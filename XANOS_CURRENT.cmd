@@ -1,7 +1,7 @@
 @echo off
 setlocal
 set "XANOS_SELF=%~f0"
-powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$c=[IO.File]::ReadAllText($env:XANOS_SELF);$m='###POWERSHELL_PAYLOAD###';$i=$c.IndexOf($m);if($i -lt 0){exit 99};Invoke-Expression $c.Substring($i+$m.Length)"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$c=[IO.File]::ReadAllText($env:XANOS_SELF);$m='###POWERSHELL_PAYLOAD###';$i=$c.LastIndexOf($m);if($i -lt 0){exit 99};Invoke-Expression $c.Substring($i+$m.Length)"
 set "RC=%ERRORLEVEL%"
 if not "%RC%"=="0" (echo. & echo FAILED - error %RC% & pause)
 exit /b %RC%
