@@ -1,0 +1,8 @@
+{
+  "channel": "stable-candidate",
+  "version": "0.7.11.11",
+  "combat_core": "0.7.10.2",
+  "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
+  "sha256": "ada3c792fd81b5f6196a9d0be83148f33ef5c21f05d73af7b005dd2d72cd9836",
+  "notes": "ONE-CLICK candidate: combat core 0.7.10.2 + NUI 0.7.11.11 open-bind fix + local Qwen AI + EPC/PRC watcher + Steam launch."
+}
