@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.7.11.15.7",
+  "version": "0.7.11.15.8",
   "combat_core": "0.7.10.2",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "1baf31ab8da837410601f65c15a4e49b70d6d8f0d8cda317655f8d9cb8930317",
-  "notes": "Target-defense telemetry: compact panel now shows detected damage immunity/resistance/vulnerability and spell resistance from equipped items plus creature skin/hide; creature skin also participates in WHY-AMMO explanation scoring. Action merged into top status line to keep the 11.15.6 compact footprint. Combat core V0.7.10.2 unchanged."
+  "sha256": "601cd12c13e8179ffcd2cf8d483fbc8f0851d01c98e64eb15795b81eb58d37a1",
+  "notes": "Compact-fit NUI cleanup: smaller buttons and labels, shorter Russian button captions (СЛЕДОМ, БАФ+, МАГИЯ), fresh 245x225 geometry to eliminate scrollbars while keeping 11.15.7 target-defense telemetry. Combat core V0.7.10.2 unchanged."
 }
