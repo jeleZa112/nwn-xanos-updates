@@ -31,6 +31,4 @@ void main()
         }
         o = GetNextFactionMember(oPC, FALSE);
     }
-
-    DelayCommand(3.0, ExecuteScript("uai_boot", oPC));
 }
