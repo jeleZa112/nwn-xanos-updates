@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.7.11.15.10",
-  "combat_core": "0.7.10.3",
+  "version": "0.7.11.15.11",
+  "combat_core": "0.7.10.4",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "bca847cd37ee694933cbc4dbef1c7ca924993c3e5c2fb72718f3eead0df43445",
-  "notes": "Compile-safe replacement for 11.15.9. Keeps the vertical/narrow NUI and Russian action labels, but reduces the combat delta to two tiny changes: AUTO low-HD non-casters (1-3 enemies) are handled with weapons only, and elemental ammo gets a strong score penalty against those trivial AUTO targets so mundane compatible ammo is preferred when available. Only xai_combat is rebuilt through the patched xai_core include; unchanged xai_playercmd/xai_init/xai_weapon/xai_ammo are not recompiled."
+  "sha256": "d6c7d079dafc9a98d3977bc4cd05bd50b2292ece3e1e6e16b10593718e28800c",
+  "notes": "Fixes live 15.10 issues: autonomous hard close-melee lock at <=4.5m, broader weak-target classification (HD or relative max HP), elemental ammo conservation on weak AUTO targets, and a fresh readable vertical NUI. Panel now shows HP, stats, AC/classes, AUTO>tactical mode, target, action, weapon, ammo, defense and reason on separate lines in a 295x345 window."
 }
