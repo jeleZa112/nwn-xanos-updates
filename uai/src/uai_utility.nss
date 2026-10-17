@@ -42,7 +42,9 @@ int UAI_TryUtilityBuff(int nSkill, int nNeed)
         !GetHasSpellEffect(SPELL_CATS_GRACE, OBJECT_SELF) &&
         UAI_UtilitySpellReady(SPELL_CATS_GRACE))
     {
+        UAI_SetAssocFlag(OBJECT_SELF, UAI_ASC_BUSY, TRUE);
         ActionCastSpellAtObject(SPELL_CATS_GRACE, OBJECT_SELF);
+        ActionDoCommand(UAI_SetAssocFlag(OBJECT_SELF, UAI_ASC_BUSY, FALSE));
         SetLocalString(OBJECT_SELF, "UAI_LAST_UTILITY", "BUFF_CATS_GRACE");
         return TRUE;
     }
@@ -51,7 +53,9 @@ int UAI_TryUtilityBuff(int nSkill, int nNeed)
         !GetHasSpellEffect(SPELL_FOXS_CUNNING, OBJECT_SELF) &&
         UAI_UtilitySpellReady(SPELL_FOXS_CUNNING))
     {
+        UAI_SetAssocFlag(OBJECT_SELF, UAI_ASC_BUSY, TRUE);
         ActionCastSpellAtObject(SPELL_FOXS_CUNNING, OBJECT_SELF);
+        ActionDoCommand(UAI_SetAssocFlag(OBJECT_SELF, UAI_ASC_BUSY, FALSE));
         SetLocalString(OBJECT_SELF, "UAI_LAST_UTILITY", "BUFF_FOXS_CUNNING");
         return TRUE;
     }
@@ -80,7 +84,9 @@ int UAI_TryTrap()
     {
         if (nSafe >= nRecoverDC)
         {
+            UAI_SetAssocFlag(OBJECT_SELF, UAI_ASC_BUSY, TRUE);
             ActionUseSkill(SKILL_DISABLE_TRAP, oTrap, SUBSKILL_RECOVERTRAP);
+            ActionDoCommand(UAI_SetAssocFlag(OBJECT_SELF, UAI_ASC_BUSY, FALSE));
             SetLocalString(OBJECT_SELF, "UAI_LAST_UTILITY", "RECOVER_TRAP");
             return TRUE;
         }
@@ -100,7 +106,9 @@ int UAI_TryTrap()
 
         if (nSafe >= nDC)
         {
+            UAI_SetAssocFlag(OBJECT_SELF, UAI_ASC_BUSY, TRUE);
             ActionUseSkill(SKILL_DISABLE_TRAP, oTrap);
+            ActionDoCommand(UAI_SetAssocFlag(OBJECT_SELF, UAI_ASC_BUSY, FALSE));
             SetLocalString(OBJECT_SELF, "UAI_LAST_UTILITY", "DISARM_TRAP");
             return TRUE;
         }
@@ -144,7 +152,11 @@ int UAI_TryLock()
             return FALSE;
         }
 
+        UAI_SetAssocFlag(OBJECT_SELF, UAI_ASC_BUSY, TRUE);
+        UAI_SetAssocFlag(OBJECT_SELF, UAI_ASC_BUSY, TRUE);
         ActionUnlockObject(oLock);
+        ActionDoCommand(UAI_SetAssocFlag(OBJECT_SELF, UAI_ASC_BUSY, FALSE));
+        ActionDoCommand(UAI_SetAssocFlag(OBJECT_SELF, UAI_ASC_BUSY, FALSE));
         SetLocalString(OBJECT_SELF, "UAI_LAST_UTILITY", "UNLOCK_WITH_KEY");
         return TRUE;
     }
