@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.7.11.14-repair1",
+  "version": "0.7.11.15",
   "combat_core": "0.7.10.2",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "5d5b4c80ffe5906cfbc558936eebd6fef84ed34359a73b790a67d18be83ff548",
-  "notes": "Repair1: rebuilt 11.14 from clean 11.13 base after malformed PowerShell injection. Canonical side-panel NUI; existing proven XANOS_CONTROL_PANEL hotkey system remains the keyboard configurator. Combat V0.7.10.2 protected."
+  "sha256": "2f456429683278f7492807c8e704b1f1a2bf75392dd414ac9ec97d3fd8c0c006",
+  "notes": "Russian compact NUI; fixes duplicate command firing by handling click only; removes spell IDs from user output; adds WHY AMMO explanation comparing elemental ammo against target resistance/vulnerability using the same scoring logic as V0.7.10.2. Combat core unchanged."
 }
