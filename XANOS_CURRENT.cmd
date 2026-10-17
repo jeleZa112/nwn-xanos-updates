@@ -49,7 +49,7 @@ Get-ChildItem $Build -File -ErrorAction SilentlyContinue|Remove-Item -Force
 # Universal Companion AI V0.8.0.0 sources.
 function Write-UaiGzipSource([string]$Name,[string]$B64){
  $raw=[Convert]::FromBase64String($B64)
- $ms=[IO.MemoryStream]::new(,$raw)
+ $ms=[IO.MemoryStream]::new([byte[]]$raw)
  $gz=[IO.Compression.GzipStream]::new($ms,[IO.Compression.CompressionMode]::Decompress)
  $out=[IO.MemoryStream]::new()
  try{$gz.CopyTo($out);[IO.File]::WriteAllBytes((Join-Path $Src $Name),$out.ToArray())}
