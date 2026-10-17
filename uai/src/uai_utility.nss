@@ -16,6 +16,9 @@ int UAI_UtilityPotentialBuff(int nSkill)
 {
     int n = 0;
 
+    // Only engine-stable ability buffs are used in the first universal build.
+    // PRC/non-stock spell packages remain fallback territory until their spell IDs
+    // are discovered from the actual installed ruleset rather than guessed.
     if (nSkill == SKILL_OPEN_LOCK &&
         !GetHasSpellEffect(SPELL_CATS_GRACE, OBJECT_SELF) &&
         UAI_UtilitySpellReady(SPELL_CATS_GRACE))
@@ -26,13 +29,6 @@ int UAI_UtilityPotentialBuff(int nSkill)
         UAI_UtilitySpellReady(SPELL_FOXS_CUNNING))
         n += 1; // conservative minimum skill gain from +INT
 
-    if (!GetHasSpellEffect(SPELL_HEROISM, OBJECT_SELF) &&
-        !GetHasSpellEffect(SPELL_GREATER_HEROISM, OBJECT_SELF))
-    {
-        if (UAI_UtilitySpellReady(SPELL_GREATER_HEROISM)) n += 4;
-        else if (UAI_UtilitySpellReady(SPELL_HEROISM)) n += 2;
-    }
-
     return n;
 }
 
@@ -42,8 +38,6 @@ int UAI_TryUtilityBuff(int nSkill, int nNeed)
     int nPotential = UAI_UtilityPotentialBuff(nSkill);
     if (nPotential < nNeed) return FALSE;
 
-    // Cheapest relevant ability buff first. It is only spent when the complete
-    // available buff plan can actually move the check into the safe range.
     if (nSkill == SKILL_OPEN_LOCK &&
         !GetHasSpellEffect(SPELL_CATS_GRACE, OBJECT_SELF) &&
         UAI_UtilitySpellReady(SPELL_CATS_GRACE))
@@ -60,31 +54,6 @@ int UAI_TryUtilityBuff(int nSkill, int nNeed)
         ActionCastSpellAtObject(SPELL_FOXS_CUNNING, OBJECT_SELF);
         SetLocalString(OBJECT_SELF, "UAI_LAST_UTILITY", "BUFF_FOXS_CUNNING");
         return TRUE;
-    }
-
-    if (!GetHasSpellEffect(SPELL_HEROISM, OBJECT_SELF) &&
-        !GetHasSpellEffect(SPELL_GREATER_HEROISM, OBJECT_SELF))
-    {
-        if (nNeed <= 2 && UAI_UtilitySpellReady(SPELL_HEROISM))
-        {
-            ActionCastSpellAtObject(SPELL_HEROISM, OBJECT_SELF);
-            SetLocalString(OBJECT_SELF, "UAI_LAST_UTILITY", "BUFF_HEROISM");
-            return TRUE;
-        }
-
-        if (UAI_UtilitySpellReady(SPELL_GREATER_HEROISM))
-        {
-            ActionCastSpellAtObject(SPELL_GREATER_HEROISM, OBJECT_SELF);
-            SetLocalString(OBJECT_SELF, "UAI_LAST_UTILITY", "BUFF_GREATER_HEROISM");
-            return TRUE;
-        }
-
-        if (UAI_UtilitySpellReady(SPELL_HEROISM))
-        {
-            ActionCastSpellAtObject(SPELL_HEROISM, OBJECT_SELF);
-            SetLocalString(OBJECT_SELF, "UAI_LAST_UTILITY", "BUFF_HEROISM");
-            return TRUE;
-        }
     }
 
     return FALSE;
