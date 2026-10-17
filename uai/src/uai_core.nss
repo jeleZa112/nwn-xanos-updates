@@ -5,6 +5,22 @@ const string UAI_ROLE = "UAI_ROLE";
 const string UAI_TICK = "UAI_TICK";
 const string UAI_SAVED_CHEST = "UAI_SAVED_CHEST";
 const string UAI_GEAR_SWAPPED = "UAI_GEAR_SWAPPED";
+const string UAI_ASSOC_STATE_VAR = "NW_ASSOCIATE_MASTER";
+const int UAI_ASC_STAND_GROUND = 0x08000000;
+const int UAI_ASC_BUSY = 0x40000000;
+
+int UAI_AssocFlag(object o, int nFlag)
+{
+    return (GetLocalInt(o, UAI_ASSOC_STATE_VAR) & nFlag) != 0;
+}
+
+void UAI_SetAssocFlag(object o, int nFlag, int bOn)
+{
+    int n = GetLocalInt(o, UAI_ASSOC_STATE_VAR);
+    if (bOn) n = n | nFlag;
+    else n = n & (~nFlag);
+    SetLocalInt(o, UAI_ASSOC_STATE_VAR, n);
+}
 
 int UAI_IsNamedXanos(object o)
 {
@@ -615,6 +631,16 @@ object UAI_SelectTarget()
 {
     object oMaster = GetLocalObject(OBJECT_SELF, UAI_MASTER);
     if (!GetIsObjectValid(oMaster)) oMaster = GetMaster(OBJECT_SELF);
+
+    // Target stickiness is also the manual-order guarantee: if the creature is
+    // already executing an attack, never silently redirect that order.
+    if (GetCurrentAction(OBJECT_SELF) == ACTION_ATTACKOBJECT)
+    {
+        object oCurrentTarget = GetAttackTarget(OBJECT_SELF);
+        if (GetIsObjectValid(oCurrentTarget) && GetCurrentHitPoints(oCurrentTarget) > 0)
+            return oCurrentTarget;
+    }
+
     object oBest = OBJECT_INVALID;
     int nBest = -100000;
     object oMasterTarget = GetIsObjectValid(oMaster) ? GetAttackTarget(oMaster) : OBJECT_INVALID;
@@ -623,6 +649,7 @@ object UAI_SelectTarget()
         int nM = UAI_TargetScore(oMasterTarget, oMaster);
         if (nM > nBest) { nBest = nM; oBest = oMasterTarget; }
     }
+
     object o = GetFirstObjectInShape(SHAPE_SPHERE, 22.0, GetLocation(OBJECT_SELF), TRUE, OBJECT_TYPE_CREATURE);
     while (GetIsObjectValid(o))
     {
@@ -633,6 +660,7 @@ object UAI_SelectTarget()
         }
         o = GetNextObjectInShape(SHAPE_SPHERE, 22.0, GetLocation(OBJECT_SELF), TRUE, OBJECT_TYPE_CREATURE);
     }
+
     if (!GetIsObjectValid(oBest))
     {
         object oAtk = GetAttackTarget(OBJECT_SELF);
