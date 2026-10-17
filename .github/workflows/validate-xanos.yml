@@ -80,6 +80,16 @@ jobs:
             Write-Host "Extracted $name"
           }
 
+          Write-Host '=== UAI_CORE_BEGIN ==='
+          Get-Content (Join-Path $src 'uai_core.nss')
+          Write-Host '=== UAI_CORE_END ==='
+          Write-Host '=== UAI_COMBAT_BEGIN ==='
+          Get-Content (Join-Path $src 'uai_combat.nss')
+          Write-Host '=== UAI_COMBAT_END ==='
+          Write-Host '=== UAI_BOOT_BEGIN ==='
+          Get-Content (Join-Path $src 'uai_boot.nss')
+          Write-Host '=== UAI_BOOT_END ==='
+
           Invoke-WebRequest -UseBasicParsing -Uri 'https://raw.githubusercontent.com/The-Frozen-North/tfn-module/master/nwn-base-scripts/nwscript.nss' -OutFile (Join-Path $src 'nwscript.nss')
           $zip = Join-Path $env:RUNNER_TEMP 'nwnsc.zip'
           Invoke-WebRequest -UseBasicParsing -Uri 'https://github.com/nwneetools/nwnsc/releases/download/v1.1.5/nwnsc-win-v1.1.5.zip' -OutFile $zip
