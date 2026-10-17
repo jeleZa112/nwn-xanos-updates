@@ -1,8 +1,9 @@
 {
   "channel": "test",
-  "version": "0.7.11.15.16-prc-famfix5",
+  "version": "0.8.0.0-universal-rc5",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "3e08c00fac7232437fd6399fca07be34983d18ae865f442c902008d3ff6ce0ce",
-  "notes": "PRC familiar FIX5. Xanos NUI remains 11.15.16 and combat remains 0.7.10.7. Replaces the failing familiar recovery source with minimal standard NWScript only (no PRC includes, no custom helper calls, no SetIsDestroyable), and prints the actual last nwnsc diagnostic lines directly in the updater console if compilation still fails."
+  "sha256": "659a11923d7d581225242c12a9467ddc6afd1e1792493928964f388247a87c5b",
+  "notes": "UAI 0.8.0.0 RC5. Xanos combat 0.7.10.7 and PRC familiar FIX5 remain protected. Supervisor is a tagged permanent EE EffectRunScript for save/load stability. Any pre-existing module/story special combat AI now receives first refusal each round and retains the HotU OK contract before generic UAI acts. UAI preserves manual/current attack target and native busy/stand-ground/follow/cast/rest/lock/trap actions; applies weak-target resource economy, capability-driven weapon/ammo/maneuvers, conservative elemental chest gear adaptation, and safe idle lock/trap utility with take-20 thresholds and only-sufficient Cat/Fox prebuffing. Summons/familiars remain excluded.",
+  "universal_core": "0.8.0.0"
 }
