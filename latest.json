@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.7.11.15.14",
+  "version": "0.7.11.15.15",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "5be917f83d5273aaacc3c266673219df228f0a0aa15427c0258af61d8b9a7df4",
-  "notes": "Live follow-up: hard weak-target economy now runs before crowd/control offense, so Easy non-casters may receive defensive self-buffs but never offensive spell/item spending; at range they use mundane ranged ammo and in close melee they use weapons. When 3+ enemies are already in melee, Xanos may equip a physical shield even with spell slots after defensive self-buffs; AUTO tracks and removes only that auto-equipped shield when pressure drops. NUI shows AUTO > ЭКОНОМИЯ for weak targets, translates new internal actions, and shows equipped shield next to the weapon."
+  "sha256": "0cdbb962118647f9445bc7ad9f8d905dc95dec9aa3d642ab5c1c4a6c3b014936",
+  "notes": "UI-only maneuver capability scan; combat remains 0.7.10.7 unchanged. Panel now shows available tactical feats (knockdown/disarm/called shot/rapid shot/power attack/expertise) and any active combat mode, so we can distinguish missing feats from unused logic before generalizing the AI to all companions."
 }
