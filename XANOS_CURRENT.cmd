@@ -9,7 +9,7 @@ exit /b %RC%
 $ErrorActionPreference='Stop'
 [Console]::OutputEncoding=[Text.Encoding]::UTF8
 $OutputEncoding=[Text.Encoding]::UTF8
-Write-Host 'XANOS ALL-IN-ONE V0.7.11.15 RU + WHY AMMO' -ForegroundColor Cyan
+Write-Host 'XANOS ALL-IN-ONE V0.7.11.15.1 RU + WHY AMMO + CP1251 FIX' -ForegroundColor Cyan
 Write-Host 'Combat core: V0.7.10.2 / NUI: canonical PRC/NWN panel / fresh window ID / live-runtime open' -ForegroundColor DarkCyan
 
 if(Get-Process -Name nwmain -ErrorAction SilentlyContinue){throw 'NWN is running. Close the game once, then run this ONE file again.'}
@@ -42,12 +42,23 @@ Get-ChildItem $Build -File -ErrorAction SilentlyContinue|Remove-Item -Force
 [IO.File]::WriteAllBytes((Join-Path $Src 'xai_init.nss'),[Convert]::FromBase64String('I2luY2x1ZGUgInhhaV9jb3JlIgoKdm9pZCBtYWluKCkKewogICAgWEFJX0luaXRBbGwoKTsKICAgIFhBSV9JbnN0YWxsQ2hhdEhvb2soKTsKCiAgICBvYmplY3Qgb1BDID0gR2V0Rmlyc3RQQygpOwogICAgd2hpbGUgKEdldElzT2JqZWN0VmFsaWQob1BDKSkKICAgIHsKICAgICAgICBEZWxheUNvbW1hbmQoNS4wLCBFeGVjdXRlU2NyaXB0KCJ4YWlfbnVpX2Jvb3QiLCBvUEMpKTsKICAgICAgICBvUEMgPSBHZXROZXh0UEMoKTsKICAgIH0KfQo='))
 [IO.File]::WriteAllBytes((Join-Path $Src 'evn_modgui.nss'),[Convert]::FromBase64String('aW50IFhHVUlfSXNYYW5vcyhvYmplY3QgbykKewogICAgaWYgKCFHZXRJc09iamVjdFZhbGlkKG8pIHx8IEdldE9iamVjdFR5cGUobykgIT0gT0JKRUNUX1RZUEVfQ1JFQVRVUkUpIHJldHVybiBGQUxTRTsKICAgIHN0cmluZyBzVGFnID0gR2V0U3RyaW5nTG93ZXJDYXNlKEdldFRhZyhvKSk7CiAgICBzdHJpbmcgc1JlcyA9IEdldFN0cmluZ0xvd2VyQ2FzZShHZXRSZXNSZWYobykpOwogICAgaWYgKEZpbmRTdWJTdHJpbmcoc1RhZywgInhhbm9zIikgPj0gMCB8fCBGaW5kU3ViU3RyaW5nKHNSZXMsICJ4YW5vcyIpID49IDApIHJldHVybiBUUlVFOwogICAgaWYgKEdldExldmVsQnlDbGFzcyhDTEFTU19UWVBFX0JBUkJBUklBTiwgbykgPiAwICYmIEdldExldmVsQnlDbGFzcyhDTEFTU19UWVBFX1NPUkNFUkVSLCBvKSA+IDApIHJldHVybiBUUlVFOwogICAgcmV0dXJuIEZBTFNFOwp9Cgp2b2lkIG1haW4oKQp7CiAgICBpZiAoIUdldExvY2FsSW50KEdldE1vZHVsZSgpLCAiWEFJX0lOSVRfRE9ORV8wNzExMTQiKSkKICAgIHsKICAgICAgICBTZXRMb2NhbEludChHZXRNb2R1bGUoKSwgIlhBSV9JTklUX0RPTkVfMDcxMTE0IiwgVFJVRSk7CiAgICAgICAgRXhlY3V0ZVNjcmlwdCgieGFpX2luaXQiLCBPQkpFQ1RfU0VMRik7CiAgICB9CgogICAgRXhlY3V0ZVNjcmlwdCgiZXBjX21vZGd1aSIsIE9CSkVDVF9TRUxGKTsKCiAgICBpZiAoR2V0TGFzdEd1aUV2ZW50VHlwZSgpID09IEdVSUVWRU5UX1NFTEVDVF9DUkVBVFVSRSkKICAgIHsKICAgICAgICBvYmplY3Qgb1NlbGVjdGVkID0gR2V0TGFzdEd1aUV2ZW50T2JqZWN0KCk7CiAgICAgICAgb2JqZWN0IG9QQyA9IEdldExhc3RHdWlFdmVudFBsYXllcigpOwogICAgICAgIGlmIChYR1VJX0lzWGFub3Mob1NlbGVjdGVkKSAmJiBHZXRJc09iamVjdFZhbGlkKG9QQykgJiYgR2V0SXNQQyhvUEMpKQogICAgICAgICAgICBEZWxheUNvbW1hbmQoMC4yMCwgRXhlY3V0ZVNjcmlwdCgieGFpX251aV9ib290Iiwgb1BDKSk7CiAgICB9Cn0K'))
 
+# NWN/nwnsc in the user's RU setup expects legacy CP1251 source bytes.
+# Embedded sources above are UTF-8; convert only Cyrillic-bearing NSS files before compile.
+$cp1251=[Text.Encoding]::GetEncoding(1251)
+foreach($n in @('xai_nui_common.nss','xai_nui_boot.nss','xai_nui_event.nss','xai_playercmd.nss')){
+ $p=Join-Path $Src $n
+ if(Test-Path -LiteralPath $p){
+  $txt=[Text.Encoding]::UTF8.GetString([IO.File]::ReadAllBytes($p))
+  [IO.File]::WriteAllBytes($p,$cp1251.GetBytes($txt))
+ }
+}
+
 # Reuse the already-installed, protected V0.7.10.2 xai_core source only for compiling the boot-enabled xai_init wrapper.
 $core=$null
 foreach($p in @((Join-Path $SupportDir 'source_xai_v07102_cp1251\xai_core.nss'),(Join-Path $SupportDir 'source_xai_v07110_cp1251\xai_core.nss'))){if(Test-Path -LiteralPath $p){$core=$p;break}}
 if($core){Copy-Item -LiteralPath $core -Destination (Join-Path $Src 'xai_core.nss') -Force}
 
-Set-Content -LiteralPath $Log -Value ('XANOS ALL-IN-ONE V0.7.11.15 RU + WHY AMMO '+(Get-Date)) -Encoding UTF8
+Set-Content -LiteralPath $Log -Value ('XANOS ALL-IN-ONE V0.7.11.15.1 RU + WHY AMMO + CP1251 FIX '+(Get-Date)) -Encoding UTF8
 function Compile([string]$name){
  Write-Host ('[compile] '+$name) -ForegroundColor DarkCyan
  $source=Join-Path $Src $name
@@ -67,8 +78,8 @@ if($core){$built['xai_init.ncs']=Compile 'xai_init.nss'}else{Write-Host '[warn] 
 
 # Atomic-ish install: only copy after every requested compile succeeded.
 foreach($n in $built.Keys){$dst=Join-Path $DevDir $n;if(Test-Path $dst){Copy-Item $dst (Join-Path $Backup ($n+'.bak')) -Force};Copy-Item $built[$n] $dst -Force}
-Set-Content -LiteralPath (Join-Path $SupportDir 'XANOS_VERSION.txt') -Value 'V0.7.11.15 RU + WHY AMMO ALL-IN-ONE + NUI OPEN BIND FIX + V0.7.10.2 COMBAT CORE RU' -Encoding UTF8
-Write-Host '[OK] NUI V0.7.11.15 RU + WHY AMMO installed. V0.7.10.2 combat scripts were not replaced.' -ForegroundColor Green
+Set-Content -LiteralPath (Join-Path $SupportDir 'XANOS_VERSION.txt') -Value 'V0.7.11.15.1 RU + WHY AMMO + CP1251 FIX ALL-IN-ONE + NUI OPEN BIND FIX + V0.7.10.2 COMBAT CORE RU' -Encoding UTF8
+Write-Host '[OK] NUI V0.7.11.15.1 RU + WHY AMMO + CP1251 FIX installed. V0.7.10.2 combat scripts were not replaced.' -ForegroundColor Green
 
 # Restart only our local AI/panel processes, never the game.
 try{Get-CimInstance Win32_Process|Where-Object{$_.Name -match '^(powershell|pwsh)(\.exe)?$' -and $_.CommandLine -and ($_.CommandLine.Contains('START_XANOS_LOCAL_AI.ps1') -or $_.CommandLine.Contains('XANOS_CONTROL_PANEL.ps1'))}|ForEach-Object{try{Stop-Process -Id $_.ProcessId -Force -ErrorAction Stop}catch{}}}catch{}
@@ -85,5 +96,5 @@ $env:XANOS_NWN_HOME=$NwnHome
 Start-Process powershell.exe -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File',('"'+$watcher+'"'))|Out-Null
 Write-Host '[OK] EPC/PRC watcher started and Steam NWN launch requested.' -ForegroundColor Green
 Write-Host ''
-Write-Host 'V0.7.11.15 INSTALLED. Russian compact panel, single-click commands, clean spell names, ammo-choice explanation.' -ForegroundColor Cyan
+Write-Host 'V0.7.11.15.1 INSTALLED. Russian compact panel with CP1251-safe text, single-click commands, clean spell names, ammo-choice explanation.' -ForegroundColor Cyan
 Start-Sleep -Seconds 3
