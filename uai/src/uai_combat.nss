@@ -92,6 +92,9 @@ void main()
         return;
     }
 
+    // Preserve module/story custom special AI semantics before applying generic tactics.
+    if (UAI_RunPreviousSpecialAI()) return;
+
     int nTick = GetLocalInt(OBJECT_SELF, UAI_TICK) + 1;
     SetLocalInt(OBJECT_SELF, UAI_TICK, nTick);
 
