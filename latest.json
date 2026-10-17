@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.7.11.15.16-prc-famfix1",
+  "version": "0.7.11.15.16-prc-famfix2",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "f4e16d32629e9c527a50cfd5c0008c960f29e6e18b640d316727ff7bd02308a2",
-  "notes": "PRC familiar compatibility FIX1. Xanos NUI remains 11.15.16 and combat remains 0.7.10.7 unchanged. Adds two isolated PRC overrides: prc_ai_fam_percp keeps BioWare familiar perception AI but stops forwarding familiar perception into the PRC persistent eventhook path that is producing sqlocalsplayer_table/no-such-database errors; prc_pnp_fam_hide preserves the PnP familiar token hide/restore behavior and retries PRC's familiar summon spell when a dead familiar left no token. Installer compiles both before copying anything and backs up previous development overrides."
+  "sha256": "a3da9183bfc2456a29910a9788d1f7e873d059f225cc06566dc2504e142d7e14",
+  "notes": "PRC familiar compatibility FIX2. Xanos NUI stays 11.15.16 and combat stays 0.7.10.7 unchanged. Fixes PRC PnP familiar recovery at the actual custom oHench3 slot: a saved dead familiar is cleaned and spell 318 recreates the same persistent PnPFamiliarType. Future PnP familiar deaths keep the original PRC XP penalty but no longer leave a dead custom associate blocking summon after save/load. Existing perception compatibility fix remains."
 }
