@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.7.11.15.5",
+  "version": "0.7.11.15.6",
   "combat_core": "0.7.10.2",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "b12177f5778830ffa35ef644af71d88fb6cc3a87c6d305e5ca3fef453934101a",
-  "notes": "Live compact UI: periodic 0.75s telemetry refresh, AUTO target fallback to current/player/nearest visible enemy, clearer melee/no-ammo reasons, smaller fresh window geometry, and SUMMON button hidden when Xanos knows no standard Summon Creature spell. Combat V0.7.10.2 unchanged."
+  "sha256": "e4bca2fd84cec88c6f1e1fd3f45f2f108865223e657a2be8830af5715c53fdf0",
+  "notes": "Ultra-compact NUI: removes PROFILE and FAMILIAR buttons from the main panel, moves live STR/DEX/CHA/AC/class levels into the header, shrinks buttons/window, shortens ammo names, keeps live AUTO telemetry and portrait-open behavior. FAMILIAR/PROFILE command logic remains available outside the compact panel. Combat V0.7.10.2 unchanged."
 }
