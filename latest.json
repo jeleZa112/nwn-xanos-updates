@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.7.11.15.13",
-  "combat_core": "0.7.10.6",
+  "version": "0.7.11.15.14",
+  "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "8ae3520bad41aa8472c92414d903457e41ed89041d8aaf63d08a792b78876a6f",
-  "notes": "Live-test follow-up. Weak-target classification now also uses real NWN Challenge Rating (target <=75% of Xanos CR), fixing Easy kobolds that escaped the HD/HP heuristic. Manual WEAPON is now a real persistent mutually-exclusive mode: can be armed without a target, persists to the next target, clears AUTO, and the panel immediately shows 'Режим: ОРУЖИЕ'. AUTO clears WEAPON. Panel ammo telemetry mirrors weak-target conservation and reports 'слабая цель — экономия ресурсов'. Panel width reduced slightly to 265."
+  "sha256": "5be917f83d5273aaacc3c266673219df228f0a0aa15427c0258af61d8b9a7df4",
+  "notes": "Live follow-up: hard weak-target economy now runs before crowd/control offense, so Easy non-casters may receive defensive self-buffs but never offensive spell/item spending; at range they use mundane ranged ammo and in close melee they use weapons. When 3+ enemies are already in melee, Xanos may equip a physical shield even with spell slots after defensive self-buffs; AUTO tracks and removes only that auto-equipped shield when pressure drops. NUI shows AUTO > ЭКОНОМИЯ for weak targets, translates new internal actions, and shows equipped shield next to the weapon."
 }
