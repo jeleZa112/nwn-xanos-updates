@@ -71,18 +71,23 @@ jobs:
             $repoPath = Join-Path $PWD ('uai\src\' + $name)
             if (!(Test-Path $repoPath)) { throw "Auditable source missing: $repoPath" }
 
-            $embeddedHash = (Get-FileHash $embeddedPath -Algorithm SHA256).Hash
-            $repoHash = (Get-FileHash $repoPath -Algorithm SHA256).Hash
-            if ($embeddedHash -ne $repoHash) {
-              throw "Embedded/source drift: $name embedded=$embeddedHash repo=$repoHash"
+            # GitHub Windows checkout may materialize LF source as CRLF.
+            # Compare canonical text, not platform line-ending bytes.
+            $embeddedText = [IO.File]::ReadAllText($embeddedPath).Replace("`r`n", "`n")
+            $repoText = [IO.File]::ReadAllText($repoPath).Replace("`r`n", "`n")
+            if ($embeddedText -cne $repoText) {
+              throw "Embedded/source canonical-text drift: $name"
             }
 
-            $raw = [IO.File]::ReadAllBytes($repoPath)
-            if (($raw | Where-Object { $_ -gt 127 }).Count -gt 0) {
+            $raw = [Text.Encoding]::ASCII.GetBytes($repoText)
+            if ($repoText.ToCharArray() | Where-Object { [int]$_ -gt 127 }) {
               throw "UAI source must remain ASCII/CP1251-safe: $name"
             }
 
-            Write-Host "$name exact-match SHA256=$repoHash"
+            $sha = [Security.Cryptography.SHA256]::Create()
+            try { $canonicalHash = ([BitConverter]::ToString($sha.ComputeHash($raw))).Replace('-','') }
+            finally { $sha.Dispose() }
+            Write-Host "$name canonical exact-match SHA256=$canonicalHash"
           }
 
       - name: Static UAI safety invariants
