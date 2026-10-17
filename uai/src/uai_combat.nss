@@ -58,6 +58,29 @@ void main()
         return;
     }
 
+    // Respect native/EPC uninterruptible and explicit player actions.
+    // The HotU override hook runs before the stock busy-state check, so UAI must
+    // mirror that safety gate itself.
+    if (UAI_AssocFlag(OBJECT_SELF, UAI_ASC_BUSY) ||
+        UAI_AssocFlag(OBJECT_SELF, UAI_ASC_STAND_GROUND))
+    {
+        UAI_Fallback();
+        return;
+    }
+
+    int nCurrentAction = GetCurrentAction(OBJECT_SELF);
+    if (nCurrentAction == ACTION_FOLLOW ||
+        nCurrentAction == ACTION_DISABLETRAP ||
+        nCurrentAction == ACTION_OPENLOCK ||
+        nCurrentAction == ACTION_REST ||
+        nCurrentAction == ACTION_CASTSPELL ||
+        nCurrentAction == ACTION_ITEMCASTSPELL ||
+        nCurrentAction == ACTION_MOVETOPOINT)
+    {
+        UAI_Fallback();
+        return;
+    }
+
     // If this creature is no longer owned by the PC that UAI attached to,
     // stop wrapping its AI rather than leaving a stale companion controller behind.
     object oSavedMaster = GetLocalObject(OBJECT_SELF, UAI_MASTER);
