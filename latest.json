@@ -1,9 +1,9 @@
 {
   "channel": "test",
-  "version": "0.8.0.0-universal-rc3",
+  "version": "0.8.0.0-universal-rc4",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "e0adf7cc6c76decfd8cc8f853ae7ae4c56cef702bcd00cd2a373cefa74890ef7",
-  "notes": "UAI 0.8.0.0 RC3. Xanos combat 0.7.10.7 and PRC familiar FIX5 stay protected. Generic companions preserve current attack target/manual orders, mirror native busy and stand-ground safety, coexist with module custom AI, use capability-driven weapon/ammo/maneuver and weak-target resource economy, conservative elemental chest armor adaptation with manual-gear restoration safety, and idle out-of-combat lock/trap utility with take-20 thresholds and only-sufficient Cat/Fox prebuffing. Summons/familiars remain excluded.",
+  "sha256": "302275a22d21529beb93778cd131448accfd8119b164e3256a592122e5d6b2a2",
+  "notes": "UAI 0.8.0.0 RC4. Xanos combat 0.7.10.7 and PRC familiar FIX5 stay protected. Universal supervisor now uses a tagged permanent EE EffectRunScript interval so it survives save/load without accumulating DelayCommand loops. Generic companions preserve manual/current attack target, native busy/stand-ground/follow/cast/rest/lock/trap actions, coexist with module custom AI, apply proven weak-target economy, capability-driven weapon/ammo/maneuver logic, conservative elemental armor adaptation with player gear override protection, and safe idle lock/trap utility with take-20 thresholds and only-sufficient Cat/Fox prebuffing. Summons/familiars remain excluded.",
   "universal_core": "0.8.0.0"
 }
