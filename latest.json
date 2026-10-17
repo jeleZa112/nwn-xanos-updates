@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.7.11.15.6",
+  "version": "0.7.11.15.7",
   "combat_core": "0.7.10.2",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "e4bca2fd84cec88c6f1e1fd3f45f2f108865223e657a2be8830af5715c53fdf0",
-  "notes": "Ultra-compact NUI: removes PROFILE and FAMILIAR buttons from the main panel, moves live STR/DEX/CHA/AC/class levels into the header, shrinks buttons/window, shortens ammo names, keeps live AUTO telemetry and portrait-open behavior. FAMILIAR/PROFILE command logic remains available outside the compact panel. Combat V0.7.10.2 unchanged."
+  "sha256": "1baf31ab8da837410601f65c15a4e49b70d6d8f0d8cda317655f8d9cb8930317",
+  "notes": "Target-defense telemetry: compact panel now shows detected damage immunity/resistance/vulnerability and spell resistance from equipped items plus creature skin/hide; creature skin also participates in WHY-AMMO explanation scoring. Action merged into top status line to keep the 11.15.6 compact footprint. Combat core V0.7.10.2 unchanged."
 }
