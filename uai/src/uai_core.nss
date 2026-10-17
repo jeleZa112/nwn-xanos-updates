@@ -1,5 +1,6 @@
 const string UAI_MARK = "UAI_V080_ACTIVE";
 const string UAI_PREV_AI = "UAI_PREVIOUS_COMBAT_AI";
+const string UAI_PREV_RAN = "UAI_PREVIOUS_COMBAT_AI_RAN";
 const string UAI_MASTER = "UAI_MASTER";
 const string UAI_ROLE = "UAI_ROLE";
 const string UAI_TICK = "UAI_TICK";
@@ -747,8 +748,30 @@ void UAI_DetachAndFallback()
     if (sPrev != "" && sPrev != "uai_combat") ExecuteScript(sPrev, OBJECT_SELF);
 }
 
+int UAI_RunPreviousSpecialAI()
+{
+    DeleteLocalInt(OBJECT_SELF, UAI_PREV_RAN);
+
+    string sPrev = GetLocalString(OBJECT_SELF, UAI_PREV_AI);
+    if (sPrev == "" || sPrev == "uai_combat") return FALSE;
+
+    // The original module special AI has first refusal. If it follows the HotU
+    // contract and sets X2_SPECIAL_COMBAT_AI_SCRIPT_OK, UAI must not interfere.
+    ExecuteScript(sPrev, OBJECT_SELF);
+    if (GetLocalInt(OBJECT_SELF, "X2_SPECIAL_COMBAT_AI_SCRIPT_OK")) return TRUE;
+
+    SetLocalInt(OBJECT_SELF, UAI_PREV_RAN, TRUE);
+    return FALSE;
+}
+
 void UAI_Fallback()
 {
+    if (GetLocalInt(OBJECT_SELF, UAI_PREV_RAN))
+    {
+        DeleteLocalInt(OBJECT_SELF, UAI_PREV_RAN);
+        return;
+    }
+
     string sPrev = GetLocalString(OBJECT_SELF, UAI_PREV_AI);
     if (sPrev != "" && sPrev != "uai_combat") ExecuteScript(sPrev, OBJECT_SELF);
 }
