@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.7.11.15.8",
-  "combat_core": "0.7.10.2",
+  "version": "0.7.11.15.9",
+  "combat_core": "0.7.10.3",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "601cd12c13e8179ffcd2cf8d483fbc8f0851d01c98e64eb15795b81eb58d37a1",
-  "notes": "Compact-fit NUI cleanup: smaller buttons and labels, shorter Russian button captions (СЛЕДОМ, БАФ+, МАГИЯ), fresh 245x225 geometry to eliminate scrollbars while keeping 11.15.7 target-defense telemetry. Combat core V0.7.10.2 unchanged."
+  "sha256": "ee594fdcdd1c1ea8d51bbc688e01268306c5fb54582b5c07739c0c4d1b029f06",
+  "notes": "Vertical/narrow native NUI plus combat hotfix 0.7.10.3. In AUTO, up to three obvious weak enemies are handled with weapons instead of native offensive spells/rods; elemental ammo is penalized on trivial targets so mundane compatible ammo is conserved/used first when available. Creature skin/hide resistance also feeds real ammo scoring. Manual MELEE/BURST behavior remains unchanged. UI splits HP/mode/action into vertical lines and translates raw English action names."
 }
