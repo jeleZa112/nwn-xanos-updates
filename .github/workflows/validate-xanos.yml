@@ -98,7 +98,8 @@ jobs:
           $combat = Get-Content (Join-Path $PWD 'uai\src\uai_combat.nss') -Raw
           $boot = Get-Content (Join-Path $PWD 'uai\src\uai_boot.nss') -Raw
           $utility = Get-Content (Join-Path $PWD 'uai\src\uai_utility.nss') -Raw
-          $all = $core + $combat + $boot + $utility
+          $bootstrap = Get-Content (Join-Path $PWD 'uai\src\uai_bootstrap.nss') -Raw
+          $all = $core + $combat + $boot + $utility + $bootstrap
 
           $required = @(
             'ASSOCIATE_TYPE_SUMMONED',
