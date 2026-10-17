@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.7.11.15.16",
+  "version": "0.7.11.15.16.1",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "fdeb71849f855f43049e62b24081fe4b16f9d0a0b80183d6d6da5cba5dbb77bb",
-  "notes": "UI-only live equipment scan; combat remains 0.7.10.7 unchanged. Panel now reads the actually equipped chest clothing/armor on every live refresh and shows self-defense telemetry aggregated from currently worn/equipped item properties plus spell resistance. Effective STR/DEX/CHA/AC were already live totals, so gear changes are visible without hard-coding a build. This is the first equipment-aware capability layer before generalizing AI decisions to all companions."
+  "sha256": "e44ca1c5f7ddc3e4ce2634cc0ec4adf58677fdfa3aaa1aa390b1662c688960d8",
+  "notes": "UI hotfix only. Restores the FAMILIAR button to the compact NUI; existing xai_playercmd/XAI_TryFamiliar logic is reused. If the familiar is alive the command reports that; if the daily summon is exhausted after death, the panel reports that the summon is unavailable. Combat core remains 0.7.10.7 unchanged."
 }
