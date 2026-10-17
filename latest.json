@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.7.11.15.1",
+  "version": "0.7.11.15.2",
   "combat_core": "0.7.10.2",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "bfd9824b20d83bf5bda13e31b7f05d6fecd58e3e885984a7d5ad468fd71ddde6",
-  "notes": "Encoding hotfix: convert Cyrillic-bearing embedded NSS sources from UTF-8 to CP1251 before nwnsc compile, matching the user's Russian NWN setup. Keeps Russian compact UI, WHY AMMO, clean spell names, single-click commands. Combat V0.7.10.2 unchanged."
+  "sha256": "9eb8bc173bee53fa14054efd7d46c04d28ab2da3c07b7585ffc8ffaaf391facd",
+  "notes": "Russian UI punctuation hotfix: replace unsupported em dash/bullet characters with ASCII separators after CP1251 conversion. Keeps compact Russian NUI, WHY AMMO, clean spell names, single-click commands. Combat V0.7.10.2 unchanged."
 }
