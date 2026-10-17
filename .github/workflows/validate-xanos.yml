@@ -54,7 +54,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $payload = [IO.File]::ReadAllText((Join-Path $PWD 'XANOS_CURRENT.cmd'))
-          $sourceNames = @('uai_core.nss','uai_combat.nss','uai_boot.nss','uai_utility.nss')
+          $sourceNames = @('uai_core.nss','uai_combat.nss','uai_boot.nss','uai_utility.nss','uai_bootstrap.nss')
           $embeddedDir = Join-Path $env:RUNNER_TEMP 'uai-embedded'
           New-Item -ItemType Directory -Force -Path $embeddedDir | Out-Null
 
@@ -112,7 +112,9 @@ jobs:
             'SUBSKILL_RECOVERTRAP',
             'GetTrapDisarmDC',
             'GetLockUnlockDC',
-            'ACTION_INVALID'
+            'ACTION_INVALID',
+            'EffectRunScript',
+            'UAI_SUPERVISOR_080'
           )
           foreach ($needle in $required) {
             if ($all -notmatch [regex]::Escape($needle)) { throw "Safety invariant missing: $needle" }
@@ -149,7 +151,7 @@ jobs:
             $compiler = Get-ChildItem $compilerDir -Recurse -Filter nwnsc.exe | Select-Object -First 1 -ExpandProperty FullName
             if (-not $compiler) { throw 'nwnsc.exe not found after extraction' }
 
-            foreach ($name in @('uai_boot.nss','uai_combat.nss','uai_utility.nss')) {
+            foreach ($name in @('uai_bootstrap.nss','uai_boot.nss','uai_combat.nss','uai_utility.nss')) {
               Write-Host "Compiling $name"
               & $compiler '-i' $src '-b' $out '-o' '-w' (Join-Path $src $name)
               if ($LASTEXITCODE -ne 0) { throw "NWScript compile failed: $name" }
