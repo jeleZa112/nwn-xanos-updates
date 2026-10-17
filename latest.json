@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.7.11.15.11",
-  "combat_core": "0.7.10.4",
+  "version": "0.7.11.15.12",
+  "combat_core": "0.7.10.5",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "d6c7d079dafc9a98d3977bc4cd05bd50b2292ece3e1e6e16b10593718e28800c",
-  "notes": "Fixes live 15.10 issues: autonomous hard close-melee lock at <=4.5m, broader weak-target classification (HD or relative max HP), elemental ammo conservation on weak AUTO targets, and a fresh readable vertical NUI. Panel now shows HP, stats, AC/classes, AUTO>tactical mode, target, action, weapon, ammo, defense and reason on separate lines in a 295x345 window."
+  "sha256": "7ad2caaaadaf70f26cd2b4ef05cc3b1cbdb0f3a7c6cb35218ca9269f1a3ddc3e",
+  "notes": "Fixes the confirmed load-state bug: AUTO now initializes automatically after load unless FOLLOW/weapon-only manual lock is active, so close-melee lock and weak-target conservation work without pressing AUTO once. Keeps combat logic otherwise unchanged. Panel is tightened to 275x285 with smaller rows/buttons and translates AUTO_CLOSE_LOCK / MANUAL_WEAPON_CLO* into Russian."
 }
