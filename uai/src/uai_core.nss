@@ -359,6 +359,18 @@ int UAI_TargetDefensePenalty(object oTarget, int nDamageType)
     return nPenalty;
 }
 
+int UAI_IsWeakTarget(object oTarget)
+{
+    if (!GetIsObjectValid(oTarget) || UAI_IsCasterTarget(oTarget)) return FALSE;
+
+    float fTargetCR = GetChallengeRating(oTarget);
+    float fSelfCR = GetChallengeRating(OBJECT_SELF);
+    if (fTargetCR > 0.0 && fSelfCR > 0.0 && fTargetCR <= fSelfCR * 0.75) return TRUE;
+    if (GetHitDice(oTarget) <= GetHitDice(OBJECT_SELF) - 1) return TRUE;
+    if (GetMaxHitPoints(oTarget) * 2 <= GetMaxHitPoints(OBJECT_SELF)) return TRUE;
+    return FALSE;
+}
+
 int UAI_AmmoScore(object oAmmo, object oTarget)
 {
     if (!GetIsObjectValid(oAmmo)) return -100000;
@@ -571,17 +583,7 @@ int UAI_IsCasterTarget(object o)
     return UAI_CasterLevel(o) > 0;
 }
 
-int UAI_IsWeakTarget(object oTarget)
-{
-    if (!GetIsObjectValid(oTarget) || UAI_IsCasterTarget(oTarget)) return FALSE;
 
-    float fTargetCR = GetChallengeRating(oTarget);
-    float fSelfCR = GetChallengeRating(OBJECT_SELF);
-    if (fTargetCR > 0.0 && fSelfCR > 0.0 && fTargetCR <= fSelfCR * 0.75) return TRUE;
-    if (GetHitDice(oTarget) <= GetHitDice(OBJECT_SELF) - 1) return TRUE;
-    if (GetMaxHitPoints(oTarget) * 2 <= GetMaxHitPoints(OBJECT_SELF)) return TRUE;
-    return FALSE;
-}
 
 int UAI_TargetScore(object o, object oMaster)
 {
