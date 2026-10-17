@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.7.11.15.4",
+  "version": "0.7.11.15.5",
   "combat_core": "0.7.10.2",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "3b246eb97c88ea288c482452b12be11daa9f5a300edbf69ba5d2dd131c880bb8",
-  "notes": "Compact telemetry layout: separate Target / Action / Weapon / Ammo / Why lines so long ammo explanations no longer run off the panel. Keeps portrait-open behavior and combat core V0.7.10.2."
+  "sha256": "b12177f5778830ffa35ef644af71d88fb6cc3a87c6d305e5ca3fef453934101a",
+  "notes": "Live compact UI: periodic 0.75s telemetry refresh, AUTO target fallback to current/player/nearest visible enemy, clearer melee/no-ammo reasons, smaller fresh window geometry, and SUMMON button hidden when Xanos knows no standard Summon Creature spell. Combat V0.7.10.2 unchanged."
 }
