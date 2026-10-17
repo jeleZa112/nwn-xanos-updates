@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.7.11.15.15",
+  "version": "0.7.11.15.16",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "0cdbb962118647f9445bc7ad9f8d905dc95dec9aa3d642ab5c1c4a6c3b014936",
-  "notes": "UI-only maneuver capability scan; combat remains 0.7.10.7 unchanged. Panel now shows available tactical feats (knockdown/disarm/called shot/rapid shot/power attack/expertise) and any active combat mode, so we can distinguish missing feats from unused logic before generalizing the AI to all companions."
+  "sha256": "fdeb71849f855f43049e62b24081fe4b16f9d0a0b80183d6d6da5cba5dbb77bb",
+  "notes": "UI-only live equipment scan; combat remains 0.7.10.7 unchanged. Panel now reads the actually equipped chest clothing/armor on every live refresh and shows self-defense telemetry aggregated from currently worn/equipped item properties plus spell resistance. Effective STR/DEX/CHA/AC were already live totals, so gear changes are visible without hard-coding a build. This is the first equipment-aware capability layer before generalizing AI decisions to all companions."
 }
