@@ -359,6 +359,15 @@ int UAI_TargetDefensePenalty(object oTarget, int nDamageType)
     return nPenalty;
 }
 
+
+
+int UAI_IsCasterTarget(object o)
+{
+    if (!GetIsObjectValid(o)) return FALSE;
+    if (GetCurrentAction(o) == ACTION_CASTSPELL || GetCurrentAction(o) == ACTION_ITEMCASTSPELL) return TRUE;
+    return UAI_CasterLevel(o) > 0;
+}
+
 int UAI_IsWeakTarget(object oTarget)
 {
     if (!GetIsObjectValid(oTarget) || UAI_IsCasterTarget(oTarget)) return FALSE;
@@ -576,12 +585,7 @@ void UAI_RestoreArmor(object o)
     }
 }
 
-int UAI_IsCasterTarget(object o)
-{
-    if (!GetIsObjectValid(o)) return FALSE;
-    if (GetCurrentAction(o) == ACTION_CASTSPELL || GetCurrentAction(o) == ACTION_ITEMCASTSPELL) return TRUE;
-    return UAI_CasterLevel(o) > 0;
-}
+
 
 
 
