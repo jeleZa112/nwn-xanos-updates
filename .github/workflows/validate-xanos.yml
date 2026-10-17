@@ -1,0 +1,49 @@
+name: Validate Xanos payload
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "XANOS_CURRENT.cmd"
+      - "latest.json"
+      - ".github/workflows/validate-xanos.yml"
+  pull_request:
+    paths:
+      - "XANOS_CURRENT.cmd"
+      - "latest.json"
+      - ".github/workflows/validate-xanos.yml"
+
+jobs:
+  validate:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parse hybrid PowerShell payload and verify manifest SHA256
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $path = Join-Path $PWD 'XANOS_CURRENT.cmd'
+          $c = [IO.File]::ReadAllText($path)
+          $m = '###POWERSHELL_PAYLOAD###'
+          $count = [regex]::Matches($c, [regex]::Escape($m)).Count
+          if ($count -ne 2) {
+            throw "Expected exactly 2 marker occurrences, got $count"
+          }
+
+          $i = $c.LastIndexOf($m)
+          if ($i -lt 0) { throw 'PowerShell payload marker not found' }
+          $payload = $c.Substring($i + $m.Length)
+
+          # This throws on the same parser errors that previously reached the user.
+          [void][ScriptBlock]::Create($payload)
+
+          $manifest = Get-Content (Join-Path $PWD 'latest.json') -Raw | ConvertFrom-Json
+          $actual = (Get-FileHash $path -Algorithm SHA256).Hash.ToLowerInvariant()
+          $expected = ([string]$manifest.sha256).ToLowerInvariant()
+          if ($actual -ne $expected) {
+            throw "latest.json SHA256 mismatch. expected=$expected actual=$actual"
+          }
+
+          Write-Host "XANOS_CURRENT.cmd PowerShell payload parses OK"
+          Write-Host "SHA256 OK: $actual"
