@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.7.11.15.16-prc-famfix4",
+  "version": "0.7.11.15.16-prc-famfix5",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "7272e8fd86ae235c88c36e1d0be2c9b798e54cff44d0e300c5019bdfd1200415",
-  "notes": "PRC familiar FIX4. Xanos NUI remains 11.15.16 and combat remains 0.7.10.7. Current-save recovery only: prc_pnp_fam_hide is now fully standalone standard NWScript with no PRC includes, clears a dead familiar from custom slot 3, destroys the stale corpse and invokes the already-compiled PRC nw_s2_familiar summon path so stored familiar selection can be restored. The unproven future-death override from FIX3 is removed until recovery is runtime-confirmed."
+  "sha256": "3e08c00fac7232437fd6399fca07be34983d18ae865f442c902008d3ff6ce0ce",
+  "notes": "PRC familiar FIX5. Xanos NUI remains 11.15.16 and combat remains 0.7.10.7. Replaces the failing familiar recovery source with minimal standard NWScript only (no PRC includes, no custom helper calls, no SetIsDestroyable), and prints the actual last nwnsc diagnostic lines directly in the updater console if compilation still fails."
 }
