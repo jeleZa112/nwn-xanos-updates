@@ -19,9 +19,13 @@ int UAI_IsEligible(object o, object oPC)
 {
     if (!GetIsObjectValid(o) || GetObjectType(o) != OBJECT_TYPE_CREATURE) return FALSE;
     if (o == oPC || GetIsPC(o) || GetCurrentHitPoints(o) <= 0) return FALSE;
+    if (!GetCommandable(o) || GetIsDMPossessed(o)) return FALSE;
     if (UAI_IsNamedXanos(o)) return FALSE;
+
     int nAssoc = GetAssociateType(o);
+    // Player-character familiar/summon mechanics are separate and must never be touched here.
     if (nAssoc == ASSOCIATE_TYPE_SUMMONED || nAssoc == ASSOCIATE_TYPE_FAMILIAR) return FALSE;
+
     object oMaster = GetMaster(o);
     if (nAssoc == ASSOCIATE_TYPE_NONE && oMaster != oPC) return FALSE;
     if (GetIsObjectValid(oMaster) && oMaster != oPC) return FALSE;
@@ -44,13 +48,34 @@ int UAI_HPPercent(object o)
 
 int UAI_CasterLevel(object o)
 {
-    return GetLevelByClass(CLASS_TYPE_SORCERER, o) +
-           GetLevelByClass(CLASS_TYPE_WIZARD, o) +
-           GetLevelByClass(CLASS_TYPE_BARD, o) +
-           GetLevelByClass(CLASS_TYPE_CLERIC, o) +
-           GetLevelByClass(CLASS_TYPE_DRUID, o) +
-           GetLevelByClass(CLASS_TYPE_PALADIN, o) +
-           GetLevelByClass(CLASS_TYPE_RANGER, o);
+    int nTotal = 0;
+    int i;
+    for (i = 1; i <= 3; i++)
+    {
+        int nClass = GetClassByPosition(i, o);
+        if (nClass == CLASS_TYPE_INVALID) continue;
+
+        int bCaster = FALSE;
+        int nSpellLevel;
+        for (nSpellLevel = 0; nSpellLevel <= 9; nSpellLevel++)
+        {
+            if (GetKnownSpellCount(o, nClass, nSpellLevel) > 0)
+            {
+                bCaster = TRUE;
+                break;
+            }
+        }
+
+        // Prepared stock casters can report no "known" spells in some states.
+        if (nClass == CLASS_TYPE_SORCERER || nClass == CLASS_TYPE_WIZARD ||
+            nClass == CLASS_TYPE_BARD || nClass == CLASS_TYPE_CLERIC ||
+            nClass == CLASS_TYPE_DRUID || nClass == CLASS_TYPE_PALADIN ||
+            nClass == CLASS_TYPE_RANGER)
+            bCaster = TRUE;
+
+        if (bCaster) nTotal += GetLevelByClass(nClass, o);
+    }
+    return nTotal;
 }
 
 int UAI_HealerLevel(object o)
@@ -339,19 +364,34 @@ int UAI_AmmoScore(object oAmmo, object oTarget)
     if (!GetIsObjectValid(oAmmo)) return -100000;
     int nBase = GetBaseItemType(oAmmo);
     if (nBase != BASE_ITEM_ARROW && nBase != BASE_ITEM_BOLT && nBase != BASE_ITEM_BULLET) return -100000;
+
     int nScore = 10;
     nScore += UAI_ItemPropertyMaxValue(oAmmo, ITEM_PROPERTY_ENHANCEMENT_BONUS) * 36;
     nScore += UAI_ItemPropertyMaxValue(oAmmo, ITEM_PROPERTY_ATTACK_BONUS) * 30;
+
+    int bSpecialDamage = FALSE;
     itemproperty ip = GetFirstItemProperty(oAmmo);
     while (GetIsItemPropertyValid(ip))
     {
         if (GetItemPropertyType(ip) == ITEM_PROPERTY_DAMAGE_BONUS)
         {
+            bSpecialDamage = TRUE;
             nScore += GetItemPropertyCostTableValue(ip) * 18;
             nScore -= UAI_TargetDefensePenalty(oTarget, GetItemPropertySubType(ip));
         }
         ip = GetNextItemProperty(oAmmo);
     }
+
+    // Proven Xanos policy generalized: do not burn elemental/special ammo on obvious trash.
+    if (bSpecialDamage && UAI_IsWeakTarget(oTarget)) nScore -= 500;
+
+    // Stack size is only a tiny tie-breaker. Quality must dominate quantity.
+    int nStack = GetNumStackedItems(oAmmo);
+    if (nStack > 100) nStack = 100;
+    nScore += nStack / 25;
+
+    int nSlot = UAI_AmmoSlot(nBase);
+    if (nSlot >= 0 && oAmmo == GetItemInSlot(nSlot, OBJECT_SELF)) nScore += 2;
     return nScore;
 }
 
@@ -414,7 +454,8 @@ int UAI_ThreatDamageType(object oTarget)
 int UAI_ArmorProtectionScore(object oItem, int nDamageType)
 {
     if (!GetIsObjectValid(oItem) || GetBaseItemType(oItem) != BASE_ITEM_ARMOR) return -100000;
-    int nScore = 0;
+
+    int nScore = GetItemACValue(oItem) * 18;
     itemproperty ip = GetFirstItemProperty(oItem);
     while (GetIsItemPropertyValid(ip))
     {
@@ -426,10 +467,14 @@ int UAI_ArmorProtectionScore(object oItem, int nDamageType)
             else if (nType == ITEM_PROPERTY_DAMAGE_RESISTANCE) nScore += 300 + nCost * 15;
             else if (nType == ITEM_PROPERTY_DAMAGE_VULNERABILITY) nScore -= 500 + nCost * 15;
         }
-        if (nType == ITEM_PROPERTY_AC_BONUS) nScore += GetItemPropertyCostTableValue(ip) * 5;
+
+        if (nType == ITEM_PROPERTY_AC_BONUS) nScore += GetItemPropertyCostTableValue(ip) * 8;
+        else if (nType == ITEM_PROPERTY_SAVING_THROW_BONUS) nScore += GetItemPropertyCostTableValue(ip) * 4;
+        else if (nType == ITEM_PROPERTY_SAVING_THROW_BONUS_SPECIFIC) nScore += GetItemPropertyCostTableValue(ip) * 3;
         ip = GetNextItemProperty(oItem);
     }
-    if (oItem == GetItemInSlot(INVENTORY_SLOT_CHEST, OBJECT_SELF)) nScore += 15;
+
+    if (oItem == GetItemInSlot(INVENTORY_SLOT_CHEST, OBJECT_SELF)) nScore += 20;
     return nScore;
 }
 
@@ -437,27 +482,47 @@ int UAI_AdaptArmor(object oTarget)
 {
     int nDamageType = UAI_ThreatDamageType(oTarget);
     if (nDamageType < 0) return FALSE;
+
     object oCurrent = GetItemInSlot(INVENTORY_SLOT_CHEST, OBJECT_SELF);
     object oBest = oCurrent;
     int nBest = UAI_ArmorProtectionScore(oCurrent, nDamageType);
+    int nCurrentBaseAC = GetIsObjectValid(oCurrent) ? GetItemACValue(oCurrent) : 0;
+    int bCaster = UAI_CasterLevel(OBJECT_SELF) > 0;
+
     object o = GetFirstItemInInventory(OBJECT_SELF);
     while (GetIsObjectValid(o))
     {
-        if (GetBaseItemType(o) == BASE_ITEM_ARMOR)
+        if (GetBaseItemType(o) == BASE_ITEM_ARMOR && GetIdentified(o))
         {
             int n = UAI_ArmorProtectionScore(o, nDamageType);
-            if (n > nBest + 40) { nBest = n; oBest = o; }
+
+            // Conservative ASF / casting-safety proxy:
+            // a spell-capable companion will not jump from light clothing into substantially
+            // heavier armor just for a resistance unless already in an emergency.
+            if (bCaster && GetItemACValue(o) > nCurrentBaseAC + 1 && UAI_HPPercent(OBJECT_SELF) > 25)
+                n -= 900;
+
+            if (n > nBest + 50)
+            {
+                nBest = n;
+                oBest = o;
+            }
         }
         o = GetNextItemInInventory(OBJECT_SELF);
     }
+
     if (GetIsObjectValid(oBest) && oBest != oCurrent)
     {
-        if (!GetLocalInt(OBJECT_SELF, UAI_GEAR_SWAPPED))
+        if (!GetLocalInt(OBJECT_SELF, "UAI_GEAR_PENDING") && !GetLocalInt(OBJECT_SELF, UAI_GEAR_SWAPPED))
         {
             SetLocalObject(OBJECT_SELF, UAI_SAVED_CHEST, oCurrent);
-            SetLocalInt(OBJECT_SELF, UAI_GEAR_SWAPPED, TRUE);
+            SetLocalObject(OBJECT_SELF, "UAI_TEMP_CHEST", oBest);
         }
+
+        SetLocalInt(OBJECT_SELF, "UAI_GEAR_PENDING", TRUE);
         ActionEquipItem(oBest, INVENTORY_SLOT_CHEST);
+        ActionDoCommand(SetLocalInt(OBJECT_SELF, UAI_GEAR_SWAPPED, TRUE));
+        ActionDoCommand(DeleteLocalInt(OBJECT_SELF, "UAI_GEAR_PENDING"));
         SetLocalString(OBJECT_SELF, "UAI_LAST_GEAR_REASON", "ELEMENT_RESIST");
         return TRUE;
     }
@@ -467,20 +532,55 @@ int UAI_AdaptArmor(object oTarget)
 void UAI_RestoreArmor(object o)
 {
     if (!GetLocalInt(o, UAI_GEAR_SWAPPED)) return;
+
     object oSaved = GetLocalObject(o, UAI_SAVED_CHEST);
-    DeleteLocalInt(o, UAI_GEAR_SWAPPED);
-    DeleteLocalObject(o, UAI_SAVED_CHEST);
-    if (GetIsObjectValid(oSaved) && GetItemInSlot(INVENTORY_SLOT_CHEST, o) != oSaved)
+    object oTemp = GetLocalObject(o, "UAI_TEMP_CHEST");
+    object oCurrent = GetItemInSlot(INVENTORY_SLOT_CHEST, o);
+
+    // If the player changed armor manually after UAI's swap, manual choice wins.
+    if (GetIsObjectValid(oTemp) && oCurrent != oTemp)
+    {
+        DeleteLocalInt(o, UAI_GEAR_SWAPPED);
+        DeleteLocalInt(o, "UAI_GEAR_PENDING");
+        DeleteLocalObject(o, UAI_SAVED_CHEST);
+        DeleteLocalObject(o, "UAI_TEMP_CHEST");
+        return;
+    }
+
+    if (GetIsObjectValid(oSaved) && oCurrent != oSaved)
+    {
         AssignCommand(o, ActionEquipItem(oSaved, INVENTORY_SLOT_CHEST));
+        AssignCommand(o, ActionDoCommand(DeleteLocalInt(o, UAI_GEAR_SWAPPED)));
+        AssignCommand(o, ActionDoCommand(DeleteLocalInt(o, "UAI_GEAR_PENDING")));
+        AssignCommand(o, ActionDoCommand(DeleteLocalObject(o, UAI_SAVED_CHEST)));
+        AssignCommand(o, ActionDoCommand(DeleteLocalObject(o, "UAI_TEMP_CHEST")));
+    }
+    else
+    {
+        DeleteLocalInt(o, UAI_GEAR_SWAPPED);
+        DeleteLocalInt(o, "UAI_GEAR_PENDING");
+        DeleteLocalObject(o, UAI_SAVED_CHEST);
+        DeleteLocalObject(o, "UAI_TEMP_CHEST");
+    }
 }
 
 int UAI_IsCasterTarget(object o)
 {
     if (!GetIsObjectValid(o)) return FALSE;
-    if (GetLevelByClass(CLASS_TYPE_SORCERER, o) > 0 || GetLevelByClass(CLASS_TYPE_WIZARD, o) > 0 ||
-        GetLevelByClass(CLASS_TYPE_CLERIC, o) > 0 || GetLevelByClass(CLASS_TYPE_DRUID, o) > 0 ||
-        GetLevelByClass(CLASS_TYPE_BARD, o) > 0) return TRUE;
-    return GetCurrentAction(o) == ACTION_CASTSPELL;
+    if (GetCurrentAction(o) == ACTION_CASTSPELL || GetCurrentAction(o) == ACTION_ITEMCASTSPELL) return TRUE;
+    return UAI_CasterLevel(o) > 0;
+}
+
+int UAI_IsWeakTarget(object oTarget)
+{
+    if (!GetIsObjectValid(oTarget) || UAI_IsCasterTarget(oTarget)) return FALSE;
+
+    float fTargetCR = GetChallengeRating(oTarget);
+    float fSelfCR = GetChallengeRating(OBJECT_SELF);
+    if (fTargetCR > 0.0 && fSelfCR > 0.0 && fTargetCR <= fSelfCR * 0.75) return TRUE;
+    if (GetHitDice(oTarget) <= GetHitDice(OBJECT_SELF) - 1) return TRUE;
+    if (GetMaxHitPoints(oTarget) * 2 <= GetMaxHitPoints(OBJECT_SELF)) return TRUE;
+    return FALSE;
 }
 
 int UAI_TargetScore(object o, object oMaster)
@@ -598,6 +698,21 @@ void UAI_Profile(object o)
     SetLocalString(o, "UAI_EQUIPPED_CHEST", GetName(GetItemInSlot(INVENTORY_SLOT_CHEST, o)));
 }
 
+void UAI_DetachAndFallback()
+{
+    string sPrev = GetLocalString(OBJECT_SELF, UAI_PREV_AI);
+    if (sPrev != "" && sPrev != "uai_combat")
+        SetLocalString(OBJECT_SELF, "X2_SPECIAL_COMBAT_AI_SCRIPT", sPrev);
+    else
+        DeleteLocalString(OBJECT_SELF, "X2_SPECIAL_COMBAT_AI_SCRIPT");
+
+    DeleteLocalInt(OBJECT_SELF, UAI_MARK);
+    DeleteLocalObject(OBJECT_SELF, UAI_MASTER);
+    DeleteLocalString(OBJECT_SELF, UAI_ROLE);
+
+    if (sPrev != "" && sPrev != "uai_combat") ExecuteScript(sPrev, OBJECT_SELF);
+}
+
 void UAI_Fallback()
 {
     string sPrev = GetLocalString(OBJECT_SELF, UAI_PREV_AI);
@@ -669,19 +784,35 @@ void UAI_Attach(object o, object oPC)
 {
     if (!UAI_IsEligible(o, oPC)) return;
     SetLocalObject(o, UAI_MASTER, oPC);
+
+    string sCurrent = GetLocalString(o, "X2_SPECIAL_COMBAT_AI_SCRIPT");
+
     if (!GetLocalInt(o, UAI_MARK))
     {
-        string sCurrent = GetLocalString(o, "X2_SPECIAL_COMBAT_AI_SCRIPT");
         if (sCurrent != "" && sCurrent != "uai_combat") SetLocalString(o, UAI_PREV_AI, sCurrent);
         SetLocalInt(o, UAI_MARK, TRUE);
         SetLocalString(o, "X2_SPECIAL_COMBAT_AI_SCRIPT", "uai_combat");
+        DeleteLocalInt(o, "UAI_EXTERNAL_OVERRIDE");
         UAI_Profile(o);
         SendMessageToPC(oPC, "[UAI] " + GetName(o) + " attached. Role=" + GetLocalString(o, UAI_ROLE));
+        return;
     }
-    else if (GetLocalString(o, "X2_SPECIAL_COMBAT_AI_SCRIPT") != "uai_combat")
+
+    if (sCurrent == "uai_combat")
     {
-        string sNow = GetLocalString(o, "X2_SPECIAL_COMBAT_AI_SCRIPT");
-        if (sNow != "" && sNow != "uai_combat") SetLocalString(o, UAI_PREV_AI, sNow);
-        SetLocalString(o, "X2_SPECIAL_COMBAT_AI_SCRIPT", "uai_combat");
+        DeleteLocalInt(o, "UAI_EXTERNAL_OVERRIDE");
+        return;
     }
+
+    // Another module/system deliberately replaced the special AI after UAI attached.
+    // Do not fight it every three seconds; suspend UAI until that external script is cleared.
+    if (sCurrent != "")
+    {
+        SetLocalInt(o, "UAI_EXTERNAL_OVERRIDE", TRUE);
+        return;
+    }
+
+    // External override ended/cleared: safely resume our wrapper.
+    DeleteLocalInt(o, "UAI_EXTERNAL_OVERRIDE");
+    SetLocalString(o, "X2_SPECIAL_COMBAT_AI_SCRIPT", "uai_combat");
 }
