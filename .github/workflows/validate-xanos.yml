@@ -6,11 +6,13 @@ on:
     paths:
       - "XANOS_CURRENT.cmd"
       - "latest.json"
+      - "uai/src/**"
       - ".github/workflows/validate-xanos.yml"
   pull_request:
     paths:
       - "XANOS_CURRENT.cmd"
       - "latest.json"
+      - "uai/src/**"
       - ".github/workflows/validate-xanos.yml"
 
 jobs:
@@ -19,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Parse hybrid PowerShell payload and verify manifest SHA256
+      - name: Parse hybrid payload and verify manifest
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -27,83 +29,131 @@ jobs:
           $c = [IO.File]::ReadAllText($path)
           $m = '###POWERSHELL_PAYLOAD###'
           $count = [regex]::Matches($c, [regex]::Escape($m)).Count
-          if ($count -ne 2) {
-            throw "Expected exactly 2 marker occurrences, got $count"
-          }
+          if ($count -ne 2) { throw "Expected exactly 2 marker occurrences, got $count" }
 
           $i = $c.LastIndexOf($m)
           if ($i -lt 0) { throw 'PowerShell payload marker not found' }
-          $payload = $c.Substring($i + $m.Length)
-
-          # This throws on the same parser errors that previously reached the user.
-          [void][ScriptBlock]::Create($payload)
+          [void][ScriptBlock]::Create($c.Substring($i + $m.Length))
 
           $manifest = Get-Content (Join-Path $PWD 'latest.json') -Raw | ConvertFrom-Json
           $actual = (Get-FileHash $path -Algorithm SHA256).Hash.ToLowerInvariant()
           $expected = ([string]$manifest.sha256).ToLowerInvariant()
-          if ($actual -ne $expected) {
-            throw "latest.json SHA256 mismatch. expected=$expected actual=$actual"
-          }
+          if ($actual -ne $expected) { throw "latest.json SHA256 mismatch. expected=$expected actual=$actual" }
 
-          Write-Host "XANOS_CURRENT.cmd PowerShell payload parses OK"
-          Write-Host "SHA256 OK: $actual"
+          if ([string]$manifest.combat_core -ne '0.7.10.7') { throw 'Protected Xanos combat_core changed.' }
+          if ([string]$manifest.universal_core -ne '0.8.0.0') { throw 'Unexpected universal_core version.' }
+          if ($c -notmatch 'PRC FAMILIAR FIX5') { throw 'Protected PRC familiar FIX5 marker missing.' }
+          if ($c -notmatch 'Xanos combat: V0\.7\.10\.7 protected') { throw 'Protected Xanos combat marker missing.' }
 
+          Write-Host "Hybrid PowerShell parses OK"
+          Write-Host "Manifest SHA256 OK: $actual"
+          Write-Host "Protected Xanos 0.7.10.7 + familiar FIX5 markers OK"
 
-      - name: Compile embedded UAI NWScript
-        if: ${{ contains(github.event.pull_request.title || '', 'UAI') || github.ref_name == 'main' }}
+      - name: Verify embedded UAI sources match auditable source
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $root = $PWD
-          $payloadPath = Join-Path $root 'XANOS_CURRENT.cmd'
-          $text = [IO.File]::ReadAllText($payloadPath)
-          if ($text -notmatch "Write-UaiGzipSource 'uai_core\.nss'") {
-            Write-Host 'No embedded UAI sources; skipping.'
-            exit 0
+          $payload = [IO.File]::ReadAllText((Join-Path $PWD 'XANOS_CURRENT.cmd'))
+          $sourceNames = @('uai_core.nss','uai_combat.nss','uai_boot.nss','uai_utility.nss')
+          $embeddedDir = Join-Path $env:RUNNER_TEMP 'uai-embedded'
+          New-Item -ItemType Directory -Force -Path $embeddedDir | Out-Null
+
+          foreach ($name in $sourceNames) {
+            $escaped = [regex]::Escape($name)
+            $rx = [regex]("Write-UaiSource '" + $escaped + "' '([^']+)'")
+            $m = $rx.Match($payload)
+            if (-not $m.Success) { throw "Embedded source missing: $name" }
+
+            $bytes = [Convert]::FromBase64String($m.Groups[1].Value)
+            $embeddedPath = Join-Path $embeddedDir $name
+            [IO.File]::WriteAllBytes($embeddedPath, $bytes)
+
+            $repoPath = Join-Path $PWD ('uai\src\' + $name)
+            if (!(Test-Path $repoPath)) { throw "Auditable source missing: $repoPath" }
+
+            $embeddedHash = (Get-FileHash $embeddedPath -Algorithm SHA256).Hash
+            $repoHash = (Get-FileHash $repoPath -Algorithm SHA256).Hash
+            if ($embeddedHash -ne $repoHash) {
+              throw "Embedded/source drift: $name embedded=$embeddedHash repo=$repoHash"
+            }
+
+            $raw = [IO.File]::ReadAllBytes($repoPath)
+            if (($raw | Where-Object { $_ -gt 127 }).Count -gt 0) {
+              throw "UAI source must remain ASCII/CP1251-safe: $name"
+            }
+
+            Write-Host "$name exact-match SHA256=$repoHash"
           }
 
-          $src = Join-Path $env:RUNNER_TEMP 'uai-src'
+      - name: Static UAI safety invariants
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $core = Get-Content (Join-Path $PWD 'uai\src\uai_core.nss') -Raw
+          $combat = Get-Content (Join-Path $PWD 'uai\src\uai_combat.nss') -Raw
+          $boot = Get-Content (Join-Path $PWD 'uai\src\uai_boot.nss') -Raw
+          $utility = Get-Content (Join-Path $PWD 'uai\src\uai_utility.nss') -Raw
+          $all = $core + $combat + $boot + $utility
+
+          $required = @(
+            'ASSOCIATE_TYPE_SUMMONED',
+            'ASSOCIATE_TYPE_FAMILIAR',
+            'UAI_IsNamedXanos',
+            'UAI_IsWeakTarget',
+            'UAI_EXTERNAL_OVERRIDE',
+            'UAI_DetachAndFallback',
+            'UAI_SAVED_CHEST',
+            'UAI_TEMP_CHEST',
+            'SUBSKILL_RECOVERTRAP',
+            'GetTrapDisarmDC',
+            'GetLockUnlockDC',
+            'ACTION_INVALID'
+          )
+          foreach ($needle in $required) {
+            if ($all -notmatch [regex]::Escape($needle)) { throw "Safety invariant missing: $needle" }
+          }
+
+          $forbidden = @('ClearAllActions(', 'DestroyObject(', 'SetIsDestroyable(', 'sqlquery', 'SqlPrepareQuery')
+          foreach ($needle in $forbidden) {
+            if ($all -match [regex]::Escape($needle)) { throw "Forbidden UAI operation found: $needle" }
+          }
+
+          if ($utility -notmatch 'GetIsInCombat\(OBJECT_SELF\)') { throw 'Utility combat guard missing.' }
+          if ($utility -notmatch 'GetCurrentAction\(OBJECT_SELF\) != ACTION_INVALID') { throw 'Utility idle/manual-order guard missing.' }
+          if ($utility -notmatch 'nSafe = nSkill \+ 20') { throw 'Utility take-20 safety rule missing.' }
+          if ($core -notmatch 'nScore -= 500') { throw 'Weak-target special-ammo economy guard missing.' }
+          if ($core -notmatch 'oCurrent != oTemp') { throw 'Manual armor override protection missing.' }
+          if ($combat -notmatch 'CASTER_FALLBACK') { throw 'Hard-target caster fallback missing.' }
+
+          Write-Host 'Static UAI safety invariants OK'
+
+      - name: Compile all UAI NWScript
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $src = Join-Path $PWD 'uai\src'
           $out = Join-Path $env:RUNNER_TEMP 'uai-out'
-          New-Item -ItemType Directory -Force -Path $src,$out | Out-Null
-
-          $rx = [regex]"Write-UaiGzipSource '([^']+\.nss)' '([^']+)'"
-          $matches = $rx.Matches($text)
-          if ($matches.Count -lt 3) { throw "Expected at least 3 embedded UAI sources, got $($matches.Count)" }
-
-          foreach ($m in $matches) {
-            $name = $m.Groups[1].Value
-            $raw = [Convert]::FromBase64String($m.Groups[2].Value)
-            $ms = [IO.MemoryStream]::new([byte[]]$raw)
-            $gz = [IO.Compression.GzipStream]::new($ms,[IO.Compression.CompressionMode]::Decompress)
-            $fs = [IO.File]::Create((Join-Path $src $name))
-            try { $gz.CopyTo($fs) } finally { $fs.Dispose(); $gz.Dispose(); $ms.Dispose() }
-            Write-Host "Extracted $name"
-          }
-
-          Write-Host '=== UAI_CORE_BEGIN ==='
-          Get-Content (Join-Path $src 'uai_core.nss')
-          Write-Host '=== UAI_CORE_END ==='
-          Write-Host '=== UAI_COMBAT_BEGIN ==='
-          Get-Content (Join-Path $src 'uai_combat.nss')
-          Write-Host '=== UAI_COMBAT_END ==='
-          Write-Host '=== UAI_BOOT_BEGIN ==='
-          Get-Content (Join-Path $src 'uai_boot.nss')
-          Write-Host '=== UAI_BOOT_END ==='
+          New-Item -ItemType Directory -Force -Path $out | Out-Null
 
           Invoke-WebRequest -UseBasicParsing -Uri 'https://raw.githubusercontent.com/The-Frozen-North/tfn-module/master/nwn-base-scripts/nwscript.nss' -OutFile (Join-Path $src 'nwscript.nss')
-          $zip = Join-Path $env:RUNNER_TEMP 'nwnsc.zip'
-          Invoke-WebRequest -UseBasicParsing -Uri 'https://github.com/nwneetools/nwnsc/releases/download/v1.1.5/nwnsc-win-v1.1.5.zip' -OutFile $zip
-          $compilerDir = Join-Path $env:RUNNER_TEMP 'nwnsc'
-          Expand-Archive -LiteralPath $zip -DestinationPath $compilerDir -Force
-          $compiler = Get-ChildItem $compilerDir -Recurse -Filter nwnsc.exe | Select-Object -First 1 -ExpandProperty FullName
-          if (-not $compiler) { throw 'nwnsc.exe not found after extraction' }
+          try {
+            $zip = Join-Path $env:RUNNER_TEMP 'nwnsc.zip'
+            Invoke-WebRequest -UseBasicParsing -Uri 'https://github.com/nwneetools/nwnsc/releases/download/v1.1.5/nwnsc-win-v1.1.5.zip' -OutFile $zip
+            $compilerDir = Join-Path $env:RUNNER_TEMP 'nwnsc'
+            Expand-Archive -LiteralPath $zip -DestinationPath $compilerDir -Force
+            $compiler = Get-ChildItem $compilerDir -Recurse -Filter nwnsc.exe | Select-Object -First 1 -ExpandProperty FullName
+            if (-not $compiler) { throw 'nwnsc.exe not found after extraction' }
 
-          foreach ($name in @('uai_boot.nss','uai_combat.nss')) {
-            Write-Host "Compiling $name"
-            & $compiler '-i' $src '-b' $out '-o' '-w' (Join-Path $src $name)
-            if ($LASTEXITCODE -ne 0) { throw "NWScript compile failed: $name" }
-            $ncs = Join-Path $out ([IO.Path]::ChangeExtension($name,'.ncs'))
-            if (!(Test-Path $ncs)) { throw "Compiler did not create $ncs" }
+            foreach ($name in @('uai_boot.nss','uai_combat.nss','uai_utility.nss')) {
+              Write-Host "Compiling $name"
+              & $compiler '-i' $src '-b' $out '-o' '-w' (Join-Path $src $name)
+              if ($LASTEXITCODE -ne 0) { throw "NWScript compile failed: $name" }
+              $ncs = Join-Path $out ([IO.Path]::ChangeExtension($name,'.ncs'))
+              if (!(Test-Path $ncs)) { throw "Compiler did not create $ncs" }
+            }
+          }
+          finally {
+            Remove-Item (Join-Path $src 'nwscript.nss') -Force -ErrorAction SilentlyContinue
           }
 
-          Write-Host 'Embedded UAI NWScript compiles successfully.'
+          Write-Host 'All UAI NWScript entrypoints compile successfully.'
