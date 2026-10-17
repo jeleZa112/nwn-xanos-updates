@@ -3,7 +3,7 @@
   "version": "0.8.0.0-universal1",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "d316e2778d873441d3cc655277aecee191701359cab74467f05525edd853beec",
+  "sha256": "d3f85017dab94d5c93853a7215d7a4c910d8c71c8fed4d8a0625399cfb386c8b",
   "notes": "UAI 0.8.0.0 UNIVERSAL COMPANION FOUNDATION. Xanos remains on protected combat 0.7.10.7. Adds a generic supervisor for other player companions: live capability/role scan from classes, feats, skills, current equipment and inventory; tactical melee/ranged weapon selection; target-aware ammo scoring; maneuver use when feats actually exist; situational chest armor swap when an enemy weapon/ammo exposes elemental damage, with restoration after combat. Pure casters/healers keep their existing PRC/vanilla spell AI at range as safe fallback. Summons/familiars are excluded in this first runtime candidate. PRC familiar FIX5 is retained.",
   "universal_core": "0.8.0.0"
 }
