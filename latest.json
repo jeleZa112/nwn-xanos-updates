@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.7.11.15.3",
+  "version": "0.7.11.15.4",
   "combat_core": "0.7.10.2",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "78fadc27d88d3ec66e080308e4275663226b24cc93dfddd28a623cda4a333888",
-  "notes": "Portrait-open hotfix: Xanos NUI opens/refreshes from GUIEVENT_PARTYBAR_PORTRAIT_CLICK using the clicked associate object, including in combat. Removed the GUIEVENT_SELECT_CREATURE world-click hook so clicking Xanos in-world remains normal dialogue interaction. Keeps Russian compact UI, WHY AMMO and combat V0.7.10.2."
+  "sha256": "3b246eb97c88ea288c482452b12be11daa9f5a300edbf69ba5d2dd131c880bb8",
+  "notes": "Compact telemetry layout: separate Target / Action / Weapon / Ammo / Why lines so long ammo explanations no longer run off the panel. Keeps portrait-open behavior and combat core V0.7.10.2."
 }
