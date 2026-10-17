@@ -1,9 +1,9 @@
 {
   "channel": "test",
-  "version": "0.8.0.0-universal1",
+  "version": "0.8.0.0-universal-rc2",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "d3f85017dab94d5c93853a7215d7a4c910d8c71c8fed4d8a0625399cfb386c8b",
-  "notes": "UAI 0.8.0.0 UNIVERSAL COMPANION FOUNDATION. Xanos remains on protected combat 0.7.10.7. Adds a generic supervisor for other player companions: live capability/role scan from classes, feats, skills, current equipment and inventory; tactical melee/ranged weapon selection; target-aware ammo scoring; maneuver use when feats actually exist; situational chest armor swap when an enemy weapon/ammo exposes elemental damage, with restoration after combat. Pure casters/healers keep their existing PRC/vanilla spell AI at range as safe fallback. Summons/familiars are excluded in this first runtime candidate. PRC familiar FIX5 is retained.",
+  "sha256": "08453018aa1a0a477ede9f5a6cc3c0a4b592cc4732631fc5ab0ed4c1662b9eda",
+  "notes": "UAI 0.8.0.0 RC2. Xanos combat 0.7.10.7 and PRC familiar FIX5 stay protected. Generic companions use the HotU special-combat-AI hook, preserve any pre-existing custom AI as fallback, and suspend if another system later takes ownership. Capability scan is class/feat/skill/equipment/inventory driven with dynamic spell-class probing. Adds Xanos-proven weak-target resource economy, target-aware ammo selection, maneuvers, conservative elemental armor adaptation with caster/ASF safety proxy and manual-gear override protection, plus out-of-combat trap/lock utility with take-20 safety thresholds and only-when-sufficient self-buff planning. Summons/familiars remain excluded.",
   "universal_core": "0.8.0.0"
 }
