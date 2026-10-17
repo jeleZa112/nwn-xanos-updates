@@ -153,9 +153,7 @@ int UAI_TryLock()
         }
 
         UAI_SetAssocFlag(OBJECT_SELF, UAI_ASC_BUSY, TRUE);
-        UAI_SetAssocFlag(OBJECT_SELF, UAI_ASC_BUSY, TRUE);
         ActionUnlockObject(oLock);
-        ActionDoCommand(UAI_SetAssocFlag(OBJECT_SELF, UAI_ASC_BUSY, FALSE));
         ActionDoCommand(UAI_SetAssocFlag(OBJECT_SELF, UAI_ASC_BUSY, FALSE));
         SetLocalString(OBJECT_SELF, "UAI_LAST_UTILITY", "UNLOCK_WITH_KEY");
         return TRUE;
@@ -168,7 +166,9 @@ int UAI_TryLock()
     int nSafe = nSkill + 20;
     if (nSafe >= nDC)
     {
+        UAI_SetAssocFlag(OBJECT_SELF, UAI_ASC_BUSY, TRUE);
         ActionUnlockObject(oLock);
+        ActionDoCommand(UAI_SetAssocFlag(OBJECT_SELF, UAI_ASC_BUSY, FALSE));
         SetLocalString(OBJECT_SELF, "UAI_LAST_UTILITY", "OPEN_LOCK");
         return TRUE;
     }
