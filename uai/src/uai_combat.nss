@@ -63,7 +63,7 @@ void main()
     object oSavedMaster = GetLocalObject(OBJECT_SELF, UAI_MASTER);
     object oRealMaster = GetMaster(OBJECT_SELF);
     if (!GetIsObjectValid(oSavedMaster) || !GetIsPC(oSavedMaster) ||
-        (GetIsObjectValid(oRealMaster) && oRealMaster != oSavedMaster))
+        !GetIsObjectValid(oRealMaster) || oRealMaster != oSavedMaster)
     {
         UAI_DetachAndFallback();
         return;
