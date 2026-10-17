@@ -1,8 +1,8 @@
 {
-  "channel": "stable-candidate",
-  "version": "0.7.11.11-bootstrapfix1",
+  "channel": "test",
+  "version": "0.7.11.14",
   "combat_core": "0.7.10.2",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "a13eb648769941e6e2270e9cf815af41ee4289c3fda67fb6c068c2840e2633e0",
-  "notes": "Bootstrap hotfix: hybrid CMD now uses LastIndexOf(marker), so PowerShell executes only the payload after the final marker. NUI remains V0.7.11.11; combat core remains V0.7.10.2."
+  "sha256": "e75c1d069c96f8fdbe74e5276e13dccb7217bdee1902e7cae51b62e5cc025365",
+  "notes": "Canonical side-panel NUI based on proven PRC render path + persistent configurable global hotkeys. Fresh window id xanosctrl14. F8 default toggle can be reassigned on first run. Combat core V0.7.10.2 protected."
 }
