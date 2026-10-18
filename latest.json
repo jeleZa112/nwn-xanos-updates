@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.7.11.15.16-prc-famfix5",
+  "version": "0.8.0-universal-multicomp",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "3e08c00fac7232437fd6399fca07be34983d18ae865f442c902008d3ff6ce0ce",
-  "notes": "PRC familiar FIX5. Xanos NUI remains 11.15.16 and combat remains 0.7.10.7. Replaces the failing familiar recovery source with minimal standard NWScript only (no PRC includes, no custom helper calls, no SetIsDestroyable), and prints the actual last nwnsc diagnostic lines directly in the updater console if compilation still fails."
+  "sha256": "f05272d422be21a0f5787128ef9a2bbb040d4edce463b75aaf330a26aca9d501",
+  "notes": "Universal companion AI 0.8.0. Supports multiple simultaneous henchmen. Every owned ASSOCIATE_TYPE_HENCHMAN gets its own independent XAI combat state and AUTO/FOLLOW/WEAPON mode. Clicking a party portrait selects only which companion the NUI panel and singleton local-Qwen DB bridge inspect/control; other companions keep running independently. Removes Xanos tag/class identity gates, adds periodic attach for companions joining later, retains PRC familiar FIX5 and the existing 0.7.10.7 combat logic. Spellcasting class detection expanded to standard bard/cleric/druid/paladin/ranger/sorcerer/wizard classes."
 }
