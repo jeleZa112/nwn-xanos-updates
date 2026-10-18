@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.2-rogue-divine",
+  "version": "0.8.3-autoheal",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "1698c2bd1564f662dda4cc056a7541fd4d901da3e6e87ba0130cf5c8adc77de3",
-  "notes": "Universal companion AI 0.8.2 ROGUE+DIVINE. PRC PnP familiar is excluded from XAI attach/selection and no longer consumes the intended real companion allowance. Fresh 410x535 panel geometry. Capability-gated buttons: Rage, Parry, Turn Undead, spells. Cleric/druid/wizard/paladin/ranger prepared spell slots are listed with GetMemorizedSpell* APIs and counted correctly. Prebuff includes low-level divine buffs and never auto-summons a familiar. Rogue utility priorities: combat/survival always wins; trap detection/disarm and lock work only with no nearby hostiles and within 10m/8m of the player; default TRAPS and LOCKS are AFTER COMBAT with cycles OFF/AFTER/AUTO; stealth is separately toggleable and is forcibly dropped on danger or utility actions. Auto Turn Undead is used only when worthwhile; auto Parry is used only under heavy melee pressure/low HP. Internal PREBUFF_FULL telemetry is rendered in Russian."
+  "sha256": "7497ca1cc1803c2ec081c9daf86271bc39dee9d08b56172df3e966093fb81bc9",
+  "notes": "Universal companion AI 0.8.3 AUTOHEAL. Adds healing as a hard priority above Turn Undead, parry and attacks. In combat: heal self at <=60% HP, master at <=45% if in range. Out of combat: heal the more injured of self/master at <=75% before trap/lock/stealth utility. Uses NWN TalentHeal so cleric cure/spontaneous healing is available when the character can perform it, with healer-kit fallback. Preserves all 0.8.2 rogue/divine/familiar/panel fixes."
 }
