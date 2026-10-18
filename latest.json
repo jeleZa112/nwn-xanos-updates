@@ -3,6 +3,6 @@
   "version": "0.8.1-henchmen-only",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "016b9b89691448988e809735182b121c656269457856e62c9961030973ace78f",
+  "sha256": "ca02c2924195a9c79101f36e26e2508840b01869ef27481a0c51f80db0ce9273",
   "notes": "Universal companion AI 0.8.1. Restricts XAI/NUI selection to real henchmen only: excludes engine familiars, animal companions, summoned and dominated associates, plus the PRC PnP familiar custom familiar oHench3 slot. Widens the NUI panel and uses an ASCII separator in the title to avoid '?' rendering. Retains PRC familiar FIX5 and combat core 0.7.10.7."
 }
