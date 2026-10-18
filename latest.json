@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.5-prebuff-familiar-panel-hotfix",
+  "version": "0.8.6.6-rebuff-partybar-anchor",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "c8f8386390cb061f569f377206b612443eb98bb06267e7340c7a16ad1e030c8b",
-  "notes": "Hotfix after live universal-AI tests. AUTO now explicitly clears legacy AI_TURNED_OFF so old Xanos saves can re-arm. PREBUFF/FULLBUFF starts a companion-local resume watchdog that cancels on visible enemies and clears stale prebuff/action locks after the spell queue ends, preventing Dorna from remaining idle after buffing. Manual panel close is sticky until the player explicitly clicks a real henchman portrait; background init no longer recreates the main panel. Buff icons are right-aligned in a strip ending beside the selected companion portrait. PRC PnP familiar class progression repair: the familiar UTCs are Commoner class 20 but have StartingPackage 151 (empty Hexblade1 package), which is why stock LevelUpHenchman(CLASS_TYPE_INVALID) fails; the guard now advances Bain Kai's Wizard/Sorcerer-based familiar levels using class 20 with valid Commoner package 82. PRC stat scaling remains untouched."
+  "sha256": "cd3ccd006163bcbfd73a9822ec7cceb31c6999374624fdb7aa116d78f49cca49",
+  "notes": "Live hotfix after 0.8.6.5: preserves the confirmed Plada level-progression repair unchanged. Universal AUTO now clears stale legacy AI_TURNED_OFF on its own. When a visible hostile appears while a companion is still queued in PREBUFF/PREBUFF_FULL, target acquisition now cancels that out-of-combat queue and immediately seeds attack instead of waiting for ACTION_INVALID, fixing Dorna hanging on rebuff. Buff badges use a fresh window and derive the selected companion row from the actual non-PC party/faction sequence (including PRC familiar/summons) instead of a henchman-only index, then remain right-aligned beside that portrait row."
 }
