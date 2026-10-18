@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.0-universal-multicomp",
+  "version": "0.8.1-henchmen-only",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "4c32da93ec111f4b842dd50d5dc7f38773973e6974f8150f5379766925ff853f",
-  "notes": "Universal companion AI 0.8.0. Supports multiple simultaneous henchmen. Every owned ASSOCIATE_TYPE_HENCHMAN gets its own independent XAI combat state and AUTO/FOLLOW/WEAPON mode. Clicking a party portrait selects only which companion the NUI panel and singleton local-Qwen DB bridge inspect/control; other companions keep running independently. Removes Xanos tag/class identity gates, adds periodic attach for companions joining later, retains PRC familiar FIX5 and the existing 0.7.10.7 combat logic. Spellcasting class detection expanded to standard bard/cleric/druid/paladin/ranger/sorcerer/wizard classes."
+  "sha256": "ca02c2924195a9c79101f36e26e2508840b01869ef27481a0c51f80db0ce9273",
+  "notes": "Universal companion AI 0.8.1. Restricts XAI/NUI selection to real henchmen only: excludes engine familiars, animal companions, summoned and dominated associates, plus the PRC PnP familiar custom familiar oHench3 slot. Widens the NUI panel and uses an ASCII separator in the title to avoid '?' rendering. Retains PRC familiar FIX5 and combat core 0.7.10.7."
 }
