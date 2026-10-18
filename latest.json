@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.1-henchmen-only",
+  "version": "0.8.2-panel-partycap",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "ca02c2924195a9c79101f36e26e2508840b01869ef27481a0c51f80db0ce9273",
-  "notes": "Universal companion AI 0.8.1. Restricts XAI/NUI selection to real henchmen only: excludes engine familiars, animal companions, summoned and dominated associates, plus the PRC PnP familiar custom familiar oHench3 slot. Widens the NUI panel and uses an ASCII separator in the title to avoid '?' rendering. Retains PRC familiar FIX5 and combat core 0.7.10.7."
+  "sha256": "fd720b179cd6a813c4afac8763dc263dcc0a5149774a98d135d57de137e33f89",
+  "notes": "Universal companion AI 0.8.2. Fresh taller/wider NUI geometry so all companion telemetry and buttons fit; new NUI/tick ids ignore old saved compact geometry. Retains 0.8.1 filtering so familiars/animal companions/summons/dominated associates and PRC PnP familiar are excluded from the companion panel. Adds a standard-NWScript party-capacity bridge: while the PRC PnP familiar custom slot is active, module max henchmen is temporarily base+1 so the familiar does not consume the intended real companion slot; it returns to base when the PnP familiar is hidden/absent. PRC familiar FIX5 and combat core 0.7.10.7 retained."
 }
