@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.5-narrow-buffs-offhand",
+  "version": "0.8.6-combat-watchdog-familiar-guard",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "e5c575b21194da79b5a1b26f9055947c313902f3e081aa6fb0fcca88d23945f9",
-  "notes": "Universal companion AI 0.8.5. Narrow 300x385 panel with ability scores split over two lines. Adds a persistent vertical NUI strip beside the party portraits showing up to 6 unique ongoing non-hostile spell effects on the selected companion using each spell's spells.2da IconResRef and hover tooltip. Weapon telemetry now shows both hands. Tactical offhand handling: companions with Two-Weapon Fighting/Ambidexterity can auto-equip the best compatible offhand melee weapon in normal pressure; shield proficiency is preferred under heavy pressure (3+ close enemies), <=40% HP, or defensive/protect modes. Manually equipped offhand weapons are not replaced in ordinary situations unless tactical shield danger requires it. Arcane companions still avoid shield spell failure except in real danger. Preserves 0.8.4 spell/prebuff fixes and 0.8.3 autoheal."
+  "sha256": "976be9b2836957800900d192d3c9e4a82a6bfdabe297231485e3eabdfc8a3b44",
+  "notes": "Universal companion AI 0.8.6. Fixes a combat stall where the panel retained a valid target/last action but the engine action queue became ACTION_INVALID after equipment/AI interaction: a conservative watchdog replans every two ticks only when combat is valid and no protected action lock is active. Also marks the PRC PnP familiar as X2_JUST_A_FOLLOWER so SoU/HotU's generic x0_i0_henchman level-up loop skips the familiar; this removes the misleading 'Level Up Failed For <familiar> in class 20' caused by the familiar being internally represented as a henchman. PRC's own familiar scaling remains separate. Preserves 0.8.5 buff strip/offhand, 0.8.4 spell fixes, and 0.8.3 autoheal."
 }
