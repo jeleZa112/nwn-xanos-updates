@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.3-autoheal",
+  "version": "0.8.4-compact-spellfix",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "7497ca1cc1803c2ec081c9daf86271bc39dee9d08b56172df3e966093fb81bc9",
-  "notes": "Universal companion AI 0.8.3 AUTOHEAL. Adds healing as a hard priority above Turn Undead, parry and attacks. In combat: heal self at <=60% HP, master at <=45% if in range. Out of combat: heal the more injured of self/master at <=75% before trap/lock/stealth utility. Uses NWN TalentHeal so cleric cure/spontaneous healing is available when the character can perform it, with healer-kit fallback. Preserves all 0.8.2 rogue/divine/familiar/panel fixes."
+  "sha256": "c43b8f05bfbf0c33fcec838443685b1bf20664dcdc52cf49c7ca4b1a35e3dce7",
+  "notes": "Universal companion AI 0.8.4 COMPACT+SPELLFIX. Restores a compact 330x350 panel with fresh geometry, keeps all controls, and shows all six abilities on one compact line. Prepared spell display groups duplicates, e.g. a repeated spell is shown as x4 with ready-count if some slots are spent. Fixes cleric/druid/wizard/paladin/ranger prebuff detection by scanning ready memorized slots instead of relying only on GetHasSpell, so prepared Bless and other divine buffs can be queued. Preserves 0.8.3 auto-heal, rogue utility, Turn Undead, familiar exclusion and party-slot fixes."
 }
