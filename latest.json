@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.11-self-tick-watchdog",
+  "version": "0.8.6.12-dualwield-diagnostics",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "03a6a8e71c6f4e0074917c9e86820558dfb5df697a801311e2eff6789ab0b52e",
-  "notes": "Root-layer recovery after 0.8.6.10 live test: Dorna displayed a valid party-combat target but stayed AUTO WAIT TARGET until the user pressed ОБКАСТ; the PREBUFF combat gate then immediately attacked. This proves the target resolver works while Dorna's independent autonomous xai_tick is not reliably running. xai_tick now stamps a heartbeat at entry; the existing 2-second universal xai_attach_all scanner restarts xai_tick only after two consecutive missed heartbeats (~4s), avoiding duplicate healthy loops. No combat planner/target/prebuff semantics are changed from 0.8.6.10. Protected combat core 0.7.10.7, PRC familiar FIX5, Plada progression, and buff UI are untouched."
+  "sha256": "c7245309d8c2c72c18bf1cecb215bc1a1bc387849e62a7d9b953568932607bc2",
+  "notes": "Diagnostics-only follow-up. Dorna is confirmed to have Ambidexterity and can attack correctly with a manually equipped offhand, so the feat/engine capability itself is not the problem. The existing dual-wield equip decision is unchanged, but every early-return path now records the exact reason (ranged/two-handed main weapon, 3+ nearby enemies, <=40% HP, no suitable offhand candidate, retry cooldown, shield/defense choice, already equipped, or equipping candidate). NUI adds a live '2 оружия:' line showing that reason. Autonomous combat/self-tick behavior from 0.8.6.11, target logic, PRC familiar FIX5, Plada progression and combat core 0.7.10.7 are unchanged."
 }
