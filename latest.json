@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.9-clickable-badge-auto-rearm",
+  "version": "0.8.6.10-party-combat-target",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "fcdab170a0511f23c8a884d71ca8a20b1f354cb29285aa4e5df5a2886fc9756d",
-  "notes": "Live follow-up to 0.8.6.8. The portrait-side buff badge is now a NuiButtonImage and clicking any visible buff explicitly reopens the companion panel. The strip gets a fresh companionbuffs869 layout and is shifted left of the native party portrait instead of overlapping/right of Dorna. AUTO is now a hard engine-mode transition: it cancels the existing FOLLOW/PREBUFF action queue, clears stale mode/target locals, immediately attacks an already-visible hostile/master target when one exists, and otherwise reports AUTO: ЖДЁТ ЦЕЛЬ rather than ambiguous ОЖИДАНИЕ. Plada progression/FIX5 and protected combat core 0.7.10.7 remain unchanged."
+  "sha256": "90782296110dfeabcebdafdafb48b795ad90690a39c97549006aea4967f12cd2",
+  "notes": "Log-driven combat recovery. 0.8.6.9 could leave Dorna in AUTO WAIT TARGET while Plada/Bain Kai were actively fighting because acquisition only inspected Dorna/master momentary GetAttackTarget plus direct perception. AUTO/tick/NUI/PREBUFF now share party combat awareness: own/master attack target or last attacker, then any nearby faction member's attack target/last attacker, then direct perception. Automatic acquisition immediately cancels stale utility/follow/prebuff queue and seeds ActionAttack. PREBUFF/FULLBUFF is hard out-of-combat: if party combat exists, it cancels buffing and immediately attacks instead. Protected tactical combat core 0.7.10.7, PRC familiar FIX5 and confirmed Plada progression are unchanged."
 }
