@@ -9,7 +9,7 @@ exit /b %RC%
 $ErrorActionPreference='Stop'
 [Console]::OutputEncoding=[Text.Encoding]::UTF8
 $OutputEncoding=[Text.Encoding]::UTF8
-Write-Host 'UNIVERSAL COMPANION AI V0.8.2 ROGUE+DIVINE + PRC FAMILIAR FIX5' -ForegroundColor Cyan
+Write-Host 'UNIVERSAL COMPANION AI V0.8.3 AUTOHEAL + ROGUE+DIVINE + PRC FAMILIAR FIX5' -ForegroundColor Cyan
 Write-Host 'Combat core: V0.7.10.7 / NUI: canonical PRC/NWN panel / fresh window ID / live-runtime open' -ForegroundColor DarkCyan
 
 if(Get-Process -Name nwmain -ErrorAction SilentlyContinue){throw 'NWN is running. Close the game once, then run this ONE file again.'}
@@ -562,7 +562,85 @@ void main()
 '@
   $tickHeadNew=@'
 #include "x0_i0_assoc"
+#include "x0_i0_talent"
 #include "xai_core"
+
+int XAI_TryAutoHeal083(int bCombat, int nTick)
+{
+    object oMaster = GetLocalObject(OBJECT_SELF, "XAI_MASTER");
+    if (!GetIsObjectValid(oMaster)) oMaster = GetMaster(OBJECT_SELF);
+
+    int nSelfHP = XAI_HPPercent(OBJECT_SELF);
+    int nMasterHP = 100;
+    if (GetIsObjectValid(oMaster) && GetIsPC(oMaster))
+        nMasterHP = XAI_HPPercent(oMaster);
+
+    object oHeal = OBJECT_INVALID;
+
+    if (bCombat)
+    {
+        // In combat: survival first, but do not burn every slot on small scratches.
+        if (nSelfHP <= 60)
+            oHeal = OBJECT_SELF;
+        else if (GetIsObjectValid(oMaster) && nMasterHP <= 45 &&
+                 GetDistanceBetween(OBJECT_SELF, oMaster) <= 15.0)
+            oHeal = oMaster;
+    }
+    else
+    {
+        // After combat: patch meaningful wounds before traps/locks/stealth work.
+        if (nSelfHP <= 75)
+            oHeal = OBJECT_SELF;
+
+        if (GetIsObjectValid(oMaster) && nMasterHP <= 75 &&
+            GetDistanceBetween(OBJECT_SELF, oMaster) <= 15.0 &&
+            (!GetIsObjectValid(oHeal) || nMasterHP < nSelfHP))
+            oHeal = oMaster;
+    }
+
+    if (!GetIsObjectValid(oHeal)) return FALSE;
+
+    // Do not tear up an already committed heal/cast/use-item action.
+    int a = GetCurrentAction(OBJECT_SELF);
+    if (a == ACTION_CASTSPELL || a == ACTION_ITEMCASTSPELL ||
+        a == ACTION_HEAL || a == ACTION_USEOBJECT)
+        return TRUE;
+
+    int nLast = GetLocalInt(OBJECT_SELF, "XAI_HEAL_LAST_TICK_083");
+    if (nLast > 0 && nTick - nLast < 4) return FALSE;
+
+    // Native NWN talent layer knows cleric cures (including spontaneous cleric healing)
+    // and other available healing magic.
+    if (TalentHeal(TRUE, oHeal))
+    {
+        SetLocalInt(OBJECT_SELF, "XAI_HEAL_LAST_TICK_083", nTick);
+        XAI_LockAction(3);
+        if (oHeal == OBJECT_SELF) XAI_SetLastAction("AUTO_HEAL_SELF");
+        else XAI_SetLastAction("AUTO_HEAL_MASTER");
+        return TRUE;
+    }
+
+    // Fallback: use a healer's kit if one is actually in inventory.
+    object oItem = GetFirstItemInInventory(OBJECT_SELF);
+    while (GetIsObjectValid(oItem))
+    {
+        if (GetStringLeft(GetResRef(oItem), 12) == "nw_it_medkit")
+        {
+            ClearAllActions();
+            ActionUseItemOnObject(oItem, GetFirstItemProperty(oItem), oHeal);
+            SetLocalInt(OBJECT_SELF, "XAI_HEAL_LAST_TICK_083", nTick);
+            XAI_LockAction(3);
+            if (oHeal == OBJECT_SELF) XAI_SetLastAction("AUTO_HEAL_SELF");
+            else XAI_SetLastAction("AUTO_HEAL_MASTER");
+            return TRUE;
+        }
+        oItem = GetNextItemInInventory(OBJECT_SELF);
+    }
+
+    // No resource available: do not rescan every second forever.
+    SetLocalInt(OBJECT_SELF, "XAI_HEAL_LAST_TICK_083", nTick + 6);
+    return FALSE;
+}
 
 int XAI_TickUndeadCount(float fRadius)
 {
@@ -636,6 +714,7 @@ void main()
 
     if(!bCombatState)
     {
+        if (XAI_TryAutoHeal083(FALSE, nTick)) return;
         ExecuteScript("xai_utility", OBJECT_SELF);
         return;
     }
@@ -643,7 +722,8 @@ void main()
     SetLocalInt(OBJECT_SELF, "XAI_UTILITY_AFTER_COMBAT_082", TRUE);
     DeleteLocalInt(OBJECT_SELF, "XAI_UTILITY_IDLE_082");
 
-    // Survival/cleric priorities are above ordinary attacks.
+    // Hard priority: healing/survival before Turn Undead, parry or attacks.
+    if (XAI_TryAutoHeal083(TRUE, nTick)) return;
     if (XAI_TryTurnUndead082(oTarget, nTick)) return;
     if (XAI_TryParry082(oTarget, nEnemies)) return;
 '@
@@ -826,7 +906,7 @@ if($core){
 # Atomic-ish install: only copy after every requested compile succeeded.
 foreach($n in $built.Keys){$dst=Join-Path $DevDir $n;if(Test-Path $dst){Copy-Item $dst (Join-Path $Backup ($n+'.bak')) -Force};Copy-Item $built[$n] $dst -Force}
 Set-Content -LiteralPath (Join-Path $SupportDir 'XANOS_VERSION.txt') -Value 'V0.7.11.15.16 EQUIPMENT LIVE SCAN ALL-IN-ONE + NUI OPEN BIND FIX + V0.7.10.7 COMBAT CORE RU' -Encoding UTF8
-Write-Host '[OK] NUI V0.7.11.15.16 installed; combat V0.7.10.7 unchanged; PRC familiar FIX5 retained; UNIVERSAL COMPANION AI 0.8.2 ROGUE+DIVINE installed.' -ForegroundColor Green
+Write-Host '[OK] NUI V0.7.11.15.16 installed; combat V0.7.10.7 unchanged; PRC familiar FIX5 retained; UNIVERSAL COMPANION AI 0.8.3 AUTOHEAL installed.' -ForegroundColor Green
 
 # Restart only our local AI/panel processes, never the game.
 try{Get-CimInstance Win32_Process|Where-Object{$_.Name -match '^(powershell|pwsh)(\.exe)?$' -and $_.CommandLine -and ($_.CommandLine.Contains('START_XANOS_LOCAL_AI.ps1') -or $_.CommandLine.Contains('XANOS_CONTROL_PANEL.ps1'))}|ForEach-Object{try{Stop-Process -Id $_.ProcessId -Force -ErrorAction Stop}catch{}}}catch{}
