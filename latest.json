@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.4-compact-spellfix",
+  "version": "0.8.5-narrow-buffs-offhand",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "c43b8f05bfbf0c33fcec838443685b1bf20664dcdc52cf49c7ca4b1a35e3dce7",
-  "notes": "Universal companion AI 0.8.4 COMPACT+SPELLFIX. Restores a compact 330x350 panel with fresh geometry, keeps all controls, and shows all six abilities on one compact line. Prepared spell display groups duplicates, e.g. a repeated spell is shown as x4 with ready-count if some slots are spent. Fixes cleric/druid/wizard/paladin/ranger prebuff detection by scanning ready memorized slots instead of relying only on GetHasSpell, so prepared Bless and other divine buffs can be queued. Preserves 0.8.3 auto-heal, rogue utility, Turn Undead, familiar exclusion and party-slot fixes."
+  "sha256": "e5c575b21194da79b5a1b26f9055947c313902f3e081aa6fb0fcca88d23945f9",
+  "notes": "Universal companion AI 0.8.5. Narrow 300x385 panel with ability scores split over two lines. Adds a persistent vertical NUI strip beside the party portraits showing up to 6 unique ongoing non-hostile spell effects on the selected companion using each spell's spells.2da IconResRef and hover tooltip. Weapon telemetry now shows both hands. Tactical offhand handling: companions with Two-Weapon Fighting/Ambidexterity can auto-equip the best compatible offhand melee weapon in normal pressure; shield proficiency is preferred under heavy pressure (3+ close enemies), <=40% HP, or defensive/protect modes. Manually equipped offhand weapons are not replaced in ordinary situations unless tactical shield danger requires it. Arcane companions still avoid shield spell failure except in real danger. Preserves 0.8.4 spell/prebuff fixes and 0.8.3 autoheal."
 }
