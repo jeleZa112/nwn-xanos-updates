@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6-dynamic-ui",
+  "version": "0.8.6.1-hotfix",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "b8ba466f5d58b50ffa7537be8f1ce6c673fc2d7119423dc59927137111c9e76a",
-  "notes": "Universal companion AI 0.8.6 DYNAMIC UI. Companion panel now hides unavailable actions completely instead of showing grey/NO buttons: Parry, Rage, Turn Undead, Traps, Locks, Stealth and caster rows appear only when the selected companion actually has the relevant feat/skill/class. AUTO and FOLLOW remain universal. Empty action rows collapse. Buff strip window is widened/tallened so spell icons are not clipped by scrollbars, and the transparent strip content is hidden when no active non-hostile spell buffs exist. Preserves 0.8.5 tactical offhand/shield logic, 0.8.4 prepared-spell fixes and 0.8.3 autoheal."
+  "sha256": "985e94204d825ea1d7f0cbbecc2f229e80c4e4f713866df5d7f4e5e9d7da193d",
+  "notes": "Hotfix for 0.8.6 dynamic UI: removes duplicate bCaster declaration in xai_nui_common.nss that caused local NWScript compile error NSC1045. No combat or familiar behavior changed."
 }
