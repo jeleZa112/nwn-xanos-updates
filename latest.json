@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.1-hotfix",
+  "version": "0.8.6.2-layout-combat-hotfix",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "985e94204d825ea1d7f0cbbecc2f229e80c4e4f713866df5d7f4e5e9d7da193d",
-  "notes": "Hotfix for 0.8.6 dynamic UI: removes duplicate bCaster declaration in xai_nui_common.nss that caused local NWScript compile error NSC1045. No combat or familiar behavior changed."
+  "sha256": "f5d86645f0061bc212331c0b20f9453aaa3d2c4ec4f0b11dc70e706ab5b33c51",
+  "notes": "Hotfix after live 0.8.6.1 test. UI no longer relies on invisible placeholder rows: the panel is built from the selected companion's actual capabilities, single actions expand to full width, and switching portraits rebuilds the layout for that companion. Combat recovery is hardened: if a hostile appears during PREBUFF/PREBUFF_FULL, queued prebuff actions are cancelled immediately; if a valid combat target remains while the engine action queue is empty, xai_combat is invoked immediately instead of leaving the companion idle. Combat core remains 0.7.10.7."
 }
