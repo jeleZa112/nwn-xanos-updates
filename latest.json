@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6-combat-watchdog-familiar-guard",
+  "version": "0.8.6-dynamic-ui",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "976be9b2836957800900d192d3c9e4a82a6bfdabe297231485e3eabdfc8a3b44",
-  "notes": "Universal companion AI 0.8.6. Fixes a combat stall where the panel retained a valid target/last action but the engine action queue became ACTION_INVALID after equipment/AI interaction: a conservative watchdog replans every two ticks only when combat is valid and no protected action lock is active. Also marks the PRC PnP familiar as X2_JUST_A_FOLLOWER so SoU/HotU's generic x0_i0_henchman level-up loop skips the familiar; this removes the misleading 'Level Up Failed For <familiar> in class 20' caused by the familiar being internally represented as a henchman. PRC's own familiar scaling remains separate. Preserves 0.8.5 buff strip/offhand, 0.8.4 spell fixes, and 0.8.3 autoheal."
+  "sha256": "b8ba466f5d58b50ffa7537be8f1ce6c673fc2d7119423dc59927137111c9e76a",
+  "notes": "Universal companion AI 0.8.6 DYNAMIC UI. Companion panel now hides unavailable actions completely instead of showing grey/NO buttons: Parry, Rage, Turn Undead, Traps, Locks, Stealth and caster rows appear only when the selected companion actually has the relevant feat/skill/class. AUTO and FOLLOW remain universal. Empty action rows collapse. Buff strip window is widened/tallened so spell icons are not clipped by scrollbars, and the transparent strip content is hidden when no active non-hostile spell buffs exist. Preserves 0.8.5 tactical offhand/shield logic, 0.8.4 prepared-spell fixes and 0.8.3 autoheal."
 }
