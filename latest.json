@@ -3,6 +3,6 @@
   "version": "0.8.6.11-self-tick-watchdog",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "4e13db713aecd3f5fcc89a0993e8ab530bc323e6f838b65e0f8b7109dc1860ad",
+  "sha256": "03a6a8e71c6f4e0074917c9e86820558dfb5df697a801311e2eff6789ab0b52e",
   "notes": "Root-layer recovery after 0.8.6.10 live test: Dorna displayed a valid party-combat target but stayed AUTO WAIT TARGET until the user pressed ОБКАСТ; the PREBUFF combat gate then immediately attacked. This proves the target resolver works while Dorna's independent autonomous xai_tick is not reliably running. xai_tick now stamps a heartbeat at entry; the existing 2-second universal xai_attach_all scanner restarts xai_tick only after two consecutive missed heartbeats (~4s), avoiding duplicate healthy loops. No combat planner/target/prebuff semantics are changed from 0.8.6.10. Protected combat core 0.7.10.7, PRC familiar FIX5, Plada progression, and buff UI are untouched."
 }
