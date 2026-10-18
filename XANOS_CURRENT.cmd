@@ -316,10 +316,16 @@ int XAI_CanCast(int nSpell)
 {
     if (GetHasSpell(nSpell, OBJECT_SELF) > 0) return TRUE;
 
-    int nClass = XAI_GetSpellcastingClass();
-    if (nClass == CLASS_TYPE_WIZARD || nClass == CLASS_TYPE_CLERIC ||
-        nClass == CLASS_TYPE_DRUID || nClass == CLASS_TYPE_PALADIN ||
-        nClass == CLASS_TYPE_RANGER)
+    int nClass = CLASS_TYPE_INVALID;
+    int nBest = 0;
+    int n;
+    n = GetLevelByClass(CLASS_TYPE_WIZARD, OBJECT_SELF);  if (n > nBest) { nBest=n; nClass=CLASS_TYPE_WIZARD; }
+    n = GetLevelByClass(CLASS_TYPE_CLERIC, OBJECT_SELF);  if (n > nBest) { nBest=n; nClass=CLASS_TYPE_CLERIC; }
+    n = GetLevelByClass(CLASS_TYPE_DRUID, OBJECT_SELF);   if (n > nBest) { nBest=n; nClass=CLASS_TYPE_DRUID; }
+    n = GetLevelByClass(CLASS_TYPE_PALADIN, OBJECT_SELF); if (n > nBest) { nBest=n; nClass=CLASS_TYPE_PALADIN; }
+    n = GetLevelByClass(CLASS_TYPE_RANGER, OBJECT_SELF);  if (n > nBest) { nBest=n; nClass=CLASS_TYPE_RANGER; }
+
+    if (nClass != CLASS_TYPE_INVALID)
     {
         int nLevel;
         for (nLevel = 0; nLevel <= 9; nLevel++)
