@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.2-layout-combat-hotfix",
+  "version": "0.8.6.3-layout-scope-hotfix",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "f5d86645f0061bc212331c0b20f9453aaa3d2c4ec4f0b11dc70e706ab5b33c51",
-  "notes": "Hotfix after live 0.8.6.1 test. UI no longer relies on invisible placeholder rows: the panel is built from the selected companion's actual capabilities, single actions expand to full width, and switching portraits rebuilds the layout for that companion. Combat recovery is hardened: if a hostile appears during PREBUFF/PREBUFF_FULL, queued prebuff actions are cancelled immediately; if a valid combat target remains while the engine action queue is empty, xai_combat is invoked immediately instead of leaving the companion idle. Combat core remains 0.7.10.7."
+  "sha256": "c1aa982f779d929e77e0c1f0b37cc456b34ee79017d05bfb180ebd6d27cd5685",
+  "notes": "Hotfix for 0.8.6.2 local compile failure. Declares oLayoutX in main() scope before all capability-layout uses, rebuilds the panel when portrait selection changes, fixes NUI tick id consistency, and uses fresh window/geometry ids. No combat logic changes beyond the already-published 0.8.6.2 hard combat recovery."
 }
