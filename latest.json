@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.7-prebuff-state-return",
+  "version": "0.8.6.8-runtime-recovery",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "c5f2475cd50e34f531279a7579938fde7529df04538fe2553de14cca0c840997",
-  "notes": "PREBUFF/REBUFF is now explicitly temporary. Before buffing, the companion snapshots AUTO/FOLLOW/WEAPON state. After the queued buff-cast chain is no longer running, it clears PREBUFF/REBUFF/action locks and restores the prior mode; FOLLOW is actively reissued. A 40-second fail-safe also clears the queue and restores state, so successful buffing cannot leave Dorna permanently stuck in REBUFF. If a hostile appears during buffing, combat still overrides and switches to AUTO attack immediately. Preserves 0.8.6.6 party-bar buff anchoring and the confirmed Plada level-progression repair unchanged; protected combat core remains 0.7.10.7."
+  "sha256": "5d376b93ca547933f8816ae5a48e74211189bd3db1b88a57206acfda60a295d5",
+  "notes": "Runtime recovery hotfix from live screenshot. Buff strip now uses a fresh companionbuffs868 layout and reverses the six effect slots so effect #0/one active effect sits directly beside the selected companion portrait, with additional buffs extending leftward. Portrait click now force-rebuilds a stale closed NUI token and retries once, so closing the panel no longer makes it permanently unreachable. Explicit AUTO/FOLLOW/WEAPON cancels any transient PREBUFF/FULLBUFF queue and clears its snapshot state before switching modes; FOLLOW no longer queues behind a stuck rebuff. Normal PREBUFF state-return remains, with the safety timeout reduced from 40s to 15s. Plada progression/FIX5 and protected combat core 0.7.10.7 are unchanged."
 }
