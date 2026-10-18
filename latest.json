@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.1-henchmen-only",
+  "version": "0.8.2-rogue-divine",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "ca02c2924195a9c79101f36e26e2508840b01869ef27481a0c51f80db0ce9273",
-  "notes": "Universal companion AI 0.8.1. Restricts XAI/NUI selection to real henchmen only: excludes engine familiars, animal companions, summoned and dominated associates, plus the PRC PnP familiar custom familiar oHench3 slot. Widens the NUI panel and uses an ASCII separator in the title to avoid '?' rendering. Retains PRC familiar FIX5 and combat core 0.7.10.7."
+  "sha256": "1698c2bd1564f662dda4cc056a7541fd4d901da3e6e87ba0130cf5c8adc77de3",
+  "notes": "Universal companion AI 0.8.2 ROGUE+DIVINE. PRC PnP familiar is excluded from XAI attach/selection and no longer consumes the intended real companion allowance. Fresh 410x535 panel geometry. Capability-gated buttons: Rage, Parry, Turn Undead, spells. Cleric/druid/wizard/paladin/ranger prepared spell slots are listed with GetMemorizedSpell* APIs and counted correctly. Prebuff includes low-level divine buffs and never auto-summons a familiar. Rogue utility priorities: combat/survival always wins; trap detection/disarm and lock work only with no nearby hostiles and within 10m/8m of the player; default TRAPS and LOCKS are AFTER COMBAT with cycles OFF/AFTER/AUTO; stealth is separately toggleable and is forcibly dropped on danger or utility actions. Auto Turn Undead is used only when worthwhile; auto Parry is used only under heavy melee pressure/low HP. Internal PREBUFF_FULL telemetry is rendered in Russian."
 }
