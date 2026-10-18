@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.4-target-acquire-portrait-buffs",
+  "version": "0.8.6.5-prebuff-familiar-panel-hotfix",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "12bd80e28052e291356967ca4586f8758b06c2a0d9943fc5936ceab6425af206",
-  "notes": "Universal companion hotfix 0.8.6.4. Repairs the regression boundary introduced by 0.8.0 universalization: if AUTO has no legacy Xanos target but a living visible hostile exists (or the master already attacks one), the companion seeds a real engine ActionAttack so GetAttackTarget and the protected 0.7.10.7 combat planner resume normally. FOLLOW lock is respected. Active spell buff icons are changed from a detached vertical floating strip to a compact horizontal row positioned beside the selected henchman's party portrait row; geometry follows portrait selection. Also fixes the stale NUI tick-id typo."
+  "sha256": "c8f8386390cb061f569f377206b612443eb98bb06267e7340c7a16ad1e030c8b",
+  "notes": "Hotfix after live universal-AI tests. AUTO now explicitly clears legacy AI_TURNED_OFF so old Xanos saves can re-arm. PREBUFF/FULLBUFF starts a companion-local resume watchdog that cancels on visible enemies and clears stale prebuff/action locks after the spell queue ends, preventing Dorna from remaining idle after buffing. Manual panel close is sticky until the player explicitly clicks a real henchman portrait; background init no longer recreates the main panel. Buff icons are right-aligned in a strip ending beside the selected companion portrait. PRC PnP familiar class progression repair: the familiar UTCs are Commoner class 20 but have StartingPackage 151 (empty Hexblade1 package), which is why stock LevelUpHenchman(CLASS_TYPE_INVALID) fails; the guard now advances Bain Kai's Wizard/Sorcerer-based familiar levels using class 20 with valid Commoner package 82. PRC stat scaling remains untouched."
 }
