@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.16-reader-compact-ui-fix",
+  "version": "0.8.6.17-reader-ui-audio-fix",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "3aeeb8706a46d0755ae6f33655c7fc05de76abfeb93e8c1842788b80ef2d84f1",
-  "notes": "UI-only correction for the live 0.8.6.15 screenshot. The reader was shrunk too far, so NWN rendered horizontal/vertical scroll controls instead of the play/stop buttons. A fresh xai_reader_button_08616 window/geometry destroys the old 08615 reader, uses a 150x78 fixed compact frame, and keeps visible 56x22 play and 42x22 stop buttons. Exact opened-book targeting and neural Edge TTS from 0.8.6.15 are unchanged. No companion AI/combat/utility/dual-wield/familiar/core changes."
+  "sha256": "ef5422b1047a54bc188187ee8726db12836616b724ee663914b0065948d9efb6",
+  "notes": "Reader-only fix from live 0.8.6.16 screenshot/audio test. NWN's font rendered Unicode ▶/■ as ?/blank, so the compact panel now uses plain Cyrillic ЧИТАТЬ/СТОП in a fresh 08617 window. Audio watcher was made observable and robust: it dynamically discovers active nwclient/nwserver logs under logs* directories (including rotated/path variants), logs every watched file and TTS command to EPC_RU_PRC/XANOS_READER_TTS.log, accepts UTF-8 or CP1251 logs, and plays speech directly through edge-playback 7.3.1 using native Windows playback instead of the WMP COM layer. Exact opened-book targeting and full identified lore text are unchanged. No companion AI/combat/utility/dual-wield/familiar/core changes."
 }
