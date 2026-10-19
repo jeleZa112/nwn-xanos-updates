@@ -9,7 +9,7 @@ exit /b %RC%
 $ErrorActionPreference='Stop'
 [Console]::OutputEncoding=[Text.Encoding]::UTF8
 $OutputEncoding=[Text.Encoding]::UTF8
-Write-Host 'UNIVERSAL COMPANION AI V0.8.6.27 PRC SWITCH SOURCE FIX' -ForegroundColor Cyan
+Write-Host 'UNIVERSAL COMPANION AI V0.8.6.28 COMPANION DISCIPLINE' -ForegroundColor Cyan
 Write-Host 'Combat core: V0.7.10.7 / NUI: canonical PRC/NWN panel / fresh window ID / live-runtime open' -ForegroundColor DarkCyan
 
 if(Get-Process -Name nwmain -ErrorAction SilentlyContinue){throw 'NWN is running. Close the game once, then run this ONE file again.'}
@@ -916,10 +916,24 @@ int XAI_TryAutoHeal083(int bCombat, int nTick)
 
     if (bCombat)
     {
-        // In combat: survival first, but do not burn every slot on small scratches.
-        if (nSelfHP <= 60)
+        // 0.8.6.28: threat-aware healing. Keep the proven baseline thresholds,
+        // but react earlier when the companion or master is under real local pressure.
+        int nSelfThreats = XAI_EnemyCountNear(GetLocation(OBJECT_SELF), 5.0);
+        int nMasterThreats = 0;
+        if (GetIsObjectValid(oMaster) && GetArea(oMaster) == GetArea(OBJECT_SELF))
+            nMasterThreats = XAI_EnemyCountNear(GetLocation(oMaster), 5.0);
+
+        int nSelfTrigger = 60;
+        if (nSelfThreats >= 2) nSelfTrigger = 66;
+        if (nSelfThreats >= 3) nSelfTrigger = 72;
+
+        int nMasterTrigger = 45;
+        if (nMasterThreats >= 2) nMasterTrigger = 52;
+        if (nMasterThreats >= 3) nMasterTrigger = 58;
+
+        if (nSelfHP <= nSelfTrigger)
             oHeal = OBJECT_SELF;
-        else if (GetIsObjectValid(oMaster) && nMasterHP <= 45 &&
+        else if (GetIsObjectValid(oMaster) && nMasterHP <= nMasterTrigger &&
                  GetDistanceBetween(OBJECT_SELF, oMaster) <= 15.0)
             oHeal = oMaster;
     }
@@ -1037,6 +1051,204 @@ object XAI_AcquireVisibleEnemy0864()
     return OBJECT_INVALID;
 }
 
+int XAI_TargetValid08628(object o, object oMaster)
+{
+    if (!GetIsObjectValid(o) || GetObjectType(o) != OBJECT_TYPE_CREATURE) return FALSE;
+    if (GetCurrentHitPoints(o) <= 0 || GetIsDead(o)) return FALSE;
+    if (GetArea(o) != GetArea(OBJECT_SELF)) return FALSE;
+    if (!GetIsEnemy(o, OBJECT_SELF)) return FALSE;
+    if (GetDistanceBetween(OBJECT_SELF, o) > 40.0) return FALSE;
+
+    if (GetIsObjectValid(oMaster) && GetArea(oMaster) == GetArea(OBJECT_SELF) &&
+        GetDistanceBetween(oMaster, o) > 45.0)
+        return FALSE;
+
+    return TRUE;
+}
+
+int XAI_TargetActivelyCasting08628(object o)
+{
+    if (!GetIsObjectValid(o) || !XAI_IsCaster(o)) return FALSE;
+    int a = GetCurrentAction(o);
+    return a == ACTION_CASTSPELL || a == ACTION_ITEMCASTSPELL;
+}
+
+int XAI_TargetHighThreat08628(object o)
+{
+    if (!GetIsObjectValid(o)) return FALSE;
+    if (XAI_IsCaster(o)) return TRUE;
+
+    float fSelfCR = GetChallengeRating(OBJECT_SELF);
+    float fTargetCR = GetChallengeRating(o);
+    if (fSelfCR > 0.0 && fTargetCR >= fSelfCR * 1.20) return TRUE;
+    if (GetHitDice(o) >= GetHitDice(OBJECT_SELF) + 2) return TRUE;
+    if (GetMaxHitPoints(o) * 2 >= GetMaxHitPoints(OBJECT_SELF) * 3) return TRUE;
+    return FALSE;
+}
+
+void XAI_SetStickyTarget08628(object o, int nTick)
+{
+    if (!GetIsObjectValid(o)) return;
+    SetLocalObject(OBJECT_SELF, "XAI_STICKY_TARGET_08628", o);
+    SetLocalInt(OBJECT_SELF, "XAI_STICKY_SINCE_08628", nTick);
+}
+
+void XAI_ClearStickyTarget08628()
+{
+    DeleteLocalObject(OBJECT_SELF, "XAI_STICKY_TARGET_08628");
+    DeleteLocalInt(OBJECT_SELF, "XAI_STICKY_SINCE_08628");
+}
+
+object XAI_CoordinatedTarget08628(object oCurrent, object oMaster, int nTick)
+{
+    object oSticky = GetLocalObject(OBJECT_SELF, "XAI_STICKY_TARGET_08628");
+    if (!XAI_TargetValid08628(oSticky, oMaster))
+    {
+        XAI_ClearStickyTarget08628();
+        oSticky = OBJECT_INVALID;
+    }
+
+    object oSelfAttacker = GetLastAttacker(OBJECT_SELF);
+    object oMasterTarget = OBJECT_INVALID;
+    object oMasterAttacker = OBJECT_INVALID;
+    if (GetIsObjectValid(oMaster) && GetArea(oMaster) == GetArea(OBJECT_SELF))
+    {
+        oMasterTarget = GetAttackTarget(oMaster);
+        oMasterAttacker = GetLastAttacker(oMaster);
+    }
+
+    // Immediate self-defense can break target lock.
+    if (XAI_TargetValid08628(oSelfAttacker, oMaster) &&
+        GetDistanceBetween(OBJECT_SELF, oSelfAttacker) <= 5.0 &&
+        oSelfAttacker != oSticky)
+    {
+        XAI_SetStickyTarget08628(oSelfAttacker, nTick);
+        return oSelfAttacker;
+    }
+
+    // An enemy actively casting is a legitimate interrupt target.
+    object oCaster = OBJECT_INVALID;
+    if (XAI_TargetValid08628(oCurrent, oMaster) && XAI_TargetActivelyCasting08628(oCurrent))
+        oCaster = oCurrent;
+    if (XAI_TargetValid08628(oMasterTarget, oMaster) && XAI_TargetActivelyCasting08628(oMasterTarget))
+        oCaster = oMasterTarget;
+    if (XAI_TargetValid08628(oMasterAttacker, oMaster) && XAI_TargetActivelyCasting08628(oMasterAttacker))
+        oCaster = oMasterAttacker;
+    if (GetIsObjectValid(oCaster) && oCaster != oSticky)
+    {
+        XAI_SetStickyTarget08628(oCaster, nTick);
+        return oCaster;
+    }
+
+    // A clearly dangerous creature actively pressuring the master can also break
+    // a low-priority lock, but not when the current target is already almost dead.
+    if (XAI_TargetValid08628(oMasterAttacker, oMaster) &&
+        GetDistanceBetween(oMaster, oMasterAttacker) <= 7.0 &&
+        XAI_TargetHighThreat08628(oMasterAttacker) &&
+        (!GetIsObjectValid(oSticky) || XAI_HPPercent(oSticky) > 20) &&
+        (!GetIsObjectValid(oSticky) || !XAI_TargetHighThreat08628(oSticky)))
+    {
+        XAI_SetStickyTarget08628(oMasterAttacker, nTick);
+        return oMasterAttacker;
+    }
+
+    if (GetIsObjectValid(oSticky))
+    {
+        // Finish a nearly dead target instead of target-flapping.
+        if (XAI_HPPercent(oSticky) <= 20) return oSticky;
+
+        // Usually hold a target for several seconds. After that, follow Bain Kai's
+        // current target, with a faster handoff to a clearly more dangerous threat.
+        if (XAI_TargetValid08628(oMasterTarget, oMaster) && oMasterTarget != oSticky)
+        {
+            int nSince = GetLocalInt(OBJECT_SELF, "XAI_STICKY_SINCE_08628");
+            int nAge = nTick - nSince;
+            if ((nAge >= 3 && XAI_TargetHighThreat08628(oMasterTarget) &&
+                 !XAI_TargetHighThreat08628(oSticky)) ||
+                nAge >= 8)
+            {
+                XAI_SetStickyTarget08628(oMasterTarget, nTick);
+                return oMasterTarget;
+            }
+        }
+        return oSticky;
+    }
+
+    object oPick = OBJECT_INVALID;
+    if (XAI_TargetValid08628(oMasterTarget, oMaster))
+        oPick = oMasterTarget;
+    else if (XAI_TargetValid08628(oCurrent, oMaster))
+        oPick = oCurrent;
+    else if (XAI_TargetValid08628(oMasterAttacker, oMaster))
+        oPick = oMasterAttacker;
+    else if (XAI_TargetValid08628(oSelfAttacker, oMaster))
+        oPick = oSelfAttacker;
+
+    if (GetIsObjectValid(oPick)) XAI_SetStickyTarget08628(oPick, nTick);
+    return oPick;
+}
+
+int XAI_ShouldRegroupCombat08628(object oTarget, object oMaster)
+{
+    if (!GetIsObjectValid(oMaster) || !GetIsPC(oMaster)) return FALSE;
+    if (!GetIsObjectValid(oTarget)) return FALSE;
+    if (GetArea(oMaster) != GetArea(OBJECT_SELF) || GetArea(oTarget) != GetArea(OBJECT_SELF))
+        return FALSE;
+
+    float fSelfFromMaster = GetDistanceBetween(OBJECT_SELF, oMaster);
+    if (fSelfFromMaster <= 12.0) return FALSE;
+
+    float fTargetFromMaster = GetDistanceBetween(oMaster, oTarget);
+    object oMasterTarget = GetAttackTarget(oMaster);
+    float fLimit = (oMasterTarget == oTarget) ? 40.0 : 28.0;
+    return fTargetFromMaster > fLimit;
+}
+
+int XAI_PostCombatHousekeeping08628(object oMaster, int nTick)
+{
+    XAI_ClearStickyTarget08628();
+    DeleteLocalInt(OBJECT_SELF, "XAI_COMBAT_IDLE_STREAK_08628");
+
+    // Remove only a shield that AUTO itself marked as a crowd-survival shield.
+    if (GetLocalInt(OBJECT_SELF, "XAI_CROWD_SHIELD_ACTIVE"))
+    {
+        object oLeft = GetItemInSlot(INVENTORY_SLOT_LEFTHAND, OBJECT_SELF);
+        DeleteLocalInt(OBJECT_SELF, "XAI_CROWD_SHIELD_ACTIVE");
+        if (XAI_IsShieldItem(oLeft))
+        {
+            ClearAllActions();
+            XAI_LockAction(2);
+            ActionUnequipItem(oLeft);
+            XAI_SetLastAction("AUTO_SHIELD_OFF");
+            return TRUE;
+        }
+    }
+
+    // Explicitly regroup after battle instead of leaving a companion at the last kill.
+    if (GetIsObjectValid(oMaster) && GetIsPC(oMaster) &&
+        GetArea(oMaster) == GetArea(OBJECT_SELF) &&
+        GetDistanceBetween(OBJECT_SELF, oMaster) > 12.0)
+    {
+        int a = GetCurrentAction(OBJECT_SELF);
+        if (a == ACTION_CASTSPELL || a == ACTION_ITEMCASTSPELL ||
+            a == ACTION_HEAL || a == ACTION_USEOBJECT)
+            return TRUE;
+
+        int nRetry = GetLocalInt(OBJECT_SELF, "XAI_REGROUP_RETRY_08628");
+        if (nTick >= nRetry)
+        {
+            ClearAllActions();
+            ActionMoveToObject(oMaster, TRUE, 4.0);
+            SetLocalInt(OBJECT_SELF, "XAI_REGROUP_RETRY_08628", nTick + 3);
+            XAI_SetLastAction("AUTO_RETREAT_REGROUP");
+        }
+        return TRUE;
+    }
+
+    DeleteLocalInt(OBJECT_SELF, "XAI_REGROUP_RETRY_08628");
+    return FALSE;
+}
+
 int XAI_TickUndeadCount(float fRadius)
 {
     int n = 0;
@@ -1126,6 +1338,38 @@ void main()
         DeleteLocalInt(OBJECT_SELF, "AI_TURNED_OFF");
     if(GetLocalInt(OBJECT_SELF,"AI_TURNED_OFF")) return;
 
+    object oMaster08628 = GetLocalObject(OBJECT_SELF, "XAI_MASTER");
+    if (!GetIsObjectValid(oMaster08628)) oMaster08628 = GetMaster(OBJECT_SELF);
+
+    // 0.8.6.28: coordinated target commitment is AUTO-only. Manual WEAPON/FOLLOW
+    // semantics stay untouched.
+    if (GetLocalInt(OBJECT_SELF, "XAI_AUTONOMOUS_MODE") &&
+        !GetLocalInt(OBJECT_SELF, "XAI_FOLLOW_LOCK") &&
+        !GetLocalInt(OBJECT_SELF, "XAI_WEAPON_ONLY_V0799"))
+    {
+        object oCoordinated08628 = XAI_CoordinatedTarget08628(oTarget, oMaster08628, nTick);
+        if (GetIsObjectValid(oCoordinated08628))
+        {
+            object oOldAttack08628 = GetAttackTarget(OBJECT_SELF);
+            oTarget = oCoordinated08628;
+            bCombatState = TRUE;
+
+            // If the engine is already doing a plain attack against a different
+            // target, hand that attack over immediately. Never interrupt casting,
+            // healing or item use for this coordination rule.
+            if (GetCurrentAction(OBJECT_SELF) == ACTION_ATTACKOBJECT &&
+                GetIsObjectValid(oOldAttack08628) &&
+                oOldAttack08628 != oCoordinated08628)
+            {
+                ClearAllActions();
+                ActionAttack(oCoordinated08628);
+                XAI_LockAction(1);
+                XAI_SetLastAction("AUTO_ACQUIRE_TARGET");
+                return;
+            }
+        }
+    }
+
     // 0.8.6.6: universal companion target bootstrap.
     // This repairs the regression introduced when XAI stopped being Xanos-only:
     // a henchman can be in AUTO with a visible hostile but the legacy selector may
@@ -1139,6 +1383,7 @@ void main()
         {
             oTarget = oAcquire;
             bCombatState = TRUE;
+            XAI_SetStickyTarget08628(oAcquire, nTick);
 
             string sAcquireState = GetLocalString(OBJECT_SELF, XAI_LAST_ACTION_VAR);
             int bAcquirePrebuff = sAcquireState == "PREBUFF" || sAcquireState == "PREBUFF_FULL";
@@ -1162,6 +1407,7 @@ void main()
     if(!bCombatState)
     {
         if (XAI_TryAutoHeal083(FALSE, nTick)) return;
+        if (XAI_PostCombatHousekeeping08628(oMaster08628, nTick)) return;
         ExecuteScript("xai_utility", OBJECT_SELF);
         return;
     }
@@ -1194,16 +1440,45 @@ void main()
 
     // Hard priority: healing/survival before Turn Undead, parry or attacks.
     if (XAI_TryAutoHeal083(TRUE, nTick)) return;
+
+    // Do not chase a stale side target through the map. Supporting the master's own
+    // current target gets a larger leash; other targets are abandoned sooner.
+    if (XAI_ShouldRegroupCombat08628(oTarget, oMaster08628))
+    {
+        ClearAllActions();
+        XAI_ClearStickyTarget08628();
+        ActionMoveToObject(oMaster08628, TRUE, 4.0);
+        XAI_LockAction(3);
+        XAI_SetLastAction("AUTO_RETREAT_REGROUP");
+        return;
+    }
+
     if (XAI_TryTurnUndead082(oTarget, nTick)) return;
     if (XAI_TryParry082(oTarget, nEnemies)) return;
 
     // Hard recovery: a valid combat target plus an empty engine action queue must
-    // never leave the companion standing still. Re-enter the proven combat planner now.
+    // never leave the companion standing still. Re-enter the proven planner first.
+    // If the planner leaves the queue empty repeatedly, force one plain engine attack
+    // as a last-resort recovery instead of looping in place forever.
     if (GetIsObjectValid(oTarget) && GetCurrentAction(OBJECT_SELF) == ACTION_INVALID)
     {
+        int nIdle08628 = GetLocalInt(OBJECT_SELF, "XAI_COMBAT_IDLE_STREAK_08628") + 1;
+        SetLocalInt(OBJECT_SELF, "XAI_COMBAT_IDLE_STREAK_08628", nIdle08628);
+
+        if (nIdle08628 >= 3)
+        {
+            DeleteLocalInt(OBJECT_SELF, "XAI_COMBAT_IDLE_STREAK_08628");
+            ClearAllActions();
+            ActionAttack(oTarget);
+            XAI_LockAction(1);
+            XAI_SetLastAction("AUTO_ACQUIRE_TARGET");
+            return;
+        }
+
         ExecuteScript("xai_combat", OBJECT_SELF);
         return;
     }
+    DeleteLocalInt(OBJECT_SELF, "XAI_COMBAT_IDLE_STREAK_08628");
 '@
   $tickText=Replace-Required $tickText $oldCombatReturn $newCombatReturn 'out-of-combat utility and cleric/rogue priorities'
 
@@ -1376,7 +1651,7 @@ void main()
  Write-Host '[warn] V0.7.10.2 source set not found; combat hotfix will not be installed.' -ForegroundColor Yellow
 }
 
-Set-Content -LiteralPath $Log -Value ('UNIVERSAL COMPANION AI 0.8.6.23 SUMMON DURATION + PRC FAMILIAR FIX5 '+(Get-Date)) -Encoding UTF8
+Set-Content -LiteralPath $Log -Value ('UNIVERSAL COMPANION AI 0.8.6.28 COMPANION DISCIPLINE + PRC FAMILIAR FIX5 '+(Get-Date)) -Encoding UTF8
 function Compile([string]$name){
  Write-Host ('[compile] '+$name) -ForegroundColor DarkCyan
  $source=Join-Path $Src $name
@@ -1416,8 +1691,8 @@ if($core){
 
 # Atomic-ish install: only copy after every requested compile succeeded.
 foreach($n in $built.Keys){$dst=Join-Path $DevDir $n;if(Test-Path $dst){Copy-Item $dst (Join-Path $Backup ($n+'.bak')) -Force};Copy-Item $built[$n] $dst -Force}
-Set-Content -LiteralPath (Join-Path $SupportDir 'XANOS_VERSION.txt') -Value 'V0.7.11.15.32 EQUIPMENT LIVE SCAN ALL-IN-ONE + SUMMON DURATION + V0.7.10.7 COMBAT CORE RU' -Encoding UTF8
-Write-Host '[OK] NUI V0.7.11.15.16 installed; combat V0.7.10.7 unchanged; PRC familiar FIX5 retained; UNIVERSAL COMPANION AI 0.8.6.23 SUMMON DURATION installed.' -ForegroundColor Green
+Set-Content -LiteralPath (Join-Path $SupportDir 'XANOS_VERSION.txt') -Value 'UNIVERSAL AI 0.8.6.28 COMPANION DISCIPLINE + READER 0.8.6.26 + PRC SWITCH SOURCE 0.8.6.27 + COMBAT CORE 0.7.10.7' -Encoding UTF8
+Write-Host '[OK] Combat 0.7.10.7 preserved; Universal AI 0.8.6.28 companion discipline installed; PRC familiar FIX5 retained.' -ForegroundColor Green
 
 # Neural book reader TTS watcher.
 # Uses Microsoft Edge online TTS via edge-playback on Windows; System.Speech is fallback only.
