@@ -28,7 +28,7 @@ if(Test-Path -LiteralPath $PersonalSwitchPath){
  $switchNew=$switchText
 
  foreach($switchName in @('PRC_PNP_SOMATIC_COMPOMENTS','PRC_SUMMON_ROUND_PER_LEVEL')){
-   $switchPattern='(?m)^(\s*\d+\s+'+[regex]::Escape($switchName)+'\s+int\s+)([-+]?\d+)(\s*)$'
+   $switchPattern='(?m)^([ \t]*\d+[ \t]+'+[regex]::Escape($switchName)+'[ \t]+int[ \t]+)([-+]?\d+)([ \t]*\r?)$'
    $switchNew=[regex]::Replace($switchNew,$switchPattern,{param($m) $m.Groups[1].Value+'0'+$m.Groups[3].Value})
  }
 
