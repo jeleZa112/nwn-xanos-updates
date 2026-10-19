@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.17-reader-ui-audio-fix",
+  "version": "0.8.6.18-mini-reader-stale-log-fix",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "9748d62f353f2ae880bf72fa058bf2a944f5e9d5bf0f1ffe8e1ce630e9c898b2",
-  "notes": "Reader-only fix from live 0.8.6.16 screenshot/audio test. NWN's font rendered Unicode ▶/■ as ?/blank, so the compact panel now uses plain Cyrillic ЧИТАТЬ/СТОП in a fresh 08617 window. Audio watcher was made observable and robust: it dynamically discovers active nwclient/nwserver logs under logs* directories (including rotated/path variants), logs every watched file and TTS command to EPC_RU_PRC/XANOS_READER_TTS.log, accepts UTF-8 or CP1251 logs, and plays speech directly through edge-playback 7.3.1 using native Windows playback instead of the WMP COM layer. Exact opened-book targeting and full identified lore text are unchanged. No companion AI/combat/utility/dual-wield/familiar/core changes."
+  "sha256": "59fabea69adc93d7c4fdb0f0509ee0b378cf86ceff686b725ac42c8bff3f818d",
+  "notes": "Reader-only live fix. 0.8.6.17 proved neural audio works, but the watcher replayed stale [XAI_TTS] records from existing NWN logs when launched before the game, so it could start speaking immediately. Existing logs now begin at EOF on watcher startup; only fresh commands after pressing play are read. The reader UI is reduced again to a tiny fresh R window with only ASCII > (play) and X (stop), avoiding unsupported glyphs and the oversized 0.8.6.17 panel. Campaign lore extraction now checks all four GetDescription variants (current/original x identified/unidentified) and speaks the longest, with hidden BOOKDBG lengths/tag/resref copied into XANOS_READER_TTS.log for exact diagnosis if an official book still stores its visible body outside item descriptions. Exact opened-book object capture remains. No companion AI/combat/utility/dual-wield/familiar/core changes."
 }
