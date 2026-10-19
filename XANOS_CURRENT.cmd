@@ -9,7 +9,7 @@ exit /b %RC%
 $ErrorActionPreference='Stop'
 [Console]::OutputEncoding=[Text.Encoding]::UTF8
 $OutputEncoding=[Text.Encoding]::UTF8
-Write-Host 'UNIVERSAL COMPANION AI V0.8.6.27 PRC SWITCH SOURCE FIX' -ForegroundColor Cyan
+Write-Host 'UNIVERSAL COMPANION AI V0.8.6.28 COMPANION TACTICS' -ForegroundColor Cyan
 Write-Host 'Combat core: V0.7.10.7 / NUI: canonical PRC/NWN panel / fresh window ID / live-runtime open' -ForegroundColor DarkCyan
 
 if(Get-Process -Name nwmain -ErrorAction SilentlyContinue){throw 'NWN is running. Close the game once, then run this ONE file again.'}
@@ -916,10 +916,25 @@ int XAI_TryAutoHeal083(int bCombat, int nTick)
 
     if (bCombat)
     {
-        // In combat: survival first, but do not burn every slot on small scratches.
-        if (nSelfHP <= 60)
+        // 0.8.6.28: pressure-aware healing. Keep the old conservative thresholds
+        // in a light fight, but react earlier when several enemies are already in melee.
+        int nPressure = XAI_EnemyCountNear(GetLocation(OBJECT_SELF), 6.0);
+        int nSelfHealAt = 60;
+        int nMasterHealAt = 45;
+        if (nPressure >= 3)
+        {
+            nSelfHealAt = 72;
+            nMasterHealAt = 60;
+        }
+        else if (nPressure >= 2)
+        {
+            nSelfHealAt = 66;
+            nMasterHealAt = 52;
+        }
+
+        if (nSelfHP <= nSelfHealAt)
             oHeal = OBJECT_SELF;
-        else if (GetIsObjectValid(oMaster) && nMasterHP <= 45 &&
+        else if (GetIsObjectValid(oMaster) && nMasterHP <= nMasterHealAt &&
                  GetDistanceBetween(OBJECT_SELF, oMaster) <= 15.0)
             oHeal = oMaster;
     }
@@ -1034,6 +1049,106 @@ object XAI_AcquireVisibleEnemy0864()
                            CREATURE_TYPE_IS_ALIVE, TRUE);
     if (XAI_AcquireTargetValid08610(o)) return o;
 
+    return OBJECT_INVALID;
+}
+
+// 0.8.6.28 target discipline: preserve a good target long enough to finish it,
+// prefer threats to the player/casters, and never chase so far that the companion
+// abandons the party. This sits above the protected 0.7.10.7 combat math.
+int XAI_TargetThreat08628(object o, object oMaster)
+{
+    if (!XAI_AcquireTargetValid08610(o)) return -10000;
+
+    int n = 0;
+    if (XAI_IsCaster(o)) n += 80;
+    if (GetIsObjectValid(oMaster))
+    {
+        if (o == GetAttackTarget(oMaster)) n += 70;
+        if (o == GetLastAttacker(oMaster)) n += 65;
+        if (GetAttackTarget(o) == oMaster) n += 55;
+    }
+    if (o == GetLastAttacker(OBJECT_SELF)) n += 50;
+    if (GetAttackTarget(o) == OBJECT_SELF) n += 35;
+
+    int hp = XAI_HPPercent(o);
+    if (hp <= 20) n += 35;
+    else if (hp <= 40) n += 18;
+
+    float d = GetDistanceBetween(OBJECT_SELF, o);
+    if (d <= 4.5) n += 25;
+    else if (d <= 10.0) n += 12;
+    return n;
+}
+
+object XAI_SelectTacticalTarget08628(object oCurrent, int nTick)
+{
+    object oMaster = GetLocalObject(OBJECT_SELF, "XAI_MASTER");
+    if (!GetIsObjectValid(oMaster)) oMaster = GetMaster(OBJECT_SELF);
+
+    object oSticky = GetLocalObject(OBJECT_SELF, "XAI_STICKY_TARGET_08628");
+    int nStickyTick = GetLocalInt(OBJECT_SELF, "XAI_STICKY_TICK_08628");
+
+    // Leash: when the companion has already been pulled away from the player,
+    // only continue against an enemy that is still near the player's fight.
+    if (GetIsObjectValid(oMaster) &&
+        GetDistanceBetween(OBJECT_SELF, oMaster) > 20.0)
+    {
+        if (XAI_AcquireTargetValid08610(oCurrent) &&
+            GetDistanceBetween(oMaster, oCurrent) > 24.0)
+            oCurrent = OBJECT_INVALID;
+
+        if (XAI_AcquireTargetValid08610(oSticky) &&
+            GetDistanceBetween(oMaster, oSticky) > 24.0)
+            oSticky = OBJECT_INVALID;
+    }
+
+    object oBest = oCurrent;
+    int nBest = XAI_TargetThreat08628(oBest, oMaster);
+
+    object o = GetLastAttacker(OBJECT_SELF);
+    int n = XAI_TargetThreat08628(o, oMaster);
+    if (n > nBest) { oBest = o; nBest = n; }
+
+    if (GetIsObjectValid(oMaster))
+    {
+        o = GetAttackTarget(oMaster);
+        n = XAI_TargetThreat08628(o, oMaster);
+        if (n > nBest) { oBest = o; nBest = n; }
+
+        o = GetLastAttacker(oMaster);
+        n = XAI_TargetThreat08628(o, oMaster);
+        if (n > nBest) { oBest = o; nBest = n; }
+    }
+
+    o = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY,
+                           OBJECT_SELF, 1,
+                           CREATURE_TYPE_PERCEPTION, PERCEPTION_SEEN,
+                           CREATURE_TYPE_IS_ALIVE, TRUE);
+    n = XAI_TargetThreat08628(o, oMaster);
+    if (n > nBest) { oBest = o; nBest = n; }
+
+    // Six-ish seconds of stickiness at the normal two-second tactical cadence.
+    // A clearly more dangerous threat may still break the lock immediately.
+    if (XAI_AcquireTargetValid08610(oSticky) &&
+        nTick - nStickyTick <= 3)
+    {
+        int nSticky = XAI_TargetThreat08628(oSticky, oMaster);
+        if (!GetIsObjectValid(oBest) || nBest < nSticky + 55)
+            return oSticky;
+    }
+
+    if (XAI_AcquireTargetValid08610(oBest))
+    {
+        if (oBest != oSticky)
+        {
+            SetLocalObject(OBJECT_SELF, "XAI_STICKY_TARGET_08628", oBest);
+            SetLocalInt(OBJECT_SELF, "XAI_STICKY_TICK_08628", nTick);
+        }
+        return oBest;
+    }
+
+    DeleteLocalObject(OBJECT_SELF, "XAI_STICKY_TARGET_08628");
+    DeleteLocalInt(OBJECT_SELF, "XAI_STICKY_TICK_08628");
     return OBJECT_INVALID;
 }
 
@@ -1192,6 +1307,33 @@ void main()
         XAI_SetLastAction("COMBAT_REPLAN");
     }
 
+    // 0.8.6.28: stabilize target choice before spending healing/feat/combat actions.
+    object oDisciplined = XAI_SelectTacticalTarget08628(oTarget, nTick);
+    if (GetIsObjectValid(oDisciplined) && oDisciplined != oTarget)
+    {
+        oTarget = oDisciplined;
+        ClearAllActions();
+        XAI_LockAction(0);
+        ActionAttack(oTarget);
+        XAI_SetLastAction("AUTO_TARGET_DISCIPLINE");
+        return;
+    }
+
+    // If a chase dragged us far from the player and there is no valid nearby fight,
+    // abandon the chase and regroup instead of crossing the map after one enemy.
+    object oTacticalMaster = GetLocalObject(OBJECT_SELF, "XAI_MASTER");
+    if (!GetIsObjectValid(oTacticalMaster)) oTacticalMaster = GetMaster(OBJECT_SELF);
+    if (!GetIsObjectValid(oDisciplined) && GetIsObjectValid(oTacticalMaster) &&
+        GetDistanceBetween(OBJECT_SELF, oTacticalMaster) > 20.0)
+    {
+        ClearAllActions();
+        DeleteLocalObject(OBJECT_SELF, "XAI_STICKY_TARGET_08628");
+        DeleteLocalInt(OBJECT_SELF, "XAI_STICKY_TICK_08628");
+        ActionMoveToObject(oTacticalMaster, TRUE, 3.0);
+        XAI_SetLastAction("AUTO_REGROUP");
+        return;
+    }
+
     // Hard priority: healing/survival before Turn Undead, parry or attacks.
     if (XAI_TryAutoHeal083(TRUE, nTick)) return;
     if (XAI_TryTurnUndead082(oTarget, nTick)) return;
@@ -1229,6 +1371,38 @@ void main()
     // last planned action, so without this guard the companion can stand idle forever.
     // Action locks are checked above, so ACTION_INVALID here means it is safe to retry.
     int bCombatIdle=(GetCurrentAction(OBJECT_SELF)==ACTION_INVALID);
+
+    // 0.8.6.28 failed-action watchdog: two consecutive idle observations with
+    // the same planned action mean the engine ate/stalled it. Escalate by clearing
+    // stale state and forcing a clean planner entry instead of retrying forever.
+    string sPlan08628 = GetLocalString(OBJECT_SELF, XAI_LAST_ACTION_VAR);
+    string sPrevPlan08628 = GetLocalString(OBJECT_SELF, "XAI_WATCH_PLAN_08628");
+    int nFail08628 = GetLocalInt(OBJECT_SELF, "XAI_WATCH_FAIL_08628");
+
+    if (bCombatIdle && sPlan08628 != "")
+    {
+        if (sPlan08628 == sPrevPlan08628) nFail08628++;
+        else nFail08628 = 1;
+        SetLocalString(OBJECT_SELF, "XAI_WATCH_PLAN_08628", sPlan08628);
+        SetLocalInt(OBJECT_SELF, "XAI_WATCH_FAIL_08628", nFail08628);
+    }
+    else
+    {
+        DeleteLocalInt(OBJECT_SELF, "XAI_WATCH_FAIL_08628");
+        SetLocalString(OBJECT_SELF, "XAI_WATCH_PLAN_08628", sPlan08628);
+        nFail08628 = 0;
+    }
+
+    if (nFail08628 >= 2 && GetIsObjectValid(oTarget))
+    {
+        ClearAllActions();
+        XAI_LockAction(0);
+        DeleteLocalInt(OBJECT_SELF, "XAI_WATCH_FAIL_08628");
+        DeleteLocalString(OBJECT_SELF, "XAI_WATCH_PLAN_08628");
+        XAI_SetLastAction("AUTO_ACTION_RECOVERY");
+        ExecuteScript("xai_combat", OBJECT_SELF);
+        return;
+    }
 
     // Keep normal combat rounds untouched, but re-plan a genuinely idle combatant.
     if(bTargetChanged || bEmergency || (bCasterCasting && (nTick%3)==0) ||
