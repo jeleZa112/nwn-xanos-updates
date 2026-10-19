@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.22-ui-vulnerability",
+  "version": "0.8.6.23-summon-duration",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "69730fa74b4d7a29f6d98746ca9a09d7e5f7e90af7804ca64bed26fdc98f9412",
-  "notes": "Live UI/tactics follow-up. Boots moved to their own NUI line under armor. Buff hover names are wrapped into compact multiline tooltips and the buff strip uses a fresh window id. Actual XAI ammo scoring now reads target elemental vulnerability, immunity and resistance from equipped items and creature skin: strong vulnerabilities such as cold +100% heavily favor matching cold arrows/bolts whenever ranged combat is tactically appropriate; immunity/resistance penalize matching ammo. Panel reason prioritizes an exploited vulnerability. Existing DR display, safe boots auto-equip, weak-target ammo conservation, reader, targeting, dual-wield and PRC familiar FIX5 remain unchanged. Reader latency is also reworked: the first short phrase starts through edge-playback while the entire remaining book is synthesized in parallel to MP3; after the first phrase it switches to the prefetched MP3, removing the old network/TTS pause between every text block. STOP kills both playback and background prefetch."
+  "sha256": "0381fae73d2e2cb11982a346fb2b4f17b0a817b0adde0fc3bd1394c09b5b14ea",
+  "notes": "PRC summon-duration correction. User logs show PRC_SUMMON_ROUND_PER_LEVEL=1 together with PRC_MULTISUMMON=1. That switch intentionally changes summons from their normal listed duration (including Summon Creature's 24 hours) to caster-level rounds, explaining ~24-30 seconds at CL 4-5. Xanos init/attach now forces only PRC_SUMMON_ROUND_PER_LEVEL=0 while leaving PRC_MULTISUMMON unchanged, so each summon spell uses its own normal duration again. Existing 0.8.6.22 UI, vulnerability-aware ammo, reader prefetch, DR/boots, combat core 0.7.10.7 and PRC familiar FIX5 remain unchanged."
 }
