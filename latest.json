@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.20-reader-path-fix",
+  "version": "0.8.6.21-dr-boots-ammo-reader",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "d68b1df0e57023554f0364065763809b332a922a1490146ce69d045e5941555f",
-  "notes": "Reader-only fix from the user's 0.8.6.19 log. Text extraction is now confirmed correct for Q3_ANCIENT_BOOK: the short identified descriptions are 119 chars while the internal lore body is 1036 chars, and the reader selects/sends the 1036-char body. Audio failed because direct edge-playback.exe checks for a sibling edge-tts executable via PATH; the private venv was prepared correctly but its Scripts directory was not inherited in PATH, producing 'edge-tts is not installed'. 0.8.6.20 verifies both edge-playback.exe and edge-tts.exe exist, prepends the private Scripts directory to the child PATH and sets VIRTUAL_ENV before playback. Chunked fast-start, hard STOP, stale-log suppression, tiny > / X panel and BOOKDBG remain unchanged. No companion AI/combat/utility/dual-wield/familiar/core changes."
+  "sha256": "PENDING_WINDOWS_CI",
+  "notes": "Four isolated live-test fixes. (1) NUI target defense now displays classic ITEM_PROPERTY_DAMAGE_REDUCTION as DR soak/+enhancement, e.g. DR 5/+1, while existing elemental immunity/resistance/SR display is unchanged. (2) Out-of-combat utility equips the highest-value boots when the companion's boots slot is empty; it never replaces player-equipped boots and exposes boots state in the clothing line. (3) AUTO weak-target ammo conservation treats any property-bearing ammo as premium, strongly preferring mundane compatible ammo when available; premium ammo is still used if no mundane stack exists. Panel reason matches this logic. (4) Reader keeps Edge neural TTS but splits a short ~90-170 character first chunk before normal ~520-character chunks to reduce the ~15s perceived start delay. Protected combat core logic, targeting, dual-wield, PRC familiar FIX5 and Plada progression are otherwise unchanged."
 }
