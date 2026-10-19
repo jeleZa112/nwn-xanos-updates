@@ -9,7 +9,7 @@ exit /b %RC%
 $ErrorActionPreference='Stop'
 [Console]::OutputEncoding=[Text.Encoding]::UTF8
 $OutputEncoding=[Text.Encoding]::UTF8
-Write-Host 'UNIVERSAL COMPANION AI V0.8.6.26 READER RAMP' -ForegroundColor Cyan
+Write-Host 'UNIVERSAL COMPANION AI V0.8.6.27 PRC SWITCH SOURCE FIX' -ForegroundColor Cyan
 Write-Host 'Combat core: V0.7.10.7 / NUI: canonical PRC/NWN panel / fresh window ID / live-runtime open' -ForegroundColor DarkCyan
 
 if(Get-Process -Name nwmain -ErrorAction SilentlyContinue){throw 'NWN is running. Close the game once, then run this ONE file again.'}
@@ -17,6 +17,35 @@ $stateFile=Join-Path $env:LOCALAPPDATA 'NWN_EPC_RU_PRC\userdir.txt'
 $NwnHome=Join-Path $env:USERPROFILE 'Documents\Neverwinter Nights'
 if(Test-Path -LiteralPath $stateFile){$s=(Get-Content -LiteralPath $stateFile -Raw).Trim();if($s){$NwnHome=$s}}
 $SupportDir=Join-Path $NwnHome 'EPC_RU_PRC'
+
+# 0.8.6.27: patch the PRC source settings themselves before NWN starts.
+# PRC reloads personal_switch.2da on module/save loads, so values of 1 there can restore old behavior.
+# Keep PRC_PNP_SOMATIC_ITEMS untouched: item-use free-hand rules remain enabled.
+$PersonalSwitchPath=Join-Path $NwnHome 'override\personal_switch.2da'
+if(Test-Path -LiteralPath $PersonalSwitchPath){
+ $switchEnc=[Text.Encoding]::GetEncoding(1251)
+ $switchText=$switchEnc.GetString([IO.File]::ReadAllBytes($PersonalSwitchPath))
+ $switchNew=$switchText
+
+ foreach($switchName in @('PRC_PNP_SOMATIC_COMPOMENTS','PRC_SUMMON_ROUND_PER_LEVEL')){
+   $switchPattern='(?m)^([ \t]*\d+[ \t]+'+[regex]::Escape($switchName)+'[ \t]+int[ \t]+)([-+]?\d+)([ \t]*\r?)$'
+   $switchNew=[regex]::Replace($switchNew,$switchPattern,{param($m) $m.Groups[1].Value+'0'+$m.Groups[3].Value})
+ }
+
+ if($switchNew -ne $switchText){
+   $cfgBackup=Join-Path $SupportDir 'config_backups'
+   New-Item -ItemType Directory -Force -Path $cfgBackup|Out-Null
+   $cfgBackupFile=Join-Path $cfgBackup ('personal_switch_'+(Get-Date -Format 'yyyyMMdd_HHmmss')+'.2da')
+   Copy-Item -LiteralPath $PersonalSwitchPath -Destination $cfgBackupFile -Force
+   [IO.File]::WriteAllBytes($PersonalSwitchPath,$switchEnc.GetBytes($switchNew))
+   Write-Host ('PRC personal_switch.2da fixed; backup: '+$cfgBackupFile) -ForegroundColor Green
+ } else {
+   Write-Host 'PRC personal_switch.2da already has required somatic/summon values.' -ForegroundColor DarkGreen
+ }
+} else {
+ Write-Host 'PRC personal_switch.2da not found in override; runtime guards remain active.' -ForegroundColor Yellow
+}
+
 $DevDir=Join-Path $NwnHome 'development'
 $Compiler=Join-Path $SupportDir 'tools\nwnsc.exe'
 if(!(Test-Path -LiteralPath $Compiler)){throw 'Existing Xanos support/compiler was not found in Documents\Neverwinter Nights\EPC_RU_PRC.'}

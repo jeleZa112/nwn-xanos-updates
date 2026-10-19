@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.26-reader-ramp",
+  "version": "0.8.6.27-prc-switch-source",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "645a961e1d345e181a9b87678ae0130c4a7c7ab54e9d639638091f77ef21b444",
-  "notes": "Reader startup/continuity refinement after 0.8.6.25. TTS chunks now ramp in size: about 55-100 chars for the first audible phrase, then about 110-190, 180-300, and finally 260-420 chars. This keeps the first sound fast while letting the double-buffered prefetch gain enough lead to avoid long gaps. Combat core 0.7.10.7, somatic-hands fix, confirmed summon-duration fix, familiar code/FIX5 and PRC_MULTISUMMON are unchanged."
+  "sha256": "0a29b27e14b799c8453f3b5122a77d3b270a24dde718cf76ad65e5c546324db5",
+  "notes": "Fixes the root source of recurring PRC free-hand and summon-duration settings. Before launching NWN, the permanent updater now backs up override/personal_switch.2da and forces PRC_PNP_SOMATIC_COMPOMENTS=0 plus PRC_SUMMON_ROUND_PER_LEVEL=0 in that source file. PRC_PNP_SOMATIC_ITEMS is intentionally left unchanged. Existing runtime guards remain. Reader 0.8.6.26 is unchanged and live-confirmed; combat core 0.7.10.7, familiar FIX5/progression code and PRC_MULTISUMMON are unchanged."
 }
