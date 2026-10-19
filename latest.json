@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.21-dr-boots-ammo-reader",
+  "version": "0.8.6.22-ui-vulnerability",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "76ab9475d7dbc64444ed2eb8eb94611d133909e2ff04c06351de38f832fe52b7",
-  "notes": "Four isolated live-test fixes. (1) NUI target defense now displays classic ITEM_PROPERTY_DAMAGE_REDUCTION as DR soak/+enhancement, e.g. DR 5/+1, while existing elemental immunity/resistance/SR display is unchanged. (2) Out-of-combat utility equips the highest-value boots when the companion's boots slot is empty; it never replaces player-equipped boots and exposes boots state in the clothing line. (3) AUTO weak-target ammo conservation treats any property-bearing ammo as premium, strongly preferring mundane compatible ammo when available; premium ammo is still used if no mundane stack exists. Panel reason matches this logic. (4) Reader keeps Edge neural TTS but splits a short ~90-170 character first chunk before normal ~520-character chunks to reduce the ~15s perceived start delay. Protected combat core logic, targeting, dual-wield, PRC familiar FIX5 and Plada progression are otherwise unchanged."
+  "sha256": "69730fa74b4d7a29f6d98746ca9a09d7e5f7e90af7804ca64bed26fdc98f9412",
+  "notes": "Live UI/tactics follow-up. Boots moved to their own NUI line under armor. Buff hover names are wrapped into compact multiline tooltips and the buff strip uses a fresh window id. Actual XAI ammo scoring now reads target elemental vulnerability, immunity and resistance from equipped items and creature skin: strong vulnerabilities such as cold +100% heavily favor matching cold arrows/bolts whenever ranged combat is tactically appropriate; immunity/resistance penalize matching ammo. Panel reason prioritizes an exploited vulnerability. Existing DR display, safe boots auto-equip, weak-target ammo conservation, reader, targeting, dual-wield and PRC familiar FIX5 remain unchanged. Reader latency is also reworked: the first short phrase starts through edge-playback while the entire remaining book is synthesized in parallel to MP3; after the first phrase it switches to the prefetched MP3, removing the old network/TTS pause between every text block. STOP kills both playback and background prefetch."
 }
