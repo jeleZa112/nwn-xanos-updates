@@ -3,6 +3,6 @@
   "version": "0.8.6.19-reader-fast-start-hard-stop",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "4b2a214b0cde5e50b18b5e3dbaba45bc0a1fd618aa038554cdba4abef0372b2a",
+  "sha256": "ec33e4e51b6defa8b8cd7ce33fb5dc0edf410a47beb9d7d19de4eddf403fc8db",
   "notes": "Reader-only fix from live 0.8.6.18 test. Slow start was structural: edge-playback first synthesized the entire long book, and every read invoked it through uv tool run; STOP killed only the uv parent while the spawned edge-playback/edge-tts child could keep speaking. 0.8.6.19 creates a persistent private edge-tts 7.3.1 venv once while the game is launching, invokes edge-playback directly, splits long text into ~520-character speech chunks so the first chunk starts quickly, queues later chunks, and polls playback without blocking the log watcher. STOP clears the queue and uses taskkill /T /F on the active playback process tree, plus a private-venv safety sweep. Offline fallback is asynchronous and cancellable too. 0.8.6.18 stale-log suppression, tiny > / X panel, exact opened-book targeting, four-description lore probe and BOOKDBG diagnostics remain. No companion AI/combat/utility/dual-wield/familiar/core changes."
 }
