@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.25-reader-pipeline",
+  "version": "0.8.6.26-reader-ramp",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "7c5ea5ff46bbd8811f1893034ffd3f6a11a8c36801e44af2e3ee865bfd6459af",
-  "notes": "Reader/TTS latency fix. Replaces the old first-phrase + whole-book-rest prefetch with a true double-buffered pipeline: text is split at punctuation into roughly 260-420 character speech chunks; while one chunk plays, only the next chunk is synthesized, and when playback switches the following chunk is immediately prefetched. This targets the reported 10-15 second silence between reader fragments. 0.8.6.24 somatic-hands, the confirmed 0.8.6.23 summon-duration fix, familiar FIX5/progression code, PRC_MULTISUMMON, and protected combat core 0.7.10.7 are unchanged."
+  "sha256": "645a961e1d345e181a9b87678ae0130c4a7c7ab54e9d639638091f77ef21b444",
+  "notes": "Reader startup/continuity refinement after 0.8.6.25. TTS chunks now ramp in size: about 55-100 chars for the first audible phrase, then about 110-190, 180-300, and finally 260-420 chars. This keeps the first sound fast while letting the double-buffered prefetch gain enough lead to avoid long gaps. Combat core 0.7.10.7, somatic-hands fix, confirmed summon-duration fix, familiar code/FIX5 and PRC_MULTISUMMON are unchanged."
 }
