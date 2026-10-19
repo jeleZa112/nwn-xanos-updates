@@ -1140,6 +1140,18 @@ object XAI_CoordinatedTarget08628(object oCurrent, object oMaster, int nTick)
         return oCaster;
     }
 
+    // A clearly dangerous creature actively pressuring the master can also break
+    // a low-priority lock, but not when the current target is already almost dead.
+    if (XAI_TargetValid08628(oMasterAttacker, oMaster) &&
+        GetDistanceBetween(oMaster, oMasterAttacker) <= 7.0 &&
+        XAI_TargetHighThreat08628(oMasterAttacker) &&
+        (!GetIsObjectValid(oSticky) || XAI_HPPercent(oSticky) > 20) &&
+        (!GetIsObjectValid(oSticky) || !XAI_TargetHighThreat08628(oSticky)))
+    {
+        XAI_SetStickyTarget08628(oMasterAttacker, nTick);
+        return oMasterAttacker;
+    }
+
     if (GetIsObjectValid(oSticky))
     {
         // Finish a nearly dead target instead of target-flapping.
@@ -1338,8 +1350,23 @@ void main()
         object oCoordinated08628 = XAI_CoordinatedTarget08628(oTarget, oMaster08628, nTick);
         if (GetIsObjectValid(oCoordinated08628))
         {
+            object oOldAttack08628 = GetAttackTarget(OBJECT_SELF);
             oTarget = oCoordinated08628;
             bCombatState = TRUE;
+
+            // If the engine is already doing a plain attack against a different
+            // target, hand that attack over immediately. Never interrupt casting,
+            // healing or item use for this coordination rule.
+            if (GetCurrentAction(OBJECT_SELF) == ACTION_ATTACKOBJECT &&
+                GetIsObjectValid(oOldAttack08628) &&
+                oOldAttack08628 != oCoordinated08628)
+            {
+                ClearAllActions();
+                ActionAttack(oCoordinated08628);
+                XAI_LockAction(1);
+                XAI_SetLastAction("AUTO_ACQUIRE_TARGET");
+                return;
+            }
         }
     }
 
