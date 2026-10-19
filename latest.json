@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.14-book-reader-tts",
+  "version": "0.8.6.15-exact-book-neural-tts",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "d76a2a9ea39054d33dcf69427860b505e8f6930314aaf9ea62d6b42b9169cc7c",
-  "notes": "Accessibility/quality-of-life feature only. Adds a separate draggable in-game 'Читалка' NUI with ЧИТАТЬ/СТОП. It reads BASE_ITEM_BOOK text using NWScript GetDescription; when the examine GUI exposes the item it remembers that book, otherwise one readable book is chosen automatically or a compact book list is shown. Text is chunked to tagged log messages and spoken by a separate local PowerShell watcher using Windows System.Speech; it prefers an installed Russian voice and works offline. No combat, target, self-tick, stealth, utility, dual-wield, familiar or protected combat-core logic is changed."
+  "sha256": "e83bef5c40e8f12fb8451d56f479825ccf08e463ee92cf6fca2ce08d92eb75be",
+  "notes": "Reader correction only. 0.8.6.14 incorrectly used GetDescription(..., GetIdentified(book)), which can return the generic base-item/unidentified text for campaign lore books. The reader now always uses identified book text and chooses the richer current/original identified description, so the full lore text shown inside the book panel is read. Any GUI event that exposes an inventory book records that exact object, so opening one book among many makes it the read target; the list remains only as fallback. Reader UI shrunk to a compact draggable Чт. window with ▶ and ■ buttons/tooltips. Offline System.Speech is replaced by Microsoft Edge neural online TTS (ru-RU-DmitryNeural) through pinned edge-tts 7.2.8; a private signed uv 0.13.1 runtime is downloaded into EPC_RU_PRC/reader_runtime on first use, with offline speech retained only as failure fallback. No companion AI/combat/utility/dual-wield/familiar/core changes."
 }
