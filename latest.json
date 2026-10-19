@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.27-prc-switch-source",
+  "version": "0.8.6.28-companion-discipline",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "0a29b27e14b799c8453f3b5122a77d3b270a24dde718cf76ad65e5c546324db5",
-  "notes": "Fixes the root source of recurring PRC free-hand and summon-duration settings. Before launching NWN, the permanent updater now backs up override/personal_switch.2da and forces PRC_PNP_SOMATIC_COMPOMENTS=0 plus PRC_SUMMON_ROUND_PER_LEVEL=0 in that source file. PRC_PNP_SOMATIC_ITEMS is intentionally left unchanged. Existing runtime guards remain. Reader 0.8.6.26 is unchanged and live-confirmed; combat core 0.7.10.7, familiar FIX5/progression code and PRC_MULTISUMMON are unchanged."
+  "sha256": "6a99593ad3ce22f4d19361dfbd8a2f2ae38252f891a48b871e956a431aa0fd1a",
+  "notes": "Universal companion behavior refinement after auditing existing work. Existing weak-target economy, close-melee/ranged switching, crowd shield/offhand logic, autoheal, Turn Undead/Parry, party target acquisition, combat idle watchdog and self-tick watchdog are preserved. New: AUTO target stickiness with active-caster/self-defense/master-target overrides; chase leash and explicit regroup to master; threat-aware healing thresholds under local pressure; post-combat removal of AI crowd shield plus regroup; and a repeated-empty-queue fallback that forces one plain engine attack only after the protected planner fails several consecutive times. Manual FOLLOW/WEAPON modes are untouched. Reader 0.8.6.26 remains live-confirmed. PRC source switch fix 0.8.6.27, summon-duration fix, familiar FIX5/progression code, PRC_MULTISUMMON and protected combat math 0.7.10.7 are unchanged."
 }
