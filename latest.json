@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.23-summon-duration",
+  "version": "0.8.6.24-somatic-hands",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "0381fae73d2e2cb11982a346fb2b4f17b0a817b0adde0fc3bd1394c09b5b14ea",
-  "notes": "PRC summon-duration correction. User logs show PRC_SUMMON_ROUND_PER_LEVEL=1 together with PRC_MULTISUMMON=1. That switch intentionally changes summons from their normal listed duration (including Summon Creature's 24 hours) to caster-level rounds, explaining ~24-30 seconds at CL 4-5. Xanos init/attach now forces only PRC_SUMMON_ROUND_PER_LEVEL=0 while leaving PRC_MULTISUMMON unchanged, so each summon spell uses its own normal duration again. Existing 0.8.6.22 UI, vulnerability-aware ammo, reader prefetch, DR/boots, combat core 0.7.10.7 and PRC familiar FIX5 remain unchanged."
+  "sha256": "543842e72d359487cefbbb0659bd3834a9b7ceeb93c443416053a1270d914484",
+  "notes": "PRC somatic free-hand compatibility fix for Bain Kai dual-wield casting. xai_init and the 2-second attach scanner now force PRC_PNP_SOMATIC_COMPOMENTS=0, preventing PRC from rejecting somatic spells with 'You do not have any free hands.' while both short swords are equipped. The proven 0.8.6.23 summon-duration correction remains active, PRC_MULTISUMMON is untouched, familiar FIX5/progression code is unchanged, and protected combat core remains 0.7.10.7."
 }
