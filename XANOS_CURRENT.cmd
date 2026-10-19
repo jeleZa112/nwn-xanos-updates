@@ -1664,7 +1664,7 @@ if($core){
 
 # Atomic-ish install: only copy after every requested compile succeeded.
 foreach($n in $built.Keys){$dst=Join-Path $DevDir $n;if(Test-Path $dst){Copy-Item $dst (Join-Path $Backup ($n+'.bak')) -Force};Copy-Item $built[$n] $dst -Force}
-Set-Content -LiteralPath (Join-Path $SupportDir 'XANOS_VERSION.txt') -Value 'V0.7.11.15.32 EQUIPMENT LIVE SCAN ALL-IN-ONE + SUMMON DURATION + V0.7.10.7 COMBAT CORE RU' -Encoding UTF8
+Set-Content -LiteralPath (Join-Path $SupportDir 'XANOS_VERSION.txt') -Value 'UNIVERSAL AI 0.8.6.28 COMPANION DISCIPLINE + READER 0.8.6.26 + PRC SWITCH SOURCE 0.8.6.27 + COMBAT CORE 0.7.10.7' -Encoding UTF8
 Write-Host '[OK] Combat 0.7.10.7 preserved; Universal AI 0.8.6.28 companion discipline installed; PRC familiar FIX5 retained.' -ForegroundColor Green
 
 # Neural book reader TTS watcher.
