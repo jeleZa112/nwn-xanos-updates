@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.15-exact-book-neural-tts",
+  "version": "0.8.6.16-reader-compact-ui-fix",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "47d2cb9ef2d8b437fee5316231dcc9be3ecc004c843a03cd5adfd5b26607e1e8",
-  "notes": "Reader correction only. 0.8.6.14 incorrectly used GetDescription(..., GetIdentified(book)), which can return the generic base-item/unidentified text for campaign lore books. The reader now always uses identified book text and chooses the richer current/original identified description, so the full lore text shown inside the book panel is read. Any GUI event that exposes an inventory book records that exact object, so opening one book among many makes it the read target; the list remains only as fallback. Reader UI shrunk to a compact draggable Чт. window with ▶ and ■ buttons/tooltips. Offline System.Speech is replaced by Microsoft Edge neural online TTS (ru-RU-DmitryNeural) through pinned edge-tts 7.2.8; a private signed uv 0.13.1 runtime is downloaded into EPC_RU_PRC/reader_runtime on first use, with offline speech retained only as failure fallback. No companion AI/combat/utility/dual-wield/familiar/core changes."
+  "sha256": "3aeeb8706a46d0755ae6f33655c7fc05de76abfeb93e8c1842788b80ef2d84f1",
+  "notes": "UI-only correction for the live 0.8.6.15 screenshot. The reader was shrunk too far, so NWN rendered horizontal/vertical scroll controls instead of the play/stop buttons. A fresh xai_reader_button_08616 window/geometry destroys the old 08615 reader, uses a 150x78 fixed compact frame, and keeps visible 56x22 play and 42x22 stop buttons. Exact opened-book targeting and neural Edge TTS from 0.8.6.15 are unchanged. No companion AI/combat/utility/dual-wield/familiar/core changes."
 }
