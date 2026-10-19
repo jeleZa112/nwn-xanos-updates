@@ -3,6 +3,6 @@
   "version": "0.8.6.20-reader-path-fix",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "1e86a8d74e3d7f23f84a6641b04850d072346b2ef5a9f2c095be350b549fab59",
+  "sha256": "d68b1df0e57023554f0364065763809b332a922a1490146ce69d045e5941555f",
   "notes": "Reader-only fix from the user's 0.8.6.19 log. Text extraction is now confirmed correct for Q3_ANCIENT_BOOK: the short identified descriptions are 119 chars while the internal lore body is 1036 chars, and the reader selects/sends the 1036-char body. Audio failed because direct edge-playback.exe checks for a sibling edge-tts executable via PATH; the private venv was prepared correctly but its Scripts directory was not inherited in PATH, producing 'edge-tts is not installed'. 0.8.6.20 verifies both edge-playback.exe and edge-tts.exe exist, prepends the private Scripts directory to the child PATH and sets VIRTUAL_ENV before playback. Chunked fast-start, hard STOP, stale-log suppression, tiny > / X panel and BOOKDBG remain unchanged. No companion AI/combat/utility/dual-wield/familiar/core changes."
 }
