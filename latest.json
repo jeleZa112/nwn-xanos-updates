@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.13-smart-stealth-utility-safety",
+  "version": "0.8.6.14-book-reader-tts",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "d691e66a4b0dbc6553a28a1a7ab017e761689044797f0a240398465b3114a54a",
-  "notes": "Live Dorna utility fix. STEALTH:AUTO is no longer a permanent slow travel mode: it enters stealth only when a living visible enemy is nearby and exits automatically when no nearby threat exists, so Dorna runs normally to locks/traps. Utility danger is now party-aware (Dorna/master/faction targets and nearby attackers/enemies), not only Dorna/master GetAttackTarget. Trap disarm and lock opening are strictly out-of-combat: combat cancels an already queued DISARM_TRAP/OPEN_LOCK action and utility checks danger before cooldown. Autonomous combat/self-tick 0.8.6.11, target switching, dual-wield behavior/diagnostics, PRC familiar FIX5, Plada progression and protected combat core 0.7.10.7 are otherwise unchanged."
+  "sha256": "d76a2a9ea39054d33dcf69427860b505e8f6930314aaf9ea62d6b42b9169cc7c",
+  "notes": "Accessibility/quality-of-life feature only. Adds a separate draggable in-game 'Читалка' NUI with ЧИТАТЬ/СТОП. It reads BASE_ITEM_BOOK text using NWScript GetDescription; when the examine GUI exposes the item it remembers that book, otherwise one readable book is chosen automatically or a compact book list is shown. Text is chunked to tagged log messages and spoken by a separate local PowerShell watcher using Windows System.Speech; it prefers an installed Russian voice and works offline. No combat, target, self-tick, stealth, utility, dual-wield, familiar or protected combat-core logic is changed."
 }
