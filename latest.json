@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.24-somatic-hands",
+  "version": "0.8.6.25-reader-pipeline",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "543842e72d359487cefbbb0659bd3834a9b7ceeb93c443416053a1270d914484",
-  "notes": "PRC somatic free-hand compatibility fix for Bain Kai dual-wield casting. xai_init and the 2-second attach scanner now force PRC_PNP_SOMATIC_COMPOMENTS=0, preventing PRC from rejecting somatic spells with 'You do not have any free hands.' while both short swords are equipped. The proven 0.8.6.23 summon-duration correction remains active, PRC_MULTISUMMON is untouched, familiar FIX5/progression code is unchanged, and protected combat core remains 0.7.10.7."
+  "sha256": "7c5ea5ff46bbd8811f1893034ffd3f6a11a8c36801e44af2e3ee865bfd6459af",
+  "notes": "Reader/TTS latency fix. Replaces the old first-phrase + whole-book-rest prefetch with a true double-buffered pipeline: text is split at punctuation into roughly 260-420 character speech chunks; while one chunk plays, only the next chunk is synthesized, and when playback switches the following chunk is immediately prefetched. This targets the reported 10-15 second silence between reader fragments. 0.8.6.24 somatic-hands, the confirmed 0.8.6.23 summon-duration fix, familiar FIX5/progression code, PRC_MULTISUMMON, and protected combat core 0.7.10.7 are unchanged."
 }
