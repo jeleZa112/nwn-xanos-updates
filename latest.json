@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.44-gui-event-bind-cp1251",
+  "version": "0.8.6.45-panel-cleanup-quiet-gui",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
   "sha256": "812588fdad7c3c7112c995121bf93e3588b5fef1f362a86363c204b79dad3fb6",
-  "notes": "Runtime panel fix based on direct inspection of the repaired Interlude save: Module.ifo has Mod_OnPlrGuiEvt empty, so installing prc_onplayergui.ncs alone cannot receive portrait clicks. 0.8.6.44 makes xai_mod_boot explicitly bind EVENT_SCRIPT_MODULE_ON_PLAYER_GUIEVENT to prc_onplayergui in every module, preserving any unrelated previous GUI handler through a local chained callback. Also adds xai_attach_all, xai_mod_boot and xai_enter to the existing CP1251 source conversion list, fixing the yellow [XANOS] PRC mojibake. Combat core 0.7.10.7, reader, Plada/FIX5 and Dorna class/profile are unchanged."
+  "notes": "Panel/layout and GUI cleanup. 0.8.6.45 moves the equipped weapon text to its own full-width row below the 'Оружие:' label, increases the default panel height, and migrates the geometry key so old 435px geometry does not clip the new row. It also fixes the xai_mod_boot notice flag mismatch that caused the 0.8.6.44 activation line to spam on every GUI event. Finally, evn_modgui no longer calls epc_modgui unconditionally; EPC is chained only when EPC was actually the module's original GUI handler, avoiding Interlude sqlite errors about the missing nui_forms table. Combat core 0.7.10.7, reader, Plada/FIX5 and Dorna class/profile are unchanged."
 }
