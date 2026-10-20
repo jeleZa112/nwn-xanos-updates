@@ -3,6 +3,6 @@
   "version": "0.8.6.45-panel-cleanup-quiet-gui",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "812588fdad7c3c7112c995121bf93e3588b5fef1f362a86363c204b79dad3fb6",
+  "sha256": "571e43396c6b607c792b09f7234a27f43374aca87f24cf11281afe014d4a1944",
   "notes": "Panel/layout and GUI cleanup. 0.8.6.45 moves the equipped weapon text to its own full-width row below the 'Оружие:' label, increases the default panel height, and migrates the geometry key so old 435px geometry does not clip the new row. It also fixes the xai_mod_boot notice flag mismatch that caused the 0.8.6.44 activation line to spam on every GUI event. Finally, evn_modgui no longer calls epc_modgui unconditionally; EPC is chained only when EPC was actually the module's original GUI handler, avoiding Interlude sqlite errors about the missing nui_forms table. Combat core 0.7.10.7, reader, Plada/FIX5 and Dorna class/profile are unchanged."
 }
