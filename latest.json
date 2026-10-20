@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.37-reader-ordered-queue",
+  "version": "0.8.6.38-module-rebootstrap",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "885a195536d97462f6ee69332e25877a00d4017f30b67048a72dc0e7a3fdd27d",
-  "notes": "Reader queue-order fix based on the user's 0.8.6.36 runtime log. One book request (1748 chars) was received, but the 9s/length-based watchdogs falsely killed valid slow synthesis/playback and replayed already-started chunks; edge-playback also produced a real NoAudioReceived/MCI error. 0.8.6.37 keeps chunks in strict order, reduces steady chunks to about 220 chars, gives prefetch up to 25s, retries only the not-yet-played prefetch chunk up to twice, and never folds an already-played chunk back into the queue. The local MP3 helper no longer relies on MediaEnded events: it plays for natural media duration (or a file-size-derived fallback) and exits deterministically. Direct Edge playback has a generous watchdog and on real failure falls back once to ordered offline speech for current+future text. Queue-finished logging is edge-triggered to stop multi-megabyte log spam. Confirmed working panel/NUI, strict-trash/economy, Dorna logic, combat core 0.7.10.7 and familiar FIX5 are unchanged."
+  "sha256": "fef4aeb05fa5e2aab3bf22240f5680196a5e6d58b3480229bbe0ade807650477",
+  "notes": "SoU module-transition regression fix. XAI now registers a permanent PRC EVENT_ONCLIENTENTER hook so every StartNewModule reboots module-local XAI state: summon-duration/somatic switches, companion attach loop, party-cap/familiar guard, NUI panel, reader boot and Dorna profile. PRC PnP familiar Plada is kept behind the real non-follower story henchman in the actual henchman associate order, preventing stock SoU chapter-transition scripts from serializing Plada as the one campaign Henchman instead of Dorna/Xanos/Deekin. Existing reader 0.8.6.37, panel, combat core 0.7.10.7 and familiar FIX5 remain unchanged."
 }
