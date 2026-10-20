@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.36-reader-active-watchdog",
+  "version": "0.8.6.37-reader-ordered-queue",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "4bfb8fc5a2eeb99c1aa50519ecf28bea13053674015c68b0d3240bd8344f25b7",
-  "notes": "Reader-only reliability update over the confirmed working 0.8.6.35 panel. Adds an active-playback watchdog because Pump-ReaderPlayback previously returned immediately while playProc was still alive, so a hung edge-playback or MP3 player could bypass the 0.8.6.34 prefetch watchdog and stop after a phrase such as 'объединившись'. Current playback now has a text-length deadline; on a stall it kills that process, preserves queued future text, and restarts the current block in smaller chunks. The generated MP3 helper is versioned and uses the actual media duration plus a short grace period instead of a 30-minute wait. NUI/panel, strict-trash/economy, combat core 0.7.10.7, Dorna logic and familiar FIX5 are unchanged."
+  "sha256": "885a195536d97462f6ee69332e25877a00d4017f30b67048a72dc0e7a3fdd27d",
+  "notes": "Reader queue-order fix based on the user's 0.8.6.36 runtime log. One book request (1748 chars) was received, but the 9s/length-based watchdogs falsely killed valid slow synthesis/playback and replayed already-started chunks; edge-playback also produced a real NoAudioReceived/MCI error. 0.8.6.37 keeps chunks in strict order, reduces steady chunks to about 220 chars, gives prefetch up to 25s, retries only the not-yet-played prefetch chunk up to twice, and never folds an already-played chunk back into the queue. The local MP3 helper no longer relies on MediaEnded events: it plays for natural media duration (or a file-size-derived fallback) and exits deterministically. Direct Edge playback has a generous watchdog and on real failure falls back once to ordered offline speech for current+future text. Queue-finished logging is edge-triggered to stop multi-megabyte log spam. Confirmed working panel/NUI, strict-trash/economy, Dorna logic, combat core 0.7.10.7 and familiar FIX5 are unchanged."
 }
