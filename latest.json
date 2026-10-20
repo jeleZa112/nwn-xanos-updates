@@ -3,6 +3,6 @@
   "version": "0.8.6.44-gui-event-bind-cp1251",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "478dd9207ba496e2533edf5e05f5f4134530279302798262f1ff43d2aee92fee",
+  "sha256": "812588fdad7c3c7112c995121bf93e3588b5fef1f362a86363c204b79dad3fb6",
   "notes": "Runtime panel fix based on direct inspection of the repaired Interlude save: Module.ifo has Mod_OnPlrGuiEvt empty, so installing prc_onplayergui.ncs alone cannot receive portrait clicks. 0.8.6.44 makes xai_mod_boot explicitly bind EVENT_SCRIPT_MODULE_ON_PLAYER_GUIEVENT to prc_onplayergui in every module, preserving any unrelated previous GUI handler through a local chained callback. Also adds xai_attach_all, xai_mod_boot and xai_enter to the existing CP1251 source conversion list, fixing the yellow [XANOS] PRC mojibake. Combat core 0.7.10.7, reader, Plada/FIX5 and Dorna class/profile are unchanged."
 }
