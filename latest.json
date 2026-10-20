@@ -3,6 +3,6 @@
   "version": "0.8.6.43-prc-gui-bridge",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "b9b0c3e52884e6464d33fc84b38caf844583eee145bc3b332587102b08912308",
+  "sha256": "478dd9207ba496e2533edf5e05f5f4134530279302798262f1ff43d2aee92fee",
   "notes": "Cross-module NUI opener fix. PRC-patched SoU modules use prc_onplayergui as the module OnPlayerGUIEvent script, so the old evn_modgui portrait-click handler could work in one module yet be bypassed in Interlude. 0.8.6.43 overrides prc_onplayergui with an include-free bridge that forwards all GUI events into the existing evn_modgui/EPC path and preserves PRC's stock DurationNUI behavior on effect-icon clicks. This fixes party-portrait opening across PRC modules without changing combat core 0.7.10.7, reader, Plada/FIX5, Dorna AI/profile, or the 0.8.6.42 OnEnter bootstrap."
 }
