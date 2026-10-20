@@ -4,23 +4,46 @@ chcp 65001 >nul 2>nul
 
 title XANOS - UPDATE AND RUN
 
-set "XANOS_URL=https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd"
+set "XANOS_RAW=https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd"
+set "XANOS_API=https://api.github.com/repos/jeleZa112/nwn-xanos-updates/contents/XANOS_CURRENT.cmd?ref=main"
 set "XANOS_DIR=%LOCALAPPDATA%\NWN_XANOS_UPDATER"
 set "XANOS_NEW=%XANOS_DIR%\XANOS_CURRENT.new.cmd"
 set "XANOS_CACHE=%XANOS_DIR%\XANOS_LAST_GOOD.cmd"
 
 if not exist "%XANOS_DIR%" mkdir "%XANOS_DIR%" >nul 2>nul
+del /q "%XANOS_NEW%" >nul 2>nul
 
 echo ============================================================
 echo   XANOS - UPDATE AND RUN
 echo ============================================================
 echo [1/3] Checking current build on GitHub...
+echo       raw download attempt...
 
 set "XANOS_DL=%XANOS_NEW%"
-powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $u='%XANOS_URL%?ts='+[DateTimeOffset]::UtcNow.ToUnixTimeSeconds(); Invoke-WebRequest -UseBasicParsing -Uri $u -OutFile $env:XANOS_DL -Headers @{'Cache-Control'='no-cache'} -TimeoutSec 45"
-if errorlevel 1 goto DOWNLOAD_FAILED
-if not exist "%XANOS_NEW%" goto DOWNLOAD_FAILED
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
+  "$ErrorActionPreference='Stop';" ^
+  "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;" ^
+  "$u='%XANOS_RAW%?ts='+[DateTimeOffset]::UtcNow.ToUnixTimeSeconds();" ^
+  "for($i=1;$i -le 2;$i++){try{Invoke-WebRequest -UseBasicParsing -Uri $u -OutFile $env:XANOS_DL -Headers @{'Cache-Control'='no-cache'} -TimeoutSec 12; if((Test-Path -LiteralPath $env:XANOS_DL) -and (Get-Item -LiteralPath $env:XANOS_DL).Length -gt 1024){exit 0}}catch{if($i -eq 2){break}}; Start-Sleep -Milliseconds 700}; exit 1"
 
+if errorlevel 1 goto API_FALLBACK
+goto VALIDATE_DOWNLOAD
+
+:API_FALLBACK
+echo       raw GitHub timed out; trying GitHub API fallback...
+del /q "%XANOS_NEW%" >nul 2>nul
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
+  "$ErrorActionPreference='Stop';" ^
+  "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;" ^
+  "$h=@{'User-Agent'='Xanos-NWN-Updater';'Accept'='application/vnd.github+json';'Cache-Control'='no-cache'};" ^
+  "$j=Invoke-RestMethod -UseBasicParsing -Uri '%XANOS_API%' -Headers $h -TimeoutSec 15;" ^
+  "if(!$j.content){throw 'GitHub API returned no file content'};" ^
+  "$b=[Convert]::FromBase64String(([string]$j.content -replace '\s',''));" ^
+  "[IO.File]::WriteAllBytes($env:XANOS_DL,$b)"
+if errorlevel 1 goto DOWNLOAD_FAILED
+
+:VALIDATE_DOWNLOAD
+if not exist "%XANOS_NEW%" goto DOWNLOAD_FAILED
 for %%A in ("%XANOS_NEW%") do set "XANOS_SIZE=%%~zA"
 if not defined XANOS_SIZE goto DOWNLOAD_FAILED
 if %XANOS_SIZE% LSS 1024 goto DOWNLOAD_FAILED
@@ -36,7 +59,8 @@ exit /b 0
 
 :DOWNLOAD_FAILED
 echo.
-echo [XANOS] GitHub download failed. Trying last working local build...
+echo [XANOS] GitHub download failed on both raw and API paths.
+echo [XANOS] Starting last working local build...
 goto RUN_CACHE
 
 :BUILD_FAILED
@@ -47,6 +71,7 @@ goto RUN_CACHE
 
 :RUN_CACHE
 if not exist "%XANOS_CACHE%" goto NO_CACHE
+echo [XANOS] Starting cached build now...
 call "%XANOS_CACHE%"
 exit /b %ERRORLEVEL%
 
