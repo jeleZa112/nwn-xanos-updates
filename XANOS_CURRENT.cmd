@@ -9,7 +9,7 @@ exit /b %RC%
 $ErrorActionPreference='Stop'
 [Console]::OutputEncoding=[Text.Encoding]::UTF8
 $OutputEncoding=[Text.Encoding]::UTF8
-Write-Host 'UNIVERSAL COMPANION AI V0.8.6.30 DORNA BATTLE CLERIC' -ForegroundColor Cyan
+Write-Host 'UNIVERSAL COMPANION AI V0.8.6.31 HIDDEN BACKGROUND' -ForegroundColor Cyan
 Write-Host 'Combat core: V0.7.10.7 / NUI: canonical PRC/NWN panel / fresh window ID / live-runtime open' -ForegroundColor DarkCyan
 
 if(Get-Process -Name nwmain -ErrorAction SilentlyContinue){throw 'NWN is running. Close the game once, then run this ONE file again.'}
@@ -1772,8 +1772,8 @@ if($core){
 
 # Atomic-ish install: only copy after every requested compile succeeded.
 foreach($n in $built.Keys){$dst=Join-Path $DevDir $n;if(Test-Path $dst){Copy-Item $dst (Join-Path $Backup ($n+'.bak')) -Force};Copy-Item $built[$n] $dst -Force}
-Set-Content -LiteralPath (Join-Path $SupportDir 'XANOS_VERSION.txt') -Value 'UNIVERSAL AI 0.8.6.30 DORNA BATTLE CLERIC + SOMATIC 0.8.6.29 + COMPANION DISCIPLINE 0.8.6.28 + READER 0.8.6.26 + COMBAT CORE 0.7.10.7' -Encoding UTF8
-Write-Host '[OK] 0.8.6.30 Dorna Battle Cleric autolevel profile installed; somatic 0.8.6.29, reader 0.8.6.26, combat 0.7.10.7 and familiar FIX5 preserved.' -ForegroundColor Green
+Set-Content -LiteralPath (Join-Path $SupportDir 'XANOS_VERSION.txt') -Value 'UNIVERSAL AI 0.8.6.31 HIDDEN BACKGROUND + DORNA 0.8.6.30 + SOMATIC 0.8.6.29 + COMPANION DISCIPLINE 0.8.6.28 + READER 0.8.6.26 + COMBAT CORE 0.7.10.7' -Encoding UTF8
+Write-Host '[OK] 0.8.6.31 installed: reader, local AI and game watcher now run hidden in background; Dorna 0.8.6.30, combat 0.7.10.7 and familiar FIX5 preserved.' -ForegroundColor Green
 
 # Neural book reader TTS watcher.
 # Uses Microsoft Edge online TTS via edge-playback on Windows; System.Speech is fallback only.
@@ -1786,7 +1786,8 @@ try{
   }|ForEach-Object{try{Stop-Process -Id $_.ProcessId -Force -ErrorAction Stop}catch{}}
 }catch{}
 $env:XANOS_NWN_HOME=$NwnHome
-Start-Process powershell.exe -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File',('"'+$tts+'"'))|Out-Null
+# 0.8.6.31: long-lived helper consoles are intentionally hidden; diagnostics continue to file logs.
+Start-Process powershell.exe -WindowStyle Hidden -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File',('"'+$tts+'"'))|Out-Null
 Write-Host '[OK] Reader voice watcher 0.8.6.22 started (Edge neural TTS; auto log discovery).' -ForegroundColor Green
 
 # Restart only our local AI/panel processes, never the game.
@@ -1794,14 +1795,14 @@ try{Get-CimInstance Win32_Process|Where-Object{$_.Name -match '^(powershell|pwsh
 Start-Sleep -Milliseconds 500
 $ai=Join-Path $SupportDir 'START_XANOS_LOCAL_AI.ps1'
 if(!(Test-Path $ai)){throw 'START_XANOS_LOCAL_AI.ps1 is missing from the installed Xanos support folder.'}
-Start-Process powershell.exe -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File',('"'+$ai+'"'))|Out-Null
+Start-Process powershell.exe -WindowStyle Hidden -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File',('"'+$ai+'"'))|Out-Null
 Write-Host '[OK] LOCAL Qwen AI + external control panel started.' -ForegroundColor Green
 
 # Start the EPC/PRC-safe game watcher. Generate it from this one-click file so the user never has to find another launcher.
 $watcher=Join-Path $SupportDir 'XANOS_ONECLICK_GAME_WATCHER.ps1'
 [IO.File]::WriteAllBytes($watcher,[Convert]::FromBase64String('JEVycm9yQWN0aW9uUHJlZmVyZW5jZT0nU3RvcCcKJE53bkhvbWU9JGVudjpYQU5PU19OV05fSE9NRQokU3VwcG9ydERpcj1Kb2luLVBhdGggJE53bkhvbWUgJ0VQQ19SVV9QUkMnCiREZXZEaXI9Sm9pbi1QYXRoICROd25Ib21lICdkZXZlbG9wbWVudCcKJEJvb3RzdHJhcD1Kb2luLVBhdGggJFN1cHBvcnREaXIgJ2RlZmF1bHRfZXBjX2Jvb3RzdHJhcC5uY3MnCiREZXZEZWZhdWx0PUpvaW4tUGF0aCAkRGV2RGlyICdkZWZhdWx0Lm5jcycKJFNhdmVkRGVmYXVsdD1Kb2luLVBhdGggJFN1cHBvcnREaXIgJ3NhdmVkX3VzZXJfZGVmYXVsdC5uY3MnCiRMb2dQYXRoPUpvaW4tUGF0aCAkTnduSG9tZSAnbG9nc1xud2NsaWVudExvZzEudHh0JwpOZXctSXRlbSAtSXRlbVR5cGUgRGlyZWN0b3J5IC1Gb3JjZSAtUGF0aCAkRGV2RGlyfE91dC1OdWxsCmZ1bmN0aW9uIEgoW3N0cmluZ10kcCl7aWYoIShUZXN0LVBhdGggLUxpdGVyYWxQYXRoICRwKSl7cmV0dXJuICcnfTtyZXR1cm4gKEdldC1GaWxlSGFzaCAtQWxnb3JpdGhtIFNIQTI1NiAtTGl0ZXJhbFBhdGggJHApLkhhc2h9CiRiaD1IICRCb290c3RyYXAKZnVuY3Rpb24gT257aWYoIShUZXN0LVBhdGggLUxpdGVyYWxQYXRoICRCb290c3RyYXApKXtyZXR1cm59O2lmKFRlc3QtUGF0aCAtTGl0ZXJhbFBhdGggJERldkRlZmF1bHQpeyRoPUggJERldkRlZmF1bHQ7aWYoJGggLW5lICRiaCAtYW5kICEoVGVzdC1QYXRoIC1MaXRlcmFsUGF0aCAkU2F2ZWREZWZhdWx0KSl7Q29weS1JdGVtICREZXZEZWZhdWx0ICRTYXZlZERlZmF1bHQgLUZvcmNlfX07Q29weS1JdGVtICRCb290c3RyYXAgJERldkRlZmF1bHQgLUZvcmNlO1dyaXRlLUhvc3QgJ1tFUENdIGJvb3RzdHJhcCBPTicgLUZvcmVncm91bmRDb2xvciBZZWxsb3d9CmZ1bmN0aW9uIE9mZntpZigoVGVzdC1QYXRoICREZXZEZWZhdWx0KS1hbmQoKEggJERldkRlZmF1bHQpLWVxICRiaCkpe1JlbW92ZS1JdGVtICREZXZEZWZhdWx0IC1Gb3JjZX07aWYoVGVzdC1QYXRoICRTYXZlZERlZmF1bHQpe0NvcHktSXRlbSAkU2F2ZWREZWZhdWx0ICREZXZEZWZhdWx0IC1Gb3JjZTtSZW1vdmUtSXRlbSAkU2F2ZWREZWZhdWx0IC1Gb3JjZX07V3JpdGUtSG9zdCAnW0VQQ10gYm9vdHN0cmFwIE9GRiAvIFBSQyByZXN0b3JlZCcgLUZvcmVncm91bmRDb2xvciBHcmVlbn0KJGN1cnNvcj0wTDtpZihUZXN0LVBhdGggJExvZ1BhdGgpeyRjdXJzb3I9KEdldC1JdGVtICRMb2dQYXRoKS5MZW5ndGh9Ck9uCnRyeXtTdGFydC1Qcm9jZXNzICdzdGVhbTovL3J1bmdhbWVpZC83MDQ0NTAnfWNhdGNoe30KJGRlYWRsaW5lPShHZXQtRGF0ZSkuQWRkTWludXRlcyg1KTskcD0kbnVsbApkb3skcD1HZXQtUHJvY2VzcyBud21haW4gLUVycm9yQWN0aW9uIFNpbGVudGx5Q29udGludWU7aWYoJHApe2JyZWFrfTtTdGFydC1TbGVlcCAtTWlsbGlzZWNvbmRzIDMwMH13aGlsZSgoR2V0LURhdGUpLWx0JGRlYWRsaW5lKQppZighJHApe09mZjt0aHJvdyAnbndtYWluIGRpZCBub3Qgc3RhcnQuJ30KJGVuYz1bVGV4dC5FbmNvZGluZ106OkdldEVuY29kaW5nKDEyNTEpCnRyeXt3aGlsZShHZXQtUHJvY2VzcyBud21haW4gLUVycm9yQWN0aW9uIFNpbGVudGx5Q29udGludWUpe2lmKFRlc3QtUGF0aCAkTG9nUGF0aCl7JGxlbj0oR2V0LUl0ZW0gJExvZ1BhdGgpLkxlbmd0aDtpZigkbGVuLWx0JGN1cnNvcil7JGN1cnNvcj0wfTtpZigkbGVuLWd0JGN1cnNvcil7JGZzPVtJTy5GaWxlXTo6T3BlbigkTG9nUGF0aCwnT3BlbicsJ1JlYWQnLCdSZWFkV3JpdGUnKTt0cnl7W3ZvaWRdJGZzLlNlZWsoJGN1cnNvciwnQmVnaW4nKTskYnVmPU5ldy1PYmplY3QgYnl0ZVtdICgkbGVuLSRjdXJzb3IpOyRuPSRmcy5SZWFkKCRidWYsMCwkYnVmLkxlbmd0aCl9ZmluYWxseXskZnMuRGlzcG9zZSgpfTskY3Vyc29yPSRsZW47aWYoJG4tZ3QwKXskdD0kZW5jLkdldFN0cmluZygkYnVmLDAsJG4pO2ZvcmVhY2goJGxpbmUgaW4oJHQtc3BsaXQiYHI/YG4iKSl7aWYoJGxpbmUtbWF0Y2gnTG9hZGluZyBNb2R1bGU6Jyl7T259O2lmKCRsaW5lLW1hdGNoJ01vZHVsZSBsYXN0IGFjY2VzcyBmaW5nZXJwcmludDonKXtTdGFydC1TbGVlcCAtTWlsbGlzZWNvbmRzIDEyMDA7T2ZmfX19fX07U3RhcnQtU2xlZXAgLU1pbGxpc2Vjb25kcyAxNTB9fWZpbmFsbHl7T2ZmfQo='))
 $env:XANOS_NWN_HOME=$NwnHome
-Start-Process powershell.exe -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File',('"'+$watcher+'"'))|Out-Null
+Start-Process powershell.exe -WindowStyle Hidden -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File',('"'+$watcher+'"'))|Out-Null
 Write-Host '[OK] EPC/PRC watcher started and Steam NWN launch requested.' -ForegroundColor Green
 Write-Host ''
 Write-Host 'UNIVERSAL 0.8.0 INSTALLED. Multiple henchmen run independent AI; portrait click switches the panel.' -ForegroundColor Cyan
