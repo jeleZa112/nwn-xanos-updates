@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.40-prc-onenter-bridge",
+  "version": "0.8.6.41-prc-onenter-compile-fix",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
   "sha256": "554cf01b49a01a02b4e70f1d0b437ffa9ecf76647ade9b763dd2681e699a03ec",
-  "notes": "Guaranteed cross-module bridge based on runtime evidence from the user's Interlude screenshot: stock PRC prc_onenter definitely runs there and unconditionally executes prc_psi_ppoints after its CD check. Instead of replacing the large/sensitive prc_onenter script, 0.8.6.40 overrides the tiny stock prc_psi_ppoints with its original ResetPowerPoints behavior plus ExecuteScript('xai_mod_boot', GetModule()). This guarantees XAI module bootstrap on every successful PRC OnEnter and also on PRC rest/level-up calls to prc_psi_ppoints. 0.8.6.39 familiar/GUI hooks remain as fallbacks. Plada ordering, reader 0.8.6.37, panel, Dorna logic, combat core 0.7.10.7 and familiar FIX5 remain preserved."
+  "notes": "Compile repair for 0.8.6.40. Removes the obsolete inc_eventhook include and AddEventScript(EVENT_ONCLIENTENTER) registration left in xai_init from the abandoned 0.8.6.38 approach. The working cross-module design is now the 0.8.6.40 stock PRC OnEnter bridge through prc_psi_ppoints -> xai_mod_boot, with 0.8.6.39 familiar/GUI hooks retained only as fallbacks. Reader 0.8.6.37, Plada order, panel, Dorna logic, combat core 0.7.10.7 and familiar FIX5 are unchanged."
 }
