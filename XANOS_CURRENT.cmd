@@ -9,7 +9,7 @@ exit /b %RC%
 $ErrorActionPreference='Stop'
 [Console]::OutputEncoding=[Text.Encoding]::UTF8
 $OutputEncoding=[Text.Encoding]::UTF8
-Write-Host 'UNIVERSAL COMPANION AI V0.8.6.28 COMPANION DISCIPLINE' -ForegroundColor Cyan
+Write-Host 'UNIVERSAL COMPANION AI V0.8.6.29 SOMATIC ITEMS FIX' -ForegroundColor Cyan
 Write-Host 'Combat core: V0.7.10.7 / NUI: canonical PRC/NWN panel / fresh window ID / live-runtime open' -ForegroundColor DarkCyan
 
 if(Get-Process -Name nwmain -ErrorAction SilentlyContinue){throw 'NWN is running. Close the game once, then run this ONE file again.'}
@@ -18,16 +18,16 @@ $NwnHome=Join-Path $env:USERPROFILE 'Documents\Neverwinter Nights'
 if(Test-Path -LiteralPath $stateFile){$s=(Get-Content -LiteralPath $stateFile -Raw).Trim();if($s){$NwnHome=$s}}
 $SupportDir=Join-Path $NwnHome 'EPC_RU_PRC'
 
-# 0.8.6.27: patch the PRC source settings themselves before NWN starts.
+# 0.8.6.29: patch the PRC source settings themselves before NWN starts.
 # PRC reloads personal_switch.2da on module/save loads, so values of 1 there can restore old behavior.
-# Keep PRC_PNP_SOMATIC_ITEMS untouched: item-use free-hand rules remain enabled.
+# Dual-wield Bain Kai must be able to cast both prepared spells and spell-items without a free hand.
 $PersonalSwitchPath=Join-Path $NwnHome 'override\personal_switch.2da'
 if(Test-Path -LiteralPath $PersonalSwitchPath){
  $switchEnc=[Text.Encoding]::GetEncoding(1251)
  $switchText=$switchEnc.GetString([IO.File]::ReadAllBytes($PersonalSwitchPath))
  $switchNew=$switchText
 
- foreach($switchName in @('PRC_PNP_SOMATIC_COMPOMENTS','PRC_SUMMON_ROUND_PER_LEVEL')){
+ foreach($switchName in @('PRC_PNP_SOMATIC_COMPOMENTS','PRC_PNP_SOMATIC_ITEMS','PRC_SUMMON_ROUND_PER_LEVEL')){
    $switchPattern='(?m)^([ \t]*\d+[ \t]+'+[regex]::Escape($switchName)+'[ \t]+int[ \t]+)([-+]?\d+)([ \t]*\r?)$'
    $switchNew=[regex]::Replace($switchNew,$switchPattern,{param($m) $m.Groups[1].Value+'0'+$m.Groups[3].Value})
  }
@@ -40,7 +40,7 @@ if(Test-Path -LiteralPath $PersonalSwitchPath){
    [IO.File]::WriteAllBytes($PersonalSwitchPath,$switchEnc.GetBytes($switchNew))
    Write-Host ('PRC personal_switch.2da fixed; backup: '+$cfgBackupFile) -ForegroundColor Green
  } else {
-   Write-Host 'PRC personal_switch.2da already has required somatic/summon values.' -ForegroundColor DarkGreen
+   Write-Host 'PRC personal_switch.2da already has required spell/item somatic and summon values.' -ForegroundColor DarkGreen
  }
 } else {
  Write-Host 'PRC personal_switch.2da not found in override; runtime guards remain active.' -ForegroundColor Yellow
@@ -1691,8 +1691,8 @@ if($core){
 
 # Atomic-ish install: only copy after every requested compile succeeded.
 foreach($n in $built.Keys){$dst=Join-Path $DevDir $n;if(Test-Path $dst){Copy-Item $dst (Join-Path $Backup ($n+'.bak')) -Force};Copy-Item $built[$n] $dst -Force}
-Set-Content -LiteralPath (Join-Path $SupportDir 'XANOS_VERSION.txt') -Value 'UNIVERSAL AI 0.8.6.28 COMPANION DISCIPLINE + READER 0.8.6.26 + PRC SWITCH SOURCE 0.8.6.27 + COMBAT CORE 0.7.10.7' -Encoding UTF8
-Write-Host '[OK] Combat 0.7.10.7 preserved; Universal AI 0.8.6.28 companion discipline installed; PRC familiar FIX5 retained.' -ForegroundColor Green
+Set-Content -LiteralPath (Join-Path $SupportDir 'XANOS_VERSION.txt') -Value 'UNIVERSAL AI 0.8.6.29 SOMATIC ITEMS FIX + COMPANION DISCIPLINE 0.8.6.28 + READER 0.8.6.26 + COMBAT CORE 0.7.10.7' -Encoding UTF8
+Write-Host '[OK] 0.8.6.29 somatic spell/item fix installed; companion discipline 0.8.6.28 and combat 0.7.10.7 preserved; PRC familiar FIX5 retained.' -ForegroundColor Green
 
 # Neural book reader TTS watcher.
 # Uses Microsoft Edge online TTS via edge-playback on Windows; System.Speech is fallback only.
