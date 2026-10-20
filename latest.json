@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.32-nui-respec-stats",
+  "version": "0.8.6.33-strict-trash",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "39ca372f1c47d32f0082f474adad97d05c1db9b281265a3f9d5d8293b33f25ec",
-  "notes": "NUI respec display fix. Companion ability lines now show permanent/base values first; if an active effect changes an ability they display base>current, so buffs/debuffs no longer look like stale respec data. The class-summary cache key now includes current class positions/levels (up to PRC's extended positions), so same-total-level respecs such as Dorna Rogue3/Cleric3 -> Cleric6 cannot reuse the old class string. No combat behavior or spell preparation logic changed. Hidden helpers 0.8.6.31, Dorna 0.8.6.30, somatic 0.8.6.29, companion discipline 0.8.6.28, reader 0.8.6.26, protected combat core 0.7.10.7, familiar FIX5/progression and PRC_MULTISUMMON are unchanged."
+  "sha256": "b491a5881bb768c759109ee871931c69d7745598fec276f36d6d9ee2940ab707",
+  "notes": "Fixes false ECONOMY/RANGED classification on meaningful enemies. A non-caster is now considered obvious trash only when it is at least 2 HD below the companion AND has at most 50% of the companion's max HP; when both CR values are usable, target CR must also be <=60% of companion CR. The same strict rule now drives combat economy, premium-ammo conservation, close-threat trash substitution, and NUI economy display. This intentionally favors spending real combat resources over misclassifying a dangerous mod/story enemy as weak. NUI respec display 0.8.6.32, hidden helpers 0.8.6.31, Dorna 0.8.6.30, somatic 0.8.6.29, companion discipline 0.8.6.28, reader 0.8.6.26, protected combat core 0.7.10.7, familiar FIX5/progression and PRC_MULTISUMMON are otherwise unchanged."
 }
