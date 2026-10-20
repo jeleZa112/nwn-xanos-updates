@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.29-somatic-items",
+  "version": "0.8.6.30-dorna-battle-cleric",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "52299d092174daa4dfe63901d6e9ae73f9b8c864411d590c7c58b2bbfa7cb99f",
-  "notes": "Fixes the remaining PRC free-hand block for spell items/scroll-like activations while dual-wielding. The updater now backs up and forces PRC_PNP_SOMATIC_ITEMS=0 in personal_switch.2da in addition to PRC_PNP_SOMATIC_COMPOMENTS=0 and PRC_SUMMON_ROUND_PER_LEVEL=0. xai_init and the 2-second runtime guard also force SOMATIC_ITEMS=0. Companion discipline 0.8.6.28, reader 0.8.6.26, combat core 0.7.10.7, familiar FIX5/progression, and PRC_MULTISUMMON are unchanged."
+  "sha256": "b46dc8ffff56ecb28701bf1651b4e75771ec7c1cd2864f43cfc7cd5572717e15",
+  "notes": "Dorna pure-cleric respec support. Installs Battle Priest package preferences for future native SoU cleric autoleveling: Power Attack, Cleave, Great Cleave first, then battle-caster feats; Concentration and Spellcraft are primary skills. Adds a Dorna-only prepared-spell profile that refreshes ordinary cleric slots once after each cleric level change and requires a normal rest; domain slots are preserved. Intended to pair with the supplied respec save (Dwarf, True Neutral, Tempus, Cleric 6, War + Strength). 0.8.6.29 somatic fixes, companion discipline 0.8.6.28, reader 0.8.6.26, combat core 0.7.10.7, familiar FIX5/progression and PRC_MULTISUMMON are unchanged."
 }
