@@ -9,7 +9,7 @@ exit /b %RC%
 $ErrorActionPreference='Stop'
 [Console]::OutputEncoding=[Text.Encoding]::UTF8
 $OutputEncoding=[Text.Encoding]::UTF8
-Write-Host 'UNIVERSAL COMPANION AI V0.8.6.34 READER WATCHDOG' -ForegroundColor Cyan
+Write-Host 'UNIVERSAL COMPANION AI V0.8.6.35 PANEL + READER RECOVERY' -ForegroundColor Cyan
 Write-Host 'Combat core: V0.7.10.7 / NUI: canonical PRC/NWN panel / fresh window ID / live-runtime open' -ForegroundColor DarkCyan
 
 if(Get-Process -Name nwmain -ErrorAction SilentlyContinue){throw 'NWN is running. Close the game once, then run this ONE file again.'}
@@ -1665,7 +1665,7 @@ void main()
              GetMaxHitPoints(oCloseThreat) * 2 <= GetMaxHitPoints(OBJECT_SELF) &&
              ((GetChallengeRating(oCloseThreat) <= 0.0 ||
                GetChallengeRating(OBJECT_SELF) <= 0.0) ||
-              GetChallengeRating(oCloseThreat) <= GetChallengeRating(OBJECT_SELF) * 0.60))
+              GetChallengeRating(oCloseThreat) <= GetChallengeRating(OBJECT_SELF) * 0.60)))
             oTrash = oCloseThreat;
 
         if (GetIsObjectValid(oCloseThreat) &&
@@ -1774,8 +1774,8 @@ if($core){
 
 # Atomic-ish install: only copy after every requested compile succeeded.
 foreach($n in $built.Keys){$dst=Join-Path $DevDir $n;if(Test-Path $dst){Copy-Item $dst (Join-Path $Backup ($n+'.bak')) -Force};Copy-Item $built[$n] $dst -Force}
-Set-Content -LiteralPath (Join-Path $SupportDir 'XANOS_VERSION.txt') -Value 'UNIVERSAL AI 0.8.6.34 READER WATCHDOG + STRICT TRASH 0.8.6.33 + NUI 0.8.6.32 + HIDDEN 0.8.6.31 + DORNA 0.8.6.30 + SOMATIC 0.8.6.29 + COMPANION DISCIPLINE 0.8.6.28 + COMBAT CORE 0.7.10.7' -Encoding UTF8
-Write-Host '[OK] 0.8.6.33 strict trash classifier installed; NUI respec 0.8.6.32, Dorna 0.8.6.30, combat 0.7.10.7 and familiar FIX5 preserved.' -ForegroundColor Green
+Set-Content -LiteralPath (Join-Path $SupportDir 'XANOS_VERSION.txt') -Value 'UNIVERSAL AI 0.8.6.35 PANEL + READER RECOVERY + STRICT TRASH 0.8.6.33 + NUI RESPEC 0.8.6.32 + HIDDEN 0.8.6.31 + DORNA 0.8.6.30 + SOMATIC 0.8.6.29 + COMPANION DISCIPLINE 0.8.6.28 + COMBAT CORE 0.7.10.7' -Encoding UTF8
+Write-Host '[OK] 0.8.6.35 installed: NUI respec + strict trash + reader watchdog; combat core 0.7.10.7 and familiar FIX5 preserved.' -ForegroundColor Green
 
 # Neural book reader TTS watcher.
 # Uses Microsoft Edge online TTS via edge-playback on Windows; System.Speech is fallback only.
