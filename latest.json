@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.35-panel-reader-recovery",
+  "version": "0.8.6.36-reader-active-watchdog",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "5c26176565bbe68e133e96b5eed96443d144590ce4af2b8a89203192e11b74e3",
-  "notes": "Recovery build after the 0.8.6.34 local compile failure. Preserves the working NUI respec display from 0.8.6.32 and strict weak-target classifier from 0.8.6.33, preserves protected combat core 0.7.10.7 and familiar FIX5, and keeps the 0.8.6.26 reader ramp/double-buffer behavior. Reader adds the 9-second hung edge-tts prefetch watchdog and same-voice edge-playback recovery from 0.8.6.34. The missing closing parenthesis in the strict-trash oCloseThreat block is fixed so generated xai_combat.nss no longer fails at oTrash."
+  "sha256": "4bfb8fc5a2eeb99c1aa50519ecf28bea13053674015c68b0d3240bd8344f25b7",
+  "notes": "Reader-only reliability update over the confirmed working 0.8.6.35 panel. Adds an active-playback watchdog because Pump-ReaderPlayback previously returned immediately while playProc was still alive, so a hung edge-playback or MP3 player could bypass the 0.8.6.34 prefetch watchdog and stop after a phrase such as 'объединившись'. Current playback now has a text-length deadline; on a stall it kills that process, preserves queued future text, and restarts the current block in smaller chunks. The generated MP3 helper is versioned and uses the actual media duration plus a short grace period instead of a 30-minute wait. NUI/panel, strict-trash/economy, combat core 0.7.10.7, Dorna logic and familiar FIX5 are unchanged."
 }

@@ -38,6 +38,19 @@ jobs:
           # This throws on the same parser errors that previously reached the user.
           [void][ScriptBlock]::Create($payload)
 
+          # Also parse the embedded reader watcher and its generated MP3 helper.
+          # The reader is stored as UTF-8 base64 inside the installer, so outer
+          # PowerShell parsing alone would not catch syntax mistakes in that payload.
+          $ttsRx = '\[IO\.File\]::WriteAllBytes\(\$tts,\[Convert\]::FromBase64String\(''([^'']+)''\)\)'
+          $ttsMatch = [regex]::Match($payload, $ttsRx)
+          if (-not $ttsMatch.Success) { throw 'Embedded XANOS_READER_TTS.ps1 payload not found' }
+          $ttsText = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($ttsMatch.Groups[1].Value))
+          [void][ScriptBlock]::Create($ttsText)
+
+          $playerMatch = [regex]::Match($ttsText, "(?s)\$playerCode=@'\r?\n(.*?)\r?\n'@")
+          if (-not $playerMatch.Success) { throw 'Embedded XANOS_READER_PLAY_MP3 helper not found' }
+          [void][ScriptBlock]::Create($playerMatch.Groups[1].Value)
+
           $manifest = Get-Content (Join-Path $PWD 'latest.json') -Raw | ConvertFrom-Json
           $actual = (Get-FileHash $path -Algorithm SHA256).Hash.ToLowerInvariant()
           $expected = ([string]$manifest.sha256).ToLowerInvariant()
