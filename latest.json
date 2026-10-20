@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.34-reader-watchdog",
+  "version": "0.8.6.31-hidden-background",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "69e72c3a4e9894ea3cb3fa7b630b6f7bfaaf43c24b6a7b9afd4ec757f4903260",
-  "notes": "Reader reliability fix. The 0.8.6.26 ramp/double-buffer design is preserved, but a hung background edge-tts prefetch can no longer create an indefinite 30+ second silence between phrases. If the next MP3 has not finished within 9 seconds, the stuck process is killed and that same chunk is immediately streamed through edge-playback using the same Russian neural voice while the following chunk is prefetched again. Nonzero prefetch exits use the same recovery path. Strict trash 0.8.6.33, NUI respec 0.8.6.32, hidden helpers 0.8.6.31, Dorna 0.8.6.30, somatic 0.8.6.29, companion discipline 0.8.6.28, protected combat core 0.7.10.7, familiar FIX5/progression and PRC_MULTISUMMON are unchanged."
+  "sha256": "c2fbd7a47bacb9ad70e91b2bcb9ae10aeb3231197259c3f9bb5a769291298c1d",
+  "notes": "Quality-of-life fix: long-lived PowerShell helpers are now launched with hidden windows, so after the one-click updater finishes you should not have persistent Reader TTS, local AI or EPC/PRC watcher consoles covering the desktop. Their diagnostics continue to file logs. Dorna 0.8.6.30, somatic 0.8.6.29, companion discipline 0.8.6.28, reader 0.8.6.26, protected combat core 0.7.10.7, familiar FIX5/progression and PRC_MULTISUMMON are unchanged."
 }
