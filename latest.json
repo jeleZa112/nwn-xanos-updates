@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.39-familiar-module-bootstrap",
+  "version": "0.8.6.40-prc-onenter-bridge",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "eec847a51bbc5ee9d209871730769a175f49159580846c4fa54fe54284041a5a",
-  "notes": "Cross-module bootstrap fix after 0.8.6.38 proved that a PRC eventhook registered in the previous module was not sufficient across StartNewModule. 0.8.6.39 adds xai_mod_boot and invokes it from global override scripts that PRC/BioWare resolves independently in every module: prc_ai_fam_percp, prc_pnp_fam_hide and evn_modgui. The bootstrap immediately forces PRC_PNP_SOMATIC_COMPOMENTS=0, PRC_PNP_SOMATIC_ITEMS=0 and PRC_SUMMON_ROUND_PER_LEVEL=0, then starts/restarts xai_init, xai_attach_all, xai_partycap, panel and reader for the current module. Existing Plada ordering from 0.8.6.38, reader 0.8.6.37, panel, Dorna logic, combat core 0.7.10.7 and familiar FIX5 remain preserved."
+  "sha256": "554cf01b49a01a02b4e70f1d0b437ffa9ecf76647ade9b763dd2681e699a03ec",
+  "notes": "Guaranteed cross-module bridge based on runtime evidence from the user's Interlude screenshot: stock PRC prc_onenter definitely runs there and unconditionally executes prc_psi_ppoints after its CD check. Instead of replacing the large/sensitive prc_onenter script, 0.8.6.40 overrides the tiny stock prc_psi_ppoints with its original ResetPowerPoints behavior plus ExecuteScript('xai_mod_boot', GetModule()). This guarantees XAI module bootstrap on every successful PRC OnEnter and also on PRC rest/level-up calls to prc_psi_ppoints. 0.8.6.39 familiar/GUI hooks remain as fallbacks. Plada ordering, reader 0.8.6.37, panel, Dorna logic, combat core 0.7.10.7 and familiar FIX5 remain preserved."
 }
