@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.43-prc-gui-bridge",
+  "version": "0.8.6.44-gui-event-bind-cp1251",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
   "sha256": "478dd9207ba496e2533edf5e05f5f4134530279302798262f1ff43d2aee92fee",
-  "notes": "Cross-module NUI opener fix. PRC-patched SoU modules use prc_onplayergui as the module OnPlayerGUIEvent script, so the old evn_modgui portrait-click handler could work in one module yet be bypassed in Interlude. 0.8.6.43 overrides prc_onplayergui with an include-free bridge that forwards all GUI events into the existing evn_modgui/EPC path and preserves PRC's stock DurationNUI behavior on effect-icon clicks. This fixes party-portrait opening across PRC modules without changing combat core 0.7.10.7, reader, Plada/FIX5, Dorna AI/profile, or the 0.8.6.42 OnEnter bootstrap."
+  "notes": "Runtime panel fix based on direct inspection of the repaired Interlude save: Module.ifo has Mod_OnPlrGuiEvt empty, so installing prc_onplayergui.ncs alone cannot receive portrait clicks. 0.8.6.44 makes xai_mod_boot explicitly bind EVENT_SCRIPT_MODULE_ON_PLAYER_GUIEVENT to prc_onplayergui in every module, preserving any unrelated previous GUI handler through a local chained callback. Also adds xai_attach_all, xai_mod_boot and xai_enter to the existing CP1251 source conversion list, fixing the yellow [XANOS] PRC mojibake. Combat core 0.7.10.7, reader, Plada/FIX5 and Dorna class/profile are unchanged."
 }
