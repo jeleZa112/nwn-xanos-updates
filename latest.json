@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.34-reader-watchdog",
+  "version": "0.8.6.35-panel-reader-recovery",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "69e72c3a4e9894ea3cb3fa7b630b6f7bfaaf43c24b6a7b9afd4ec757f4903260",
-  "notes": "Reader reliability fix. The 0.8.6.26 ramp/double-buffer design is preserved, but a hung background edge-tts prefetch can no longer create an indefinite 30+ second silence between phrases. If the next MP3 has not finished within 9 seconds, the stuck process is killed and that same chunk is immediately streamed through edge-playback using the same Russian neural voice while the following chunk is prefetched again. Nonzero prefetch exits use the same recovery path. Strict trash 0.8.6.33, NUI respec 0.8.6.32, hidden helpers 0.8.6.31, Dorna 0.8.6.30, somatic 0.8.6.29, companion discipline 0.8.6.28, protected combat core 0.7.10.7, familiar FIX5/progression and PRC_MULTISUMMON are unchanged."
+  "sha256": "5c26176565bbe68e133e96b5eed96443d144590ce4af2b8a89203192e11b74e3",
+  "notes": "Recovery build after the 0.8.6.34 local compile failure. Preserves the working NUI respec display from 0.8.6.32 and strict weak-target classifier from 0.8.6.33, preserves protected combat core 0.7.10.7 and familiar FIX5, and keeps the 0.8.6.26 reader ramp/double-buffer behavior. Reader adds the 9-second hung edge-tts prefetch watchdog and same-voice edge-playback recovery from 0.8.6.34. The missing closing parenthesis in the strict-trash oCloseThreat block is fixed so generated xai_combat.nss no longer fails at oTrash."
 }
