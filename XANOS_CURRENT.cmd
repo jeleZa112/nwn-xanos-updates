@@ -9,7 +9,7 @@ exit /b %RC%
 $ErrorActionPreference='Stop'
 [Console]::OutputEncoding=[Text.Encoding]::UTF8
 $OutputEncoding=[Text.Encoding]::UTF8
-Write-Host 'UNIVERSAL COMPANION AI V0.8.6.37 READER ORDERED QUEUE' -ForegroundColor Cyan
+Write-Host 'UNIVERSAL COMPANION AI V0.8.6.38 PLADA TRANSITION GUARD' -ForegroundColor Cyan
 Write-Host 'Combat core: V0.7.10.7 / NUI: canonical PRC/NWN panel / fresh window ID / live-runtime open' -ForegroundColor DarkCyan
 
 if(Get-Process -Name nwmain -ErrorAction SilentlyContinue){throw 'NWN is running. Close the game once, then run this ONE file again.'}
@@ -1765,6 +1765,12 @@ $built['xai_init.ncs']=Compile 'xai_init.nss'
 $built['xai_attach_all.ncs']=Compile 'xai_attach_all.nss'
 $built['xai_dorna_profile.ncs']=Compile 'xai_dorna_profile.nss'
 $built['xai_partycap.ncs']=Compile 'xai_partycap.nss'
+# 0.8.6.38: SoU chapter/interlude transition guard for the PRC PnP familiar.
+$built['q1_endchapter.ncs']=Compile 'q1_endchapter.nss'
+$built['q1a_area_oe.ncs']=Compile 'q1a_area_oe.nss'
+$built['q4a_area_ud.ncs']=Compile 'q4a_area_ud.nss'
+$built['en_undrentide.ncs']=Compile 'en_undrentide.nss'
+$built['x1_playerlevelup.ncs']=Compile 'x1_playerlevelup.nss'
 $built['xai_utility.ncs']=Compile 'xai_utility.nss'
 if(Test-Path -LiteralPath (Join-Path $Src 'xai_tick.nss')){$built['xai_tick.ncs']=Compile 'xai_tick.nss'}
 if(Test-Path -LiteralPath (Join-Path $Src 'xai_chat.nss')){$built['xai_chat.ncs']=Compile 'xai_chat.nss'}
@@ -1779,8 +1785,8 @@ if($core){
 
 # Atomic-ish install: only copy after every requested compile succeeded.
 foreach($n in $built.Keys){$dst=Join-Path $DevDir $n;if(Test-Path $dst){Copy-Item $dst (Join-Path $Backup ($n+'.bak')) -Force};Copy-Item $built[$n] $dst -Force}
-Set-Content -LiteralPath (Join-Path $SupportDir 'XANOS_VERSION.txt') -Value 'UNIVERSAL AI 0.8.6.37 READER ORDERED QUEUE + PANEL 0.8.6.35 + STRICT TRASH 0.8.6.33 + NUI RESPEC 0.8.6.32 + HIDDEN 0.8.6.31 + DORNA 0.8.6.30 + SOMATIC 0.8.6.29 + COMPANION DISCIPLINE 0.8.6.28 + COMBAT CORE 0.7.10.7' -Encoding UTF8
-Write-Host '[OK] 0.8.6.37 installed: reader ordered queue/retry fix; panel preserved; combat core 0.7.10.7 and familiar FIX5 preserved.' -ForegroundColor Green
+Set-Content -LiteralPath (Join-Path $SupportDir 'XANOS_VERSION.txt') -Value 'UNIVERSAL AI 0.8.6.38 PLADA TRANSITION GUARD + READER 0.8.6.37 + PANEL 0.8.6.35 + STRICT TRASH 0.8.6.33 + NUI RESPEC 0.8.6.32 + HIDDEN 0.8.6.31 + DORNA 0.8.6.30 + SOMATIC 0.8.6.29 + COMPANION DISCIPLINE 0.8.6.28 + COMBAT CORE 0.7.10.7' -Encoding UTF8
+Write-Host '[OK] 0.8.6.38 installed: Plada transition/level guard; reader/panel/combat core and familiar FIX5 preserved.' -ForegroundColor Green
 
 # Neural book reader TTS watcher.
 # Uses Microsoft Edge online TTS via edge-playback on Windows; System.Speech is fallback only.
