@@ -3,6 +3,6 @@
   "version": "0.8.6.47-nui-capabilities-buff-tooltips",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
-  "sha256": "22d9ed4c9ece561277b0063fb378315833ba5fc1d674f145a2ed9d39422704f2",
+  "sha256": "6e31901c2bc2fdb42ed526d541162ebcf6eb1638a94f6b5ad6a4fd56d053eec0",
   "notes": "NUI capability cleanup + portrait buff tooltip fix. Trap controls are now shown only when the selected companion has real Disable Trap skill; Search alone no longer exposes trap-disarm controls on clerics such as Dorna. Buff tooltips near the right-side party portrait now wrap into shorter lines at word boundaries so names such as 'Божественное покровительство' fit instead of clipping. 0.8.6.46 Plada progression, FIX5, combat core 0.7.10.7, reader and Dorna profile remain unchanged."
 }
