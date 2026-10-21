@@ -1,8 +1,8 @@
 {
   "channel": "test",
-  "version": "0.8.6.46-pnp-familiar-progression",
+  "version": "0.8.6.47-nui-capabilities-buff-tooltips",
   "combat_core": "0.7.10.7",
   "payload_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/main/XANOS_CURRENT.cmd",
   "sha256": "22d9ed4c9ece561277b0063fb378315833ba5fc1d674f145a2ed9d39422704f2",
-  "notes": "Exact PRC PnP familiar progression repair. XAI now mirrors PRC ApplyPnPFamiliarProperties familiar-level formula for the relevant classes (Wizard, Sorcerer, Alienist, Hexblade, Dread Necromancer; Witch is invalid/-1 in this PRC build). If Plada's Commoner HD lags that effective familiar level, xai_partycap advances it with valid Commoner package 82 instead of PRC's failing CLASS_TYPE_INVALID path. After HD is correct, stock nw_s2_familiar is invoked once per effective familiar level to reapply the real PRC familiar bonuses (half-master HP, saves, AC/INT/SR/AB, skills/master bonus). For Bain Kai Rogue 2 / Wizard 5, correct PRC familiar level is 5; Rogue and Abjurant Champion do not advance it. FIX5, module-transition ordering, combat core 0.7.10.7, reader, panel and Dorna profile are unchanged."
+  "notes": "NUI capability cleanup + portrait buff tooltip fix. Trap controls are now shown only when the selected companion has real Disable Trap skill; Search alone no longer exposes trap-disarm controls on clerics such as Dorna. Buff tooltips near the right-side party portrait now wrap into shorter lines at word boundaries so names such as 'Божественное покровительство' fit instead of clipping. 0.8.6.46 Plada progression, FIX5, combat core 0.7.10.7, reader and Dorna profile remain unchanged."
 }
