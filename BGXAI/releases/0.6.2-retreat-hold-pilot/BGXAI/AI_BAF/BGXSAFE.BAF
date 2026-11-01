@@ -1,0 +1,73 @@
+// BGXSAFE v0.6.2 - defensive test with single-command timed retreat.
+// Intended for ONE companion in a BACKUP SAVE. The player retains control
+// when party AI is OFF. Do not use for automated boss battles yet.
+// Problem fixed: v0.6.1 issued RunAwayFrom repeatedly without testing whether
+// the previous move was still queued, so the actor could start/stop in place.
+// Time unit: AI ticks (~15 per second), NOT seconds: 180 ticks = ~12 seconds.
+// Emergency: on the first HP<35% transition, cancel the current attack ONCE.
+// Retreat while enemy is visible within 30 and no action is currently queued.
+// Recovery flag prevents ALL automatic attacks until HP>65%.
+
+IF
+  Global("BGXSFLEE","LOCALS",0)
+  HPPercentLT(Myself,35)
+THEN
+  RESPONSE #100
+    SetGlobal("BGXSFLEE","LOCALS",1)
+    ClearActions(Myself)
+END
+
+IF
+  Global("BGXSFLEE","LOCALS",1)
+  HPPercentGT(Myself,65)
+THEN
+  RESPONSE #100
+    SetGlobal("BGXSFLEE","LOCALS",0)
+END
+
+// If the escape is already in the action queue, don't replace it.
+// Unlike RunAwayFromNoInterrupt..., this move can be overridden by player orders.
+IF
+  Global("BGXSFLEE","LOCALS",1)
+  ActionListEmpty()
+  See(NearestEnemyOf(Myself))
+  Range(NearestEnemyOf(Myself),30)
+THEN
+  RESPONSE #100
+    RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),180)
+END
+
+// Self-healing only when no active combat, so the caster doesn't stand still
+// reading a spell while a wolf is biting her.
+IF
+  Global("BGXSFLEE","LOCALS",1)
+  ActionListEmpty()
+  CombatCounter(0)
+  HPPercentLT(Myself,65)
+  HaveSpell(CLERIC_CURE_MODERATE_WOUNDS)
+THEN
+  RESPONSE #100
+    Spell(Myself,CLERIC_CURE_MODERATE_WOUNDS)
+END
+
+IF
+  Global("BGXSFLEE","LOCALS",1)
+  ActionListEmpty()
+  CombatCounter(0)
+  HPPercentLT(Myself,65)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+THEN
+  RESPONSE #100
+    Spell(Myself,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// Cheap attacks only while NOT in recovery mode.
+IF
+  Global("BGXSFLEE","LOCALS",0)
+  ActionListEmpty()
+  !StateCheck(Myself,STATE_INVISIBLE)
+  See(NearestEnemyOf(Myself))
+THEN
+  RESPONSE #100
+    AttackOneRound(NearestEnemyOf(Myself))
+END

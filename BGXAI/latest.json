@@ -1,8 +1,8 @@
 {
   "channel": "pilot",
-  "version": "0.6.1-safety-pilot",
-  "status": "compiled-basic-pilot-plus-untested-safety",
-  "message_ru": "Вариант BGXSAFE v0.6.1, новая экспериментальная защита от низкого HP. BGXATK v0.6 сохранён без изменений. Устанавливать и назначать одному спутнику в копии сохранения.",
+  "version": "0.6.2-retreat-hold-pilot",
+  "status": "source-published-awaiting-weidu-compile-and-runtime-test",
+  "message_ru": "BGXSAFE v0.6.2: устраняет повторную перезапись команды бегства, увеличивает длительность отступления до 180 AI-тиков (~12 сек), запускает уход только при свободной очереди действий, сбрасывает предыдущую атаку один раз при переходе в аварийный режим. Не проверено в игре. BGXATK без изменений.",
   "files": [
     {
       "path": "BGXAI/AI_BAF/BGXATK.BAF",
@@ -22,7 +22,7 @@
     },
     {
       "path": "BGXAI/AI_BAF/BGXSAFE.BAF",
-      "sha256": "45ed36405bea38a42fd18fe90762e4973acf32a0044332b8c58b0efea0d64bef"
+      "sha256": "abcaae11f8df175f91596d81fff174ca5bc9f02589d03b84a5dfd586b7806dd0"
     },
     {
       "path": "BGXAI/AI_BAF/BGXSCUT.BAF",
@@ -34,7 +34,7 @@
     },
     {
       "path": "BGXAI/BGXAI.TP2",
-      "sha256": "2dab57540485657cffd6def0b643266a59a32230140c7e3ededb5f4cd34f542f"
+      "sha256": "037c5311804e29a604172e676623d8f202aa159e466d682f74e89ad7116a7d02"
     }
   ]
 }
