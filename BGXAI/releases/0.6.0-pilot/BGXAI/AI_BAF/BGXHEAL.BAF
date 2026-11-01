@@ -1,0 +1,31 @@
+// BGXHEAL - conservative party healer: injured party members only,
+// and only with a visible enemy. No out-of-combat spell consumption.
+// MostDamagedOf([PC]) must be checked in the actual user game.
+IF
+  ActionListEmpty()
+  See(NearestEnemyOf(Myself))
+  Range(MostDamagedOf([PC]),12)
+  HPPercentLT(MostDamagedOf([PC]),35)
+  HaveSpell(CLERIC_CURE_SERIOUS_WOUNDS)
+THEN
+  RESPONSE #100
+    Spell(MostDamagedOf([PC]),CLERIC_CURE_SERIOUS_WOUNDS)
+END
+IF
+  ActionListEmpty()
+  See(NearestEnemyOf(Myself))
+  Range(MostDamagedOf([PC]),12)
+  HPPercentLT(MostDamagedOf([PC]),25)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+THEN
+  RESPONSE #100
+    Spell(MostDamagedOf([PC]),CLERIC_CURE_LIGHT_WOUNDS)
+END
+IF
+  ActionListEmpty()
+  !StateCheck(Myself,STATE_INVISIBLE)
+  See(NearestEnemyOf(Myself))
+THEN
+  RESPONSE #100
+    AttackOneRound(NearestEnemyOf(Myself))
+END
