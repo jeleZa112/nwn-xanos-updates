@@ -52,7 +52,7 @@ foreach ($asset in $manifest.files) {
     New-Item -ItemType Directory -Force -Path $parent | Out-Null
     [IO.File]::WriteAllBytes($out,$bytes)
 }
-if (($paths.Count -ne 7) -or !($paths -contains 'BGXAI/BGXAI.TP2')) { throw 'Unexpected number of mod files.' }
+if (($paths.Count -ne 8) -or !($paths -contains 'BGXAI/BGXAI.TP2')) { throw 'Unexpected number of mod files.' }
 $setup = Join-Path $GameRoot 'setup-BGXAI.exe'
 if (-not (Test-Path -LiteralPath $setup)) {
     $sourceExe = Join-Path $GameRoot 'setup-stratagems.exe'
@@ -98,5 +98,5 @@ if ($exitCode -ne 0) {
 }
 [IO.File]::WriteAllText($marker,$sha,[Text.Encoding]::ASCII)
 Write-Host ('SUCCESS: BGXAI ' + $manifest.version + ' installed. Script files should be in scripts\BGX*.BS') -ForegroundColor Green
-Write-Host 'TEST ONLY: assign BGXATK to one character in a backup save.' -ForegroundColor Yellow
+Write-Host 'TEST ONLY: assign BGXSAFE to ONE character in a backup save; BGXATK is unchanged.' -ForegroundColor Yellow
 exit 0

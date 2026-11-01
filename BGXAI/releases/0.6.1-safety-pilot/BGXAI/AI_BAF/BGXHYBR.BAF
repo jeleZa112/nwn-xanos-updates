@@ -1,0 +1,61 @@
+// BGXHYBR - combined test profile for mage/priest/thief combinations.
+// Availability based on spells/skills, not initial CLASS or KIT.
+IF
+  ActionListEmpty()
+  See(NearestEnemyOf(Myself))
+  Range(MostDamagedOf([PC]),12)
+  HPPercentLT(MostDamagedOf([PC]),35)
+  HaveSpell(CLERIC_CURE_SERIOUS_WOUNDS)
+THEN
+  RESPONSE #100
+    Spell(MostDamagedOf([PC]),CLERIC_CURE_SERIOUS_WOUNDS)
+END
+IF
+  ActionListEmpty()
+  See(NearestEnemyOf(Myself))
+  Range(MostDamagedOf([PC]),12)
+  HPPercentLT(MostDamagedOf([PC]),25)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+THEN
+  RESPONSE #100
+    Spell(MostDamagedOf([PC]),CLERIC_CURE_LIGHT_WOUNDS)
+END
+IF
+  ActionListEmpty()
+  See(NearestEnemyOf(Myself))
+  NumCreatureGT([ENEMY],2)
+  HPPercentLT(Myself,55)
+  CheckStat(Myself,0,STONESKINS)
+  HaveSpell(WIZARD_STONE_SKIN)
+THEN
+  RESPONSE #100
+    Spell(Myself,WIZARD_STONE_SKIN)
+END
+IF
+  ActionListEmpty()
+  See(NearestEnemyOf(Myself))
+  HPPercentLT(Myself,45)
+  !StateCheck(Myself,STATE_MIRRORIMAGE)
+  HaveSpell(WIZARD_MIRROR_IMAGE)
+THEN
+  RESPONSE #100
+    Spell(Myself,WIZARD_MIRROR_IMAGE)
+END
+IF
+  ActionListEmpty()
+  CombatCounter(0)
+  CheckStatGT(Myself,0,TRAPS)
+  !ModalState(DETECTTRAPS)
+  !See(NearestEnemyOf(Myself))
+THEN
+  RESPONSE #100
+    FindTraps()
+END
+IF
+  ActionListEmpty()
+  !StateCheck(Myself,STATE_INVISIBLE)
+  See(NearestEnemyOf(Myself))
+THEN
+  RESPONSE #100
+    AttackOneRound(NearestEnemyOf(Myself))
+END

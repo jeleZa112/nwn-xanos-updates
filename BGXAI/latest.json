@@ -1,8 +1,8 @@
 {
   "channel": "pilot",
-  "version": "0.6.0-pilot",
-  "status": "unverified-in-game",
-  "message_ru": "Тестовый пилот. Не является полноценным ИИ v0.7.x. Сначала проверить компиляцию и один бой.",
+  "version": "0.6.1-safety-pilot",
+  "status": "compiled-basic-pilot-plus-untested-safety",
+  "message_ru": "Вариант BGXSAFE v0.6.1, новая экспериментальная защита от низкого HP. BGXATK v0.6 сохранён без изменений. Устанавливать и назначать одному спутнику в копии сохранения.",
   "files": [
     {
       "path": "BGXAI/AI_BAF/BGXATK.BAF",
@@ -21,6 +21,10 @@
       "sha256": "04d520fe6a34a8bdc032a1ee9d5429135dc7708635355b3e426b2cc493a635e9"
     },
     {
+      "path": "BGXAI/AI_BAF/BGXSAFE.BAF",
+      "sha256": "45ed36405bea38a42fd18fe90762e4973acf32a0044332b8c58b0efea0d64bef"
+    },
+    {
       "path": "BGXAI/AI_BAF/BGXSCUT.BAF",
       "sha256": "e84047f5c60bd037d485e26670ecc2ee1fc3bed79f42d2f5bc567033d05f9dfb"
     },
@@ -30,7 +34,7 @@
     },
     {
       "path": "BGXAI/BGXAI.TP2",
-      "sha256": "e0567480dbae7ae4df420c247f99e62d0c3d9d8d2ebcbf47d0d854a3492358fb"
+      "sha256": "2dab57540485657cffd6def0b643266a59a32230140c7e3ededb5f4cd34f542f"
     }
   ]
 }

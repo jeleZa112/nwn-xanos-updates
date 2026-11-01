@@ -1,0 +1,66 @@
+// BGXSAFE v0.6.1 - emergency retreat / self-healing test profile.
+// Only assign to ONE character in a backup save. Does not control other NPCs.
+// Local flag prevents immediate re-engagement until HP rises ABOVE 65%.
+// Critical escape has priority over attack and may temporarily override manual
+// orders: switch party AI OFF for absolute manual control.
+// RunAwayFromNoLeaveArea never switches game area; path safety is not guaranteed.
+
+IF
+  Global("BGXSFLEE","LOCALS",0)
+  HPPercentLT(Myself,35)
+THEN
+  RESPONSE #100
+    SetGlobal("BGXSFLEE","LOCALS",1)
+END
+
+IF
+  Global("BGXSFLEE","LOCALS",1)
+  HPPercentGT(Myself,65)
+THEN
+  RESPONSE #100
+    SetGlobal("BGXSFLEE","LOCALS",0)
+END
+
+// The safety exception is intentionally not restricted to ActionListEmpty.
+IF
+  Global("BGXSFLEE","LOCALS",1)
+  See(NearestEnemyOf(Myself))
+  Range(NearestEnemyOf(Myself),14)
+THEN
+  RESPONSE #100
+    RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),75)
+END
+
+// Self-healing ONLY outside combat, while recovery mode is active.
+IF
+  Global("BGXSFLEE","LOCALS",1)
+  ActionListEmpty()
+  CombatCounter(0)
+  HPPercentLT(Myself,65)
+  HaveSpell(CLERIC_CURE_MODERATE_WOUNDS)
+THEN
+  RESPONSE #100
+    Spell(Myself,CLERIC_CURE_MODERATE_WOUNDS)
+END
+
+IF
+  Global("BGXSFLEE","LOCALS",1)
+  ActionListEmpty()
+  CombatCounter(0)
+  HPPercentLT(Myself,65)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+THEN
+  RESPONSE #100
+    Spell(Myself,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// No attack while in recovery mode. Does not autonomously pre-buff / cast AoE.
+IF
+  Global("BGXSFLEE","LOCALS",0)
+  ActionListEmpty()
+  !StateCheck(Myself,STATE_INVISIBLE)
+  See(NearestEnemyOf(Myself))
+THEN
+  RESPONSE #100
+    AttackOneRound(NearestEnemyOf(Myself))
+END

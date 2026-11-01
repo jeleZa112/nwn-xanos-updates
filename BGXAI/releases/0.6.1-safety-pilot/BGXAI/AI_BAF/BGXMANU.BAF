@@ -1,0 +1,7 @@
+// BGXMANU - no automatic actions. Use for manual boss fights.
+IF
+  False()
+THEN
+  RESPONSE #100
+    NoAction()
+END
