@@ -1,14 +1,14 @@
 {
   "channel": "pilot",
-  "version": "0.6.21-verified-compile-pilot",
-  "status": "build-provenance-fix-only-awaiting-weidu-in-game-verification",
-  "message_ru": "Исправление цепочки сборки без изменения тактики v0.6.20. WeiDU компилирует уникальные BGG621.BAF/BGT621.BAF, установщик проверяет BGXVER21 в свежих BGG621.BCS/BGT621.BCS и только после этого обновляет активные BGXGRP.BCS/BGXGRP.BS и BGXTANK.BCS/BGXTANK.BS, синхронизирует Documents. Сохраняет оригиналы до WeiDU и откатывает при ошибке. Не проводить бой пока не появятся PROVEN NEW COMPILED, VERIFIED ACTIVE BGXVER21 и SUCCESS. Реальный запуск WeiDU на пользовательской сборке пока не проверен.",
+  "version": "0.6.22-intercept-melee-pilot",
+  "status": "source-static-verified-weidu-and-combat-unverified",
+  "message_ru": "v0.6.22: после доказанной компиляции v0.6.21 исправлена именно тактика: Халид при видимом враге начинает длительную Attack вместо AttackOneRound и получает Help() от Джахейры; если не видит врага, но видит раненую Джахейру, приближается к ней. Джахейра при контакте делает EquipMostDamagingMelee вне ActionListEmpty и защёлкивает запрос до дистанции 12 футов, вызывает Help() в зоне 8 футов; лечение после отхода не менялось. Компиляция WeiDU и поведение на пользовательской EET не подтверждены. Никакой универсальной оптимизации оружия нет.",
   "package_path": "BGXAI/releases/0.6.16-retreat-priority-pilot.zip.b64",
   "package_sha256": "183065babac9a9e27f6a443a62f3e94563a19333656d730b1927e96f7362a8aa",
   "package_size": 6979,
   "overlay_paths": [
-    "BGXAI/hotfix/BGG621.BAF",
-    "BGXAI/hotfix/BGT621.BAF",
-    "BGXAI/hotfix/BGXAI_0.6.21.TP2"
+    "BGXAI/hotfix/BGG622.BAF",
+    "BGXAI/hotfix/BGT622.BAF",
+    "BGXAI/hotfix/BGXAI_0.6.22.TP2"
   ]
 }
