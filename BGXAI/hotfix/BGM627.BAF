@@ -1,0 +1,142 @@
+// BGXMGF v0.6.27 — Mage Magic Missile finisher when idle; no interruption of casts
+// New optional roles, not assigned to saved characters automatically.
+// Finisher mage role ready
+IF
+ Global("BGXVER27","LOCALS",0)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXVER27","LOCALS",1)
+  DisplayStringHead(Myself,~BGXMGF627 MAGE FINISHER ACTIVE~)
+END
+// Self preservation takes precedence over minor low HP enemy
+IF
+ HPPercentLT(Myself,32)
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),7)
+ !GlobalTimerNotExpired("BGXFLM27","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXFLM27","LOCALS",10)
+  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),45)
+END
+// MAGIC MISSILE FINISH: only when idle; don't interrupt manually cast spells. Ally 1
+IF
+ ActionListEmpty()
+ InParty(PartySlot1)
+ InMyArea(PartySlot1)
+ See(LastAttackerOf(PartySlot1))
+ Range(LastAttackerOf(PartySlot1),22)
+ HPLT(LastAttackerOf(PartySlot1),11)
+ HPPercentLT(LastAttackerOf(PartySlot1),26)
+ HaveSpell(WIZARD_MAGIC_MISSILE)
+ !GlobalTimerNotExpired("BGXKILL27","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXKILL27","LOCALS",11)
+  DisplayStringHead(Myself,~BGXMGF627 FINISH P1~)
+  Spell(LastAttackerOf(PartySlot1),WIZARD_MAGIC_MISSILE)
+END
+// MAGIC MISSILE FINISH: only when idle; don't interrupt manually cast spells. Ally 2
+IF
+ ActionListEmpty()
+ InParty(PartySlot2)
+ InMyArea(PartySlot2)
+ See(LastAttackerOf(PartySlot2))
+ Range(LastAttackerOf(PartySlot2),22)
+ HPLT(LastAttackerOf(PartySlot2),11)
+ HPPercentLT(LastAttackerOf(PartySlot2),26)
+ HaveSpell(WIZARD_MAGIC_MISSILE)
+ !GlobalTimerNotExpired("BGXKILL27","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXKILL27","LOCALS",11)
+  DisplayStringHead(Myself,~BGXMGF627 FINISH P2~)
+  Spell(LastAttackerOf(PartySlot2),WIZARD_MAGIC_MISSILE)
+END
+// MAGIC MISSILE FINISH: only when idle; don't interrupt manually cast spells. Ally 3
+IF
+ ActionListEmpty()
+ InParty(PartySlot3)
+ InMyArea(PartySlot3)
+ See(LastAttackerOf(PartySlot3))
+ Range(LastAttackerOf(PartySlot3),22)
+ HPLT(LastAttackerOf(PartySlot3),11)
+ HPPercentLT(LastAttackerOf(PartySlot3),26)
+ HaveSpell(WIZARD_MAGIC_MISSILE)
+ !GlobalTimerNotExpired("BGXKILL27","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXKILL27","LOCALS",11)
+  DisplayStringHead(Myself,~BGXMGF627 FINISH P3~)
+  Spell(LastAttackerOf(PartySlot3),WIZARD_MAGIC_MISSILE)
+END
+// MAGIC MISSILE FINISH: only when idle; don't interrupt manually cast spells. Ally 4
+IF
+ ActionListEmpty()
+ InParty(PartySlot4)
+ InMyArea(PartySlot4)
+ See(LastAttackerOf(PartySlot4))
+ Range(LastAttackerOf(PartySlot4),22)
+ HPLT(LastAttackerOf(PartySlot4),11)
+ HPPercentLT(LastAttackerOf(PartySlot4),26)
+ HaveSpell(WIZARD_MAGIC_MISSILE)
+ !GlobalTimerNotExpired("BGXKILL27","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXKILL27","LOCALS",11)
+  DisplayStringHead(Myself,~BGXMGF627 FINISH P4~)
+  Spell(LastAttackerOf(PartySlot4),WIZARD_MAGIC_MISSILE)
+END
+// MAGIC MISSILE FINISH: only when idle; don't interrupt manually cast spells. Ally 5
+IF
+ ActionListEmpty()
+ InParty(PartySlot5)
+ InMyArea(PartySlot5)
+ See(LastAttackerOf(PartySlot5))
+ Range(LastAttackerOf(PartySlot5),22)
+ HPLT(LastAttackerOf(PartySlot5),11)
+ HPPercentLT(LastAttackerOf(PartySlot5),26)
+ HaveSpell(WIZARD_MAGIC_MISSILE)
+ !GlobalTimerNotExpired("BGXKILL27","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXKILL27","LOCALS",11)
+  DisplayStringHead(Myself,~BGXMGF627 FINISH P5~)
+  Spell(LastAttackerOf(PartySlot5),WIZARD_MAGIC_MISSILE)
+END
+// MAGIC MISSILE FINISH: only when idle; don't interrupt manually cast spells. Ally 6
+IF
+ ActionListEmpty()
+ InParty(PartySlot6)
+ InMyArea(PartySlot6)
+ See(LastAttackerOf(PartySlot6))
+ Range(LastAttackerOf(PartySlot6),22)
+ HPLT(LastAttackerOf(PartySlot6),11)
+ HPPercentLT(LastAttackerOf(PartySlot6),26)
+ HaveSpell(WIZARD_MAGIC_MISSILE)
+ !GlobalTimerNotExpired("BGXKILL27","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXKILL27","LOCALS",11)
+  DisplayStringHead(Myself,~BGXMGF627 FINISH P6~)
+  Spell(LastAttackerOf(PartySlot6),WIZARD_MAGIC_MISSILE)
+END
+// Mage finisher idle ranged weapon setup
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ !IsWeaponRanged(Myself)
+ CanEquipRanged()
+THEN
+ RESPONSE #100
+  EquipRanged()
+END
+// Mage finisher conserve spell slots for near-death physical target; ordinary attack once when idle
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),23)
+THEN
+ RESPONSE #100
+  Attack(NearestEnemyOf(Myself))
+END
