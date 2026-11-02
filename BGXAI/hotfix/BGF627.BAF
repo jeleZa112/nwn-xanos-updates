@@ -1,3 +1,5 @@
+// DESIGN DRAFT — NOT RELEASED / NOT SAFE FOR MANIFEST. Fixed low-HP finisher thresholds are not difficulty-adaptive.
+// Superseded by BGXAI/DESIGN_DIFFICULTY_ADAPTIVE_THREAT_RU_20261102.md. Replace with predicted burst+TTK before enabling.
 // BGXFIN v0.6.27 — dedicated ranged opportunistic finisher, 6 allies
 // New optional roles, not assigned to saved characters automatically.
 // Finisher bow ready; first-time activation
