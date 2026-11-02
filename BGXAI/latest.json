@@ -1,9 +1,14 @@
 {
   "channel": "pilot",
-  "version": "0.6.19-emergency-guard-pilot",
-  "status": "experimental-not-weidu-verified",
-  "message_ru": "Приоритет низкого HP: Джахейра прекращает атаковать при <50% HP, пытается сблизиться с танком при угрозе, лечится только на дистанции; Халид больше не следует за Джахейрой вместо перехвата видимого врага. Важно: поведение временное, дистанция до танка и позиция за ним не рассчитываются; возможна остановка Джахейры при угрозе без безопасного маршрута. Требуется тест WeiDU.",
+  "version": "0.6.20-liveness-first-pilot",
+  "status": "static-regression-checked-9600-cases-weidu-game-compile-pending",
+  "message_ru": "v0.6.20: без BGXMODE; не более двух коротких отходов, лечение только вне ближнего контакта, после нехватки лечения обязательный fallback AttackOneRound при угрозе. Халид не преследует Player4, реагирует на ближайшего врага на ограниченном расстоянии. 9600 локальных логических сочетаний + 36 танка пройдены. Установщик сверяет скомпилированные BCS/BS; проверка WeiDU/игры предстоит. Использовать отдельное сохранение.",
   "package_path": "BGXAI/releases/0.6.16-retreat-priority-pilot.zip.b64",
   "package_sha256": "183065babac9a9e27f6a443a62f3e94563a19333656d730b1927e96f7362a8aa",
-  "package_size": 6979
+  "package_size": 6979,
+  "overlay_paths": [
+    "BGXAI/hotfix/BGXGRP_0.6.20.BAF",
+    "BGXAI/hotfix/BGXTANK_0.6.20.BAF",
+    "BGXAI/hotfix/BGXAI_0.6.20.TP2"
+  ]
 }
