@@ -49,8 +49,10 @@ try {
     $stage=Join-Path $cache "stage_$stamp"
     New-Item -ItemType Directory -Path $stage -Force | Out-Null
     Add-Type -AssemblyName System.IO.Compression
-    $zip=New-Object IO.MemoryStream(,$bytes)
-    $archive=New-Object IO.Compression.ZipArchive($zip,[IO.Compression.ZipArchiveMode]::Read)
+    $zip=New-Object System.IO.MemoryStream
+    $zip.Write($bytes,0,$bytes.Length)
+    $zip.Position=0
+    $archive=[System.IO.Compression.ZipArchive]::new($zip,[System.IO.Compression.ZipArchiveMode]::Read)
     $allowed=@("BGXAI/BGXAI.TP2","BGXAI/AI_BAF/BGXATK.BAF","BGXAI/AI_BAF/BGXSCUT.BAF","BGXAI/AI_BAF/BGXHEAL.BAF","BGXAI/AI_BAF/BGXWARD.BAF","BGXAI/AI_BAF/BGXHYBR.BAF","BGXAI/AI_BAF/BGXMANU.BAF","BGXAI/AI_BAF/BGXSAFE.BAF","BGXAI/AI_BAF/BGXDBG.BAF","BGXAI/AI_BAF/BGXGRP.BAF","BGXAI/AI_BAF/BGXTANK.BAF")
     $found=@()
     try {
