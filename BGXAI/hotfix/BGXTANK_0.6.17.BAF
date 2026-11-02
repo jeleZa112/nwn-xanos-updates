@@ -1,0 +1,36 @@
+// BGXTANK 0.6.17 pursuit hotfix - no 20/24/30 range cap for seen enemies.
+IF
+ IsWeaponRanged(Myself)
+ See(NearestEnemyOf(Myself))
+THEN
+ RESPONSE #100
+  EquipMostDamagingMelee()
+  DisplayStringHead(Myself,~BGXTANK617 SWITCH MELEE~)
+END
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Player4))
+THEN
+ RESPONSE #100
+  Attack(NearestEnemyOf(Player4))
+  DisplayStringHead(Myself,~BGXTANK617 PURSUE THREAT TO SUPPORT~)
+END
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+THEN
+ RESPONSE #100
+  Attack(NearestEnemyOf(Myself))
+  DisplayStringHead(Myself,~BGXTANK617 ENGAGE ENEMY~)
+END
+// No visible foe? Rejoin fleeing Player4 instead of staying at former position.
+IF
+ ActionListEmpty()
+ !See(NearestEnemyOf(Myself))
+ See(Player4)
+ !Range(Player4,12)
+THEN
+ RESPONSE #100
+  MoveToObject(Player4)
+  DisplayStringHead(Myself,~BGXTANK617 REJOIN SUPPORT~)
+END
