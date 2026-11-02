@@ -1,0 +1,84 @@
+// BGXGRP 0.6.19 emergency guard pilot. Player3 tank; Player4 support.
+// Critical HP always suppresses attack until distance is gained.
+IF
+ HPPercentLT(Myself,50)
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),10)
+ See(Player3)
+ !Range(Player3,5)
+ ActionListEmpty()
+THEN
+ RESPONSE #100
+  MoveToObject(Player3)
+  DisplayStringHead(Myself,~BGXGRP619 CRITICAL TO TANK~)
+END
+IF
+// Do not lock onto the enemy while injured and standing next to tank.
+// At contact, select defensive melee, do not repeatedly reset attack timer.
+IF
+ HPPercentLT(Myself,50)
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),5)
+ IsWeaponRanged(Myself)
+THEN
+ RESPONSE #100
+  EquipMostDamagingMelee()
+  DisplayStringHead(Myself,~BGXGRP619 DEFENSIVE MELEE~)
+END
+IF
+// Heal only when no nearby threat; health threshold checked before combat.
+IF
+ ActionListEmpty()
+ HPPercentLT(Myself,80)
+ !Range(NearestEnemyOf(Myself),10)
+ HaveSpell(CLERIC_CURE_MODERATE_WOUNDS)
+THEN
+ RESPONSE #100
+  Spell(Myself,CLERIC_CURE_MODERATE_WOUNDS)
+  DisplayStringHead(Myself,~BGXGRP619 HEAL MODERATE~)
+END
+IF
+IF
+ ActionListEmpty()
+ HPPercentLT(Myself,80)
+ !Range(NearestEnemyOf(Myself),10)
+ HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+THEN
+ RESPONSE #100
+  Spell(Myself,CLERIC_CURE_LIGHT_WOUNDS)
+  DisplayStringHead(Myself,~BGXGRP619 HEAL LIGHT~)
+END
+IF
+// At low HP and tank in reach, do not initiate fresh attacks. Let tank take target.
+IF
+ ActionListEmpty()
+ HPPercentGT(Myself,49)
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),8)
+THEN
+ RESPONSE #100
+  AttackOneRound(NearestEnemyOf(Myself))
+  DisplayStringHead(Myself,~BGXGRP619 DEFEND~)
+END
+IF
+IF
+ ActionListEmpty()
+ HPPercentGT(Myself,79)
+ See(NearestEnemyOf(Myself))
+ !Range(NearestEnemyOf(Myself),8)
+ IsWeaponRanged(Myself)
+THEN
+ RESPONSE #100
+  AttackOneRound(NearestEnemyOf(Myself))
+END
+IF
+IF
+ ActionListEmpty()
+ HPPercentGT(Myself,79)
+ See(NearestEnemyOf(Myself))
+ !Range(NearestEnemyOf(Myself),8)
+ !IsWeaponRanged(Myself)
+THEN
+ RESPONSE #100
+  EquipRanged()
+END
