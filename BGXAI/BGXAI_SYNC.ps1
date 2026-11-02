@@ -36,7 +36,7 @@ try {
     if($version -notmatch '^[A-Za-z0-9._-]+$'){throw "Invalid release version"}
     Log "GitHub release: $version; status: $($manifest.status)"
     $marker=Join-Path $GameRoot "BGXAI\bgxai-updater-version.txt"
-    if((Test-Path $marker) -and ([IO.File]::ReadAllText($marker).Trim() -eq $version)) {
+    if((Test-Path $marker) -and ([IO.File]::ReadAllText($marker).Trim() -eq ($version + "-telemetry1")) -and (Test-Path (Join-Path $GameRoot "override\M_BGXAI.lua"))) {
        Log "Already installed; no changes."
        exit 0
     }
@@ -45,6 +45,8 @@ try {
     $bytes=[Convert]::FromBase64String($raw)
     if($bytes.Length -ne [int]$manifest.package_size){throw "Package size mismatch"}
     if((Sha256 $bytes) -ne [string]$manifest.package_sha256){throw "SHA256 mismatch; refusing update"}
+    $luaBytes=Get-Bytes "BGXAI/M_BGXAI.lua"
+    if($luaBytes.Length -lt 500){throw "Telemetry module too short"}
     $stamp=Get-Date -Format "yyyyMMdd_HHmmss"
     $stage=Join-Path $cache "stage_$stamp"
     New-Item -ItemType Directory -Path $stage -Force | Out-Null
@@ -107,9 +109,13 @@ try {
        }
        exit 1
     }
-    [IO.File]::WriteAllText($marker,$version,[Text.Encoding]::ASCII)
+    $luaDest=Join-Path $GameRoot "override\M_BGXAI.lua"
+    if(Test-Path $luaDest){ Copy-Item $luaDest (Join-Path $cache "M_BGXAI_$stamp.lua.backup") -Force }
+    [IO.File]::WriteAllBytes($luaDest,$luaBytes)
+    [IO.File]::WriteAllText($marker,($version + "-telemetry1"),[Text.Encoding]::ASCII)
     Log "SUCCESS: BGXAI $version; BGXTANK for Khalid, BGXGRP for Jaheira."
-    Log "IMPORTANT: Experimental. Detailed combat telemetry is NOT active yet."
+    Log "EEex telemetry module placed in override\\M_BGXAI.lua; restart game via InfinityLoader to activate."
+    Log "Diagnostic events should appear in BGXAI_COMBAT.log (game working directory). Pilot; action start only, not all game events."
     exit 0
 } catch {
     Log ("FAILED: "+ $_.Exception.Message)
