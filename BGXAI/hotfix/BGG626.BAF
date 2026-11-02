@@ -97,7 +97,7 @@ END
 // Emergency call to any tanks; nothing for one or two light hits
 IF
  Global("BGXST26","LOCALS",2)
- HPPercentLT(Myself,35)
+ HPPercentLT(Myself,40)
  See(NearestEnemyOf(Myself))
  Range(NearestEnemyOf(Myself),10)
  !GlobalTimerNotExpired("BGXHELP26","LOCALS")
