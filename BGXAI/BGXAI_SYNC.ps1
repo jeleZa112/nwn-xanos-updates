@@ -1,4 +1,4 @@
-# BGXAI GitHub updater v0.6.21 verified compilation pilot. Separate branch; never touches NWN main.
+# BGXAI GitHub updater v0.6.22 verified compilation pilot. Separate branch; never touches NWN main.
 param([string]$GameRoot=".")
 $ErrorActionPreference='Stop'
 $ProgressPreference='SilentlyContinue'
