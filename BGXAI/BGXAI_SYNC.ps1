@@ -50,7 +50,23 @@ try {
     if($rel -notmatch '^BGXAI/releases/[A-Za-z0-9._-]+\.zip\.b64$') {throw 'Invalid package path'}
     $marker=Join-Path $GameRoot 'BGXAI\bgxai-updater-version.txt'
     Log ('Target BGXAI '+$version)
-    if((Test-Path $marker) -and ([IO.File]::ReadAllText($marker).Trim() -eq $version)) {
+    $alreadyCurrent=(Test-Path $marker) -and ([IO.File]::ReadAllText($marker).Trim() -eq $version)
+    if($alreadyCurrent -and $version -eq '0.6.21-verified-compile-pilot') {
+        foreach($name in @('BGXGRP','BGXTANK')) {
+            $activeFile=Join-Path $GameRoot ('scripts\'+$name+'.BS')
+            if(!(Test-Path -LiteralPath $activeFile)) {
+                $alreadyCurrent=$false
+                break
+            }
+            $activeBytes=[IO.File]::ReadAllBytes($activeFile)
+            if(!([Text.Encoding]::ASCII.GetString($activeBytes)).Contains('BGXVER21')) {
+                $alreadyCurrent=$false
+                break
+            }
+        }
+        if(!$alreadyCurrent) {Log 'Version marker says current, but active binary has no BGXVER21; rebuilding.'}
+    }
+    if($alreadyCurrent) {
         Log 'Already current; combat scripts untouched. Auditing higher-priority user script folders.'
         RepairUserScriptShadow $commit
         exit 0
