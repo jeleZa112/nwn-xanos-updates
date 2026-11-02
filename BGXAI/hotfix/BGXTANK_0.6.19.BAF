@@ -1,0 +1,29 @@
+// BGXTANK 0.6.19 emergency guard pilot. Player3 tank; Player4 support.
+// Do NOT follow Player4 in combat. Enemy engagement takes precedence.
+IF
+ See(NearestEnemyOf(Myself))
+ IsWeaponRanged(Myself)
+THEN
+ RESPONSE #100
+  EquipMostDamagingMelee()
+  DisplayStringHead(Myself,~BGXTANK619 MELEE~)
+END
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+THEN
+ RESPONSE #100
+  Attack(NearestEnemyOf(Myself))
+  DisplayStringHead(Myself,~BGXTANK619 INTERCEPT~)
+END
+IF
+ ActionListEmpty()
+ !See(NearestEnemyOf(Myself))
+ See(NearestEnemyOf(Player4))
+THEN
+ RESPONSE #100
+  Attack(NearestEnemyOf(Player4))
+  DisplayStringHead(Myself,~BGXTANK619 SUPPORT THREAT~)
+END
+IF
+// Formation follow is intentionally disabled; it previously chased Jaheira.
