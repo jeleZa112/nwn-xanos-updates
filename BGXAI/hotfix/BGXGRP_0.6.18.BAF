@@ -1,0 +1,81 @@
+// BGXGRP 0.6.18 cohesion pilot: no unlimited RunAwayFromNoLeaveArea.
+// Party role: Player3 tank, Player4 support (matching current test assignment).
+// Retreat toward tank FIRST; only disengage in place if standing close to tank.
+IF
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),7)
+ IsWeaponRanged(Myself)
+THEN
+ RESPONSE #100
+  EquipMostDamagingMelee()
+  DisplayStringHead(Myself,~BGXGRP618 CONTACT: MELEE~)
+END
+IF
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),10)
+ See(Player3)
+ !Range(Player3,8)
+ ActionListEmpty()
+THEN
+ RESPONSE #100
+  MoveToObject(Player3)
+  DisplayStringHead(Myself,~BGXGRP618 WITHDRAW TO TANK~)
+END
+// Keep fighting when tank is already near. Never kite endlessly into unexplored map.
+IF
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),9)
+ Range(Player3,8)
+ ActionListEmpty()
+THEN
+ RESPONSE #100
+  AttackOneRound(NearestEnemyOf(Myself))
+  DisplayStringHead(Myself,~BGXGRP618 DEFEND NEAR TANK~)
+END
+// If injured and no foe close, heal; then next AI evaluation runs normal branches.
+IF
+ ActionListEmpty()
+ !Range(NearestEnemyOf(Myself),12)
+ HPPercentLT(Myself,65)
+ HaveSpell(CLERIC_CURE_MODERATE_WOUNDS)
+THEN
+ RESPONSE #100
+  Spell(Myself,CLERIC_CURE_MODERATE_WOUNDS)
+  DisplayStringHead(Myself,~BGXGRP618 HEAL MODERATE~)
+END
+IF
+ ActionListEmpty()
+ !Range(NearestEnemyOf(Myself),12)
+ HPPercentLT(Myself,65)
+ HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+THEN
+ RESPONSE #100
+  Spell(Myself,CLERIC_CURE_LIGHT_WOUNDS)
+  DisplayStringHead(Myself,~BGXGRP618 HEAL LIGHT~)
+END
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ !Range(NearestEnemyOf(Myself),10)
+ IsWeaponRanged(Myself)
+THEN
+ RESPONSE #100
+  AttackOneRound(NearestEnemyOf(Myself))
+END
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ !Range(NearestEnemyOf(Myself),10)
+ !IsWeaponRanged(Myself)
+THEN
+ RESPONSE #100
+  EquipRanged()
+END
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ !Range(NearestEnemyOf(Myself),10)
+THEN
+ RESPONSE #100
+  AttackOneRound(NearestEnemyOf(Myself))
+END
