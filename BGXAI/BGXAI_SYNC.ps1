@@ -43,6 +43,14 @@ try {
         Log "SAFETY: removed experimental EEex telemetry from override; backup=$quarantine"
     }
     Log "Safety patch complete. BGXAI combat scripts unchanged. No WeiDU reinstall."
+    # Safe diagnostic boot probe: no UI calls, no EEex engine memory or action hooks.
+    $probe=Get-Bytes "BGXAI/M_BGXAI.lua"
+    $probeText=[Text.Encoding]::UTF8.GetString($probe)
+    if($probeText -notmatch "SAFE BOOT PROBE v1" -or $probeText -match "Infinity_DisplayString|AddSpriteStartedActionListener"){throw "Unsafe boot probe; installation aborted"}
+    [IO.File]::WriteAllBytes($luaDest,$probe)
+    Log "Passive Lua boot probe installed: override\\M_BGXAI.lua; no hooks or UI calls."
+    Log "Look for BGXAI_BOOT_PROBE.log after starting through InfinityLoader."
+
     # Download a pure Windows diagnostics collector; no Lua and no game runtime modifications.
     $diag = Get-Bytes "BGXAI/BGXAI_DIAGNOSTICS.cmd"
     $diagText=[Text.Encoding]::UTF8.GetString($diag)
