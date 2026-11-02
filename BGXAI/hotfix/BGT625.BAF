@@ -22,10 +22,10 @@ END
 IF
  See(NearestEnemyOf(Myself))
  !Range(NearestEnemyOf(Myself),7)
- !GlobalTimerNotExpired("BGXCHASE24","LOCALS")
+ !GlobalTimerNotExpired("BGXCHASE25","LOCALS")
 THEN
  RESPONSE #100
-  SetGlobalTimer("BGXCHASE24","LOCALS",4)
+  SetGlobalTimer("BGXCHASE25","LOCALS",4)
   DisplayStringHead(Myself,~BGXTANK625 REACQUIRE ENEMY~)
   Attack(NearestEnemyOf(Myself))
 END
@@ -68,10 +68,10 @@ IF
  HPPercentLT(Player4,95)
  !Range(Player4,9)
  !See(NearestEnemyOf(Myself))
- !GlobalTimerNotExpired("BGXRESCUE24","LOCALS")
+ !GlobalTimerNotExpired("BGXRESCUE25","LOCALS")
 THEN
  RESPONSE #100
-  SetGlobalTimer("BGXRESCUE24","LOCALS",4)
+  SetGlobalTimer("BGXRESCUE25","LOCALS",4)
   DisplayStringHead(Myself,~BGXTANK625 INJURED ALLY: CLOSE~)
   MoveToObject(Player4)
 END
