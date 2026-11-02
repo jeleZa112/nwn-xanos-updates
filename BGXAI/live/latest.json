@@ -1,0 +1,14 @@
+{
+  "channel": "local-readonly",
+  "version": "0.3.0",
+  "min_bootstrap": "1.0",
+  "message_ru": "Один постоянный BGXAI_LIVE.cmd. Бесплатный локальный монитор со сводками и Ollama. Без звука, без платных API, без передачи логов.",
+  "files": [
+    {
+      "path": "BGXAI/live/BGXAI_LIVE_MONITOR.ps1",
+      "name": "BGXAI_LIVE_MONITOR.ps1",
+      "size": 7757,
+      "sha256": "628bbf922f1c47705606b407ee7b3d818dbae1311ba5b8d1a1781bb76547dfe5"
+    }
+  ]
+}
