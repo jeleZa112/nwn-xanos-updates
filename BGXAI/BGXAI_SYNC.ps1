@@ -50,6 +50,7 @@ try {
     if($version -eq '0.6.22-intercept-melee-pilot') {$verifiedTag='622'}
     if($version -eq '0.6.23-formation-rescue-pilot') {$verifiedTag='623'}
     if($version -eq '0.6.24-support-survival-pilot') {$verifiedTag='624'}
+    if($version -eq '0.6.25-healthy-engage-pilot') {$verifiedTag='625'}
     if($version -eq '0.6.25-no-premature-formation-pilot') {$verifiedTag='625'}
     if($version -eq '0.6.23-formation-rescue-pilot') {$verifiedTag='623'}
     $expectedCompiledMarker=''
