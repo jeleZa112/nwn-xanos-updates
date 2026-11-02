@@ -71,15 +71,17 @@ try {
     } finally {$zip.Dispose();$mem.Dispose()}
     if($seen.Count -ne $allowed.Count) {throw 'Incomplete package'}
     # v0.6.17 hotfix overlay: retrieve individual BAF source files at the pinned GitHub commit.
-    if($version -eq '0.6.17-tank-pursuit-recover-pilot') {
+    if($version -eq '0.6.17-tank-pursuit-recover-pilot' -or $version -eq '0.6.18-formation-cohesion-pilot') {
+        $hotfix='0.6.17'
+        if($version -eq '0.6.18-formation-cohesion-pilot') {$hotfix='0.6.18'}
         $patches=@{
-            'BGXAI/AI_BAF/BGXTANK.BAF'='BGXAI/hotfix/BGXTANK_0.6.17.BAF'
-            'BGXAI/AI_BAF/BGXGRP.BAF'='BGXAI/hotfix/BGXGRP_0.6.17.BAF'
+            'BGXAI/AI_BAF/BGXTANK.BAF'=('BGXAI/hotfix/BGXTANK_'+$hotfix+'.BAF')
+            'BGXAI/AI_BAF/BGXGRP.BAF'=('BGXAI/hotfix/BGXGRP_'+$hotfix+'.BAF')
         }
         foreach($target in $patches.Keys) {
             [byte[]]$patch=GetFile $patches[$target] $commit
             $patchText=[Text.Encoding]::UTF8.GetString($patch)
-            if($patch.Length -lt 1000 -or !$patchText.Contains('0.6.17')) {throw ('Invalid hotfix script: '+$target)}
+            if($patch.Length -lt 1000 -or !$patchText.Contains($hotfix)) {throw ('Invalid hotfix script: '+$target)}
             $dst=Join-Path $stage ($target.Replace('/',[IO.Path]::DirectorySeparatorChar))
             [IO.File]::WriteAllBytes($dst,$patch)
             Log ('Staged verified hotfix BAF: '+$target)
