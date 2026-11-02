@@ -1,0 +1,245 @@
+// BGXFIN v0.6.27 — dedicated ranged opportunistic finisher, 6 allies
+// New optional roles, not assigned to saved characters automatically.
+// Finisher bow ready; first-time activation
+IF
+ Global("BGXVER27","LOCALS",0)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXVER27","LOCALS",1)
+  DisplayStringHead(Myself,~BGXFIN627 RANGED FINISHER ACTIVE~)
+END
+// Retreat only when truly endangered
+IF
+ HPPercentLT(Myself,38)
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),6)
+ !GlobalTimerNotExpired("BGXFLEE27","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXFLEE27","LOCALS",10)
+  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),45)
+END
+// Prepare ranged option when idle, do not change during a shot
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ !IsWeaponRanged(Myself)
+ CanEquipRanged()
+THEN
+ RESPONSE #100
+  EquipRanged()
+  DisplayStringHead(Myself,~BGXFIN627 READY~)
+END
+// RANGED FINISH: close to dead enemy that actually damaged party slot 1; 9 second switch limit
+IF
+ InParty(PartySlot1)
+ InMyArea(PartySlot1)
+ See(LastAttackerOf(PartySlot1))
+ Range(LastAttackerOf(PartySlot1),24)
+ HPLT(LastAttackerOf(PartySlot1),17)
+ HPPercentLT(LastAttackerOf(PartySlot1),31)
+ IsWeaponRanged(Myself)
+ !GlobalTimerNotExpired("BGXKILL27","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXKILL27","LOCALS",9)
+  DisplayStringHead(Myself,~BGXFIN627 FINISH P1~)
+  Attack(LastAttackerOf(PartySlot1))
+END
+// RANGED FINISH: close to dead enemy that actually damaged party slot 2; 9 second switch limit
+IF
+ InParty(PartySlot2)
+ InMyArea(PartySlot2)
+ See(LastAttackerOf(PartySlot2))
+ Range(LastAttackerOf(PartySlot2),24)
+ HPLT(LastAttackerOf(PartySlot2),17)
+ HPPercentLT(LastAttackerOf(PartySlot2),31)
+ IsWeaponRanged(Myself)
+ !GlobalTimerNotExpired("BGXKILL27","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXKILL27","LOCALS",9)
+  DisplayStringHead(Myself,~BGXFIN627 FINISH P2~)
+  Attack(LastAttackerOf(PartySlot2))
+END
+// RANGED FINISH: close to dead enemy that actually damaged party slot 3; 9 second switch limit
+IF
+ InParty(PartySlot3)
+ InMyArea(PartySlot3)
+ See(LastAttackerOf(PartySlot3))
+ Range(LastAttackerOf(PartySlot3),24)
+ HPLT(LastAttackerOf(PartySlot3),17)
+ HPPercentLT(LastAttackerOf(PartySlot3),31)
+ IsWeaponRanged(Myself)
+ !GlobalTimerNotExpired("BGXKILL27","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXKILL27","LOCALS",9)
+  DisplayStringHead(Myself,~BGXFIN627 FINISH P3~)
+  Attack(LastAttackerOf(PartySlot3))
+END
+// RANGED FINISH: close to dead enemy that actually damaged party slot 4; 9 second switch limit
+IF
+ InParty(PartySlot4)
+ InMyArea(PartySlot4)
+ See(LastAttackerOf(PartySlot4))
+ Range(LastAttackerOf(PartySlot4),24)
+ HPLT(LastAttackerOf(PartySlot4),17)
+ HPPercentLT(LastAttackerOf(PartySlot4),31)
+ IsWeaponRanged(Myself)
+ !GlobalTimerNotExpired("BGXKILL27","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXKILL27","LOCALS",9)
+  DisplayStringHead(Myself,~BGXFIN627 FINISH P4~)
+  Attack(LastAttackerOf(PartySlot4))
+END
+// RANGED FINISH: close to dead enemy that actually damaged party slot 5; 9 second switch limit
+IF
+ InParty(PartySlot5)
+ InMyArea(PartySlot5)
+ See(LastAttackerOf(PartySlot5))
+ Range(LastAttackerOf(PartySlot5),24)
+ HPLT(LastAttackerOf(PartySlot5),17)
+ HPPercentLT(LastAttackerOf(PartySlot5),31)
+ IsWeaponRanged(Myself)
+ !GlobalTimerNotExpired("BGXKILL27","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXKILL27","LOCALS",9)
+  DisplayStringHead(Myself,~BGXFIN627 FINISH P5~)
+  Attack(LastAttackerOf(PartySlot5))
+END
+// RANGED FINISH: close to dead enemy that actually damaged party slot 6; 9 second switch limit
+IF
+ InParty(PartySlot6)
+ InMyArea(PartySlot6)
+ See(LastAttackerOf(PartySlot6))
+ Range(LastAttackerOf(PartySlot6),24)
+ HPLT(LastAttackerOf(PartySlot6),17)
+ HPPercentLT(LastAttackerOf(PartySlot6),31)
+ IsWeaponRanged(Myself)
+ !GlobalTimerNotExpired("BGXKILL27","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXKILL27","LOCALS",9)
+  DisplayStringHead(Myself,~BGXFIN627 FINISH P6~)
+  Attack(LastAttackerOf(PartySlot6))
+END
+// NEAR ALLY FALLBACK: wounded enemy in melee range of ally 1; no evidence of actual aggro, prioritise by proximity and low HP
+IF
+ InParty(PartySlot1)
+ InMyArea(PartySlot1)
+ Range(PartySlot1,22)
+ See(NearestEnemyOf(PartySlot1))
+ Range(NearestEnemyOf(PartySlot1),20)
+ Range(PartySlot1,15)
+ HPLT(NearestEnemyOf(PartySlot1),13)
+ HPPercentLT(NearestEnemyOf(PartySlot1),26)
+ IsWeaponRanged(Myself)
+ !GlobalTimerNotExpired("BGXKILL27","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXKILL27","LOCALS",9)
+  DisplayStringHead(Myself,~BGXFIN627 LOW ENEMY P1~)
+  Attack(NearestEnemyOf(PartySlot1))
+END
+// NEAR ALLY FALLBACK: wounded enemy in melee range of ally 2; no evidence of actual aggro, prioritise by proximity and low HP
+IF
+ InParty(PartySlot2)
+ InMyArea(PartySlot2)
+ Range(PartySlot2,22)
+ See(NearestEnemyOf(PartySlot2))
+ Range(NearestEnemyOf(PartySlot2),20)
+ Range(PartySlot2,15)
+ HPLT(NearestEnemyOf(PartySlot2),13)
+ HPPercentLT(NearestEnemyOf(PartySlot2),26)
+ IsWeaponRanged(Myself)
+ !GlobalTimerNotExpired("BGXKILL27","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXKILL27","LOCALS",9)
+  DisplayStringHead(Myself,~BGXFIN627 LOW ENEMY P2~)
+  Attack(NearestEnemyOf(PartySlot2))
+END
+// NEAR ALLY FALLBACK: wounded enemy in melee range of ally 3; no evidence of actual aggro, prioritise by proximity and low HP
+IF
+ InParty(PartySlot3)
+ InMyArea(PartySlot3)
+ Range(PartySlot3,22)
+ See(NearestEnemyOf(PartySlot3))
+ Range(NearestEnemyOf(PartySlot3),20)
+ Range(PartySlot3,15)
+ HPLT(NearestEnemyOf(PartySlot3),13)
+ HPPercentLT(NearestEnemyOf(PartySlot3),26)
+ IsWeaponRanged(Myself)
+ !GlobalTimerNotExpired("BGXKILL27","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXKILL27","LOCALS",9)
+  DisplayStringHead(Myself,~BGXFIN627 LOW ENEMY P3~)
+  Attack(NearestEnemyOf(PartySlot3))
+END
+// NEAR ALLY FALLBACK: wounded enemy in melee range of ally 4; no evidence of actual aggro, prioritise by proximity and low HP
+IF
+ InParty(PartySlot4)
+ InMyArea(PartySlot4)
+ Range(PartySlot4,22)
+ See(NearestEnemyOf(PartySlot4))
+ Range(NearestEnemyOf(PartySlot4),20)
+ Range(PartySlot4,15)
+ HPLT(NearestEnemyOf(PartySlot4),13)
+ HPPercentLT(NearestEnemyOf(PartySlot4),26)
+ IsWeaponRanged(Myself)
+ !GlobalTimerNotExpired("BGXKILL27","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXKILL27","LOCALS",9)
+  DisplayStringHead(Myself,~BGXFIN627 LOW ENEMY P4~)
+  Attack(NearestEnemyOf(PartySlot4))
+END
+// NEAR ALLY FALLBACK: wounded enemy in melee range of ally 5; no evidence of actual aggro, prioritise by proximity and low HP
+IF
+ InParty(PartySlot5)
+ InMyArea(PartySlot5)
+ Range(PartySlot5,22)
+ See(NearestEnemyOf(PartySlot5))
+ Range(NearestEnemyOf(PartySlot5),20)
+ Range(PartySlot5,15)
+ HPLT(NearestEnemyOf(PartySlot5),13)
+ HPPercentLT(NearestEnemyOf(PartySlot5),26)
+ IsWeaponRanged(Myself)
+ !GlobalTimerNotExpired("BGXKILL27","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXKILL27","LOCALS",9)
+  DisplayStringHead(Myself,~BGXFIN627 LOW ENEMY P5~)
+  Attack(NearestEnemyOf(PartySlot5))
+END
+// NEAR ALLY FALLBACK: wounded enemy in melee range of ally 6; no evidence of actual aggro, prioritise by proximity and low HP
+IF
+ InParty(PartySlot6)
+ InMyArea(PartySlot6)
+ Range(PartySlot6,22)
+ See(NearestEnemyOf(PartySlot6))
+ Range(NearestEnemyOf(PartySlot6),20)
+ Range(PartySlot6,15)
+ HPLT(NearestEnemyOf(PartySlot6),13)
+ HPPercentLT(NearestEnemyOf(PartySlot6),26)
+ IsWeaponRanged(Myself)
+ !GlobalTimerNotExpired("BGXKILL27","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXKILL27","LOCALS",9)
+  DisplayStringHead(Myself,~BGXFIN627 LOW ENEMY P6~)
+  Attack(NearestEnemyOf(PartySlot6))
+END
+// Ranged finisher normal behaviour — maintain current enemy until defeated
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),24)
+THEN
+ RESPONSE #100
+  Attack(NearestEnemyOf(Myself))
+END
