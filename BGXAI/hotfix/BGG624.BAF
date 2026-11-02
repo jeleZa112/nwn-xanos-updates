@@ -1,0 +1,189 @@
+// BGXGRP v0.6.24 LIVENESS FIRST. No legacy BGXMODE lock; Player3 = tank, Player4 = support.
+// The engine evaluates the first matching block. EVERY threatened HP band has fallback.
+IF
+ Global("BGXVER24","LOCALS",0)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXVER24","LOCALS",1)
+  DisplayStringHead(Myself,~BGXGRP624 ACTIVE~)
+END
+// Re-arm a finite escape budget only after recovery.
+IF
+ GlobalGT("BGXESC24","LOCALS",0)
+ HPPercentGT(Myself,84)
+ !GlobalTimerNotExpired("BGXRESET24","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobal("BGXESC24","LOCALS",0)
+  SetGlobalTimer("BGXRESET24","LOCALS",6)
+END
+// Actual protection: while threatened beside tank, step AWAY from attacker.
+// Use direct attack evidence or low HP. Do not send another Help every 6 sec.
+IF
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),9)
+ InMyArea(Player3)
+ Range(Player3,12)
+ OR(2)
+  AttackedBy([ANYONE],DEFAULT)
+  HPPercentLT(Myself,65)
+ Global("BGXESC24","LOCALS",0)
+ !GlobalTimerNotExpired("BGXESCWAIT24","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobal("BGXESC24","LOCALS",1)
+  SetGlobalTimer("BGXESCWAIT24","LOCALS",5)
+  SetGlobalTimer("BGXEVADEWINDOW24","LOCALS",5)
+  DisplayStringHead(Myself,~BGXGRP624 BREAK CONTACT 1/3~)
+  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),45)
+END
+IF
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),9)
+ InMyArea(Player3)
+ Range(Player3,12)
+ OR(2)
+  AttackedBy([ANYONE],DEFAULT)
+  HPPercentLT(Myself,65)
+ Global("BGXESC24","LOCALS",1)
+ !GlobalTimerNotExpired("BGXESCWAIT24","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobal("BGXESC24","LOCALS",2)
+  SetGlobalTimer("BGXESCWAIT24","LOCALS",5)
+  SetGlobalTimer("BGXEVADEWINDOW24","LOCALS",5)
+  DisplayStringHead(Myself,~BGXGRP624 BREAK CONTACT 2/3~)
+  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),45)
+END
+IF
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),9)
+ InMyArea(Player3)
+ Range(Player3,12)
+ OR(2)
+  AttackedBy([ANYONE],DEFAULT)
+  HPPercentLT(Myself,65)
+ Global("BGXESC24","LOCALS",2)
+ !GlobalTimerNotExpired("BGXESCWAIT24","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobal("BGXESC24","LOCALS",3)
+  SetGlobalTimer("BGXESCWAIT24","LOCALS",5)
+  SetGlobalTimer("BGXEVADEWINDOW24","LOCALS",5)
+  DisplayStringHead(Myself,~BGXGRP624 BREAK CONTACT 3/3~)
+  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),45)
+END
+// If far from tank at low HP, run TOWARD him, but not during an evasive burst.
+IF
+ HPPercentLT(Myself,70)
+ See(NearestEnemyOf(Myself))
+ InMyArea(Player3)
+ !Range(Player3,9)
+ !GlobalTimerNotExpired("BGXRET24","LOCALS")
+ !GlobalTimerNotExpired("BGXEVADEWINDOW24","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXRET24","LOCALS",5)
+  DisplayStringHead(Myself,~BGXGRP624 WITHDRAW TO TANK~)
+  MoveToObject(Player3)
+END
+// Maintain formation when farther away. Not while fleeing from a current attack.
+IF
+ See(NearestEnemyOf(Myself))
+ InMyArea(Player3)
+ !Range(Player3,16)
+ !GlobalTimerNotExpired("BGXLEASH24","LOCALS")
+ !GlobalTimerNotExpired("BGXEVADEWINDOW24","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXLEASH24","LOCALS",5)
+  DisplayStringHead(Myself,~BGXGRP624 RETURN TO FORMATION~)
+  MoveToObject(Player3)
+END
+// A help cry is only needed when attacked OUTSIDE the tank's reach.
+IF
+ AttackedBy([ANYONE],DEFAULT)
+ InMyArea(Player3)
+ !Range(Player3,10)
+ !GlobalTimerNotExpired("BGXHELP24","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXHELP24","LOCALS",15)
+  Help()
+  DisplayStringHead(Myself,~BGXGRP624 HELP SIGNAL~)
+END
+// Contact melee is requested once; never repeatedly reset attack timing.
+IF
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),8)
+ Global("BGXMELEE24","LOCALS",0)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXMELEE24","LOCALS",1)
+  EquipMostDamagingMelee()
+  DisplayStringHead(Myself,~BGXGRP624 CONTACT MELEE REQUEST~)
+END
+// Reset the contact latch only after immediate danger has passed.
+IF
+ Global("BGXMELEE24","LOCALS",1)
+ !Range(NearestEnemyOf(Myself),12)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXMELEE24","LOCALS",0)
+END
+// Heal only when not within 8 ft of an enemy; do not block combat if out of spells.
+IF
+ HPPercentLT(Myself,80)
+ !Range(NearestEnemyOf(Myself),8)
+ HaveSpell(CLERIC_CURE_MODERATE_WOUNDS)
+ !GlobalTimerNotExpired("BGXHEAL24","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXHEAL24","LOCALS",9)
+  DisplayStringHead(Myself,~BGXGRP624 HEAL MODERATE~)
+  Spell(Myself,CLERIC_CURE_MODERATE_WOUNDS)
+END
+IF
+ HPPercentLT(Myself,80)
+ !Range(NearestEnemyOf(Myself),8)
+ HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+ !GlobalTimerNotExpired("BGXHEAL24","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXHEAL24","LOCALS",9)
+  DisplayStringHead(Myself,~BGXGRP624 HEAL LIGHT~)
+  Spell(Myself,CLERIC_CURE_LIGHT_WOUNDS)
+END
+// When safe enough for range, switch only if an equipped ranged option really exists.
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ !Range(NearestEnemyOf(Myself),9)
+ Range(NearestEnemyOf(Myself),18)
+ OR(2)
+  !InMyArea(Player3)
+  Range(Player3,14)
+ !IsWeaponRanged(Myself)
+ CanEquipRanged()
+ !GlobalTimerNotExpired("BGXWPN24","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXWPN24","LOCALS",6)
+  EquipRanged()
+  SetGlobal("BGXMELEE24","LOCALS",0)
+  DisplayStringHead(Myself,~BGXGRP624 RANGED~)
+END
+// STABLE FALLBACK: issue Attack only when idle, not a periodic AttackOneRound chain.
+// Keep the range bounded: support will not chase enemies across the area.
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),18)
+ OR(2)
+  !InMyArea(Player3)
+  Range(Player3,14)
+THEN
+ RESPONSE #100
+  Attack(NearestEnemyOf(Myself))
+  DisplayStringHead(Myself,~BGXGRP624 ENGAGE~)
+END
