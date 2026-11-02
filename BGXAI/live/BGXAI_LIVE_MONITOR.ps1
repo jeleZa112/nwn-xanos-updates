@@ -1,4 +1,4 @@
-﻿# BGXAI LIVE MONITOR 0.3.2 - verified BGEE action labels in Ollama prompt. Windows PowerShell 5.1.
+﻿# BGXAI LIVE MONITOR 0.4.1 - private fixed-target sync with GitHub CLI. Windows PowerShell 5.1.
 param([Parameter(Mandatory=$true)][string]$GameRoot)
 $ErrorActionPreference='Stop'
 $ProgressPreference='SilentlyContinue'
@@ -12,6 +12,21 @@ $escapes=@{}; $helps=@{}; $lastAlert=@{}
 $stream=$null
 $partial=''
 $decoder=[Text.Encoding]::UTF8.GetDecoder()
+$script:Counts=@{}
+$script:Incidents=@{}
+$script:TotalEvents=0
+$script:LastSnapshot=[datetime]::MinValue
+$script:LastSync=[datetime]::MinValue
+$script:LastQueuedCount=0
+$script:SyncJob=$null
+$script:SyncRoot=Join-Path $env:LOCALAPPDATA 'BGXAI_LIVE'
+$script:Actors=@{}
+$script:NextActor=0
+$script:CodeCounts=@{}
+$script:Recent=New-Object 'System.Collections.Generic.List[object]'
+$script:KeyFile=Join-Path $script:SyncRoot 'github_token.dpapi'
+$script:SummaryFile=Join-Path $out 'LIVE_SUMMARY.json'
+$script:SyncStatusFile=Join-Path $out 'SYNC_STATUS.txt'
 function Log([string]$s,[string]$level='INFO') {
   $msg='['+(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')+']['+$level+'] '+$s
   if($level -eq 'ALERT'){Write-Host $msg -ForegroundColor Red}
@@ -37,6 +52,8 @@ function Incident([string]$kind,[string]$who,[string]$reason) {
   $now=Get-Date
   if($lastAlert.ContainsKey($key) -and ($now-$lastAlert[$key]).TotalSeconds -lt 60){return}
   $lastAlert[$key]=$now
+  if(!$script:Incidents.ContainsKey($kind)){$script:Incidents[$kind]=0}
+  $script:Incidents[$kind]=[int]$script:Incidents[$kind]+1
   $name='INCIDENT_'+$now.ToString('yyyyMMdd_HHmmss_fff')+'_'+$kind+'.txt'
   $path=Join-Path $out $name
   $lines=@('BGXAI LIVE INCIDENT',
@@ -72,6 +89,69 @@ function Incident([string]$kind,[string]$who,[string]$reason) {
     }catch{Log ('Local Ollama worker failed: '+$_.Exception.Message) 'WARN'}
   }
 }
+
+# All online uploads are opt-in, sanitized and restricted to a verified private GitHub repo.
+function Write-Summary {
+  $actors=@()
+  foreach($label in @($script:Counts.Keys | Sort-Object)){
+    $actors+=@{actor=[string]$label;actions=[int]$script:Counts[$label]}
+  }
+  $codes=@()
+  foreach($id in @($script:CodeCounts.Keys | Sort-Object)){
+    $codes+=@{code=[int]$id;count=[int]$script:CodeCounts[$id]}
+  }
+  $incidents=@()
+  foreach($kind in @($script:Incidents.Keys | Sort-Object)){
+    $incidents+=@{type=[string]$kind;count=[int]$script:Incidents[$kind]}
+  }
+  $obj=@{
+    schema=1;monitor='0.4.1';utc=[DateTime]::UtcNow.ToString('o')
+    total=[int]$script:TotalEvents;actors=$actors;actions=$codes
+    incidents=$incidents;recent=@($script:Recent | Select-Object -Last 20)
+    note='Observes action starts, not damage, HP, confirmed deaths or complete roster.'
+  }
+  [IO.File]::WriteAllText($script:SummaryFile,($obj | ConvertTo-Json -Compress -Depth 6),(New-Object Text.UTF8Encoding($false)))
+}
+function Begin-PrivateSync {
+  # Only the private repo hardcoded below. No arbitrary URLs from files or logs.
+  if(!(Test-Path -LiteralPath $script:KeyFile -PathType Leaf)){return}
+  if(!(Test-Path -LiteralPath $script:SummaryFile -PathType Leaf)){return}
+  if($script:SyncJob -and $script:SyncJob.State -eq 'Running'){return}
+  if($script:SyncJob){Remove-Job -Job $script:SyncJob -Force -ErrorAction SilentlyContinue;$script:SyncJob=$null}
+  $script:SyncJob=Start-Job -Name ('BGXAI_Private_'+(Get-Date -Format HHmmssfff)) -ArgumentList $script:KeyFile,$script:SummaryFile,$script:SyncStatusFile -ScriptBlock {
+    param([string]$keyFile,[string]$summaryFile,[string]$statusFile)
+    $env:GH_TOKEN=$null
+    try{
+      $secure=[IO.File]::ReadAllText($keyFile,[Text.Encoding]::ASCII) | ConvertTo-SecureString
+      $bstr=[Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+      try { $env:GH_TOKEN=[Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr) }
+      finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
+      if($env:GH_TOKEN -notmatch '^github_pat_[A-Za-z0-9_]{30,}$'){throw 'GitHub token format invalid'}
+      $repo='jeleZa112/BGXAI-private-telemetry'
+      $v=& gh api ('repos/'+$repo) --jq '.private' 2>$null
+      if($LASTEXITCODE -ne 0 -or ($v -join '').Trim() -ne 'true'){throw 'Private repo access not verified'}
+      $endpoint='repos/'+$repo+'/contents/live/latest.json'
+      $oldSha=& gh api $endpoint --jq '.sha' 2>$null
+      if($LASTEXITCODE -ne 0){$oldSha=$null}
+      $raw=[IO.File]::ReadAllBytes($summaryFile)
+      if($raw.Length -gt 10000){throw 'Summary oversized'}
+      $b64=[Convert]::ToBase64String($raw)
+      $args=@('api',$endpoint,'--method','PUT','-f','message=BGXAI private counters','-f',('content='+$b64))
+      if($oldSha -and ($oldSha -join '').Trim() -match '^[a-f0-9]{40}$'){
+        $args+=@('-f',('sha='+($oldSha -join '').Trim()))
+      }
+      $null= & gh @args 2>$null
+      if($LASTEXITCODE -ne 0){throw 'GitHub update rejected'}
+      [IO.File]::WriteAllText($statusFile,([DateTime]::UtcNow.ToString('o')+' OK: private summary uploaded'),[Text.Encoding]::ASCII)
+    }catch{
+      [IO.File]::WriteAllText($statusFile,([DateTime]::UtcNow.ToString('o')+' ERROR: '+$_.Exception.Message),[Text.Encoding]::ASCII)
+    }finally{
+      Remove-Item Env:\GH_TOKEN -ErrorAction SilentlyContinue
+      $secure=$null
+      $raw=$null
+    }
+  }
+}
 function Handle([string]$line) {
   if(!$line){return}
   if($line.Contains('[BGXAI]')) {
@@ -81,6 +161,19 @@ function Handle([string]$line) {
   if($line -match '\[BGXAI\] HOOK_ERROR') {Incident 'HOOK_ERROR' 'EEex' 'Listener exception';return}
   if($line -notmatch '\[BGXAI\] ACTION_\d+ name=(.+?) id=\S+ action=(\d+)\b'){return}
   $who=$Matches[1].Trim();$act=[int]$Matches[2];$now=Get-Date
+  if(!$script:Actors.ContainsKey($who)){
+    $script:NextActor++
+    $script:Actors[$who]='A'+[string]$script:NextActor
+  }
+  $actor=[string]$script:Actors[$who]
+  if(!$script:Counts.ContainsKey($actor)){$script:Counts[$actor]=0}
+  $script:Counts[$actor]=[int]$script:Counts[$actor]+1
+  $code=[string]$act
+  if(!$script:CodeCounts.ContainsKey($code)){$script:CodeCounts[$code]=0}
+  $script:CodeCounts[$code]=[int]$script:CodeCounts[$code]+1
+  [void]$script:Recent.Add(@{actor=$actor;action=$act})
+  if($script:Recent.Count -gt 20){$script:Recent.RemoveAt(0)}
+  $script:TotalEvents++
   if($act -eq 355) {
     if(!$escapes.ContainsKey($who)){$escapes[$who]=New-Object 'System.Collections.Generic.List[datetime]'}
     $li=$escapes[$who]; [void]$li.Add($now)
@@ -130,6 +223,8 @@ Log 'BGXAI LIVE MONITOR 0.3 | no sound, no paid API, log is read-only.'
 Log ('Local reports: '+$out)
 if($model){Log ('Ollama local: '+$model)}else{Log 'Ollama unavailable; rules-only mode active.' 'WARN'}
 Log 'Launch EET using InfinityLoader; press Ctrl+C here to stop.'
+Log 'Private report sync is active only when encrypted github_token.dpapi exists.'
+Write-Summary
 while($true){
   try {
     if(!$stream){$null=OpenLog}else{Poll}
@@ -140,5 +235,16 @@ while($true){
     Log ('Watch warning: '+$_.Exception.Message) 'WARN'
     if($stream){try{$stream.Dispose()}catch{};$stream=$null}
   }
+  try {
+    if(([DateTime]::UtcNow-$script:LastSnapshot).TotalSeconds -ge 15){
+      Write-Summary
+      $script:LastSnapshot=[DateTime]::UtcNow
+      if($script:TotalEvents -gt $script:LastQueuedCount -and ([DateTime]::UtcNow-$script:LastSync).TotalSeconds -ge 120){
+        Begin-PrivateSync
+        $script:LastQueuedCount=$script:TotalEvents
+        $script:LastSync=[DateTime]::UtcNow
+      }
+    }
+  }catch{Log ('Private sync diagnostic: '+$_.Exception.Message) 'WARN'}
   Start-Sleep -Milliseconds 600
 }
