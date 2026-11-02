@@ -1,0 +1,60 @@
+// BGXTANK v0.6.26 TARGET STABILITY, switches only for critical emergency (Player4 support)
+// First matching block wins. Continue() only after immediate state changes.
+// Version stamp
+IF
+ Global("BGXVER26","LOCALS",0)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXVER26","LOCALS",1)
+  DisplayStringHead(Myself,~BGXTANK626 ACTIVE~)
+END
+// CRITICAL intervention: help signal + support dying + visible last physical attacker nearby
+IF
+ Help(Player4)
+ InMyArea(Player4)
+ HPPercentLT(Player4,28)
+ Range(Player4,20)
+ See(LastAttackerOf(Player4))
+ Range(LastAttackerOf(Player4),20)
+ !GlobalTimerNotExpired("BGXSWITCH26","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXSWITCH26","LOCALS",15)
+  DisplayStringHead(Myself,~BGXTANK626 CRITICAL INTERCEPT~)
+  Attack(LastAttackerOf(Player4))
+END
+// Only when no opponent visible and ally dying, move to rescue
+IF
+ InMyArea(Player4)
+ HPPercentLT(Player4,30)
+ !Range(Player4,9)
+ !See(NearestEnemyOf(Myself))
+ !GlobalTimerNotExpired("BGXRESCUE26","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXRESCUE26","LOCALS",8)
+  DisplayStringHead(Myself,~BGXTANK626 EMERGENCY REGROUP~)
+  MoveToObject(Player4)
+END
+// Weapon change at immediate contact, then resume attacking without idle gap
+IF
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),14)
+ IsWeaponRanged(Myself)
+ !GlobalTimerNotExpired("BGXWPN26","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXWPN26","LOCALS",9)
+  EquipMostDamagingMelee()
+  DisplayStringHead(Myself,~BGXTANK626 MELEE AND ENGAGE~)
+  Attack(NearestEnemyOf(Myself))
+END
+// Keep engine target until dead or lost. Only acquire when action queue idle
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+THEN
+ RESPONSE #100
+  DisplayStringHead(Myself,~BGXTANK626 ACQUIRE ONCE~)
+  Attack(NearestEnemyOf(Myself))
+END
