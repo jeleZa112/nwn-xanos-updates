@@ -11,7 +11,8 @@ local function append(msg)
     if T.disabled then return end
     local ok,err = pcall(function()
         local root = (type(Infinity_GetGameDirectory) == "function" and Infinity_GetGameDirectory()) or "."
-        local separator = root:sub(-1) == "\\" or root:sub(-1) == "/" and "" or "\\"
+        local separator = "\\"
+        if root:sub(-1) == "\\" or root:sub(-1) == "/" then separator = "" end
         local fullpath = root .. separator .. "BGXAI_COMBAT.log"
         local f,e = io.open(fullpath, "a")
         if not f then error(e or "io.open failed") end
