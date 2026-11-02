@@ -1,0 +1,67 @@
+// BGXTANK v0.6.23 RESCUE-PERSIST pilot. Player3 tank, Player4 support.
+// Every emergency response uses a timer, NOT ActionListEmpty, so old movement cannot deadlock rescue.
+IF
+ Global("BGXVER23","LOCALS",0)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXVER23","LOCALS",1)
+  DisplayStringHead(Myself,~BGXTANK623 ACTIVE~)
+END
+// Preserve proven melee switching near visible threats.
+IF
+ See(NearestEnemyOf(Myself))
+ IsWeaponRanged(Myself)
+ !GlobalTimerNotExpired("BGXWPN23","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXWPN23","LOCALS",8)
+  EquipMostDamagingMelee()
+  DisplayStringHead(Myself,~BGXTANK623 MELEE REQUEST~)
+END
+// A distant visible enemy: reissue interception after 4 sec even when prior movement remains queued.
+IF
+ See(NearestEnemyOf(Myself))
+ !Range(NearestEnemyOf(Myself),7)
+ !GlobalTimerNotExpired("BGXCHASE23","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCHASE23","LOCALS",4)
+  DisplayStringHead(Myself,~BGXTANK623 REACQUIRE ENEMY~)
+  Attack(NearestEnemyOf(Myself))
+END
+// If already next to enemy, let the standing Attack continue without resetting round timer.
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+THEN
+ RESPONSE #100
+  Attack(NearestEnemyOf(Myself))
+END
+// A received help call takes priority over old move orders if no enemy is visible.
+// Do not require See(Player4): she can be behind foliage or beyond visual radius.
+IF
+ Help(Player4)
+ InMyArea(Player4)
+ !Range(Player4,8)
+ !See(NearestEnemyOf(Myself))
+ !GlobalTimerNotExpired("BGXHELP23","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXHELP23","LOCALS",3)
+  DisplayStringHead(Myself,~BGXTANK623 HELP: RUN TO SUPPORT~)
+  MoveToObject(Player4)
+END
+// Recovery from missed help: if support was injured, move to her even from outside visual range.
+// Does not require ActionListEmpty, See(Player4), or a 30ft range limit.
+IF
+ InMyArea(Player4)
+ HPPercentLT(Player4,95)
+ !Range(Player4,9)
+ !See(NearestEnemyOf(Myself))
+ !GlobalTimerNotExpired("BGXRESCUE23","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXRESCUE23","LOCALS",4)
+  DisplayStringHead(Myself,~BGXTANK623 INJURED ALLY: CLOSE~)
+  MoveToObject(Player4)
+END
