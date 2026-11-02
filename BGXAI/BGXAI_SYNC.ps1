@@ -70,6 +70,22 @@ try {
         }
     } finally {$zip.Dispose();$mem.Dispose()}
     if($seen.Count -ne $allowed.Count) {throw 'Incomplete package'}
+    # v0.6.17 hotfix overlay: retrieve individual BAF source files at the pinned GitHub commit.
+    if($version -eq '0.6.17-tank-pursuit-recover-pilot') {
+        $patches=@{
+            'BGXAI/AI_BAF/BGXTANK.BAF'='BGXAI/hotfix/BGXTANK_0.6.17.BAF'
+            'BGXAI/AI_BAF/BGXGRP.BAF'='BGXAI/hotfix/BGXGRP_0.6.17.BAF'
+        }
+        foreach($target in $patches.Keys) {
+            [byte[]]$patch=GetFile $patches[$target] $commit
+            $patchText=[Text.Encoding]::UTF8.GetString($patch)
+            if($patch.Length -lt 1000 -or !$patchText.Contains('0.6.17')) {throw ('Invalid hotfix script: '+$target)}
+            $dst=Join-Path $stage ($target.Replace('/',[IO.Path]::DirectorySeparatorChar))
+            [IO.File]::WriteAllBytes($dst,$patch)
+            Log ('Staged verified hotfix BAF: '+$target)
+        }
+    }
+
     $setup=Join-Path $GameRoot 'setup-BGXAI.exe'
     if(!(Test-Path $setup)) {
         $source=Join-Path $GameRoot 'setup-stratagems.exe'
