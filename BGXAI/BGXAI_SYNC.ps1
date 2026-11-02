@@ -43,6 +43,12 @@ try {
         Log "SAFETY: removed experimental EEex telemetry from override; backup=$quarantine"
     }
     Log "Safety patch complete. BGXAI combat scripts unchanged. No WeiDU reinstall."
+    # Download a pure Windows diagnostics collector; no Lua and no game runtime modifications.
+    $diag = Get-Bytes "BGXAI/BGXAI_DIAGNOSTICS.cmd"
+    $diagText=[Text.Encoding]::UTF8.GetString($diag)
+    if($diagText.Length -lt 400 -or !$diagText.Contains("BGXAI_DIAGNOSTICS.txt")){throw "Invalid diagnostic collector"}
+    [IO.File]::WriteAllBytes((Join-Path $GameRoot "BGXAI_DIAGNOSTICS.cmd"),$diag)
+    Log "Safe collector installed: BGXAI_DIAGNOSTICS.cmd (collects existing logs only)."
     exit 0
     $marker=Join-Path $GameRoot "BGXAI\bgxai-updater-version.txt"
     if((Test-Path $marker) -and ([IO.File]::ReadAllText($marker).Trim() -eq ($version + "-telemetry2")) -and (Test-Path (Join-Path $GameRoot "override\M_BGXAI.lua"))) {
