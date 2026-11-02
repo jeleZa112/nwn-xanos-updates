@@ -1,0 +1,16 @@
+# BGXAI 2026-11-02 — почему продолжали исполняться сообщения BGXGRP614
+Состояние: источник старого скрипта в профиле пока **подозревается, но НЕ подтверждён отчётом пользователя**.
+
+Наблюдения:
+- На экране v0.6.20 всё ещё появлялись `BGXGRP614 EVADE SHORT`, Халид не перехватывал волка, Джахейра погибала.
+- `BGXAI_UPDATE.log` показал `VERIFY compiled BGXGRP`, `VERIFY compiled BGXTANK`, `SUCCESS: BGXAI 0.6.20-liveness-first-pilot`. Назначения в игровом меню также `BGXGRP` и `BGXTANK`.
+- `InfinityLoader` сканирует `C:/Users/Drevo/Documents/Baldur's Gate - Enhanced Edition Trilogy/scripts` **до** папки установки. Источник: https://gibberlings3.github.io/iesdp/appendices/override.htm (сначала home:/scripts, потом install:/scripts).
+- Предыдущий updater проверял только `install:/scripts`; это не доказывало, какой сценарий движок берёт при наличии копии в `home:/scripts`.
+
+Изменение:
+- Коммит `c1917b3` обновляет `BGXAI/BGXAI_SYNC.ps1`: существующий постоянный CMD запускает диагностику и синхронизацию даже при `Already current`, без WeiDU.
+- `BGXAI/BGXAI_RESOURCE_AUDIT.ps1` проверяет SHA256 `override/NAME.BCS` и `scripts/NAME.BS`, затем находит папку `Documents/Baldur's Gate - Enhanced Edition Trilogy` и при наличии сохраняет старые версии `BGXGRP.BS` и `BGXTANK.BS` в `%LOCALAPPDATA%/BGXAI_UPDATER/shadow_backup_TIMESTAMP`, переписывает их текущей компиляцией, проверяет хеш. То же для существующих конфликтующих BGX*.BS/.BCS в других пользовательских override-папках.
+- Пишет `BGXAI_RESOURCE_AUDIT.txt` в корне игры. До чтения отчёта не делать вывод, что корень проблемы подтверждён. Если профиля нет или имеются другие переопределения, развивать диагностическое покрытие.
+- Никакого боевого ИИ, Lua или WeiDU этот аудит не меняет.
+
+Следующая приемка: прочесть `BGXAI_RESOURCE_AUDIT.txt`, убедиться в `PROFILE FOUND`, `SYNCED`/ `MATCH` и `AUDIT SUCCESS`. После этого перезапустить игру через InfinityLoader, изучить боевой лог и убедиться, что выполняются только BGXGRP620 / BGXTANK620, прежде чем править тактику дальше.
