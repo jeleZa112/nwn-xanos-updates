@@ -1,4 +1,4 @@
-﻿# BGXAI LIVE MONITOR 0.4.0 - private opt-in sync + read-only aggregate snapshots. Windows PowerShell 5.1.
+﻿# BGXAI LIVE MONITOR 0.4.0 DEV - private opt-in sync and sanitized counters. Windows PowerShell 5.1.
 param([Parameter(Mandatory=$true)][string]$GameRoot)
 $ErrorActionPreference='Stop'
 $ProgressPreference='SilentlyContinue'
@@ -12,17 +12,17 @@ $escapes=@{}; $helps=@{}; $lastAlert=@{}
 $stream=$null
 $partial=''
 $decoder=[Text.Encoding]::UTF8.GetDecoder()
-$script:ActionCounts=@{}
-$script:IncidentCounts=@{}
-$script:NewEvents=0
-$script:LastSummary=[datetime]::MinValue
+$script:Counts=@{}
+$script:Incidents=@{}
+$script:TotalEvents=0
+$script:LastSnapshot=[datetime]::MinValue
 $script:LastSync=[datetime]::MinValue
 $script:SyncJob=$null
 $script:SyncRoot=Join-Path $env:LOCALAPPDATA 'BGXAI_LIVE'
-$script:SyncConfig=Join-Path $script:SyncRoot 'private_sync.json'
-$script:SyncCredential=Join-Path $script:SyncRoot 'private_sync.dpapi'
-$script:SummaryPath=Join-Path $out 'LIVE_SUMMARY.json'
-$script:SyncStatus=Join-Path $out 'SYNC_STATUS.txt'
+$script:RepoFile=Join-Path $script:SyncRoot 'private_repo.json'
+$script:KeyFile=Join-Path $script:SyncRoot 'private_token.dpapi'
+$script:SummaryFile=Join-Path $out 'LIVE_SUMMARY.json'
+$script:SyncStatusFile=Join-Path $out 'SYNC_STATUS.txt'
 function Log([string]$s,[string]$level='INFO') {
   $msg='['+(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')+']['+$level+'] '+$s
   if($level -eq 'ALERT'){Write-Host $msg -ForegroundColor Red}
@@ -48,8 +48,8 @@ function Incident([string]$kind,[string]$who,[string]$reason) {
   $now=Get-Date
   if($lastAlert.ContainsKey($key) -and ($now-$lastAlert[$key]).TotalSeconds -lt 60){return}
   $lastAlert[$key]=$now
-  if(!$script:IncidentCounts.ContainsKey($kind)){$script:IncidentCounts[$kind]=0}
-  $script:IncidentCounts[$kind]=[int]$script:IncidentCounts[$kind]+1
+  if(!$script:Incidents.ContainsKey($kind)){$script:Incidents[$kind]=0}
+  $script:Incidents[$kind]=[int]$script:Incidents[$kind]+1
   $name='INCIDENT_'+$now.ToString('yyyyMMdd_HHmmss_fff')+'_'+$kind+'.txt'
   $path=Join-Path $out $name
   $lines=@('BGXAI LIVE INCIDENT',
@@ -85,345 +85,95 @@ function Incident([string]$kind,[string]$who,[string]$reason) {
     }catch{Log ('Local Ollama worker failed: '+$_.Exception.Message) 'WARN'}
   }
 }
-# Private sync never activates without explicit local setup. Only summary JSON is uploaded.
-function Save-CompactSnapshot {
-  try {
-    $actors=@()
-    foreach($name in @($script:ActionCounts.Keys | Sort-Object)) {
-      $safe=([string]$name -replace '[^\\p{L}\\p{N} _-]','_')
-      if($safe.Length -gt 32){$safe=$safe.Substring(0,32)}
-      $actors+=@{actor=$safe;actions=[int]$script:ActionCounts[$name]}
-    }
-    $problems=@()
-    foreach($kind in @($script:IncidentCounts.Keys | Sort-Object)) {
-      $problems+=@{type=[string]$kind;count=[int]$script:IncidentCounts[$kind]}
-    }
-    $data=@{schema=1;monitor='0.4.0';observed_utc=[DateTime]::UtcNow.ToString('o');
-      observed_actors=$actors;incidents=$problems;events_total=[int]$script:NewEvents;
-      notes='Only beginnings of actions are observed. No HP, hits, complete party roster, or combat outcome.'}
-    $json=$data|ConvertTo-Json -Depth 6
-    [IO.File]::WriteAllText($script:SummaryPath,$json,(New-Object Text.UTF8Encoding($false)))
-    return $true
-  } catch {
-    Log ('Snapshot failed: '+$_.Exception.Message) 'WARN'
-    return $false
+
+# All online uploads are opt-in, sanitized and restricted to a verified private GitHub repo.
+function Write-Summary {
+  $actors=@()
+  foreach($who in @($script:Counts.Keys|Sort-Object)) {
+    $label=([string]$who -replace '[^\p{L}\p{N} _-]','_')
+    if($label.Length -gt 32){$label=$label.Substring(0,32)}
+    $actors+=@{name=$label;actions=[int]$script:Counts[$who]}
   }
+  $alerts=@()
+  foreach($k in @($script:Incidents.Keys|Sort-Object)) {
+    $alerts+=@{kind=[string]$k;count=[int]$script:Incidents[$k]}
+  }
+  $obj=@{schema=1;version='0.4.0';time_utc=[DateTime]::UtcNow.ToString('o');
+    action_count=[int]$script:TotalEvents;actors=$actors;alerts=$alerts;
+    observation='Only action starts; no confirmed HP, hits or complete party membership.'}
+  [IO.File]::WriteAllText($script:SummaryFile,($obj|ConvertTo-Json -Depth 6),(New-Object Text.UTF8Encoding($false)))
 }
-function Enable-PrivateSync {
-  Write-Host '[BGXAI SYNC] Setup: only a PRIVATE GitHub repo, never the public NWN repo.'
-  Write-Host '[BGXAI SYNC] Create the private repo with a README in GitHub first.'
-  $repo=([string](Read-Host 'Private repository OWNER/REPO')).Trim()
-  if($repo -notmatch '^[A-Za-z0-9_.-]{1,60}/[A-Za-z0-9_.-]{1,100}
-  if(!$line){return}
-  if($line.Contains('[BGXAI]')) {
-    [void]$history.Add($line)
-    if($history.Count -gt 32){$history.RemoveAt(0)}
+function Configure-PrivateSync {
+  Write-Host '[BGXAI SYNC] Setup requires a PRIVATE GitHub repo with a README and fine-grained Contents R/W token.'
+  $repo=([string](Read-Host 'Private GitHub repo OWNER/REPO')).Trim()
+  if($repo -notmatch '^[A-Za-z0-9_.-]{1,60}/[A-Za-z0-9_.-]{1,100}$' -or $repo -ieq 'jeleZa112/nwn-xanos-updates'){
+    Write-Host '[BGXAI SYNC] Invalid or forbidden repository.' -ForegroundColor Yellow;return
   }
-  if($line -match '\[BGXAI\] HOOK_ERROR') {Incident 'HOOK_ERROR' 'EEex' 'Listener exception';return}
-  if($line -notmatch '\[BGXAI\] ACTION_\d+ name=(.+?) id=\S+ action=(\d+)\b'){return}
-  $who=$Matches[1].Trim();$act=[int]$Matches[2];$now=Get-Date
-  if(!$script:ActionCounts.ContainsKey($who)){$script:ActionCounts[$who]=0}
-  $script:ActionCounts[$who]=[int]$script:ActionCounts[$who]+1
-  $script:NewEvents++
-  if($act -eq 355) {
-    if(!$escapes.ContainsKey($who)){$escapes[$who]=New-Object 'System.Collections.Generic.List[datetime]'}
-    $li=$escapes[$who]; [void]$li.Add($now)
-    while($li.Count -gt 0 -and ($now-$li[0]).TotalSeconds -gt 35){$li.RemoveAt(0)}
-    if($li.Count -ge 2){Incident 'REPEATED_RETREAT' $who 'Multiple retreats within 35 seconds'}
-  }
-  if($act -eq 3 -and $escapes.ContainsKey($who)) {
-    $li=$escapes[$who]
-    if($li.Count -gt 0 -and ($now-$li[$li.Count-1]).TotalSeconds -le 8){
-      Incident 'ATTACK_AFTER_FLEE' $who 'Attack soon after retreat'
-    }
-  }
-  if($act -eq 17) {
-    if(!$helps.ContainsKey($who)){$helps[$who]=New-Object 'System.Collections.Generic.List[datetime]'}
-    $li=$helps[$who]; [void]$li.Add($now)
-    while($li.Count -gt 0 -and ($now-$li[0]).TotalSeconds -gt 40){$li.RemoveAt(0)}
-    if($li.Count -ge 2){Incident 'REPEATED_HELP' $who 'Repeated Help() requests'}
-  }
-}
-function OpenLog {
-  if(!(Test-Path -LiteralPath $gameLog -PathType Leaf)){return $false}
-  try {
-    $script:stream=[IO.File]::Open($gameLog,[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::ReadWrite)
-    [void]$script:stream.Seek(0,[IO.SeekOrigin]::End)
-    $script:partial='';$script:decoder=[Text.Encoding]::UTF8.GetDecoder()
-    Log ('Observing new lines in '+$gameLog);return $true
-  }catch{Log ('Waiting for game log: '+$_.Exception.Message) 'WARN';return $false}
-}
-function Poll {
-  if($script:stream.Length -lt $script:stream.Position){
-    [void]$script:stream.Seek(0,[IO.SeekOrigin]::Begin)
-    $script:partial='';$script:decoder=[Text.Encoding]::UTF8.GetDecoder()
-    Log 'Log reset detected' 'WARN'
-  }
-  $bytes=New-Object byte[] 16384;$chars=New-Object char[] 16384
-  for($i=0;$i -lt 80 -and $script:stream.Position -lt $script:stream.Length;$i++){
-    $n=$script:stream.Read($bytes,0,$bytes.Length);if($n -le 0){break}
-    $c=$script:decoder.GetChars($bytes,0,$n,$chars,0,$false)
-    if($c -gt 0){$script:partial+=(-join $chars[0..($c-1)])}
-    if($script:partial.Length -gt 300000){$script:partial=$script:partial.Substring($script:partial.Length-100000)}
-    $lines=$script:partial.Split([char]10)
-    for($j=0;$j -lt $lines.Length-1;$j++){Handle ($lines[$j].TrimEnd([char]13))}
-    $script:partial=$lines[$lines.Length-1]
-  }
-}
-Log 'BGXAI LIVE MONITOR 0.3 | no sound, no paid API, log is read-only.'
-Log ('Local reports: '+$out)
-if($model){Log ('Ollama local: '+$model)}else{Log 'Ollama unavailable; rules-only mode active.' 'WARN'}
-Log 'Launch EET using InfinityLoader; press Ctrl+C here to stop.'
-Log 'Press S in this console to configure opt-in PRIVATE GitHub report sync (no token in chat).'
-$null=Save-CompactSnapshot
-while($true){
-  try {
-    if(!$stream){$null=OpenLog}else{Poll}
-    if((Test-Path -LiteralPath $status) -and (Get-Item -LiteralPath $status).Length -gt 1000000){
-      Move-Item -LiteralPath $status -Destination (Join-Path $out ('STATUS_'+(Get-Date -Format 'yyyyMMdd_HHmmss')+'.old.txt')) -Force
-    }
-  }catch{
-    Log ('Watch warning: '+$_.Exception.Message) 'WARN'
-    if($stream){try{$stream.Dispose()}catch{};$stream=$null}
-  }
-  try {
-    if(([DateTime]::UtcNow-$script:LastSummary).TotalSeconds -ge 15) {
-      if(Save-CompactSnapshot) {
-        $script:LastSummary=[DateTime]::UtcNow
-        if($script:NewEvents -gt 0 -and ([DateTime]::UtcNow-$script:LastSync).TotalSeconds -ge 120) {
-          Queue-PrivateSync
-          $script:LastSync=[DateTime]::UtcNow
-        }
-      }
-    }
-    if([Console]::KeyAvailable) {
-      $key=[Console]::ReadKey($true)
-      if($key.KeyChar -eq 's' -or $key.KeyChar -eq 'S'){Enable-PrivateSync}
-    }
-  } catch { Log ('Sync/snapshot warning: '+$_.Exception.Message) 'WARN' }
-  Start-Sleep -Milliseconds 600
-}
-) {
-    Write-Host '[BGXAI SYNC] Invalid repository name.' -ForegroundColor Yellow
-    return
-  }
-  if($repo -eq 'jeleZa112/nwn-xanos-updates') {
-    Write-Host '[BGXAI SYNC] Public game updater repo is forbidden.' -ForegroundColor Red
-    return
-  }
-  Write-Host 'Paste a fine-grained token limited to this PRIVATE repo: Contents - Read and write.'
-  Write-Host 'The token is not shown and will be encrypted by Windows DPAPI for this user.'
-  $secure=Read-Host 'GitHub token (hidden)' -AsSecureString
+  $secret=Read-Host 'Fine-grained token (hidden; do not paste in chat)' -AsSecureString
   $ptr=[IntPtr]::Zero
-  $token=''
   try {
-    $ptr=[Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+    $ptr=[Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)
     $token=[Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
-    if(!$token -or $token.Length -lt 12){throw 'Empty or too short token'}
-    $headers=@{Authorization=('Bearer '+$token);'User-Agent'='BGXAI-PrivateSync';Accept='application/vnd.github+json'}
-    $details=Invoke-RestMethod -Uri ('https://api.github.com/repos/'+$repo) -Headers $headers -TimeoutSec 12
-    if(!$details.private){throw 'Repository is PUBLIC: refusing synchronization'}
-    if($details.full_name -ine $repo){throw 'Repository identity mismatch'}
+    if(!$token -or $token.Length -lt 12){throw 'Invalid token'}
+    $h=@{Authorization=('Bearer '+$token);Accept='application/vnd.github+json';'User-Agent'='BGXAI-LocalSync'}
+    $info=Invoke-RestMethod -Uri ('https://api.github.com/repos/'+$repo) -Headers $h -TimeoutSec 12
+    if(!$info.private -or $info.full_name -ine $repo){throw 'Repo is not private or does not match'}
     [IO.Directory]::CreateDirectory($script:SyncRoot)|Out-Null
-    $crypted=ConvertFrom-SecureString -SecureString $secure
-    [IO.File]::WriteAllText($script:SyncCredential,$crypted,[Text.Encoding]::ASCII)
-    $config=@{repo=$repo;enabled=$true;created_utc=[DateTime]::UtcNow.ToString('o')} | ConvertTo-Json -Compress
-    [IO.File]::WriteAllText($script:SyncConfig,$config,[Text.Encoding]::UTF8)
-    Write-Host '[BGXAI SYNC] PRIVATE sync configured. No public logs will be uploaded.' -ForegroundColor Green
+    $encrypted=ConvertFrom-SecureString -SecureString $secret
+    [IO.File]::WriteAllText($script:KeyFile,$encrypted,[Text.Encoding]::ASCII)
+    [IO.File]::WriteAllText($script:RepoFile,(@{repo=$repo;enabled=$true}|ConvertTo-Json -Compress),[Text.Encoding]::UTF8)
     $script:LastSync=[datetime]::MinValue
-  } catch {
-    Write-Host ('[BGXAI SYNC] Setup not completed: '+$_.Exception.Message) -ForegroundColor Yellow
-  } finally {
+    Write-Host '[BGXAI SYNC] Enabled. Token encrypted locally with Windows DPAPI.' -ForegroundColor Green
+  }catch{
+    Write-Host ('[BGXAI SYNC] Setup failed: '+$_.Exception.Message) -ForegroundColor Yellow
+  }finally{
     if($ptr -ne [IntPtr]::Zero){[Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)}
     $token=$null
-    $secure=$null
+    $secret=$null
   }
 }
-function Queue-PrivateSync {
-  if(!(Test-Path -LiteralPath $script:SyncConfig) -or !(Test-Path -LiteralPath $script:SyncCredential)){return}
-  if(!(Test-Path -LiteralPath $script:SummaryPath)){return}
+function Begin-PrivateSync {
+  if(!(Test-Path -LiteralPath $script:RepoFile) -or !(Test-Path -LiteralPath $script:KeyFile)){return}
   if($script:SyncJob -and $script:SyncJob.State -eq 'Running'){return}
-  if($script:SyncJob){Remove-Job -Job $script:SyncJob -Force -ErrorAction SilentlyContinue;$script:SyncJob=$null}
-  $cfgPath=$script:SyncConfig;$credPath=$script:SyncCredential;$summary=$script:SummaryPath;$status=$script:SyncStatus
-  $script:SyncJob=Start-Job -Name ('BGXAI_Private_'+(Get-Date -Format 'HHmmssfff')) -ArgumentList $cfgPath,$credPath,$summary,$status -ScriptBlock {
-    param($cfgPath,$credPath,$summary,$status)
-    $ptr=[IntPtr]::Zero;$token=$null
+  if($script:SyncJob){Remove-Job -Job $script:SyncJob -Force -ErrorAction SilentlyContinue}
+  $script:SyncJob=Start-Job -Name ('BGXAI_Private_'+(Get-Date -Format HHmmssfff)) -ArgumentList $script:RepoFile,$script:KeyFile,$script:SummaryFile,$script:SyncStatusFile -ScriptBlock {
+    param($repoFile,$keyFile,$summaryFile,$statusFile)
+    $ptr=[IntPtr]::Zero
     try {
-      $cfg=[IO.File]::ReadAllText($cfgPath,[Text.Encoding]::UTF8)|ConvertFrom-Json
-      if(!$cfg.enabled -or $cfg.repo -notmatch '^[A-Za-z0-9_.-]{1,60}/[A-Za-z0-9_.-]{1,100}
-  if(!$line){return}
-  if($line.Contains('[BGXAI]')) {
-    [void]$history.Add($line)
-    if($history.Count -gt 32){$history.RemoveAt(0)}
-  }
-  if($line -match '\[BGXAI\] HOOK_ERROR') {Incident 'HOOK_ERROR' 'EEex' 'Listener exception';return}
-  if($line -notmatch '\[BGXAI\] ACTION_\d+ name=(.+?) id=\S+ action=(\d+)\b'){return}
-  $who=$Matches[1].Trim();$act=[int]$Matches[2];$now=Get-Date
-  if($act -eq 355) {
-    if(!$escapes.ContainsKey($who)){$escapes[$who]=New-Object 'System.Collections.Generic.List[datetime]'}
-    $li=$escapes[$who]; [void]$li.Add($now)
-    while($li.Count -gt 0 -and ($now-$li[0]).TotalSeconds -gt 35){$li.RemoveAt(0)}
-    if($li.Count -ge 2){Incident 'REPEATED_RETREAT' $who 'Multiple retreats within 35 seconds'}
-  }
-  if($act -eq 3 -and $escapes.ContainsKey($who)) {
-    $li=$escapes[$who]
-    if($li.Count -gt 0 -and ($now-$li[$li.Count-1]).TotalSeconds -le 8){
-      Incident 'ATTACK_AFTER_FLEE' $who 'Attack soon after retreat'
-    }
-  }
-  if($act -eq 17) {
-    if(!$helps.ContainsKey($who)){$helps[$who]=New-Object 'System.Collections.Generic.List[datetime]'}
-    $li=$helps[$who]; [void]$li.Add($now)
-    while($li.Count -gt 0 -and ($now-$li[0]).TotalSeconds -gt 40){$li.RemoveAt(0)}
-    if($li.Count -ge 2){Incident 'REPEATED_HELP' $who 'Repeated Help() requests'}
-  }
-}
-function OpenLog {
-  if(!(Test-Path -LiteralPath $gameLog -PathType Leaf)){return $false}
-  try {
-    $script:stream=[IO.File]::Open($gameLog,[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::ReadWrite)
-    [void]$script:stream.Seek(0,[IO.SeekOrigin]::End)
-    $script:partial='';$script:decoder=[Text.Encoding]::UTF8.GetDecoder()
-    Log ('Observing new lines in '+$gameLog);return $true
-  }catch{Log ('Waiting for game log: '+$_.Exception.Message) 'WARN';return $false}
-}
-function Poll {
-  if($script:stream.Length -lt $script:stream.Position){
-    [void]$script:stream.Seek(0,[IO.SeekOrigin]::Begin)
-    $script:partial='';$script:decoder=[Text.Encoding]::UTF8.GetDecoder()
-    Log 'Log reset detected' 'WARN'
-  }
-  $bytes=New-Object byte[] 16384;$chars=New-Object char[] 16384
-  for($i=0;$i -lt 80 -and $script:stream.Position -lt $script:stream.Length;$i++){
-    $n=$script:stream.Read($bytes,0,$bytes.Length);if($n -le 0){break}
-    $c=$script:decoder.GetChars($bytes,0,$n,$chars,0,$false)
-    if($c -gt 0){$script:partial+=(-join $chars[0..($c-1)])}
-    if($script:partial.Length -gt 300000){$script:partial=$script:partial.Substring($script:partial.Length-100000)}
-    $lines=$script:partial.Split([char]10)
-    for($j=0;$j -lt $lines.Length-1;$j++){Handle ($lines[$j].TrimEnd([char]13))}
-    $script:partial=$lines[$lines.Length-1]
-  }
-}
-Log 'BGXAI LIVE MONITOR 0.3 | no sound, no paid API, log is read-only.'
-Log ('Local reports: '+$out)
-if($model){Log ('Ollama local: '+$model)}else{Log 'Ollama unavailable; rules-only mode active.' 'WARN'}
-Log 'Launch EET using InfinityLoader; press Ctrl+C here to stop.'
-while($true){
-  try {
-    if(!$stream){$null=OpenLog}else{Poll}
-    if((Test-Path -LiteralPath $status) -and (Get-Item -LiteralPath $status).Length -gt 1000000){
-      Move-Item -LiteralPath $status -Destination (Join-Path $out ('STATUS_'+(Get-Date -Format 'yyyyMMdd_HHmmss')+'.old.txt')) -Force
-    }
-  }catch{
-    Log ('Watch warning: '+$_.Exception.Message) 'WARN'
-    if($stream){try{$stream.Dispose()}catch{};$stream=$null}
-  }
-  Start-Sleep -Milliseconds 600
-}
-){throw 'Config disabled/invalid'}
-      $secret=[IO.File]::ReadAllText($credPath,[Text.Encoding]::ASCII)|ConvertTo-SecureString
-      $ptr=[Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)
-      $token=[Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
-      $headers=@{Authorization=('Bearer '+$token);'User-Agent'='BGXAI-PrivateSync';Accept='application/vnd.github+json'}
-      $base='https://api.github.com/repos/'+[string]$cfg.repo
-      $r=Invoke-RestMethod -Uri $base -Headers $headers -TimeoutSec 15
-      if(!$r.private -or $r.full_name -ine [string]$cfg.repo){throw 'Repository is not private or mismatch'}
+      $conf=[IO.File]::ReadAllText($repoFile,[Text.Encoding]::UTF8)|ConvertFrom-Json
+      if(!$conf.enabled -or $conf.repo -notmatch '^[A-Za-z0-9_.-]{1,60}/[A-Za-z0-9_.-]{1,100}$' -or $conf.repo -ieq 'jeleZa112/nwn-xanos-updates'){throw 'Bad config'}
+      $secure=[IO.File]::ReadAllText($keyFile,[Text.Encoding]::ASCII)|ConvertTo-SecureString
+      $ptr=[Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+      $bearer=[Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
+      $h=@{Authorization=('Bearer '+$bearer);Accept='application/vnd.github+json';'User-Agent'='BGXAI-LocalSync'}
+      $base='https://api.github.com/repos/'+[string]$conf.repo
+      $detail=Invoke-RestMethod -Uri $base -Headers $h -TimeoutSec 12
+      if(!$detail.private -or $detail.full_name -ine $conf.repo){throw 'Repo is not private'}
       $uri=$base+'/contents/live/latest.json'
-      $sha=$null
+      $priorSha=$null
       try {
-        $prior=Invoke-RestMethod -Uri $uri -Headers $headers -TimeoutSec 15
-        if($prior.type -ne 'file' -or $prior.sha -notmatch '^[a-f0-9]{40}
-  if(!$line){return}
-  if($line.Contains('[BGXAI]')) {
-    [void]$history.Add($line)
-    if($history.Count -gt 32){$history.RemoveAt(0)}
-  }
-  if($line -match '\[BGXAI\] HOOK_ERROR') {Incident 'HOOK_ERROR' 'EEex' 'Listener exception';return}
-  if($line -notmatch '\[BGXAI\] ACTION_\d+ name=(.+?) id=\S+ action=(\d+)\b'){return}
-  $who=$Matches[1].Trim();$act=[int]$Matches[2];$now=Get-Date
-  if($act -eq 355) {
-    if(!$escapes.ContainsKey($who)){$escapes[$who]=New-Object 'System.Collections.Generic.List[datetime]'}
-    $li=$escapes[$who]; [void]$li.Add($now)
-    while($li.Count -gt 0 -and ($now-$li[0]).TotalSeconds -gt 35){$li.RemoveAt(0)}
-    if($li.Count -ge 2){Incident 'REPEATED_RETREAT' $who 'Multiple retreats within 35 seconds'}
-  }
-  if($act -eq 3 -and $escapes.ContainsKey($who)) {
-    $li=$escapes[$who]
-    if($li.Count -gt 0 -and ($now-$li[$li.Count-1]).TotalSeconds -le 8){
-      Incident 'ATTACK_AFTER_FLEE' $who 'Attack soon after retreat'
-    }
-  }
-  if($act -eq 17) {
-    if(!$helps.ContainsKey($who)){$helps[$who]=New-Object 'System.Collections.Generic.List[datetime]'}
-    $li=$helps[$who]; [void]$li.Add($now)
-    while($li.Count -gt 0 -and ($now-$li[0]).TotalSeconds -gt 40){$li.RemoveAt(0)}
-    if($li.Count -ge 2){Incident 'REPEATED_HELP' $who 'Repeated Help() requests'}
-  }
-}
-function OpenLog {
-  if(!(Test-Path -LiteralPath $gameLog -PathType Leaf)){return $false}
-  try {
-    $script:stream=[IO.File]::Open($gameLog,[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::ReadWrite)
-    [void]$script:stream.Seek(0,[IO.SeekOrigin]::End)
-    $script:partial='';$script:decoder=[Text.Encoding]::UTF8.GetDecoder()
-    Log ('Observing new lines in '+$gameLog);return $true
-  }catch{Log ('Waiting for game log: '+$_.Exception.Message) 'WARN';return $false}
-}
-function Poll {
-  if($script:stream.Length -lt $script:stream.Position){
-    [void]$script:stream.Seek(0,[IO.SeekOrigin]::Begin)
-    $script:partial='';$script:decoder=[Text.Encoding]::UTF8.GetDecoder()
-    Log 'Log reset detected' 'WARN'
-  }
-  $bytes=New-Object byte[] 16384;$chars=New-Object char[] 16384
-  for($i=0;$i -lt 80 -and $script:stream.Position -lt $script:stream.Length;$i++){
-    $n=$script:stream.Read($bytes,0,$bytes.Length);if($n -le 0){break}
-    $c=$script:decoder.GetChars($bytes,0,$n,$chars,0,$false)
-    if($c -gt 0){$script:partial+=(-join $chars[0..($c-1)])}
-    if($script:partial.Length -gt 300000){$script:partial=$script:partial.Substring($script:partial.Length-100000)}
-    $lines=$script:partial.Split([char]10)
-    for($j=0;$j -lt $lines.Length-1;$j++){Handle ($lines[$j].TrimEnd([char]13))}
-    $script:partial=$lines[$lines.Length-1]
-  }
-}
-Log 'BGXAI LIVE MONITOR 0.3 | no sound, no paid API, log is read-only.'
-Log ('Local reports: '+$out)
-if($model){Log ('Ollama local: '+$model)}else{Log 'Ollama unavailable; rules-only mode active.' 'WARN'}
-Log 'Launch EET using InfinityLoader; press Ctrl+C here to stop.'
-while($true){
-  try {
-    if(!$stream){$null=OpenLog}else{Poll}
-    if((Test-Path -LiteralPath $status) -and (Get-Item -LiteralPath $status).Length -gt 1000000){
-      Move-Item -LiteralPath $status -Destination (Join-Path $out ('STATUS_'+(Get-Date -Format 'yyyyMMdd_HHmmss')+'.old.txt')) -Force
-    }
-  }catch{
-    Log ('Watch warning: '+$_.Exception.Message) 'WARN'
-    if($stream){try{$stream.Dispose()}catch{};$stream=$null}
-  }
-  Start-Sleep -Milliseconds 600
-}
-){throw 'Unexpected existing content'}
-        $sha=[string]$prior.sha
-      } catch {
-        $statusCode=0
-        if($_.Exception.Response){$statusCode=[int]$_.Exception.Response.StatusCode}
-        if($statusCode -ne 404){throw}
+        $prev=Invoke-RestMethod -Uri $uri -Headers $h -TimeoutSec 12
+        if($prev.type -ne 'file' -or $prev.sha -notmatch '^[a-f0-9]{40}$'){throw 'Unexpected prior file'}
+        $priorSha=[string]$prev.sha
+      }catch{
+        $code=0
+        if($_.Exception.Response){$code=[int]$_.Exception.Response.StatusCode}
+        if($code -ne 404){throw}
       }
-      $raw=[IO.File]::ReadAllBytes($summary)
-      if($raw.Length -gt 12000){throw 'Summary size exceeded'}
-      $content=[Convert]::ToBase64String($raw)
-      $body=@{message='BGXAI private live summary';content=$content}
-      if($sha){$body.sha=$sha}
-      $bytes=[Text.Encoding]::UTF8.GetBytes(($body|ConvertTo-Json -Compress -Depth 5))
-      $null=Invoke-RestMethod -Method Put -Uri $uri -Headers $headers -Body $bytes -ContentType 'application/json; charset=utf-8' -TimeoutSec 30
-      [IO.File]::WriteAllText($status,([DateTime]::UtcNow.ToString('o')+' OK private summary uploaded'),[Text.Encoding]::ASCII)
-    } catch {
-      $statusCode=0
-      if($_.Exception.Response){$statusCode=[int]$_.Exception.Response.StatusCode}
-      [IO.File]::WriteAllText($status,([DateTime]::UtcNow.ToString('o')+' ERROR: '+$statusCode+'; verify private repository access and token'),[Text.Encoding]::ASCII)
-    } finally {
+      $raw=[IO.File]::ReadAllBytes($summaryFile)
+      if($raw.Length -gt 12000){throw 'Summary too large'}
+      $body=@{message='BGXAI private summary';content=[Convert]::ToBase64String($raw)}
+      if($priorSha){$body.sha=$priorSha}
+      $bytes=[Text.Encoding]::UTF8.GetBytes(($body|ConvertTo-Json -Compress -Depth 4))
+      $null=Invoke-RestMethod -Uri $uri -Method Put -Headers $h -ContentType 'application/json; charset=utf-8' -Body $bytes -TimeoutSec 25
+      [IO.File]::WriteAllText($statusFile,([DateTime]::UtcNow.ToString('o')+' OK: private summary synced'),[Text.Encoding]::ASCII)
+    }catch{
+      $code=0
+      if($_.Exception.Response){$code=[int]$_.Exception.Response.StatusCode}
+      [IO.File]::WriteAllText($statusFile,([DateTime]::UtcNow.ToString('o')+' ERROR '+$code+'; check private repo or token'),[Text.Encoding]::ASCII)
+    }finally{
       if($ptr -ne [IntPtr]::Zero){[Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)}
-      $token=$null
+      $bearer=$null
     }
   }
 }
@@ -437,6 +187,9 @@ function Handle([string]$line) {
   if($line -match '\[BGXAI\] HOOK_ERROR') {Incident 'HOOK_ERROR' 'EEex' 'Listener exception';return}
   if($line -notmatch '\[BGXAI\] ACTION_\d+ name=(.+?) id=\S+ action=(\d+)\b'){return}
   $who=$Matches[1].Trim();$act=[int]$Matches[2];$now=Get-Date
+  if(!$script:Counts.ContainsKey($who)){$script:Counts[$who]=0}
+  $script:Counts[$who]=[int]$script:Counts[$who]+1
+  $script:TotalEvents++
   if($act -eq 355) {
     if(!$escapes.ContainsKey($who)){$escapes[$who]=New-Object 'System.Collections.Generic.List[datetime]'}
     $li=$escapes[$who]; [void]$li.Add($now)
@@ -486,6 +239,8 @@ Log 'BGXAI LIVE MONITOR 0.3 | no sound, no paid API, log is read-only.'
 Log ('Local reports: '+$out)
 if($model){Log ('Ollama local: '+$model)}else{Log 'Ollama unavailable; rules-only mode active.' 'WARN'}
 Log 'Launch EET using InfinityLoader; press Ctrl+C here to stop.'
+Log 'Press S in this window to configure opt-in private GitHub sync.'
+Write-Summary
 while($true){
   try {
     if(!$stream){$null=OpenLog}else{Poll}
@@ -496,5 +251,19 @@ while($true){
     Log ('Watch warning: '+$_.Exception.Message) 'WARN'
     if($stream){try{$stream.Dispose()}catch{};$stream=$null}
   }
+  try {
+    if(([DateTime]::UtcNow-$script:LastSnapshot).TotalSeconds -ge 15){
+      Write-Summary
+      $script:LastSnapshot=[DateTime]::UtcNow
+      if($script:TotalEvents -gt 0 -and ([DateTime]::UtcNow-$script:LastSync).TotalSeconds -ge 120){
+        Begin-PrivateSync
+        $script:LastSync=[DateTime]::UtcNow
+      }
+    }
+    if([Console]::KeyAvailable){
+      $key=[Console]::ReadKey($true)
+      if($key.KeyChar -eq 's' -or $key.KeyChar -eq 'S'){Configure-PrivateSync}
+    }
+  }catch{Log ('Private sync diagnostic: '+$_.Exception.Message) 'WARN'}
   Start-Sleep -Milliseconds 600
 }
