@@ -109,6 +109,7 @@ THEN
  RESPONSE #100
   SetGlobalTimer("BGXWPN22","LOCALS",6)
   EquipRanged()
+  SetGlobal("BGXMELEE22","LOCALS",0)
   DisplayStringHead(Myself,~BGXGRP622 RANGED~)
 END
 // LIVENESS FALLBACK: even at critical HP, or with no spells, use a valid one-round defense.
