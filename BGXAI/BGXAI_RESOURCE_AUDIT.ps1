@@ -96,6 +96,7 @@ try {
         if($installedMarker -eq '0.6.22-intercept-melee-pilot') {$expectedMarker='BGXVER22'}
         if($installedMarker -eq '0.6.23-formation-rescue-pilot') {$expectedMarker='BGXVER23'}
         if($installedMarker -eq '0.6.24-support-survival-pilot') {$expectedMarker='BGXVER24'}
+        if($installedMarker -eq '0.6.25-healthy-engage-pilot') {$expectedMarker='BGXVER25'}
         if($installedMarker -eq '0.6.25-no-premature-formation-pilot') {$expectedMarker='BGXVER25'}
         if($installedMarker -eq '0.6.23-formation-rescue-pilot') {$expectedMarker='BGXVER23'}
     }
@@ -107,6 +108,7 @@ try {
         if($compiledText.Contains("BGXVER22")) {$requiredMarker='BGXVER22'}
         if($compiledText.Contains("BGXVER23")) {$requiredMarker='BGXVER23'}
         if($compiledText.Contains("BGXVER24")) {$requiredMarker='BGXVER24'}
+        if($compiledText.Contains("BGXVER25")) {$requiredMarker='BGXVER25'}
         if($compiledText.Contains("BGXVER25")) {$requiredMarker='BGXVER25'}
         if($compiledText.Contains("BGXVER23")) {$requiredMarker='BGXVER23'}
         if($compiledText.Contains($requiredMarker)) {
