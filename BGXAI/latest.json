@@ -1,8 +1,8 @@
 {
   "channel": "pilot",
-  "version": "0.6.16-retreat-priority-pilot",
-  "status": "experimental-uncompiled-in-game",
-  "message_ru": "Предварительный тест: приоритет отхода от преследователя над атакой, лечение на безопасной дистанции, запрос ближнего оружия; нет геометрии точки за танком. Нужна проверка WeiDU и в игре.",
+  "version": "0.6.17-tank-pursuit-recover-pilot",
+  "status": "experimental-needs-weidu-and-in-game-test",
+  "message_ru": "Хотфикс исходников: Халид преследует видимого противника без прежних лимитов дальности и возвращается к Джахейре; Джахейра после лечения переоценивает дистанцию и бой. Файлы BAF накладываются на пакет 0.6.16 перед WeiDU. Диагностика v5 без изменений.",
   "package_path": "BGXAI/releases/0.6.16-retreat-priority-pilot.zip.b64",
   "package_sha256": "183065babac9a9e27f6a443a62f3e94563a19333656d730b1927e96f7362a8aa",
   "package_size": 6979
