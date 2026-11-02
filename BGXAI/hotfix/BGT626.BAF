@@ -1,42 +1,320 @@
-// BGXTANK v0.6.26 TARGET STABILITY, switches only for critical emergency (Player4 support)
-// First matching block wins. Continue() only after immediate state changes.
-// Version stamp
+// BGXTANK 0.6.26 six portrait slots, multiple protectees, per-slot GLOBAL rescue claim for two tanks
+// Priority order: first matching block wins. No unconditional per-round attack restarts.
+// Version stamp; same BGXTANK script may be assigned to two or more party tanks
 IF
  Global("BGXVER26","LOCALS",0)
 THEN
  RESPONSE #100
   SetGlobal("BGXVER26","LOCALS",1)
-  DisplayStringHead(Myself,~BGXTANK626 ACTIVE~)
+  DisplayStringHead(Myself,~BGXTANK626 SQUAD ACTIVE~)
 END
-// CRITICAL intervention: help signal + support dying + visible last physical attacker nearby
+// Emergency override: PartySlot1 <20% HP, one tank claims this victim and may drop its target
 IF
- Help(Player4)
- InMyArea(Player4)
- HPPercentLT(Player4,28)
- Range(Player4,20)
- See(LastAttackerOf(Player4))
- Range(LastAttackerOf(Player4),20)
- !GlobalTimerNotExpired("BGXSWITCH26","LOCALS")
+ HPPercentLT(PartySlot1,20)
+ InParty(PartySlot1)
+ InMyArea(PartySlot1)
+ !Range(PartySlot1,2)
+ See(LastAttackerOf(PartySlot1))
+ Range(LastAttackerOf(PartySlot1),22)
+ !GlobalTimerNotExpired("BGXCL126","GLOBAL")
+ !GlobalTimerNotExpired("BGXURG26","LOCALS")
 THEN
  RESPONSE #100
-  SetGlobalTimer("BGXSWITCH26","LOCALS",15)
-  DisplayStringHead(Myself,~BGXTANK626 CRITICAL INTERCEPT~)
-  Attack(LastAttackerOf(Player4))
+  SetGlobalTimer("BGXCL126","GLOBAL",12)
+  SetGlobalTimer("BGXURG26","LOCALS",8)
+  DisplayStringHead(Myself,~BGXTANK626 URGENT P1~)
+  Attack(LastAttackerOf(PartySlot1))
 END
-// Only when no opponent visible and ally dying, move to rescue
+// Emergency override: PartySlot2 <20% HP, one tank claims this victim and may drop its target
 IF
- InMyArea(Player4)
- HPPercentLT(Player4,30)
- !Range(Player4,9)
+ HPPercentLT(PartySlot2,20)
+ InParty(PartySlot2)
+ InMyArea(PartySlot2)
+ !Range(PartySlot2,2)
+ See(LastAttackerOf(PartySlot2))
+ Range(LastAttackerOf(PartySlot2),22)
+ !GlobalTimerNotExpired("BGXCL226","GLOBAL")
+ !GlobalTimerNotExpired("BGXURG26","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCL226","GLOBAL",12)
+  SetGlobalTimer("BGXURG26","LOCALS",8)
+  DisplayStringHead(Myself,~BGXTANK626 URGENT P2~)
+  Attack(LastAttackerOf(PartySlot2))
+END
+// Emergency override: PartySlot3 <20% HP, one tank claims this victim and may drop its target
+IF
+ HPPercentLT(PartySlot3,20)
+ InParty(PartySlot3)
+ InMyArea(PartySlot3)
+ !Range(PartySlot3,2)
+ See(LastAttackerOf(PartySlot3))
+ Range(LastAttackerOf(PartySlot3),22)
+ !GlobalTimerNotExpired("BGXCL326","GLOBAL")
+ !GlobalTimerNotExpired("BGXURG26","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCL326","GLOBAL",12)
+  SetGlobalTimer("BGXURG26","LOCALS",8)
+  DisplayStringHead(Myself,~BGXTANK626 URGENT P3~)
+  Attack(LastAttackerOf(PartySlot3))
+END
+// Emergency override: PartySlot4 <20% HP, one tank claims this victim and may drop its target
+IF
+ HPPercentLT(PartySlot4,20)
+ InParty(PartySlot4)
+ InMyArea(PartySlot4)
+ !Range(PartySlot4,2)
+ See(LastAttackerOf(PartySlot4))
+ Range(LastAttackerOf(PartySlot4),22)
+ !GlobalTimerNotExpired("BGXCL426","GLOBAL")
+ !GlobalTimerNotExpired("BGXURG26","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCL426","GLOBAL",12)
+  SetGlobalTimer("BGXURG26","LOCALS",8)
+  DisplayStringHead(Myself,~BGXTANK626 URGENT P4~)
+  Attack(LastAttackerOf(PartySlot4))
+END
+// Emergency override: PartySlot5 <20% HP, one tank claims this victim and may drop its target
+IF
+ HPPercentLT(PartySlot5,20)
+ InParty(PartySlot5)
+ InMyArea(PartySlot5)
+ !Range(PartySlot5,2)
+ See(LastAttackerOf(PartySlot5))
+ Range(LastAttackerOf(PartySlot5),22)
+ !GlobalTimerNotExpired("BGXCL526","GLOBAL")
+ !GlobalTimerNotExpired("BGXURG26","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCL526","GLOBAL",12)
+  SetGlobalTimer("BGXURG26","LOCALS",8)
+  DisplayStringHead(Myself,~BGXTANK626 URGENT P5~)
+  Attack(LastAttackerOf(PartySlot5))
+END
+// Emergency override: PartySlot6 <20% HP, one tank claims this victim and may drop its target
+IF
+ HPPercentLT(PartySlot6,20)
+ InParty(PartySlot6)
+ InMyArea(PartySlot6)
+ !Range(PartySlot6,2)
+ See(LastAttackerOf(PartySlot6))
+ Range(LastAttackerOf(PartySlot6),22)
+ !GlobalTimerNotExpired("BGXCL626","GLOBAL")
+ !GlobalTimerNotExpired("BGXURG26","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCL626","GLOBAL",12)
+  SetGlobalTimer("BGXURG26","LOCALS",8)
+  DisplayStringHead(Myself,~BGXTANK626 URGENT P6~)
+  Attack(LastAttackerOf(PartySlot6))
+END
+// Idle tank helps PartySlot1 in danger; a busy tank retains its current target
+IF
+ ActionListEmpty()
+ HPPercentLT(PartySlot1,38)
+ OR(2)
+ Help(PartySlot1)
+ HPPercentLT(PartySlot1,26)
+ InParty(PartySlot1)
+ InMyArea(PartySlot1)
+ !Range(PartySlot1,2)
+ See(LastAttackerOf(PartySlot1))
+ Range(LastAttackerOf(PartySlot1),22)
+ !GlobalTimerNotExpired("BGXCL126","GLOBAL")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCL126","GLOBAL",14)
+  DisplayStringHead(Myself,~BGXTANK626 FREE RESCUE P1~)
+  Attack(LastAttackerOf(PartySlot1))
+END
+// Idle tank helps PartySlot2 in danger; a busy tank retains its current target
+IF
+ ActionListEmpty()
+ HPPercentLT(PartySlot2,38)
+ OR(2)
+ Help(PartySlot2)
+ HPPercentLT(PartySlot2,26)
+ InParty(PartySlot2)
+ InMyArea(PartySlot2)
+ !Range(PartySlot2,2)
+ See(LastAttackerOf(PartySlot2))
+ Range(LastAttackerOf(PartySlot2),22)
+ !GlobalTimerNotExpired("BGXCL226","GLOBAL")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCL226","GLOBAL",14)
+  DisplayStringHead(Myself,~BGXTANK626 FREE RESCUE P2~)
+  Attack(LastAttackerOf(PartySlot2))
+END
+// Idle tank helps PartySlot3 in danger; a busy tank retains its current target
+IF
+ ActionListEmpty()
+ HPPercentLT(PartySlot3,38)
+ OR(2)
+ Help(PartySlot3)
+ HPPercentLT(PartySlot3,26)
+ InParty(PartySlot3)
+ InMyArea(PartySlot3)
+ !Range(PartySlot3,2)
+ See(LastAttackerOf(PartySlot3))
+ Range(LastAttackerOf(PartySlot3),22)
+ !GlobalTimerNotExpired("BGXCL326","GLOBAL")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCL326","GLOBAL",14)
+  DisplayStringHead(Myself,~BGXTANK626 FREE RESCUE P3~)
+  Attack(LastAttackerOf(PartySlot3))
+END
+// Idle tank helps PartySlot4 in danger; a busy tank retains its current target
+IF
+ ActionListEmpty()
+ HPPercentLT(PartySlot4,38)
+ OR(2)
+ Help(PartySlot4)
+ HPPercentLT(PartySlot4,26)
+ InParty(PartySlot4)
+ InMyArea(PartySlot4)
+ !Range(PartySlot4,2)
+ See(LastAttackerOf(PartySlot4))
+ Range(LastAttackerOf(PartySlot4),22)
+ !GlobalTimerNotExpired("BGXCL426","GLOBAL")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCL426","GLOBAL",14)
+  DisplayStringHead(Myself,~BGXTANK626 FREE RESCUE P4~)
+  Attack(LastAttackerOf(PartySlot4))
+END
+// Idle tank helps PartySlot5 in danger; a busy tank retains its current target
+IF
+ ActionListEmpty()
+ HPPercentLT(PartySlot5,38)
+ OR(2)
+ Help(PartySlot5)
+ HPPercentLT(PartySlot5,26)
+ InParty(PartySlot5)
+ InMyArea(PartySlot5)
+ !Range(PartySlot5,2)
+ See(LastAttackerOf(PartySlot5))
+ Range(LastAttackerOf(PartySlot5),22)
+ !GlobalTimerNotExpired("BGXCL526","GLOBAL")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCL526","GLOBAL",14)
+  DisplayStringHead(Myself,~BGXTANK626 FREE RESCUE P5~)
+  Attack(LastAttackerOf(PartySlot5))
+END
+// Idle tank helps PartySlot6 in danger; a busy tank retains its current target
+IF
+ ActionListEmpty()
+ HPPercentLT(PartySlot6,38)
+ OR(2)
+ Help(PartySlot6)
+ HPPercentLT(PartySlot6,26)
+ InParty(PartySlot6)
+ InMyArea(PartySlot6)
+ !Range(PartySlot6,2)
+ See(LastAttackerOf(PartySlot6))
+ Range(LastAttackerOf(PartySlot6),22)
+ !GlobalTimerNotExpired("BGXCL626","GLOBAL")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCL626","GLOBAL",14)
+  DisplayStringHead(Myself,~BGXTANK626 FREE RESCUE P6~)
+  Attack(LastAttackerOf(PartySlot6))
+END
+// Idle tank regroups with PartySlot1 near death when the attacker is out of sight
+IF
+ ActionListEmpty()
+ HPPercentLT(PartySlot1,20)
+ InParty(PartySlot1)
+ InMyArea(PartySlot1)
+ !Range(PartySlot1,10)
  !See(NearestEnemyOf(Myself))
- !GlobalTimerNotExpired("BGXRESCUE26","LOCALS")
+ !GlobalTimerNotExpired("BGXCL126","GLOBAL")
 THEN
  RESPONSE #100
-  SetGlobalTimer("BGXRESCUE26","LOCALS",8)
-  DisplayStringHead(Myself,~BGXTANK626 EMERGENCY REGROUP~)
-  MoveToObject(Player4)
+  SetGlobalTimer("BGXCL126","GLOBAL",12)
+  DisplayStringHead(Myself,~BGXTANK626 RALLY P1~)
+  MoveToObject(PartySlot1)
 END
-// Weapon change at immediate contact, then resume attacking without idle gap
+// Idle tank regroups with PartySlot2 near death when the attacker is out of sight
+IF
+ ActionListEmpty()
+ HPPercentLT(PartySlot2,20)
+ InParty(PartySlot2)
+ InMyArea(PartySlot2)
+ !Range(PartySlot2,10)
+ !See(NearestEnemyOf(Myself))
+ !GlobalTimerNotExpired("BGXCL226","GLOBAL")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCL226","GLOBAL",12)
+  DisplayStringHead(Myself,~BGXTANK626 RALLY P2~)
+  MoveToObject(PartySlot2)
+END
+// Idle tank regroups with PartySlot3 near death when the attacker is out of sight
+IF
+ ActionListEmpty()
+ HPPercentLT(PartySlot3,20)
+ InParty(PartySlot3)
+ InMyArea(PartySlot3)
+ !Range(PartySlot3,10)
+ !See(NearestEnemyOf(Myself))
+ !GlobalTimerNotExpired("BGXCL326","GLOBAL")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCL326","GLOBAL",12)
+  DisplayStringHead(Myself,~BGXTANK626 RALLY P3~)
+  MoveToObject(PartySlot3)
+END
+// Idle tank regroups with PartySlot4 near death when the attacker is out of sight
+IF
+ ActionListEmpty()
+ HPPercentLT(PartySlot4,20)
+ InParty(PartySlot4)
+ InMyArea(PartySlot4)
+ !Range(PartySlot4,10)
+ !See(NearestEnemyOf(Myself))
+ !GlobalTimerNotExpired("BGXCL426","GLOBAL")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCL426","GLOBAL",12)
+  DisplayStringHead(Myself,~BGXTANK626 RALLY P4~)
+  MoveToObject(PartySlot4)
+END
+// Idle tank regroups with PartySlot5 near death when the attacker is out of sight
+IF
+ ActionListEmpty()
+ HPPercentLT(PartySlot5,20)
+ InParty(PartySlot5)
+ InMyArea(PartySlot5)
+ !Range(PartySlot5,10)
+ !See(NearestEnemyOf(Myself))
+ !GlobalTimerNotExpired("BGXCL526","GLOBAL")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCL526","GLOBAL",12)
+  DisplayStringHead(Myself,~BGXTANK626 RALLY P5~)
+  MoveToObject(PartySlot5)
+END
+// Idle tank regroups with PartySlot6 near death when the attacker is out of sight
+IF
+ ActionListEmpty()
+ HPPercentLT(PartySlot6,20)
+ InParty(PartySlot6)
+ InMyArea(PartySlot6)
+ !Range(PartySlot6,10)
+ !See(NearestEnemyOf(Myself))
+ !GlobalTimerNotExpired("BGXCL626","GLOBAL")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCL626","GLOBAL",12)
+  DisplayStringHead(Myself,~BGXTANK626 RALLY P6~)
+  MoveToObject(PartySlot6)
+END
+// Switch from ranged to melee once on contact, resume own target
 IF
  See(NearestEnemyOf(Myself))
  Range(NearestEnemyOf(Myself),14)
@@ -49,7 +327,7 @@ THEN
   DisplayStringHead(Myself,~BGXTANK626 MELEE AND ENGAGE~)
   Attack(NearestEnemyOf(Myself))
 END
-// Keep engine target until dead or lost. Only acquire when action queue idle
+// Keep chosen current target unless critical party emergency; start a new attack only when idle
 IF
  ActionListEmpty()
  See(NearestEnemyOf(Myself))
