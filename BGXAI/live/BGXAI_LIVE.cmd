@@ -12,7 +12,7 @@ color 07
 echo ===================================================
 echo BGXAI LIVE 1.0 - ONE FILE - LOCAL - NO SOUND
 echo [BGXAI 01] Game: %BGXAI_GAME_ROOT%
-echo [BGXAI 02] Checking signed-source manifest and cache...
+echo [BGXAI 02] Checking GitHub manifest and cache...
 echo ===================================================
 powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$raw=[IO.File]::ReadAllText($env:BGXAI_SELF,[Text.Encoding]::ASCII);$tag='##PS_BEGIN##';$i=$raw.LastIndexOf($tag);if($i -lt 0){Write-Host '[BGXAI FATAL 90] Embedded bootstrap missing';exit 90};$code=$raw.Substring($i+$tag.Length);& ([scriptblock]::Create($code))"
 set "BGXAI_EXIT=%ERRORLEVEL%"
@@ -88,7 +88,7 @@ try {
     $tok = $null
     $parseErrors = $null
     [void][System.Management.Automation.Language.Parser]::ParseFile($tmp,[ref]$tok,[ref]$parseErrors)
-    if (@($parseErrors).Count -gt 0) { throw ('PowerShell parse error: ' + $parseErrors[0].Message) }
+    if ($parseErrors -and $parseErrors.Count -gt 0) { throw ('PowerShell parse error: ' + $parseErrors[0].Message) }
     Move-Item -LiteralPath $tmp -Destination (Join-Path $newDir 'BGXAI_LIVE_MONITOR.ps1') -Force
     $targetFile = Verified-File $target
     if (!$targetFile) { throw 'stage verification failed' }
