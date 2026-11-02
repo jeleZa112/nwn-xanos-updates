@@ -45,13 +45,19 @@ try {
     $manifest=[Text.Encoding]::UTF8.GetString((GetFile 'BGXAI/latest.json' $commit)) | ConvertFrom-Json
     if($manifest.channel -ne 'pilot') { throw 'Unknown channel' }
     $version=[string]$manifest.version
+    $verifiedTag=''
+    if($version -eq '0.6.21-verified-compile-pilot') {$verifiedTag='621'}
+    if($version -eq '0.6.22-intercept-melee-pilot') {$verifiedTag='622'}
+    $expectedCompiledMarker=''
+    if($verifiedTag) {$expectedCompiledMarker='BGXVER'+$verifiedTag.Substring(1)}
+
     if($version -notmatch '^[A-Za-z0-9._-]+$') {throw 'Invalid version'}
     $rel=[string]$manifest.package_path
     if($rel -notmatch '^BGXAI/releases/[A-Za-z0-9._-]+\.zip\.b64$') {throw 'Invalid package path'}
     $marker=Join-Path $GameRoot 'BGXAI\bgxai-updater-version.txt'
     Log ('Target BGXAI '+$version)
     $alreadyCurrent=(Test-Path $marker) -and ([IO.File]::ReadAllText($marker).Trim() -eq $version)
-    if($alreadyCurrent -and $version -eq '0.6.21-verified-compile-pilot') {
+    if($alreadyCurrent -and $verifiedTag) {
         foreach($name in @('BGXGRP','BGXTANK')) {
             $activeFile=Join-Path $GameRoot ('scripts\'+$name+'.BS')
             if(!(Test-Path -LiteralPath $activeFile)) {
@@ -59,12 +65,12 @@ try {
                 break
             }
             $activeBytes=[IO.File]::ReadAllBytes($activeFile)
-            if(!([Text.Encoding]::ASCII.GetString($activeBytes)).Contains('BGXVER21')) {
+            if(!([Text.Encoding]::ASCII.GetString($activeBytes)).Contains($expectedCompiledMarker)) {
                 $alreadyCurrent=$false
                 break
             }
         }
-        if(!$alreadyCurrent) {Log 'Version marker says current, but active binary has no BGXVER21; rebuilding.'}
+        if(!$alreadyCurrent) {Log ('Version marker says current, but active binary has no '+$expectedCompiledMarker+'; rebuilding.')}
     }
     if($alreadyCurrent) {
         Log 'Already current; combat scripts untouched. Auditing higher-priority user script folders.'
@@ -124,30 +130,30 @@ try {
     }
 
 
-    # v0.6.21: compile under unique resrefs to prevent old BCS reuse.
+    # Compile under fresh resource names; select exact source for each pilot.
     $extraFiles=@()
-    if($version -eq '0.6.21-verified-compile-pilot') {
+    if($verifiedTag) {
         $extraPatches=@{
-            'BGXAI/BGXAI.TP2'='BGXAI/hotfix/BGXAI_0.6.21.TP2'
-            'BGXAI/AI_BAF/BGG621.BAF'='BGXAI/hotfix/BGG621.BAF'
-            'BGXAI/AI_BAF/BGT621.BAF'='BGXAI/hotfix/BGT621.BAF'
+            'BGXAI/BGXAI.TP2'=('BGXAI/hotfix/BGXAI_0.6.'+$verifiedTag.Substring(1)+'.TP2')
+            ('BGXAI/AI_BAF/BGG'+$verifiedTag+'.BAF')=('BGXAI/hotfix/BGG'+$verifiedTag+'.BAF')
+            ('BGXAI/AI_BAF/BGT'+$verifiedTag+'.BAF')=('BGXAI/hotfix/BGT'+$verifiedTag+'.BAF')
         }
-        foreach($targetName in $extraPatches.Keys) {
-            [byte[]]$extraBytes=GetFile $extraPatches[$targetName] $commit
+        foreach($sourceTarget in $extraPatches.Keys) {
+            [byte[]]$extraBytes=GetFile $extraPatches[$sourceTarget] $commit
             $extraText=[Text.Encoding]::UTF8.GetString($extraBytes)
-            if($extraBytes.Length -lt 500) {throw ('Too short: '+$targetName)}
-            if($targetName.EndsWith('.BAF') -and !$extraText.Contains('BGXVER21')) {
-                throw ('Source lacks version marker: '+$targetName)
+            if($extraBytes.Length -lt 500) {throw ('Too short: '+$sourceTarget)}
+            if($sourceTarget.EndsWith('.BAF') -and !$extraText.Contains($expectedCompiledMarker)) {
+                throw ('Source lacks version marker: '+$sourceTarget)
             }
-            if($targetName.EndsWith('.TP2') -and !$extraText.Contains('BGXAI v0.6.21 VERIFIED COMPILE')) {
-                throw 'Wrong v0.6.21 TP2'
+            if($sourceTarget.EndsWith('.TP2') -and !$extraText.Contains('BGXAI v0.6.'+$verifiedTag.Substring(1)+' VERIFIED COMPILE')) {
+                throw 'Wrong TP2 version'
             }
-            $extraDest=Join-Path $stage ($targetName.Replace('/',[IO.Path]::DirectorySeparatorChar))
+            $extraDest=Join-Path $stage ($sourceTarget.Replace('/',[IO.Path]::DirectorySeparatorChar))
             New-Item -ItemType Directory -Path (Split-Path -Parent $extraDest) -Force | Out-Null
             [IO.File]::WriteAllBytes($extraDest,$extraBytes)
-            Log ('Staged unique compilation source '+$targetName)
+            Log ('Staged unique compilation source '+$sourceTarget)
         }
-        $extraFiles=@('BGXAI/AI_BAF/BGG621.BAF','BGXAI/AI_BAF/BGT621.BAF')
+        $extraFiles=@(('BGXAI/AI_BAF/BGG'+$verifiedTag+'.BAF'),('BGXAI/AI_BAF/BGT'+$verifiedTag+'.BAF'))
     }
 
     $setup=Join-Path $GameRoot 'setup-BGXAI.exe'
@@ -160,8 +166,8 @@ try {
     $backup=Join-Path $cache ('backup_'+$stamp)
 
     $liveBackupDir=$null
-    if($version -eq '0.6.21-verified-compile-pilot') {
-        $liveBackupDir=Join-Path $cache ('active_pre_weidu_621_'+$stamp)
+    if($verifiedTag) {
+        $liveBackupDir=Join-Path $cache ('active_pre_weidu_'+$verifiedTag+'_'+$stamp)
         New-Item -ItemType Directory -Path $liveBackupDir -Force | Out-Null
         foreach($scriptName in @('BGXGRP','BGXTANK')) {
             foreach($pair in @(
@@ -201,7 +207,7 @@ try {
     if($code -ne 0) {
         Log ('WeiDU FAILED code='+$code+'; see setup-BGXAI.DEBUG')
 
-        if($version -eq '0.6.21-verified-compile-pilot' -and $liveBackupDir) {
+        if($verifiedTag -and $liveBackupDir) {
             foreach($entry in @(Get-ChildItem -LiteralPath $liveBackupDir -File -ErrorAction SilentlyContinue)) {
                 if($entry.Name -match '^(override|scripts)_(BGXGRP|BGXTANK)\.(BCS|BS)$') {
                     $restoreDest=Join-Path $GameRoot ($Matches[1]+'\'+$Matches[2]+'.'+$Matches[3])
@@ -219,25 +225,25 @@ try {
         exit 1
     }
 
-    # New v0.6.21 activation requires proof from two NEW compiler outputs.
-    # Never report SUCCESS for the old BGXGRP/BGXTANK aliases unless proven.
-    if($version -eq '0.6.21-verified-compile-pilot') {
-        [byte[]]$helper=GetFile 'BGXAI/BGXAI_VERIFY_ACTIVATE_621.ps1' $commit
+    # Verify new compiled script provenance before activating old alias names.
+    if($verifiedTag) {
+        $verifyHelperRemote='BGXAI/BGXAI_VERIFY_ACTIVATE_'+$verifiedTag+'.ps1'
+        [byte[]]$helper=GetFile $verifyHelperRemote $commit
         $helperText=[Text.Encoding]::UTF8.GetString($helper)
-        if($helper.Length -lt 3000 -or !$helperText.Contains('BGXAI v0.6.21 VERIFIED ACTIVATION SUCCESS')) {
+        if($helper.Length -lt 3000 -or !$helperText.Contains('BGXAI v0.6.'+$verifiedTag.Substring(1)+' VERIFIED ACTIVATION SUCCESS')) {
             throw 'Invalid compiler verification helper'
         }
-        $helperPath=Join-Path $cache 'BGXAI_VERIFY_ACTIVATE_621.latest.ps1'
+        $helperPath=Join-Path $cache ('BGXAI_VERIFY_ACTIVATE_'+$verifiedTag+'.latest.ps1')
         [IO.File]::WriteAllBytes($helperPath,$helper)
-        Log 'Proving freshly compiled BGXVER21 BCS resources before activation.'
+        Log ('Proving freshly compiled '+$expectedCompiledMarker+' BCS resources before activation.')
         & $helperPath -GameRoot $GameRoot -CacheRoot $cache
         if(!$?) {throw 'Compiler verification/activation failed'}
         foreach($scriptName in @('BGXGRP','BGXTANK')) {
             $compiledBytes=[IO.File]::ReadAllBytes((Join-Path $GameRoot ('scripts\'+$scriptName+'.BS')))
-            if(!([Text.Encoding]::ASCII.GetString($compiledBytes)).Contains('BGXVER21')) {
-                throw ('ACTIVE VERSION MARKER MISSING '+$scriptName)
+            if(!([Text.Encoding]::ASCII.GetString($compiledBytes)).Contains($expectedCompiledMarker)) {
+                throw ('ACTIVE VERSION MARKER MISSING '+$scriptName+' '+$expectedCompiledMarker)
             }
-            Log ('VERIFIED ACTIVE BGXVER21 '+$scriptName)
+            Log ('VERIFIED ACTIVE '+$expectedCompiledMarker+' '+$scriptName)
         }
     }
     # Verify *installed* compiled scripts. The BAF source alone is not proof of game installation.
@@ -262,7 +268,7 @@ try {
     Log ('Diagnostic: '+$version+'; EEex telemetry unchanged. Test only after verified binary/version markers.')
     exit 0
 } catch {
-    if(([string]$version) -eq '0.6.21-verified-compile-pilot' -and $liveBackupDir -and (Test-Path -LiteralPath $liveBackupDir)) {
+    if($verifiedTag -and $liveBackupDir -and (Test-Path -LiteralPath $liveBackupDir)) {
         foreach($entry in @(Get-ChildItem -LiteralPath $liveBackupDir -File -ErrorAction SilentlyContinue)) {
             if($entry.Name -match '^(override|scripts)_(BGXGRP|BGXTANK)\.(BCS|BS)$') {
                 $restoreDest=Join-Path $GameRoot ($Matches[1]+'\'+$Matches[2]+'.'+$Matches[3])
