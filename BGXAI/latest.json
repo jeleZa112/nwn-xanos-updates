@@ -1,14 +1,14 @@
 {
   "channel": "pilot",
-  "version": "0.6.22-intercept-melee-pilot",
-  "status": "source-static-verified-weidu-and-combat-unverified",
-  "message_ru": "v0.6.22: после доказанной компиляции v0.6.21 исправлена именно тактика: Халид при видимом враге начинает длительную Attack вместо AttackOneRound и получает Help() от Джахейры; если не видит врага, но видит раненую Джахейру, приближается к ней. Джахейра при контакте делает EquipMostDamagingMelee вне ActionListEmpty и защёлкивает запрос до дистанции 12 футов, вызывает Help() в зоне 8 футов; лечение после отхода не менялось. Компиляция WeiDU и поведение на пользовательской EET не подтверждены. Никакой универсальной оптимизации оружия нет.",
+  "version": "0.6.23-formation-rescue-pilot",
+  "status": "nine-static-regression-scenarios-passed-Windows-WeiDU-and-combat-unverified",
+  "message_ru": "0.6.23: второй тест 0.6.22 провален, Халид action=23 уходит на одну точку и не перехватывает, Джахейра при HP14/53 продолжает AttackOneRound. Улучшена защита: Халид не требует ActionListEmpty/See(Player4)/Range(Player4,30) при вызове Help или подмоге раненой в одной области; таймер 3-4с повторяет сближение. При видимом враге переотдаёт Attack на дальнем/ближнем контакте. Джахейра при HP<70% и угрозе отступает к Player3; если в бою оторвалась от танка >14 футов, возвращается к нему независимо от HP, но только при видимом противнике. Лечение после безопасного отхода сохранено. Девять сценарных проверок на исходниках пройдены; реальная компиляция/игровой бой не подтверждены. Точная геометрия за танком/агро/универсальный менеджер оружия ещё отсутствуют.",
   "package_path": "BGXAI/releases/0.6.16-retreat-priority-pilot.zip.b64",
   "package_sha256": "183065babac9a9e27f6a443a62f3e94563a19333656d730b1927e96f7362a8aa",
   "package_size": 6979,
   "overlay_paths": [
-    "BGXAI/hotfix/BGG622.BAF",
-    "BGXAI/hotfix/BGT622.BAF",
-    "BGXAI/hotfix/BGXAI_0.6.22.TP2"
+    "BGXAI/hotfix/BGG623.BAF",
+    "BGXAI/hotfix/BGT623.BAF",
+    "BGXAI/hotfix/BGXAI_0.6.23.TP2"
   ]
 }
