@@ -10,7 +10,7 @@ END
 // Equip melee at first sight of a nearby opponent, limited to one request per contact.
 IF
  See(NearestEnemyOf(Myself))
- Range(NearestEnemyOf(Myself),16)
+ Range(NearestEnemyOf(Myself),26)
  IsWeaponRanged(Myself)
  !GlobalTimerNotExpired("BGXWPN22","LOCALS")
 THEN
