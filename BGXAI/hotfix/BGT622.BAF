@@ -1,0 +1,55 @@
+// BGXTANK v0.6.22 INTERCEPT PILOT. Player3=tank, Player4=support.
+// Combat triggers do not depend on ActionListEmpty when switching to melee.
+IF
+ Global("BGXVER22","LOCALS",0)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXVER22","LOCALS",1)
+  DisplayStringHead(Myself,~BGXTANK622 ACTIVE~)
+END
+// Equip melee at first sight of a nearby opponent, limited to one request per contact.
+IF
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),16)
+ IsWeaponRanged(Myself)
+ !GlobalTimerNotExpired("BGXWPN22","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXWPN22","LOCALS",8)
+  EquipMostDamagingMelee()
+  DisplayStringHead(Myself,~BGXTANK622 MELEE REQUEST~)
+END
+// A short one-round attack can fail to close distance. A sustained Attack must intercept.
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),26)
+THEN
+ RESPONSE #100
+  DisplayStringHead(Myself,~BGXTANK622 INTERCEPT TARGET~)
+  Attack(NearestEnemyOf(Myself))
+END
+// Support calls for help: approach even if the enemy cannot yet be seen from the tank.
+IF
+ ActionListEmpty()
+ Help(Player4)
+ See(Player4)
+ !Range(Player4,6)
+THEN
+ RESPONSE #100
+  DisplayStringHead(Myself,~BGXTANK622 HELP RESPONSE~)
+  MoveToObject(Player4)
+END
+// Fallback if help was missed: regroup with injured support in the same visible area.
+IF
+ ActionListEmpty()
+ !See(NearestEnemyOf(Myself))
+ See(Player4)
+ HPPercentLT(Player4,90)
+ !Range(Player4,8)
+ Range(Player4,30)
+THEN
+ RESPONSE #100
+  DisplayStringHead(Myself,~BGXTANK622 CLOSE TO INJURED ALLY~)
+  MoveToObject(Player4)
+END
