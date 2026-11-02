@@ -32,7 +32,7 @@ try {
     Write-UpdateLog "Safe diagnostic update; GitHub commit $($sha.Substring(0,12))"
     $luaPath=Join-Path $GameRoot "override\M_BGXAI.lua"
     $probe=Get-RepoText "BGXAI/M_BGXAI.lua" $sha
-    if(!$probe.Contains("FILTERED ACTION PROBE v4") -or $probe.Contains("Infinity_DisplayString")) {
+    if(!$probe.Contains("FILTERED ACTION PROBE v5") -or $probe.Contains("Infinity_DisplayString")) {
         throw "Unexpected Lua diagnostic module refused"
     }
     if(Test-Path -LiteralPath $luaPath) {
@@ -40,7 +40,7 @@ try {
         Copy-Item -LiteralPath $luaPath -Destination $oldProbe -Force
     }
     [IO.File]::WriteAllText($luaPath,$probe,(New-Object System.Text.UTF8Encoding($false)))
-    Write-UpdateLog "Filtered action probe v4 installed: Khalid, Jaheira, Wolf; 2000 events; no AI edits."
+    Write-UpdateLog "Filtered action probe v5 installed: Khalid, Jaheira, Wolf; positions, destinations and targets, 5000 events; no AI edits."
     $iniPath=Join-Path $GameRoot "InfinityLoader.ini"
     if(Test-Path -LiteralPath $iniPath) {
         $iniContents=[IO.File]::ReadAllText($iniPath)
