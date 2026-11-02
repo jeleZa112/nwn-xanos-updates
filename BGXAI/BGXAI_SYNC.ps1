@@ -81,7 +81,7 @@ try {
         foreach($target in $patches.Keys) {
             [byte[]]$patch=GetFile $patches[$target] $commit
             $patchText=[Text.Encoding]::UTF8.GetString($patch)
-            if($patch.Length -lt 1000 -or !$patchText.Contains($hotfix)) {throw ('Invalid hotfix script: '+$target)}
+            if($patch.Length -lt 300 -or !$patchText.Contains($hotfix)) {throw ('Invalid hotfix script: '+$target)}
             $dst=Join-Path $stage ($target.Replace('/',[IO.Path]::DirectorySeparatorChar))
             [IO.File]::WriteAllBytes($dst,$patch)
             Log ('Staged verified hotfix BAF: '+$target)
