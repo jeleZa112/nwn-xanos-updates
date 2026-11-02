@@ -19,7 +19,7 @@ END
 // A nearby support under attack broadcasts a short-range alert to her tank.
 IF
  See(NearestEnemyOf(Myself))
- Range(NearestEnemyOf(Myself),12)
+ Range(NearestEnemyOf(Myself),8)
  !GlobalTimerNotExpired("BGXHELP22","LOCALS")
 THEN
  RESPONSE #100
