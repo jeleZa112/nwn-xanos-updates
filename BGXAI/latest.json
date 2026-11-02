@@ -1,9 +1,9 @@
 {
   "channel": "pilot",
-  "version": "0.6.15-cover-state-pilot",
-  "status": "experimental-user-tested-still-buggy",
-  "message_ru": "Временная экспериментальная версия 0.6.15 для Халида и Джахейры. Установщик GitHub теперь получает пакет, который соответствует последнему испытанному CMD. Отход и перехват врага всё ещё требуют исправлений. На отдельном сохранении.",
-  "package_path": "BGXAI/releases/0.6.15-cover-state-pilot.zip.b64",
-  "package_sha256": "87bfea6aaab480cec4c547ea91e4281225e904d67332bf2b15c7806f77d28bcd",
-  "package_size": 7501
+  "version": "0.6.16-retreat-priority-pilot",
+  "status": "experimental-uncompiled-in-game",
+  "message_ru": "Предварительный тест: приоритет отхода от преследователя над атакой, лечение на безопасной дистанции, запрос ближнего оружия; нет геометрии точки за танком. Нужна проверка WeiDU и в игре.",
+  "package_path": "BGXAI/releases/0.6.16-retreat-priority-pilot.zip.b64",
+  "package_sha256": "183065babac9a9e27f6a443a62f3e94563a19333656d730b1927e96f7362a8aa",
+  "package_size": 6979
 }
