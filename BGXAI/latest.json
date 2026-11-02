@@ -1,40 +1,9 @@
 {
   "channel": "pilot",
-  "version": "0.6.2-retreat-hold-pilot",
-  "status": "source-published-awaiting-weidu-compile-and-runtime-test",
-  "message_ru": "BGXSAFE v0.6.2: устраняет повторную перезапись команды бегства, увеличивает длительность отступления до 180 AI-тиков (~12 сек), запускает уход только при свободной очереди действий, сбрасывает предыдущую атаку один раз при переходе в аварийный режим. Не проверено в игре. BGXATK без изменений.",
-  "files": [
-    {
-      "path": "BGXAI/AI_BAF/BGXATK.BAF",
-      "sha256": "0b876eb3a6139bb75d02b1604f03d7a372b8734ab5718f7bd49fbe1f3d0ebb47"
-    },
-    {
-      "path": "BGXAI/AI_BAF/BGXHEAL.BAF",
-      "sha256": "0beb7c5c2f287976e33f2612c74fae4b172a395571b20d3db6c4e471d1eb8330"
-    },
-    {
-      "path": "BGXAI/AI_BAF/BGXHYBR.BAF",
-      "sha256": "21c98ac1f09d0f020c4ccb857fc6f27ddd8dc263480f478e6046ee28b561efb0"
-    },
-    {
-      "path": "BGXAI/AI_BAF/BGXMANU.BAF",
-      "sha256": "04d520fe6a34a8bdc032a1ee9d5429135dc7708635355b3e426b2cc493a635e9"
-    },
-    {
-      "path": "BGXAI/AI_BAF/BGXSAFE.BAF",
-      "sha256": "abcaae11f8df175f91596d81fff174ca5bc9f02589d03b84a5dfd586b7806dd0"
-    },
-    {
-      "path": "BGXAI/AI_BAF/BGXSCUT.BAF",
-      "sha256": "e84047f5c60bd037d485e26670ecc2ee1fc3bed79f42d2f5bc567033d05f9dfb"
-    },
-    {
-      "path": "BGXAI/AI_BAF/BGXWARD.BAF",
-      "sha256": "e22298b9714c1433402b99376280b9919320bb1b54584ee0923421412d84b7b7"
-    },
-    {
-      "path": "BGXAI/BGXAI.TP2",
-      "sha256": "037c5311804e29a604172e676623d8f202aa159e466d682f74e89ad7116a7d02"
-    }
-  ]
+  "version": "0.6.15-cover-state-pilot",
+  "status": "experimental-user-tested-still-buggy",
+  "message_ru": "Временная экспериментальная версия 0.6.15 для Халида и Джахейры. Установщик GitHub теперь получает пакет, который соответствует последнему испытанному CMD. Отход и перехват врага всё ещё требуют исправлений. На отдельном сохранении.",
+  "package_path": "BGXAI/releases/0.6.15-cover-state-pilot.zip.b64",
+  "package_sha256": "87bfea6aaab480cec4c547ea91e4281225e904d67332bf2b15c7806f77d28bcd",
+  "package_size": 7501
 }
