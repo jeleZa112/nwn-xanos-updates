@@ -54,7 +54,7 @@ try {
     if(Test-Path -LiteralPath $iniPath){
         $iniText=[IO.File]::ReadAllText($iniPath)
         if($iniText -match '(?m)^LogFile=.*
-    Log "Look for BGXAI_BOOT_PROBE.log after starting through InfinityLoader."
+    Log "After loading game through InfinityLoader, inspect BGXAI_COMBAT.log for SAFE BOOT PROBE v2."
 
     # Download a pure Windows diagnostics collector; no Lua and no game runtime modifications.
     $diag = Get-Bytes "BGXAI/BGXAI_DIAGNOSTICS.cmd"
