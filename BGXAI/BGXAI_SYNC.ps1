@@ -32,15 +32,15 @@ try {
     Write-UpdateLog "Safe diagnostic update; GitHub commit $($sha.Substring(0,12))"
     $luaPath=Join-Path $GameRoot "override\M_BGXAI.lua"
     $probe=Get-RepoText "BGXAI/M_BGXAI.lua" $sha
-    if(!$probe.Contains("SAFE BOOT PROBE v2") -or $probe.Contains("Infinity_DisplayString") -or $probe.Contains("AddSpriteStartedActionListener")) {
-        throw "Unsafe Lua diagnostic module refused"
+    if(!$probe.Contains("SAFE ACTION PROBE v3") -or $probe.Contains("Infinity_DisplayString")) {
+        throw "Unexpected Lua diagnostic module refused"
     }
     if(Test-Path -LiteralPath $luaPath) {
         $oldProbe=Join-Path $cache ("M_BGXAI_$stamp.lua.bak")
         Copy-Item -LiteralPath $luaPath -Destination $oldProbe -Force
     }
     [IO.File]::WriteAllText($luaPath,$probe,(New-Object System.Text.UTF8Encoding($false)))
-    Write-UpdateLog "Safe Lua boot probe installed; no engine hooks."
+    Write-UpdateLog "Limited action probe v3 installed: 150 events; experimental; no AI edits."
     $iniPath=Join-Path $GameRoot "InfinityLoader.ini"
     if(Test-Path -LiteralPath $iniPath) {
         $iniContents=[IO.File]::ReadAllText($iniPath)
@@ -56,7 +56,7 @@ try {
     if(!$collector.Contains("BGXAI_DIAGNOSTICS.txt")) { throw "Invalid diagnostics collector" }
     [IO.File]::WriteAllText((Join-Path $GameRoot "BGXAI_DIAGNOSTICS.cmd"),$collector,[Text.Encoding]::ASCII)
     Write-UpdateLog "SUCCESS: diagnostic update finished; combat scripts untouched."
-    Write-UpdateLog "Start via InfinityLoader.exe; check BGXAI_COMBAT.log for SAFE BOOT PROBE v2."
+    Write-UpdateLog "Start via InfinityLoader.exe; check BGXAI_COMBAT.log for ACTION HOOK REGISTERED."
     exit 0
 } catch {
     Write-UpdateLog ("ERROR: " + $_.Exception.Message)
