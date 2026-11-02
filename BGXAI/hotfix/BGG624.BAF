@@ -11,7 +11,7 @@ END
 IF
  GlobalGT("BGXESC24","LOCALS",0)
  HPPercentGT(Myself,84)
- !Range(NearestEnemyOf(Myself),12)
+ !See(NearestEnemyOf(Myself))
  !GlobalTimerNotExpired("BGXRESET24","LOCALS")
 THEN
  RESPONSE #100
