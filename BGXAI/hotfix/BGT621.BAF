@@ -1,0 +1,42 @@
+// BGXTANK v0.6.21 LIVENESS FIRST. Independent tank - NEVER blindly follow Player4.
+IF
+ Global("BGXVER21","LOCALS",0)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXVER21","LOCALS",1)
+  DisplayStringHead(Myself,~BGXTANK621 ACTIVE~)
+END
+// If enemy is close and current weapon is ranged, switch to melee once.
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),9)
+ IsWeaponRanged(Myself)
+ !GlobalTimerNotExpired("BGXWPN21","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXWPN21","LOCALS",6)
+  EquipMostDamagingMelee()
+  DisplayStringHead(Myself,~BGXTANK621 MELEE INTERCEPT~)
+END
+// Prefer opponents already threatening the tank; keep pursuit bounded.
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),19)
+THEN
+ RESPONSE #100
+  AttackOneRound(NearestEnemyOf(Myself))
+END
+// Only engage a foe near support when support AND foe are in tank's sight.
+IF
+ ActionListEmpty()
+ See(Player4)
+ Range(Player4,17)
+ See(NearestEnemyOf(Player4))
+ Range(NearestEnemyOf(Player4),22)
+THEN
+ RESPONSE #100
+  AttackOneRound(NearestEnemyOf(Player4))
+END
+// No MoveToObject(Player4), no endless waypoint chasing, no ClearActions.
