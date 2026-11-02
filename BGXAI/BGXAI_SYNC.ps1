@@ -1,4 +1,4 @@
-# BGXAI GitHub updater v0.6.24 verified compilation pilot. Separate branch; never touches NWN main.
+# BGXAI GitHub updater v0.6.25 verified compilation pilot. Separate branch; never touches NWN main.
 param([string]$GameRoot=".")
 $ErrorActionPreference='Stop'
 $ProgressPreference='SilentlyContinue'
@@ -50,6 +50,7 @@ try {
     if($version -eq '0.6.22-intercept-melee-pilot') {$verifiedTag='622'}
     if($version -eq '0.6.23-formation-rescue-pilot') {$verifiedTag='623'}
     if($version -eq '0.6.24-support-survival-pilot') {$verifiedTag='624'}
+    if($version -eq '0.6.25-no-premature-formation-pilot') {$verifiedTag='625'}
     if($version -eq '0.6.23-formation-rescue-pilot') {$verifiedTag='623'}
     $expectedCompiledMarker=''
     if($verifiedTag) {$expectedCompiledMarker='BGXVER'+$verifiedTag.Substring(1)}
