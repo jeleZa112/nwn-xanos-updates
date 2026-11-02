@@ -1,3 +1,5 @@
+// DESIGN DRAFT — NOT RELEASED / NOT SAFE FOR MANIFEST. Fixed low-HP finisher thresholds are not difficulty-adaptive.
+// Superseded by BGXAI/DESIGN_DIFFICULTY_ADAPTIVE_THREAT_RU_20261102.md. Replace with predicted burst+TTK before enabling.
 // BGXMGF v0.6.27 — Mage Magic Missile finisher when idle; no interruption of casts
 // New optional roles, not assigned to saved characters automatically.
 // Finisher mage role ready
