@@ -46,9 +46,212 @@ try {
     # Safe diagnostic boot probe: no UI calls, no EEex engine memory or action hooks.
     $probe=Get-Bytes "BGXAI/M_BGXAI.lua"
     $probeText=[Text.Encoding]::UTF8.GetString($probe)
-    if($probeText -notmatch "SAFE BOOT PROBE v1" -or $probeText -match "Infinity_DisplayString|AddSpriteStartedActionListener"){throw "Unsafe boot probe; installation aborted"}
+    if($probeText -notmatch "SAFE BOOT PROBE v2" -or $probeText -match "Infinity_DisplayString|AddSpriteStartedActionListener"){throw "Unsafe boot probe; installation aborted"}
     [IO.File]::WriteAllBytes($luaDest,$probe)
     Log "Passive Lua boot probe installed: override\\M_BGXAI.lua; no hooks or UI calls."
+    # Enable loader-native log mirroring, preserving all other InfinityLoader settings.
+    $iniPath=Join-Path $GameRoot "InfinityLoader.ini"
+    if(Test-Path -LiteralPath $iniPath){
+        $iniText=[IO.File]::ReadAllText($iniPath)
+        if($iniText -match '(?m)^LogFile=.*
+    Log "Look for BGXAI_BOOT_PROBE.log after starting through InfinityLoader."
+
+    # Download a pure Windows diagnostics collector; no Lua and no game runtime modifications.
+    $diag = Get-Bytes "BGXAI/BGXAI_DIAGNOSTICS.cmd"
+    $diagText=[Text.Encoding]::UTF8.GetString($diag)
+    if($diagText.Length -lt 400 -or !$diagText.Contains("BGXAI_DIAGNOSTICS.txt")){throw "Invalid diagnostic collector"}
+    [IO.File]::WriteAllBytes((Join-Path $GameRoot "BGXAI_DIAGNOSTICS.cmd"),$diag)
+    Log "Safe collector installed: BGXAI_DIAGNOSTICS.cmd (collects existing logs only)."
+    exit 0
+    $marker=Join-Path $GameRoot "BGXAI\bgxai-updater-version.txt"
+    if((Test-Path $marker) -and ([IO.File]::ReadAllText($marker).Trim() -eq ($version + "-telemetry2")) -and (Test-Path (Join-Path $GameRoot "override\M_BGXAI.lua"))) {
+       Log "Already installed; no changes."
+       exit 0
+    }
+    $raw=[Text.Encoding]::UTF8.GetString((Get-Bytes ([string]$manifest.package_path))).Trim()
+    if($raw -notmatch '^[A-Za-z0-9+/=]+$'){throw "Package is not valid base64"}
+    $bytes=[Convert]::FromBase64String($raw)
+    if($bytes.Length -ne [int]$manifest.package_size){throw "Package size mismatch"}
+    if((Sha256 $bytes) -ne [string]$manifest.package_sha256){throw "SHA256 mismatch; refusing update"}
+    $luaBytes=Get-Bytes "BGXAI/M_BGXAI.lua"
+    if($luaBytes.Length -lt 500){throw "Telemetry module too short"}
+    $stamp=Get-Date -Format "yyyyMMdd_HHmmss"
+    $stage=Join-Path $cache "stage_$stamp"
+    New-Item -ItemType Directory -Path $stage -Force | Out-Null
+    Add-Type -AssemblyName System.IO.Compression
+    $zip=New-Object System.IO.MemoryStream
+    $zip.Write($bytes,0,$bytes.Length)
+    $zip.Position=0
+    $archive=[System.IO.Compression.ZipArchive]::new($zip,[System.IO.Compression.ZipArchiveMode]::Read)
+    $allowed=@("BGXAI/BGXAI.TP2","BGXAI/AI_BAF/BGXATK.BAF","BGXAI/AI_BAF/BGXSCUT.BAF","BGXAI/AI_BAF/BGXHEAL.BAF","BGXAI/AI_BAF/BGXWARD.BAF","BGXAI/AI_BAF/BGXHYBR.BAF","BGXAI/AI_BAF/BGXMANU.BAF","BGXAI/AI_BAF/BGXSAFE.BAF","BGXAI/AI_BAF/BGXDBG.BAF","BGXAI/AI_BAF/BGXGRP.BAF","BGXAI/AI_BAF/BGXTANK.BAF")
+    $found=@()
+    try {
+      foreach($entry in $archive.Entries) {
+        $rel=$entry.FullName.Replace('\','/')
+        if($rel -eq "README_RU.txt"){continue}
+        if($allowed -notcontains $rel -or $found -contains $rel){throw "Unexpected or duplicate package entry: $rel"}
+        $found+= $rel
+        $dest=Join-Path $stage ($rel.Replace('/',[IO.Path]::DirectorySeparatorChar))
+        New-Item -ItemType Directory -Path (Split-Path $dest -Parent) -Force | Out-Null
+        $inputStream=$entry.Open()
+        $outputStream=[IO.File]::Create($dest)
+        try { $inputStream.CopyTo($outputStream) } finally { $outputStream.Dispose(); $inputStream.Dispose() }
+      }
+    } finally { $archive.Dispose(); $zip.Dispose() }
+    if($found.Count -ne $allowed.Count){throw "Incomplete package"}
+    $setup=Join-Path $GameRoot "setup-BGXAI.exe"
+    if(!(Test-Path $setup)){
+       $weidu=Join-Path $GameRoot "setup-stratagems.exe"
+       if(!(Test-Path $weidu)){throw "No setup-BGXAI.exe or setup-stratagems.exe (WeiDU). Not installed."}
+       Copy-Item $weidu $setup
+    }
+    $moddir=Join-Path $GameRoot "BGXAI"
+    $backup=Join-Path $cache "backup_$stamp"
+    $hadOld=Test-Path $moddir
+    if($hadOld){Copy-Item $moddir $backup -Recurse -Force}
+    $weiduLog=Join-Path $GameRoot "WeiDU.log"
+    $installed=$false
+    if(Test-Path $weiduLog){
+       $installed=Select-String -LiteralPath $weiduLog -Pattern 'BGXAI[\\/]BGXAI\.TP2' -Quiet
+       Copy-Item $weiduLog (Join-Path $cache "WeiDU_$stamp.log") -Force
+    }
+    foreach($rel in $allowed) {
+       $src=Join-Path $stage ($rel.Replace('/',[IO.Path]::DirectorySeparatorChar))
+       $dst=Join-Path $GameRoot ($rel.Replace('/',[IO.Path]::DirectorySeparatorChar))
+       New-Item -ItemType Directory -Path (Split-Path $dst -Parent) -Force | Out-Null
+       Copy-Item $src $dst -Force
+    }
+    Log "SHA256 verified; source backed up: $backup; starting WeiDU."
+    $arguments=@("--noautoupdate","--no-exit-pause")
+    if($installed){$arguments+=@("--reinstall","0")}
+    else{$arguments+=@("--language","0","--force-install","0")}
+    Push-Location $GameRoot
+    try { & $setup @arguments; $code=$LASTEXITCODE }
+    finally { Pop-Location }
+    if($code -ne 0) {
+       Log "WeiDU failed, exit=$code; see setup-BGXAI.DEBUG"
+       if($hadOld) {
+          Remove-Item $moddir -Recurse -Force -ErrorAction SilentlyContinue
+          Copy-Item $backup $moddir -Recurse -Force
+          Log "Restored previous source folder (game-level WeiDU rollback NOT guaranteed)."
+       }
+       exit 1
+    }
+    $luaDest=Join-Path $GameRoot "override\M_BGXAI.lua"
+    if(Test-Path $luaDest){ Copy-Item $luaDest (Join-Path $cache "M_BGXAI_$stamp.lua.backup") -Force }
+    [IO.File]::WriteAllBytes($luaDest,$luaBytes)
+    [IO.File]::WriteAllText($marker,($version + "-telemetry2"),[Text.Encoding]::ASCII)
+    Log "SUCCESS: BGXAI $version; BGXTANK for Khalid, BGXGRP for Jaheira."
+    Log "EEex telemetry module placed in override\\M_BGXAI.lua; restart game via InfinityLoader to activate."
+    Log "Diagnostic events should appear in BGXAI_COMBAT.log (game working directory). Pilot; action start only, not all game events."
+    exit 0
+} catch {
+    Log ("FAILED: "+ $_.Exception.Message)
+    exit 1
+}){
+            $iniBackup=Join-Path $cache ("InfinityLoader_" + (Get-Date -Format "yyyyMMdd_HHmmss") + ".ini.bak")
+            Copy-Item -LiteralPath $iniPath -Destination $iniBackup -Force
+            $iniText=[Text.RegularExpressions.Regex]::Replace($iniText,'(?m)^LogFile=.*
+    Log "Look for BGXAI_BOOT_PROBE.log after starting through InfinityLoader."
+
+    # Download a pure Windows diagnostics collector; no Lua and no game runtime modifications.
+    $diag = Get-Bytes "BGXAI/BGXAI_DIAGNOSTICS.cmd"
+    $diagText=[Text.Encoding]::UTF8.GetString($diag)
+    if($diagText.Length -lt 400 -or !$diagText.Contains("BGXAI_DIAGNOSTICS.txt")){throw "Invalid diagnostic collector"}
+    [IO.File]::WriteAllBytes((Join-Path $GameRoot "BGXAI_DIAGNOSTICS.cmd"),$diag)
+    Log "Safe collector installed: BGXAI_DIAGNOSTICS.cmd (collects existing logs only)."
+    exit 0
+    $marker=Join-Path $GameRoot "BGXAI\bgxai-updater-version.txt"
+    if((Test-Path $marker) -and ([IO.File]::ReadAllText($marker).Trim() -eq ($version + "-telemetry2")) -and (Test-Path (Join-Path $GameRoot "override\M_BGXAI.lua"))) {
+       Log "Already installed; no changes."
+       exit 0
+    }
+    $raw=[Text.Encoding]::UTF8.GetString((Get-Bytes ([string]$manifest.package_path))).Trim()
+    if($raw -notmatch '^[A-Za-z0-9+/=]+$'){throw "Package is not valid base64"}
+    $bytes=[Convert]::FromBase64String($raw)
+    if($bytes.Length -ne [int]$manifest.package_size){throw "Package size mismatch"}
+    if((Sha256 $bytes) -ne [string]$manifest.package_sha256){throw "SHA256 mismatch; refusing update"}
+    $luaBytes=Get-Bytes "BGXAI/M_BGXAI.lua"
+    if($luaBytes.Length -lt 500){throw "Telemetry module too short"}
+    $stamp=Get-Date -Format "yyyyMMdd_HHmmss"
+    $stage=Join-Path $cache "stage_$stamp"
+    New-Item -ItemType Directory -Path $stage -Force | Out-Null
+    Add-Type -AssemblyName System.IO.Compression
+    $zip=New-Object System.IO.MemoryStream
+    $zip.Write($bytes,0,$bytes.Length)
+    $zip.Position=0
+    $archive=[System.IO.Compression.ZipArchive]::new($zip,[System.IO.Compression.ZipArchiveMode]::Read)
+    $allowed=@("BGXAI/BGXAI.TP2","BGXAI/AI_BAF/BGXATK.BAF","BGXAI/AI_BAF/BGXSCUT.BAF","BGXAI/AI_BAF/BGXHEAL.BAF","BGXAI/AI_BAF/BGXWARD.BAF","BGXAI/AI_BAF/BGXHYBR.BAF","BGXAI/AI_BAF/BGXMANU.BAF","BGXAI/AI_BAF/BGXSAFE.BAF","BGXAI/AI_BAF/BGXDBG.BAF","BGXAI/AI_BAF/BGXGRP.BAF","BGXAI/AI_BAF/BGXTANK.BAF")
+    $found=@()
+    try {
+      foreach($entry in $archive.Entries) {
+        $rel=$entry.FullName.Replace('\','/')
+        if($rel -eq "README_RU.txt"){continue}
+        if($allowed -notcontains $rel -or $found -contains $rel){throw "Unexpected or duplicate package entry: $rel"}
+        $found+= $rel
+        $dest=Join-Path $stage ($rel.Replace('/',[IO.Path]::DirectorySeparatorChar))
+        New-Item -ItemType Directory -Path (Split-Path $dest -Parent) -Force | Out-Null
+        $inputStream=$entry.Open()
+        $outputStream=[IO.File]::Create($dest)
+        try { $inputStream.CopyTo($outputStream) } finally { $outputStream.Dispose(); $inputStream.Dispose() }
+      }
+    } finally { $archive.Dispose(); $zip.Dispose() }
+    if($found.Count -ne $allowed.Count){throw "Incomplete package"}
+    $setup=Join-Path $GameRoot "setup-BGXAI.exe"
+    if(!(Test-Path $setup)){
+       $weidu=Join-Path $GameRoot "setup-stratagems.exe"
+       if(!(Test-Path $weidu)){throw "No setup-BGXAI.exe or setup-stratagems.exe (WeiDU). Not installed."}
+       Copy-Item $weidu $setup
+    }
+    $moddir=Join-Path $GameRoot "BGXAI"
+    $backup=Join-Path $cache "backup_$stamp"
+    $hadOld=Test-Path $moddir
+    if($hadOld){Copy-Item $moddir $backup -Recurse -Force}
+    $weiduLog=Join-Path $GameRoot "WeiDU.log"
+    $installed=$false
+    if(Test-Path $weiduLog){
+       $installed=Select-String -LiteralPath $weiduLog -Pattern 'BGXAI[\\/]BGXAI\.TP2' -Quiet
+       Copy-Item $weiduLog (Join-Path $cache "WeiDU_$stamp.log") -Force
+    }
+    foreach($rel in $allowed) {
+       $src=Join-Path $stage ($rel.Replace('/',[IO.Path]::DirectorySeparatorChar))
+       $dst=Join-Path $GameRoot ($rel.Replace('/',[IO.Path]::DirectorySeparatorChar))
+       New-Item -ItemType Directory -Path (Split-Path $dst -Parent) -Force | Out-Null
+       Copy-Item $src $dst -Force
+    }
+    Log "SHA256 verified; source backed up: $backup; starting WeiDU."
+    $arguments=@("--noautoupdate","--no-exit-pause")
+    if($installed){$arguments+=@("--reinstall","0")}
+    else{$arguments+=@("--language","0","--force-install","0")}
+    Push-Location $GameRoot
+    try { & $setup @arguments; $code=$LASTEXITCODE }
+    finally { Pop-Location }
+    if($code -ne 0) {
+       Log "WeiDU failed, exit=$code; see setup-BGXAI.DEBUG"
+       if($hadOld) {
+          Remove-Item $moddir -Recurse -Force -ErrorAction SilentlyContinue
+          Copy-Item $backup $moddir -Recurse -Force
+          Log "Restored previous source folder (game-level WeiDU rollback NOT guaranteed)."
+       }
+       exit 1
+    }
+    $luaDest=Join-Path $GameRoot "override\M_BGXAI.lua"
+    if(Test-Path $luaDest){ Copy-Item $luaDest (Join-Path $cache "M_BGXAI_$stamp.lua.backup") -Force }
+    [IO.File]::WriteAllBytes($luaDest,$luaBytes)
+    [IO.File]::WriteAllText($marker,($version + "-telemetry2"),[Text.Encoding]::ASCII)
+    Log "SUCCESS: BGXAI $version; BGXTANK for Khalid, BGXGRP for Jaheira."
+    Log "EEex telemetry module placed in override\\M_BGXAI.lua; restart game via InfinityLoader to activate."
+    Log "Diagnostic events should appear in BGXAI_COMBAT.log (game working directory). Pilot; action start only, not all game events."
+    exit 0
+} catch {
+    Log ("FAILED: "+ $_.Exception.Message)
+    exit 1
+},"LogFile=BGXAI_COMBAT.log")
+            [IO.File]::WriteAllText($iniPath,$iniText)
+            Log "InfinityLoader LogFile enabled (backup=$iniBackup); safe probe uses print only."
+        } else { Log "WARNING: InfinityLoader.ini has no LogFile key; not modifying." }
+    } else { Log "WARNING: InfinityLoader.ini not found in game root." }
+
     Log "Look for BGXAI_BOOT_PROBE.log after starting through InfinityLoader."
 
     # Download a pure Windows diagnostics collector; no Lua and no game runtime modifications.
