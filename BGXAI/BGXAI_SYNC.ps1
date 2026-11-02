@@ -71,13 +71,17 @@ try {
     } finally {$zip.Dispose();$mem.Dispose()}
     if($seen.Count -ne $allowed.Count) {throw 'Incomplete package'}
     # v0.6.17 hotfix overlay: retrieve individual BAF source files at the pinned GitHub commit.
-    if($version -eq '0.6.17-tank-pursuit-recover-pilot' -or $version -eq '0.6.18-formation-cohesion-pilot' -or $version -eq '0.6.19-emergency-guard-pilot') {
+    if($version -eq '0.6.17-tank-pursuit-recover-pilot' -or $version -eq '0.6.18-formation-cohesion-pilot' -or $version -eq '0.6.19-emergency-guard-pilot' -or $version -eq '0.6.20-liveness-first-pilot') {
         $hotfix='0.6.17'
         if($version -eq '0.6.18-formation-cohesion-pilot') {$hotfix='0.6.18'}
         if($version -eq '0.6.19-emergency-guard-pilot') {$hotfix='0.6.19'}
+        if($version -eq '0.6.20-liveness-first-pilot') {$hotfix='0.6.20'}
         $patches=@{
             'BGXAI/AI_BAF/BGXTANK.BAF'=('BGXAI/hotfix/BGXTANK_'+$hotfix+'.BAF')
             'BGXAI/AI_BAF/BGXGRP.BAF'=('BGXAI/hotfix/BGXGRP_'+$hotfix+'.BAF')
+        }
+        if($version -eq '0.6.20-liveness-first-pilot') {
+            $patches['BGXAI/BGXAI.TP2']='BGXAI/hotfix/BGXAI_0.6.20.TP2'
         }
         foreach($target in $patches.Keys) {
             [byte[]]$patch=GetFile $patches[$target] $commit
@@ -127,9 +131,25 @@ try {
         }
         exit 1
     }
+    # Verify *installed* compiled scripts. The BAF source alone is not proof of game installation.
+    if($version -eq '0.6.20-liveness-first-pilot') {
+        foreach($name in @('BGXGRP','BGXTANK')) {
+            $bcs=Join-Path $GameRoot ('override\' + $name + '.BCS')
+            $bs=Join-Path $GameRoot ('scripts\' + $name + '.BS')
+            if(!(Test-Path -LiteralPath $bcs) -or !(Test-Path -LiteralPath $bs)) {
+                throw ('Missing compiled script: '+$name)
+            }
+            [byte[]]$compiled=[IO.File]::ReadAllBytes($bcs)
+            [byte[]]$assigned=[IO.File]::ReadAllBytes($bs)
+            if($compiled.Length -lt 100 -or $assigned.Length -lt 100 -or (Hash $compiled) -ne (Hash $assigned)) {
+                throw ('Compiled script mismatch: '+$name)
+            }
+            Log ('VERIFY compiled '+$name+': override BCS == scripts BS')
+        }
+    }
     [IO.File]::WriteAllText($marker,$version,[Text.Encoding]::ASCII)
     Log ('SUCCESS: BGXAI '+$version+' installed; BGXTANK for Khalid, BGXGRP for Jaheira')
-    Log 'Experimental retreat logic. EEex v5 logging unchanged. Test on a disposable save.'
+    Log 'v0.6.20: finite retreat and nonblocking fallback; EEex telemetry unchanged. Use disposable save.'
     exit 0
 } catch {
     Log ('FAILED: '+$_.Exception.Message)
