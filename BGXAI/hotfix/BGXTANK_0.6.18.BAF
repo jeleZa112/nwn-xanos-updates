@@ -1,0 +1,35 @@
+// BGXTANK 0.6.18 cohesion pilot: defend support and recover formation.
+// Party role: Player3 tank, Player4 support.
+IF
+ See(NearestEnemyOf(Myself))
+ IsWeaponRanged(Myself)
+THEN
+ RESPONSE #100
+  EquipMostDamagingMelee()
+  DisplayStringHead(Myself,~BGXTANK618 CONTACT: MELEE~)
+END
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Player4))
+THEN
+ RESPONSE #100
+  Attack(NearestEnemyOf(Player4))
+  DisplayStringHead(Myself,~BGXTANK618 INTERCEPT SUPPORT THREAT~)
+END
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+THEN
+ RESPONSE #100
+  Attack(NearestEnemyOf(Myself))
+END
+IF
+ ActionListEmpty()
+ See(Player4)
+ !Range(Player4,10)
+ !See(NearestEnemyOf(Myself))
+THEN
+ RESPONSE #100
+  MoveToObject(Player4)
+  DisplayStringHead(Myself,~BGXTANK618 REJOIN SUPPORT~)
+END
