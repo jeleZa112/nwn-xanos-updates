@@ -142,6 +142,24 @@ try {
     }
     $mod=Join-Path $GameRoot 'BGXAI'
     $backup=Join-Path $cache ('backup_'+$stamp)
+
+    $liveBackup=$null
+    if($version -eq '0.6.21-verified-compile-pilot') {
+        $liveBackup=Join-Path $cache ('active_pre_weidu_621_'+$stamp)
+        New-Item -ItemType Directory -Path $liveBackup -Force | Out-Null
+        foreach($name in @('BGXGRP','BGXTANK')) {
+            foreach($entry in @(
+                @{subdir='override';extension='BCS'},
+                @{subdir='scripts';extension='BS'}
+            )) {
+                $from=Join-Path $GameRoot ($entry.subdir+'\'+$name+'.'+$entry.extension)
+                if(Test-Path -LiteralPath $from) {
+                    Copy-Item -LiteralPath $from -Destination (Join-Path $liveBackup ($entry.subdir+'_'+$name+'.'+$entry.extension)) -Force
+                }
+            }
+        }
+        Log ('Active script backups before WeiDU: '+$liveBackup)
+    }
     $hadOld=Test-Path $mod
     if($hadOld) {Copy-Item -LiteralPath $mod -Destination $backup -Recurse -Force}
     $weiduLog=Join-Path $GameRoot 'WeiDU.log'
@@ -165,6 +183,144 @@ try {
     } finally {Pop-Location}
     if($code -ne 0) {
         Log ('WeiDU FAILED code='+$code+'; see setup-BGXAI.DEBUG')
+
+        if($version -eq '0.6.21-verified-compile-pilot' -and $liveBackup) {
+            foreach($file in @(Get-ChildItem -LiteralPath $liveBackup -File -ErrorAction SilentlyContinue)) {
+                if($file.Name -match '^(override|scripts)_(BGXGRP|BGXTANK)\.(BS|BCS)
+        if($hadOld) {
+            Remove-Item -LiteralPath $mod -Recurse -Force -ErrorAction SilentlyContinue
+            Copy-Item -LiteralPath $backup -Destination $mod -Recurse -Force
+            Log 'Old BGXAI sources restored; game-level WeiDU rollback is NOT guaranteed.'
+        }
+        exit 1
+    }
+
+    # New v0.6.21 activation requires proof from two NEW compiler outputs.
+    # Never report SUCCESS for the old BGXGRP/BGXTANK aliases unless proven.
+    if($version -eq '0.6.21-verified-compile-pilot') {
+        [byte[]]$helper=GetFile 'BGXAI/BGXAI_VERIFY_ACTIVATE_621.ps1' $commit
+        $helperText=[Text.Encoding]::UTF8.GetString($helper)
+        if($helper.Length -lt 3000 -or !$helperText.Contains('BGXAI v0.6.21 VERIFIED ACTIVATION SUCCESS')) {
+            throw 'Invalid compiler verification helper'
+        }
+        $helperPath=Join-Path $cache 'BGXAI_VERIFY_ACTIVATE_621.latest.ps1'
+        [IO.File]::WriteAllBytes($helperPath,$helper)
+        Log 'Proving freshly compiled BGXVER21 BCS resources before activation.'
+        & $helperPath -GameRoot $GameRoot -CacheRoot $cache
+        if(!$?) {throw 'Compiler verification/activation failed'}
+        foreach($scriptName in @('BGXGRP','BGXTANK')) {
+            $compiledBytes=[IO.File]::ReadAllBytes((Join-Path $GameRoot ('scripts\'+$scriptName+'.BS')))
+            if(!([Text.Encoding]::ASCII.GetString($compiledBytes)).Contains('BGXVER21')) {
+                throw ('ACTIVE VERSION MARKER MISSING '+$scriptName)
+            }
+            Log ('VERIFIED ACTIVE BGXVER21 '+$scriptName)
+        }
+    }
+    # Verify *installed* compiled scripts. The BAF source alone is not proof of game installation.
+    if($version -eq '0.6.20-liveness-first-pilot') {
+        foreach($name in @('BGXGRP','BGXTANK')) {
+            $bcs=Join-Path $GameRoot ('override\' + $name + '.BCS')
+            $bs=Join-Path $GameRoot ('scripts\' + $name + '.BS')
+            if(!(Test-Path -LiteralPath $bcs) -or !(Test-Path -LiteralPath $bs)) {
+                throw ('Missing compiled script: '+$name)
+            }
+            [byte[]]$compiled=[IO.File]::ReadAllBytes($bcs)
+            [byte[]]$assigned=[IO.File]::ReadAllBytes($bs)
+            if($compiled.Length -lt 100 -or $assigned.Length -lt 100 -or (Hash $compiled) -ne (Hash $assigned)) {
+                throw ('Compiled script mismatch: '+$name)
+            }
+            Log ('VERIFY compiled '+$name+': override BCS == scripts BS')
+        }
+    }
+    RepairUserScriptShadow $commit
+    [IO.File]::WriteAllText($marker,$version,[Text.Encoding]::ASCII)
+    Log ('SUCCESS: BGXAI '+$version+' installed; BGXTANK for Khalid, BGXGRP for Jaheira')
+    Log 'v0.6.20: finite retreat and nonblocking fallback; EEex telemetry unchanged. Use disposable save.'
+    exit 0
+} catch {
+    if(([string]$version) -eq '0.6.21-verified-compile-pilot' -and $liveBackup -and (Test-Path -LiteralPath $liveBackup)) {
+        foreach($file in @(Get-ChildItem -LiteralPath $liveBackup -File -ErrorAction SilentlyContinue)) {
+            if($file.Name -match '^(override|scripts)_(BGXGRP|BGXTANK)\.(BS|BCS)
+) {
+                    $location=Join-Path $GameRoot ($Matches[1]+'\'+$Matches[2]+'.'+$Matches[3])
+                    Copy-Item -LiteralPath $file.FullName -Destination $location -Force -ErrorAction Continue
+                }
+            }
+            Log 'Restored pre-WeiDU active script binaries after WeiDU failure.'
+        }
+
+        if($hadOld) {
+            Remove-Item -LiteralPath $mod -Recurse -Force -ErrorAction SilentlyContinue
+            Copy-Item -LiteralPath $backup -Destination $mod -Recurse -Force
+            Log 'Old BGXAI sources restored; game-level WeiDU rollback is NOT guaranteed.'
+        }
+        exit 1
+    }
+
+    # New v0.6.21 activation requires proof from two NEW compiler outputs.
+    # Never report SUCCESS for the old BGXGRP/BGXTANK aliases unless proven.
+    if($version -eq '0.6.21-verified-compile-pilot') {
+        [byte[]]$helper=GetFile 'BGXAI/BGXAI_VERIFY_ACTIVATE_621.ps1' $commit
+        $helperText=[Text.Encoding]::UTF8.GetString($helper)
+        if($helper.Length -lt 3000 -or !$helperText.Contains('BGXAI v0.6.21 VERIFIED ACTIVATION SUCCESS')) {
+            throw 'Invalid compiler verification helper'
+        }
+        $helperPath=Join-Path $cache 'BGXAI_VERIFY_ACTIVATE_621.latest.ps1'
+        [IO.File]::WriteAllBytes($helperPath,$helper)
+        Log 'Proving freshly compiled BGXVER21 BCS resources before activation.'
+        & $helperPath -GameRoot $GameRoot -CacheRoot $cache
+        if(!$?) {throw 'Compiler verification/activation failed'}
+        foreach($scriptName in @('BGXGRP','BGXTANK')) {
+            $compiledBytes=[IO.File]::ReadAllBytes((Join-Path $GameRoot ('scripts\'+$scriptName+'.BS')))
+            if(!([Text.Encoding]::ASCII.GetString($compiledBytes)).Contains('BGXVER21')) {
+                throw ('ACTIVE VERSION MARKER MISSING '+$scriptName)
+            }
+            Log ('VERIFIED ACTIVE BGXVER21 '+$scriptName)
+        }
+    }
+    # Verify *installed* compiled scripts. The BAF source alone is not proof of game installation.
+    if($version -eq '0.6.20-liveness-first-pilot') {
+        foreach($name in @('BGXGRP','BGXTANK')) {
+            $bcs=Join-Path $GameRoot ('override\' + $name + '.BCS')
+            $bs=Join-Path $GameRoot ('scripts\' + $name + '.BS')
+            if(!(Test-Path -LiteralPath $bcs) -or !(Test-Path -LiteralPath $bs)) {
+                throw ('Missing compiled script: '+$name)
+            }
+            [byte[]]$compiled=[IO.File]::ReadAllBytes($bcs)
+            [byte[]]$assigned=[IO.File]::ReadAllBytes($bs)
+            if($compiled.Length -lt 100 -or $assigned.Length -lt 100 -or (Hash $compiled) -ne (Hash $assigned)) {
+                throw ('Compiled script mismatch: '+$name)
+            }
+            Log ('VERIFY compiled '+$name+': override BCS == scripts BS')
+        }
+    }
+    RepairUserScriptShadow $commit
+    [IO.File]::WriteAllText($marker,$version,[Text.Encoding]::ASCII)
+    Log ('SUCCESS: BGXAI '+$version+' installed; BGXTANK for Khalid, BGXGRP for Jaheira')
+    Log 'v0.6.20: finite retreat and nonblocking fallback; EEex telemetry unchanged. Use disposable save.'
+    exit 0
+} catch {
+    Log ('FAILED: '+$_.Exception.Message)
+    exit 1
+}
+) {
+                $location=Join-Path $GameRoot ($Matches[1]+'\'+$Matches[2]+'.'+$Matches[3])
+                Copy-Item -LiteralPath $file.FullName -Destination $location -Force -ErrorAction Continue
+            }
+        }
+        Log 'Restored pre-WeiDU active script files; WeiDU metadata rollback is not guaranteed.'
+    }
+    Log ('FAILED: '+$_.Exception.Message)
+    exit 1
+}
+) {
+                    $location=Join-Path $GameRoot ($Matches[1]+'\'+$Matches[2]+'.'+$Matches[3])
+                    Copy-Item -LiteralPath $file.FullName -Destination $location -Force -ErrorAction Continue
+                }
+            }
+            Log 'Restored pre-WeiDU active script binaries after WeiDU failure.'
+        }
+
         if($hadOld) {
             Remove-Item -LiteralPath $mod -Recurse -Force -ErrorAction SilentlyContinue
             Copy-Item -LiteralPath $backup -Destination $mod -Recurse -Force
