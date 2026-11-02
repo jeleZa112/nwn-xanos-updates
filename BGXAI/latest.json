@@ -1,14 +1,14 @@
 {
   "channel": "pilot",
-  "version": "0.6.20-liveness-first-pilot",
-  "status": "static-regression-checked-9600-cases-weidu-game-compile-pending",
-  "message_ru": "v0.6.20: без BGXMODE; не более двух коротких отходов, лечение только вне ближнего контакта, после нехватки лечения обязательный fallback AttackOneRound при угрозе. Халид не преследует Player4, реагирует на ближайшего врага на ограниченном расстоянии. 9600 локальных логических сочетаний + 36 танка пройдены. Установщик сверяет скомпилированные BCS/BS; проверка WeiDU/игры предстоит. Использовать отдельное сохранение.",
+  "version": "0.6.21-verified-compile-pilot",
+  "status": "build-provenance-fix-only-awaiting-weidu-in-game-verification",
+  "message_ru": "Исправление цепочки сборки без изменения тактики v0.6.20. WeiDU компилирует уникальные BGG621.BAF/BGT621.BAF, установщик проверяет BGXVER21 в свежих BGG621.BCS/BGT621.BCS и только после этого обновляет активные BGXGRP.BCS/BGXGRP.BS и BGXTANK.BCS/BGXTANK.BS, синхронизирует Documents. Сохраняет оригиналы до WeiDU и откатывает при ошибке. Не проводить бой пока не появятся PROVEN NEW COMPILED, VERIFIED ACTIVE BGXVER21 и SUCCESS. Реальный запуск WeiDU на пользовательской сборке пока не проверен.",
   "package_path": "BGXAI/releases/0.6.16-retreat-priority-pilot.zip.b64",
   "package_sha256": "183065babac9a9e27f6a443a62f3e94563a19333656d730b1927e96f7362a8aa",
   "package_size": 6979,
   "overlay_paths": [
-    "BGXAI/hotfix/BGXGRP_0.6.20.BAF",
-    "BGXAI/hotfix/BGXTANK_0.6.20.BAF",
-    "BGXAI/hotfix/BGXAI_0.6.20.TP2"
+    "BGXAI/hotfix/BGG621.BAF",
+    "BGXAI/hotfix/BGT621.BAF",
+    "BGXAI/hotfix/BGXAI_0.6.21.TP2"
   ]
 }
