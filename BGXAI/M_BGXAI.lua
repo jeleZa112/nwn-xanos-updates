@@ -10,7 +10,10 @@ end
 local function append(msg)
     if T.disabled then return end
     local ok,err = pcall(function()
-        local f,e = io.open("BGXAI_COMBAT.log", "a")
+        local root = (type(Infinity_GetGameDirectory) == "function" and Infinity_GetGameDirectory()) or "."
+        local separator = root:sub(-1) == "\\" or root:sub(-1) == "/" and "" or "\\"
+        local fullpath = root .. separator .. "BGXAI_COMBAT.log"
+        local f,e = io.open(fullpath, "a")
         if not f then error(e or "io.open failed") end
         f:write(os.date("!%Y-%m-%dT%H:%M:%SZ"), " ", msg, "\n")
         f:close()
@@ -21,7 +24,8 @@ local function append(msg)
         if T.errors >= 3 then T.disabled = true end
     end
 end
-append("SESSION START; BGXAI telemetry=0.6.15-pilot; action-start events only; UTC")
+append("SESSION START; BGXAI telemetry=0.6.15-pilot.2; action-start events only; UTC")
+if type(Infinity_DisplayString) == "function" then pcall(Infinity_DisplayString, "[BGXAI] Lua telemetry loaded; search for BGXAI_COMBAT.log") end
 local function onAction(sprite,action)
     local ok,err = pcall(function()
         T.count = T.count + 1
