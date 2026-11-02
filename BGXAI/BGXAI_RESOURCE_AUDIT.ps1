@@ -58,21 +58,21 @@ try {
     $seen=@{}
     $found=0
     foreach($docs in $docRoots) {
-        $home=Join-Path $docs "Baldur's Gate - Enhanced Edition Trilogy"
-        $unique=$home.ToLowerInvariant()
+        $profileDir=Join-Path $docs "Baldur's Gate - Enhanced Edition Trilogy"
+        $unique=$profileDir.ToLowerInvariant()
         if($seen.ContainsKey($unique)) {continue}
         $seen[$unique]=$true
-        if(!(Test-Path -LiteralPath $home)) {continue}
+        if(!(Test-Path -LiteralPath $profileDir)) {continue}
         $found++
-        Note ("PROFILE FOUND "+$home)
-        $userScripts=Join-Path $home "scripts"
+        Note ("PROFILE FOUND "+$profileDir)
+        $userScripts=Join-Path $profileDir "scripts"
         foreach($name in @("BGXGRP","BGXTANK")) {
             $srcBS=Join-Path $GameRoot ("scripts\\"+$name+".BS")
             $srcBCS=Join-Path $GameRoot ("override\\"+$name+".BCS")
             SyncOwnedFile $srcBS (Join-Path $userScripts ($name+".BS")) ("user_scripts_"+$name+"_BS")
             # Fix only already-existing shadow resources in higher-priority user folders.
             foreach($folderName in @("characters","portraits","sounds","override","scripts")) {
-                $candidateDir=Join-Path $home $folderName
+                $candidateDir=Join-Path $profileDir $folderName
                 foreach($ext in @(".BS",".BCS")) {
                     $candidate=Join-Path $candidateDir ($name+$ext)
                     if(!(Test-Path -LiteralPath $candidate)) {continue}
