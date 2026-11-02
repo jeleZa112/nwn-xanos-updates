@@ -24,6 +24,19 @@ function Hash([byte[]]$bytes) {
     try {return ([BitConverter]::ToString($h.ComputeHash($bytes))).Replace('-','').ToLowerInvariant()}
     finally {$h.Dispose()}
 }
+function RepairUserScriptShadow([string]$pinnedCommit) {
+    [byte[]]$auditBytes=GetFile 'BGXAI/BGXAI_RESOURCE_AUDIT.ps1' $pinnedCommit
+    $auditText=[Text.Encoding]::UTF8.GetString($auditBytes)
+    if($auditBytes.Length -lt 3000 -or !$auditText.Contains("AUDIT SUCCESS") -or !$auditText.Contains("SyncOwnedFile")) {
+        throw 'Unexpected resource audit script; refusing to execute'
+    }
+    $auditPath=Join-Path $cache 'BGXAI_RESOURCE_AUDIT.latest.ps1'
+    [IO.File]::WriteAllBytes($auditPath,$auditBytes)
+    Log 'Checking user Documents script shadows (backup before any update).'
+    & $auditPath -GameRoot $GameRoot
+    if(!$?) {throw 'BGXAI shadow resource audit failed'}
+    Log 'User script shadow audit completed. See BGXAI_RESOURCE_AUDIT.txt'
+}
 try {
     if(!(Test-Path -LiteralPath (Join-Path $GameRoot 'chitin.key'))) { throw 'Missing chitin.key. Run in game root.' }
     if(Get-Process -Name Baldur,BaldursGate,baldur -ErrorAction SilentlyContinue) { throw 'Close Baldurs Gate before updating.' }
@@ -38,7 +51,8 @@ try {
     $marker=Join-Path $GameRoot 'BGXAI\bgxai-updater-version.txt'
     Log ('Target BGXAI '+$version)
     if((Test-Path $marker) -and ([IO.File]::ReadAllText($marker).Trim() -eq $version)) {
-        Log 'Already current; no changes.'
+        Log 'Already current; combat scripts untouched. Auditing higher-priority user script folders.'
+        RepairUserScriptShadow $commit
         exit 0
     }
     $b64=[Text.Encoding]::ASCII.GetString((GetFile $rel $commit)).Trim()
@@ -147,6 +161,7 @@ try {
             Log ('VERIFY compiled '+$name+': override BCS == scripts BS')
         }
     }
+    RepairUserScriptShadow $commit
     [IO.File]::WriteAllText($marker,$version,[Text.Encoding]::ASCII)
     Log ('SUCCESS: BGXAI '+$version+' installed; BGXTANK for Khalid, BGXGRP for Jaheira')
     Log 'v0.6.20: finite retreat and nonblocking fallback; EEex telemetry unchanged. Use disposable save.'
