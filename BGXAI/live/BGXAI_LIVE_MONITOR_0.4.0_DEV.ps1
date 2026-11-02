@@ -17,6 +17,7 @@ $script:Incidents=@{}
 $script:TotalEvents=0
 $script:LastSnapshot=[datetime]::MinValue
 $script:LastSync=[datetime]::MinValue
+$script:LastQueuedCount=0
 $script:SyncJob=$null
 $script:SyncRoot=Join-Path $env:LOCALAPPDATA 'BGXAI_LIVE'
 $script:RepoFile=Join-Path $script:SyncRoot 'private_repo.json'
@@ -123,6 +124,7 @@ function Configure-PrivateSync {
     [IO.File]::WriteAllText($script:KeyFile,$encrypted,[Text.Encoding]::ASCII)
     [IO.File]::WriteAllText($script:RepoFile,(@{repo=$repo;enabled=$true}|ConvertTo-Json -Compress),[Text.Encoding]::UTF8)
     $script:LastSync=[datetime]::MinValue
+    $script:LastQueuedCount=-1
     Write-Host '[BGXAI SYNC] Enabled. Token encrypted locally with Windows DPAPI.' -ForegroundColor Green
   }catch{
     Write-Host ('[BGXAI SYNC] Setup failed: '+$_.Exception.Message) -ForegroundColor Yellow
@@ -255,8 +257,9 @@ while($true){
     if(([DateTime]::UtcNow-$script:LastSnapshot).TotalSeconds -ge 15){
       Write-Summary
       $script:LastSnapshot=[DateTime]::UtcNow
-      if($script:TotalEvents -gt 0 -and ([DateTime]::UtcNow-$script:LastSync).TotalSeconds -ge 120){
+      if($script:TotalEvents -gt $script:LastQueuedCount -and ([DateTime]::UtcNow-$script:LastSync).TotalSeconds -ge 120){
         Begin-PrivateSync
+        $script:LastQueuedCount=$script:TotalEvents
         $script:LastSync=[DateTime]::UtcNow
       }
     }
