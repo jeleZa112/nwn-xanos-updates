@@ -1,14 +1,14 @@
 {
   "channel": "local-readonly",
-  "version": "0.3.2",
+  "version": "0.4.1",
   "min_bootstrap": "1.0",
-  "message_ru": "BGXAI Live 0.3.2: исправлены проверенные значения action ID для локальной Ollama; боевые правила не изменены; Windows-запуск ещё не проверен.",
+  "message_ru": "BGXAI Live 0.4.1: локальные сводки без имён и путей, автоматическая отправка только в приватный BGXAI-private-telemetry через сохранённый Windows DPAPI токен и GitHub CLI. Боевой ИИ не изменён. Первое выполнение на Windows ещё не проверено.",
   "files": [
     {
       "path": "BGXAI/live/BGXAI_LIVE_MONITOR.ps1",
       "name": "BGXAI_LIVE_MONITOR.ps1",
-      "size": 8751,
-      "sha256": "adbdf006134e3857f5debd32745d1ee8dbd0b83959bbcb7615bd66b5d754ea91"
+      "size": 14010,
+      "sha256": "a0a8e012a78bdaed843b1117c3de6dcab1e69d84fb034aceab6a1c92f876842b"
     }
   ]
 }
