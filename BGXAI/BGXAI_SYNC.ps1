@@ -71,9 +71,10 @@ try {
     } finally {$zip.Dispose();$mem.Dispose()}
     if($seen.Count -ne $allowed.Count) {throw 'Incomplete package'}
     # v0.6.17 hotfix overlay: retrieve individual BAF source files at the pinned GitHub commit.
-    if($version -eq '0.6.17-tank-pursuit-recover-pilot' -or $version -eq '0.6.18-formation-cohesion-pilot') {
+    if($version -eq '0.6.17-tank-pursuit-recover-pilot' -or $version -eq '0.6.18-formation-cohesion-pilot' -or $version -eq '0.6.19-emergency-guard-pilot') {
         $hotfix='0.6.17'
         if($version -eq '0.6.18-formation-cohesion-pilot') {$hotfix='0.6.18'}
+        if($version -eq '0.6.19-emergency-guard-pilot') {$hotfix='0.6.19'}
         $patches=@{
             'BGXAI/AI_BAF/BGXTANK.BAF'=('BGXAI/hotfix/BGXTANK_'+$hotfix+'.BAF')
             'BGXAI/AI_BAF/BGXGRP.BAF'=('BGXAI/hotfix/BGXGRP_'+$hotfix+'.BAF')
