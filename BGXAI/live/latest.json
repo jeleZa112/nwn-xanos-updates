@@ -1,14 +1,14 @@
 {
   "channel": "local-readonly",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "min_bootstrap": "1.0",
-  "message_ru": "Один постоянный BGXAI_LIVE.cmd. Бесплатный локальный монитор со сводками и Ollama. Без звука, без платных API, без передачи логов.",
+  "message_ru": "BGXAI Live 0.3.1: исправлена кодировка UTF-8 BOM для Windows PowerShell 5.1. Бесплатный локальный монитор. Старый BGXAI_LIVE.cmd менять не нужно.",
   "files": [
     {
       "path": "BGXAI/live/BGXAI_LIVE_MONITOR.ps1",
       "name": "BGXAI_LIVE_MONITOR.ps1",
-      "size": 7757,
-      "sha256": "628bbf922f1c47705606b407ee7b3d818dbae1311ba5b8d1a1781bb76547dfe5"
+      "size": 7760,
+      "sha256": "10f112c38373814e197d10bf03d6c56a44090fd06a1b22adb6e68cdf261edc26"
     }
   ]
 }
