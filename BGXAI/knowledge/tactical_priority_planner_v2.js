@@ -1,6 +1,6 @@
 // BGXAI OFFLINE prototype only. No EEex/WeiDU runtime integration; no I/O, no live commands.
 // Inputs must be supported by observed telemetry; projected hitChance/APR etc are estimates.
-(v,a,b)=>Math.min(b,Math.max(a,v))
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 
 function estimate(action,enemy){
  if(!action.available||!action.inRange||!enemy.visible)return 0;
