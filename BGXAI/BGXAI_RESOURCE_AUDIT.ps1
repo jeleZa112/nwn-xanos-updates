@@ -87,67 +87,49 @@ try {
         Note "WARNING: No user profile folder found; original InfinityLoader path may use a redirected Documents directory."
     }
 
-    # Read-only provenance check: confirm the compiled binary contains a v0.6.20 variable marker.
+    # Read-only provenance: check version-20 marker in compiled binaries, not just hashes.
     foreach($scriptName in @("BGXGRP","BGXTANK")) {
-        $checkPath=Join-Path $GameRoot ("scripts\\"+$scriptName+".BS")
-        $binaryText=[Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes($checkPath))
-        if($binaryText.Contains("BGXVER20")) {
-            Note ("VERSION MARKER PRESENT "+$scriptName+" BGXVER20")
+        $compiledFile=Join-Path $GameRoot ("scripts\"+$scriptName+".BS")
+        $compiledText=[Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes($compiledFile))
+        if($compiledText.Contains("BGXVER20")) {
+            Note ("COMPILED VERSION MARKER PRESENT "+$scriptName+" BGXVER20")
         } else {
-            Note ("WARNING VERSION MARKER MISSING "+$scriptName+" : compiled file may not contain v0.6.20 code")
+            Note ("WARNING COMPILED VERSION MARKER MISSING "+$scriptName)
         }
-        if($binaryText.Contains("BGXMODE")) {
-            Note ("WARNING LEGACY BGXMODE FOUND "+$scriptName)
+        if($compiledText.Contains("BGXMODE")) {
+            Note ("WARNING LEGACY MODE DETECTED "+$scriptName)
         }
     }
-    # Inspect higher-priority root folders, including language overrides, for shadow files.
+    # Scan known game and user resource folders for colliding scripts, without modifying them.
     $scanDirs=New-Object System.Collections.Generic.List[string]
-    foreach($folderLabel in @("characters","portraits","sounds","scripts","override","lang\\ru_RU\\override","lang\\en_US\\override")) {
+    foreach($folderLabel in @("characters","portraits","sounds","scripts","override","lang\ru_RU\override","lang\en_US\override")) {
         $scanDirs.Add((Join-Path $GameRoot $folderLabel))
     }
     foreach($docs in $docRoots) {
-        $userProfileDir=Join-Path $docs "Baldur's Gate - Enhanced Edition Trilogy"
+        $userDir=Join-Path $docs "Baldur's Gate - Enhanced Edition Trilogy"
         foreach($folderLabel in @("characters","portraits","sounds","scripts","override")) {
-            $scanDirs.Add((Join-Path $userProfileDir $folderLabel))
+            $scanDirs.Add((Join-Path $userDir $folderLabel))
         }
     }
-    $seenScanDirs=@{}
+    $seenDirs=@{}
     foreach($folderPath in $scanDirs) {
         $folderKey=$folderPath.ToLowerInvariant()
-        if($seenScanDirs.ContainsKey($folderKey)) {continue}
-        $seenScanDirs[$folderKey]=$true
+        if($seenDirs.ContainsKey($folderKey)) {continue}
+        $seenDirs[$folderKey]=$true
         if(!(Test-Path -LiteralPath $folderPath -PathType Container)) {continue}
         foreach($scriptName in @("BGXGRP","BGXTANK")) {
-            $baselineHash=Digest (Join-Path $GameRoot ("scripts\\"+$scriptName+".BS"))
+            $baselineHash=Digest (Join-Path $GameRoot ("scripts\"+$scriptName+".BS"))
             foreach($extension in @(".BS",".BCS")) {
-                $candidatePath=Join-Path $folderPath ($scriptName+$extension)
-                if(!(Test-Path -LiteralPath $candidatePath -PathType Leaf)) {continue}
-                $candidateHash=Digest $candidatePath
+                $candidateFile=Join-Path $folderPath ($scriptName+$extension)
+                if(!(Test-Path -LiteralPath $candidateFile -PathType Leaf)) {continue}
+                $candidateHash=Digest $candidateFile
                 if($candidateHash -eq $baselineHash) {
-                    Note ("RESOURCE MATCH "+$scriptName+$extension+" "+$candidatePath)
+                    Note ("RESOURCE MATCH "+$scriptName+$extension+" path="+$candidateFile)
                 } else {
-                    Note ("WARNING RESOURCE CONFLICT "+$scriptName+$extension+" sha256="+$candidateHash.Substring(0,16)+" "+$candidatePath)
+                    Note ("WARNING RESOURCE CONFLICT "+$scriptName+$extension+" sha256="+$candidateHash.Substring(0,16)+" path="+$candidateFile)
                 }
             }
         }
-    }
-    $zipFilePath=Join-Path $GameRoot "scripts.zip"
-    if(Test-Path -LiteralPath $zipFilePath -PathType Leaf) {
-        Add-Type -AssemblyName System.IO.Compression
-        $zipArchive=[IO.Compression.ZipFile]::OpenRead($zipFilePath)
-        try {
-            foreach($zipEntry in $zipArchive.Entries) {
-                if($zipEntry.Name -match '^(?i:BGXGRP|BGXTANK)\\.(?i:BS|BCS)
-    return
-} catch {
-    Note ("AUDIT FAILED: "+$_.Exception.Message)
-    throw
-}
-) {
-                    Note ("WARNING ZIP SHADOW scripts.zip entry="+$zipEntry.FullName)
-                }
-            }
-        } finally {$zipArchive.Dispose()}
     }
     Note ("AUDIT SUCCESS profiles="+$found+"; same game script resources, home shadows synchronized.")
     return
