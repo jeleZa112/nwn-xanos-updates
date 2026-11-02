@@ -35,6 +35,15 @@ try {
     $version=[string]$manifest.version
     if($version -notmatch '^[A-Za-z0-9._-]+$'){throw "Invalid release version"}
     Log "GitHub release: $version; status: $($manifest.status)"
+    # Emergency mitigation: never load experimental combat telemetry after loader crash.
+    $luaDest=Join-Path $GameRoot "override\M_BGXAI.lua"
+    if(Test-Path -LiteralPath $luaDest){
+        $quarantine=Join-Path $cache ("M_BGXAI_disabled_" + (Get-Date -Format "yyyyMMdd_HHmmss") + ".lua")
+        Move-Item -LiteralPath $luaDest -Destination $quarantine -Force
+        Log "SAFETY: removed experimental EEex telemetry from override; backup=$quarantine"
+    }
+    Log "Safety patch complete. BGXAI combat scripts unchanged. No WeiDU reinstall."
+    exit 0
     $marker=Join-Path $GameRoot "BGXAI\bgxai-updater-version.txt"
     if((Test-Path $marker) -and ([IO.File]::ReadAllText($marker).Trim() -eq ($version + "-telemetry2")) -and (Test-Path (Join-Path $GameRoot "override\M_BGXAI.lua"))) {
        Log "Already installed; no changes."
