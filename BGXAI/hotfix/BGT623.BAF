@@ -29,7 +29,17 @@ THEN
   DisplayStringHead(Myself,~BGXTANK623 REACQUIRE ENEMY~)
   Attack(NearestEnemyOf(Myself))
 END
-// If already next to enemy, let the standing Attack continue without resetting round timer.
+// At close contact, periodically recover from stale movement orders; do not reset every tick.
+IF
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),7)
+ !GlobalTimerNotExpired("BGXMELEE23","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXMELEE23","LOCALS",6)
+  DisplayStringHead(Myself,~BGXTANK623 HOLD ENGAGEMENT~)
+  Attack(NearestEnemyOf(Myself))
+END
 IF
  ActionListEmpty()
  See(NearestEnemyOf(Myself))
