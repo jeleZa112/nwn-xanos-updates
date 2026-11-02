@@ -142,6 +142,25 @@ try {
     }
     $mod=Join-Path $GameRoot 'BGXAI'
     $backup=Join-Path $cache ('backup_'+$stamp)
+
+    $liveBackupDir=$null
+    if($version -eq '0.6.21-verified-compile-pilot') {
+        $liveBackupDir=Join-Path $cache ('active_pre_weidu_621_'+$stamp)
+        New-Item -ItemType Directory -Path $liveBackupDir -Force | Out-Null
+        foreach($scriptName in @('BGXGRP','BGXTANK')) {
+            foreach($pair in @(
+                @{folder='override';ext='BCS'},
+                @{folder='scripts';ext='BS'}
+            )) {
+                $original=Join-Path $GameRoot ($pair.folder+'\'+$scriptName+'.'+$pair.ext)
+                if(Test-Path -LiteralPath $original) {
+                    $safeCopy=Join-Path $liveBackupDir ($pair.folder+'_'+$scriptName+'.'+$pair.ext)
+                    Copy-Item -LiteralPath $original -Destination $safeCopy -Force
+                }
+            }
+        }
+        Log ('BACKUP active game scripts before WeiDU: '+$liveBackupDir)
+    }
     $hadOld=Test-Path $mod
     if($hadOld) {Copy-Item -LiteralPath $mod -Destination $backup -Recurse -Force}
     $weiduLog=Join-Path $GameRoot 'WeiDU.log'
@@ -165,6 +184,17 @@ try {
     } finally {Pop-Location}
     if($code -ne 0) {
         Log ('WeiDU FAILED code='+$code+'; see setup-BGXAI.DEBUG')
+
+        if($version -eq '0.6.21-verified-compile-pilot' -and $liveBackupDir) {
+            foreach($entry in @(Get-ChildItem -LiteralPath $liveBackupDir -File -ErrorAction SilentlyContinue)) {
+                if($entry.Name -match '^(override|scripts)_(BGXGRP|BGXTANK)\.(BCS|BS)$') {
+                    $restoreDest=Join-Path $GameRoot ($Matches[1]+'\'+$Matches[2]+'.'+$Matches[3])
+                    Copy-Item -LiteralPath $entry.FullName -Destination $restoreDest -Force -ErrorAction Continue
+                }
+            }
+            Log 'RESTORED pre-WeiDU active scripts following compile failure.'
+        }
+
         if($hadOld) {
             Remove-Item -LiteralPath $mod -Recurse -Force -ErrorAction SilentlyContinue
             Copy-Item -LiteralPath $backup -Destination $mod -Recurse -Force
@@ -216,6 +246,15 @@ try {
     Log 'v0.6.20: finite retreat and nonblocking fallback; EEex telemetry unchanged. Use disposable save.'
     exit 0
 } catch {
+    if(([string]$version) -eq '0.6.21-verified-compile-pilot' -and $liveBackupDir -and (Test-Path -LiteralPath $liveBackupDir)) {
+        foreach($entry in @(Get-ChildItem -LiteralPath $liveBackupDir -File -ErrorAction SilentlyContinue)) {
+            if($entry.Name -match '^(override|scripts)_(BGXGRP|BGXTANK)\.(BCS|BS)$') {
+                $restoreDest=Join-Path $GameRoot ($Matches[1]+'\'+$Matches[2]+'.'+$Matches[3])
+                Copy-Item -LiteralPath $entry.FullName -Destination $restoreDest -Force -ErrorAction Continue
+            }
+        }
+        Log 'RESTORED pre-WeiDU active scripts following activation failure; WeiDU metadata rollback not guaranteed.'
+    }
     Log ('FAILED: '+$_.Exception.Message)
     exit 1
 }
