@@ -1,4 +1,4 @@
-# BGXAI GitHub updater v0.6.25 verified compilation pilot. Separate branch; never touches NWN main.
+# BGXAI GitHub updater v0.6.26 verified squad compilation pilot. Separate branch; never touches NWN main.
 param([string]$GameRoot=".")
 $ErrorActionPreference='Stop'
 $ProgressPreference='SilentlyContinue'
@@ -52,6 +52,7 @@ try {
     if($version -eq '0.6.24-support-survival-pilot') {$verifiedTag='624'}
     if($version -eq '0.6.25-healthy-engage-pilot') {$verifiedTag='625'}
     if($version -eq '0.6.25-no-premature-formation-pilot') {$verifiedTag='625'}
+    if($version -eq '0.6.26-squad-two-tank-pilot') {$verifiedTag='626'}
     if($version -eq '0.6.23-formation-rescue-pilot') {$verifiedTag='623'}
     $expectedCompiledMarker=''
     if($verifiedTag) {$expectedCompiledMarker='BGXVER'+$verifiedTag.Substring(1)}
