@@ -87,14 +87,22 @@ try {
         Note "WARNING: No user profile folder found; original InfinityLoader path may use a redirected Documents directory."
     }
 
-    # Read-only provenance: check version-20 marker in compiled binaries, not just hashes.
+    # Read-only provenance: check the active binary for the expected version marker.
+    $markerPath=Join-Path $GameRoot 'BGXAI\bgxai-updater-version.txt'
+    $expectedMarker='BGXVER20'
+    if(Test-Path -LiteralPath $markerPath) {
+        $installedMarker=[IO.File]::ReadAllText($markerPath).Trim()
+        if($installedMarker -eq '0.6.21-verified-compile-pilot') {$expectedMarker='BGXVER21'}
+    }
     foreach($scriptName in @("BGXGRP","BGXTANK")) {
         $compiledFile=Join-Path $GameRoot ("scripts\"+$scriptName+".BS")
         $compiledText=[Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes($compiledFile))
-        if($compiledText.Contains("BGXVER20")) {
-            Note ("COMPILED VERSION MARKER PRESENT "+$scriptName+" BGXVER20")
+        $requiredMarker=$expectedMarker
+        if($compiledText.Contains("BGXVER21")) {$requiredMarker='BGXVER21'}
+        if($compiledText.Contains($requiredMarker)) {
+            Note ("COMPILED VERSION MARKER PRESENT "+$scriptName+" "+$requiredMarker)
         } else {
-            Note ("WARNING COMPILED VERSION MARKER MISSING "+$scriptName)
+            Note ("WARNING COMPILED VERSION MARKER MISSING "+$scriptName+" expected="+$requiredMarker)
         }
         if($compiledText.Contains("BGXMODE")) {
             Note ("WARNING LEGACY MODE DETECTED "+$scriptName)
