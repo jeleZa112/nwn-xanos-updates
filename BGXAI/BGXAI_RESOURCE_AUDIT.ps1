@@ -87,8 +87,8 @@ try {
         Note "WARNING: No user profile folder found; original InfinityLoader path may use a redirected Documents directory."
     }
     Note ("AUDIT SUCCESS profiles="+$found+"; same game script resources, home shadows synchronized.")
-    exit 0
+    return
 } catch {
     Note ("AUDIT FAILED: "+$_.Exception.Message)
-    exit 1
+    throw
 }
