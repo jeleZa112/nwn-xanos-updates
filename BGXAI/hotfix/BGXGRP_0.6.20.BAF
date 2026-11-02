@@ -1,0 +1,106 @@
+// BGXGRP v0.6.20 LIVENESS FIRST. No legacy BGXMODE lock; Player3 = tank, Player4 = support.
+// The engine evaluates the first matching block. EVERY threatened HP band has fallback.
+IF
+ Global("BGXVER20","LOCALS",0)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXVER20","LOCALS",1)
+  DisplayStringHead(Myself,~BGXGRP620 ACTIVE~)
+END
+// Re-arm up to two short evasions ONLY after recovering HP; no infinite kite loop.
+IF
+ GlobalGT("BGXESC20","LOCALS",0)
+ HPPercentGT(Myself,79)
+ ActionListEmpty()
+THEN
+ RESPONSE #100
+  SetGlobal("BGXESC20","LOCALS",0)
+END
+// Emergency: 2 finite evasions maximum, 24 AI ticks (~1.6 sec) each.
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),7)
+ HPPercentLT(Myself,50)
+ Global("BGXESC20","LOCALS",0)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXESC20","LOCALS",1)
+  DisplayStringHead(Myself,~BGXGRP620 SHORT EVADE 1/2~)
+  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),24)
+END
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),7)
+ HPPercentLT(Myself,50)
+ Global("BGXESC20","LOCALS",1)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXESC20","LOCALS",2)
+  DisplayStringHead(Myself,~BGXGRP620 SHORT EVADE 2/2~)
+  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),24)
+END
+// Short evasion exhausted or enemy too near to cast: switch to melee, but only when needed.
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),7)
+ IsWeaponRanged(Myself)
+ !GlobalTimerNotExpired("BGXWPN20","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXWPN20","LOCALS",6)
+  EquipMostDamagingMelee()
+  DisplayStringHead(Myself,~BGXGRP620 MELEE DEFENSE~)
+END
+// Heal only when not within 8 ft of an enemy; do not block combat if out of spells.
+IF
+ ActionListEmpty()
+ HPPercentLT(Myself,80)
+ !Range(NearestEnemyOf(Myself),8)
+ HaveSpell(CLERIC_CURE_MODERATE_WOUNDS)
+ !GlobalTimerNotExpired("BGXHEAL20","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXHEAL20","LOCALS",8)
+  DisplayStringHead(Myself,~BGXGRP620 HEAL MODERATE~)
+  Spell(Myself,CLERIC_CURE_MODERATE_WOUNDS)
+END
+IF
+ ActionListEmpty()
+ HPPercentLT(Myself,80)
+ !Range(NearestEnemyOf(Myself),8)
+ HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+ !GlobalTimerNotExpired("BGXHEAL20","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXHEAL20","LOCALS",8)
+  DisplayStringHead(Myself,~BGXGRP620 HEAL LIGHT~)
+  Spell(Myself,CLERIC_CURE_LIGHT_WOUNDS)
+END
+// When safe enough for range, switch only if an equipped ranged option really exists.
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ !Range(NearestEnemyOf(Myself),9)
+ Range(NearestEnemyOf(Myself),18)
+ !IsWeaponRanged(Myself)
+ CanEquipRanged()
+ !GlobalTimerNotExpired("BGXWPN20","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXWPN20","LOCALS",6)
+  EquipRanged()
+  DisplayStringHead(Myself,~BGXGRP620 RANGED~)
+END
+// LIVENESS FALLBACK: even at critical HP, or with no spells, use a valid one-round defense.
+// Keep the range bounded: support will not chase enemies across the area.
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),18)
+THEN
+ RESPONSE #100
+  AttackOneRound(NearestEnemyOf(Myself))
+END
