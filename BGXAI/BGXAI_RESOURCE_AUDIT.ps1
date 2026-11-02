@@ -94,6 +94,7 @@ try {
         $installedMarker=[IO.File]::ReadAllText($markerPath).Trim()
         if($installedMarker -eq '0.6.21-verified-compile-pilot') {$expectedMarker='BGXVER21'}
         if($installedMarker -eq '0.6.22-intercept-melee-pilot') {$expectedMarker='BGXVER22'}
+        if($installedMarker -eq '0.6.23-formation-rescue-pilot') {$expectedMarker='BGXVER23'}
     }
     foreach($scriptName in @("BGXGRP","BGXTANK")) {
         $compiledFile=Join-Path $GameRoot ("scripts\"+$scriptName+".BS")
@@ -101,6 +102,7 @@ try {
         $requiredMarker=$expectedMarker
         if($compiledText.Contains("BGXVER21")) {$requiredMarker='BGXVER21'}
         if($compiledText.Contains("BGXVER22")) {$requiredMarker='BGXVER22'}
+        if($compiledText.Contains("BGXVER23")) {$requiredMarker='BGXVER23'}
         if($compiledText.Contains($requiredMarker)) {
             Note ("COMPILED VERSION MARKER PRESENT "+$scriptName+" "+$requiredMarker)
         } else {
