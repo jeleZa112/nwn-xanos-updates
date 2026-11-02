@@ -133,11 +133,9 @@ try {
     # Compile under fresh resource names; select exact source for each pilot.
     $extraFiles=@()
     if($verifiedTag) {
-        $extraPatches=@{
-            'BGXAI/BGXAI.TP2'=('BGXAI/hotfix/BGXAI_0.6.'+$verifiedTag.Substring(1)+'.TP2')
-            ('BGXAI/AI_BAF/BGG'+$verifiedTag+'.BAF')=('BGXAI/hotfix/BGG'+$verifiedTag+'.BAF')
-            ('BGXAI/AI_BAF/BGT'+$verifiedTag+'.BAF')=('BGXAI/hotfix/BGT'+$verifiedTag+'.BAF')
-        }
+        $extraPatches=@{'BGXAI/BGXAI.TP2'=('BGXAI/hotfix/BGXAI_0.6.'+$verifiedTag.Substring(1)+'.TP2')}
+        $extraPatches[('BGXAI/AI_BAF/BGG'+$verifiedTag+'.BAF')]=('BGXAI/hotfix/BGG'+$verifiedTag+'.BAF')
+        $extraPatches[('BGXAI/AI_BAF/BGT'+$verifiedTag+'.BAF')]=('BGXAI/hotfix/BGT'+$verifiedTag+'.BAF')
         foreach($sourceTarget in $extraPatches.Keys) {
             [byte[]]$extraBytes=GetFile $extraPatches[$sourceTarget] $commit
             $extraText=[Text.Encoding]::UTF8.GetString($extraBytes)
