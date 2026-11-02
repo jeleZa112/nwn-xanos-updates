@@ -49,6 +49,7 @@ try {
     if($version -eq '0.6.21-verified-compile-pilot') {$verifiedTag='621'}
     if($version -eq '0.6.22-intercept-melee-pilot') {$verifiedTag='622'}
     if($version -eq '0.6.23-formation-rescue-pilot') {$verifiedTag='623'}
+    if($version -eq '0.6.23-formation-rescue-pilot') {$verifiedTag='623'}
     $expectedCompiledMarker=''
     if($verifiedTag) {$expectedCompiledMarker='BGXVER'+$verifiedTag.Substring(1)}
 
