@@ -1,4 +1,4 @@
-# BGXAI GitHub updater v0.6.16 pilot. Separate branch, never touches NWN main.
+# BGXAI GitHub updater v0.6.21 verified compilation pilot. Separate branch; never touches NWN main.
 param([string]$GameRoot=".")
 $ErrorActionPreference='Stop'
 $ProgressPreference='SilentlyContinue'
@@ -259,7 +259,7 @@ try {
     RepairUserScriptShadow $commit
     [IO.File]::WriteAllText($marker,$version,[Text.Encoding]::ASCII)
     Log ('SUCCESS: BGXAI '+$version+' installed; BGXTANK for Khalid, BGXGRP for Jaheira')
-    Log 'v0.6.20: finite retreat and nonblocking fallback; EEex telemetry unchanged. Use disposable save.'
+    Log ('Diagnostic: '+$version+'; EEex telemetry unchanged. Test only after verified binary/version markers.')
     exit 0
 } catch {
     if(([string]$version) -eq '0.6.21-verified-compile-pilot' -and $liveBackupDir -and (Test-Path -LiteralPath $liveBackupDir)) {
