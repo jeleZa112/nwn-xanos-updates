@@ -1,4 +1,4 @@
-# BGXAI LIVE MONITOR 0.3 - read-only local combat log + Ollama. Windows PowerShell 5.1.
+﻿# BGXAI LIVE MONITOR 0.3 - read-only local combat log + Ollama. Windows PowerShell 5.1.
 param([Parameter(Mandatory=$true)][string]$GameRoot)
 $ErrorActionPreference='Stop'
 $ProgressPreference='SilentlyContinue'
