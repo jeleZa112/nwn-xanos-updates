@@ -42,4 +42,19 @@ t('when scout mission off use universal',v4.selectWithScout(cfg,'cre:91',
  {...shot,scoutMission:{enabled:false}}).source,'universal');
 t('when actor manual use universal',(()=>{core.stance(p,'manual');let r=v4.selectWithScout(cfg,'cre:91',shot).source;core.stance(p,'balanced');return r})(),'universal');
 t('no named companion',!/Imoen|Xzar|Montaron|PartySlot/.test(JSON.stringify(cfg)),true);
+t('confirmed safe retreat from enemy',v4.selectWithScout(cfg,'cre:91',
+ {...shot,capabilities:{detect:true,disarm:true,mobility:true},
+ scoutObservation:{...obs,nowMs:13000,visibleHostiles:[{hostile:true}],
+ safeRetreatToParty:true,retreatDestinationVerified:true,retreatPathAvoidsTraps:true,
+ safePartyPointId:'ally:1'}},b.scoutMemory).decision.kind,'SCOUT_RETREAT_PROPOSAL');
+t('retreat blocked by known trap in path',v4.selectWithScout(cfg,'cre:91',
+ {...shot,capabilities:{detect:true,disarm:true,mobility:true},
+ scoutObservation:{...obs,nowMs:13000,visibleHostiles:[{hostile:true}],
+ safeRetreatToParty:true,retreatDestinationVerified:true,retreatPathAvoidsTraps:false,
+ safePartyPointId:'ally:1'}},b.scoutMemory).decision.kind,'SCOUT_ABORT_DISARM');
+t('no retreat while hidden',v4.selectWithScout(cfg,'cre:91',
+ {...shot,capabilities:{detect:true,disarm:true,mobility:true},
+ scoutObservation:{...obs,nowMs:13000,visibleHostiles:[{hostile:true}],hidden:true,
+ safeRetreatToParty:true,retreatDestinationVerified:true,retreatPathAvoidsTraps:true,
+ safePartyPointId:'ally:1'}},b.scoutMemory).decision.kind,'SCOUT_ABORT_DISARM');
 console.log('PASS '+n+' universal/scout integration cases');
