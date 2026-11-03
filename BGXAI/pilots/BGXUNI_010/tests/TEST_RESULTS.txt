@@ -1,0 +1,39 @@
+test_actions_and_triggers_exist_in_supplied_ids (__main__.TestBAF.test_actions_and_triggers_exist_in_supplied_ids) ... ok
+test_attack_cannot_break_stealth (__main__.TestBAF.test_attack_cannot_break_stealth) ... ok
+test_bard_song_skill_mode (__main__.TestBAF.test_bard_song_skill_mode) ... ok
+test_blocks_balanced (__main__.TestBAF.test_blocks_balanced) ... ok
+test_caster_defensive_spell_if_actual_slot (__main__.TestBAF.test_caster_defensive_spell_if_actual_slot) ... ok
+test_detect_requires_skill (__main__.TestBAF.test_detect_requires_skill) ... ok
+test_detect_safe_idle_skill (__main__.TestBAF.test_detect_safe_idle_skill) ... ok
+test_disable_offensive_in_legacy_switch (__main__.TestBAF.test_disable_offensive_in_legacy_switch) ... ok
+test_explicit_control_permission (__main__.TestBAF.test_explicit_control_permission) ... ok
+test_fail_closed_unknown_class_spells (__main__.TestBAF.test_fail_closed_unknown_class_spells) ... ok
+test_global_attack_off_suppresses_both (__main__.TestBAF.test_global_attack_off_suppresses_both) ... ok
+test_initial_banner_once (__main__.TestBAF.test_initial_banner_once) ... ok
+test_magic_missile_optin (__main__.TestBAF.test_magic_missile_optin) ... ok
+test_manual_order_cannot_be_broken (__main__.TestBAF.test_manual_order_cannot_be_broken) ... ok
+test_melee_attack_adjacent (__main__.TestBAF.test_melee_attack_adjacent) ... ok
+test_melee_disabled_independently (__main__.TestBAF.test_melee_disabled_independently) ... ok
+test_melee_does_not_charge_far_enemy (__main__.TestBAF.test_melee_does_not_charge_far_enemy) ... ok
+test_multiclass_combines_spell_and_weapon_when_available (__main__.TestBAF.test_multiclass_combines_spell_and_weapon_when_available) ... ok
+test_no_automatic_offensive_spells_without_optin (__main__.TestBAF.test_no_automatic_offensive_spells_without_optin) ... ok
+test_no_song_for_nonbard (__main__.TestBAF.test_no_song_for_nonbard) ... ok
+test_no_unsafe_actions (__main__.TestBAF.test_no_unsafe_actions) ... ok
+test_one_script_and_separate_names (__main__.TestBAF.test_one_script_and_separate_names) ... ok
+test_protection_spell_timer (__main__.TestBAF.test_protection_spell_timer) ... ok
+test_ranged_attack_disabled (__main__.TestBAF.test_ranged_attack_disabled) ... ok
+test_ranged_attack_in_range (__main__.TestBAF.test_ranged_attack_in_range) ... ok
+test_ranged_does_not_chase_invisible (__main__.TestBAF.test_ranged_does_not_chase_invisible) ... ok
+test_ranged_suppressed_by_melee_only_legacy_mode (__main__.TestBAF.test_ranged_suppressed_by_melee_only_legacy_mode) ... ok
+test_seeded_random_invariants_2000 (__main__.TestBAF.test_seeded_random_invariants_2000) ... ok
+test_self_heal_priority_when_not_under_attack (__main__.TestBAF.test_self_heal_priority_when_not_under_attack) ... ok
+test_self_heal_refused_under_immediate_pressure (__main__.TestBAF.test_self_heal_refused_under_immediate_pressure) ... ok
+test_spell_symbols_in_actual_user_ids (__main__.TestBAF.test_spell_symbols_in_actual_user_ids) ... ok
+test_stats_and_classes (__main__.TestBAF.test_stats_and_classes) ... ok
+test_stealth_not_in_combat (__main__.TestBAF.test_stealth_not_in_combat) ... ok
+test_stealth_safe_idle_skill (__main__.TestBAF.test_stealth_safe_idle_skill) ... ok
+
+----------------------------------------------------------------------
+Ran 34 tests in 0.059s
+
+OK
