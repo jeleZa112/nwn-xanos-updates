@@ -1,4 +1,4 @@
-﻿# BGXAI LIVE MONITOR 0.4.1 - private fixed-target sync with GitHub CLI. Windows PowerShell 5.1.
+﻿# BGXAI LIVE MONITOR 0.4.2 - private fixed-target sync with GitHub CLI. Windows PowerShell 5.1.
 param([Parameter(Mandatory=$true)][string]$GameRoot)
 $ErrorActionPreference='Stop'
 $ProgressPreference='SilentlyContinue'
@@ -24,6 +24,11 @@ $script:Actors=@{}
 $script:NextActor=0
 $script:CodeCounts=@{}
 $script:Recent=New-Object 'System.Collections.Generic.List[object]'
+$script:ShadowCount=0
+$script:ShadowRosterSize=0
+$script:ShadowLast=@{}
+$script:ShadowRetreats=@{}
+$script:ShadowFlagged=@{}
 $script:KeyFile=Join-Path $script:SyncRoot 'github_token.dpapi'
 $script:SummaryFile=Join-Path $out 'LIVE_SUMMARY.json'
 $script:SyncStatusFile=Join-Path $out 'SYNC_STATUS.txt'
@@ -105,10 +110,10 @@ function Write-Summary {
     $incidents+=@{type=[string]$kind;count=[int]$script:Incidents[$kind]}
   }
   $obj=@{
-    schema=1;monitor='0.4.1';utc=[DateTime]::UtcNow.ToString('o')
-    total=[int]$script:TotalEvents;actors=$actors;actions=$codes
+    schema=1;monitor='0.4.2';utc=[DateTime]::UtcNow.ToString('o')
+    total=[int]$script:TotalEvents;shadow_action_starts=[int]$script:ShadowCount;observed_roster_size=[int]$script:ShadowRosterSize;actors=$actors;actions=$codes
     incidents=$incidents;recent=@($script:Recent | Select-Object -Last 20)
-    note='Observes action starts, not damage, HP, confirmed deaths or complete roster.'
+    note='Interception flags are suspected patterns from action starts and approximate positions, not proven weapon, aggro, HP or rescue outcome.'
   }
   [IO.File]::WriteAllText($script:SummaryFile,($obj | ConvertTo-Json -Compress -Depth 6),(New-Object Text.UTF8Encoding($false)))
 }
@@ -152,11 +157,47 @@ function Begin-PrivateSync {
     }
   }
 }
+function Observe-BGX71([string]$line) {
+  # Read-only. Never infer tank identity or ranged weapon from action start.
+  if($line -match '\[BGX71\] ROSTER epoch=\d+ size=([1-6])\b'){
+    $script:ShadowRosterSize=[int]$Matches[1]
+    $script:ShadowLast=@{};$script:ShadowRetreats=@{};$script:ShadowFlagged=@{}
+    return
+  }
+  if($line -notmatch '\[BGX71\] ACTION_\d+ actor=(A\d+) id=-?\d+ slot=[1-6] action=(-?\d+) pos=\((-?\d+),(-?\d+)\) dest=\((-?\d+),(-?\d+)\) target=(-?\d+)'){return}
+  $actor=[string]$Matches[1];$act=[int]$Matches[2]
+  $x=[int64]::Parse($Matches[3]);$y=[int64]::Parse($Matches[4]);$target=[string]$Matches[5]
+  $script:ShadowCount++
+  if($act -eq 355 -and $target -ne '-1'){
+    $key=$actor+'|'+$target
+    if(!$script:ShadowRetreats.ContainsKey($key)){$script:ShadowRetreats[$key]=0}
+    $script:ShadowRetreats[$key]=[int]$script:ShadowRetreats[$key]+1
+    if($script:ShadowRetreats[$key] -ge 2 -and !$script:ShadowFlagged.ContainsKey($key)){
+      foreach($other in @($script:ShadowLast.Keys)){
+        if($other -eq $actor){continue}
+        $prev=$script:ShadowLast[$other]
+        if([int]$prev.act -ne 3 -or [string]$prev.target -ne $target){continue}
+        if(($script:ShadowCount-[int]$prev.index) -gt 50){continue}
+        $dx=$x-[int64]$prev.x;$dy=$y-[int64]$prev.y
+        if(($dx*$dx+$dy*$dy) -lt 48400){continue}
+        $script:ShadowFlagged[$key]=$true
+        $distance=[int][Math]::Round([Math]::Sqrt(($dx*$dx)+($dy*$dy)))
+        Incident 'SUSPECT_DELAYED_INTERCEPT' $actor ('Repeated retreat from same threat; '+$other+' last attacked it from '+$distance+' coordinate units. Role, weapon, HP, aggro, actual rescue and elapsed seconds UNKNOWN.')
+        break
+      }
+    }
+  }
+  $script:ShadowLast[$actor]=@{act=$act;target=$target;x=$x;y=$y;index=$script:ShadowCount}
+}
 function Handle([string]$line) {
   if(!$line){return}
-  if($line.Contains('[BGXAI]')) {
+  if($line.Contains('[BGXAI]') -or $line.Contains('[BGX71]')) {
     [void]$history.Add($line)
     if($history.Count -gt 32){$history.RemoveAt(0)}
+  }
+  if($line.Contains('[BGX71]')) {
+    Observe-BGX71 $line
+    return
   }
   if($line -match '\[BGXAI\] HOOK_ERROR') {Incident 'HOOK_ERROR' 'EEex' 'Listener exception';return}
   if($line -notmatch '\[BGXAI\] ACTION_\d+ name=(.+?) id=\S+ action=(\d+)\b'){return}
@@ -219,7 +260,7 @@ function Poll {
     $script:partial=$lines[$lines.Length-1]
   }
 }
-Log 'BGXAI LIVE MONITOR 0.3 | no sound, no paid API, log is read-only.'
+Log 'BGXAI LIVE MONITOR 0.4.2 | no sound, no paid API, log is read-only.'
 Log ('Local reports: '+$out)
 if($model){Log ('Ollama local: '+$model)}else{Log 'Ollama unavailable; rules-only mode active.' 'WARN'}
 Log 'Launch EET using InfinityLoader; press Ctrl+C here to stop.'
@@ -239,9 +280,9 @@ while($true){
     if(([DateTime]::UtcNow-$script:LastSnapshot).TotalSeconds -ge 15){
       Write-Summary
       $script:LastSnapshot=[DateTime]::UtcNow
-      if($script:TotalEvents -gt $script:LastQueuedCount -and ([DateTime]::UtcNow-$script:LastSync).TotalSeconds -ge 120){
+      if(($script:TotalEvents+$script:ShadowCount) -gt $script:LastQueuedCount -and ([DateTime]::UtcNow-$script:LastSync).TotalSeconds -ge 120){
         Begin-PrivateSync
-        $script:LastQueuedCount=$script:TotalEvents
+        $script:LastQueuedCount=$script:TotalEvents+$script:ShadowCount
         $script:LastSync=[DateTime]::UtcNow
       }
     }
