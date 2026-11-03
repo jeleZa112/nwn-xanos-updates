@@ -21,8 +21,19 @@ function selectWithScout(cfg,actorKey,snapshot={},memory=null,settings={}){
   requiresVerifiedExecutor:true,mustRevalidateAtExecution:true}};
  if(r.kind==="TRAP_ALERT")return {...common,decision:{kind:"SCOUT_ALERT_TRAP",
   target:r.target,requestPartyRouteHold:true,requiresVerifiedExecutor:true}};
- if(r.kind==="ABORT_DISARM")return {...common,decision:{kind:"SCOUT_ABORT_DISARM",
-  target:r.target,requestPartyRouteHold:true,suggestSafeFallback:true}};
+ if(r.kind==="ABORT_DISARM"){
+  // Never run blindly across a trapped corridor; a safe destination and route are mandatory.
+  const escape=observed.safeRetreatToParty===true&&observed.retreatDestinationVerified===true&&
+   observed.retreatPathAvoidsTraps===true&&observed.safePartyPointId!=null&&
+   p.allow.retreat===true&&snapshot.capabilities?.mobility===true&&
+   !observed.manualOrder&&!observed.actionBusy&&!observed.actorDisabled&&
+   !observed.actorDead&&!observed.panicked&&!observed.hidden;
+  if(escape)return {...common,decision:{kind:"SCOUT_RETREAT_PROPOSAL",
+   target:observed.safePartyPointId,requestPartyRouteHold:true,
+   requiresVerifiedExecutor:true,mustRevalidateAtExecution:true}};
+  return {...common,decision:{kind:"SCOUT_ABORT_DISARM",
+   target:r.target,requestPartyRouteHold:true,suggestSafeFallback:true}};
+ }
  if(r.kind==="REQUEST_CONFIRMATION")return {...common,decision:{kind:"SCOUT_ASK_PLAYER",
   target:r.target,chance:r.chance,reason:r.reason}};
  return {...common,decision:{kind:"HOLD",reason:r.reason}};
