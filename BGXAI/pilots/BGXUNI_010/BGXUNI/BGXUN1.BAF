@@ -1,0 +1,170 @@
+// BGXUN1 v0.1.0 — separate selectable party script for EET / SCS 35.21 / Insane.
+// New independent experimental pilot; never patches BDDEFAI, BGXGRP, BGXTANK.
+// Capability checks use current spells / weapon / thief stats, not NPC names or portrait slots.
+// WARNING: WeiDU and real-game compilation/test required. Do not claim the whole BGXAI is integrated.
+// Existing BDAI local switches are read-only. The Advanced AI UI's availability while
+// this custom script is selected has NOT been verified in the user's build.
+// Optional opt-in LOCALS: BGXUCTRL=1 enables Blindness; BGXUDMG=1 enables Magic Missile.
+// Independent opt-out LOCALS: BGXUNR=1 disables ranged; BGXUNM=1 disables melee.
+
+// Startup evidence; fires once when the new script is actually assigned and actions are idle.
+IF
+ ActionListEmpty()
+ Global("BGXU010","LOCALS",0)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXU010","LOCALS",1)
+  DisplayStringHead(Myself,~BGXUN1 V010 READY~)
+END
+
+// Self-heal: live divine spell is mandatory (works for valid dual/multi/respec).
+// Never cast under immediate melee pressure. No consumables or bypassed spell costs.
+IF
+ ActionListEmpty()
+ Global("BDAI_DISABLE_DEFENSIVE","LOCALS",0)
+ HPPercentLT(Myself,40)
+ !Range(NearestEnemyOf(Myself),8)
+ HaveSpell(CLERIC_CURE_MEDIUM_WOUNDS)
+ !GlobalTimerNotExpired("BGXUHL01","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXUHL01","LOCALS",12)
+  Spell(Myself,CLERIC_CURE_MEDIUM_WOUNDS)
+END
+IF
+ ActionListEmpty()
+ Global("BDAI_DISABLE_DEFENSIVE","LOCALS",0)
+ HPPercentLT(Myself,40)
+ !Range(NearestEnemyOf(Myself),8)
+ HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+ !GlobalTimerNotExpired("BGXUHL01","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXUHL01","LOCALS",12)
+  Spell(Myself,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// Save scarce protection for a wounded, actually threatened mage; no idle prebuff.
+IF
+ ActionListEmpty()
+ Global("BDAI_DISABLE_DEFENSIVE","LOCALS",0)
+ HPPercentLT(Myself,70)
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),12)
+ !Range(NearestEnemyOf(Myself),5)
+ HaveSpell(WIZARD_MIRROR_IMAGE)
+ !GlobalTimerNotExpired("BGXUMI01","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXUMI01","LOCALS",120)
+  Spell(Myself,WIZARD_MIRROR_IMAGE)
+END
+
+// Two offensive actions are STRICTLY OPT-IN (default LOCALS 0), no crowd/AoE damage.
+// No remote enemy counting or hidden-information reads: only a visible target and real wound.
+IF
+ ActionListEmpty()
+ Global("BDAI_DISABLE_OFFENSIVE","LOCALS",0)
+ Global("BGXUCTRL","LOCALS",1)
+ HPPercentLT(Myself,80)
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),15)
+ HaveSpell(WIZARD_BLINDNESS)
+ !GlobalTimerNotExpired("BGXUCB01","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXUCB01","LOCALS",60)
+  Spell(NearestEnemyOf(Myself),WIZARD_BLINDNESS)
+END
+IF
+ ActionListEmpty()
+ Global("BDAI_DISABLE_OFFENSIVE","LOCALS",0)
+ Global("BGXUDMG","LOCALS",1)
+ HPPercentLT(Myself,70)
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),15)
+ HaveSpell(WIZARD_MAGIC_MISSILE)
+ !GlobalTimerNotExpired("BGXUCD01","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXUCD01","LOCALS",40)
+  Spell(NearestEnemyOf(Myself),WIZARD_MAGIC_MISSILE)
+END
+
+// Legacy skill-mode preference stays separate from weapon and magic permission.
+// Trap sensing is passive while standing still; NO auto lockpick, disarm or movement.
+IF
+ ActionListEmpty()
+ Global("BDAI_DISABLE_SPECIAL","LOCALS",0)
+ Global("BDAI_SKILL_MODE","LOCALS",1)
+ !ActuallyInCombat()
+ !See(NearestEnemyOf(Myself))
+ CheckStatGT(Myself,0,TRAPS)
+ !ModalState(DETECTTRAPS)
+ !StateCheck(Myself,STATE_INVISIBLE)
+THEN
+ RESPONSE #100
+  FindTraps()
+END
+
+// Hide when selected by the player: never try while visible enemies or combat active.
+IF
+ ActionListEmpty()
+ Global("BDAI_DISABLE_SPECIAL","LOCALS",0)
+ Global("BDAI_SKILL_MODE","LOCALS",2)
+ !ActuallyInCombat()
+ !See(NearestEnemyOf(Myself))
+ CheckStatGT(Myself,0,STEALTH)
+ !StateCheck(Myself,STATE_INVISIBLE)
+ !GlobalTimerNotExpired("BGXUHI01","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXUHI01","LOCALS",18)
+  Hide()
+END
+
+// Bard song: explicit existing skill mode only; no script guesses for other classes.
+// This action is never issued during a manual action queue.
+IF
+ ActionListEmpty()
+ Global("BDAI_DISABLE_SPECIAL","LOCALS",0)
+ Global("BDAI_SKILL_MODE","LOCALS",3)
+ Class(Myself,BARD)
+ ActuallyInCombat()
+ See(NearestEnemyOf(Myself))
+ !GlobalTimerNotExpired("BGXUSO01","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXUSO01","LOCALS",45)
+  BattleSong()
+END
+
+// Low-cost ranged combat only with an ALREADY SELECTED ranged weapon.
+// Never equip-swaps or runs across a trap. Sneaking / invisible actor is respected.
+IF
+ ActionListEmpty()
+ Global("BDAI_DISABLE_ATTACK","LOCALS",0)
+ !StateCheck(Myself,STATE_INVISIBLE)
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),18)
+ Global("BGXUNR","LOCALS",0)
+ !Global("BDAI_ATTACK_MODE","LOCALS",1)
+ IsWeaponRanged(Myself)
+THEN
+ RESPONSE #100
+  AttackOneRound(NearestEnemyOf(Myself))
+END
+
+// Melee fallback: only a nearby visible enemy, no automatic long-distance charge.
+IF
+ ActionListEmpty()
+ Global("BDAI_DISABLE_ATTACK","LOCALS",0)
+ !StateCheck(Myself,STATE_INVISIBLE)
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),4)
+ Global("BGXUNM","LOCALS",0)
+ !IsWeaponRanged(Myself)
+THEN
+ RESPONSE #100
+  AttackOneRound(NearestEnemyOf(Myself))
+END
