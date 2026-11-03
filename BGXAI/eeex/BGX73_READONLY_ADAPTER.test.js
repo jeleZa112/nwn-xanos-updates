@@ -25,7 +25,10 @@ t(A.parse(line.replace('identity=SESSION_ONLY','identity=GUARANTEED')),null,'ide
 t(A.toScoutSnapshot(e,{saveEpoch:'',monotonicMs:4}).valid,false,'epoch needed');
 t(A.toScoutSnapshot(e,{saveEpoch:'s',monotonicMs:-3}).valid,false,'valid time needed');
 console.log(`PASS ${num} read-only adapter tests`);
-const S=require('../BGXAI_SCOUT_SAFE_v04/BGX_SCOUT_SAFETY_V01.js');
+const fs=require('node:fs'), path=require('node:path');
+const relativeScout=fs.existsSync(path.join(__dirname,'../scout/BGX_SCOUT_SAFETY_V01.js'))
+ ? '../scout/BGX_SCOUT_SAFETY_V01.js' : './BGX_SCOUT_SAFETY_V01.js';
+const S=require(relativeScout);
 const d=S.step(null,partial);
 assert.notEqual(d.kind,'DISARM_TRAP','unverified EEex observation can never disarm');
 const z=A.toScoutSnapshot(noEnemy,{saveEpoch:'s',monotonicMs:20});
