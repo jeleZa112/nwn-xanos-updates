@@ -1,4 +1,4 @@
-﻿# BGXAI LIVE MONITOR 0.4.2 - private fixed-target sync with GitHub CLI. Windows PowerShell 5.1.
+﻿# BGXAI LIVE MONITOR 0.4.3 - private fixed-target sync with GitHub CLI. Windows PowerShell 5.1.
 param([Parameter(Mandatory=$true)][string]$GameRoot)
 $ErrorActionPreference='Stop'
 $ProgressPreference='SilentlyContinue'
@@ -110,7 +110,7 @@ function Write-Summary {
     $incidents+=@{type=[string]$kind;count=[int]$script:Incidents[$kind]}
   }
   $obj=@{
-    schema=1;monitor='0.4.2';utc=[DateTime]::UtcNow.ToString('o')
+    schema=1;monitor='0.4.3';utc=[DateTime]::UtcNow.ToString('o')
     total=[int]$script:TotalEvents;shadow_action_starts=[int]$script:ShadowCount;observed_roster_size=[int]$script:ShadowRosterSize;actors=$actors;actions=$codes
     incidents=$incidents;recent=@($script:Recent | Select-Object -Last 20)
     note='Interception flags are suspected patterns from action starts and approximate positions, not proven weapon, aggro, HP or rescue outcome.'
@@ -118,42 +118,76 @@ function Write-Summary {
   [IO.File]::WriteAllText($script:SummaryFile,($obj | ConvertTo-Json -Compress -Depth 6),(New-Object Text.UTF8Encoding($false)))
 }
 function Begin-PrivateSync {
-  # Only the private repo hardcoded below. No arbitrary URLs from files or logs.
-  if(!(Test-Path -LiteralPath $script:KeyFile -PathType Leaf)){return}
+  # Explicitly fixed destination and source: encrypted DPAPI credential + anonymous summary only.
+  # No third-party CLI, no raw log upload, no credential/error text in status.
+  if(!(Test-Path -LiteralPath $script:KeyFile -PathType Leaf)){
+    [IO.File]::WriteAllText($script:SyncStatusFile,([DateTime]::UtcNow.ToString('o')+' DISABLED stage=credential reason=encrypted_token_file_absent'),(New-Object Text.UTF8Encoding($false)))
+    return
+  }
   if(!(Test-Path -LiteralPath $script:SummaryFile -PathType Leaf)){return}
   if($script:SyncJob -and $script:SyncJob.State -eq 'Running'){return}
   if($script:SyncJob){Remove-Job -Job $script:SyncJob -Force -ErrorAction SilentlyContinue;$script:SyncJob=$null}
   $script:SyncJob=Start-Job -Name ('BGXAI_Private_'+(Get-Date -Format HHmmssfff)) -ArgumentList $script:KeyFile,$script:SummaryFile,$script:SyncStatusFile -ScriptBlock {
     param([string]$keyFile,[string]$summaryFile,[string]$statusFile)
-    $env:GH_TOKEN=$null
-    try{
-      $secure=[IO.File]::ReadAllText($keyFile,[Text.Encoding]::ASCII) | ConvertTo-SecureString
+    $ErrorActionPreference='Stop'
+    $stage='init'
+    $token=$null;$headers=$null;$raw=$null;$secure=$null
+    try {
+      $stage='read_dpapi_credential'
+      $secure=[IO.File]::ReadAllText($keyFile,[Text.Encoding]::ASCII) | ConvertTo-SecureString -ErrorAction Stop
       $bstr=[Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-      try { $env:GH_TOKEN=[Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr) }
+      try { $token=[Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr) }
       finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
-      if($env:GH_TOKEN -notmatch '^github_pat_[A-Za-z0-9_]{30,}$'){throw 'GitHub token format invalid'}
-      $repo='jeleZa112/BGXAI-private-telemetry'
-      $v=& gh api ('repos/'+$repo) --jq '.private' 2>$null
-      if($LASTEXITCODE -ne 0 -or ($v -join '').Trim() -ne 'true'){throw 'Private repo access not verified'}
-      $endpoint='repos/'+$repo+'/contents/live/latest.json'
-      $oldSha=& gh api $endpoint --jq '.sha' 2>$null
-      if($LASTEXITCODE -ne 0){$oldSha=$null}
+      if($token -notmatch '^github_pat_[A-Za-z0-9_]{30,}$'){throw 'BGXAI_SAFE_UNSUPPORTED_TOKEN_FORMAT'}
+      $stage='read_sanitized_summary'
       $raw=[IO.File]::ReadAllBytes($summaryFile)
-      if($raw.Length -gt 10000){throw 'Summary oversized'}
-      $b64=[Convert]::ToBase64String($raw)
-      $args=@('api',$endpoint,'--method','PUT','-f','message=BGXAI private counters','-f',('content='+$b64))
-      if($oldSha -and ($oldSha -join '').Trim() -match '^[a-f0-9]{40}$'){
-        $args+=@('-f',('sha='+($oldSha -join '').Trim()))
+      if($raw.Length -gt 10000 -or $raw.Length -lt 2){throw 'BGXAI_SAFE_SUMMARY_SIZE'}
+      $stage='verify_private_repo'
+      [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+      $headers=@{
+        Authorization=('Bearer '+$token)
+        Accept='application/vnd.github+json'
+        'X-GitHub-Api-Version'='2022-11-28'
       }
-      $null= & gh @args 2>$null
-      if($LASTEXITCODE -ne 0){throw 'GitHub update rejected'}
-      [IO.File]::WriteAllText($statusFile,([DateTime]::UtcNow.ToString('o')+' OK: private summary uploaded'),[Text.Encoding]::ASCII)
-    }catch{
-      [IO.File]::WriteAllText($statusFile,([DateTime]::UtcNow.ToString('o')+' ERROR: '+$_.Exception.Message),[Text.Encoding]::ASCII)
-    }finally{
-      Remove-Item Env:\GH_TOKEN -ErrorAction SilentlyContinue
-      $secure=$null
-      $raw=$null
+      $base='https://api.github.com/repos/jeleZa112/BGXAI-private-telemetry'
+      $repository=Invoke-RestMethod -Uri $base -Method Get -Headers $headers -UserAgent 'BGXAI-LIVE' -TimeoutSec 25 -ErrorAction Stop
+      if($repository.private -ne $true){throw 'BGXAI_SAFE_REPOSITORY_NOT_PRIVATE'}
+      $stage='read_previous_file'
+      $target=$base+'/contents/live/latest.json'
+      $oldSha=$null
+      try {
+        $old=Invoke-RestMethod -Uri $target -Method Get -Headers $headers -UserAgent 'BGXAI-LIVE' -TimeoutSec 25 -ErrorAction Stop
+        if($old.type -ne 'file' -or $old.sha -notmatch '^[a-f0-9]{40}$'){throw 'BGXAI_SAFE_WRONG_TARGET_TYPE'}
+        $oldSha=[string]$old.sha
+      } catch {
+        $readCode=0
+        try{if($_.Exception.Response){$readCode=[int]$_.Exception.Response.StatusCode}}catch{}
+        if($readCode -ne 404){throw}
+      }
+      $stage='upload_private_summary'
+      $body=@{ message='BGXAI anonymous live counters'; content=[Convert]::ToBase64String($raw) }
+      if($oldSha){$body['sha']=$oldSha}
+      $json=$body | ConvertTo-Json -Compress -Depth 4
+      $response=Invoke-RestMethod -Uri $target -Method Put -Headers $headers -UserAgent 'BGXAI-LIVE' -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($json)) -TimeoutSec 35 -ErrorAction Stop
+      if(!$response.content.sha){throw 'BGXAI_SAFE_MISSING_UPLOAD_ACK'}
+      [IO.File]::WriteAllText($statusFile,([DateTime]::UtcNow.ToString('o')+' OK stage=uploaded_private_summary'),(New-Object Text.UTF8Encoding($false)))
+    } catch {
+      # Sanitized ASCII-only diagnostics: never serialize exception messages or response bodies.
+      $http=0
+      try { if($_.Exception.Response){$http=[int]$_.Exception.Response.StatusCode} } catch {}
+      $type=$_.Exception.GetType().Name -replace '[^A-Za-z0-9_]',''
+      $safe='unknown'
+      switch -Exact ($_.Exception.Message) {
+        'BGXAI_SAFE_UNSUPPORTED_TOKEN_FORMAT' {$safe='unsupported_token_format'}
+        'BGXAI_SAFE_SUMMARY_SIZE' {$safe='summary_size'}
+        'BGXAI_SAFE_REPOSITORY_NOT_PRIVATE' {$safe='repository_not_private'}
+        'BGXAI_SAFE_WRONG_TARGET_TYPE' {$safe='target_not_file'}
+        'BGXAI_SAFE_MISSING_UPLOAD_ACK' {$safe='missing_ack'}
+      }
+      $diagnostic=[DateTime]::UtcNow.ToString('o')+' ERROR stage='+$stage+' http='+$http+' type='+$type+' reason='+$safe
+      try{[IO.File]::WriteAllText($statusFile,$diagnostic,(New-Object Text.UTF8Encoding($false)))}catch{}
+    } finally {
+      $token=$null;$headers=$null;$raw=$null;$secure=$null
     }
   }
 }
@@ -280,7 +314,7 @@ while($true){
     if(([DateTime]::UtcNow-$script:LastSnapshot).TotalSeconds -ge 15){
       Write-Summary
       $script:LastSnapshot=[DateTime]::UtcNow
-      if(($script:TotalEvents+$script:ShadowCount) -gt $script:LastQueuedCount -and ([DateTime]::UtcNow-$script:LastSync).TotalSeconds -ge 120){
+      if(($script:TotalEvents+$script:ShadowCount) -gt 0 -and ([DateTime]::UtcNow-$script:LastSync).TotalSeconds -ge 120 -and ((($script:TotalEvents+$script:ShadowCount) -gt $script:LastQueuedCount) -or !(Test-Path -LiteralPath $script:SyncStatusFile) -or ((Get-Content -LiteralPath $script:SyncStatusFile -Raw -ErrorAction SilentlyContinue) -notmatch ' OK stage=uploaded_private_summary'))){
         Begin-PrivateSync
         $script:LastQueuedCount=$script:TotalEvents+$script:ShadowCount
         $script:LastSync=[DateTime]::UtcNow
