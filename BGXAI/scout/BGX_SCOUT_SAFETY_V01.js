@@ -48,14 +48,6 @@ function step(memory,ob={},rawOptions={}){
   return out("TRAP_ALERT","identified_trap_stop_route_and_reassess",mem,
    {target:trapID,requestPartyRouteHold:true});
  }
- if(ob.actorDisabled||ob.actorDead||ob.panicked)
-  return out("HOLD","actor_unavailable",mem,{target:trapID});
- if(ob.canDisarm!==true||!integer(ob.findTrapsSkill))
-  return out("HOLD","skill_not_active_or_unknown",mem,{target:trapID});
- if(!percent(ob.hpPct)||ob.hpPct<opt.minimumHp)
-  return out("HOLD","hp_too_low",mem,{target:trapID});
- if(ob.hidden===true)
-  return out("HOLD","preserve_stealth_manual_choice",mem,{target:trapID});
  // Fail closed on stale, partial or unavailable enemy/surroundings telemetry.
  if(ob.visibilitySnapshotFresh!==true||ob.surroundingsChecked!==true||
     !Array.isArray(ob.visibleHostiles)||!Array.isArray(ob.suspectedHostiles)){
@@ -72,6 +64,14 @@ function step(memory,ob={},rawOptions={}){
   return out("ABORT_DISARM","visible_or_recent_enemy_threat",mem,
    {target:trapID,requestPartyRouteHold:true});
  }
+ if(ob.actorDisabled||ob.actorDead||ob.panicked)
+  return out("HOLD","actor_unavailable",mem,{target:trapID});
+ if(ob.canDisarm!==true||!integer(ob.findTrapsSkill))
+  return out("HOLD","skill_not_active_or_unknown",mem,{target:trapID});
+ if(!percent(ob.hpPct)||ob.hpPct<opt.minimumHp)
+  return out("HOLD","hp_too_low",mem,{target:trapID});
+ if(ob.hidden===true)
+  return out("HOLD","preserve_stealth_manual_choice",mem,{target:trapID});
  if(mem.lastThreatAt!==null&&now-mem.lastThreatAt<opt.minClearMs)
   return out("WAIT_CLEAR","cooldown_after_enemy_seen",mem,{target:trapID});
  // Never let RemoveTraps implicitly path through a trap or a suspected hazard.
