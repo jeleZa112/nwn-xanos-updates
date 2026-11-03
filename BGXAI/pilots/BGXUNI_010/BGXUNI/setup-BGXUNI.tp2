@@ -1,0 +1,7 @@
+BACKUP ~BGXUNI/backup~
+AUTHOR ~BGXAI project - parallel script test pilot~
+VERSION ~0.1.0-independent-parallel-pilot~
+
+BEGIN ~BGXUN1 v0.1 - independent selectable unified party pilot (experimental)~
+  COMPILE ~BGXUNI/BGXUN1.BAF~
+  COPY ~override/BGXUN1.BCS~ ~scripts/BGXUN1.BS~
