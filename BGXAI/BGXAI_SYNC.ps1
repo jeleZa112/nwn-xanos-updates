@@ -25,7 +25,9 @@ function Hash([byte[]]$bytes) {
     finally {$h.Dispose()}
 }
 function RepairUserScriptShadow([string]$pinnedCommit) {
-    [byte[]]$auditBytes=GetFile 'BGXAI/BGXAI_RESOURCE_AUDIT.ps1' $pinnedCommit
+    [byte[]]$auditFile='BGXAI/BGXAI_RESOURCE_AUDIT.ps1'
+    if($script:ActiveVersion -eq '0.6.27-role-profile-install-pilot') {$auditFile='BGXAI/BGXAI_RESOURCE_AUDIT_627.ps1'}
+    [byte[]]$auditBytes=GetFile $auditFile $pinnedCommit
     $auditText=[Text.Encoding]::UTF8.GetString($auditBytes)
     if($auditBytes.Length -lt 3000 -or !$auditText.Contains("AUDIT SUCCESS") -or !$auditText.Contains("SyncOwnedFile")) {
         throw 'Unexpected resource audit script; refusing to execute'
@@ -53,6 +55,11 @@ try {
     if($version -eq '0.6.25-healthy-engage-pilot') {$verifiedTag='625'}
     if($version -eq '0.6.25-no-premature-formation-pilot') {$verifiedTag='625'}
     if($version -eq '0.6.26-squad-two-tank-pilot') {$verifiedTag='626'}
+    if($version -eq '0.6.27-role-profile-install-pilot') {$verifiedTag='626'}
+    $script:ActiveVersion=$version
+    $ownedNames=@('BGXGRP','BGXTANK')
+    if($version -eq '0.6.27-role-profile-install-pilot') {$ownedNames+=@('BGXRANG','BGXSCOUT','BGXCAST','BGXHEAL')}
+    $ownedMarkers=@{BGXGRP='BGXVER26';BGXTANK='BGXVER26';BGXRANG='BGXRV02';BGXSCOUT='BGXSV02';BGXCAST='BGXCV02';BGXHEAL='BGXHV02'}
     if($version -eq '0.6.23-formation-rescue-pilot') {$verifiedTag='623'}
     $expectedCompiledMarker=''
     if($verifiedTag) {$expectedCompiledMarker='BGXVER'+$verifiedTag.Substring(1)}
@@ -64,19 +71,19 @@ try {
     Log ('Target BGXAI '+$version)
     $alreadyCurrent=(Test-Path $marker) -and ([IO.File]::ReadAllText($marker).Trim() -eq $version)
     if($alreadyCurrent -and $verifiedTag) {
-        foreach($name in @('BGXGRP','BGXTANK')) {
+        foreach($name in $ownedNames) {
             $activeFile=Join-Path $GameRoot ('scripts\'+$name+'.BS')
             if(!(Test-Path -LiteralPath $activeFile)) {
                 $alreadyCurrent=$false
                 break
             }
             $activeBytes=[IO.File]::ReadAllBytes($activeFile)
-            if(!([Text.Encoding]::ASCII.GetString($activeBytes)).Contains($expectedCompiledMarker)) {
+            if(!([Text.Encoding]::ASCII.GetString($activeBytes)).Contains([string]$ownedMarkers[$name])) {
                 $alreadyCurrent=$false
                 break
             }
         }
-        if(!$alreadyCurrent) {Log ('Version marker says current, but active binary has no '+$expectedCompiledMarker+'; rebuilding.')}
+        if(!$alreadyCurrent) {Log ('Version marker says current, but an active script version marker is missing; rebuilding.')}
     }
     if($alreadyCurrent) {
         Log 'Already current; combat scripts untouched. Auditing higher-priority user script folders.'
@@ -142,15 +149,33 @@ try {
         $extraPatches=@{'BGXAI/BGXAI.TP2'=('BGXAI/hotfix/BGXAI_0.6.'+$verifiedTag.Substring(1)+'.TP2')}
         $extraPatches[('BGXAI/AI_BAF/BGG'+$verifiedTag+'.BAF')]=('BGXAI/hotfix/BGG'+$verifiedTag+'.BAF')
         $extraPatches[('BGXAI/AI_BAF/BGT'+$verifiedTag+'.BAF')]=('BGXAI/hotfix/BGT'+$verifiedTag+'.BAF')
+        if($version -eq '0.6.27-role-profile-install-pilot') {
+            $extraPatches['BGXAI/BGXAI.TP2']='BGXAI/hotfix/BGXAI_0.6.27.TP2'
+            $extraPatches['BGXAI/AI_BAF/BGR002.BAF']='BGXAI/prototypes/BGR002.BAF'
+            $extraPatches['BGXAI/AI_BAF/BGS002.BAF']='BGXAI/prototypes/BGS002.BAF'
+            $extraPatches['BGXAI/AI_BAF/BGC002.BAF']='BGXAI/prototypes/BGC002.BAF'
+            $extraPatches['BGXAI/AI_BAF/BGH002.BAF']='BGXAI/prototypes/BGH002.BAF'
+        }
         foreach($sourceTarget in $extraPatches.Keys) {
             [byte[]]$extraBytes=GetFile $extraPatches[$sourceTarget] $commit
             $extraText=[Text.Encoding]::UTF8.GetString($extraBytes)
             if($extraBytes.Length -lt 500) {throw ('Too short: '+$sourceTarget)}
-            if($sourceTarget.EndsWith('.BAF') -and !$extraText.Contains($expectedCompiledMarker)) {
-                throw ('Source lacks version marker: '+$sourceTarget)
+            if($sourceTarget.EndsWith('.BAF')) {
+                $expected=$expectedCompiledMarker
+                if($version -eq '0.6.27-role-profile-install-pilot') {
+                    switch -Exact ($sourceTarget) {
+                        'BGXAI/AI_BAF/BGR002.BAF' {$expected='BGXRV02'}
+                        'BGXAI/AI_BAF/BGS002.BAF' {$expected='BGXSV02'}
+                        'BGXAI/AI_BAF/BGC002.BAF' {$expected='BGXCV02'}
+                        'BGXAI/AI_BAF/BGH002.BAF' {$expected='BGXHV02'}
+                    }
+                }
+                if(!$extraText.Contains($expected)){throw ('Source lacks version marker '+$expected+': '+$sourceTarget)}
             }
-            if($sourceTarget.EndsWith('.TP2') -and !$extraText.Contains('BGXAI v0.6.'+$verifiedTag.Substring(1)+' VERIFIED COMPILE')) {
-                throw 'Wrong TP2 version'
+            if($sourceTarget.EndsWith('.TP2')) {
+                $tp2Marker='BGXAI v0.6.'+$verifiedTag.Substring(1)+' VERIFIED COMPILE'
+                if($version -eq '0.6.27-role-profile-install-pilot'){$tp2Marker='BGXAI v0.6.27 ROLE PROFILES'}
+                if(!$extraText.Contains($tp2Marker)){throw 'Wrong TP2 version'}
             }
             $extraDest=Join-Path $stage ($sourceTarget.Replace('/',[IO.Path]::DirectorySeparatorChar))
             New-Item -ItemType Directory -Path (Split-Path -Parent $extraDest) -Force | Out-Null
@@ -158,6 +183,7 @@ try {
             Log ('Staged unique compilation source '+$sourceTarget)
         }
         $extraFiles=@(('BGXAI/AI_BAF/BGG'+$verifiedTag+'.BAF'),('BGXAI/AI_BAF/BGT'+$verifiedTag+'.BAF'))
+        if($version -eq '0.6.27-role-profile-install-pilot') {$extraFiles+=@('BGXAI/AI_BAF/BGR002.BAF','BGXAI/AI_BAF/BGS002.BAF','BGXAI/AI_BAF/BGC002.BAF','BGXAI/AI_BAF/BGH002.BAF')}
     }
 
     $setup=Join-Path $GameRoot 'setup-BGXAI.exe'
@@ -173,7 +199,7 @@ try {
     if($verifiedTag) {
         $liveBackupDir=Join-Path $cache ('active_pre_weidu_'+$verifiedTag+'_'+$stamp)
         New-Item -ItemType Directory -Path $liveBackupDir -Force | Out-Null
-        foreach($scriptName in @('BGXGRP','BGXTANK')) {
+        foreach($scriptName in $ownedNames) {
             foreach($pair in @(
                 @{folder='override';ext='BCS'},
                 @{folder='scripts';ext='BS'}
@@ -213,7 +239,7 @@ try {
 
         if($verifiedTag -and $liveBackupDir) {
             foreach($entry in @(Get-ChildItem -LiteralPath $liveBackupDir -File -ErrorAction SilentlyContinue)) {
-                if($entry.Name -match '^(override|scripts)_(BGXGRP|BGXTANK)\.(BCS|BS)$') {
+                if($entry.Name -match '^(override|scripts)_(BGXGRP|BGXTANK|BGXRANG|BGXSCOUT|BGXCAST|BGXHEAL)\.(BCS|BS)$') {
                     $restoreDest=Join-Path $GameRoot ($Matches[1]+'\'+$Matches[2]+'.'+$Matches[3])
                     Copy-Item -LiteralPath $entry.FullName -Destination $restoreDest -Force -ErrorAction Continue
                 }
@@ -232,9 +258,14 @@ try {
     # Verify new compiled script provenance before activating old alias names.
     if($verifiedTag) {
         $verifyHelperRemote='BGXAI/BGXAI_VERIFY_ACTIVATE_'+$verifiedTag+'.ps1'
+        $helperSuccess='BGXAI v0.6.'+$verifiedTag.Substring(1)+' VERIFIED ACTIVATION SUCCESS'
+        if($version -eq '0.6.27-role-profile-install-pilot') {
+            $verifyHelperRemote='BGXAI/BGXAI_VERIFY_ACTIVATE_627.ps1'
+            $helperSuccess='BGXAI v0.6.27 VERIFIED ACTIVATION SUCCESS'
+        }
         [byte[]]$helper=GetFile $verifyHelperRemote $commit
         $helperText=[Text.Encoding]::UTF8.GetString($helper)
-        if($helper.Length -lt 3000 -or !$helperText.Contains('BGXAI v0.6.'+$verifiedTag.Substring(1)+' VERIFIED ACTIVATION SUCCESS')) {
+        if($helper.Length -lt 3000 -or !$helperText.Contains($helperSuccess)) {
             throw 'Invalid compiler verification helper'
         }
         $helperPath=Join-Path $cache ('BGXAI_VERIFY_ACTIVATE_'+$verifiedTag+'.latest.ps1')
@@ -242,12 +273,12 @@ try {
         Log ('Proving freshly compiled '+$expectedCompiledMarker+' BCS resources before activation.')
         & $helperPath -GameRoot $GameRoot -CacheRoot $cache
         if(!$?) {throw 'Compiler verification/activation failed'}
-        foreach($scriptName in @('BGXGRP','BGXTANK')) {
+        foreach($scriptName in $ownedNames) {
             $compiledBytes=[IO.File]::ReadAllBytes((Join-Path $GameRoot ('scripts\'+$scriptName+'.BS')))
-            if(!([Text.Encoding]::ASCII.GetString($compiledBytes)).Contains($expectedCompiledMarker)) {
+            if(!([Text.Encoding]::ASCII.GetString($compiledBytes)).Contains([string]$ownedMarkers[$scriptName])) {
                 throw ('ACTIVE VERSION MARKER MISSING '+$scriptName+' '+$expectedCompiledMarker)
             }
-            Log ('VERIFIED ACTIVE '+$expectedCompiledMarker+' '+$scriptName)
+            Log ('VERIFIED ACTIVE '+$ownedMarkers[$scriptName]+' '+$scriptName)
         }
     }
     # Verify *installed* compiled scripts. The BAF source alone is not proof of game installation.
@@ -268,13 +299,13 @@ try {
     }
     RepairUserScriptShadow $commit
     [IO.File]::WriteAllText($marker,$version,[Text.Encoding]::ASCII)
-    Log ('SUCCESS: BGXAI '+$version+' installed; BGXTANK for Khalid, BGXGRP for Jaheira')
+    Log ('SUCCESS: BGXAI '+$version+' installed; selectable role scripts: '+($ownedNames -join ', '))
     Log ('Diagnostic: '+$version+'; EEex telemetry unchanged. Test only after verified binary/version markers.')
     exit 0
 } catch {
     if($verifiedTag -and $liveBackupDir -and (Test-Path -LiteralPath $liveBackupDir)) {
         foreach($entry in @(Get-ChildItem -LiteralPath $liveBackupDir -File -ErrorAction SilentlyContinue)) {
-            if($entry.Name -match '^(override|scripts)_(BGXGRP|BGXTANK)\.(BCS|BS)$') {
+            if($entry.Name -match '^(override|scripts)_(BGXGRP|BGXTANK|BGXRANG|BGXSCOUT|BGXCAST|BGXHEAL)\.(BCS|BS)$') {
                 $restoreDest=Join-Path $GameRoot ($Matches[1]+'\'+$Matches[2]+'.'+$Matches[3])
                 Copy-Item -LiteralPath $entry.FullName -Destination $restoreDest -Force -ErrorAction Continue
             }
