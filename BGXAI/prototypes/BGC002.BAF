@@ -1,0 +1,88 @@
+// 2026-11-03 EET/SCS 35.21 / Insane | STAGING ONLY: requires WeiDU compilation + local game tests
+// Do NOT activate or select: this is not a compiled game script.
+// No fixed companion names, kit IDs or portrait slots.
+
+// BGC002: BGXCAST v0.2 - safe arcane support for any kit/class that knows spells
+IF
+ Global("BGXCV02","LOCALS",0)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXCV02","LOCALS",1)
+  DisplayStringHead(Myself,~BGXCAST V02~)
+END
+
+// Emergency disengage, only with empty manual action queue.
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),7)
+ HPPercentLT(Myself,55)
+ Global("BGXCE02","LOCALS",0)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXCE02","LOCALS",1)
+  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),55)
+END
+
+// Reset panic only in peace after healing
+IF
+ Global("BGXCE02","LOCALS",1)
+ !ActuallyInCombat()
+ !See(NearestEnemyOf(Myself))
+ HPPercentGT(Myself,85)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXCE02","LOCALS",0)
+  Continue()
+END
+
+// Protect with self-only Mirror Image when available; do not drain repeatedly.
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),12)
+ HPPercentLT(Myself,85)
+ HaveSpell(WIZARD_MIRROR_IMAGE)
+ !GlobalTimerNotExpired("BGXCM02","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCM02","LOCALS",90)
+  Spell(Myself,WIZARD_MIRROR_IMAGE)
+END
+
+// Debuff a visible nearby attacker with single-target Blindness. No friendly AoE.
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),18)
+ HaveSpell(WIZARD_BLINDNESS)
+ !GlobalTimerNotExpired("BGXCB02","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCB02","LOCALS",35)
+  Spell(NearestEnemyOf(Myself),WIZARD_BLINDNESS)
+END
+
+// Direct damage only after debuff choices: Magic Missile, single enemy.
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),18)
+ HaveSpell(WIZARD_MAGIC_MISSILE)
+ !GlobalTimerNotExpired("BGXCD02","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCD02","LOCALS",12)
+  Spell(NearestEnemyOf(Myself),WIZARD_MAGIC_MISSILE)
+END
+
+// Fallback: shoot only if already holding ranged gear; no melee charge.
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),18)
+ IsWeaponRanged(Myself)
+THEN
+ RESPONSE #100
+  Attack(NearestEnemyOf(Myself))
+END
