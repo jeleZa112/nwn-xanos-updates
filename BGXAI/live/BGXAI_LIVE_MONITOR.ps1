@@ -1,4 +1,4 @@
-﻿# BGXAI LIVE MONITOR 0.4.3 - private fixed-target sync with GitHub CLI. Windows PowerShell 5.1.
+﻿# BGXAI LIVE MONITOR 0.4.4 - private fixed-target sync with GitHub CLI. Windows PowerShell 5.1.
 param([Parameter(Mandatory=$true)][string]$GameRoot)
 $ErrorActionPreference='Stop'
 $ProgressPreference='SilentlyContinue'
@@ -110,7 +110,7 @@ function Write-Summary {
     $incidents+=@{type=[string]$kind;count=[int]$script:Incidents[$kind]}
   }
   $obj=@{
-    schema=1;monitor='0.4.3';utc=[DateTime]::UtcNow.ToString('o')
+    schema=1;monitor='0.4.4';utc=[DateTime]::UtcNow.ToString('o')
     total=[int]$script:TotalEvents;shadow_action_starts=[int]$script:ShadowCount;observed_roster_size=[int]$script:ShadowRosterSize;actors=$actors;actions=$codes
     incidents=$incidents;recent=@($script:Recent | Select-Object -Last 20)
     note='Interception flags are suspected patterns from action starts and approximate positions, not proven weapon, aggro, HP or rescue outcome.'
@@ -134,7 +134,16 @@ function Begin-PrivateSync {
     $token=$null;$headers=$null;$raw=$null;$secure=$null
     try {
       $stage='read_dpapi_credential'
-      $secure=[IO.File]::ReadAllText($keyFile,[Text.Encoding]::ASCII) | ConvertTo-SecureString -ErrorAction Stop
+      # Original Windows DPAPI export might be UTF-8 BOM or UTF-16 LE via PowerShell
+      # Out-File/Set-Content. Read with BOM autodetection, never ASCII-corrupt BOM.
+      $reader=[IO.StreamReader]::new($keyFile,[Text.Encoding]::UTF8,$true)
+      try { $sealed=$reader.ReadToEnd() } finally { $reader.Dispose() }
+      $sealed=($sealed -replace '^\uFEFF','').Trim()
+      # DPAPI ConvertFrom-SecureString: hex payload. Do not log any source bytes.
+      if($sealed -notmatch '\A[0-9a-fA-F]{64,}\z'){throw 'BGXAI_SAFE_CREDENTIAL_FORMAT'}
+      $stage='decrypt_dpapi_credential'
+      $secure=ConvertTo-SecureString -String $sealed -ErrorAction Stop
+      $sealed=$null
       $bstr=[Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
       try { $token=[Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr) }
       finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
@@ -179,6 +188,7 @@ function Begin-PrivateSync {
       $safe='unknown'
       switch -Exact ($_.Exception.Message) {
         'BGXAI_SAFE_UNSUPPORTED_TOKEN_FORMAT' {$safe='unsupported_token_format'}
+        'BGXAI_SAFE_CREDENTIAL_FORMAT' {$safe='credential_encoding_or_format'}
         'BGXAI_SAFE_SUMMARY_SIZE' {$safe='summary_size'}
         'BGXAI_SAFE_REPOSITORY_NOT_PRIVATE' {$safe='repository_not_private'}
         'BGXAI_SAFE_WRONG_TARGET_TYPE' {$safe='target_not_file'}
@@ -187,7 +197,7 @@ function Begin-PrivateSync {
       $diagnostic=[DateTime]::UtcNow.ToString('o')+' ERROR stage='+$stage+' http='+$http+' type='+$type+' reason='+$safe
       try{[IO.File]::WriteAllText($statusFile,$diagnostic,(New-Object Text.UTF8Encoding($false)))}catch{}
     } finally {
-      $token=$null;$headers=$null;$raw=$null;$secure=$null
+      $token=$null;$sealed=$null;$headers=$null;$raw=$null;$secure=$null
     }
   }
 }
