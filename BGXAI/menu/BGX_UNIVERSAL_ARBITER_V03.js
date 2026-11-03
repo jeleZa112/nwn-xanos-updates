@@ -69,31 +69,33 @@ function select(cfg,key,s={}){
     add("USE_HEAL_ITEM",critical?940:690,need.id,it.id);
  }
  if(enemy){
-  if(permitted(p,cap,"control"))
+  // Hidden characters keep their concealment until a verified sneak attack or an immediate survival emergency.
+  const preserveStealth=self.hidden===true&&!(hp<=25&&world.imminentHit===true);
+  if(!preserveStealth&&permitted(p,cap,"control")&&(world.highThreat===true||world.visibleHostileCount>=2||cfg.mode==="boss"))
    for(const sp of candidatesSpells.filter(x=>x.group==="control"&&canCast(x)&&targetOk(enemy,x.range)&&
       (x.area!==true||x.friendlyFireSafe===true)&&x.knownIneffective!==true))
      add("CAST_CONTROL",world.highThreat?840:690,enemy.id,sp.id);
-  if(permitted(p,cap,"defenseSpell")&&(hp<80||world.imminentHit===true))
+  if(!preserveStealth&&permitted(p,cap,"defenseSpell")&&(hp<80||world.imminentHit===true))
    for(const sp of candidatesSpells.filter(x=>x.group==="defense"&&canCast(x)&&x.buffAlreadyActive!==true))
     add("CAST_DEFENSE",world.imminentHit?870:650,self.id??key,sp.id);
-  if(permitted(p,cap,"defensiveItem")&&(hp<55||world.imminentHit===true))
+  if(!preserveStealth&&permitted(p,cap,"defensiveItem")&&(hp<55||world.imminentHit===true))
    for(const it of candidatesItems.filter(x=>x.group==="defensiveItem"&&canItem(x)))
     add("USE_DEFENSE_ITEM",world.imminentHit?860:620,self.id??key,it.id);
-  if(permitted(p,cap,"summon")&&world.highThreat)
+  if(!preserveStealth&&permitted(p,cap,"summon")&&world.highThreat)
    for(const sp of candidatesSpells.filter(x=>x.group==="summon"&&canCast(x)&&x.summonCapFree===true))
     add("CAST_SUMMON",760,enemy.id,sp.id);
-  if(permitted(p,cap,"buff")&&world.highThreat)
+  if(!preserveStealth&&permitted(p,cap,"buff")&&world.highThreat)
    for(const sp of candidatesSpells.filter(x=>x.group==="buff"&&canCast(x)&&x.buffAlreadyActive!==true))
     add("CAST_BUFF",670,self.id??key,sp.id);
-  if(permitted(p,cap,"damageSpell")&&world.highThreat!==false)
+  if(!preserveStealth&&permitted(p,cap,"damageSpell")&&world.highThreat!==false)
    for(const sp of candidatesSpells.filter(x=>x.group==="damage"&&canCast(x)&&targetOk(enemy,x.range)&&
       (x.area!==true||x.friendlyFireSafe===true)&&x.knownIneffective!==true))
     add("CAST_DAMAGE",world.highThreat?680:435,enemy.id,sp.id);
-  if(permitted(p,cap,"wand")&&world.highThreat===true)
+  if(!preserveStealth&&permitted(p,cap,"wand")&&world.highThreat===true)
    for(const it of candidatesItems.filter(x=>x.group==="wand"&&canItem(x)&&targetOk(enemy,x.range)&&
      (x.area!==true||x.friendlyFireSafe===true)))
     add("USE_WAND",560,enemy.id,it.id);
-  if(permitted(p,cap,"specialItem")&&cfg.mode==="boss")
+  if(!preserveStealth&&permitted(p,cap,"specialItem")&&cfg.mode==="boss")
    for(const it of candidatesItems.filter(x=>x.group==="specialItem"&&canItem(x)&&targetOk(enemy,x.range)))
     add("USE_SPECIAL_ITEM",575,enemy.id,it.id);
   if(permitted(p,cap,"sneak")&&self.hidden===true&&world.safeMeleeApproach===true&&
@@ -113,12 +115,12 @@ function select(cfg,key,s={}){
    add("DISARM_TRAP",400,obj.id);
   if(consent&&permitted(p,cap,"unlock")&&obj.kind==="lock"&&obj.trapsChecked===true&&obj.safeAccess===true)
    add("PICK_LOCK",360,obj.id);
-  if(permitted(p,cap,"detect")&&self.detectingTraps!==true&&
+  if(permitted(p,cap,"detect")&&self.hidden!==true&&self.detectingTraps!==true&&
       (cfg.mode==="travel"||cfg.mode==="stealth"||cfg.mode==="boss"))
    add("DETECT_TRAPS",190);
-  if(permitted(p,cap,"hide")&&self.hidden!==true&&cfg.mode==="stealth"&&
+  if(permitted(p,cap,"hide")&&self.hidden!==true&&self.detectingTraps!==true&&cfg.mode==="stealth"&&
       world.safeToHide===true)
-   add("HIDE",180);
+   add("HIDE",230);
  }
  // Cooldowns/hysteresis supplied by external adapter. Can't infer if last order finished.
  const cooling=world.cooldowns||{};
