@@ -1,0 +1,64 @@
+{
+  "sourceArchiveSHA256": "515774b8627f1d159e694035f6b1b090f57eeccaa9d04e0df3e2dc31224635b8",
+  "files": {
+    "actions": {
+      "name": "ACTION.IDS",
+      "sha256": "c62349cbaad7bedefed507736cc06f740debb3d1ae5d39802003f228a13aad21",
+      "symbols": [
+        "AttackOneRound",
+        "BattleSong",
+        "DisplayStringHead",
+        "FindTraps",
+        "Hide",
+        "SetGlobal",
+        "SetGlobalTimer",
+        "Spell"
+      ]
+    },
+    "triggers": {
+      "name": "TRIGGER.IDS",
+      "sha256": "ab4c1b2dddd7a45f3d8d2760ffe321376a94c1c835555703ea8f72e50254bf62",
+      "symbols": [
+        "ActionListEmpty",
+        "ActuallyInCombat",
+        "CheckStatGT",
+        "Class",
+        "Global",
+        "GlobalTimerNotExpired",
+        "HPPercentLT",
+        "HaveSpell",
+        "IsWeaponRanged",
+        "ModalState",
+        "Range",
+        "See",
+        "StateCheck"
+      ]
+    },
+    "spells": {
+      "name": "SPELL.IDS",
+      "sha256": "adc341da9e2aadb6aeab2f1cee8547b9e834653b2069fab5b9b497b62dba9272",
+      "symbols": [
+        "CLERIC_CURE_LIGHT_WOUNDS",
+        "CLERIC_CURE_MEDIUM_WOUNDS",
+        "WIZARD_BLINDNESS",
+        "WIZARD_MAGIC_MISSILE",
+        "WIZARD_MIRROR_IMAGE"
+      ]
+    },
+    "stats": {
+      "name": "stats.ids",
+      "sha256": "2904ec2ed49af477eab133830f79683c469842ad20cacba2df97a1822b34e286",
+      "symbols": [
+        "STEALTH",
+        "TRAPS"
+      ]
+    },
+    "classes": {
+      "name": "CLASS.IDS",
+      "sha256": "363d2f41d0e6830923adb0ea51113fd971b8515aeac4e2d7ff4c58caaf31af42",
+      "symbols": [
+        "BARD"
+      ]
+    }
+  }
+}
