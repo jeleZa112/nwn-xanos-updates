@@ -1,14 +1,14 @@
 {
   "channel": "local-readonly",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "min_bootstrap": "1.0",
-  "message_ru": "BGXAI Live 0.4.3: исправлена приватная синхронизация: PowerShell HTTPS без gh CLI, безопасные коды ошибок, повторная попытка после сбоя; монитор 0.7.1 и SHADOW-детекторы без изменения боевых скриптов. Требуется проверка на Windows.",
+  "message_ru": "BGXAI LIVE 0.4.4: исправлено чтение DPAPI-файла с UTF-8 BOM/UTF-16; вместо ASCII теперь автоматическое распознавание кодировки. Данные токена не логируются и не отправляются; при сохранении ошибки выводятся этап и безопасный код. Требуется проверка в Windows.",
   "files": [
     {
       "path": "BGXAI/live/BGXAI_LIVE_MONITOR.ps1",
       "name": "BGXAI_LIVE_MONITOR.ps1",
-      "size": 18719,
-      "sha256": "8bd0b34a68512063e6a9e94d4ee36a52eb9826e4f54cdb10d315c7109d437bb3"
+      "size": 19370,
+      "sha256": "43ba7098eb83af824ed424274b81f2955e4925333c24ef9bcfaecf712d978dab"
     }
   ]
 }
