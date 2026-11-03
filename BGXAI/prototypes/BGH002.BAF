@@ -1,0 +1,80 @@
+// BGXHEAL v0.2 | staged, NOT installed, EET 2.6.6.0 / SCS 35.21
+// Adapt to class/kit by checking prepared priest spells; any party member can assign profile.
+IF
+ Global("BGXHV02","LOCALS",0)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXHV02","LOCALS",1)
+  DisplayStringHead(Myself,~BGXHEAL V02~)
+END
+
+// Emergency self heal only away from immediate attacker.
+IF
+ ActionListEmpty()
+ HPPercentLT(Myself,45)
+ !Range(NearestEnemyOf(Myself),9)
+ HaveSpell(CLERIC_CURE_MEDIUM_WOUNDS)
+ !GlobalTimerNotExpired("BGXHHL02","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXHHL02","LOCALS",12)
+  Spell(Myself,CLERIC_CURE_MEDIUM_WOUNDS)
+END
+IF
+ ActionListEmpty()
+ HPPercentLT(Myself,45)
+ !Range(NearestEnemyOf(Myself),9)
+ HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+ !GlobalTimerNotExpired("BGXHHL02","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXHHL02","LOCALS",12)
+  Spell(Myself,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// Heal the most damaged visible party member. Works with changing portrait order.
+IF
+ ActionListEmpty()
+ See(MostDamagedOf([PC]))
+ HPPercentLT(MostDamagedOf([PC]),40)
+ !Range(NearestEnemyOf(Myself),9)
+ HaveSpell(CLERIC_CURE_MEDIUM_WOUNDS)
+ !GlobalTimerNotExpired("BGXHHL02","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXHHL02","LOCALS",12)
+  Spell(MostDamagedOf([PC]),CLERIC_CURE_MEDIUM_WOUNDS)
+END
+IF
+ ActionListEmpty()
+ See(MostDamagedOf([PC]))
+ HPPercentLT(MostDamagedOf([PC]),40)
+ !Range(NearestEnemyOf(Myself),9)
+ HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+ !GlobalTimerNotExpired("BGXHHL02","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXHHL02","LOCALS",12)
+  Spell(MostDamagedOf([PC]),CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// When not healing, use currently selected weapon. Never break a spell with auto-attack.
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),18)
+ IsWeaponRanged(Myself)
+THEN
+ RESPONSE #100
+  Attack(NearestEnemyOf(Myself))
+END
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),5)
+ !IsWeaponRanged(Myself)
+ HPPercentGT(Myself,50)
+THEN
+ RESPONSE #100
+  Attack(NearestEnemyOf(Myself))
+END
