@@ -1,14 +1,14 @@
 {
   "channel": "local-readonly",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "min_bootstrap": "1.0",
-  "message_ru": "BGXAI Live 0.4.1: локальные сводки без имён и путей, автоматическая отправка только в приватный BGXAI-private-telemetry через сохранённый Windows DPAPI токен и GitHub CLI. Боевой ИИ не изменён. Первое выполнение на Windows ещё не проверено.",
+  "message_ru": "BGXAI Live 0.4.2: read-only детектор подозрения запоздалой защиты союзника из BGX71; без сведений о фактическом оружии, агро и HP. Изменения BAF/BCS не выполнялись. Автоматическая приватная передача типов инцидентов сохраняется, Windows PowerShell 5.1 запуск новой версии требует проверки.",
   "files": [
     {
       "path": "BGXAI/live/BGXAI_LIVE_MONITOR.ps1",
       "name": "BGXAI_LIVE_MONITOR.ps1",
-      "size": 14010,
-      "sha256": "a0a8e012a78bdaed843b1117c3de6dcab1e69d84fb034aceab6a1c92f876842b"
+      "size": 16251,
+      "sha256": "e5b6d70acb4ad5c60e4911a70838a1ac36d6e28383bbe73821c9a65a31d78f6d"
     }
   ]
 }
