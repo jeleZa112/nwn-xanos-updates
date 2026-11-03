@@ -1,14 +1,14 @@
 {
   "channel": "local-readonly",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "min_bootstrap": "1.0",
-  "message_ru": "BGXAI Live 0.4.2: read-only детектор подозрения запоздалой защиты союзника из BGX71; без сведений о фактическом оружии, агро и HP. Изменения BAF/BCS не выполнялись. Автоматическая приватная передача типов инцидентов сохраняется, Windows PowerShell 5.1 запуск новой версии требует проверки.",
+  "message_ru": "BGXAI Live 0.4.3: исправлена приватная синхронизация: PowerShell HTTPS без gh CLI, безопасные коды ошибок, повторная попытка после сбоя; монитор 0.7.1 и SHADOW-детекторы без изменения боевых скриптов. Требуется проверка на Windows.",
   "files": [
     {
       "path": "BGXAI/live/BGXAI_LIVE_MONITOR.ps1",
       "name": "BGXAI_LIVE_MONITOR.ps1",
-      "size": 16251,
-      "sha256": "e5b6d70acb4ad5c60e4911a70838a1ac36d6e28383bbe73821c9a65a31d78f6d"
+      "size": 18719,
+      "sha256": "8bd0b34a68512063e6a9e94d4ee36a52eb9826e4f54cdb10d315c7109d437bb3"
     }
   ]
 }
