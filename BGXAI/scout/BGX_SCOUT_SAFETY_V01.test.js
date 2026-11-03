@@ -69,4 +69,8 @@ check("different actor resets",S.step(afterScan.memory,{...base,nowMs:20000,acto
 check("missing save epoch",S.step(null,{...base,saveEpoch:null},opt).kind,"HOLD");
 check("passive trap detect without trap",S.step(null,{...base,trap:null,canFindTraps:true,safeStationaryArea:true},opt).kind,"DETECT_TRAPS");
 check("no pathing with unsafe stationary area",S.step(null,{...base,trap:null,canFindTraps:true,safeStationaryArea:false},opt).kind,"HOLD");
+check("enemy prevents scan even without spotted trap",S.step(null,{...base,trap:null,
+ canFindTraps:true,safeStationaryArea:true,visibleHostiles:[{hostile:true}]},opt).kind,"ABORT_DISARM");
+check("missing enemy telemetry prevents scan even without spotted trap",S.step(null,{...base,
+ trap:null,canFindTraps:true,safeStationaryArea:true,visibleHostiles:null},opt).kind,"HOLD");
 console.log("PASS "+n+" scout/trap safety cases");
