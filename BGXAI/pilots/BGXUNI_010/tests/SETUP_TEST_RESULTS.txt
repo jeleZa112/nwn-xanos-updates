@@ -1,0 +1,12 @@
+test_checks_unique_script_before_user_can_select_it (__main__.TestWeiDU251Setup.test_checks_unique_script_before_user_can_select_it) ... ok
+test_never_mutates_old_ai (__main__.TestWeiDU251Setup.test_never_mutates_old_ai) ... ok
+test_never_overwrites_unrelated_existing_tp2 (__main__.TestWeiDU251Setup.test_never_overwrites_unrelated_existing_tp2) ... ok
+test_no_unsupported_tp2_argument (__main__.TestWeiDU251Setup.test_no_unsupported_tp2_argument) ... ok
+test_stages_tp2_from_existing_user_folder (__main__.TestWeiDU251Setup.test_stages_tp2_from_existing_user_folder) ... ok
+test_tp2_compiles_one_unique_baf (__main__.TestWeiDU251Setup.test_tp2_compiles_one_unique_baf) ... ok
+test_valid_supported_cli_commands (__main__.TestWeiDU251Setup.test_valid_supported_cli_commands) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.001s
+
+OK
