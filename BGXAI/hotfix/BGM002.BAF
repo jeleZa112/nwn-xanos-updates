@@ -1,0 +1,78 @@
+// BGXMAGE v0.2 - memorized-spell-driven controller for whichever kit/class has spells
+// No forced cast, no infinite spell interruption; emergency escape and ranged fallback.
+IF
+ Global("BGXMVER2","LOCALS",0)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXMVER2","LOCALS",1)
+  DisplayStringHead(Myself,~BGXMAGE V02 ACTIVE~)
+END
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),9)
+ HPPercentLT(Myself,45)
+ !GlobalTimerNotExpired("BGXMF2","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXMF2","LOCALS",12)
+  Help()
+  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),45)
+END
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),16)
+ NumCreatureGT([EVILCUTOFF],1)
+ HaveSpell(WIZARD_SLEEP)
+ !GlobalTimerNotExpired("BGXMS2","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXMS2","LOCALS",20)
+  Spell(NearestEnemyOf(Myself),WIZARD_SLEEP)
+END
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),16)
+ HaveSpell(WIZARD_BLINDNESS)
+ !GlobalTimerNotExpired("BGXMB2","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXMB2","LOCALS",20)
+  Spell(NearestEnemyOf(Myself),WIZARD_BLINDNESS)
+END
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),16)
+ HaveSpell(WIZARD_MAGIC_MISSILE)
+ !GlobalTimerNotExpired("BGXMM2","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXMM2","LOCALS",12)
+  Spell(NearestEnemyOf(Myself),WIZARD_MAGIC_MISSILE)
+END
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),16)
+ !IsWeaponRanged(Myself)
+ CanEquipRanged()
+ !GlobalTimerNotExpired("BGXMW2","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXMW2","LOCALS",12)
+  EquipRanged()
+END
+IF
+ ActionListEmpty()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),16)
+ IsWeaponRanged(Myself)
+ !GlobalTimerNotExpired("BGXMH2","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXMH2","LOCALS",3)
+  Attack(NearestEnemyOf(Myself))
+END
