@@ -37,6 +37,16 @@ function step(memory,ob={},rawOptions={}){
  }
  if(!trap||validId(trap.id)===null||trap.discovered!==true||trap.visible!==true){
   mem.status="SEARCH";mem.trap=null;mem.clearSamples=0;mem.firstClearAt=null;mem.firstScanAt=null;
+  // Even without a spotted trap, a scout must NOT tunnel-vision into detection during combat.
+  if(ob.visibilitySnapshotFresh!==true||ob.surroundingsChecked!==true||
+   !Array.isArray(ob.visibleHostiles)||!Array.isArray(ob.suspectedHostiles))
+   return out("HOLD","enemy_scan_unknown_or_stale",mem);
+  const approachingThreat=ob.visibleHostiles.some(e=>e?.hostile===true&&e.sameArea!==false)||
+   ob.suspectedHostiles.length>0||ob.partyCombat!==false||
+   ob.recentDamage===true||ob.recentEnemyAttack===true||
+   ob.enemyAudible===true||ob.trapAreaAlert===true;
+  if(approachingThreat)
+   return out("ABORT_DISARM","danger_during_recon",mem,{requestPartyRouteHold:true});
   if(ob.canFindTraps===true&&ob.safeStationaryArea===true&&!ob.hidden)
    return out("DETECT_TRAPS","passive_scanning",mem);
   return out("HOLD","no_verified_trap_or_unavailable_detection",mem);
