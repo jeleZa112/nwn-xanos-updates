@@ -31,8 +31,10 @@ function step(memory,ob={},rawOptions={}){
  if(mem.actor!==actorID){mem=newMemory();mem.actor=actorID;}
  const trap=ob.trap;
  // No AI may interfere with a manual order, an active action, or game pause.
- if(ob.manualOrder||ob.actionBusy||ob.gamePaused||ob.cutscene)
+ if(ob.manualOrder||ob.actionBusy||ob.gamePaused||ob.cutscene){
+  mem.clearSamples=0;mem.firstClearAt=null;mem.firstScanAt=null;
   return out("HOLD","manual_or_action_in_progress",mem);
+ }
  if(!trap||validId(trap.id)===null||trap.discovered!==true||trap.visible!==true){
   mem.status="SEARCH";mem.trap=null;mem.clearSamples=0;mem.firstClearAt=null;mem.firstScanAt=null;
   if(ob.canFindTraps===true&&ob.safeStationaryArea===true&&!ob.hidden)
