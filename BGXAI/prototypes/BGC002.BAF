@@ -36,6 +36,33 @@ THEN
   Continue()
 END
 
+// When a changed class actually has priest healing, use it before offensive spells.
+// No presumption about race, alignment, kit or presence of spell slots.
+IF
+ ActionListEmpty()
+ HPPercentLT(Myself,50)
+ !Range(NearestEnemyOf(Myself),8)
+ HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+ !GlobalTimerNotExpired("BGXCH02","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCH02","LOCALS",12)
+  Spell(Myself,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+IF
+ ActionListEmpty()
+ See(MostDamagedOf([PC]))
+ HPPercentLT(MostDamagedOf([PC]),40)
+ !Range(NearestEnemyOf(Myself),8)
+ HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+ !GlobalTimerNotExpired("BGXCH02","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobalTimer("BGXCH02","LOCALS",12)
+  Spell(MostDamagedOf([PC]),CLERIC_CURE_LIGHT_WOUNDS)
+END
+
 // Protect with self-only Mirror Image when available; do not drain repeatedly.
 IF
  ActionListEmpty()
