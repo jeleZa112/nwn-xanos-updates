@@ -1,0 +1,63 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {gate,scoutEvidence}=require('./BGXRADAR_EVIDENCE_GATE_V02.js');
+const {parse}=require('../eeex/BGX73_READONLY_ADAPTER.js');
+const radar={schema:2,source:'BG2RadarOverlay-local-export',session:'s',area:'AR1000',identityEpoch:'load1',timeMs:4850,
+ entities:[{id:'r1',side:'enemy',hp:25,effects:[{effect:'PFMW',ms:8500}],resist:{fire:75}},
+ {id:'r2',side:'enemy',hp:50}]};
+const eeex={source:'EEex',session:'s',area:'AR1000',identityEpoch:'load1',timeMs:4920,
+ confirmedMatches:[{radarId:'r1',actorId:'A1',sameCreatureVerified:true,inGameVisible:true,sameArea:true,alive:true,side:'enemy'},
+ {radarId:'r2',actorId:'A2',sameCreatureVerified:true,inGameVisible:false,sameArea:true,alive:true,side:'enemy'}]};
+let n=0;
+const t=(name,act,want)=>{assert.deepEqual(act,want,name);n++};
+const g=(r=radar,e=eeex,now=5000)=>gate(r,e,now);
+t('ready snapshot',g().ready,true);
+t('one EEex-visible entity',g().entities.length,1);
+t('visible HP',g().entities[0].hp,25);
+t('visible effect',g().entities[0].effects[0].effect,'PFMW');
+t('visible resistance',g().entities[0].resist.fire,75);
+t('hidden not included',g().untrusted,1);
+t('no execution',g().canIssueGameAction,false);
+t('no trap authorization',g().canDisarm,false);
+t('no retreat authorization',g().canRetreat,false);
+t('manual origin unknown',g().manualOrigin,'UNKNOWN');
+t('not whole-area safety',g().surroundingsChecked,false);
+t('different area',g({...radar,area:'AR9999'}).ready,false);
+t('different session',g({...radar,session:'s2'}).ready,false);
+t('load/reload epoch changed',g({...radar,identityEpoch:'load2'}).ready,false);
+t('epoch missing',g({...radar,identityEpoch:null}).ready,false);
+t('radar stale',g({...radar,timeMs:4000}).ready,false);
+t('EEex stale',g(radar,{...eeex,timeMs:4000}).ready,false);
+t('future timestamp',g({...radar,timeMs:5010}).ready,false);
+t('skew too high',g({...radar,timeMs:4400}).ready,false);
+t('wrong radar publisher',g({...radar,source:'BG2RadarOverlay'}).ready,false);
+t('wrong schema',g({...radar,schema:1}).ready,false);
+t('no EEex',g(radar,null).ready,false);
+t('hidden proof denied',g(radar,{...eeex,confirmedMatches:eeex.confirmedMatches.map(x=>({...x,inGameVisible:false}))}).entities.length,0);
+t('unverified creature denied',g(radar,{...eeex,confirmedMatches:eeex.confirmedMatches.map(x=>({...x,sameCreatureVerified:false}))}).entities.length,0);
+t('side conflict denied',g({...radar,entities:[{...radar.entities[0],side:'party'}]}).entities.length,0);
+t('duplicate Radar entity denied',g({...radar,entities:[radar.entities[0],radar.entities[0]]}).entities.length,0);
+t('duplicate match denied',g(radar,{...eeex,confirmedMatches:[eeex.confirmedMatches[0],eeex.confirmedMatches[0]]}).entities.length,0);
+t('same game actor mapped twice denied',g({...radar,entities:[radar.entities[0],radar.entities[1]]},
+ {...eeex,confirmedMatches:[{...eeex.confirmedMatches[0]},{...eeex.confirmedMatches[1],inGameVisible:true,actorId:'A1'}]}).entities.length,0);
+t('bad hp -> null',g({...radar,entities:[{...radar.entities[0],hp:-10}]}).entities[0].hp,null);
+t('bad effect filtered',g({...radar,entities:[{...radar.entities[0],effects:[{effect:'a\nb',ms:-10}]}]}).entities[0].effects.length,0);
+t('bad resistance filtered',Object.keys(g({...radar,entities:[{...radar.entities[0],resist:{fire:1000}}]}).entities[0].resist).length,0);
+t('missing matching => no entities',g(radar,{...eeex,confirmedMatches:[]}).entities.length,0);
+t('more than 128 entities',g({...radar,entities:Array(129).fill(radar.entities[0])}).ready,false);
+const line='[BGX73] OBS actor=A1 slot=1 class=3 kit=0 level=2/1/0 hp=12 enemyLOS=0 selected=leader BDAI=0,0,0,0,0,1,2,0 manual=? trap=? path=? identity=SESSION_ONLY';
+const event=parse(line);assert.ok(event);n++;
+const s=scoutEvidence(event,{saveEpoch:'load1',monotonicMs:5000},g());
+t('scout no hidden knowledge',s.surroundingsChecked,false);
+t('scout no verified fresh whole-scene scan',s.visibilitySnapshotFresh,false);
+t('scout no trap target',s.trap,null);
+t('scout no auto-disarm',s.mayDisarm,false);
+t('scout no auto-retreat',s.mayRetreat,false);
+t('scout manual origin unknown',s.manualOrigin,'UNKNOWN');
+t('scout sees confirmed visible threat',s.visibleHostiles.length,1);
+t('radar epoch tracked',g().identityEpoch,'load1');
+t('stale fused epoch cannot cross a save/load',scoutEvidence(event,{saveEpoch:'load2',monotonicMs:5000},g()).visibleHostiles.length,0);
+t('invalid epoch fails',scoutEvidence(event,{saveEpoch:'',monotonicMs:5000},g()).valid,false);
+const none=scoutEvidence(event,{saveEpoch:'load1',monotonicMs:5000},g(radar,null));
+t('missing Radar not all-clear',none.surroundingsChecked,false);
+console.log('PASS '+n+' Radar / EEex evidence-gate SHADOW tests');
