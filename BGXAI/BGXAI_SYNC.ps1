@@ -25,7 +25,7 @@ function Hash([byte[]]$bytes) {
     finally {$h.Dispose()}
 }
 function RepairUserScriptShadow([string]$pinnedCommit) {
-    [byte[]]$auditFile='BGXAI/BGXAI_RESOURCE_AUDIT.ps1'
+    $auditFile='BGXAI/BGXAI_RESOURCE_AUDIT.ps1'
     if($script:ActiveVersion -eq '0.6.27-role-profile-install-pilot') {$auditFile='BGXAI/BGXAI_RESOURCE_AUDIT_627.ps1'}
     [byte[]]$auditBytes=GetFile $auditFile $pinnedCommit
     $auditText=[Text.Encoding]::UTF8.GetString($auditBytes)
@@ -276,7 +276,7 @@ try {
         foreach($scriptName in $ownedNames) {
             $compiledBytes=[IO.File]::ReadAllBytes((Join-Path $GameRoot ('scripts\'+$scriptName+'.BS')))
             if(!([Text.Encoding]::ASCII.GetString($compiledBytes)).Contains([string]$ownedMarkers[$scriptName])) {
-                throw ('ACTIVE VERSION MARKER MISSING '+$scriptName+' '+$expectedCompiledMarker)
+                throw ('ACTIVE VERSION MARKER MISSING '+$scriptName+' '+$ownedMarkers[$scriptName])
             }
             Log ('VERIFIED ACTIVE '+$ownedMarkers[$scriptName]+' '+$scriptName)
         }
