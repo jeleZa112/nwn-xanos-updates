@@ -1,0 +1,23 @@
+{
+  "channel": "BGXUNI-parallel",
+  "version": "0.1.3-unified-one-updater",
+  "deployment": "single-existing-BGXAI_UPDATE.cmd",
+  "status": "offline static verified; Windows WeiDU not yet confirmed",
+  "files": [
+    {
+      "path": "BGXAI/pilots/BGXUNI_010/BGXUNI/BGXUN1.BAF",
+      "size": 5309,
+      "sha256": "ec28dd2b823c7ea612d0ea1fcbafbbe95f4dd2b23f820f22ce6f28e4ba8db6e7"
+    },
+    {
+      "path": "BGXAI/pilots/BGXUNI_010/BGXUNI/setup-BGXUNI.tp2",
+      "size": 278,
+      "sha256": "db83b65e55747247292edfec76e411c5bdd10aa226200781b9547e8cdcf4fad8"
+    }
+  ],
+  "installer": {
+    "path": "BGXAI/pilots/BGXUNI_010/parallel/BGXUNI_AUTOINSTALL.ps1",
+    "size": 10799,
+    "sha256": "a8fa668786e95f8b108ae6efa95a3300ee521ad278e8b87e6d1c74bc310101e2"
+  }
+}
