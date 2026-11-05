@@ -1,10 +1,11 @@
-name: Roblox HID source checks
+name: Roblox input source checks
 
 on:
   push:
     branches: [roblox-bg-monitor]
     paths:
       - roblox_monitor.py
+      - tests/test_touch_abi.py
       - ROBLOX_HID_LEONARDO/**
       - .github/workflows/roblox-hid-check.yml
   workflow_dispatch:
@@ -18,7 +19,9 @@ jobs:
         with:
           python-version: '3.13'
       - name: Compile Roblox bot source
-        run: python -m py_compile roblox_monitor.py
+        run: |
+          python -m py_compile roblox_monitor.py
+          python tests/test_touch_abi.py
 
   arduino-leonardo:
     runs-on: ubuntu-latest
