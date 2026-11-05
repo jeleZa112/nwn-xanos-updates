@@ -1,0 +1,17 @@
+// BGXAI HYBRID 022 — EXPERIMENTAL / ISOLATED TEST ONLY.
+// Not deployed in BGXAI_UPDATE.cmd. No player's standard scripts edited.
+// Requires official WeiDU and actual EET game files; inspect output before live use.
+BACKUP ~BGXH022/backup~
+AUTHOR ~BGXAI stock-preserving hybrid research~
+
+BEGIN ~BGXH022: Advanced AI alias with opt-in read-only target evidence~
+REQUIRE_PREDICATE FILE_EXISTS_IN_GAME ~BDDEFAI.BCS~ ~Installed ordinary BDDEFAI missing~
+
+// Reference is EXACT modded installed original; never distributed to public repo.
+COPY_EXISTING ~BDDEFAI.BCS~ ~BGXH022/NATIVE_REF.BCS~
+// Independent alias, original override BDDEFAI not touched.
+COPY_EXISTING ~BDDEFAI.BCS~ ~override/BGXUN1.BCS~
+// Append ONLY one opt-in noncombat read-only evidence block.
+EXTEND_BOTTOM ~BGXUN1.BCS~ ~BGXH022/shadow_target.baf~
+// Selectable script file with the same modified bytecode as BGXUN1.BCS.
+COPY_EXISTING ~BGXUN1.BCS~ ~scripts/BGXUN1.BS~
