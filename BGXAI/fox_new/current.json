@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "channel": "fox-new-dev-only",
+  "version": "0.2.4-advisory",
+  "status": "SOURCE_ONLY_NOT_INSTALLED_NOT_RUNTIME_VERIFIED",
+  "repo": "jeleZa112/nwn-xanos-updates",
+  "branch": "bg-eet-ai",
+  "game_root": "C:\\Games\\BG_EET_FOXX_NEW",
+  "summary_ru": "Офлайн-советник 024 (19/19 тестов в JS-песочнице), совместно с архивом Hybrid022/Telemetry023. Новые игровые действия НЕ выполняются. EPS 18.4 остаётся текущим штатным ИИ.",
+  "files": [
+    {
+      "source": "BGXAI/fox_new/README_RU.md",
+      "dest": "README_RU.md",
+      "size": 5518,
+      "git_blob_sha": "876a0ca197d5bede4e30b66e7338921511dbc5c6"
+    },
+    {
+      "source": "BGXAI/fox_new/src/role_advisor_024.js",
+      "dest": "src/role_advisor_024.js",
+      "size": 4393,
+      "git_blob_sha": "663351fe6a0d8acd76d48cd228652050bd738e9a"
+    },
+    {
+      "source": "BGXAI/fox_new/tests/test_role_advisor_024.js",
+      "dest": "tests/test_role_advisor_024.js",
+      "size": 3321,
+      "git_blob_sha": "713d4280f661859955e638d3cbb6ad7c61087d16"
+    },
+    {
+      "source": "BGXAI/rebuild/HYBRID_022/src/planner.py",
+      "dest": "archive_022/planner.py",
+      "size": 6004,
+      "git_blob_sha": "be595812c091eb5e14bec596743fb3f03854d3c3"
+    },
+    {
+      "source": "BGXAI/rebuild/HYBRID_022/src/replay.py",
+      "dest": "archive_022/replay.py",
+      "size": 1490,
+      "git_blob_sha": "374f69fa1736dc49a2bcf55ac578e738fedead7d"
+    },
+    {
+      "source": "BGXAI/rebuild/HYBRID_022/tests/test_hybrid.py",
+      "dest": "archive_022/test_hybrid.py",
+      "size": 6394,
+      "git_blob_sha": "7687f0e08f07b5115b62be63846c65f567a03ed6"
+    },
+    {
+      "source": "BGXAI/rebuild/TELEMETRY_023/src/BGX23_PARSER.js",
+      "dest": "archive_023/BGX23_PARSER.js",
+      "size": 2150,
+      "git_blob_sha": "7f36f3416d160c2cba29fa0ba6c70cc4e32a62a6"
+    },
+    {
+      "source": "BGXAI/rebuild/TELEMETRY_023/docs/README_RU.md",
+      "dest": "archive_023/README_RU.md",
+      "size": 6283,
+      "git_blob_sha": "806d77ab283331a155398207945ab2dbe0878815"
+    },
+    {
+      "source": "BGXAI/knowledge/tactical_priority_planner_v2.js",
+      "dest": "knowledge/tactical_priority_planner_v2.js",
+      "size": 9480,
+      "git_blob_sha": "a6c453ff6d7e1f311da281fe7e5298d52935de0e"
+    },
+    {
+      "source": "BGXAI/knowledge/team_combo_planner_v3_offline.js",
+      "dest": "knowledge/team_combo_planner_v3_offline.js",
+      "size": 14298,
+      "git_blob_sha": "3c435b66f4dc2a8824b9bc4686e34a0dc88485bb"
+    }
+  ]
+}
