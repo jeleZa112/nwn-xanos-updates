@@ -1,9 +1,9 @@
-# Roblox background monitor - release 2.1.0
+# Roblox background monitor - release 2.1.1
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "2.1.0"
+VERSION = "2.1.1"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -313,7 +313,7 @@ def lobby_helper():
     folder = Path.home() / "Documents" / "RobloxBGDiagnostics" / "LOBBY"
     folder.mkdir(parents=True, exist_ok=True)
     logfile = folder / "lobby.log"
-    print("\nROBLOX LOBBY BOT V2.1.0")
+    print("\nROBLOX LOBBY BOT V2.1.1")
     print("Target: City Landscape / 1 player / Hard / Create")
     print("Bot will click only if the Roblox window is focused.")
     print("You must first walk onto the purple creation pad.")
@@ -378,8 +378,9 @@ def lobby_helper():
         return float(max(colormask(z,kind) for z in segments))
 
     def scan(frame):
-        # Selected city map has a YELLOW outline, 1-player has GREEN,
-        # and selected difficulty has GREEN outline, unlike unselected Hard.
+        # Selected city map has a YELLOW outline, 1-player has GREEN.
+        # Selected HARD uses a RED outline (not green); NORMAL has a
+        # GREEN selected border. These are separate mutually exclusive modes.
         # This is not proof of GUI state without real post-click changes.
         create = border_color(frame,(.359,.833,.481,.914),"green")
         cancel = border_color(frame,(.519,.833,.642,.914),"red")
@@ -991,7 +992,7 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    # V2.1.0: strict sequential steps. Retry ONLY the last unconfirmed step.
+    # V2.1.1: strict sequential steps. Retry ONLY the last unconfirmed step.
     # Never re-click an earlier option after moving on, to avoid toggling it off.
     controller = None
     step_names = ("city","one","hard","create")
@@ -1027,10 +1028,14 @@ def lobby_helper():
         return {
             "city": feat["city"]>.15 and feat["cave"]<.12,
             "one": player_selected(feat)==1,
-            "hard": feat["hard"]>.15 and feat["normal"]<.15
+            # Hard is highlighted RED; normal is highlighted GREEN.
+            # Require red on Hard AND no green on Normal to avoid mistaking
+            # a hovered-but-unselected Hard tile for the chosen difficulty.
+            "hard": feat["hard_red"]>.18 and feat["normal"]<.12
         }
-    log("Lobby v2.1.0 start; armed="+str(enabled))
-    log("Strict sequence CITY -> ONE -> HARD -> CREATE; retry only unconfirmed step")
+    log("Lobby v2.1.1 start; armed="+str(enabled))
+    log("Strict sequence CITY -> ONE -> HARD(RED BORDER) -> CREATE")
+    log("HARD_CHECK requires red hard border + normal green not selected")
     log("Before/after click evidence in "+str(evidence_dir)+"; JPEG overwritten per step.")
     try:
         controller=capture.start_free_threaded()
@@ -1238,7 +1243,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V2.1.0 - choose mode:")
+    print("ROBLOX V2.1.1 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
@@ -1264,7 +1269,7 @@ try:
     from windows_capture import WindowsCapture, Frame, InternalCaptureControl
 except Exception as exc:
     note("DEPENDENCY ERROR: " + str(exc))
-    note("Run: py -3 -m pip install --user windows-capture==2.1.0 numpy opencv-python")
+    note("Run: py -3 -m pip install --user windows-capture==2.1.1 numpy opencv-python")
     sys.exit(2)
 
 stats = {"received": 0, "analyzed": 0, "changes": 0, "last": 0.0, "errors": 0, "left": 0.0, "center": 0.0, "right": 0.0, "possible_match": 0, "hud_mode": "UNCONFIRMED", "hud_strength": 0.0}
