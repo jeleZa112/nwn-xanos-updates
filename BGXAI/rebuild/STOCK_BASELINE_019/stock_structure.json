@@ -1,0 +1,131 @@
+{
+  "source_archive": "BG_EET_AUDIT_02_QUESTS_AI.zip",
+  "scripts": {
+    "BDDEFAI.BCS": {
+      "resource": "BDDEFAI.BCS",
+      "size_bytes": 489880,
+      "sha256": "2d98605d2ee5a1d8abb17961f03f2ca9c9d48ea24a1007860e938f49c650165a",
+      "rules": 322,
+      "actions": 700,
+      "meaningful_actions": {
+        "Spell": 277,
+        "UseItem": 8,
+        "SetInterrupt": 144,
+        "SetGlobalTimer": 221
+      },
+      "retreat_state_tokens": [],
+      "unknown_origin": true
+    },
+    "BDFTHI01.BCS": {
+      "resource": "BDFTHI01.BCS",
+      "size_bytes": 34196,
+      "sha256": "4e1836f960364d0d8eeef2047cf28416550d92b00cc24db4c520b886ebdaa39c",
+      "rules": 30,
+      "actions": 75,
+      "meaningful_actions": {
+        "UseItem": 24,
+        "SetInterrupt": 24,
+        "SetGlobalTimer": 24,
+        "AttackReevaluate": 2
+      },
+      "retreat_state_tokens": [
+        "bd_combat",
+        "bd_no_combat",
+        "bd_no_retreat",
+        "bd_retreat"
+      ],
+      "unknown_origin": true
+    },
+    "BDFIGH01.BCS": {
+      "resource": "BDFIGH01.BCS",
+      "size_bytes": 36473,
+      "sha256": "4c7e02a1a14254b43b4a5b9903a4477ad3425a1f54a78969f3779fedb20d9872",
+      "rules": 32,
+      "actions": 79,
+      "meaningful_actions": {
+        "UseItem": 23,
+        "SetInterrupt": 23,
+        "SetGlobalTimer": 23,
+        "AttackReevaluate": 2
+      },
+      "retreat_state_tokens": [
+        "bd_combat",
+        "bd_no_combat",
+        "bd_no_retreat",
+        "bd_retreat"
+      ],
+      "unknown_origin": true
+    },
+    "BDFMAG01.BCS": {
+      "resource": "BDFMAG01.BCS",
+      "size_bytes": 164068,
+      "sha256": "27992100b54116798e480299391d2f27b135cdb7c50d2ad41baf5302699f0e7d",
+      "rules": 141,
+      "actions": 203,
+      "meaningful_actions": {
+        "Spell": 69,
+        "UseItem": 28,
+        "SetInterrupt": 28,
+        "SetGlobalTimer": 44,
+        "AttackReevaluate": 2
+      },
+      "retreat_state_tokens": [
+        "bd_combat",
+        "bd_no_combat",
+        "bd_no_retreat",
+        "bd_retreat"
+      ],
+      "unknown_origin": true
+    },
+    "BDFCLE01.BCS": {
+      "resource": "BDFCLE01.BCS",
+      "size_bytes": 107196,
+      "sha256": "8b9f646097f99aa893feb3f90b6adc1cd1fb88d7bf045d71cf50fe370605585a",
+      "rules": 97,
+      "actions": 147,
+      "meaningful_actions": {
+        "Spell": 38,
+        "UseItem": 24,
+        "SetInterrupt": 24,
+        "SetGlobalTimer": 27,
+        "AttackReevaluate": 2
+      },
+      "retreat_state_tokens": [
+        "bd_combat",
+        "bd_no_combat",
+        "bd_no_retreat",
+        "bd_retreat"
+      ],
+      "unknown_origin": true
+    },
+    "BDAI0010.BCS": {
+      "resource": "BDAI0010.BCS",
+      "size_bytes": 768,
+      "sha256": "15825978d430e041ecc6adcee79c89d0d8b93c2d10d7680a1324b54b9cc6c54b",
+      "rules": 1,
+      "actions": 4,
+      "meaningful_actions": {},
+      "retreat_state_tokens": [],
+      "unknown_origin": true
+    },
+    "BDAI0020.BCS": {
+      "resource": "BDAI0020.BCS",
+      "size_bytes": 771,
+      "sha256": "3e9fd2a7f97501122b5af5cedecc2452de1c5ec69a659eb95d056140851c6384",
+      "rules": 1,
+      "actions": 4,
+      "meaningful_actions": {},
+      "retreat_state_tokens": [
+        "bd_no_retreat"
+      ],
+      "unknown_origin": true
+    }
+  },
+  "safety": {
+    "game_modified": false,
+    "original_stock_bcs_included_in_output": false,
+    "installation_tested": false,
+    "stock_behavior_parity_proven": false,
+    "notes": "These are static structural facts, not a replay of the Infinity Engine."
+  }
+}
