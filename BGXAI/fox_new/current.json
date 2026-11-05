@@ -1,12 +1,12 @@
 {
   "schema": 1,
   "channel": "fox-new-dev-only",
-  "version": "0.2.7-local-eps-baseline",
+  "version": "0.2.8-eps-structure-audit",
   "status": "SOURCE_ONLY_NOT_INSTALLED_NOT_RUNTIME_VERIFIED",
   "repo": "jeleZa112/nwn-xanos-updates",
   "branch": "bg-eet-ai",
   "game_root": "C:\\Games\\BG_EET_FOXX_NEW",
-  "summary_ru": "024 офлайн советник; локальная безопасная подготовка EPS 18.4 для конечной персональной сборки. Компонент 027 снимает локальный снимок текстов EPS в BGXAI_LOCAL_BUILD, не загружает их в GitHub и не изменяет игру. EPS остаётся единственным рабочим игровым ИИ; координация BGXAI 025/026 ведётся отдельно в закрытом репозитории.",
+  "summary_ru": "BGXAI 028: безопасная сверка целостности личной копии EPS 18.4 (235 файлов по сообщению пользователя), счётчик скриптов и компонентов WeiDU; 12/12 офлайн-тестов PASS. Исполняемый игровой ИИ пока остаётся EPS; аудит НЕ устанавливает BGXAI в игру.",
   "files": [
     {
       "source": "BGXAI/fox_new/README_RU.md",
@@ -79,6 +79,18 @@
       "dest": "tests/test_eps_local_builder_027.py",
       "size": 3488,
       "git_blob_sha": "0e2bcab514d304e416bc5d89b4d2dbc22df2efca"
+    },
+    {
+      "source": "BGXAI/fox_new/src/eps_structure_audit_028.py",
+      "dest": "src/eps_structure_audit_028.py",
+      "size": 6543,
+      "git_blob_sha": "6674fea012b885289a8dac1532394a66f171d69c"
+    },
+    {
+      "source": "BGXAI/fox_new/tests/test_eps_structure_audit_028.py",
+      "dest": "tests/test_eps_structure_audit_028.py",
+      "size": 3274,
+      "git_blob_sha": "f01534cccf6eba712882539e0668e5cf6795b9be"
     }
   ]
 }
