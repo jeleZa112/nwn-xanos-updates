@@ -287,19 +287,198 @@ def training_mode():
 
 # Menu stays in the *same downloaded Python file*.
 # No new CMD files are necessary.
+
+# === V1.0 Lobby assistant: conservative foreground-only workflow ===
+def lobby_helper():
+    """Detect a known lobby menu, choose Hard mode and click Create when armed.
+    It never starts Roblox, walks the avatar to the pad, or clicks in the background.
+    """
+    import ctypes
+    import queue
+    import cv2
+    import numpy as np
+    from windows_capture import WindowsCapture, Frame, InternalCaptureControl
+    from ctypes import wintypes
+    print("\nLOBBY HELPER V1.0")
+    print("Known sequence from your recording: step onto creation pad, 1 player, Hard, Create.")
+    print("Only tested visually against one supplied 1280x687 reference frame.")
+    print("1 = observe only (safe)")
+    print("2 = allow clicks ONLY while Roblox is the focused window")
+    selection = input("Mode [1]: ").strip()
+    armed = selection == "2" and input("Type YES to enable clicking: ").strip() == "YES"
+    if armed:
+        print("You must manually enter the purple creation pad and focus Roblox.")
+        print("Program clicks hard difficulty, then Create, only if menu matches.")
+        print("WARNING: cursor may move during clicks; don't use mouse at same time.")
+    else:
+        print("Observation mode: no mouse actions.")
+    u = ctypes.windll.user32
+    hwnd = u.FindWindowW(None, "Roblox")
+    if not hwnd:
+        print("Roblox window was not found.")
+        return 1
+    out = Path.home() / "Documents" / "RobloxBGDiagnostics" / "LOBBY"
+    out.mkdir(parents=True, exist_ok=True)
+    log_path = out / "lobby.log"
+    frames = queue.Queue(maxsize=1)
+    stop = threading.Event()
+    state = "SEARCH_PAD"
+    last_emit = ""
+    last_click_time = 0.0
+    modal_frames = 0
+    next_action = "HARD"
+    started = time.monotonic()
+
+    def write(message):
+        line = time.strftime("[%H:%M:%S] ") + str(message)
+        print(line, flush=True)
+        with log_path.open("a", encoding="utf-8") as fp:
+            fp.write(line + "\n")
+
+    write("Lobby helper v1.0; armed=" + str(armed))
+    write("Clicks are strictly foreground-only and require detected creation menu.")
+
+    def green_red(frame, relative_box):
+        h, w = frame.shape[:2]
+        x1, y1, x2, y2 = relative_box
+        block = frame[int(y1*h):int(y2*h), int(x1*w):int(x2*w), :3]
+        if not block.size:
+            return (0.0, 0.0)
+        hsv = cv2.cvtColor(block, cv2.COLOR_BGR2HSV)
+        green = ((hsv[:,:,0] >= 35) & (hsv[:,:,0] <= 90) &
+                 (hsv[:,:,1] > 65) & (hsv[:,:,2] > 55)).mean()
+        red = ((((hsv[:,:,0] < 12) | (hsv[:,:,0] > 169)) &
+                (hsv[:,:,1] > 100) & (hsv[:,:,2] > 65))).mean()
+        return float(green), float(red)
+
+    def recognize(frame):
+        create_green,_ = green_red(frame, (.35,.80,.49,.94))
+        one_green,_ = green_red(frame, (.35,.65,.415,.81))
+        _,cancel_red = green_red(frame, (.50,.80,.66,.94))
+        hard_green,_ = green_red(frame, (.665,.67,.755,.73))
+        is_modal = create_green > .15 and one_green > .20 and cancel_red > .035
+        return is_modal, hard_green > .14, (create_green,one_green,cancel_red,hard_green)
+
+    def click_window_point(relx, rely, frame_w, frame_h):
+        if u.GetForegroundWindow() != hwnd or u.IsIconic(hwnd):
+            return "SKIPPED_NOT_FOREGROUND"
+        rect = wintypes.RECT()
+        if not u.GetWindowRect(hwnd, ctypes.byref(rect)):
+            return "FAILED_GET_WINDOW_RECT"
+        width, height = rect.right-rect.left, rect.bottom-rect.top
+        if abs(width/frame_w - height/frame_h) > .12:
+            return "SKIPPED_WINDOW_ASPECT_RATIO_MISMATCH"
+        px = int(rect.left + width * relx)
+        py = int(rect.top + height * rely)
+        old = wintypes.POINT()
+        u.GetCursorPos(ctypes.byref(old))
+        u.SetCursorPos(px, py)
+        u.mouse_event(0x0002,0,0,0,0)
+        time.sleep(.07)
+        u.mouse_event(0x0004,0,0,0,0)
+        u.SetCursorPos(old.x,old.y)
+        return "CLICK_SENT_NOT_YET_VERIFIED"
+
+    capture = WindowsCapture(cursor_capture=None,draw_border=None,
+                             monitor_index=None,window_name="Roblox")
+    @capture.event
+    def on_frame_arrived(frame: Frame, control: InternalCaptureControl):
+        if stop.is_set():
+            control.stop()
+            return
+        if frames.full():
+            return
+        try:
+            # The only copied image is the latest and is discarded immediately.
+            frames.put_nowait(frame.frame_buffer[:,:,:3].copy())
+        except queue.Full:
+            pass
+
+    @capture.event
+    def on_closed():
+        stop.set()
+
+    controller = None
+    try:
+        controller = capture.start_free_threaded()
+        write("Started. Step onto the creation pad manually.")
+        while not stop.is_set() and time.monotonic()-started < 180:
+            try:
+                frame = frames.get(timeout=.5)
+            except queue.Empty:
+                continue
+            h,w = frame.shape[:2]
+            is_modal, hard_selected, confidence = recognize(frame)
+            if is_modal:
+                modal_frames += 1
+                new_state = "CREATION_MENU"
+            else:
+                modal_frames = 0
+                new_state = "CREATION_CONFIRMED_OR_MENU_CLOSED" if state == "CREATION_MENU" else "SEARCH_PAD"
+            if new_state != state:
+                state = new_state
+                write("STATE " + state + " features=" + str(tuple(round(x,3) for x in confidence)))
+            if not armed or modal_frames < 3 or not is_modal:
+                continue
+            if time.monotonic()-last_click_time < 2.0:
+                continue
+            if next_action == "HARD" and not hard_selected:
+                action = click_window_point(.71, .702, w,h)
+                write("Hard select: " + action)
+                last_click_time = time.monotonic()
+                if action.startswith("CLICK_SENT"):
+                    next_action = "VERIFY_HARD"
+            elif next_action == "VERIFY_HARD":
+                if hard_selected:
+                    write("Hard selection appears active; will create lobby next.")
+                    next_action = "CREATE"
+                else:
+                    write("Hard selection not confirmed; stopping automation.")
+                    break
+            elif next_action == "HARD" and hard_selected:
+                write("Hard selection already present.")
+                next_action = "CREATE"
+            elif next_action == "CREATE" and hard_selected:
+                action = click_window_point(.42,.87,w,h)
+                write("Create attempt: " + action)
+                last_click_time = time.monotonic()
+                if action.startswith("CLICK_SENT"):
+                    next_action = "WAIT_FOR_COUNTDOWN"
+            elif next_action == "WAIT_FOR_COUNTDOWN" and not is_modal:
+                write("Menu closed; possible lobby creation. Verify countdown visually.")
+                break
+        write("Stopped. Last state=" + state + ", next_action=" + next_action)
+    except KeyboardInterrupt:
+        write("User stopped lobby helper.")
+    except Exception:
+        write("ERROR: " + traceback.format_exc())
+    finally:
+        stop.set()
+        if controller is not None:
+            try:
+                controller.stop()
+            except Exception:
+                pass
+    return 0
+# === End lobby assistant ===
+
 def run_mode_prompt():
     print("")
     print("ROBLOX V0.9.2 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
+    print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
     try:
         choice = input("Choose 1 or 2 [1]: ").strip()
     except EOFError:
         choice = "1"
     return choice
 
-if run_mode_prompt() == "2":
+selected_mode = run_mode_prompt()
+if selected_mode == "2":
     raise SystemExit(training_mode())
+if selected_mode == "3":
+    raise SystemExit(lobby_helper())
 
 # ------------ End demonstration recording ------------
 
