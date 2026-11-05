@@ -1,13 +1,13 @@
 {
   "channel": "BGXUNI-parallel",
-  "version": "0.1.7-threat-gated-short-retreat",
+  "version": "0.1.8-safe-resume-fire",
   "deployment": "single-existing-BGXAI_UPDATE.cmd",
-  "status": "v016 live: long 355 retreat after killing one foe while second attacks familiar; v017 uses AttackedBy and 24-tick steps; offline tested, Windows WeiDU/in-game UNVERIFIED, no squad geometry.",
+  "status": "v017 live 080316: first episode 1 attack 2 retreats; second episode 3 attacks 0 retreats. v018 fixes HP<=55 attack deadlock when aggro moves away, Windows WeiDU and live runtime UNVERIFIED; no player command origin/tank geometry.",
   "files": [
     {
       "path": "BGXAI/pilots/BGXUNI_010/BGXUNI/BGXUN1.BAF",
-      "size": 9466,
-      "sha256": "1707f2b67e38dda6f6dccf2550dfd16805a779ae7fb3d26d18331373ec00c7c6"
+      "size": 10261,
+      "sha256": "effe02c5a7061874d7e14b2b48ccb73225e3c208f1c2783b593365c466dfbbb3"
     },
     {
       "path": "BGXAI/pilots/BGXUNI_010/BGXUNI/setup-BGXUNI.tp2",
@@ -17,7 +17,7 @@
   ],
   "installer": {
     "path": "BGXAI/pilots/BGXUNI_010/parallel/BGXUNI_AUTOINSTALL.ps1",
-    "size": 10820,
-    "sha256": "942ed4d45a0cf1e93c58212c00bdfc6cbce79f54e1c5a7c98ef0541d68d46534"
+    "size": 10800,
+    "sha256": "aac8325a57cdfff993a065465bb144f641abe0031b8da08a025379a81a05dcb0"
   }
 }
