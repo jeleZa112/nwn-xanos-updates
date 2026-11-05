@@ -1,0 +1,96 @@
+{
+  "status": "PASS: static stock bard invariants only",
+  "source": "BG_EET_AUDIT_02_QUESTS_AI.zip",
+  "game_files_modified": false,
+  "stock": {
+    "BDDEFAI.BCS": {
+      "size": 489880,
+      "sha256": "2d98605d2ee5a1d8abb17961f03f2ca9c9d48ea24a1007860e938f49c650165a",
+      "action_names": {
+        "BattleSong": 1,
+        "Attack": 0,
+        "AttackOneRound": 0,
+        "AttackReevaluate": 0,
+        "RunAwayFromNoLeaveArea": 0,
+        "Spell": 277,
+        "Continue": 13
+      },
+      "locals_bard_mode": true,
+      "locals_bard_state": true,
+      "controls_no_retreat": false
+    },
+    "BDBARD01.BCS": {
+      "size": 153732,
+      "sha256": "4e2d04319f8bf917e94e4aeeb6874080547e5075282924cc372601bc75a590a3",
+      "action_names": {
+        "BattleSong": 0,
+        "Attack": 0,
+        "AttackOneRound": 0,
+        "AttackReevaluate": 2,
+        "RunAwayFromNoLeaveArea": 0,
+        "Spell": 68,
+        "Continue": 16
+      },
+      "locals_bard_mode": false,
+      "locals_bard_state": false,
+      "controls_no_retreat": true
+    },
+    "BDBARD20.BCS": {
+      "size": 34394,
+      "sha256": "1fc90ef45bb74b942523ad2cb8dc49f992722bb698c91c7aacef7f26ae3b95fe",
+      "action_names": {
+        "BattleSong": 0,
+        "Attack": 0,
+        "AttackOneRound": 0,
+        "AttackReevaluate": 2,
+        "RunAwayFromNoLeaveArea": 0,
+        "Spell": 7,
+        "Continue": 2
+      },
+      "locals_bard_mode": false,
+      "locals_bard_state": false,
+      "controls_no_retreat": true
+    },
+    "BDFTHI01.BCS": {
+      "size": 34196,
+      "sha256": "4e1836f960364d0d8eeef2047cf28416550d92b00cc24db4c520b886ebdaa39c",
+      "action_names": {
+        "BattleSong": 0,
+        "Attack": 0,
+        "AttackOneRound": 0,
+        "AttackReevaluate": 2,
+        "RunAwayFromNoLeaveArea": 0,
+        "Spell": 0,
+        "Continue": 0
+      },
+      "locals_bard_mode": false,
+      "locals_bard_state": false,
+      "controls_no_retreat": true
+    }
+  },
+  "checks": {
+    "stock_BDDEFAI_contains_BattleSong_action296": true,
+    "bard_song_block_uses_BDAI_SKILL_MODE": true,
+    "bard_song_block_updates_BD_BRDS": true,
+    "bard_class_script_present": true,
+    "bard_alt_class_script_present": true
+  },
+  "scs_v35_21_external_source": {
+    "repo": "Gibberlings3/SwordCoastStratagems",
+    "tag": "v35.21",
+    "file": "stratagems/gameplay/resource/bddefai.ssl",
+    "verified_from_github_connector": true,
+    "verified_sha1_blob": "fe8bca172924aad2604ec889de1ceec4f40a5647",
+    "observed_contains_BattleSong": false,
+    "observed_contains_AttackReevaluate": false,
+    "observed_contains_Attack": true,
+    "observed_contains_WeaponCanDamage": true,
+    "observed_contains_WeaponEffectiveVs": true
+  },
+  "limitations": [
+    "Not a runtime bard song/casting continuity proof",
+    "No user current save slot assignment verified",
+    "Historical SCS 5000 in old WeiDU log does not mean present now",
+    "Do not replace live BGXUN1 until explicit verified beta"
+  ]
+}
