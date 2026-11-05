@@ -1,0 +1,109 @@
+{
+  "events_total": 39,
+  "actor_A1_events": 35,
+  "actor_A1_attack_one_round": 5,
+  "actor_A1_retreats": 4,
+  "actor_A1_move_to_point": 6,
+  "post_first_kill_actions": [
+    [
+      24,
+      105,
+      136382496,
+      [
+        440,
+        1410
+      ]
+    ],
+    [
+      25,
+      105,
+      136382496,
+      [
+        440,
+        1410
+      ]
+    ],
+    [
+      28,
+      355,
+      136382496,
+      [
+        440,
+        1410
+      ]
+    ],
+    [
+      29,
+      105,
+      136382496,
+      [
+        392,
+        1410
+      ]
+    ],
+    [
+      32,
+      355,
+      136382496,
+      [
+        392,
+        1410
+      ]
+    ],
+    [
+      33,
+      105,
+      136382496,
+      [
+        344,
+        1410
+      ]
+    ],
+    [
+      36,
+      355,
+      136382496,
+      [
+        344,
+        1410
+      ]
+    ],
+    [
+      39,
+      355,
+      136382496,
+      [
+        280,
+        1410
+      ]
+    ]
+  ],
+  "retreat_positions": [
+    [
+      440,
+      1410
+    ],
+    [
+      392,
+      1410
+    ],
+    [
+      344,
+      1410
+    ],
+    [
+      280,
+      1410
+    ]
+  ],
+  "retreat_step_distances": [
+    48.0,
+    48.0,
+    64.0
+  ],
+  "attack_retreat_alternations": 5,
+  "manual_vs_AI_source": "UNKNOWN",
+  "hostile_aggro_target": "NOT_LOGGED",
+  "tank_position": "NOT_LOGGED",
+  "warning": "Action-start events are NOT proof of who originated the order. This is a behavioral regression fixture, not an engine simulation."
+}
