@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.4.3
+# Roblox background monitor - release 1.5.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.4.3"
+VERSION = "1.5.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -432,6 +432,18 @@ def lobby_helper():
         event.mi=MOUSEINPUT(0,0,0,flag,0,None)
         return int(ui.SendInput(1,ctypes.byref(event),ctypes.sizeof(INPUT)))
 
+    def send_mouse_move(px,py):
+        # Emit an actual mouse MOVE event that game engines can receive.
+        vx,vy=ui.GetSystemMetrics(76),ui.GetSystemMetrics(77)
+        vw,vh=ui.GetSystemMetrics(78),ui.GetSystemMetrics(79)
+        if vw<=0 or vh<=0: return 0
+        xx=max(0,min(65535,round((px-vx)*65535/max(1,vw-1))))
+        yy=max(0,min(65535,round((py-vy)*65535/max(1,vh-1))))
+        ev=INPUT()
+        ev.type=0
+        ev.mi=MOUSEINPUT(xx,yy,0,0xC001,0,None)
+        return int(ui.SendInput(1,ctypes.byref(ev),ctypes.sizeof(INPUT)))
+
     def click(relx,rely,frame):
         # Coordinates in recognizer are normalized to the whole WGC frame.
         # On this PC the captured frame is 1920x1030 while the client
@@ -460,8 +472,8 @@ def lobby_helper():
             return "ERROR_CLIENT_TO_SCREEN"
         before=POINT()
         ui.GetCursorPos(ctypes.byref(before))
-        if not ui.SetCursorPos(p.x,p.y):
-            return "ERROR_SET_CURSOR"
+        if send_mouse_move(p.x,p.y)!=1:
+            return "ERROR_SENDINPUT_MOVE"
         time.sleep(.27)
         actual=POINT()
         ui.GetCursorPos(ctypes.byref(actual))
@@ -474,10 +486,13 @@ def lobby_helper():
             return "ERROR_CURSOR_DRIFT"
         if ui.GetForegroundWindow()!=hwnd:
             return "ERROR_FOCUS_LOST"
+        if send_mouse_move(p.x,p.y)!=1:
+            return "ERROR_SENDINPUT_MOVE_BEFORE_PRESS"
+        time.sleep(.09)
         down=send_mouse_flag(0x0002)
         time.sleep(.14)
         up=send_mouse_flag(0x0004)
-        time.sleep(.42)
+        time.sleep(.55)
         after=POINT()
         ui.GetCursorPos(ctypes.byref(after))
         log("INPUT_TRACE target=(%d,%d) after=(%d,%d) SendInput=%d/%d" %
@@ -503,7 +518,7 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    # V1.4.3: strict sequential steps. Retry ONLY the last unconfirmed step.
+    # V1.5.0: strict sequential steps. Retry ONLY the last unconfirmed step.
     # Never re-click an earlier option after moving on, to avoid toggling it off.
     controller = None
     step_names = ("city","one","hard","create")
@@ -533,7 +548,7 @@ def lobby_helper():
             "one": player_selected(feat)==1,
             "hard": feat["hard"]>.15 and feat["normal"]<.15
         }
-    log("Lobby v1.4.3 start; armed="+str(enabled))
+    log("Lobby v1.5.0 start; armed="+str(enabled))
     log("Strict sequence CITY -> ONE -> HARD -> CREATE; retry only unconfirmed step")
     log("Before/after click evidence in "+str(evidence_dir)+"; JPEG overwritten per step.")
     try:
@@ -682,7 +697,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.4.3 - choose mode:")
+    print("ROBLOX V1.5.0 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
