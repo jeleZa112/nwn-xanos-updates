@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.2.0
+# Roblox background monitor - release 1.3.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.2.0"
+VERSION = "1.3.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -477,9 +477,16 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    controller=None
-    log("Lobby v1.1 start; armed="+str(enabled))
-    log("Waiting for user to step on creation pad; foreground clicks only.")
+    # Reconciliation controller. Every input is followed by a fresh check
+    # of ALL selections; it never assumes earlier selections persisted.
+    controller = None
+    attempts = {"city":0,"one":0,"hard":0,"create":0}
+    last_action = 0.0
+    signatures = []
+    verified_runs = 0
+    pending = ""
+    log("Lobby v1.3.0 start; armed="+str(enabled))
+    log("State-driven: city + one player + hard checked together after EACH click.")
     try:
         controller=capture.start_free_threaded()
         while not stop.is_set() and time.monotonic()-start < 150:
@@ -487,102 +494,87 @@ def lobby_helper():
                 frame=q.get(timeout=.5)
             except queue.Empty:
                 continue
-            if time.monotonic()-last_update<.24:
+            if time.monotonic()-last_update < .30:
                 continue
             last_update=time.monotonic()
             modal,features=scan(frame)
-            if modal:
-                modal_seen+=1
-                menu_closed=0
-            else:
-                modal_seen=0
-                if stage=="AFTER_CREATE":
-                    menu_closed+=1
-                    if menu_closed>=4:
-                        log("DIALOG_CLOSED: creation probably started; check countdown.")
+            if not modal:
+                signatures.clear()
+                verified_runs=0
+                if pending == "create" and time.monotonic()-last_action >= 1.0:
+                    menu_closed += 1
+                    if menu_closed >= 4:
+                        log("POST_CREATE_DIALOG_CLOSED: possible countdown; not guaranteed")
                         break
                 continue
-            if modal_seen<4:
+            menu_closed=0
+            city = features["city"] > .15 and features["cave"] < .12
+            one = features["p1"] > .15 and features["p4"] < .15
+            hard = features["hard"] > .15 and features["normal"] < .15
+            signature=(city,one,hard)
+            signatures.append(signature)
+            if len(signatures)>5:
+                signatures.pop(0)
+            if len(signatures)<4 or len(set(signatures[-4:])) != 1:
                 continue
-            # No assumption that green ROI alone proves correct selections:
-            # verify each subsequent selector before advancing.
-            if stage=="WAIT_MENU":
-                stage="SELECT_CITY"
-                log("MENU_DETECTED "+str({k:round(v,2) for k,v in features.items()}))
-            if not enabled or time.monotonic()-action_time<1.0:
+            if state != "CREATION_MENU":
+                state="CREATION_MENU"
+                log("MENU_CONFIRMED: "+str({k:round(v,2) for k,v in features.items()}))
+            if not enabled:
                 continue
             if ui.GetForegroundWindow()!=hwnd:
                 continue
-            def do(x,y,label):
-                nonlocal action_time
-                answer=click(x,y,frame)
-                log(label+": "+answer+"; this is NOT confirmation Roblox accepted input; frame_before="+str({k:round(v,2) for k,v in features.items()}))
-                action_time=time.monotonic()
-                return answer=="INPUT_SENT_UNVERIFIED"
-            if stage=="SELECT_CITY":
-                if features["city"]>.15 and features["cave"]<.12:
-                    stage="SELECT_ONE"
-                elif do(.400,.585,"City map left tile"):
-                    stage="VERIFY_CITY"
-            elif stage=="VERIFY_CITY":
-                if features["city"]>.15 and features["cave"]<.12:
-                    stage="SELECT_ONE"
-                    retries=0
-                    log("City map selection VISIBLE. This does not prove the bot clicked.")
-                elif time.monotonic()-action_time>3.0:
-                    if retries < 2:
-                        retries+=1
-                        log("City not selected, retry "+str(retries))
-                        stage="SELECT_CITY"
-                    else:
-                        log("STOP: City not confirmed; cave=%.3f city=%.3f" % (features["cave"],features["city"]))
-                        break
-            elif stage=="SELECT_ONE":
-                if features["p1"]>.15 and features["p4"]<.15:
-                    stage="SELECT_HARD"
-                elif do(.382,.745,"One player"):
-                    stage="VERIFY_ONE"
-            elif stage=="VERIFY_ONE":
-                if features["p1"]>.15 and features["p4"]<.15:
-                    stage="SELECT_HARD"
-                    retries=0
-                    log("1 player verified.")
-                elif time.monotonic()-action_time>3.0:
-                    if retries < 2:
-                        retries += 1
-                        stage="SELECT_ONE"
-                        log("Retry 1-player selection, attempt="+str(retries+1))
-                    else:
-                        log("STOP: 1 player not verified after 3 clicks.")
-                        break
-            elif stage=="SELECT_HARD":
-                if features["hard"]>.15 and features["normal"]<.15:
-                    stage="CREATE"
-                elif do(.710,.707,"Hard difficulty"):
-                    stage="VERIFY_HARD"
-            elif stage=="VERIFY_HARD":
-                if features["hard"]>.15 and features["normal"]<.15:
-                    stage="CREATE"
-                    retries=0
-                    log("Hard verified.")
-                elif time.monotonic()-action_time>3.0:
-                    if retries < 2:
-                        retries += 1
-                        stage="SELECT_HARD"
-                        log("Retry Hard selection, attempt="+str(retries+1))
-                    else:
-                        log("STOP: Hard not verified after 3 clicks. Features="+str(features))
-                        break
-            elif stage=="CREATE":
-                if (features["city"]>.15 and features["cave"]<.12 and features["p1"]>.15
-                    and features["hard"]>.15 and features["normal"]<.15
-                    and features["p4"]<.15):
-                    if do(.420,.870,"Create lobby"):
-                        stage="AFTER_CREATE"
-                else:
-                    log("STOP: selectors lost validation; refusing Create.")
+            # Allow enough time for the game to display any selection changes.
+            if time.monotonic()-last_action < 1.8:
+                continue
+            if pending:
+                log("AFTER_"+pending.upper()+" observed="+str(signature)+
+                    " features="+str({k:round(v,2) for k,v in features.items()}))
+                pending = ""
+            if city and one and hard:
+                verified_runs += 1
+                if verified_runs < 3:
+                    continue
+                if attempts["create"] != 0:
+                    continue
+                action=click(.420,.870,frame)
+                attempts["create"]=1
+                pending="create"
+                last_action=time.monotonic()
+                log("CREATE requested="+action+"; config stable="+str(signature))
+                if action != "INPUT_SENT_UNVERIFIED":
+                    log("STOP: OS rejected creation input")
                     break
-        log("END stage="+stage+"; no creation was confirmed unless countdown appears")
+                # Now observe menu closing, rather than further clicking.
+                signatures.clear()
+                continue
+            verified_runs=0
+            # Always repair the earliest missing setting, regardless of
+            # which setting was previously clicked.
+            if not city:
+                key="city"
+                xy=(.400,.585)
+            elif not one:
+                key="one"
+                xy=(.382,.745)
+            else:
+                key="hard"
+                xy=(.710,.707)
+            if attempts[key] >= 3:
+                log("STOP: "+key+" not stable after 3 inputs; last="+str(signature))
+                break
+            attempts[key]+=1
+            action=click(xy[0],xy[1],frame)
+            last_action=time.monotonic()
+            pending=key
+            log("ACTION "+key+" attempt="+str(attempts[key])+
+                " result="+action+" before="+str(signature))
+            signatures.clear()
+            if action != "INPUT_SENT_UNVERIFIED":
+                log("STOP: OS refused mouse input")
+                break
+        log("END state="+state+" attempts="+str(attempts)+
+            " (created match only if game itself shows countdown)")
     except KeyboardInterrupt:
         log("STOP requested by user.")
     except Exception:
@@ -600,7 +592,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.2.0 - choose mode:")
+    print("ROBLOX V1.3.0 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
