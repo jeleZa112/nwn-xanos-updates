@@ -1,9 +1,9 @@
-# Roblox background monitor - release 0.8.0
+# Roblox background monitor - release 0.9.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "0.8.0"
+VERSION = "0.9.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -84,6 +84,223 @@ def try_background_key_test():
     time.sleep(.2)
     up = win.PostMessageW(hwnd, WM_KEYUP, VK_W, 0xC0110001)
     return "POSTED_NOT_PROVEN" if down and up else "POSTMESSAGE_FAILED"
+
+
+# ------------ Demonstration recording (opt-in, V0.9) ------------
+def training_mode():
+    """Record a human demonstration, not automatic playing or input injection."""
+    import csv
+    import zipfile
+    import datetime
+    import queue
+    import cv2
+    import numpy as np
+    from windows_capture import WindowsCapture, Frame, InternalCaptureControl
+
+    # Capture callback only queues the most recent frame; encoder runs separately.
+    # Bounding the queue avoids memory growth in long sessions.
+    when = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    target = Path.home() / "Documents" / "RobloxBGDiagnostics" / "TRAINING" / when
+    staging = target / "_staging"
+    staging.mkdir(parents=True, exist_ok=True)
+    log_file = target / "training.log"
+    session_csv = target / "events.csv"
+    options = {
+        "interval_sec": 5.0,
+        "max_width": 1280,
+        "jpeg_quality": 72,
+        "part_images": 100,
+        "session_limit_mb": 180,
+        "max_minutes": 240,
+        "event_cooldown": 6.0,
+    }
+    def line(message):
+        text = datetime.datetime.now().strftime("[%H:%M:%S] ") + str(message)
+        print(text, flush=True)
+        with log_file.open("a", encoding="utf-8") as fp:
+            fp.write(text + "\n")
+    line("TRAINING session " + when + " (no Roblox control or memory access)")
+    line("5-second baseline snapshots; extra on large visual change. JPEG -> ZIP.")
+    line("STOP: Ctrl+C in this window. Do not close with X until ZIP parts finish.")
+    line("Output: " + str(target))
+    with session_csv.open("w", newline="", encoding="utf-8") as fp:
+        csv.writer(fp).writerow(["elapsed_s", "filename", "reason", "visual_difference"])
+    (target / "READ_ME.txt").write_text(
+        "Human gameplay demonstration. Screenshots are sampled, not continuous video.\n"
+        "Visual change is NOT proof of purchase or turret placement.\n"
+        "Send the ZIP parts plus training.log to ChatGPT, preferably one part at a time.\n"
+        "Roblox must remain restored (not minimized), even behind Chrome.\n", encoding="utf-8")
+
+    incoming = queue.Queue(maxsize=1)
+    halt = threading.Event()
+    captured = 0
+    dropped = 0
+    saved = 0
+    zipped = 0
+    bytes_total = 0
+    start = time.monotonic()
+    last_baseline = -100.0
+    last_event = -100.0
+    prev_hud = None
+    staged_names = []
+    control_holder = []
+
+    def flush_part():
+        nonlocal zipped, bytes_total, staged_names
+        if not staged_names:
+            return
+        part_number = zipped + 1
+        final = target / ("TRAIN_%03d.zip" % part_number)
+        temporary = target / ("TRAIN_%03d.tmp" % part_number)
+        # Each ZIP is independently uploadable. Include per-frame metadata.
+        with zipfile.ZipFile(temporary, "w", compression=zipfile.ZIP_STORED) as archive:
+            for name in staged_names:
+                archive.write(staging / name, arcname="frames/" + name)
+            archive.write(session_csv, arcname="events.csv")
+            archive.write(target / "READ_ME.txt", arcname="READ_ME.txt")
+        with zipfile.ZipFile(temporary) as archive:
+            corrupt = archive.testzip()
+            if corrupt is not None:
+                raise RuntimeError("ZIP verification failed: " + str(corrupt))
+        temporary.replace(final)
+        bytes_total += final.stat().st_size
+        zipped += 1
+        for name in staged_names:
+            (staging / name).unlink(missing_ok=True)
+        staged_names = []
+        line("Part saved: " + final.name + " / %.1f MB total" % (bytes_total/1048576))
+
+    capture = WindowsCapture(
+        cursor_capture=None, draw_border=None, monitor_index=None, window_name="Roblox"
+    )
+
+    @capture.event
+    def on_frame_arrived(frame: Frame, capture_control: InternalCaptureControl):
+        nonlocal captured, dropped
+        if halt.is_set():
+            capture_control.stop()
+            return
+        captured += 1
+        # At most ~2 frames/s copied to RAM, no full-resolution queues.
+        if captured % 60 != 1:
+            return
+        try:
+            if incoming.full():
+                dropped += 1
+                return
+            incoming.put_nowait((time.monotonic(), frame.frame_buffer[:,:,:3].copy()))
+        except queue.Full:
+            dropped += 1
+
+    @capture.event
+    def on_closed():
+        halt.set()
+        line("Capture window closed.")
+
+    def encode_worker():
+        nonlocal saved, last_baseline, last_event, prev_hud
+        try:
+            while not halt.is_set() or not incoming.empty():
+                try:
+                    ts, frame = incoming.get(timeout=0.5)
+                except queue.Empty:
+                    continue
+                elapsed = ts - start
+                height, width = frame.shape[:2]
+                if width > options["max_width"]:
+                    scale = options["max_width"] / width
+                    frame = cv2.resize(frame, (options["max_width"], round(height*scale)))
+                h, w = frame.shape[:2]
+                # Compare primarily the top and bottom HUD bands.
+                top = cv2.resize(frame[:max(1,int(h*.22))], (120, 25))
+                bottom = cv2.resize(frame[int(h*.75):], (120, 25))
+                hud = np.concatenate([top, bottom], axis=0)
+                hud = cv2.cvtColor(hud, cv2.COLOR_BGR2GRAY)
+                score = float(cv2.absdiff(hud, prev_hud).mean()) if prev_hud is not None else 0.0
+                prev_hud = hud
+                baseline = elapsed - last_baseline >= options["interval_sec"]
+                event = score >= 16.0 and elapsed - last_event >= options["event_cooldown"]
+                if not (baseline or event):
+                    continue
+                reason = "interval" if baseline else "visual_change"
+                if baseline:
+                    last_baseline = elapsed
+                if event:
+                    last_event = elapsed
+                filename = "t_%07.1fs_%s.jpg" % (elapsed, reason)
+                ok, jpg = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY,options["jpeg_quality"]])
+                if not ok:
+                    raise RuntimeError("JPEG encoder returned failure")
+                (staging / filename).write_bytes(jpg.tobytes())
+                staged_names.append(filename)
+                saved += 1
+                with session_csv.open("a", newline="", encoding="utf-8") as fp:
+                    csv.writer(fp).writerow([round(elapsed, 1),filename,reason,round(score,2)])
+                if len(staged_names) >= options["part_images"]:
+                    flush_part()
+                if bytes_total + sum((staging / n).stat().st_size for n in staged_names) >= options["session_limit_mb"]*1048576:
+                    line("Storage limit reached. Stopping to preserve earlier ZIP parts.")
+                    halt.set()
+            flush_part()
+        except Exception as exc:
+            line("ENCODER ERROR: " + repr(exc))
+            halt.set()
+            # Raw staging files are left available for recovery.
+        finally:
+            line("Encoder finished.")
+
+    worker = threading.Thread(target=encode_worker, daemon=False)
+    worker.start()
+    try:
+        control = capture.start_free_threaded()
+        control_holder.append(control)
+        line("Capture active. Play yourself; stop with Ctrl+C after wave 100.")
+        while not halt.is_set():
+            if time.monotonic() - start > 60 * options["max_minutes"]:
+                line("Time limit reached; finishing archive.")
+                halt.set()
+                break
+            time.sleep(0.5)
+    except KeyboardInterrupt:
+        line("User requested stop; finalizing ZIP parts.")
+        halt.set()
+    except Exception:
+        line("CAPTURE ERROR: " + traceback.format_exc())
+        halt.set()
+    finally:
+        # Normally stops inside the capture callback. Do not hard-kill an active encoder.
+        if control_holder:
+            try:
+                control_holder[0].stop()
+            except Exception as exc:
+                line("Capture stop notice: " + str(exc))
+        halt.set()
+        worker.join(timeout=90)
+        if worker.is_alive():
+            line("WARNING: encoder still active; wait for ZIP finalization.")
+            worker.join()
+        line("END: received=%d dropped=%d jpg=%d zip_parts=%d" % (captured,dropped,saved,zipped))
+        line("Upload TRAIN_001.zip, TRAIN_002.zip etc. + training.log.")
+    return 0
+
+
+# Menu stays in the *same downloaded Python file*.
+# No new CMD files are necessary.
+def run_mode_prompt():
+    print("")
+    print("ROBLOX V0.9 - choose mode:")
+    print("  1 = monitor 120 seconds (no screenshots)")
+    print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
+    try:
+        choice = input("Choose 1 or 2 [1]: ").strip()
+    except EOFError:
+        choice = "1"
+    return choice
+
+if run_mode_prompt() == "2":
+    raise SystemExit(training_mode())
+
+# ------------ End demonstration recording ------------
 
 note(f"Roblox monitor {VERSION}, RAM-only analysis, {DURATION} sec")
 note("HUD detection is heuristic: no OCR; exact health/money/waves not yet available.")
