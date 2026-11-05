@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.1.1
+# Roblox background monitor - release 1.1.2
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.1.1"
+VERSION = "1.1.2"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -388,9 +388,27 @@ def lobby_helper():
         city = border_color(frame,(.347,.517,.496,.647),"yellow")
         normal = border_color(frame,(.666,.620,.757,.670),"green")
         hard = border_color(frame,(.666,.674,.757,.720),"red")
-        modal = (create>.08 and cancel>.08)
+        # The old color-only test mistook lobby scenery for the creation dialog.
+        # Four large WHITE digits (1/2/3/4) must exist at the four slot centers.
+        # A missing digit invalidates the whole dialog, even if color ROIs match.
+        digit_boxes = [(.369,.716,.396,.785),(.449,.716,.476,.785),
+                       (.529,.716,.556,.785),(.609,.716,.636,.785)]
+        white_digits=[]
+        for box in digit_boxes:
+            roi=patch(frame,*box)
+            if roi.size == 0:
+                white_digits.append(0.0)
+                continue
+            b,g,r=[roi[:,:,i].astype(np.int16) for i in range(3)]
+            white=((b>165)&(g>165)&(r>165)&
+                   ((np.maximum(np.maximum(b,g),r)-np.minimum(np.minimum(b,g),r))<80))
+            white_digits.append(float(white.mean()))
+        # No clicks unless all four player-count digits are visible.
+        count_digits=sum(1 for value in white_digits if value > .025)
+        modal = create>.08 and cancel>.08 and count_digits == 4
         return modal,dict(create=create,cancel=cancel,p1=players1,
-                p4=players4,city=city,normal=normal,hard=hard)
+                p4=players4,city=city,normal=normal,hard=hard,
+                digits=count_digits)
 
     def click(relx,rely,frame):
         if ui.IsIconic(hwnd) or ui.GetForegroundWindow()!=hwnd:
@@ -537,7 +555,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.1.1 - choose mode:")
+    print("ROBLOX V1.1.2 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
