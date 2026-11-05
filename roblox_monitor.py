@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.7.0
+# Roblox background monitor - release 1.7.1
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.7.0"
+VERSION = "1.7.1"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -598,7 +598,7 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    # V1.7.0: strict sequential steps. Retry ONLY the last unconfirmed step.
+    # V1.7.1: strict sequential steps. Retry ONLY the last unconfirmed step.
     # Never re-click an earlier option after moving on, to avoid toggling it off.
     controller = None
     step_names = ("city","one","hard","create")
@@ -620,6 +620,8 @@ def lobby_helper():
     nav_count = 0
     nav_baseline = None
     nav_last_scores = None
+    drift_events=0
+    freeze_until=0.0
     evidence_dir = folder / "LAST_CLICK"
     evidence_dir.mkdir(parents=True,exist_ok=True)
     evidence_pending = None
@@ -634,7 +636,7 @@ def lobby_helper():
             "one": player_selected(feat)==1,
             "hard": feat["hard"]>.15 and feat["normal"]<.15
         }
-    log("Lobby v1.7.0 start; armed="+str(enabled))
+    log("Lobby v1.7.1 start; armed="+str(enabled))
     log("Strict sequence CITY -> ONE -> HARD -> CREATE; retry only unconfirmed step")
     log("Before/after click evidence in "+str(evidence_dir)+"; JPEG overwritten per step.")
     try:
@@ -686,13 +688,36 @@ def lobby_helper():
                 continue
             if not enabled or ui.GetForegroundWindow()!=hwnd:
                 continue
-            # Previously confirmed settings must never be lost.
+            # Do not interpret transitional UI frames as permanent loss of
+            # earlier selections; finish checking pending click first.
+            if awaiting_confirmation and time.monotonic()-last_click<3.0:
+                continue
             earlier=step_names[:step_index]
-            if any(not flags[k] for k in earlier):
-                log("STOP: earlier selection changed after step: "+
-                    str({k:flags[k] for k in earlier})+
-                    ". Refusing to reset or click other buttons.")
-                break
+            missing=[k for k in earlier if not flags[k]]
+            if missing:
+                drift_events+=1
+                log("CONFIG_DRIFT: previous selection no longer confirmed; "+
+                    "missing="+str(missing)+" current="+str(flags)+
+                    " count="+str(drift_events))
+                if drift_events>2:
+                    log("STOP: too many configuration changes; no unsafe Create")
+                    break
+                # Re-check the earliest missing configuration step, and allow
+                # exactly one new click for that setting. Never click Create
+                # until all three settings are simultaneously verified.
+                step_index=step_names.index(missing[0])
+                retries[missing[0]]=0
+                awaiting_confirmation=False
+                nav_phase="off"
+                nav_count=0
+                nav_baseline=None
+                manual_prompted=False
+                previous_result=None
+                stable_count=0
+                freeze_until=time.monotonic()+1.25
+                continue
+            if time.monotonic()<freeze_until:
+                continue
             key=step_names[step_index]
             if key=="create":
                 if not all(flags.values()):
@@ -850,7 +875,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.7.0 - choose mode:")
+    print("ROBLOX V1.7.1 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
