@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.1.5
+# Roblox background monitor - release 1.2.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.1.5"
+VERSION = "1.2.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -445,17 +445,16 @@ def lobby_helper():
         p = POINT(int(width*relx),int(height*rely))
         if not ui.ClientToScreen(hwnd,ctypes.byref(p)):
             return "ERROR_CLIENT_TO_SCREEN"
-        old=POINT()
-        ui.GetCursorPos(ctypes.byref(old))
         if not ui.SetCursorPos(p.x,p.y):
             return "ERROR_SET_CURSOR"
-        time.sleep(.18)
+        # Roblox may sample cursor location on subsequent render frames.
+        # Do not immediately restore the pointer to its prior location.
+        time.sleep(.45)
         down=send_mouse_flag(0x0002)
-        time.sleep(.11)
+        time.sleep(.17)
         up=send_mouse_flag(0x0004)
-        time.sleep(.20)
-        ui.SetCursorPos(old.x,old.y)
-        log("INPUT_TRACE target=(%d,%d) frame=%dx%d client=%dx%d SendInput=%d/%d" %
+        time.sleep(.75)
+        log("INPUT_TRACE target=(%d,%d) frame=%dx%d client=%dx%d SendInput=%d/%d cursor_held=0.75s" %
             (p.x,p.y,frame_w,frame_h,width,height,down,up))
         return "INPUT_SENT_UNVERIFIED" if down==1 and up==1 else "INPUT_REJECTED"
 
@@ -531,8 +530,13 @@ def lobby_helper():
                     retries=0
                     log("City map selection VISIBLE. This does not prove the bot clicked.")
                 elif time.monotonic()-action_time>3.0:
-                    log("STOP: City not confirmed; cave=%.3f city=%.3f" % (features["cave"], features["city"]))
-                    break
+                    if retries < 2:
+                        retries+=1
+                        log("City not selected, retry "+str(retries))
+                        stage="SELECT_CITY"
+                    else:
+                        log("STOP: City not confirmed; cave=%.3f city=%.3f" % (features["cave"],features["city"]))
+                        break
             elif stage=="SELECT_ONE":
                 if features["p1"]>.15 and features["p4"]<.15:
                     stage="SELECT_HARD"
@@ -585,7 +589,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.1.5 - choose mode:")
+    print("ROBLOX V1.2.0 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
