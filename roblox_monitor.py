@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.3.0
+# Roblox background monitor - release 1.3.1
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.3.0"
+VERSION = "1.3.1"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -486,7 +486,7 @@ def lobby_helper():
     signatures = []
     verified_runs = 0
     pending = ""
-    log("Lobby v1.3.0 start; armed="+str(enabled))
+    log("Lobby v1.3.1 start; armed="+str(enabled))
     log("State-driven: city + one player + hard checked together after EACH click.")
     try:
         controller=capture.start_free_threaded()
@@ -526,7 +526,7 @@ def lobby_helper():
             if ui.GetForegroundWindow()!=hwnd:
                 continue
             # Allow enough time for the game to display any selection changes.
-            if time.monotonic()-last_action < 1.8:
+            if time.monotonic()-last_action < 2.5:
                 continue
             if attempts["create"]:
                 # Never click selectors again after sending Create.
@@ -564,8 +564,8 @@ def lobby_helper():
             else:
                 key="hard"
                 xy=(.710,.707)
-            if attempts[key] >= 3:
-                log("STOP: "+key+" not stable after 3 inputs; last="+str(signature))
+            if attempts[key] >= 1:
+                log("STOP: "+key+" not stable after ONE click; avoid repeated blind clicks. last="+str(signature))
                 break
             attempts[key]+=1
             action=click(xy[0],xy[1],frame)
@@ -596,7 +596,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.3.0 - choose mode:")
+    print("ROBLOX V1.3.1 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
