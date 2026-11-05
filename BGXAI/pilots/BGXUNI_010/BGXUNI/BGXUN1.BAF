@@ -1,4 +1,4 @@
-// BGXUN1 v0.1.6 — separate selectable party script for EET / SCS 35.21 / Insane.
+// BGXUN1 v0.1.7 — separate selectable party script for EET / SCS 35.21 / Insane.
 // New independent experimental pilot; never patches BDDEFAI, BGXGRP, BGXTANK.
 // Capability checks use current spells / weapon / thief stats, not NPC names or portrait slots.
 // REAL v0.1.3 pilot was installed and startup + FindTraps observed in EET. v0.1.4 was live-tested and FAILED to displace Imoen; v0.1.5 is unverified diagnostic.
@@ -40,6 +40,17 @@ THEN
   DisplayStringHead(Myself,~BGXUN1 V016 NO-IDLE READY~)
 END
 
+// 0.1.7: only move from nearby enemies that actually attack THIS sprite.
+// Range alone caused excessive retreat from the second hobgoblin while it fought a familiar.
+IF
+ ActionListEmpty()
+ Global("BGXU017","LOCALS",0)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXU017","LOCALS",1)
+  DisplayStringHead(Myself,~BGXUN1 V017 TARGET-AWARE~)
+END
+
 // CRITICAL: a wounded companion should continue to get away, not exhaust a 3-try
 // budget and stand in place. This may override a manual order ONLY in emergency.
 // The engine may be unable to path away; no guarantee of survival.
@@ -49,13 +60,14 @@ IF
  Global("bd_no_retreat","LOCALS",0)
  HPPercentLT(Myself,56)
  See(NearestEnemyOf(Myself))
- Range(NearestEnemyOf(Myself),8)
+ Range(NearestEnemyOf(Myself),6)
+ AttackedBy(NearestEnemyOf(Myself),DEFAULT)
  !GlobalTimerNotExpired("BGXUER16","LOCALS")
 THEN
  RESPONSE #100
   SetGlobalTimer("BGXUER16","LOCALS",6)
   DisplayStringHead(Myself,~BGXUN1 V016 CRITICAL ESCAPE~)
-  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),75)
+  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),35)
 END
 
 // Under fire: real incoming damage, moderately wounded, limited reissue.
@@ -74,12 +86,13 @@ THEN
   SetGlobalTimer("BGXUER16","LOCALS",6)
   SetGlobalTimer("BGXUKW16","LOCALS",7)
   DisplayStringHead(Myself,~BGXUN1 V016 HIT EVADE~)
-  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),60)
+  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),35)
 END
 
-// Archer first chooses distance on an idle action queue. One 45-tick step, at
+// Archer first chooses distance on an idle action queue. One 24-tick step, at
 // most once each eight seconds; re-arm automatically, no 3-step hard lockout.
-// No geometry-based retreat behind a designated tank yet.
+// No geometry-based retreat behind a designated tank yet; do not flee just because
+// a nearby enemy is engaged with a familiar or tank.
 IF
  ActionListEmpty()
  IsWeaponRanged(Myself)
@@ -92,13 +105,14 @@ IF
  Global("bd_no_retreat","LOCALS",0)
  !StateCheck(Myself,STATE_INVISIBLE)
  See(NearestEnemyOf(Myself))
- Range(NearestEnemyOf(Myself),8)
+ Range(NearestEnemyOf(Myself),6)
+ AttackedBy(NearestEnemyOf(Myself),DEFAULT)
  !GlobalTimerNotExpired("BGXUKW16","LOCALS")
 THEN
  RESPONSE #100
   SetGlobalTimer("BGXUKW16","LOCALS",8)
   DisplayStringHead(Myself,~BGXUN1 V016 KITE REQUEST~)
-  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),45)
+  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),24)
 END
 
 // No deadlock: if the close enemy still pursues while repositioning is cooling
