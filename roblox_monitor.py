@@ -418,6 +418,9 @@ def lobby_helper():
             if new_state != state:
                 state = new_state
                 write("STATE " + state + " features=" + str(tuple(round(x,3) for x in confidence)))
+            if next_action == "WAIT_FOR_COUNTDOWN" and not is_modal:
+                write("Creation dialog disappeared after Create. Verify countdown/game start.")
+                break
             if not armed or modal_frames < 3 or not is_modal:
                 continue
             if time.monotonic()-last_click_time < 2.0:
@@ -444,9 +447,6 @@ def lobby_helper():
                 last_click_time = time.monotonic()
                 if action.startswith("CLICK_SENT"):
                     next_action = "WAIT_FOR_COUNTDOWN"
-            elif next_action == "WAIT_FOR_COUNTDOWN" and not is_modal:
-                write("Menu closed; possible lobby creation. Verify countdown visually.")
-                break
         write("Stopped. Last state=" + state + ", next_action=" + next_action)
     except KeyboardInterrupt:
         write("User stopped lobby helper.")
