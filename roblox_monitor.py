@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.9.1
+# Roblox background monitor - release 1.9.2
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.9.1"
+VERSION = "1.9.2"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -313,7 +313,7 @@ def lobby_helper():
     folder = Path.home() / "Documents" / "RobloxBGDiagnostics" / "LOBBY"
     folder.mkdir(parents=True, exist_ok=True)
     logfile = folder / "lobby.log"
-    print("\nROBLOX LOBBY BOT V1.1")
+    print("\nROBLOX LOBBY BOT V1.9.2")
     print("Target: City Landscape / 1 player / Hard / Create")
     print("Bot will click only if the Roblox window is focused.")
     print("You must first walk onto the purple creation pad.")
@@ -646,9 +646,20 @@ def lobby_helper():
                     log("HID_NOT_FOUND: plug in flashed Arduino Leonardo/Micro "+
                         "or set ROBLOX_HID_PORT explicitly. Observe only.")
                     enabled=False
-    if backend=="HID" and not re.fullmatch(r"COM[1-9][0-9]{0,2}",hid_port):
+    if backend=="HID" and hid_port and not re.fullmatch(r"COM[1-9][0-9]{0,2}",hid_port):
         log("HID_INVALID_PORT: expected COM1..COM999; observe only")
         enabled=False
+    if backend=="HID" and not hid_port:
+        enabled=False
+    if mode=="2" and not enabled:
+        log("NO_INPUT: the USB HID controller is not ready. "+
+            "No clicks will be sent; stopping this run.")
+        print("")
+        print("HID HARDWARE REQUIRED: Arduino Leonardo or Micro (ATmega32U4).")
+        print("Flash ROBLOX_HID_LEONARDO.ino and connect the USB board.")
+        print("Install serial support once: py -m pip install pyserial")
+        print("Without the HID board, mode 3 cannot click in Roblox.")
+        return 2
 
     def usb_hid_mouse_click(relx,rely,frame):
         # USB serial commands go to a genuine HID board, not Windows SendInput.
@@ -762,7 +773,7 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    # V1.9.1: strict sequential steps. Retry ONLY the last unconfirmed step.
+    # V1.9.2: strict sequential steps. Retry ONLY the last unconfirmed step.
     # Never re-click an earlier option after moving on, to avoid toggling it off.
     controller = None
     step_names = ("city","one","hard","create")
@@ -800,7 +811,7 @@ def lobby_helper():
             "one": player_selected(feat)==1,
             "hard": feat["hard"]>.15 and feat["normal"]<.15
         }
-    log("Lobby v1.9.1 start; armed="+str(enabled))
+    log("Lobby v1.9.2 start; armed="+str(enabled))
     log("Strict sequence CITY -> ONE -> HARD -> CREATE; retry only unconfirmed step")
     log("Before/after click evidence in "+str(evidence_dir)+"; JPEG overwritten per step.")
     try:
@@ -993,7 +1004,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.9.1 - choose mode:")
+    print("ROBLOX V1.9.2 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
