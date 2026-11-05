@@ -305,7 +305,7 @@ def lobby_helper():
     print("1 = observe only (safe)")
     print("2 = allow clicks ONLY while Roblox is the focused window")
     selection = input("Mode [1]: ").strip()
-    armed = selection == "2" and input("Type YES to enable clicking: ").strip() == "YES"
+    armed = selection == "2" and input("Type YES to enable clicking: ").strip().upper() == "YES"
     if armed:
         print("You must manually enter the purple creation pad and focus Roblox.")
         print("Program clicks hard difficulty, then Create, only if menu matches.")
