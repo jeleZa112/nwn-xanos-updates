@@ -525,7 +525,7 @@ def lobby_helper():
                 elif do(.400,.585,"City map left tile"):
                     stage="VERIFY_CITY"
             elif stage=="VERIFY_CITY":
-                if features["city"]>.12:
+                if features["city"]>.15 and features["cave"]<.12:
                     stage="SELECT_ONE"
                     retries=0
                     log("City map selection VISIBLE. This does not prove the bot clicked.")
@@ -547,9 +547,14 @@ def lobby_helper():
                     stage="SELECT_HARD"
                     retries=0
                     log("1 player verified.")
-                elif time.monotonic()-action_time>2.5:
-                    log("STOP: 1 player could not be verified.")
-                    break
+                elif time.monotonic()-action_time>3.0:
+                    if retries < 2:
+                        retries += 1
+                        stage="SELECT_ONE"
+                        log("Retry 1-player selection, attempt="+str(retries+1))
+                    else:
+                        log("STOP: 1 player not verified after 3 clicks.")
+                        break
             elif stage=="SELECT_HARD":
                 if features["hard"]>.15 and features["normal"]<.15:
                     stage="CREATE"
@@ -558,10 +563,16 @@ def lobby_helper():
             elif stage=="VERIFY_HARD":
                 if features["hard"]>.15 and features["normal"]<.15:
                     stage="CREATE"
+                    retries=0
                     log("Hard verified.")
-                elif time.monotonic()-action_time>2.5:
-                    log("STOP: difficulty not verified. Features="+str({k:round(v,3) for k,v in features.items()}))
-                    break
+                elif time.monotonic()-action_time>3.0:
+                    if retries < 2:
+                        retries += 1
+                        stage="SELECT_HARD"
+                        log("Retry Hard selection, attempt="+str(retries+1))
+                    else:
+                        log("STOP: Hard not verified after 3 clicks. Features="+str(features))
+                        break
             elif stage=="CREATE":
                 if (features["city"]>.15 and features["cave"]<.12 and features["p1"]>.15
                     and features["hard"]>.15 and features["normal"]<.15
