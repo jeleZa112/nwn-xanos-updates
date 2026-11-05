@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.9.0
+# Roblox background monitor - release 1.9.1
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.9.0"
+VERSION = "1.9.1"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -625,10 +625,27 @@ def lobby_helper():
     if backend not in ("HID","SOFTWARE"):
         log("INPUT_BACKEND_INVALID: "+backend+"; observe only")
         enabled=False
-    if backend=="HID" and not hid_port:
-        log("HID_NOT_CONFIGURED: set ROBLOX_HID_PORT=COMx after flashing "+
-            "Leonardo. Safe observe-only mode.")
-        enabled=False
+    if backend=="HID":
+        try:
+            import serial
+            from serial.tools import list_ports
+        except ImportError:
+            log("HID_DEPENDENCY_MISSING: install once using py -m pip install pyserial")
+            enabled=False
+        else:
+            if not hid_port:
+                candidates=[entry.device for entry in list_ports.comports()
+                            if entry.vid in (0x2341,0x2A03,0x1B4F)]
+                if len(candidates)==1:
+                    hid_port=candidates[0].upper()
+                    log("HID_AUTO_PORT "+hid_port+"; firmware identity still verified")
+                elif len(candidates)>1:
+                    log("HID_AMBIGUOUS: set ROBLOX_HID_PORT to one COM port")
+                    enabled=False
+                else:
+                    log("HID_NOT_FOUND: plug in flashed Arduino Leonardo/Micro "+
+                        "or set ROBLOX_HID_PORT explicitly. Observe only.")
+                    enabled=False
     if backend=="HID" and not re.fullmatch(r"COM[1-9][0-9]{0,2}",hid_port):
         log("HID_INVALID_PORT: expected COM1..COM999; observe only")
         enabled=False
@@ -745,7 +762,7 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    # V1.9.0: strict sequential steps. Retry ONLY the last unconfirmed step.
+    # V1.9.1: strict sequential steps. Retry ONLY the last unconfirmed step.
     # Never re-click an earlier option after moving on, to avoid toggling it off.
     controller = None
     step_names = ("city","one","hard","create")
@@ -783,7 +800,7 @@ def lobby_helper():
             "one": player_selected(feat)==1,
             "hard": feat["hard"]>.15 and feat["normal"]<.15
         }
-    log("Lobby v1.9.0 start; armed="+str(enabled))
+    log("Lobby v1.9.1 start; armed="+str(enabled))
     log("Strict sequence CITY -> ONE -> HARD -> CREATE; retry only unconfirmed step")
     log("Before/after click evidence in "+str(evidence_dir)+"; JPEG overwritten per step.")
     try:
@@ -976,7 +993,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.9.0 - choose mode:")
+    print("ROBLOX V1.9.1 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
