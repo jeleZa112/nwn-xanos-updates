@@ -29,6 +29,14 @@ class PointerTouchInfo(C.Structure):
                 ("rcContact", Rect), ("rcContactRaw", Rect),
                 ("orientation", C.c_uint32), ("pressure", C.c_uint32)]
 
+class PointerTypeUnion(C.Union):
+    _fields_ = [("pointerInfo", PointerInfo),
+                ("touchInfo", PointerTouchInfo)]
+
+class PointerTypeInfo(C.Structure):
+    _fields_ = [("type", C.c_uint32),
+                ("info", PointerTypeUnion)]
+
 def test_struct_layout():
     assert C.sizeof(C.c_void_p) == 8, "Run layout test on 64-bit Python"
     assert C.sizeof(Point) == 8
@@ -38,7 +46,17 @@ def test_struct_layout():
     assert PointerInfo.ptPixelLocation.offset == 32
     assert PointerInfo.PerformanceCount.offset == 80
     assert PointerTouchInfo.touchMask.offset == 100
+    assert C.sizeof(PointerTypeUnion) == 144
+    assert C.sizeof(PointerTypeInfo) == 152
+    assert PointerTypeInfo.info.offset == 8
+    t = PointerTypeInfo()
+    t.type = 2  # PT_TOUCH
+    t.info.touchInfo.pointerInfo.pointerFlags = 0x10006
+    t.info.touchInfo.pressure = 512
+    assert t.info.touchInfo.pointerInfo.pointerFlags == 0x10006
+    assert t.info.touchInfo.pressure == 512
+
 
 if __name__ == "__main__":
     test_struct_layout()
-    print("Win32 touch ctypes ABI layout OK (64-bit)")
+    print("Win32 Touch + Synthetic Pointer ctypes ABI OK (64-bit)")
