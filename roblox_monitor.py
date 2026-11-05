@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.5.1
+# Roblox background monitor - release 1.5.2
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.5.1"
+VERSION = "1.5.2"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -527,7 +527,7 @@ def lobby_helper():
             return "ERROR_SENDINPUT_MOVE_BEFORE_PRESS"
         time.sleep(.09)
         down=send_mouse_flag(0x0002)
-        time.sleep(.14)
+        time.sleep(.28)
         up=send_mouse_flag(0x0004)
         time.sleep(.55)
         after=POINT()
@@ -555,7 +555,7 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    # V1.5.1: strict sequential steps. Retry ONLY the last unconfirmed step.
+    # V1.5.2: strict sequential steps. Retry ONLY the last unconfirmed step.
     # Never re-click an earlier option after moving on, to avoid toggling it off.
     controller = None
     step_names = ("city","one","hard","create")
@@ -585,7 +585,7 @@ def lobby_helper():
             "one": player_selected(feat)==1,
             "hard": feat["hard"]>.15 and feat["normal"]<.15
         }
-    log("Lobby v1.5.1 start; armed="+str(enabled))
+    log("Lobby v1.5.2 start; armed="+str(enabled))
     log("Strict sequence CITY -> ONE -> HARD -> CREATE; retry only unconfirmed step")
     log("Before/after click evidence in "+str(evidence_dir)+"; JPEG overwritten per step.")
     try:
@@ -702,12 +702,21 @@ def lobby_helper():
             reduced=cv2.resize(frame,(960,round(frame.shape[0]*960/frame.shape[1])))
             cv2.imwrite(str(evidence_dir / ("before_"+key+".jpg")),reduced,
                         [cv2.IMWRITE_JPEG_QUALITY,70])
-            method="SENDINPUT" if retries[key]==1 else "WINDOW_MESSAGE"
-            log("INPUT_METHOD step="+key+" attempt="+str(retries[key])+" method="+method)
-            if method=="SENDINPUT":
-                result=click(*step_points[key],frame)
+            # The previous 1-player center overlaps the visible digit label.
+            # Try blank areas INSIDE the actual card rather than repeatedly
+            # pressing the text overlay. Confirm using green outline each time.
+            if key=="one":
+                target=(.367,.703) if retries[key]==1 else (.401,.765)
+                method="CARD_UPPER_LEFT" if retries[key]==1 else "CARD_LOWER_RIGHT"
+            elif key=="hard":
+                target=(.713,.686) if retries[key]==1 else (.742,.706)
+                method="HARD_INTERIOR"
             else:
-                result=click_window_message(*step_points[key],frame)
+                target=step_points[key]
+                method="CARD_INTERIOR"
+            log("INPUT_METHOD step="+key+" attempt="+str(retries[key])+
+                " method="+method+" frame_target="+str(target))
+            result=click(*target,frame)
             last_click=time.monotonic()
             awaiting_confirmation=(result=="INPUT_SENT_UNVERIFIED")
             if awaiting_confirmation:
@@ -739,7 +748,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.5.1 - choose mode:")
+    print("ROBLOX V1.5.2 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
