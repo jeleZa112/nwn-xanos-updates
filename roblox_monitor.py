@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.1.3
+# Roblox background monitor - release 1.1.4
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.1.3"
+VERSION = "1.1.4"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -411,25 +411,52 @@ def lobby_helper():
                 p4=players4,city=city,normal=normal,hard=hard,
                 hard_red=hard_red,digits=count_digits)
 
+    # SendInput is the supported Windows synthetic input API. It still may
+    # be ignored by Roblox; success means OS accepted the event, not the game.
+    class MOUSEINPUT(ctypes.Structure):
+        _fields_ = [("dx", ctypes.c_long), ("dy", ctypes.c_long),
+                    ("mouseData", ctypes.c_ulong), ("dwFlags", ctypes.c_ulong),
+                    ("time", ctypes.c_ulong), ("dwExtraInfo", ctypes.c_void_p)]
+    class INPUTUNION(ctypes.Union):
+        _fields_ = [("mi", MOUSEINPUT)]
+    class INPUT(ctypes.Structure):
+        _anonymous_ = ("data",)
+        _fields_ = [("type", ctypes.c_ulong), ("data", INPUTUNION)]
+
+    def send_mouse_flag(flag):
+        event=INPUT()
+        event.type=0
+        event.mi=MOUSEINPUT(0,0,0,flag,0,None)
+        return int(ui.SendInput(1,ctypes.byref(event),ctypes.sizeof(INPUT)))
+
     def click(relx,rely,frame):
         if ui.IsIconic(hwnd) or ui.GetForegroundWindow()!=hwnd:
             return "SKIP_NOT_FOREGROUND"
         rect = RECT()
         if not ui.GetClientRect(hwnd,ctypes.byref(rect)):
             return "ERROR_CLIENT_RECT"
-        p = POINT(int((rect.right-rect.left)*relx),
-                  int((rect.bottom-rect.top)*rely))
+        width = rect.right-rect.left
+        height=rect.bottom-rect.top
+        frame_h,frame_w=frame.shape[:2]
+        if abs(width/frame_w-1)>0.08 or abs(height/frame_h-1)>0.08:
+            log("WARN client_size=%dx%d capture_frame=%dx%d" %
+                (width,height,frame_w,frame_h))
+        p = POINT(int(width*relx),int(height*rely))
         if not ui.ClientToScreen(hwnd,ctypes.byref(p)):
             return "ERROR_CLIENT_TO_SCREEN"
         old=POINT()
         ui.GetCursorPos(ctypes.byref(old))
-        ui.SetCursorPos(p.x,p.y)
-        time.sleep(.10)
-        ui.mouse_event(0x0002,0,0,0,0)
-        time.sleep(.065)
-        ui.mouse_event(0x0004,0,0,0,0)
+        if not ui.SetCursorPos(p.x,p.y):
+            return "ERROR_SET_CURSOR"
+        time.sleep(.18)
+        down=send_mouse_flag(0x0002)
+        time.sleep(.11)
+        up=send_mouse_flag(0x0004)
+        time.sleep(.20)
         ui.SetCursorPos(old.x,old.y)
-        return "CLICK_SENT"
+        log("INPUT_TRACE target=(%d,%d) frame=%dx%d client=%dx%d SendInput=%d/%d" %
+            (p.x,p.y,frame_w,frame_h,width,height,down,up))
+        return "INPUT_SENT_UNVERIFIED" if down==1 and up==1 else "INPUT_REJECTED"
 
     capture = WindowsCapture(cursor_capture=None,draw_border=None,
                              monitor_index=None,window_name="Roblox")
@@ -491,7 +518,7 @@ def lobby_helper():
                 answer=click(x,y,frame)
                 log(label+": "+answer+"; this is NOT confirmation Roblox accepted input; frame_before="+str({k:round(v,2) for k,v in features.items()}))
                 action_time=time.monotonic()
-                return answer=="CLICK_SENT"
+                return answer=="INPUT_SENT_UNVERIFIED"
             if stage=="SELECT_CITY":
                 if features["city"]>.12:
                     stage="SELECT_ONE"
@@ -502,7 +529,7 @@ def lobby_helper():
                     stage="SELECT_ONE"
                     retries=0
                     log("City map selection VISIBLE. This does not prove the bot clicked.")
-                elif time.monotonic()-action_time>2.5:
+                elif time.monotonic()-action_time>3.0:
                     log("STOP: City map not visibly selected after click; no further input.")
                     break
             elif stage=="SELECT_ONE":
@@ -539,7 +566,7 @@ def lobby_helper():
                 else:
                     log("STOP: selectors lost validation; refusing Create.")
                     break
-        log("END stage="+stage)
+        log("END stage="+stage+"; no creation was confirmed unless countdown appears")
     except KeyboardInterrupt:
         log("STOP requested by user.")
     except Exception:
@@ -557,7 +584,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.1.3 - choose mode:")
+    print("ROBLOX V1.1.4 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
