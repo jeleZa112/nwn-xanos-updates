@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.1.2
+# Roblox background monitor - release 1.1.3
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.1.2"
+VERSION = "1.1.3"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -379,7 +379,7 @@ def lobby_helper():
 
     def scan(frame):
         # Selected city map has a YELLOW outline, 1-player has GREEN,
-        # and Hard has RED. These are observed on the user's screenshot.
+        # and selected difficulty has GREEN outline, unlike unselected Hard.
         # This is not proof of GUI state without real post-click changes.
         create = border_color(frame,(.359,.833,.481,.914),"green")
         cancel = border_color(frame,(.519,.833,.642,.914),"red")
@@ -387,7 +387,8 @@ def lobby_helper():
         players4 = border_color(frame,(.583,.672,.655,.805),"green")
         city = border_color(frame,(.347,.517,.496,.647),"yellow")
         normal = border_color(frame,(.666,.620,.757,.670),"green")
-        hard = border_color(frame,(.666,.674,.757,.720),"red")
+        hard = border_color(frame,(.666,.674,.757,.720),"green")
+        hard_red = border_color(frame,(.666,.674,.757,.720),"red")
         # The old color-only test mistook lobby scenery for the creation dialog.
         # Four large WHITE digits (1/2/3/4) must exist at the four slot centers.
         # A missing digit invalidates the whole dialog, even if color ROIs match.
@@ -408,7 +409,7 @@ def lobby_helper():
         modal = create>.08 and cancel>.08 and count_digits == 4
         return modal,dict(create=create,cancel=cancel,p1=players1,
                 p4=players4,city=city,normal=normal,hard=hard,
-                digits=count_digits)
+                hard_red=hard_red,digits=count_digits)
 
     def click(relx,rely,frame):
         if ui.IsIconic(hwnd) or ui.GetForegroundWindow()!=hwnd:
@@ -518,20 +519,21 @@ def lobby_helper():
                     log("STOP: 1 player could not be verified.")
                     break
             elif stage=="SELECT_HARD":
-                if features["hard"]>.15:
+                if features["hard"]>.15 and features["normal"]<.15:
                     stage="CREATE"
                 elif do(.710,.707,"Hard difficulty"):
                     stage="VERIFY_HARD"
             elif stage=="VERIFY_HARD":
-                if features["hard"]>.15:
+                if features["hard"]>.15 and features["normal"]<.15:
                     stage="CREATE"
                     log("Hard verified.")
                 elif time.monotonic()-action_time>2.5:
-                    log("STOP: difficulty could not be verified.")
+                    log("STOP: difficulty not verified. Features="+str({k:round(v,3) for k,v in features.items()}))
                     break
             elif stage=="CREATE":
                 if (features["city"]>.12 and features["p1"]>.15
-                    and features["hard"]>.15 and features["p4"]<.15):
+                    and features["hard"]>.15 and features["normal"]<.15
+                    and features["p4"]<.15):
                     if do(.420,.870,"Create lobby"):
                         stage="AFTER_CREATE"
                 else:
@@ -555,7 +557,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.1.2 - choose mode:")
+    print("ROBLOX V1.1.3 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
