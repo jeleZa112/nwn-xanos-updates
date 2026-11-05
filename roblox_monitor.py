@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.4.0
+# Roblox background monitor - release 1.4.1
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.4.0"
+VERSION = "1.4.1"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -431,31 +431,55 @@ def lobby_helper():
         return int(ui.SendInput(1,ctypes.byref(event),ctypes.sizeof(INPUT)))
 
     def click(relx,rely,frame):
+        # Coordinates in recognizer are normalized to the whole WGC frame.
+        # On this PC the captured frame is 1920x1030 while the client
+        # area is 1920x1001 (the extra 29 pixels are the title bar).
         if ui.IsIconic(hwnd) or ui.GetForegroundWindow()!=hwnd:
             return "SKIP_NOT_FOREGROUND"
-        rect = RECT()
+        rect=RECT()
         if not ui.GetClientRect(hwnd,ctypes.byref(rect)):
             return "ERROR_CLIENT_RECT"
-        width = rect.right-rect.left
+        width=rect.right-rect.left
         height=rect.bottom-rect.top
         frame_h,frame_w=frame.shape[:2]
-        if abs(width/frame_w-1)>0.08 or abs(height/frame_h-1)>0.08:
-            log("WARN client_size=%dx%d capture_frame=%dx%d" %
-                (width,height,frame_w,frame_h))
-        p = POINT(int(width*relx),int(height*rely))
+        offset_y=frame_h-height
+        offset_x=frame_w-width
+        if offset_y<0 or offset_y>90 or offset_x<0 or offset_x>50:
+            log("STOP_INPUT_GEOMETRY frame=%dx%d client=%dx%d delta=%dx%d" %
+                (frame_w,frame_h,width,height,offset_x,offset_y))
+            return "ERROR_GEOMETRY"
+        # Translate a WGC frame point into the client area.
+        client_x=int(relx*frame_w-offset_x/2)
+        client_y=int(rely*frame_h-offset_y)
+        if not (0<=client_x<width and 0<=client_y<height):
+            return "ERROR_TARGET_OUTSIDE_CLIENT"
+        p=POINT(client_x,client_y)
         if not ui.ClientToScreen(hwnd,ctypes.byref(p)):
             return "ERROR_CLIENT_TO_SCREEN"
+        before=POINT()
+        ui.GetCursorPos(ctypes.byref(before))
         if not ui.SetCursorPos(p.x,p.y):
             return "ERROR_SET_CURSOR"
-        # Roblox may sample cursor location on subsequent render frames.
-        # Do not immediately restore the pointer to its prior location.
-        time.sleep(.45)
+        time.sleep(.27)
+        actual=POINT()
+        ui.GetCursorPos(ctypes.byref(actual))
+        drift=abs(actual.x-p.x)+abs(actual.y-p.y)
+        log("CURSOR_TRACE before=(%d,%d) target=(%d,%d) actual=(%d,%d) drift=%d frame=%dx%d client=%dx%d" %
+            (before.x,before.y,p.x,p.y,actual.x,actual.y,drift,
+             frame_w,frame_h,width,height))
+        if drift>7:
+            log("STOP_INPUT_CURSOR_MOVED: Roblox or other software changed cursor position")
+            return "ERROR_CURSOR_DRIFT"
+        if ui.GetForegroundWindow()!=hwnd:
+            return "ERROR_FOCUS_LOST"
         down=send_mouse_flag(0x0002)
-        time.sleep(.17)
+        time.sleep(.14)
         up=send_mouse_flag(0x0004)
-        time.sleep(.75)
-        log("INPUT_TRACE target=(%d,%d) frame=%dx%d client=%dx%d SendInput=%d/%d cursor_held=0.75s" %
-            (p.x,p.y,frame_w,frame_h,width,height,down,up))
+        time.sleep(.42)
+        after=POINT()
+        ui.GetCursorPos(ctypes.byref(after))
+        log("INPUT_TRACE target=(%d,%d) after=(%d,%d) SendInput=%d/%d" %
+            (p.x,p.y,after.x,after.y,down,up))
         return "INPUT_SENT_UNVERIFIED" if down==1 and up==1 else "INPUT_REJECTED"
 
     capture = WindowsCapture(cursor_capture=None,draw_border=None,
@@ -477,7 +501,7 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    # V1.4.0: strict sequential steps. Retry ONLY the last unconfirmed step.
+    # V1.4.1: strict sequential steps. Retry ONLY the last unconfirmed step.
     # Never re-click an earlier option after moving on, to avoid toggling it off.
     controller = None
     step_names = ("city","one","hard","create")
@@ -499,7 +523,7 @@ def lobby_helper():
             "one": feat["p1"]>.15 and feat["p4"]<.15,
             "hard": feat["hard"]>.15 and feat["normal"]<.15
         }
-    log("Lobby v1.4.0 start; armed="+str(enabled))
+    log("Lobby v1.4.1 start; armed="+str(enabled))
     log("Strict sequence CITY -> ONE -> HARD -> CREATE; retry only unconfirmed step")
     try:
         controller=capture.start_free_threaded()
@@ -619,7 +643,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.4.0 - choose mode:")
+    print("ROBLOX V1.4.1 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
