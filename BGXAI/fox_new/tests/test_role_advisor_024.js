@@ -1,6 +1,6 @@
 'use strict';
 // Run: node test_role_advisor_024.js (offline, never communicates with game)
-const {recommend}=require('./role_advisor_024');
+const {recommend}=require('../src/role_advisor_024');
 const assert=require('node:assert/strict');
 const actor={id:'cleric',alive:true,isCasting:false,commandOrigin:'AI',manualLocked:false,hp:45,maxHp:100,songStatus:'INACTIVE',isBard:false};
 const ab=(kind,id,target='cleric')=>({kind,id,available:true,canUse:true,resourceConfirmed:true,cooldownReady:true,inRange:true,legal:true,verifiedTargets:[target],healAmount:20,healAmountVerified:true,effectStatus:'INACTIVE'});
