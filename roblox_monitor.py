@@ -1,9 +1,9 @@
-# Roblox background monitor - release 2.1.1
+# Roblox background monitor - release 2.1.2
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "2.1.1"
+VERSION = "2.1.2"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -313,7 +313,7 @@ def lobby_helper():
     folder = Path.home() / "Documents" / "RobloxBGDiagnostics" / "LOBBY"
     folder.mkdir(parents=True, exist_ok=True)
     logfile = folder / "lobby.log"
-    print("\nROBLOX LOBBY BOT V2.1.1")
+    print("\nROBLOX LOBBY BOT V2.1.2")
     print("Target: City Landscape / 1 player / Hard / Create")
     print("Bot will click only if the Roblox window is focused.")
     print("You must first walk onto the purple creation pad.")
@@ -992,7 +992,7 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    # V2.1.1: strict sequential steps. Retry ONLY the last unconfirmed step.
+    # V2.1.2: strict sequential steps. Retry ONLY the last unconfirmed step.
     # Never re-click an earlier option after moving on, to avoid toggling it off.
     controller = None
     step_names = ("city","one","hard","create")
@@ -1009,6 +1009,8 @@ def lobby_helper():
     completed = False
     max_attempts = 1 if backend in ("HID","TOUCH","SYNTHETIC") else 2
     manual_prompted = False
+    last_gate_note = 0.0
+    ready_override_logged = False
     nav_phase = "off"
     nav_step_at = 0.0
     nav_count = 0
@@ -1033,7 +1035,7 @@ def lobby_helper():
             # a hovered-but-unselected Hard tile for the chosen difficulty.
             "hard": feat["hard_red"]>.18 and feat["normal"]<.12
         }
-    log("Lobby v2.1.1 start; armed="+str(enabled))
+    log("Lobby v2.1.2 start; armed="+str(enabled))
     log("Strict sequence CITY -> ONE -> HARD(RED BORDER) -> CREATE")
     log("HARD_CHECK requires red hard border + normal green not selected")
     log("Before/after click evidence in "+str(evidence_dir)+"; JPEG overwritten per step.")
@@ -1078,6 +1080,19 @@ def lobby_helper():
                 previous_result=flags.copy()
             if stable_count<3:
                 continue
+            # A verified screen state is authoritative. The earlier sequential
+            # bookkeeping can lag after rapid real input / transient UI frames.
+            # Never bypass selection verification or send Create twice.
+            if all(flags.values()) and retries["create"]==0 and step_index<3:
+                if awaiting_confirmation and time.monotonic()-last_click<1.2:
+                    continue
+                log("ALL_SETTINGS_VERIFIED: CITY/ONE/HARD simultaneously selected; "+
+                    "advance to CREATE from step="+step_names[step_index]+
+                    " flags="+str(flags))
+                step_index=3
+                awaiting_confirmation=False
+                previous_result=None
+                ready_override_logged=True
             if step_index>=3 and awaiting_confirmation:
                 # We have sent Create. Do not click anything else.
                 if time.monotonic()-last_click>7:
@@ -1085,6 +1100,11 @@ def lobby_helper():
                     break
                 continue
             if not enabled or ui.GetForegroundWindow()!=hwnd:
+                if all(flags.values()) and time.monotonic()-last_gate_note>5:
+                    log("CREATE_BLOCKED_INPUT_GATE enabled="+str(enabled)+
+                        " foreground="+str(ui.GetForegroundWindow()==hwnd)+
+                        " step="+step_names[step_index])
+                    last_gate_note=time.monotonic()
                 continue
             # Do not interpret transitional UI frames as permanent loss of
             # earlier selections; finish checking pending click first.
@@ -1123,17 +1143,25 @@ def lobby_helper():
                     break
                 if time.monotonic()-last_click<1.5:
                     continue
+                # Button centre from observed lobby GUI: x=0.420, y=0.872
+                # in the full WGC window (not desktop taskbar coordinates).
+                # One deliberate attempt only; never press twice blindly.
+                target=(.420,.872)
+                log("CREATE_READY flags="+str(flags)+" backend="+backend+
+                    " target="+str(target)+
+                    " frame="+str(frame.shape[1])+"x"+str(frame.shape[0])+
+                    " foreground="+str(ui.GetForegroundWindow()==hwnd))
                 reduced=cv2.resize(frame,(960,round(frame.shape[0]*960/frame.shape[1])))
                 cv2.imwrite(str(evidence_dir / "before_create.jpg"),reduced,
                             [cv2.IMWRITE_JPEG_QUALITY,70])
                 if backend=="SYNTHETIC":
-                    result=click_synthetic(*step_points[key],frame)
+                    result=click_synthetic(*target,frame)
                 elif backend=="TOUCH":
-                    result=click_touch(*step_points[key],frame)
+                    result=click_touch(*target,frame)
                 elif backend=="HID":
-                    result=usb_hid_mouse_click(*step_points[key],frame)
+                    result=usb_hid_mouse_click(*target,frame)
                 else:
-                    result=click(*step_points[key],frame)
+                    result=click(*target,frame)
                 if result=="INPUT_SENT_UNVERIFIED":
                     evidence_pending="create"
                 retries[key]+=1
@@ -1243,7 +1271,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V2.1.1 - choose mode:")
+    print("ROBLOX V2.1.2 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
@@ -1269,7 +1297,7 @@ try:
     from windows_capture import WindowsCapture, Frame, InternalCaptureControl
 except Exception as exc:
     note("DEPENDENCY ERROR: " + str(exc))
-    note("Run: py -3 -m pip install --user windows-capture==2.1.1 numpy opencv-python")
+    note("Run: py -3 -m pip install --user windows-capture==2.1.2 numpy opencv-python")
     sys.exit(2)
 
 stats = {"received": 0, "analyzed": 0, "changes": 0, "last": 0.0, "errors": 0, "left": 0.0, "center": 0.0, "right": 0.0, "possible_match": 0, "hud_mode": "UNCONFIRMED", "hud_strength": 0.0}
