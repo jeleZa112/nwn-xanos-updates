@@ -1,9 +1,9 @@
-# Roblox background monitor - release 0.5.2
+# Roblox background monitor - release 0.6.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "0.5.2"
+VERSION = "0.6.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -30,14 +30,14 @@ except Exception as exc:
     note("Run: py -3 -m pip install --user windows-capture==2.0.1 numpy opencv-python")
     sys.exit(2)
 
-stats = {"received": 0, "analyzed": 0, "changes": 0, "last": 0.0, "errors": 0}
+stats = {"received": 0, "analyzed": 0, "changes": 0, "last": 0.0, "errors": 0, "left": 0.0, "center": 0.0, "right": 0.0}
 lock = threading.Lock()
 start = time.monotonic()
 previous = None
 last_sample = 0.0
 stopping = threading.Event()
 with CSV.open("w", encoding="utf-8") as f:
-    f.write("elapsed_sec,frames,motion_score,changed\n")
+    f.write("elapsed_sec,frames,motion_score,changed,left_motion,center_motion,right_motion\n")
 
 capture = WindowsCapture(cursor_capture=None, draw_border=None,
                          monitor_index=None, window_name="Roblox")
@@ -62,15 +62,24 @@ def on_frame_arrived(frame: Frame, control: InternalCaptureControl):
         if previous is not None and previous.shape == current.shape:
             motion = float(np.abs(current.astype(np.int16) -
                                   previous.astype(np.int16)).mean())
+        region_motion = [0.0, 0.0, 0.0]
+        if previous is not None and previous.shape == current.shape:
+            difference = np.abs(current.astype(np.int16) - previous.astype(np.int16))
+            width = current.shape[1]
+            boundaries = [0, width // 3, 2 * width // 3, width]
+            for index in range(3):
+                piece = difference[:, boundaries[index]:boundaries[index+1], :]
+                region_motion[index] = float(piece.mean()) if piece.size else 0.0
         previous = current
         changed = int(motion > 1.5)
         with lock:
             stats["analyzed"] += 1
             stats["changes"] += changed
             stats["last"] = motion
+            stats["left"], stats["center"], stats["right"] = region_motion
             count = stats["received"]
         with CSV.open("a", encoding="utf-8") as f:
-            f.write(f"{now-start:.1f},{count},{motion:.3f},{changed}\n")
+            f.write(f"{now-start:.1f},{count},{motion:.3f},{changed},{region_motion[0]:.3f},{region_motion[1]:.3f},{region_motion[2]:.3f}\n")
     except Exception as exc:
         with lock:
             stats["errors"] += 1
@@ -107,8 +116,11 @@ finally:
               f"Frames received: {stats['received']}\n"
               f"Frames analyzed: {stats['analyzed']}\n"
               f"Scene changes: {stats['changes']}\n"
+              f"Last motion by regions: {stats['left']:.2f}/{stats['center']:.2f}/{stats['right']:.2f}\n"
               f"Errors: {stats['errors']}\n"
               f"Screenshots saved: 0\n")
+    if stats["received"] == 0:
+        report += "WARNING: zero frames received. Keep Roblox restored.\n"
     SUMMARY.write_text(report, encoding="utf-8")
     note(report.replace("\n", " | "))
     note("Results folder: " + str(ROOT))
