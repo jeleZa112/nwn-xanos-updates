@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.8.0
+# Roblox background monitor - release 1.9.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.8.0"
+VERSION = "1.9.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -616,6 +616,116 @@ def lobby_helper():
             (p.x,p.y,after.x,after.y,down,up))
         return "INPUT_SENT_UNVERIFIED" if down==1 and up==1 else "INPUT_REJECTED"
 
+
+    # V1.9: Arduino Leonardo / Micro with USB HID and serial COM control.
+    # Only an explicitly configured COM device can receive mouse commands.
+    import re
+    hid_port=os.environ.get("ROBLOX_HID_PORT","").strip().upper()
+    backend=os.environ.get("ROBLOX_INPUT_BACKEND","HID").strip().upper()
+    if backend not in ("HID","SOFTWARE"):
+        log("INPUT_BACKEND_INVALID: "+backend+"; observe only")
+        enabled=False
+    if backend=="HID" and not hid_port:
+        log("HID_NOT_CONFIGURED: set ROBLOX_HID_PORT=COMx after flashing "+
+            "Leonardo. Safe observe-only mode.")
+        enabled=False
+    if backend=="HID" and not re.fullmatch(r"COM[1-9][0-9]{0,2}",hid_port):
+        log("HID_INVALID_PORT: expected COM1..COM999; observe only")
+        enabled=False
+
+    def usb_hid_mouse_click(relx,rely,frame):
+        # USB serial commands go to a genuine HID board, not Windows SendInput.
+        if ui.IsIconic(hwnd) or ui.GetForegroundWindow()!=hwnd:
+            return "SKIP_NOT_FOREGROUND"
+        rect=RECT()
+        if not ui.GetClientRect(hwnd,ctypes.byref(rect)):
+            return "ERROR_CLIENT_RECT"
+        fw,fh=frame.shape[1],frame.shape[0]
+        cw,ch=rect.right-rect.left,rect.bottom-rect.top
+        dx_frame,dy_frame=fw-cw,fh-ch
+        if not (0<=dx_frame<=50 and 0<=dy_frame<=90):
+            return "ERROR_HID_GEOMETRY"
+        cx=int(relx*fw-dx_frame/2)
+        cy=int(rely*fh-dy_frame)
+        if not (0<=cx<cw and 0<=cy<ch):
+            return "ERROR_HID_POINT"
+        target=POINT(cx,cy)
+        if not ui.ClientToScreen(hwnd,ctypes.byref(target)):
+            return "ERROR_HID_CLIENT_TO_SCREEN"
+        link=None
+        try:
+            import serial
+            # Native-USB boards can reboot when the COM port opens.
+            # Handshake prevents accidentally using a different serial device.
+            link=serial.Serial(port=hid_port,baudrate=115200,
+                               timeout=.65,write_timeout=.65)
+            def command(word,expected):
+                link.reset_input_buffer()
+                link.write((word+"\n").encode("ascii"))
+                link.flush()
+                answer=link.readline().decode("ascii","replace").strip()
+                if answer!=expected:
+                    raise RuntimeError("HID command "+word.split()[0]+
+                                       " response="+repr(answer))
+            found=False
+            for _ in range(7):
+                try:
+                    command("HELLO","ROBLOX_HID_V1")
+                    found=True
+                    break
+                except RuntimeError:
+                    time.sleep(.3)
+            if not found:
+                raise RuntimeError("HID handshake failed: check firmware and port")
+            command("ARM ROBLOX_HID_V1","OK ARMED")
+            last_error=1000000
+            stagnant=0
+            reached=False
+            for iteration in range(80):
+                if ui.GetForegroundWindow()!=hwnd:
+                    raise RuntimeError("Roblox lost focus during HID motion")
+                current=POINT()
+                if not ui.GetCursorPos(ctypes.byref(current)):
+                    raise RuntimeError("GetCursorPos failed")
+                ex,ey=target.x-current.x,target.y-current.y
+                error=abs(ex)+abs(ey)
+                if error<=5:
+                    reached=True
+                    break
+                if error>=last_error-1:
+                    stagnant+=1
+                else:
+                    stagnant=0
+                if stagnant>=10:
+                    raise RuntimeError("HID pointer did not converge")
+                last_error=error
+                mx=max(-65,min(65,ex))
+                my=max(-65,min(65,ey))
+                command("MOVE %d %d"%(mx,my),"OK MOVE")
+                time.sleep(.035)
+            if not reached:
+                raise RuntimeError("HID pointer target timeout")
+            if ui.GetForegroundWindow()!=hwnd:
+                raise RuntimeError("Roblox lost focus before HID click")
+            command("CLICK","OK CLICK")
+            log("HID_CLICK_SENT target=(%d,%d) port=%s; game confirmation pending" %
+                (target.x,target.y,hid_port))
+            return "INPUT_SENT_UNVERIFIED"
+        except Exception as error:
+            log("HID_ERROR "+str(error))
+            return "ERROR_HID_DEVICE"
+        finally:
+            if link is not None:
+                try:
+                    link.write(b"DISARM\n")
+                    link.flush()
+                except Exception:
+                    pass
+                try:
+                    link.close()
+                except Exception:
+                    pass
+
     capture = WindowsCapture(cursor_capture=None,draw_border=None,
                              monitor_index=None,window_name="Roblox")
 
@@ -635,7 +745,7 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    # V1.8.0: strict sequential steps. Retry ONLY the last unconfirmed step.
+    # V1.9.0: strict sequential steps. Retry ONLY the last unconfirmed step.
     # Never re-click an earlier option after moving on, to avoid toggling it off.
     controller = None
     step_names = ("city","one","hard","create")
@@ -650,7 +760,7 @@ def lobby_helper():
     menu_present_count = 0
     menu_absent_count = 0
     completed = False
-    max_attempts = 2
+    max_attempts = 1 if backend=="HID" else 2
     manual_prompted = False
     nav_phase = "off"
     nav_step_at = 0.0
@@ -673,7 +783,7 @@ def lobby_helper():
             "one": player_selected(feat)==1,
             "hard": feat["hard"]>.15 and feat["normal"]<.15
         }
-    log("Lobby v1.8.0 start; armed="+str(enabled))
+    log("Lobby v1.9.0 start; armed="+str(enabled))
     log("Strict sequence CITY -> ONE -> HARD -> CREATE; retry only unconfirmed step")
     log("Before/after click evidence in "+str(evidence_dir)+"; JPEG overwritten per step.")
     try:
@@ -765,7 +875,8 @@ def lobby_helper():
                 reduced=cv2.resize(frame,(960,round(frame.shape[0]*960/frame.shape[1])))
                 cv2.imwrite(str(evidence_dir / "before_create.jpg"),reduced,
                             [cv2.IMWRITE_JPEG_QUALITY,70])
-                result=click(*step_points[key],frame)
+                result=(usb_hid_mouse_click(*step_points[key],frame) if backend=="HID"
+                        else click(*step_points[key],frame))
                 if result=="INPUT_SENT_UNVERIFIED":
                     evidence_pending="create"
                 retries[key]+=1
@@ -805,9 +916,8 @@ def lobby_helper():
                 awaiting_confirmation=False
             if retries[key]>=max_attempts:
                 if not manual_prompted:
-                    log("INPUT_BACKENDS_EXHAUSTED step="+key+
-                        " - SendInput and legacy mouse_event did not cause "+
-                        "confirmed selection. No further automated input.")
+                    log("INPUT_UNCONFIRMED step="+key+" backend="+backend+
+                        " - no further automated input; observation only.")
                     manual_prompted=True
                 continue
             if time.monotonic()-last_click<1.0:
@@ -828,10 +938,13 @@ def lobby_helper():
             else:
                 target=step_points[key]
             method="SENDINPUT" if retries[key]==1 else "LEGACY_MOUSE_EVENT"
+            if backend=="HID":
+                method="USB_HID_LEONARDO"
             log("INPUT_METHOD step="+key+" attempt="+str(retries[key])+
                 " method="+method+" frame_target="+str(target))
-            result=(click(*target,frame) if retries[key]==1 else
-                    click_legacy(*target,frame))
+            result=(usb_hid_mouse_click(*target,frame) if backend=="HID"
+                    else (click(*target,frame) if retries[key]==1
+                          else click_legacy(*target,frame)))
             last_click=time.monotonic()
             awaiting_confirmation=(result=="INPUT_SENT_UNVERIFIED")
             if awaiting_confirmation:
@@ -863,7 +976,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.8.0 - choose mode:")
+    print("ROBLOX V1.9.0 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
