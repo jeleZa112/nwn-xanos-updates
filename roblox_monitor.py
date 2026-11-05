@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.1.4
+# Roblox background monitor - release 1.1.5
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.1.4"
+VERSION = "1.1.5"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -386,6 +386,7 @@ def lobby_helper():
         players1 = border_color(frame,(.346,.672,.416,.805),"green")
         players4 = border_color(frame,(.583,.672,.655,.805),"green")
         city = border_color(frame,(.347,.517,.496,.647),"yellow")
+        cave = border_color(frame,(.505,.517,.653,.647),"yellow")
         normal = border_color(frame,(.666,.620,.757,.670),"green")
         hard = border_color(frame,(.666,.674,.757,.720),"green")
         hard_red = border_color(frame,(.666,.674,.757,.720),"red")
@@ -408,7 +409,7 @@ def lobby_helper():
         count_digits=sum(1 for value in white_digits if value > .025)
         modal = create>.08 and cancel>.08 and count_digits == 4
         return modal,dict(create=create,cancel=cancel,p1=players1,
-                p4=players4,city=city,normal=normal,hard=hard,
+                p4=players4,city=city,cave=cave,normal=normal,hard=hard,
                 hard_red=hard_red,digits=count_digits)
 
     # SendInput is the supported Windows synthetic input API. It still may
@@ -520,9 +521,9 @@ def lobby_helper():
                 action_time=time.monotonic()
                 return answer=="INPUT_SENT_UNVERIFIED"
             if stage=="SELECT_CITY":
-                if features["city"]>.12:
+                if features["city"]>.15 and features["cave"]<.12:
                     stage="SELECT_ONE"
-                elif do(.420,.585,"City map"):
+                elif do(.400,.585,"City map left tile"):
                     stage="VERIFY_CITY"
             elif stage=="VERIFY_CITY":
                 if features["city"]>.12:
@@ -530,7 +531,7 @@ def lobby_helper():
                     retries=0
                     log("City map selection VISIBLE. This does not prove the bot clicked.")
                 elif time.monotonic()-action_time>3.0:
-                    log("STOP: City map not visibly selected after click; no further input.")
+                    log("STOP: City not confirmed; cave=%.3f city=%.3f" % (features["cave"], features["city"]))
                     break
             elif stage=="SELECT_ONE":
                 if features["p1"]>.15 and features["p4"]<.15:
@@ -558,7 +559,7 @@ def lobby_helper():
                     log("STOP: difficulty not verified. Features="+str({k:round(v,3) for k,v in features.items()}))
                     break
             elif stage=="CREATE":
-                if (features["city"]>.12 and features["p1"]>.15
+                if (features["city"]>.15 and features["cave"]<.12 and features["p1"]>.15
                     and features["hard"]>.15 and features["normal"]<.15
                     and features["p4"]<.15):
                     if do(.420,.870,"Create lobby"):
@@ -584,7 +585,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.1.4 - choose mode:")
+    print("ROBLOX V1.1.5 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
