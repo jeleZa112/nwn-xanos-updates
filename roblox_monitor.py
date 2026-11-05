@@ -480,6 +480,7 @@ def lobby_helper():
     # Reconciliation controller. Every input is followed by a fresh check
     # of ALL selections; it never assumes earlier selections persisted.
     controller = None
+    state = "WAIT_MENU"
     attempts = {"city":0,"one":0,"hard":0,"create":0}
     last_action = 0.0
     signatures = []
@@ -526,6 +527,9 @@ def lobby_helper():
                 continue
             # Allow enough time for the game to display any selection changes.
             if time.monotonic()-last_action < 1.8:
+                continue
+            if attempts["create"]:
+                # Never click selectors again after sending Create.
                 continue
             if pending:
                 log("AFTER_"+pending.upper()+" observed="+str(signature)+
