@@ -336,3 +336,7 @@ User reports Foxx EET repack was updated, and their current game has SCS install
 - Проверен официальный GitHub `LCA-EET/AutoLoot`: `AutoLoot.tp2` имеет только English/Spanish; `menupatch.tph` использует `XA_STR_REF_100..115`; `xaal.tra` содержит 24 локализуемые строки (8 установщика, 16 интерфейса/сообщений). Пользователь запросил именно русские настройки игры.
 - Подготовлен и офлайн проверен ZIP `AutoLoot_1_3_RUS_GAME_MENU_PATCH.zip` (SHA256 `4b1ff8e12d03537c1d8cbf7dd73e3a41708293e96921006c5e22ee6d6efdd27a`), перевод `xaal.tra` (SHA256 `f366d2731d6a0b250422c56630244b64f2de7b3f5dd35a42d58644b733c1c1df`). Он добавляет русский язык в TP2 и новый TRA, с резервным копированием; исходники игры и логика AutoLoot не меняются до штатной установки. Тест Windows/WeiDU пока отсутствует.
 - Пользователю: закрыть пока открытый установщик AutoLoot, распаковать ZIP рядом с chitin.key, запустить AUTOLOOT_RU_INSTALL.cmd, проверить SUCCESS и EXIT CODE 0, затем setup-AutoLoot.exe -> 2 Russian. Дальше EPS 18.4 с бэкапом.
+
+## 2026-11-06 — AutoLoot installed by user; EPS 18.4 next
+- User confirms AutoLoot install on new Foxx after Russian game-menu patch. No updated WeiDU verification yet.
+- Next EPS 18.4: official source morpheus-mart.com/enhanced-powergaming-scripts; Russian translation has existed since v5.2 and received updates in v14, but exact current completeness unknown. Back up Foxx first; script may change BDDEFAI/Advanced AI. Choose Russian where available and Normal Pre-Buffing Speed. SCS #5000 remains excluded; BGXUN1 unsafe install remains blocked.
