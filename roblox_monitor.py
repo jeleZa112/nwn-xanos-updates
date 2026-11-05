@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.4.1
+# Roblox background monitor - release 1.4.2
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.4.1"
+VERSION = "1.4.2"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -501,7 +501,7 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    # V1.4.1: strict sequential steps. Retry ONLY the last unconfirmed step.
+    # V1.4.2: strict sequential steps. Retry ONLY the last unconfirmed step.
     # Never re-click an earlier option after moving on, to avoid toggling it off.
     controller = None
     step_names = ("city","one","hard","create")
@@ -517,14 +517,18 @@ def lobby_helper():
     menu_absent_count = 0
     completed = False
     max_attempts = 2
+    evidence_dir = folder / "LAST_CLICK"
+    evidence_dir.mkdir(parents=True,exist_ok=True)
+    evidence_pending = None
     def selected_flags(feat):
         return {
             "city": feat["city"]>.15 and feat["cave"]<.12,
             "one": feat["p1"]>.15 and feat["p4"]<.15,
             "hard": feat["hard"]>.15 and feat["normal"]<.15
         }
-    log("Lobby v1.4.1 start; armed="+str(enabled))
+    log("Lobby v1.4.2 start; armed="+str(enabled))
     log("Strict sequence CITY -> ONE -> HARD -> CREATE; retry only unconfirmed step")
+    log("Before/after click evidence in "+str(evidence_dir)+"; JPEG overwritten per step.")
     try:
         controller=capture.start_free_threaded()
         while not stop.is_set() and time.monotonic()-start < 150:
@@ -536,6 +540,13 @@ def lobby_helper():
                 continue
             last_update=time.monotonic()
             modal,features=scan(frame)
+            if evidence_pending is not None and time.monotonic()-last_click >= .9:
+                label=evidence_pending
+                reduced=cv2.resize(frame,(960,round(frame.shape[0]*960/frame.shape[1])))
+                cv2.imwrite(str(evidence_dir / ("after_"+label+".jpg")),reduced,
+                            [cv2.IMWRITE_JPEG_QUALITY,70])
+                log("EVIDENCE_SAVED after_"+label+".jpg; captured frame after click")
+                evidence_pending=None
             if not modal:
                 menu_present_count=0
                 previous_result=None
@@ -581,7 +592,12 @@ def lobby_helper():
                     break
                 if time.monotonic()-last_click<1.5:
                     continue
+                reduced=cv2.resize(frame,(960,round(frame.shape[0]*960/frame.shape[1])))
+                cv2.imwrite(str(evidence_dir / "before_create.jpg"),reduced,
+                            [cv2.IMWRITE_JPEG_QUALITY,70])
                 result=click(*step_points[key],frame)
+                if result=="INPUT_SENT_UNVERIFIED":
+                    evidence_pending="create"
                 retries[key]+=1
                 last_click=time.monotonic()
                 awaiting_confirmation=True
@@ -613,9 +629,14 @@ def lobby_helper():
             if time.monotonic()-last_click<1.0:
                 continue
             retries[key]+=1
+            reduced=cv2.resize(frame,(960,round(frame.shape[0]*960/frame.shape[1])))
+            cv2.imwrite(str(evidence_dir / ("before_"+key+".jpg")),reduced,
+                        [cv2.IMWRITE_JPEG_QUALITY,70])
             result=click(*step_points[key],frame)
             last_click=time.monotonic()
             awaiting_confirmation=(result=="INPUT_SENT_UNVERIFIED")
+            if awaiting_confirmation:
+                evidence_pending=key
             stable_count=0
             previous_result=None
             log("STEP_CLICK: "+key+" attempt="+str(retries[key])+
@@ -643,7 +664,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.4.1 - choose mode:")
+    print("ROBLOX V1.4.2 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
