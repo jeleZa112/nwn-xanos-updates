@@ -340,3 +340,6 @@ User reports Foxx EET repack was updated, and their current game has SCS install
 ## 2026-11-06 — AutoLoot installed by user; EPS 18.4 next
 - User confirms AutoLoot install on new Foxx after Russian game-menu patch. No updated WeiDU verification yet.
 - Next EPS 18.4: official source morpheus-mart.com/enhanced-powergaming-scripts; Russian translation has existed since v5.2 and received updates in v14, but exact current completeness unknown. Back up Foxx first; script may change BDDEFAI/Advanced AI. Choose Russian where available and Normal Pre-Buffing Speed. SCS #5000 remains excluded; BGXUN1 unsafe install remains blocked.
+
+## 2026-11-06 — EPS 18.4 installed (user report)
+- User confirmed all desired EPS installation completed. Confirmed earlier selection 1 = Normal Pre-Buffing Speed; Enhanced Scripts for Summoned Celestials = Install. Other options and success messages / fresh WeiDU remain UNVERIFIED. Next action is gentle in-game check of EPS assignment and UI, not extra installation. Author: Enhanced Powergaming Scripts replaces previous Advanced AI menu, actual script `bddefai`, reset None/reassign if not active, AI toggle on. B prebuff / N long buffs; bard song/spell test specifically. Public BGXUN1 v018 guarded off. 
