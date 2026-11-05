@@ -1,9 +1,9 @@
-# Roblox background monitor - release 2.1.2
+# Roblox background monitor - release 2.1.3
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "2.1.2"
+VERSION = "2.1.3"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -313,7 +313,7 @@ def lobby_helper():
     folder = Path.home() / "Documents" / "RobloxBGDiagnostics" / "LOBBY"
     folder.mkdir(parents=True, exist_ok=True)
     logfile = folder / "lobby.log"
-    print("\nROBLOX LOBBY BOT V2.1.2")
+    print("\nROBLOX LOBBY BOT V2.1.3")
     print("Target: City Landscape / 1 player / Hard / Create")
     print("Bot will click only if the Roblox window is focused.")
     print("You must first walk onto the purple creation pad.")
@@ -992,7 +992,7 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    # V2.1.2: strict sequential steps. Retry ONLY the last unconfirmed step.
+    # V2.1.3: strict sequential steps. Retry ONLY the last unconfirmed step.
     # Never re-click an earlier option after moving on, to avoid toggling it off.
     controller = None
     step_names = ("city","one","hard","create")
@@ -1007,7 +1007,14 @@ def lobby_helper():
     menu_present_count = 0
     menu_absent_count = 0
     completed = False
-    max_attempts = 1 if backend in ("HID","TOUCH","SYNTHETIC") else 2
+    # Stable synthetic taps work in Roblox, but a single tap can be missed.
+    # Retry only UNCONFIRMED settings, with a strict per-setting upper bound.
+    # CREATE itself is never repeated automatically.
+    attempt_limits = ({"city":2,"one":3,"hard":2,"create":1}
+                      if backend=="SYNTHETIC" else
+                      {"city":1,"one":1,"hard":1,"create":1}
+                      if backend in ("HID","TOUCH") else
+                      {"city":2,"one":2,"hard":2,"create":1})
     manual_prompted = False
     last_gate_note = 0.0
     ready_override_logged = False
@@ -1035,8 +1042,10 @@ def lobby_helper():
             # a hovered-but-unselected Hard tile for the chosen difficulty.
             "hard": feat["hard_red"]>.18 and feat["normal"]<.12
         }
-    log("Lobby v2.1.2 start; armed="+str(enabled))
+    log("Lobby v2.1.3 start; armed="+str(enabled))
     log("Strict sequence CITY -> ONE -> HARD(RED BORDER) -> CREATE")
+    log("SYNTHETIC retries: up to 3 verified attempts for ONE, 2 for HARD; "+
+        "CREATE strictly once. Alternate safe points inside the same tile.")
     log("HARD_CHECK requires red hard border + normal green not selected")
     log("Before/after click evidence in "+str(evidence_dir)+"; JPEG overwritten per step.")
     try:
@@ -1199,12 +1208,19 @@ def lobby_helper():
                 log("STEP_NOT_CONFIRMED: "+key+" attempt="+str(retries[key])+
                     " features="+str({k:round(v,3) for k,v in features.items()}))
                 awaiting_confirmation=False
-            if retries[key]>=max_attempts:
+            if retries[key]>=attempt_limits[key]:
                 if not manual_prompted:
                     log("INPUT_UNCONFIRMED step="+key+" backend="+backend+
+                        " attempts="+str(retries[key])+
+                        " limit="+str(attempt_limits[key])+
                         " - no further automated input; observation only.")
                     manual_prompted=True
                 continue
+            if awaiting_confirmation is False and retries[key]>0 and not manual_prompted:
+                log("RETRY_UNCONFIRMED step="+key+
+                    " next_attempt="+str(retries[key]+1)+
+                    " selected="+str(flags)+
+                    " limit="+str(attempt_limits[key]))
             if time.monotonic()-last_click<1.0:
                 continue
             if key=="one":
@@ -1214,12 +1230,18 @@ def lobby_helper():
             reduced=cv2.resize(frame,(960,round(frame.shape[0]*960/frame.shape[1])))
             cv2.imwrite(str(evidence_dir / ("before_"+key+".jpg")),reduced,
                         [cv2.IMWRITE_JPEG_QUALITY,70])
-            # Switch the Windows input path on the second attempt.
-            # Do not enable Roblox UI Navigation (which hijacks WASD).
+            # Alternate across INSIDE points of the same button, never a
+            # neighbouring player slot. User's 00:43 log showed 4 still
+            # selected after a sent touch on 1, so verify before each retry.
             if key=="one":
-                target=(.367,.703) if retries[key]==1 else (.401,.765)
+                one_targets=((.367,.703),(.381,.741),(.392,.767))
+                target=one_targets[min(retries[key]-1,len(one_targets)-1)]
             elif key=="hard":
-                target=(.713,.686) if retries[key]==1 else (.742,.706)
+                hard_targets=((.713,.686),(.707,.705))
+                target=hard_targets[min(retries[key]-1,len(hard_targets)-1)]
+            elif key=="city":
+                city_targets=((.400,.585),(.415,.585))
+                target=city_targets[min(retries[key]-1,len(city_targets)-1)]
             else:
                 target=step_points[key]
             method="SENDINPUT" if retries[key]==1 else "LEGACY_MOUSE_EVENT"
@@ -1271,7 +1293,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V2.1.2 - choose mode:")
+    print("ROBLOX V2.1.3 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
@@ -1297,7 +1319,7 @@ try:
     from windows_capture import WindowsCapture, Frame, InternalCaptureControl
 except Exception as exc:
     note("DEPENDENCY ERROR: " + str(exc))
-    note("Run: py -3 -m pip install --user windows-capture==2.1.2 numpy opencv-python")
+    note("Run: py -3 -m pip install --user windows-capture==2.1.3 numpy opencv-python")
     sys.exit(2)
 
 stats = {"received": 0, "analyzed": 0, "changes": 0, "last": 0.0, "errors": 0, "left": 0.0, "center": 0.0, "right": 0.0, "possible_match": 0, "hud_mode": "UNCONFIRMED", "hud_strength": 0.0}
