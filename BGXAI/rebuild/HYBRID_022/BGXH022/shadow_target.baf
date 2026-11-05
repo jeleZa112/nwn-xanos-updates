@@ -1,0 +1,21 @@
+// BGXAI Hybrid 022: OPTIONAL OBSERVATION ONLY.
+// Native BDDEFAI copied byte-for-byte before EXTEND_BOTTOM, retains every original block.
+// Enable only by explicitly setting per-actor BGXH022=1; default 0 = completely inert.
+// No attack, item, movement, song, or spell actions are used here.
+// SCS v35.21-inspired target viability predicates, not SCS source-code copy.
+IF
+  Global("BGXH022","LOCALS",1)
+  ActionListEmpty()
+  !Class(Myself,BARD)
+  !Global("BDAI_SKILL_MODE","LOCALS",3)
+  !GlobalTimerNotExpired("BGXH22SCAN","LOCALS")
+  IsWeaponRanged(Myself)
+  See(LastAttackerOf(Myself))
+  WeaponEffectiveVs(LastAttackerOf(Myself),MAINHAND)
+  WeaponCanDamage(LastAttackerOf(Myself),MAINHAND)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXH22SCAN","LOCALS",12)
+    DisplayStringHead(Myself,~BGX H022 TARGET WEAPON OK~)
+    Continue()
+END
