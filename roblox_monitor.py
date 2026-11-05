@@ -1,9 +1,9 @@
-# Roblox background monitor - release 0.9.0
+# Roblox background monitor - release 0.9.1
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "0.9.0"
+VERSION = "0.9.1"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -135,6 +135,7 @@ def training_mode():
     halt = threading.Event()
     captured = 0
     dropped = 0
+    last_queued_at = -100.0
     saved = 0
     zipped = 0
     bytes_total = 0
@@ -176,19 +177,21 @@ def training_mode():
 
     @capture.event
     def on_frame_arrived(frame: Frame, capture_control: InternalCaptureControl):
-        nonlocal captured, dropped
+        nonlocal captured, dropped, last_queued_at
         if halt.is_set():
             capture_control.stop()
             return
         captured += 1
-        # At most ~2 frames/s copied to RAM, no full-resolution queues.
-        if captured % 60 != 1:
+        # Sample by elapsed time, independent of fluctuating capture frame rate.
+        sampled_at = time.monotonic()
+        if sampled_at - last_queued_at < 0.5:
             return
+        last_queued_at = sampled_at
         try:
             if incoming.full():
                 dropped += 1
                 return
-            incoming.put_nowait((time.monotonic(), frame.frame_buffer[:,:,:3].copy()))
+            incoming.put_nowait((sampled_at, frame.frame_buffer[:,:,:3].copy()))
         except queue.Full:
             dropped += 1
 
@@ -254,7 +257,7 @@ def training_mode():
     try:
         control = capture.start_free_threaded()
         control_holder.append(control)
-        line("Capture active. Play yourself; stop with Ctrl+C after wave 100.")
+        line("Capture active. Play yourself; stop with Ctrl+C when you finish or lose.")
         while not halt.is_set():
             if time.monotonic() - start > 60 * options["max_minutes"]:
                 line("Time limit reached; finishing archive.")
@@ -268,12 +271,7 @@ def training_mode():
         line("CAPTURE ERROR: " + traceback.format_exc())
         halt.set()
     finally:
-        # Normally stops inside the capture callback. Do not hard-kill an active encoder.
-        if control_holder:
-            try:
-                control_holder[0].stop()
-            except Exception as exc:
-                line("Capture stop notice: " + str(exc))
+        # Stop from capture callback to avoid Already borrowed race.
         halt.set()
         worker.join(timeout=90)
         if worker.is_alive():
@@ -288,7 +286,7 @@ def training_mode():
 # No new CMD files are necessary.
 def run_mode_prompt():
     print("")
-    print("ROBLOX V0.9 - choose mode:")
+    print("ROBLOX V0.9.1 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     try:
