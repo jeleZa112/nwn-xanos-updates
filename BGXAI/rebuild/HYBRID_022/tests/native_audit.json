@@ -1,0 +1,25 @@
+{
+  "private_bcs_not_included_in_published_release": true,
+  "sources": {
+    "BDDEFAI.BCS": {
+      "bytes": 489880,
+      "sha256": "2d98605d2ee5a1d8abb17961f03f2ca9c9d48ea24a1007860e938f49c650165a"
+    },
+    "BDFTHI01.BCS": {
+      "bytes": 34196,
+      "sha256": "4e1836f960364d0d8eeef2047cf28416550d92b00cc24db4c520b886ebdaa39c"
+    },
+    "BDBARD01.BCS": {
+      "bytes": 153732,
+      "sha256": "4e2d04319f8bf917e94e4aeeb6874080547e5075282924cc372601bc75a590a3"
+    },
+    "BDBARD20.BCS": {
+      "bytes": 34394,
+      "sha256": "1fc90ef45bb74b942523ad2cb8dc49f992722bb698c91c7aacef7f26ae3b95fe"
+    }
+  },
+  "required_song_action_id_296": 1,
+  "bard_song_mode_present": true,
+  "bard_locals_flag_present": true,
+  "class_scripts_preserved_not_patched": true
+}
