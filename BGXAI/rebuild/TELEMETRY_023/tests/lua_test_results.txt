@@ -1,0 +1,12 @@
+PASS Registration and party HP/position/flags
+PASS Flee and bard song always recorded
+PASS Party and self target detection
+PASS Only party actors observed
+PASS Noisy actions throttled but critical actions not
+PASS Missing data is UNKNOWN
+PASS Duplicate registration is rejected
+PASS Rate limits avoid unlimited logs
+PASS Invalid portrait/mismatched actor rejected
+PASS Missing required API is disabled
+PASS read-only no game-action / script-variable writes
+TOTAL 11 Lua runtime mock groups PASS
