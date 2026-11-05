@@ -1,0 +1,200 @@
+{
+  "status": "OFFLINE PASS - NO IN-GAME VALIDATION",
+  "game_modified": false,
+  "live_updater_modified": false,
+  "stock_resource_sha256": {
+    "BDDEFAI.BCS": "2d98605d2ee5a1d8abb17961f03f2ca9c9d48ea24a1007860e938f49c650165a",
+    "BDFTHI01.BCS": "4e1836f960364d0d8eeef2047cf28416550d92b00cc24db4c520b886ebdaa39c",
+    "BDFIGH01.BCS": "4c7e02a1a14254b43b4a5b9903a4477ad3425a1f54a78969f3779fedb20d9872",
+    "BDFMAG01.BCS": "27992100b54116798e480299391d2f27b135cdb7c50d2ad41baf5302699f0e7d",
+    "BDFCLE01.BCS": "8b9f646097f99aa893feb3f90b6adc1cd1fb88d7bf045d71cf50fe370605585a",
+    "BDAI0010.BCS": "15825978d430e041ecc6adcee79c89d0d8b93c2d10d7680a1324b54b9cc6c54b",
+    "BDAI0020.BCS": "3e9fd2a7f97501122b5af5cedecc2452de1c5ec69a659eb95d056140851c6384"
+  },
+  "game_ai_structure": {
+    "BDDEFAI.BCS": {
+      "rules": 322,
+      "actions": 700,
+      "known": {
+        "Spell": 277,
+        "UseItem": 8,
+        "SetInterrupt": 144,
+        "SetGlobalTimer": 221
+      }
+    },
+    "BDFTHI01.BCS": {
+      "rules": 30,
+      "actions": 75,
+      "known": {
+        "UseItem": 24,
+        "SetInterrupt": 24,
+        "SetGlobalTimer": 24,
+        "AttackReevaluate": 2
+      }
+    },
+    "BDFIGH01.BCS": {
+      "rules": 32,
+      "actions": 79,
+      "known": {
+        "UseItem": 23,
+        "SetInterrupt": 23,
+        "SetGlobalTimer": 23,
+        "AttackReevaluate": 2
+      }
+    },
+    "BDFMAG01.BCS": {
+      "rules": 141,
+      "actions": 203,
+      "known": {
+        "Spell": 69,
+        "UseItem": 28,
+        "SetInterrupt": 28,
+        "SetGlobalTimer": 44,
+        "AttackReevaluate": 2
+      }
+    },
+    "BDFCLE01.BCS": {
+      "rules": 97,
+      "actions": 147,
+      "known": {
+        "Spell": 38,
+        "UseItem": 24,
+        "SetInterrupt": 24,
+        "SetGlobalTimer": 27,
+        "AttackReevaluate": 2
+      }
+    },
+    "BDAI0010.BCS": {
+      "rules": 1,
+      "actions": 4,
+      "known": {}
+    },
+    "BDAI0020.BCS": {
+      "rules": 1,
+      "actions": 4,
+      "known": {}
+    }
+  },
+  "old_bad_oscillations_detected": [
+    [
+      "BGXAI_COMBAT(20261105-093310).log",
+      0,
+      [
+        {
+          "target": 136382496,
+          "sequence": [
+            105,
+            105,
+            355,
+            105,
+            355,
+            105,
+            355,
+            355
+          ],
+          "attack_retreat_transitions": 5
+        }
+      ]
+    ],
+    [
+      "BGXAI_COMBAT(20261105-064722).log",
+      0,
+      [
+        {
+          "target": 136316959,
+          "sequence": [
+            105,
+            355,
+            105,
+            355,
+            355,
+            355,
+            355
+          ],
+          "attack_retreat_transitions": 3
+        }
+      ]
+    ]
+  ],
+  "per_session_actions": {
+    "BGXAI_COMBAT(20261105-093310).log": [
+      {
+        "actor": "A1",
+        "actions_total": 35,
+        "attacks_started": 5,
+        "retreats_started": 4,
+        "melee_or_aggro_known": false,
+        "manual_vs_AI_origin": "UNKNOWN",
+        "bad_oscillations": [
+          {
+            "target": 136382496,
+            "sequence": [
+              105,
+              105,
+              355,
+              105,
+              355,
+              105,
+              355,
+              355
+            ],
+            "attack_retreat_transitions": 5
+          }
+        ],
+        "warning": "Current sensor cannot establish HP, aggro, enemy path, actual attacks landed or PLAYER/AI origin."
+      }
+    ],
+    "BGXAI_COMBAT(20261105-080316).log": [
+      {
+        "actor": "A1",
+        "actions_total": 35,
+        "attacks_started": 4,
+        "retreats_started": 2,
+        "melee_or_aggro_known": false,
+        "manual_vs_AI_origin": "UNKNOWN",
+        "bad_oscillations": [],
+        "warning": "Current sensor cannot establish HP, aggro, enemy path, actual attacks landed or PLAYER/AI origin."
+      }
+    ],
+    "BGXAI_COMBAT(20261105-064722).log": [
+      {
+        "actor": "A1",
+        "actions_total": 26,
+        "attacks_started": 2,
+        "retreats_started": 5,
+        "melee_or_aggro_known": false,
+        "manual_vs_AI_origin": "UNKNOWN",
+        "bad_oscillations": [
+          {
+            "target": 136316959,
+            "sequence": [
+              105,
+              355,
+              105,
+              355,
+              355,
+              355,
+              355
+            ],
+            "attack_retreat_transitions": 3
+          }
+        ],
+        "warning": "Current sensor cannot establish HP, aggro, enemy path, actual attacks landed or PLAYER/AI origin."
+      }
+    ],
+    "BGXAI_COMBAT(20261105-065803).log": [
+      {
+        "actor": "A1",
+        "actions_total": 13,
+        "attacks_started": 1,
+        "retreats_started": 1,
+        "melee_or_aggro_known": false,
+        "manual_vs_AI_origin": "UNKNOWN",
+        "bad_oscillations": [],
+        "warning": "Current sensor cannot establish HP, aggro, enemy path, actual attacks landed or PLAYER/AI origin."
+      }
+    ]
+  },
+  "next_gate": "Isolated WeiDU installation of byte-identical stock-alias; class-slot verification",
+  "behavioral_improvement_proven": false
+}
