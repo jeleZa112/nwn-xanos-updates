@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.7.2
+# Roblox background monitor - release 1.8.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.7.2"
+VERSION = "1.8.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -487,6 +487,43 @@ def lobby_helper():
         ev.mi=MOUSEINPUT(xx,yy,0,0xC001,0,None)
         return int(ui.SendInput(1,ctypes.byref(ev),ctypes.sizeof(INPUT)))
 
+    def click_legacy(relx,rely,frame):
+        # Independent legacy mouse_event route. Do NOT enable UI Navigation.
+        # A return only means Windows processed the injection call.
+        if ui.IsIconic(hwnd) or ui.GetForegroundWindow()!=hwnd:
+            return "SKIP_NOT_FOREGROUND"
+        bounds=RECT()
+        if not ui.GetClientRect(hwnd,ctypes.byref(bounds)):
+            return "ERROR_CLIENT_RECT"
+        width,height=bounds.right-bounds.left,bounds.bottom-bounds.top
+        frame_h,frame_w=frame.shape[:2]
+        extra_y,extra_x=frame_h-height,frame_w-width
+        if not (0<=extra_y<=90 and 0<=extra_x<=50):
+            return "ERROR_GEOMETRY"
+        x=int(relx*frame_w-extra_x/2)
+        y=int(rely*frame_h-extra_y)
+        if not (0<=x<width and 0<=y<height):
+            return "ERROR_TARGET_OUTSIDE_CLIENT"
+        p=POINT(x,y)
+        if not ui.ClientToScreen(hwnd,ctypes.byref(p)):
+            return "ERROR_CLIENT_TO_SCREEN"
+        if not ui.SetCursorPos(p.x,p.y):
+            return "ERROR_SET_CURSOR"
+        time.sleep(.22)
+        actual=POINT()
+        ui.GetCursorPos(ctypes.byref(actual))
+        if abs(actual.x-p.x)+abs(actual.y-p.y)>6:
+            return "ERROR_CURSOR_DRIFT"
+        if ui.GetForegroundWindow()!=hwnd:
+            return "ERROR_FOCUS_LOST"
+        ui.mouse_event(0x0002,0,0,0,0)
+        time.sleep(.22)
+        state=bool(ui.GetAsyncKeyState(0x01) & 0x8000)
+        ui.mouse_event(0x0004,0,0,0,0)
+        log("LEGACY_MOUSE_TRACE target=(%d,%d) down_state=%s" %
+            (p.x,p.y,str(state)))
+        return "INPUT_SENT_UNVERIFIED"
+
     def click_window_message(relx,rely,frame):
         # Diagnostic alternate Windows GUI input path. Some games consume
         # only hardware/raw input, so this is an experiment, not a guarantee.
@@ -598,7 +635,7 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    # V1.7.2: strict sequential steps. Retry ONLY the last unconfirmed step.
+    # V1.8.0: strict sequential steps. Retry ONLY the last unconfirmed step.
     # Never re-click an earlier option after moving on, to avoid toggling it off.
     controller = None
     step_names = ("city","one","hard","create")
@@ -613,7 +650,7 @@ def lobby_helper():
     menu_present_count = 0
     menu_absent_count = 0
     completed = False
-    max_attempts = 1
+    max_attempts = 2
     manual_prompted = False
     nav_phase = "off"
     nav_step_at = 0.0
@@ -636,7 +673,7 @@ def lobby_helper():
             "one": player_selected(feat)==1,
             "hard": feat["hard"]>.15 and feat["normal"]<.15
         }
-    log("Lobby v1.7.2 start; armed="+str(enabled))
+    log("Lobby v1.8.0 start; armed="+str(enabled))
     log("Strict sequence CITY -> ONE -> HARD -> CREATE; retry only unconfirmed step")
     log("Before/after click evidence in "+str(evidence_dir)+"; JPEG overwritten per step.")
     try:
@@ -767,12 +804,10 @@ def lobby_helper():
                     " features="+str({k:round(v,3) for k,v in features.items()}))
                 awaiting_confirmation=False
             if retries[key]>=max_attempts:
-                # Safety: NEVER toggle Roblox UI Navigation. Earlier versions
-                # left UI Navigation enabled and disabled normal WASD movement.
-                # Do not inject keyboard events in lobby mode.
                 if not manual_prompted:
-                    log("AUTO_INPUT_UNCONFIRMED step="+key+
-                        " - stopped synthetic input; monitoring selections only.")
+                    log("INPUT_BACKENDS_EXHAUSTED step="+key+
+                        " - SendInput and legacy mouse_event did not cause "+
+                        "confirmed selection. No further automated input.")
                     manual_prompted=True
                 continue
             if time.monotonic()-last_click<1.0:
@@ -784,21 +819,19 @@ def lobby_helper():
             reduced=cv2.resize(frame,(960,round(frame.shape[0]*960/frame.shape[1])))
             cv2.imwrite(str(evidence_dir / ("before_"+key+".jpg")),reduced,
                         [cv2.IMWRITE_JPEG_QUALITY,70])
-            # The previous 1-player center overlaps the visible digit label.
-            # Try blank areas INSIDE the actual card rather than repeatedly
-            # pressing the text overlay. Confirm using green outline each time.
+            # Switch the Windows input path on the second attempt.
+            # Do not enable Roblox UI Navigation (which hijacks WASD).
             if key=="one":
                 target=(.367,.703) if retries[key]==1 else (.401,.765)
-                method="CARD_UPPER_LEFT" if retries[key]==1 else "CARD_LOWER_RIGHT"
             elif key=="hard":
                 target=(.713,.686) if retries[key]==1 else (.742,.706)
-                method="HARD_INTERIOR"
             else:
                 target=step_points[key]
-                method="CARD_INTERIOR"
+            method="SENDINPUT" if retries[key]==1 else "LEGACY_MOUSE_EVENT"
             log("INPUT_METHOD step="+key+" attempt="+str(retries[key])+
                 " method="+method+" frame_target="+str(target))
-            result=click(*target,frame)
+            result=(click(*target,frame) if retries[key]==1 else
+                    click_legacy(*target,frame))
             last_click=time.monotonic()
             awaiting_confirmation=(result=="INPUT_SENT_UNVERIFIED")
             if awaiting_confirmation:
@@ -830,7 +863,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.7.2 - choose mode:")
+    print("ROBLOX V1.8.0 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
