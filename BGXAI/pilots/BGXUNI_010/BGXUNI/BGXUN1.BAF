@@ -1,13 +1,13 @@
-// BGXUN1 v0.1.0 — separate selectable party script for EET / SCS 35.21 / Insane.
+// BGXUN1 v0.1.4 — separate selectable party script for EET / SCS 35.21 / Insane.
 // New independent experimental pilot; never patches BDDEFAI, BGXGRP, BGXTANK.
 // Capability checks use current spells / weapon / thief stats, not NPC names or portrait slots.
-// WARNING: WeiDU and real-game compilation/test required. Do not claim the whole BGXAI is integrated.
+// REAL v0.1.3 pilot was installed and startup + FindTraps observed in EET. v0.1.4 short spacing/retreat remains UNTESTED in live combat.
 // Existing BDAI local switches are read-only. The Advanced AI UI's availability while
 // this custom script is selected has NOT been verified in the user's build.
 // Optional opt-in LOCALS: BGXUCTRL=1 enables Blindness; BGXUDMG=1 enables Magic Missile.
 // Independent opt-out LOCALS: BGXUNR=1 disables ranged; BGXUNM=1 disables melee.
 
-// Startup evidence; fires once when the new script is actually assigned and actions are idle.
+// First pilot startup evidence; fires once when the new script is actually assigned and actions are idle.
 IF
  ActionListEmpty()
  Global("BGXU010","LOCALS",0)
@@ -15,6 +15,168 @@ THEN
  RESPONSE #100
   SetGlobal("BGXU010","LOCALS",1)
   DisplayStringHead(Myself,~BGXUN1 V010 READY~)
+END
+
+// 0.1.4 marker. On SAVED GAME with BGXU010=1 this still confirms fresh updated BCS ran.
+IF
+ ActionListEmpty()
+ Global("BGXU014","LOCALS",0)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXU014","LOCALS",1)
+  DisplayStringHead(Myself,~BGXUN1 V014 SPACING~)
+END
+
+// NEW 0.1.4: RANGED SPACING. Stay stationary and shoot when at a safe range.
+// With the weapon already set to ranged, make a short (12 AI updates ~= 0.8 sec)
+// reposition only if a VISIBLE enemy is inside a 4-foot buffer.
+// This is NOT absolute "behind the tank" geometry, which requires actor/position tracking.
+// Respect active commands, 5-second rate limit, per-fight 2-step budget, and old retreat disable.
+IF
+ ActionListEmpty()
+ IsWeaponRanged(Myself)
+ Global("BDAI_DISABLE_ATTACK","LOCALS",0)
+ !StateCheck(Myself,STATE_INVISIBLE)
+ Global("BDAI_DISABLE_DEFENSIVE","LOCALS",0)
+ Global("bd_ai_no_retreat","LOCALS",0)
+ Global("bd_no_retreat","LOCALS",0)
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),4)
+ Global("BGXUSP14","LOCALS",0)
+ !GlobalTimerNotExpired("BGXUSWAIT14","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobal("BGXUSP14","LOCALS",1)
+  SetGlobalTimer("BGXUSWAIT14","LOCALS",5)
+  SetGlobalTimer("BGXUPOST14","LOCALS",2)
+  DisplayStringHead(Myself,~BGXUN1 V014 SPACE 1/2~)
+  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),12)
+END
+IF
+ ActionListEmpty()
+ IsWeaponRanged(Myself)
+ Global("BDAI_DISABLE_ATTACK","LOCALS",0)
+ !StateCheck(Myself,STATE_INVISIBLE)
+ Global("BDAI_DISABLE_DEFENSIVE","LOCALS",0)
+ Global("bd_ai_no_retreat","LOCALS",0)
+ Global("bd_no_retreat","LOCALS",0)
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),4)
+ Global("BGXUSP14","LOCALS",1)
+ !GlobalTimerNotExpired("BGXUSWAIT14","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobal("BGXUSP14","LOCALS",2)
+  SetGlobalTimer("BGXUSWAIT14","LOCALS",5)
+  SetGlobalTimer("BGXUPOST14","LOCALS",2)
+  DisplayStringHead(Myself,~BGXUN1 V014 SPACE 2/2~)
+  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),12)
+END
+
+// Emergency retreat adapted from project BGXGRP626 3-try budget
+// and the game's existing no-retreat toggle. Escape means movement, not immunity.
+// At <56% HP, a VISIBLE enemy in close reach causes a short emergency override.
+// This may interrupt even a manual order: until EEex origin telemetry is proven,
+// guarantee of absolute manual command priority at critical HP is IMPOSSIBLE.
+// Respect legacy Advanced AI's opt-out retreat switches, per character.
+// Never leave the current area, never use an unverified pathfinding shortcut.
+IF
+ Global("BDAI_DISABLE_DEFENSIVE","LOCALS",0)
+ Global("bd_ai_no_retreat","LOCALS",0)
+ Global("bd_no_retreat","LOCALS",0)
+ HPPercentLT(Myself,56)
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),5)
+ Global("BGXUE14","LOCALS",0)
+ !GlobalTimerNotExpired("BGXURW14","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobal("BGXUE14","LOCALS",1)
+  SetGlobalTimer("BGXURW14","LOCALS",8)
+  SetGlobalTimer("BGXUPOST14","LOCALS",2)
+  DisplayStringHead(Myself,~BGXUN1 V014 EVADE 1/3~)
+  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),24)
+END
+IF
+ Global("BDAI_DISABLE_DEFENSIVE","LOCALS",0)
+ Global("bd_ai_no_retreat","LOCALS",0)
+ Global("bd_no_retreat","LOCALS",0)
+ HPPercentLT(Myself,56)
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),5)
+ Global("BGXUE14","LOCALS",1)
+ !GlobalTimerNotExpired("BGXURW14","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobal("BGXUE14","LOCALS",2)
+  SetGlobalTimer("BGXURW14","LOCALS",8)
+  SetGlobalTimer("BGXUPOST14","LOCALS",2)
+  DisplayStringHead(Myself,~BGXUN1 V014 EVADE 2/3~)
+  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),24)
+END
+IF
+ Global("BDAI_DISABLE_DEFENSIVE","LOCALS",0)
+ Global("bd_ai_no_retreat","LOCALS",0)
+ Global("bd_no_retreat","LOCALS",0)
+ HPPercentLT(Myself,56)
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),5)
+ Global("BGXUE14","LOCALS",2)
+ !GlobalTimerNotExpired("BGXURW14","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobal("BGXUE14","LOCALS",3)
+  SetGlobalTimer("BGXURW14","LOCALS",8)
+  SetGlobalTimer("BGXUPOST14","LOCALS",2)
+  DisplayStringHead(Myself,~BGXUN1 V014 EVADE 3/3~)
+  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),24)
+END
+
+// Short pressure retreat while still able to act, only after a real fresh hit.
+// A fresh hit may also interrupt an action: survival takes priority when threatened.
+// A read-only action-start probe cannot prove PLAYER vs AI origin yet.
+IF
+ Global("BDAI_DISABLE_DEFENSIVE","LOCALS",0)
+ Global("bd_ai_no_retreat","LOCALS",0)
+ Global("bd_no_retreat","LOCALS",0)
+ HPPercentLT(Myself,76)
+ TookDamage()
+ See(NearestEnemyOf(Myself))
+ Range(NearestEnemyOf(Myself),6)
+ Global("BGXUE14","LOCALS",0)
+ !GlobalTimerNotExpired("BGXURW14","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobal("BGXUE14","LOCALS",1)
+  SetGlobalTimer("BGXURW14","LOCALS",8)
+  SetGlobalTimer("BGXUPOST14","LOCALS",2)
+  DisplayStringHead(Myself,~BGXUN1 V014 PRESSURE EVADE~)
+  RunAwayFromNoLeaveArea(NearestEnemyOf(Myself),18)
+END
+
+// Restore finite attempts only after getting healthy AND exiting enemy sight.
+IF
+ ActionListEmpty()
+ GlobalGT("BGXUE14","LOCALS",0)
+ HPPercentGT(Myself,85)
+ !See(NearestEnemyOf(Myself))
+THEN
+ RESPONSE #100
+  SetGlobal("BGXUE14","LOCALS",0)
+  Continue()
+END
+
+// Re-arm short spacing steps only in genuine peace after a fight.
+IF
+ ActionListEmpty()
+ GlobalGT("BGXUSP14","LOCALS",0)
+ !ActuallyInCombat()
+ !See(NearestEnemyOf(Myself))
+ !GlobalTimerNotExpired("BGXUSWAIT14","LOCALS")
+THEN
+ RESPONSE #100
+  SetGlobal("BGXUSP14","LOCALS",0)
+  Continue()
 END
 
 // Self-heal: live divine spell is mandatory (works for valid dual/multi/respec).
@@ -143,10 +305,13 @@ END
 // Never equip-swaps or runs across a trap. Sneaking / invisible actor is respected.
 IF
  ActionListEmpty()
+ HPPercentGT(Myself,55)
+ !GlobalTimerNotExpired("BGXUPOST14","LOCALS")
  Global("BDAI_DISABLE_ATTACK","LOCALS",0)
  !StateCheck(Myself,STATE_INVISIBLE)
  See(NearestEnemyOf(Myself))
  Range(NearestEnemyOf(Myself),18)
+ !Range(NearestEnemyOf(Myself),4)
  Global("BGXUNR","LOCALS",0)
  !Global("BDAI_ATTACK_MODE","LOCALS",1)
  IsWeaponRanged(Myself)
@@ -158,6 +323,8 @@ END
 // Melee fallback: only a nearby visible enemy, no automatic long-distance charge.
 IF
  ActionListEmpty()
+ HPPercentGT(Myself,55)
+ !GlobalTimerNotExpired("BGXUPOST14","LOCALS")
  Global("BDAI_DISABLE_ATTACK","LOCALS",0)
  !StateCheck(Myself,STATE_INVISIBLE)
  See(NearestEnemyOf(Myself))
