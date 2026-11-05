@@ -321,3 +321,7 @@ User reports Foxx EET repack was updated, and their current game has SCS install
 ## 2026-11-05 — SCS 35.21 RU patch SUCCESS, native Windows user output
 - User's actual console: `UPDATED setup.tra`, `UPDATED gameplay.tra`, `UPDATED initial.tra`, `UPDATED leveller.tra`, `UPDATED spell_som.tra`; `SUCCESS: SCS 35.21 Russian setup (263 entries) + 18 missing game entries`; `EXIT CODE: 0`; backup created. This upgrades earlier offline-only patch validation to **Windows patch success**; does NOT imply SCS WeiDU components installed or game run verified.
 - Next: run `setup-stratagems.exe`, choose Russian, select components carefully, SKIP #5000; do not install SCS party AI, preserve ordinary Advanced AI/BattleSong. No new screenshots required unless genuine error.
+
+## 2026-11-05 — WeiDU(8).log received: 86 SCS 35.21, #5000 absent
+- Real newly supplied log has 97 WeiDU component lines: 86 SCS35.21 with Russian localized names, 8 EEex **v1.2.0**, Bubb v5.2, Remastered Spell Icons **v1.0** 2 components (core + green IWD-style summons). Confirms installed SCS modules but not runtime compatibility. SCS party AI #5000 omitted. #1520 new bard songs installed: no proof of intact ordinary song+spell behavior; do a low-risk later bard-specific test.
+- Initial Foxx `WeiDU.txt` 171 components is separate from this current `WeiDU.log` 97 components; no proof Foxx content removed. Keep old originals safe. Next add remaining optional mods and check game launch; do not install broken BGXUN1 v018.
