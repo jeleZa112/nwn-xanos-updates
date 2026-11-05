@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.7.1
+# Roblox background monitor - release 1.7.2
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.7.1"
+VERSION = "1.7.2"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -598,7 +598,7 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    # V1.7.1: strict sequential steps. Retry ONLY the last unconfirmed step.
+    # V1.7.2: strict sequential steps. Retry ONLY the last unconfirmed step.
     # Never re-click an earlier option after moving on, to avoid toggling it off.
     controller = None
     step_names = ("city","one","hard","create")
@@ -636,7 +636,7 @@ def lobby_helper():
             "one": player_selected(feat)==1,
             "hard": feat["hard"]>.15 and feat["normal"]<.15
         }
-    log("Lobby v1.7.1 start; armed="+str(enabled))
+    log("Lobby v1.7.2 start; armed="+str(enabled))
     log("Strict sequence CITY -> ONE -> HARD -> CREATE; retry only unconfirmed step")
     log("Before/after click evidence in "+str(evidence_dir)+"; JPEG overwritten per step.")
     try:
@@ -767,58 +767,13 @@ def lobby_helper():
                     " features="+str({k:round(v,3) for k,v in features.items()}))
                 awaiting_confirmation=False
             if retries[key]>=max_attempts:
-                # After the ignored mouse input, try the documented Roblox
-                # keyboard UI navigation. NEVER send Enter without detecting
-                # an unambiguous focus outline on the exact target card.
-                if key!="one":
-                    if not manual_prompted:
-                        log("STOP: no verified keyboard focus for step="+key)
-                        manual_prompted=True
-                    continue
-                if time.monotonic()-nav_step_at<.85:
-                    continue
-                current=nav_focus_scores(frame)
-                if nav_phase=="off":
-                    nav_baseline=current
-                    nav_phase="toggle"
-                    result=send_scan_key(0x2B)
-                    nav_step_at=time.monotonic()
-                    log("KEYBOARD_NAV_TOGGLE sent="+str(result)+" base="+str([round(x,3) for x in current]))
-                    if not result: break
-                    continue
-                differences=[current[i]-nav_baseline[i] for i in range(4)]
-                best=max(range(4),key=lambda i:differences[i])
-                good=differences[best]>.08 and (sorted(differences)[-1]-sorted(differences)[-2])>.045
-                if good and best==0:
-                    result=send_scan_key(0x1C)
-                    log("KEYBOARD_NAV_ENTER focus=one delta="+str([round(x,3) for x in differences])+
-                        " sent="+str(result))
-                    nav_phase="verify"
-                    nav_step_at=time.monotonic()
-                    if not result: break
-                    continue
-                if nav_phase=="verify":
-                    if not manual_prompted:
-                        log("KEYBOARD_NAV_FAILED: Enter sent but one player not selected.")
-                        manual_prompted=True
-                    nav_phase="done"
-                    continue
-                if nav_phase=="done":
-                    continue
-                if nav_count>=4:
-                    log("KEYBOARD_NAV_STOP: unable to verify focus on one player. "+
-                        "No Enter sent. delta="+str([round(x,3) for x in differences]))
-                    nav_phase="done"
-                    continue
-                # Move only one navigation step at a time, then check new frame.
-                result=send_scan_key(0x4B,True)
-                nav_count+=1
-                nav_phase="moving"
-                nav_step_at=time.monotonic()
-                log("KEYBOARD_NAV_LEFT step="+str(nav_count)+" sent="+str(result)+
-                    " focus="+str(best+1 if good else "unknown")+
-                    " delta="+str([round(x,3) for x in differences]))
-                if not result: break
+                # Safety: NEVER toggle Roblox UI Navigation. Earlier versions
+                # left UI Navigation enabled and disabled normal WASD movement.
+                # Do not inject keyboard events in lobby mode.
+                if not manual_prompted:
+                    log("AUTO_INPUT_UNCONFIRMED step="+key+
+                        " - stopped synthetic input; monitoring selections only.")
+                    manual_prompted=True
                 continue
             if time.monotonic()-last_click<1.0:
                 continue
@@ -875,7 +830,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.7.1 - choose mode:")
+    print("ROBLOX V1.7.2 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
