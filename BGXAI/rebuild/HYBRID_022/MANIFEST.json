@@ -1,0 +1,76 @@
+{
+  "phase": "022",
+  "status": "SOURCE_ONLY_OFFLINE",
+  "windows_weidu_compiled": false,
+  "game_installed": false,
+  "runtime_combat_verified": false,
+  "game_updater_changed": false,
+  "offline_tests_passed": 24,
+  "files": [
+    {
+      "path": "docs/CHECKPOINT_RU.md",
+      "bytes": 2999,
+      "sha256": "e1061057e06f394cc81711a3315835077582f49173aeaa921ed5d69e7a121a10"
+    },
+    {
+      "path": "docs/README_RU.md",
+      "bytes": 9612,
+      "sha256": "1e42c4d2130b14658490920cf85025fdc148615b50d7527de1f995e7cb582310"
+    },
+    {
+      "path": "installer/shadow_target.baf",
+      "bytes": 839,
+      "sha256": "fec0440618d8963f86bd242c32e0dacaa4243968b08e3e9470ee91cfb7085c63"
+    },
+    {
+      "path": "installer/setup-BGXH022.tp2",
+      "bytes": 939,
+      "sha256": "3f4db7110a2841cbb112fdd28334253273d249d095d4f485e69be6a8b379e8ac"
+    },
+    {
+      "path": "BGXH022/shadow_target.baf",
+      "bytes": 839,
+      "sha256": "fec0440618d8963f86bd242c32e0dacaa4243968b08e3e9470ee91cfb7085c63"
+    },
+    {
+      "path": "BGXH022/setup-BGXH022.tp2",
+      "bytes": 939,
+      "sha256": "3f4db7110a2841cbb112fdd28334253273d249d095d4f485e69be6a8b379e8ac"
+    },
+    {
+      "path": "tests/replay_existing.json",
+      "bytes": 3667,
+      "sha256": "ceebe296b0f9d92529959e6d0b5a5711a45706031ba7796938ab44a08d4344b8"
+    },
+    {
+      "path": "tests/results.txt",
+      "bytes": 2609,
+      "sha256": "e353b7fc74ccff657ff237bb01e46831135e3812ba710e43d3a84e9908939b34"
+    },
+    {
+      "path": "tests/test_hybrid.py",
+      "bytes": 6394,
+      "sha256": "2819bfa85d006f75cf901a4b6578121019b93c09a6d130b0e9afe49081f535a1"
+    },
+    {
+      "path": "tests/native_audit.json",
+      "bytes": 769,
+      "sha256": "1d00e710d15e1622c7adb4919660dbc058aee189ffbc3a7c2ef466607864a242"
+    },
+    {
+      "path": "src/audit_native.py",
+      "bytes": 1297,
+      "sha256": "2829727ebe6e2d43c0aec8b1eb371a37d800572ae1595c4afc5f2378277a679f"
+    },
+    {
+      "path": "src/replay.py",
+      "bytes": 1490,
+      "sha256": "1e63643e5652e85cf8a5ed48d20ffc05c77a58909af0150ad2ae67ba28ee80b6"
+    },
+    {
+      "path": "src/planner.py",
+      "bytes": 6004,
+      "sha256": "b1311ccddc1d63d932dbd4fce1587a03e85caf27225faf3a5d3d01e01d99cbe6"
+    }
+  ]
+}
