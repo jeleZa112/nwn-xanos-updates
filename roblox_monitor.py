@@ -1,9 +1,9 @@
-# Roblox background monitor - release 0.6.1
+# Roblox background monitor - release 0.7.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "0.6.1"
+VERSION = "0.7.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -21,7 +21,30 @@ def note(line):
     with LOG.open("a", encoding="utf-8") as f:
         f.write(message + "\n")
 
+
+# Strategy policy is embedded so the existing one-file updater remains sufficient.
+def strategy_decision(in_match, money=None, turret_price=None, core_turrets=None,
+                      core_limit=3, frontline_ok=None, core_protected=False,
+                      perimeter_coverage=None, health=None):
+    if not in_match: return "LOBBY:WAIT"
+    if health is not None and health < .30: return "SURVIVE:RETREAT"
+    if frontline_ok is False: return "DEFENSE:REINFORCE_FRONT"
+    if core_turrets is None: return "OBSERVE:TURRET_COUNT_UNKNOWN"
+    if core_turrets == 0:
+        if money is None or turret_price is None: return "FIRST:OBSERVE_PRICE"
+        return "FIRST:PLACE_TURRET" if money >= turret_price else "FIRST:SAVE"
+    if core_turrets < core_limit:
+        if money is None or turret_price is None: return "CORE:OBSERVE_PRICE"
+        return "CORE:PLACE_NEXT" if money >= turret_price else "CORE:HOLD_BEHIND_TURRETS"
+    if frontline_ok is None or not core_protected: return "CORE:VERIFY_AND_PROTECT"
+    if perimeter_coverage is None: return "PERIMETER:SCOUT_APPROACHES"
+    return "MAINTAIN:REPAIR" if perimeter_coverage >= 1.0 else "PERIMETER:EXPAND"
+
+# Visual detection and independent controls are NOT implemented yet.
+# No gameplay decisions are executed in this monitoring release.
+
 note(f"Roblox monitor {VERSION}, RAM-only analysis, {DURATION} sec")
+note("Policy loaded: first turret -> grouped core -> protected perimeter; observation only")
 try:
     import numpy as np
     from windows_capture import WindowsCapture, Frame, InternalCaptureControl
