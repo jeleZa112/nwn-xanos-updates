@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.3.1
+# Roblox background monitor - release 1.4.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.3.1"
+VERSION = "1.4.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -477,17 +477,30 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    # Reconciliation controller. Every input is followed by a fresh check
-    # of ALL selections; it never assumes earlier selections persisted.
+    # V1.4.0: strict sequential steps. Retry ONLY the last unconfirmed step.
+    # Never re-click an earlier option after moving on, to avoid toggling it off.
     controller = None
-    state = "WAIT_MENU"
-    attempts = {"city":0,"one":0,"hard":0,"create":0}
-    last_action = 0.0
-    signatures = []
-    verified_runs = 0
-    pending = ""
-    log("Lobby v1.3.1 start; armed="+str(enabled))
-    log("State-driven: city + one player + hard checked together after EACH click.")
+    step_names = ("city","one","hard","create")
+    step_points = {"city":(.400,.585),"one":(.382,.745),
+                   "hard":(.710,.707),"create":(.420,.870)}
+    step_index = 0
+    retries = {name:0 for name in step_names}
+    stable_count = 0
+    previous_result = None
+    awaiting_confirmation = False
+    last_click = 0.0
+    menu_present_count = 0
+    menu_absent_count = 0
+    completed = False
+    max_attempts = 2
+    def selected_flags(feat):
+        return {
+            "city": feat["city"]>.15 and feat["cave"]<.12,
+            "one": feat["p1"]>.15 and feat["p4"]<.15,
+            "hard": feat["hard"]>.15 and feat["normal"]<.15
+        }
+    log("Lobby v1.4.0 start; armed="+str(enabled))
+    log("Strict sequence CITY -> ONE -> HARD -> CREATE; retry only unconfirmed step")
     try:
         controller=capture.start_free_threaded()
         while not stop.is_set() and time.monotonic()-start < 150:
@@ -500,85 +513,95 @@ def lobby_helper():
             last_update=time.monotonic()
             modal,features=scan(frame)
             if not modal:
-                signatures.clear()
-                verified_runs=0
-                if pending == "create" and time.monotonic()-last_action >= 1.0:
-                    menu_closed += 1
-                    if menu_closed >= 4:
-                        log("POST_CREATE_DIALOG_CLOSED: possible countdown; not guaranteed")
+                menu_present_count=0
+                previous_result=None
+                stable_count=0
+                if step_index==3 and awaiting_confirmation:
+                    menu_absent_count+=1
+                    if menu_absent_count>=4:
+                        completed=True
+                        log("CREATE_DIALOG_CLOSED: possible success; verify countdown in Roblox")
                         break
                 continue
-            menu_closed=0
-            city = features["city"] > .15 and features["cave"] < .12
-            one = features["p1"] > .15 and features["p4"] < .15
-            hard = features["hard"] > .15 and features["normal"] < .15
-            signature=(city,one,hard)
-            signatures.append(signature)
-            if len(signatures)>5:
-                signatures.pop(0)
-            if len(signatures)<4 or len(set(signatures[-4:])) != 1:
+            menu_absent_count=0
+            menu_present_count+=1
+            if menu_present_count<4:
                 continue
-            if state != "CREATION_MENU":
-                state="CREATION_MENU"
-                log("MENU_CONFIRMED: "+str({k:round(v,2) for k,v in features.items()}))
-            if not enabled:
-                continue
-            if ui.GetForegroundWindow()!=hwnd:
-                continue
-            # Allow enough time for the game to display any selection changes.
-            if time.monotonic()-last_action < 2.5:
-                continue
-            if attempts["create"]:
-                # Never click selectors again after sending Create.
-                continue
-            if pending:
-                log("AFTER_"+pending.upper()+" observed="+str(signature)+
-                    " features="+str({k:round(v,2) for k,v in features.items()}))
-                pending = ""
-            if city and one and hard:
-                verified_runs += 1
-                if verified_runs < 3:
-                    continue
-                if attempts["create"] != 0:
-                    continue
-                action=click(.420,.870,frame)
-                attempts["create"]=1
-                pending="create"
-                last_action=time.monotonic()
-                log("CREATE requested="+action+"; config stable="+str(signature))
-                if action != "INPUT_SENT_UNVERIFIED":
-                    log("STOP: OS rejected creation input")
-                    break
-                # Now observe menu closing, rather than further clicking.
-                signatures.clear()
-                continue
-            verified_runs=0
-            # Always repair the earliest missing setting, regardless of
-            # which setting was previously clicked.
-            if not city:
-                key="city"
-                xy=(.400,.585)
-            elif not one:
-                key="one"
-                xy=(.382,.745)
+            flags=selected_flags(features)
+            if previous_result==flags:
+                stable_count+=1
             else:
-                key="hard"
-                xy=(.710,.707)
-            if attempts[key] >= 1:
-                log("STOP: "+key+" not stable after ONE click; avoid repeated blind clicks. last="+str(signature))
+                stable_count=1
+                previous_result=flags.copy()
+            if stable_count<3:
+                continue
+            if step_index>=3 and awaiting_confirmation:
+                # We have sent Create. Do not click anything else.
+                if time.monotonic()-last_click>7:
+                    log("STOP: Create was sent, dialog stayed open. No auto-repeat.")
+                    break
+                continue
+            if not enabled or ui.GetForegroundWindow()!=hwnd:
+                continue
+            # Previously confirmed settings must never be lost.
+            earlier=step_names[:step_index]
+            if any(not flags[k] for k in earlier):
+                log("STOP: earlier selection changed after step: "+
+                    str({k:flags[k] for k in earlier})+
+                    ". Refusing to reset or click other buttons.")
                 break
-            attempts[key]+=1
-            action=click(xy[0],xy[1],frame)
-            last_action=time.monotonic()
-            pending=key
-            log("ACTION "+key+" attempt="+str(attempts[key])+
-                " result="+action+" before="+str(signature))
-            signatures.clear()
-            if action != "INPUT_SENT_UNVERIFIED":
-                log("STOP: OS refused mouse input")
+            key=step_names[step_index]
+            if key=="create":
+                if not all(flags.values()):
+                    log("STOP: not all selections verified, will not Create: "+str(flags))
+                    break
+                if time.monotonic()-last_click<1.5:
+                    continue
+                result=click(*step_points[key],frame)
+                retries[key]+=1
+                last_click=time.monotonic()
+                awaiting_confirmation=True
+                log("ACTION CREATE result="+result+" selected="+str(flags))
+                if result!="INPUT_SENT_UNVERIFIED":
+                    log("STOP: OS did not accept Create")
+                    break
+                continue
+            if flags[key]:
+                # Confirm current choice from fresh frame readings before advancing.
+                if awaiting_confirmation:
+                    log("STEP_VERIFIED: "+key+" after attempt="+str(retries[key]))
+                else:
+                    log("STEP_ALREADY_SELECTED: "+key)
+                awaiting_confirmation=False
+                step_index+=1
+                stable_count=0
+                previous_result=None
+                continue
+            if awaiting_confirmation:
+                if time.monotonic()-last_click<3.0:
+                    continue
+                log("STEP_NOT_CONFIRMED: "+key+" attempt="+str(retries[key])+
+                    " features="+str({k:round(v,3) for k,v in features.items()}))
+                awaiting_confirmation=False
+            if retries[key]>=max_attempts:
+                log("STOP: "+key+" failed after "+str(max_attempts)+" clicks.")
                 break
-        log("END state="+state+" attempts="+str(attempts)+
-            " (created match only if game itself shows countdown)")
+            if time.monotonic()-last_click<1.0:
+                continue
+            retries[key]+=1
+            result=click(*step_points[key],frame)
+            last_click=time.monotonic()
+            awaiting_confirmation=(result=="INPUT_SENT_UNVERIFIED")
+            stable_count=0
+            previous_result=None
+            log("STEP_CLICK: "+key+" attempt="+str(retries[key])+
+                " result="+result+" before="+str(flags))
+            if not awaiting_confirmation:
+                log("STOP: OS rejected click")
+                break
+        log("END lobby; dialog_disappeared="+str(completed)+
+            "; attempts="+str(retries)+
+            "; match start not independently confirmed")
     except KeyboardInterrupt:
         log("STOP requested by user.")
     except Exception:
@@ -596,7 +619,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.3.1 - choose mode:")
+    print("ROBLOX V1.4.0 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
