@@ -326,7 +326,7 @@ def lobby_helper():
     last_emit = ""
     last_click_time = 0.0
     modal_frames = 0
-    next_action = "HARD"
+    next_action = "MAP"
     started = time.monotonic()
 
     def write(message):
@@ -425,7 +425,13 @@ def lobby_helper():
                 continue
             if time.monotonic()-last_click_time < 2.0:
                 continue
-            if next_action == "HARD" and not hard_selected:
+            if next_action == "MAP":
+                action = click_window_point(.418,.590,w,h)
+                write("City map select: " + action)
+                last_click_time = time.monotonic()
+                if action.startswith("CLICK_SENT"):
+                    next_action = "HARD"
+            elif next_action == "HARD" and not hard_selected:
                 action = click_window_point(.71, .702, w,h)
                 write("Hard select: " + action)
                 last_click_time = time.monotonic()
