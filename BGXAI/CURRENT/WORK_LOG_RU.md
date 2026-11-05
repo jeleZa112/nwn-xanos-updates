@@ -331,3 +331,8 @@ User reports Foxx EET repack was updated, and their current game has SCS install
 
 ## 2026-11-05 — HPS INSTALLED USER-CONFIRMED
 - User states HPS Portraits Project installed on new Foxx. Component 6 chosen option 1, matching previous Foxx: add missing mod NPC portraits and replace mod NPC + party portraits. Exact new version/WeiDU verification still pending. Next user step install EET AutoLoot via official LCA-EET release and setup-AutoLoot.exe, then EPS 18.4 last, with backup first. Keep native bard behaviors available for comparison.
+
+## 2026-11-06 — Русский AutoLoot 1.3, включая игровое меню
+- Проверен официальный GitHub `LCA-EET/AutoLoot`: `AutoLoot.tp2` имеет только English/Spanish; `menupatch.tph` использует `XA_STR_REF_100..115`; `xaal.tra` содержит 24 локализуемые строки (8 установщика, 16 интерфейса/сообщений). Пользователь запросил именно русские настройки игры.
+- Подготовлен и офлайн проверен ZIP `AutoLoot_1_3_RUS_GAME_MENU_PATCH.zip` (SHA256 `4b1ff8e12d03537c1d8cbf7dd73e3a41708293e96921006c5e22ee6d6efdd27a`), перевод `xaal.tra` (SHA256 `f366d2731d6a0b250422c56630244b64f2de7b3f5dd35a42d58644b733c1c1df`). Он добавляет русский язык в TP2 и новый TRA, с резервным копированием; исходники игры и логика AutoLoot не меняются до штатной установки. Тест Windows/WeiDU пока отсутствует.
+- Пользователю: закрыть пока открытый установщик AutoLoot, распаковать ZIP рядом с chitin.key, запустить AUTOLOOT_RU_INSTALL.cmd, проверить SUCCESS и EXIT CODE 0, затем setup-AutoLoot.exe -> 2 Russian. Дальше EPS 18.4 с бэкапом.
