@@ -1,0 +1,29 @@
+{
+  "source": "Gibberlings3/SwordCoastStratagems",
+  "tag": "v35.21",
+  "source_revision": "5dc240e",
+  "installer_translation_entries": 263,
+  "new_game_translation_entries": 18,
+  "files": {
+    "gameplay.tra.add": {
+      "bytes": 811,
+      "sha256": "caafbc4f711ead9cc7ae66cb4fb316c0a4078b5879ad0ca5ad6e1874d5206826"
+    },
+    "spell_som.tra.add": {
+      "bytes": 2326,
+      "sha256": "f9860c21d62c8de57ba8ae33c8a2b6a309011d68dfba9787cc2cb345b800c20e"
+    },
+    "leveller.tra.add": {
+      "bytes": 37,
+      "sha256": "d5a74fe1d394eb4326acdf349a0717e708a1003ef83839106e3b6166de9e3931"
+    },
+    "setup.tra": {
+      "bytes": 29519,
+      "sha256": "6c184d67658dad5e85ea92b6e287aeb289be76db384c70633754933293d79d95"
+    },
+    "initial.tra.add": {
+      "bytes": 1715,
+      "sha256": "8d49366b8138c3f08ab50bdd258214da0e8bf74bc8bc35102cc3449898d5a875"
+    }
+  }
+}
