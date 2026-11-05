@@ -1,0 +1,22 @@
+// PROTOTYPE ONLY, NOT IN THE LIVE UPDATER. DO NOT RUN ON THE USER'S GAME YET.
+// Goal: a separate BGXUN1 binary alias of the MODDED INSTALLED BDDEFAI.BCS,
+// NOT a standalone replacement with 20 custom rules.
+// Must retain other stock/class script slots exactly as original Advanced AI.
+// Requires WeiDU 251 on an isolated copy of the user's game for actual testing.
+
+BACKUP ~BGXUNI_STOCK/backup~
+AUTHOR ~BGXAI stock parity investigation~
+
+BEGIN ~BGXUN1 STOCK BASELINE ALIAS [offline prototype, no custom combat actions]~
+REQUIRE_PREDICATE FILE_EXISTS_IN_GAME ~BDDEFAI.BCS~ ~Missing installed Advanced AI base resource~
+
+// COPY_EXISTING reads the user's installed game resource (override before BIFF).
+// It does not redistribute or embed the proprietary game content.
+COPY_EXISTING ~BDDEFAI.BCS~ ~override/BGXUN1.BCS~
+COPY_EXISTING ~BDDEFAI.BCS~ ~scripts/BGXUN1.BS~
+
+// Future mandatory acceptance outside WeiDU:
+// sha256(ORIGINAL BDDEFAI.BCS resolved from game) ==
+// sha256(override/BGXUN1.BCS) == sha256(scripts/BGXUN1.BS)
+// Then confirm class/general/default script slots remain unchanged in game.
+// This check IS NOT IMPLEMENTED in the current BGXAI_UPDATE.cmd path.
