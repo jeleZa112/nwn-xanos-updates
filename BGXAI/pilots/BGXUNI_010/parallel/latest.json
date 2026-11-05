@@ -1,13 +1,13 @@
 {
   "channel": "BGXUNI-parallel",
-  "version": "0.1.4-spacing-first-retreat-fallback",
+  "version": "0.1.5-kite-action-diagnostic",
   "deployment": "single-existing-BGXAI_UPDATE.cmd",
-  "status": "Offline checked source; 20 BAF blocks; Windows WeiDU 0.1.4 and live spacing runtime unverified; tank geometry and manual origin UNKNOWN",
+  "status": "v014 real EET fail: two pre-movement markers but no visible retreat; v015 commands longer, confirms after-action return, runtime NOT yet verified. No tank geometry or manual-source confirmation.",
   "files": [
     {
       "path": "BGXAI/pilots/BGXUNI_010/BGXUNI/BGXUN1.BAF",
-      "size": 10933,
-      "sha256": "e8827c548e4bf6457d850844f0b0d74441e10bff5c84804a1cedfda17c8dbf0b"
+      "size": 12836,
+      "sha256": "fafc8c08236c2be59f6263d00527b543bff972fce60a4119b5d50d045facccbc"
     },
     {
       "path": "BGXAI/pilots/BGXUNI_010/BGXUNI/setup-BGXUNI.tp2",
@@ -17,7 +17,7 @@
   ],
   "installer": {
     "path": "BGXAI/pilots/BGXUNI_010/parallel/BGXUNI_AUTOINSTALL.ps1",
-    "size": 10821,
-    "sha256": "37ed12efad4b8a64ece8cd7c43366a6b3ccc5eae730b4df9c13ceffcc419afb5"
+    "size": 10808,
+    "sha256": "e3a5540684025671d8d81e1f2351cbf9ef8cf882c0e187e04f2ca8ee1a799d57"
   }
 }
