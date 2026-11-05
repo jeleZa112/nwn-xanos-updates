@@ -1,9 +1,9 @@
-# Roblox background monitor - release 2.0.1
+# Roblox background monitor - release 2.1.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "2.0.1"
+VERSION = "2.1.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -313,7 +313,7 @@ def lobby_helper():
     folder = Path.home() / "Documents" / "RobloxBGDiagnostics" / "LOBBY"
     folder.mkdir(parents=True, exist_ok=True)
     logfile = folder / "lobby.log"
-    print("\nROBLOX LOBBY BOT V2.0.1")
+    print("\nROBLOX LOBBY BOT V2.1.0")
     print("Target: City Landscape / 1 player / Hard / Create")
     print("Bot will click only if the Roblox window is focused.")
     print("You must first walk onto the purple creation pad.")
@@ -621,8 +621,8 @@ def lobby_helper():
     # Only an explicitly configured COM device can receive mouse commands.
     import re
     hid_port=os.environ.get("ROBLOX_HID_PORT","").strip().upper()
-    backend=os.environ.get("ROBLOX_INPUT_BACKEND","TOUCH").strip().upper()
-    if backend not in ("TOUCH","HID","SOFTWARE"):
+    backend=os.environ.get("ROBLOX_INPUT_BACKEND","SYNTHETIC").strip().upper()
+    if backend not in ("SYNTHETIC","TOUCH","HID","SOFTWARE"):
         log("INPUT_BACKEND_INVALID: "+backend+"; observe only")
         enabled=False
     if backend=="HID":
@@ -651,6 +651,18 @@ def lobby_helper():
         enabled=False
     if backend=="HID" and not hid_port:
         enabled=False
+    if backend=="SYNTHETIC":
+        try:
+            api_check=ctypes.WinDLL("user32",use_last_error=True)
+            for name in ("CreateSyntheticPointerDevice",
+                         "InjectSyntheticPointerInput",
+                         "DestroySyntheticPointerDevice"):
+                getattr(api_check,name)
+            log("SYNTH_API_AVAILABLE: Windows pointer functions found. "+
+                "Game reception not yet verified.")
+        except (AttributeError,OSError) as exc:
+            log("SYNTH_API_UNAVAILABLE: "+repr(exc))
+            enabled=False
     if backend=="TOUCH":
         try:
             touch_check=ctypes.WinDLL("user32",use_last_error=True)
@@ -773,6 +785,100 @@ def lobby_helper():
             log("TOUCH_API_UNAVAILABLE "+repr(exc))
             return "ERROR_TOUCH_UNSUPPORTED"
 
+    # Windows 10 1809+ software synthetic TOUCH device.
+    # This is independent of the legacy InjectTouchInput API, which returned
+    # ERROR_INVALID_PARAMETER (87) on the user's Windows laptop.
+    class POINTER_TYPE_UNION(ctypes.Union):
+        _fields_=[("pointerInfo",POINTER_INFO),
+                  ("touchInfo",POINTER_TOUCH_INFO)]
+    class POINTER_TYPE_INFO(ctypes.Structure):
+        _fields_=[("type",ctypes.c_uint32),
+                  ("info",POINTER_TYPE_UNION)]
+    def click_synthetic(relx,rely,frame):
+        if ui.IsIconic(hwnd) or ui.GetForegroundWindow()!=hwnd:
+            return "SKIP_NOT_FOREGROUND"
+        rect=RECT()
+        if not ui.GetClientRect(hwnd,ctypes.byref(rect)):
+            return "ERROR_CLIENT_RECT"
+        fw,fh=frame.shape[1],frame.shape[0]
+        cw,ch=rect.right-rect.left,rect.bottom-rect.top
+        dx,dy=fw-cw,fh-ch
+        if not(0<=dx<=50 and 0<=dy<=90):
+            log("SYNTH_GEOMETRY_INVALID frame=%dx%d client=%dx%d"%
+                (fw,fh,cw,ch))
+            return "ERROR_SYNTH_GEOMETRY"
+        cx=int(relx*fw-dx/2)
+        cy=int(rely*fh-dy)
+        if not(0<=cx<cw and 0<=cy<ch):
+            return "ERROR_SYNTH_POINT"
+        screen=POINT(cx,cy)
+        if not ui.ClientToScreen(hwnd,ctypes.byref(screen)):
+            return "ERROR_SYNTH_CONVERSION"
+        # x64 POINTER_TYPE_INFO has an 8-byte aligned anonymous union.
+        if ctypes.sizeof(POINTER_TYPE_INFO)!=152 or POINTER_TYPE_INFO.info.offset!=8:
+            log("SYNTH_ABI_INVALID size=%d offset=%d"%
+                (ctypes.sizeof(POINTER_TYPE_INFO),POINTER_TYPE_INFO.info.offset))
+            return "ERROR_SYNTH_ABI"
+        device=None
+        try:
+            api=ctypes.WinDLL("user32",use_last_error=True)
+            create=api.CreateSyntheticPointerDevice
+            inject=api.InjectSyntheticPointerInput
+            destroy=api.DestroySyntheticPointerDevice
+            create.argtypes=(ctypes.c_uint32,ctypes.c_uint32,ctypes.c_uint32)
+            create.restype=ctypes.c_void_p
+            inject.argtypes=(ctypes.c_void_p,
+                             ctypes.POINTER(POINTER_TYPE_INFO),ctypes.c_uint32)
+            inject.restype=ctypes.c_int
+            destroy.argtypes=(ctypes.c_void_p,)
+            destroy.restype=None
+            ctypes.set_last_error(0)
+            device=create(2,1,3) # PT_TOUCH, one contact, no feedback
+            if not device:
+                log("SYNTH_CREATE_FAILED WinError="+str(ctypes.get_last_error()))
+                return "ERROR_SYNTH_CREATE"
+            contact=POINTER_TYPE_INFO()
+            contact.type=2
+            touch=contact.info.touchInfo
+            touch.pointerInfo.pointerType=2
+            touch.pointerInfo.pointerId=0
+            # Microsoft's synthetic pointer API documents screen positions
+            # relative to the top-left corner of the virtual screen.
+            origin_x=ui.GetSystemMetrics(76) # SM_XVIRTUALSCREEN
+            origin_y=ui.GetSystemMetrics(77) # SM_YVIRTUALSCREEN
+            px,py=screen.x-origin_x,screen.y-origin_y
+            touch.pointerInfo.ptPixelLocation=TOUCH_POINT(px,py)
+            touch.pointerInfo.pointerFlags=0x10006
+            touch.touchMask=0x7
+            touch.orientation=90
+            touch.pressure=512
+            touch.rcContact=TOUCH_RECT(px-3,py-3,px+3,py+3)
+            touch.rcContactRaw=touch.rcContact
+            if ui.GetForegroundWindow()!=hwnd:
+                return "ERROR_SYNTH_FOCUS"
+            ctypes.set_last_error(0)
+            if not inject(device,ctypes.byref(contact),1):
+                log("SYNTH_DOWN_FAILED WinError="+str(ctypes.get_last_error())+
+                    " x="+str(px)+" y="+str(py))
+                return "ERROR_SYNTH_DOWN"
+            time.sleep(.07)
+            touch.pointerInfo.pointerFlags=0x40000
+            ctypes.set_last_error(0)
+            if not inject(device,ctypes.byref(contact),1):
+                log("SYNTH_UP_FAILED WinError="+str(ctypes.get_last_error()))
+                return "ERROR_SYNTH_UP"
+            log("SYNTH_SENT point=(%d,%d) status=UNVERIFIED"%(px,py))
+            return "INPUT_SENT_UNVERIFIED"
+        except (AttributeError,OSError) as exc:
+            log("SYNTH_API_UNAVAILABLE "+repr(exc))
+            return "ERROR_SYNTH_API"
+        finally:
+            if device:
+                try:
+                    destroy(device)
+                except Exception as exc:
+                    log("SYNTH_DESTROY_NOTE "+repr(exc))
+
     def usb_hid_mouse_click(relx,rely,frame):
         # USB serial commands go to a genuine HID board, not Windows SendInput.
         if ui.IsIconic(hwnd) or ui.GetForegroundWindow()!=hwnd:
@@ -885,7 +991,7 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    # V2.0.1: strict sequential steps. Retry ONLY the last unconfirmed step.
+    # V2.1.0: strict sequential steps. Retry ONLY the last unconfirmed step.
     # Never re-click an earlier option after moving on, to avoid toggling it off.
     controller = None
     step_names = ("city","one","hard","create")
@@ -900,7 +1006,7 @@ def lobby_helper():
     menu_present_count = 0
     menu_absent_count = 0
     completed = False
-    max_attempts = 1 if backend in ("HID","TOUCH") else 2
+    max_attempts = 1 if backend in ("HID","TOUCH","SYNTHETIC") else 2
     manual_prompted = False
     nav_phase = "off"
     nav_step_at = 0.0
@@ -923,7 +1029,7 @@ def lobby_helper():
             "one": player_selected(feat)==1,
             "hard": feat["hard"]>.15 and feat["normal"]<.15
         }
-    log("Lobby v2.0.1 start; armed="+str(enabled))
+    log("Lobby v2.1.0 start; armed="+str(enabled))
     log("Strict sequence CITY -> ONE -> HARD -> CREATE; retry only unconfirmed step")
     log("Before/after click evidence in "+str(evidence_dir)+"; JPEG overwritten per step.")
     try:
@@ -1015,7 +1121,9 @@ def lobby_helper():
                 reduced=cv2.resize(frame,(960,round(frame.shape[0]*960/frame.shape[1])))
                 cv2.imwrite(str(evidence_dir / "before_create.jpg"),reduced,
                             [cv2.IMWRITE_JPEG_QUALITY,70])
-                if backend=="TOUCH":
+                if backend=="SYNTHETIC":
+                    result=click_synthetic(*step_points[key],frame)
+                elif backend=="TOUCH":
                     result=click_touch(*step_points[key],frame)
                 elif backend=="HID":
                     result=usb_hid_mouse_click(*step_points[key],frame)
@@ -1086,9 +1194,13 @@ def lobby_helper():
                 method="USB_HID_LEONARDO"
             elif backend=="TOUCH":
                 method="WIN32_TOUCH"
+            elif backend=="SYNTHETIC":
+                method="WIN32_SYNTHETIC_POINTER"
             log("INPUT_METHOD step="+key+" attempt="+str(retries[key])+
                 " method="+method+" frame_target="+str(target))
-            if backend=="TOUCH":
+            if backend=="SYNTHETIC":
+                result=click_synthetic(*target,frame)
+            elif backend=="TOUCH":
                 result=click_touch(*target,frame)
             elif backend=="HID":
                 result=usb_hid_mouse_click(*target,frame)
@@ -1126,7 +1238,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V2.0.1 - choose mode:")
+    print("ROBLOX V2.1.0 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
@@ -1152,7 +1264,7 @@ try:
     from windows_capture import WindowsCapture, Frame, InternalCaptureControl
 except Exception as exc:
     note("DEPENDENCY ERROR: " + str(exc))
-    note("Run: py -3 -m pip install --user windows-capture==2.0.1 numpy opencv-python")
+    note("Run: py -3 -m pip install --user windows-capture==2.1.0 numpy opencv-python")
     sys.exit(2)
 
 stats = {"received": 0, "analyzed": 0, "changes": 0, "last": 0.0, "errors": 0, "left": 0.0, "center": 0.0, "right": 0.0, "possible_match": 0, "hud_mode": "UNCONFIRMED", "hud_strength": 0.0}
