@@ -1,13 +1,13 @@
 {
   "channel": "BGXUNI-parallel",
-  "version": "0.1.6-no-idle-range-first",
+  "version": "0.1.7-threat-gated-short-retreat",
   "deployment": "single-existing-BGXAI_UPDATE.cmd",
-  "status": "v015 real combat: short steps then no attacks; v016 allows close-fire fallback and unlimited rate-limited retreat. Offline checks only; Windows WeiDU and gameplay UNVERIFIED. No tank geometry/manual origin.",
+  "status": "v016 live: long 355 retreat after killing one foe while second attacks familiar; v017 uses AttackedBy and 24-tick steps; offline tested, Windows WeiDU/in-game UNVERIFIED, no squad geometry.",
   "files": [
     {
       "path": "BGXAI/pilots/BGXUNI_010/BGXUNI/BGXUN1.BAF",
-      "size": 8965,
-      "sha256": "da61009a665c8760745abec992d26dba778a18e21605ac79445ac7176c006c67"
+      "size": 9466,
+      "sha256": "1707f2b67e38dda6f6dccf2550dfd16805a779ae7fb3d26d18331373ec00c7c6"
     },
     {
       "path": "BGXAI/pilots/BGXUNI_010/BGXUNI/setup-BGXUNI.tp2",
@@ -17,7 +17,7 @@
   ],
   "installer": {
     "path": "BGXAI/pilots/BGXUNI_010/parallel/BGXUNI_AUTOINSTALL.ps1",
-    "size": 10799,
-    "sha256": "6ff6de587861393c9fb79ec899576924f37f30e6d386e87c228d434da6606fba"
+    "size": 10820,
+    "sha256": "942ed4d45a0cf1e93c58212c00bdfc6cbce79f54e1c5a7c98ef0541d68d46534"
   }
 }
