@@ -39,58 +39,25 @@ function RepairUserScriptShadow([string]$pinnedCommit) {
     if(!$?) {throw 'BGXAI shadow resource audit failed'}
     Log 'User script shadow audit completed. See BGXAI_RESOURCE_AUDIT.txt'
 }
-# BGXAI_ONE_FILE_SELECTOR_018
-# This is REMOTE code inside the existing BGXAI_SYNC.ps1. The user still runs ONLY
-# the original game-root BGXAI_UPDATE.cmd; no new launcher or manually installed ZIP.
+# BGXAI_ONE_FILE_SELECTOR_019_GUARD
+# Experimental BGXUN1 v018 temporarily PAUSED after real 105/355 oscillation.
+# No game files changed by choices 1 and 3. Original BGXAI_UPDATE.cmd unchanged.
 Write-Host ''
-Write-Host '============================================================='
-Write-Host ' BGXAI ONE UPDATE FILE - EET / WeiDU 251'
-Write-Host '============================================================='
-Write-Host ' 1 = Install/update NEW parallel BGXUN1 script (recommended)'
-Write-Host '     Existing Advanced AI / BGXGRP / BGXTANK remain unchanged.'
-Write-Host ' 2 = Update EXISTING BGXAI 0.6.x role pilots (legacy behavior)'
-Write-Host ' 3 = Exit without changing game files'
+Write-Host ' BGXAI UPDATE - SAFE STOCK BASELINE REBUILD'
+Write-Host ' 1 = BGXUN1 experimental installer [PAUSED: known combat regression]'
+Write-Host ' 2 = Update legacy BGXAI 0.6.x role scripts (original behavior)'
+Write-Host ' 3 = Exit without changes [default]'
 Write-Host ''
-$bgxChoice=Read-Host 'Choose [1]'
-if([string]::IsNullOrWhiteSpace($bgxChoice)) {$bgxChoice='1'}
-if($bgxChoice -eq '3') {Write-Host 'No game files changed.'; exit 0}
-if($bgxChoice -ne '1' -and $bgxChoice -ne '2') {
-    Log ('ERROR: Invalid menu selection: '+$bgxChoice)
-    exit 1
+$bgxChoice=Read-Host 'Choose [3]'
+if([string]::IsNullOrWhiteSpace($bgxChoice)) {$bgxChoice='3'}
+if($bgxChoice -eq '3'){Write-Host 'No files changed.';exit 0}
+if($bgxChoice -eq '1'){
+    Write-Host 'PAUSED: BGXUN1 0.1.8 failed real ranged retreat/reengage tests.'
+    Write-Host 'Use the existing working Advanced AI in the character script menu.'
+    Write-Host 'No files have been modified.'
+    exit 0
 }
-if($bgxChoice -eq '1') {
-    try {
-        if(!(Test-Path -LiteralPath (Join-Path $GameRoot 'chitin.key'))) {throw 'chitin.key not found'}
-        if(Get-Process -Name Baldur,BaldursGate,InfinityLoader -ErrorAction SilentlyContinue) {
-            throw 'Game / InfinityLoader is running: close both before changing game scripts'
-        }
-        $bgxCommit=[IO.File]::ReadAllText((Join-Path $cache 'head.txt')).Trim()
-        if($bgxCommit -notmatch '^[a-fA-F0-9]{40}$') {throw 'Updater GitHub commit marker missing'}
-        [byte[]]$bgxManifestBytes=GetFile 'BGXAI/pilots/BGXUNI_010/parallel/latest.json' $bgxCommit
-        $bgxManifest=[Text.Encoding]::UTF8.GetString($bgxManifestBytes) | ConvertFrom-Json
-        if($bgxManifest.channel -ne 'BGXUNI-parallel' -or
-           $bgxManifest.version -ne '0.1.8-safe-resume-fire') {throw 'Invalid parallel channel manifest'}
-        $bgxHelperRemote='BGXAI/pilots/BGXUNI_010/parallel/BGXUNI_AUTOINSTALL.ps1'
-        if([string]$bgxManifest.installer.path -ne $bgxHelperRemote) {throw 'Unexpected helper path'}
-        [byte[]]$bgxHelper=GetFile $bgxHelperRemote $bgxCommit
-        $bgxHelperText=[Text.Encoding]::UTF8.GetString($bgxHelper)
-        if($bgxHelper.Length -ne [int]$bgxManifest.installer.size -or
-           (Hash $bgxHelper) -ne [string]$bgxManifest.installer.sha256 -or
-           !$bgxHelperText.Contains('BGXUNI_INTEGRATED_INSTALLER_V018')) {
-            throw 'BGXUNI helper content verification failed'
-        }
-        $bgxHelperPath=Join-Path $cache 'BGXUNI_AUTOINSTALL.current.ps1'
-        [IO.File]::WriteAllBytes($bgxHelperPath,$bgxHelper)
-        Log ('BGXUNI: pinned helper SHA256 checked; commit '+$bgxCommit.Substring(0,12))
-        & $bgxHelperPath -GameRoot $GameRoot -Commit $bgxCommit
-        if(!$? -or $LASTEXITCODE -ne 0) {throw 'BGXUNI parallel installer failed; see BGXUNI_UPDATE.log'}
-        Log 'SUCCESS: parallel BGXUN1 installation verified. Other AI scripts unchanged.'
-        exit 0
-    } catch {
-        Log ('FAILED BGXUNI: '+$_.Exception.Message)
-        exit 1
-    }
-}
+if($bgxChoice -ne '2'){Write-Host 'Invalid choice; nothing changed.';exit 1}
 # Choice 2 falls through unchanged to the historic BGXAI 0.6.x try/catch below.
 
 try {
