@@ -1,9 +1,9 @@
-# Roblox background monitor - release 2.0.0
+# Roblox background monitor - release 2.0.1
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "2.0.0"
+VERSION = "2.0.1"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -313,7 +313,7 @@ def lobby_helper():
     folder = Path.home() / "Documents" / "RobloxBGDiagnostics" / "LOBBY"
     folder.mkdir(parents=True, exist_ok=True)
     logfile = folder / "lobby.log"
-    print("\nROBLOX LOBBY BOT V2.0.0")
+    print("\nROBLOX LOBBY BOT V2.0.1")
     print("Target: City Landscape / 1 player / Hard / Create")
     print("Bot will click only if the Roblox window is focused.")
     print("You must first walk onto the purple creation pad.")
@@ -651,6 +651,16 @@ def lobby_helper():
         enabled=False
     if backend=="HID" and not hid_port:
         enabled=False
+    if backend=="TOUCH":
+        try:
+            touch_check=ctypes.WinDLL("user32",use_last_error=True)
+            getattr(touch_check,"InitializeTouchInjection")
+            getattr(touch_check,"InjectTouchInput")
+            log("TOUCH_API_AVAILABLE: Windows touch functions found. "+
+                "Roblox handling of synthetic touch is not yet verified.")
+        except (AttributeError,OSError) as exc:
+            log("TOUCH_API_UNAVAILABLE: "+repr(exc))
+            enabled=False
     if mode=="2" and not enabled:
         log("NO_INPUT: backend="+backend+" is not ready; no clicks sent.")
         if backend=="HID":
@@ -875,7 +885,7 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    # V2.0.0: strict sequential steps. Retry ONLY the last unconfirmed step.
+    # V2.0.1: strict sequential steps. Retry ONLY the last unconfirmed step.
     # Never re-click an earlier option after moving on, to avoid toggling it off.
     controller = None
     step_names = ("city","one","hard","create")
@@ -913,7 +923,7 @@ def lobby_helper():
             "one": player_selected(feat)==1,
             "hard": feat["hard"]>.15 and feat["normal"]<.15
         }
-    log("Lobby v2.0.0 start; armed="+str(enabled))
+    log("Lobby v2.0.1 start; armed="+str(enabled))
     log("Strict sequence CITY -> ONE -> HARD -> CREATE; retry only unconfirmed step")
     log("Before/after click evidence in "+str(evidence_dir)+"; JPEG overwritten per step.")
     try:
@@ -1116,7 +1126,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V2.0.0 - choose mode:")
+    print("ROBLOX V2.0.1 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
