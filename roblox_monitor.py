@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.1.0
+# Roblox background monitor - release 1.1.1
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.1.0"
+VERSION = "1.1.1"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -328,6 +328,9 @@ def lobby_helper():
     last_update = 0.
     modal_seen = 0
     stage = "WAIT_MENU"
+    last_features = None
+    pending_step = None
+    pending_before = None
     previous_stage = ""
     action_time = 0.
     retries = 0
@@ -365,27 +368,27 @@ def lobby_helper():
             return 0.
         return float(mask.mean())
 
-    def border_green(frame, rect):
+    def border_color(frame, rect, kind):
         x1,y1,x2,y2 = rect
-        pad=.007
+        pad=.009
         segments = [patch(frame,x1,y1,x2,y1+pad),
                     patch(frame,x1,y2-pad,x2,y2),
                     patch(frame,x1,y1,x1+pad,y2),
                     patch(frame,x2-pad,y1,x2,y2)]
-        return float(max(colormask(z,"green") for z in segments))
+        return float(max(colormask(z,kind) for z in segments))
 
     def scan(frame):
-        # Relative to Roblox content. Anchors verified on the user's screenshots,
-        # not hard proof of UI identity; require several successive matches.
-        create = border_green(frame,(.36,.835,.48,.914))
-        cancel = colormask(patch(frame,.52,.845,.64,.912),"red")
-        players1 = border_green(frame,(.347,.670,.417,.805))
-        players4 = border_green(frame,(.583,.670,.653,.805))
-        city = border_green(frame,(.345,.515,.495,.655))
-        normal = border_green(frame,(.665,.620,.757,.674))
-        hard = border_green(frame,(.665,.678,.757,.735))
-        modal = (create>.10 and cancel>.035 and
-                 max(players1,players4)>.04)
+        # Selected city map has a YELLOW outline, 1-player has GREEN,
+        # and Hard has RED. These are observed on the user's screenshot.
+        # This is not proof of GUI state without real post-click changes.
+        create = border_color(frame,(.359,.833,.481,.914),"green")
+        cancel = border_color(frame,(.519,.833,.642,.914),"red")
+        players1 = border_color(frame,(.346,.672,.416,.805),"green")
+        players4 = border_color(frame,(.583,.672,.655,.805),"green")
+        city = border_color(frame,(.347,.517,.496,.647),"yellow")
+        normal = border_color(frame,(.666,.620,.757,.670),"green")
+        hard = border_color(frame,(.666,.674,.757,.720),"red")
+        modal = (create>.08 and cancel>.08)
         return modal,dict(create=create,cancel=cancel,p1=players1,
                 p4=players4,city=city,normal=normal,hard=hard)
 
@@ -402,6 +405,7 @@ def lobby_helper():
         old=POINT()
         ui.GetCursorPos(ctypes.byref(old))
         ui.SetCursorPos(p.x,p.y)
+        time.sleep(.10)
         ui.mouse_event(0x0002,0,0,0,0)
         time.sleep(.065)
         ui.mouse_event(0x0004,0,0,0,0)
@@ -466,29 +470,29 @@ def lobby_helper():
             def do(x,y,label):
                 nonlocal action_time
                 answer=click(x,y,frame)
-                log(label+": "+answer)
+                log(label+": "+answer+"; this is NOT confirmation Roblox accepted input; frame_before="+str({k:round(v,2) for k,v in features.items()}))
                 action_time=time.monotonic()
                 return answer=="CLICK_SENT"
             if stage=="SELECT_CITY":
-                if features["city"]>.20:
+                if features["city"]>.12:
                     stage="SELECT_ONE"
                 elif do(.420,.585,"City map"):
                     stage="VERIFY_CITY"
             elif stage=="VERIFY_CITY":
-                if features["city"]>.20:
+                if features["city"]>.12:
                     stage="SELECT_ONE"
                     retries=0
-                    log("City selection verified.")
+                    log("City map selection VISIBLE. This does not prove the bot clicked.")
                 elif time.monotonic()-action_time>2.5:
-                    log("STOP: city map could not be verified.")
+                    log("STOP: City map not visibly selected after click; no further input.")
                     break
             elif stage=="SELECT_ONE":
-                if features["p1"]>.19 and features["p4"]<.19:
+                if features["p1"]>.15 and features["p4"]<.15:
                     stage="SELECT_HARD"
                 elif do(.382,.745,"One player"):
                     stage="VERIFY_ONE"
             elif stage=="VERIFY_ONE":
-                if features["p1"]>.19 and features["p4"]<.19:
+                if features["p1"]>.15 and features["p4"]<.15:
                     stage="SELECT_HARD"
                     retries=0
                     log("1 player verified.")
@@ -496,20 +500,20 @@ def lobby_helper():
                     log("STOP: 1 player could not be verified.")
                     break
             elif stage=="SELECT_HARD":
-                if features["hard"]>.20 and features["normal"]<.19:
+                if features["hard"]>.15:
                     stage="CREATE"
                 elif do(.710,.707,"Hard difficulty"):
                     stage="VERIFY_HARD"
             elif stage=="VERIFY_HARD":
-                if features["hard"]>.20 and features["normal"]<.19:
+                if features["hard"]>.15:
                     stage="CREATE"
                     log("Hard verified.")
                 elif time.monotonic()-action_time>2.5:
                     log("STOP: difficulty could not be verified.")
                     break
             elif stage=="CREATE":
-                if (features["city"]>.19 and features["p1"]>.19
-                    and features["hard"]>.19 and features["p4"]<.19):
+                if (features["city"]>.12 and features["p1"]>.15
+                    and features["hard"]>.15 and features["p4"]<.15):
                     if do(.420,.870,"Create lobby"):
                         stage="AFTER_CREATE"
                 else:
@@ -533,7 +537,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.1.0 - choose mode:")
+    print("ROBLOX V1.1.1 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
