@@ -39,7 +39,7 @@ function RepairUserScriptShadow([string]$pinnedCommit) {
     if(!$?) {throw 'BGXAI shadow resource audit failed'}
     Log 'User script shadow audit completed. See BGXAI_RESOURCE_AUDIT.txt'
 }
-# BGXAI_ONE_FILE_SELECTOR_013
+# BGXAI_ONE_FILE_SELECTOR_014
 # This is REMOTE code inside the existing BGXAI_SYNC.ps1. The user still runs ONLY
 # the original game-root BGXAI_UPDATE.cmd; no new launcher or manually installed ZIP.
 Write-Host ''
@@ -69,14 +69,14 @@ if($bgxChoice -eq '1') {
         [byte[]]$bgxManifestBytes=GetFile 'BGXAI/pilots/BGXUNI_010/parallel/latest.json' $bgxCommit
         $bgxManifest=[Text.Encoding]::UTF8.GetString($bgxManifestBytes) | ConvertFrom-Json
         if($bgxManifest.channel -ne 'BGXUNI-parallel' -or
-           $bgxManifest.version -ne '0.1.3-unified-one-updater') {throw 'Invalid parallel channel manifest'}
+           $bgxManifest.version -ne '0.1.4-spacing-first-retreat-fallback') {throw 'Invalid parallel channel manifest'}
         $bgxHelperRemote='BGXAI/pilots/BGXUNI_010/parallel/BGXUNI_AUTOINSTALL.ps1'
         if([string]$bgxManifest.installer.path -ne $bgxHelperRemote) {throw 'Unexpected helper path'}
         [byte[]]$bgxHelper=GetFile $bgxHelperRemote $bgxCommit
         $bgxHelperText=[Text.Encoding]::UTF8.GetString($bgxHelper)
         if($bgxHelper.Length -ne [int]$bgxManifest.installer.size -or
            (Hash $bgxHelper) -ne [string]$bgxManifest.installer.sha256 -or
-           !$bgxHelperText.Contains('BGXUNI_INTEGRATED_INSTALLER_V013')) {
+           !$bgxHelperText.Contains('BGXUNI_INTEGRATED_INSTALLER_V014')) {
             throw 'BGXUNI helper content verification failed'
         }
         $bgxHelperPath=Join-Path $cache 'BGXUNI_AUTOINSTALL.current.ps1'
