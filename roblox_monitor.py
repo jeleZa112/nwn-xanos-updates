@@ -1,9 +1,9 @@
-# Roblox background monitor - release 0.6.0
+# Roblox background monitor - release 0.6.1
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "0.6.0"
+VERSION = "0.6.1"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -94,11 +94,9 @@ try:
     controller = capture.start_free_threaded()
     def watchdog():
         if not stopping.wait(DURATION):
+            # A stop request from another thread can race with the Rust capture callback
+            # and cause 'Already borrowed'. Let the next frame callback stop the session.
             stopping.set()
-            try:
-                controller.stop()
-            except Exception as exc:
-                note("STOP ERROR: " + str(exc))
     threading.Thread(target=watchdog, daemon=True).start()
     controller.wait()
 except KeyboardInterrupt:
