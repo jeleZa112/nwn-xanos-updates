@@ -1,9 +1,9 @@
-# Roblox background monitor - release 0.9.2
+# Roblox background monitor - release 1.1.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "0.9.2"
+VERSION = "1.1.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -290,107 +290,136 @@ def training_mode():
 
 # === V1.0 Lobby assistant: conservative foreground-only workflow ===
 def lobby_helper():
-    """Detect a known lobby menu, choose Hard mode and click Create when armed.
-    It never starts Roblox, walks the avatar to the pad, or clicks in the background.
+    """Guided lobby creation from the already-open Roblox creation pad.
+
+    Uses Windows Graphics Capture frames, OpenCV HSV tests, client-area
+    coordinates, verified state transitions, and explicitly foreground-only
+    mouse input. No memory injection or hidden background input.
     """
     import ctypes
     import queue
     import cv2
     import numpy as np
-    from windows_capture import WindowsCapture, Frame, InternalCaptureControl
     from ctypes import wintypes
-    print("\nLOBBY HELPER V1.0")
-    print("Known sequence from your recording: step onto creation pad, 1 player, Hard, Create.")
-    print("Only tested visually against one supplied 1280x687 reference frame.")
-    print("1 = observe only (safe)")
-    print("2 = allow clicks ONLY while Roblox is the focused window")
-    selection = input("Mode [1]: ").strip()
-    armed = selection == "2" and input("Type YES to enable clicking: ").strip().upper() == "YES"
-    if armed:
-        print("You must manually enter the purple creation pad and focus Roblox.")
-        print("Program clicks hard difficulty, then Create, only if menu matches.")
-        print("WARNING: cursor may move during clicks; don't use mouse at same time.")
-    else:
-        print("Observation mode: no mouse actions.")
-    u = ctypes.windll.user32
-    hwnd = u.FindWindowW(None, "Roblox")
-    if not hwnd:
-        print("Roblox window was not found.")
-        return 1
-    out = Path.home() / "Documents" / "RobloxBGDiagnostics" / "LOBBY"
-    out.mkdir(parents=True, exist_ok=True)
-    log_path = out / "lobby.log"
-    frames = queue.Queue(maxsize=1)
-    stop = threading.Event()
-    state = "SEARCH_PAD"
-    last_emit = ""
-    last_click_time = 0.0
-    modal_frames = 0
-    next_action = "MAP"
-    started = time.monotonic()
+    from windows_capture import WindowsCapture, Frame, InternalCaptureControl
 
-    def write(message):
-        line = time.strftime("[%H:%M:%S] ") + str(message)
+    ui = ctypes.windll.user32
+    ui.SetProcessDPIAware()
+    hwnd = ui.FindWindowW(None, "Roblox")
+    if not hwnd:
+        print("LOBBY ERROR: Roblox window not found.")
+        return 1
+
+    folder = Path.home() / "Documents" / "RobloxBGDiagnostics" / "LOBBY"
+    folder.mkdir(parents=True, exist_ok=True)
+    logfile = folder / "lobby.log"
+    print("\nROBLOX LOBBY BOT V1.1")
+    print("Target: City Landscape / 1 player / Hard / Create")
+    print("Bot will click only if the Roblox window is focused.")
+    print("You must first walk onto the purple creation pad.")
+    print("The window can be observed from the background, but clicks require focus.")
+    print("1 = observe only; 2 = enable real lobby clicks")
+    mode = input("Select mode [1]: ").strip()
+    enabled = mode == "2" and input("Confirm YES: ").strip().casefold() in ("yes", "да", "da")
+    print("ARMED=" + str(enabled) + "; switch to Roblox. Ctrl+C = STOP.")
+    q = queue.Queue(maxsize=1)
+    stop = threading.Event()
+    start = time.monotonic()
+    last_update = 0.
+    modal_seen = 0
+    stage = "WAIT_MENU"
+    previous_stage = ""
+    action_time = 0.
+    retries = 0
+    menu_closed = 0
+
+    class POINT(ctypes.Structure):
+        _fields_ = [("x", ctypes.c_long), ("y", ctypes.c_long)]
+    class RECT(ctypes.Structure):
+        _fields_ = [("left", ctypes.c_long), ("top", ctypes.c_long),
+                    ("right", ctypes.c_long), ("bottom", ctypes.c_long)]
+
+    def log(msg):
+        line = time.strftime("[%H:%M:%S] ") + str(msg)
         print(line, flush=True)
-        with log_path.open("a", encoding="utf-8") as fp:
+        with logfile.open("a", encoding="utf-8") as fp:
             fp.write(line + "\n")
 
-    write("Lobby helper v1.0; armed=" + str(armed))
-    write("Clicks are strictly foreground-only and require detected creation menu.")
+    def patch(frame, x1,y1,x2,y2):
+        h,w = frame.shape[:2]
+        return frame[max(0,int(y1*h)):min(h,int(y2*h)),
+                     max(0,int(x1*w)):min(w,int(x2*w)),:3]
 
-    def green_red(frame, relative_box):
-        h, w = frame.shape[:2]
-        x1, y1, x2, y2 = relative_box
-        block = frame[int(y1*h):int(y2*h), int(x1*w):int(x2*w), :3]
-        if not block.size:
-            return (0.0, 0.0)
-        hsv = cv2.cvtColor(block, cv2.COLOR_BGR2HSV)
-        green = ((hsv[:,:,0] >= 35) & (hsv[:,:,0] <= 90) &
-                 (hsv[:,:,1] > 65) & (hsv[:,:,2] > 55)).mean()
-        red = ((((hsv[:,:,0] < 12) | (hsv[:,:,0] > 169)) &
-                (hsv[:,:,1] > 100) & (hsv[:,:,2] > 65))).mean()
-        return float(green), float(red)
+    def colormask(area, kind):
+        if area.size == 0:
+            return 0.
+        hsv = cv2.cvtColor(area, cv2.COLOR_BGR2HSV)
+        h,s,v = cv2.split(hsv)
+        if kind == "green":
+            mask = (h>=35)&(h<=90)&(s>95)&(v>80)
+        elif kind == "red":
+            mask = ((h<12)|(h>170))&(s>100)&(v>90)
+        elif kind == "yellow":
+            mask = (h>=18)&(h<=42)&(s>100)&(v>90)
+        else:
+            return 0.
+        return float(mask.mean())
 
-    def recognize(frame):
-        create_green,_ = green_red(frame, (.35,.80,.49,.94))
-        one_green,_ = green_red(frame, (.35,.65,.415,.81))
-        _,cancel_red = green_red(frame, (.50,.80,.66,.94))
-        hard_green,_ = green_red(frame, (.665,.67,.755,.73))
-        is_modal = create_green > .15 and one_green > .20 and cancel_red > .035
-        return is_modal, hard_green > .14, (create_green,one_green,cancel_red,hard_green)
+    def border_green(frame, rect):
+        x1,y1,x2,y2 = rect
+        pad=.007
+        segments = [patch(frame,x1,y1,x2,y1+pad),
+                    patch(frame,x1,y2-pad,x2,y2),
+                    patch(frame,x1,y1,x1+pad,y2),
+                    patch(frame,x2-pad,y1,x2,y2)]
+        return float(max(colormask(z,"green") for z in segments))
 
-    def click_window_point(relx, rely, frame_w, frame_h):
-        if u.GetForegroundWindow() != hwnd or u.IsIconic(hwnd):
-            return "SKIPPED_NOT_FOREGROUND"
-        rect = wintypes.RECT()
-        if not u.GetWindowRect(hwnd, ctypes.byref(rect)):
-            return "FAILED_GET_WINDOW_RECT"
-        width, height = rect.right-rect.left, rect.bottom-rect.top
-        if abs(width/frame_w - height/frame_h) > .12:
-            return "SKIPPED_WINDOW_ASPECT_RATIO_MISMATCH"
-        px = int(rect.left + width * relx)
-        py = int(rect.top + height * rely)
-        old = wintypes.POINT()
-        u.GetCursorPos(ctypes.byref(old))
-        u.SetCursorPos(px, py)
-        u.mouse_event(0x0002,0,0,0,0)
-        time.sleep(.07)
-        u.mouse_event(0x0004,0,0,0,0)
-        u.SetCursorPos(old.x,old.y)
-        return "CLICK_SENT_NOT_YET_VERIFIED"
+    def scan(frame):
+        # Relative to Roblox content. Anchors verified on the user's screenshots,
+        # not hard proof of UI identity; require several successive matches.
+        create = border_green(frame,(.36,.835,.48,.914))
+        cancel = colormask(patch(frame,.52,.845,.64,.912),"red")
+        players1 = border_green(frame,(.347,.670,.417,.805))
+        players4 = border_green(frame,(.583,.670,.653,.805))
+        city = border_green(frame,(.345,.515,.495,.655))
+        normal = border_green(frame,(.665,.620,.757,.674))
+        hard = border_green(frame,(.665,.678,.757,.735))
+        modal = (create>.10 and cancel>.035 and
+                 max(players1,players4)>.04)
+        return modal,dict(create=create,cancel=cancel,p1=players1,
+                p4=players4,city=city,normal=normal,hard=hard)
+
+    def click(relx,rely,frame):
+        if ui.IsIconic(hwnd) or ui.GetForegroundWindow()!=hwnd:
+            return "SKIP_NOT_FOREGROUND"
+        rect = RECT()
+        if not ui.GetClientRect(hwnd,ctypes.byref(rect)):
+            return "ERROR_CLIENT_RECT"
+        p = POINT(int((rect.right-rect.left)*relx),
+                  int((rect.bottom-rect.top)*rely))
+        if not ui.ClientToScreen(hwnd,ctypes.byref(p)):
+            return "ERROR_CLIENT_TO_SCREEN"
+        old=POINT()
+        ui.GetCursorPos(ctypes.byref(old))
+        ui.SetCursorPos(p.x,p.y)
+        ui.mouse_event(0x0002,0,0,0,0)
+        time.sleep(.065)
+        ui.mouse_event(0x0004,0,0,0,0)
+        ui.SetCursorPos(old.x,old.y)
+        return "CLICK_SENT"
 
     capture = WindowsCapture(cursor_capture=None,draw_border=None,
                              monitor_index=None,window_name="Roblox")
+
     @capture.event
     def on_frame_arrived(frame: Frame, control: InternalCaptureControl):
         if stop.is_set():
             control.stop()
             return
-        if frames.full():
+        if q.full():
             return
         try:
-            # The only copied image is the latest and is discarded immediately.
-            frames.put_nowait(frame.frame_buffer[:,:,:3].copy())
+            q.put_nowait(frame.frame_buffer[:,:,:3].copy())
         except queue.Full:
             pass
 
@@ -398,79 +427,113 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    controller = None
+    controller=None
+    log("Lobby v1.1 start; armed="+str(enabled))
+    log("Waiting for user to step on creation pad; foreground clicks only.")
     try:
-        controller = capture.start_free_threaded()
-        write("Started. Step onto the creation pad manually.")
-        while not stop.is_set() and time.monotonic()-started < 180:
+        controller=capture.start_free_threaded()
+        while not stop.is_set() and time.monotonic()-start < 150:
             try:
-                frame = frames.get(timeout=.5)
+                frame=q.get(timeout=.5)
             except queue.Empty:
                 continue
-            h,w = frame.shape[:2]
-            is_modal, hard_selected, confidence = recognize(frame)
-            if is_modal:
-                modal_frames += 1
-                new_state = "CREATION_MENU"
+            if time.monotonic()-last_update<.24:
+                continue
+            last_update=time.monotonic()
+            modal,features=scan(frame)
+            if modal:
+                modal_seen+=1
+                menu_closed=0
             else:
-                modal_frames = 0
-                new_state = "CREATION_CONFIRMED_OR_MENU_CLOSED" if state == "CREATION_MENU" else "SEARCH_PAD"
-            if new_state != state:
-                state = new_state
-                write("STATE " + state + " features=" + str(tuple(round(x,3) for x in confidence)))
-            if next_action == "WAIT_FOR_COUNTDOWN" and not is_modal:
-                write("Creation dialog disappeared after Create. Verify countdown/game start.")
-                break
-            if not armed or modal_frames < 3 or not is_modal:
+                modal_seen=0
+                if stage=="AFTER_CREATE":
+                    menu_closed+=1
+                    if menu_closed>=4:
+                        log("DIALOG_CLOSED: creation probably started; check countdown.")
+                        break
                 continue
-            if time.monotonic()-last_click_time < 2.0:
+            if modal_seen<4:
                 continue
-            if next_action == "MAP":
-                action = click_window_point(.418,.590,w,h)
-                write("City map select: " + action)
-                last_click_time = time.monotonic()
-                if action.startswith("CLICK_SENT"):
-                    next_action = "HARD"
-            elif next_action == "HARD" and not hard_selected:
-                action = click_window_point(.71, .702, w,h)
-                write("Hard select: " + action)
-                last_click_time = time.monotonic()
-                if action.startswith("CLICK_SENT"):
-                    next_action = "VERIFY_HARD"
-            elif next_action == "VERIFY_HARD":
-                if hard_selected:
-                    write("Hard selection appears active; will create lobby next.")
-                    next_action = "CREATE"
-                else:
-                    write("Hard selection not confirmed; stopping automation.")
+            # No assumption that green ROI alone proves correct selections:
+            # verify each subsequent selector before advancing.
+            if stage=="WAIT_MENU":
+                stage="SELECT_CITY"
+                log("MENU_DETECTED "+str({k:round(v,2) for k,v in features.items()}))
+            if not enabled or time.monotonic()-action_time<1.0:
+                continue
+            if ui.GetForegroundWindow()!=hwnd:
+                continue
+            def do(x,y,label):
+                nonlocal action_time
+                answer=click(x,y,frame)
+                log(label+": "+answer)
+                action_time=time.monotonic()
+                return answer=="CLICK_SENT"
+            if stage=="SELECT_CITY":
+                if features["city"]>.20:
+                    stage="SELECT_ONE"
+                elif do(.420,.585,"City map"):
+                    stage="VERIFY_CITY"
+            elif stage=="VERIFY_CITY":
+                if features["city"]>.20:
+                    stage="SELECT_ONE"
+                    retries=0
+                    log("City selection verified.")
+                elif time.monotonic()-action_time>2.5:
+                    log("STOP: city map could not be verified.")
                     break
-            elif next_action == "HARD" and hard_selected:
-                write("Hard selection already present.")
-                next_action = "CREATE"
-            elif next_action == "CREATE" and hard_selected:
-                action = click_window_point(.42,.87,w,h)
-                write("Create attempt: " + action)
-                last_click_time = time.monotonic()
-                if action.startswith("CLICK_SENT"):
-                    next_action = "WAIT_FOR_COUNTDOWN"
-        write("Stopped. Last state=" + state + ", next_action=" + next_action)
+            elif stage=="SELECT_ONE":
+                if features["p1"]>.19 and features["p4"]<.19:
+                    stage="SELECT_HARD"
+                elif do(.382,.745,"One player"):
+                    stage="VERIFY_ONE"
+            elif stage=="VERIFY_ONE":
+                if features["p1"]>.19 and features["p4"]<.19:
+                    stage="SELECT_HARD"
+                    retries=0
+                    log("1 player verified.")
+                elif time.monotonic()-action_time>2.5:
+                    log("STOP: 1 player could not be verified.")
+                    break
+            elif stage=="SELECT_HARD":
+                if features["hard"]>.20 and features["normal"]<.19:
+                    stage="CREATE"
+                elif do(.710,.707,"Hard difficulty"):
+                    stage="VERIFY_HARD"
+            elif stage=="VERIFY_HARD":
+                if features["hard"]>.20 and features["normal"]<.19:
+                    stage="CREATE"
+                    log("Hard verified.")
+                elif time.monotonic()-action_time>2.5:
+                    log("STOP: difficulty could not be verified.")
+                    break
+            elif stage=="CREATE":
+                if (features["city"]>.19 and features["p1"]>.19
+                    and features["hard"]>.19 and features["p4"]<.19):
+                    if do(.420,.870,"Create lobby"):
+                        stage="AFTER_CREATE"
+                else:
+                    log("STOP: selectors lost validation; refusing Create.")
+                    break
+        log("END stage="+stage)
     except KeyboardInterrupt:
-        write("User stopped lobby helper.")
+        log("STOP requested by user.")
     except Exception:
-        write("ERROR: " + traceback.format_exc())
+        log("ERROR "+traceback.format_exc())
     finally:
         stop.set()
         if controller is not None:
             try:
                 controller.stop()
-            except Exception:
-                pass
+            except Exception as exc:
+                log("Capture stop note: "+str(exc))
     return 0
 # === End lobby assistant ===
 
+
 def run_mode_prompt():
     print("")
-    print("ROBLOX V0.9.2 - choose mode:")
+    print("ROBLOX V1.1.0 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
