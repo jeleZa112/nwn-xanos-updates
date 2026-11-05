@@ -1,13 +1,13 @@
 {
   "channel": "BGXUNI-parallel",
-  "version": "0.1.5-kite-action-diagnostic",
+  "version": "0.1.6-no-idle-range-first",
   "deployment": "single-existing-BGXAI_UPDATE.cmd",
-  "status": "v014 real EET fail: two pre-movement markers but no visible retreat; v015 commands longer, confirms after-action return, runtime NOT yet verified. No tank geometry or manual-source confirmation.",
+  "status": "v015 real combat: short steps then no attacks; v016 allows close-fire fallback and unlimited rate-limited retreat. Offline checks only; Windows WeiDU and gameplay UNVERIFIED. No tank geometry/manual origin.",
   "files": [
     {
       "path": "BGXAI/pilots/BGXUNI_010/BGXUNI/BGXUN1.BAF",
-      "size": 12836,
-      "sha256": "fafc8c08236c2be59f6263d00527b543bff972fce60a4119b5d50d045facccbc"
+      "size": 8965,
+      "sha256": "da61009a665c8760745abec992d26dba778a18e21605ac79445ac7176c006c67"
     },
     {
       "path": "BGXAI/pilots/BGXUNI_010/BGXUNI/setup-BGXUNI.tp2",
@@ -17,7 +17,7 @@
   ],
   "installer": {
     "path": "BGXAI/pilots/BGXUNI_010/parallel/BGXUNI_AUTOINSTALL.ps1",
-    "size": 10808,
-    "sha256": "e3a5540684025671d8d81e1f2351cbf9ef8cf882c0e187e04f2ca8ee1a799d57"
+    "size": 10799,
+    "sha256": "6ff6de587861393c9fb79ec899576924f37f30e6d386e87c228d434da6606fba"
   }
 }
