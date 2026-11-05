@@ -1,0 +1,32 @@
+name: Roblox HID source checks
+
+on:
+  push:
+    branches: [roblox-bg-monitor]
+    paths:
+      - roblox_monitor.py
+      - ROBLOX_HID_LEONARDO/**
+      - .github/workflows/roblox-hid-check.yml
+  workflow_dispatch:
+
+jobs:
+  python-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile Roblox bot source
+        run: python -m py_compile roblox_monitor.py
+
+  arduino-leonardo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arduino/compile-sketches@v1
+        with:
+          fqbn: arduino:avr:leonardo
+          libraries: '[]'
+          sketch-paths: |
+            - ROBLOX_HID_LEONARDO
