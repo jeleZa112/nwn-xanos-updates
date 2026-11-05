@@ -1,9 +1,9 @@
-# Roblox background monitor - release 0.9.1
+# Roblox background monitor - release 0.9.2
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "0.9.1"
+VERSION = "0.9.2"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -157,7 +157,7 @@ def training_mode():
         with zipfile.ZipFile(temporary, "w", compression=zipfile.ZIP_STORED) as archive:
             for name in staged_names:
                 archive.write(staging / name, arcname="frames/" + name)
-            archive.write(session_csv, arcname="events.csv")
+            archive.write(session_csv, arcname="events_full_session.csv")
             archive.write(target / "READ_ME.txt", arcname="READ_ME.txt")
         with zipfile.ZipFile(temporary) as archive:
             corrupt = archive.testzip()
@@ -257,7 +257,7 @@ def training_mode():
     try:
         control = capture.start_free_threaded()
         control_holder.append(control)
-        line("Capture active. Play yourself; stop with Ctrl+C when you finish or lose.")
+        line("Capture active. Play yourself; stop with Ctrl+C when you finish or lose. Do not close CMD with X.")
         while not halt.is_set():
             if time.monotonic() - start > 60 * options["max_minutes"]:
                 line("Time limit reached; finishing archive.")
@@ -278,7 +278,7 @@ def training_mode():
             line("WARNING: encoder still active; wait for ZIP finalization.")
             worker.join()
         line("END: received=%d dropped=%d jpg=%d zip_parts=%d" % (captured,dropped,saved,zipped))
-        line("Upload TRAIN_001.zip, TRAIN_002.zip etc. + training.log.")
+        line("Upload TRAIN_001.zip etc. with training.log. Reached wave and game speed are supplied by player.")
     return 0
 
 
@@ -286,7 +286,7 @@ def training_mode():
 # No new CMD files are necessary.
 def run_mode_prompt():
     print("")
-    print("ROBLOX V0.9.1 - choose mode:")
+    print("ROBLOX V0.9.2 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     try:
