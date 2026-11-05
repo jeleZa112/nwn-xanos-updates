@@ -1,0 +1,29 @@
+test_01_tank_hold_fire (test_hybrid.TestHybrid.test_01_tank_hold_fire) ... ok
+test_02_attack_direct_with_safe_path (test_hybrid.TestHybrid.test_02_attack_direct_with_safe_path) ... ok
+test_03_never_move_with_unknown_path (test_hybrid.TestHybrid.test_03_never_move_with_unknown_path) ... ok
+test_04_unknown_order_never_take_control (test_hybrid.TestHybrid.test_04_unknown_order_never_take_control) ... ok
+test_05_player_order_never_take_control (test_hybrid.TestHybrid.test_05_player_order_never_take_control) ... ok
+test_06_actor_order_queue_unknown (test_hybrid.TestHybrid.test_06_actor_order_queue_unknown) ... ok
+test_07_bard_unverified_never_take_control (test_hybrid.TestHybrid.test_07_bard_unverified_never_take_control) ... ok
+test_08_bard_mode_never_take_control (test_hybrid.TestHybrid.test_08_bard_mode_never_take_control) ... ok
+test_09_no_assigned_tank (test_hybrid.TestHybrid.test_09_no_assigned_tank) ... ok
+test_10_unknown_enemy_aggro (test_hybrid.TestHybrid.test_10_unknown_enemy_aggro) ... ok
+test_11_unknown_weapon_immune (test_hybrid.TestHybrid.test_11_unknown_weapon_immune) ... ok
+test_12_proven_weapon_immune_no_attack (test_hybrid.TestHybrid.test_12_proven_weapon_immune_no_attack) ... ok
+test_13_not_a_ranged_hero (test_hybrid.TestHybrid.test_13_not_a_ranged_hero) ... ok
+test_14_dont_chase_outside_leash (test_hybrid.TestHybrid.test_14_dont_chase_outside_leash) ... ok
+test_15_degenerate_geometry (test_hybrid.TestHybrid.test_15_degenerate_geometry) ... ok
+test_16_never_autoexecute_any_fixture (test_hybrid.TestHybrid.test_16_never_autoexecute_any_fixture) ... ok
+test_17_shadowscript_is_100percent_noncombat (test_hybrid.TestHybrid.test_17_shadowscript_is_100percent_noncombat) ... ok
+test_18_installer_does_not_patch_original (test_hybrid.TestHybrid.test_18_installer_does_not_patch_original) ... ok
+test_19_private_archive_bard_invariants (test_hybrid.TestHybrid.test_19_private_archive_bard_invariants) ... ok
+test_20_existing_failed_093310 (test_hybrid.TestHybrid.test_20_existing_failed_093310) ... ok
+test_21_existing_080316 (test_hybrid.TestHybrid.test_21_existing_080316) ... ok
+test_22_shadowscript_optin_off_by_default (test_hybrid.TestHybrid.test_22_shadowscript_optin_off_by_default) ... ok
+test_23_every_known_actor_attackers_prefer_defender (test_hybrid.TestHybrid.test_23_every_known_actor_attackers_prefer_defender) ... ok
+test_24_danger_without_observed_defender_retains_native (test_hybrid.TestHybrid.test_24_danger_without_observed_defender_retains_native) ... ok
+
+----------------------------------------------------------------------
+Ran 24 tests in 0.173s
+
+OK
