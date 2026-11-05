@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.5.0
+# Roblox background monitor - release 1.5.1
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.5.0"
+VERSION = "1.5.1"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -444,6 +444,43 @@ def lobby_helper():
         ev.mi=MOUSEINPUT(xx,yy,0,0xC001,0,None)
         return int(ui.SendInput(1,ctypes.byref(ev),ctypes.sizeof(INPUT)))
 
+    def click_window_message(relx,rely,frame):
+        # Diagnostic alternate Windows GUI input path. Some games consume
+        # only hardware/raw input, so this is an experiment, not a guarantee.
+        if ui.IsIconic(hwnd) or ui.GetForegroundWindow()!=hwnd:
+            return "SKIP_NOT_FOREGROUND"
+        rect=RECT()
+        if not ui.GetClientRect(hwnd,ctypes.byref(rect)):
+            return "ERROR_CLIENT_RECT"
+        width=rect.right-rect.left
+        height=rect.bottom-rect.top
+        frame_h,frame_w=frame.shape[:2]
+        delta_y=frame_h-height
+        delta_x=frame_w-width
+        if not (0<=delta_y<=90 and 0<=delta_x<=50):
+            return "ERROR_GEOMETRY"
+        x=int(relx*frame_w-delta_x/2)
+        y=int(rely*frame_h-delta_y)
+        if not (0<=x<width and 0<=y<height):
+            return "ERROR_TARGET_OUTSIDE_CLIENT"
+        pt=POINT(x,y)
+        if not ui.ClientToScreen(hwnd,ctypes.byref(pt)):
+            return "ERROR_CLIENT_TO_SCREEN"
+        if send_mouse_move(pt.x,pt.y)!=1:
+            return "ERROR_SENDINPUT_MOVE"
+        time.sleep(.25)
+        if ui.GetForegroundWindow()!=hwnd:
+            return "ERROR_FOCUS_LOST"
+        lparam=(x & 0xFFFF)|((y & 0xFFFF)<<16)
+        moved=ui.PostMessageW(hwnd,0x0200,0,lparam)
+        time.sleep(.13)
+        down=ui.PostMessageW(hwnd,0x0201,0x0001,lparam)
+        time.sleep(.18)
+        up=ui.PostMessageW(hwnd,0x0202,0,lparam)
+        log("WM_INPUT_TRACE client=(%d,%d) screen=(%d,%d) move=%d down=%d up=%d" %
+            (x,y,pt.x,pt.y,moved,down,up))
+        return "INPUT_SENT_UNVERIFIED" if moved and down and up else "INPUT_REJECTED"
+
     def click(relx,rely,frame):
         # Coordinates in recognizer are normalized to the whole WGC frame.
         # On this PC the captured frame is 1920x1030 while the client
@@ -518,7 +555,7 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    # V1.5.0: strict sequential steps. Retry ONLY the last unconfirmed step.
+    # V1.5.1: strict sequential steps. Retry ONLY the last unconfirmed step.
     # Never re-click an earlier option after moving on, to avoid toggling it off.
     controller = None
     step_names = ("city","one","hard","create")
@@ -548,7 +585,7 @@ def lobby_helper():
             "one": player_selected(feat)==1,
             "hard": feat["hard"]>.15 and feat["normal"]<.15
         }
-    log("Lobby v1.5.0 start; armed="+str(enabled))
+    log("Lobby v1.5.1 start; armed="+str(enabled))
     log("Strict sequence CITY -> ONE -> HARD -> CREATE; retry only unconfirmed step")
     log("Before/after click evidence in "+str(evidence_dir)+"; JPEG overwritten per step.")
     try:
@@ -665,7 +702,12 @@ def lobby_helper():
             reduced=cv2.resize(frame,(960,round(frame.shape[0]*960/frame.shape[1])))
             cv2.imwrite(str(evidence_dir / ("before_"+key+".jpg")),reduced,
                         [cv2.IMWRITE_JPEG_QUALITY,70])
-            result=click(*step_points[key],frame)
+            method="SENDINPUT" if retries[key]==1 else "WINDOW_MESSAGE"
+            log("INPUT_METHOD step="+key+" attempt="+str(retries[key])+" method="+method)
+            if method=="SENDINPUT":
+                result=click(*step_points[key],frame)
+            else:
+                result=click_window_message(*step_points[key],frame)
             last_click=time.monotonic()
             awaiting_confirmation=(result=="INPUT_SENT_UNVERIFIED")
             if awaiting_confirmation:
@@ -697,7 +739,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.5.0 - choose mode:")
+    print("ROBLOX V1.5.1 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
