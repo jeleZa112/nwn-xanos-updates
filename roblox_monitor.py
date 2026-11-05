@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.4.2
+# Roblox background monitor - release 1.4.3
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.4.2"
+VERSION = "1.4.3"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -384,6 +384,8 @@ def lobby_helper():
         create = border_color(frame,(.359,.833,.481,.914),"green")
         cancel = border_color(frame,(.519,.833,.642,.914),"red")
         players1 = border_color(frame,(.346,.672,.416,.805),"green")
+        players2 = border_color(frame,(.426,.672,.496,.805),"green")
+        players3 = border_color(frame,(.505,.672,.575,.805),"green")
         players4 = border_color(frame,(.583,.672,.655,.805),"green")
         city = border_color(frame,(.347,.517,.496,.647),"yellow")
         cave = border_color(frame,(.505,.517,.653,.647),"yellow")
@@ -409,7 +411,7 @@ def lobby_helper():
         count_digits=sum(1 for value in white_digits if value > .025)
         modal = create>.08 and cancel>.08 and count_digits == 4
         return modal,dict(create=create,cancel=cancel,p1=players1,
-                p4=players4,city=city,cave=cave,normal=normal,hard=hard,
+                p2=players2,p3=players3,p4=players4,city=city,cave=cave,normal=normal,hard=hard,
                 hard_red=hard_red,digits=count_digits)
 
     # SendInput is the supported Windows synthetic input API. It still may
@@ -501,7 +503,7 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    # V1.4.2: strict sequential steps. Retry ONLY the last unconfirmed step.
+    # V1.4.3: strict sequential steps. Retry ONLY the last unconfirmed step.
     # Never re-click an earlier option after moving on, to avoid toggling it off.
     controller = None
     step_names = ("city","one","hard","create")
@@ -520,13 +522,18 @@ def lobby_helper():
     evidence_dir = folder / "LAST_CLICK"
     evidence_dir.mkdir(parents=True,exist_ok=True)
     evidence_pending = None
+    player_selection_before = None
+    def player_selected(feat):
+        values=[feat["p1"],feat["p2"],feat["p3"],feat["p4"]]
+        indices=[i+1 for i,v in enumerate(values) if v>.15]
+        return indices[0] if len(indices)==1 else 0
     def selected_flags(feat):
         return {
             "city": feat["city"]>.15 and feat["cave"]<.12,
-            "one": feat["p1"]>.15 and feat["p4"]<.15,
+            "one": player_selected(feat)==1,
             "hard": feat["hard"]>.15 and feat["normal"]<.15
         }
-    log("Lobby v1.4.2 start; armed="+str(enabled))
+    log("Lobby v1.4.3 start; armed="+str(enabled))
     log("Strict sequence CITY -> ONE -> HARD -> CREATE; retry only unconfirmed step")
     log("Before/after click evidence in "+str(evidence_dir)+"; JPEG overwritten per step.")
     try:
@@ -620,6 +627,14 @@ def lobby_helper():
             if awaiting_confirmation:
                 if time.monotonic()-last_click<3.0:
                     continue
+                if key=="one":
+                    now_player=player_selected(features)
+                    log("PLAYER_STATE_BEFORE_AFTER before="+str(player_selection_before)+
+                        " after="+str(now_player)+
+                        " p="+str([round(features["p"+str(i)],3) for i in range(1,5)]))
+                    if now_player!=player_selection_before and now_player!=1:
+                        log("STOP: click changed player setting to unexpected state; no blind retry")
+                        break
                 log("STEP_NOT_CONFIRMED: "+key+" attempt="+str(retries[key])+
                     " features="+str({k:round(v,3) for k,v in features.items()}))
                 awaiting_confirmation=False
@@ -628,6 +643,9 @@ def lobby_helper():
                 break
             if time.monotonic()-last_click<1.0:
                 continue
+            if key=="one":
+                player_selection_before=player_selected(features)
+                log("PLAYER_BEFORE_CLICK selected="+str(player_selection_before))
             retries[key]+=1
             reduced=cv2.resize(frame,(960,round(frame.shape[0]*960/frame.shape[1])))
             cv2.imwrite(str(evidence_dir / ("before_"+key+".jpg")),reduced,
@@ -664,7 +682,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.4.2 - choose mode:")
+    print("ROBLOX V1.4.3 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
