@@ -1,0 +1,18 @@
+'use strict';
+const assert=require('assert');
+const {parse,reduceLog}=require('../src/BGX23_PARSER.js');
+const line='[BGX23] OBS seq=1 actor=A1 slot=1 action=105 hp=10 class=4 pos=301,400 dest=0,0 target=NONPARTY_UNVERIFIED enemyLOS=1 selected=SELECTED skill=3 atkMode=2 manual=UNKNOWN enemyTarget=UNKNOWN weapon=UNKNOWN maxHP=UNKNOWN path=UNKNOWN sessionEpoch=UNKNOWN';
+const e=parse(line);
+assert(e&&e.hp===10&&e.action===105&&e.actor==='A1'&&e.targetCategory==='NONPARTY_UNVERIFIED');
+assert(e.canIssueGameAction===false&&e.manual==='UNKNOWN'&&e.enemyTarget==='UNKNOWN');
+assert(parse(line.replace('actor=A1 slot=1','actor=A2 slot=1'))===null);
+assert(parse(line.replace('manual=UNKNOWN','manual=AI'))===null);
+assert(parse(line+' secret')===null);
+assert(parse(line.replace('hp=10','hp=?')).hp===null);
+assert(parse(line.replace('pos=301,400','pos=?,?')).position[0]===null);
+const flee=line.replace('seq=1','seq=2').replace('action=105','action=355');
+const song=line.replace('seq=1','seq=3').replace('action=105','action=296');
+const summary=reduceLog(line+'\n'+flee+'\n'+song+'\n');
+assert.equal(summary.stats.total,3);assert.equal(summary.stats.attacks,1);assert.equal(summary.stats.retreats,1);assert.equal(summary.stats.songs,1);
+assert.equal(summary.lastEvents[0].sessionEpoch,'UNKNOWN');
+console.log('PASS 9 JS parser / privacy / fail-closed checks');
