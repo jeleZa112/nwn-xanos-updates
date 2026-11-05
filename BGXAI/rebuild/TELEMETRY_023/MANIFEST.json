@@ -1,0 +1,61 @@
+{
+  "project": "BGXAI",
+  "version": "0.2.3",
+  "status": "source-only-shared-monitor-integration-staged",
+  "liveInstalled": false,
+  "gameModified": false,
+  "singleExistingUpdateCmdUnchanged": true,
+  "radar": "optional-not-connected-no-local-export-confirmed",
+  "files": [
+    {
+      "path": "docs/README_RU.md",
+      "size": 6283,
+      "sha256": "7a98a3fd8d987c04bcd73bfc66b5b5df0e21288f6e29d02ade3bb29258d654be"
+    },
+    {
+      "path": "src/BGX23_MONITOR_FRAGMENT.ps1",
+      "size": 1617,
+      "sha256": "14cd255bed719b395946411be945c04befb1c89a3cf5303e1158715c25e03a82"
+    },
+    {
+      "path": "src/BGX23_PARSER.js",
+      "size": 2150,
+      "sha256": "c86139e20fa2713534f99408db90aec5a0088e435b041e6fae5dafd5a61e4bf4"
+    },
+    {
+      "path": "src/BGXAI_FOXX_SCS_PRECHECK_023.ps1",
+      "size": 2110,
+      "sha256": "08af7bd2ae532b5a80ea0f4269d9ece44e8e40799cf6658bb68ecfc13907a008"
+    },
+    {
+      "path": "src/M_BGX23.lua",
+      "size": 5031,
+      "sha256": "a3c58daf0559d708d05be02d50c1505cb2baa15d2d641ffc2c38898af24d50ee"
+    },
+    {
+      "path": "tests/js_test_results.txt",
+      "size": 48,
+      "sha256": "3083154a66d3962a18d118651208587a0ca911300fa0de3e9d18ee609d916a6a"
+    },
+    {
+      "path": "tests/lua_test_results.txt",
+      "size": 495,
+      "sha256": "76a6e0b6916269faeda0776d3a6a5a5d1ba5293d1aef69037aa418e542fbb46e"
+    },
+    {
+      "path": "tests/test_bgx23.py",
+      "size": 4286,
+      "sha256": "5c611d76d2a8ae9ff663fa8fb9784686a4b9d131243822f2b3970cc7647c05ee"
+    },
+    {
+      "path": "tests/test_compatibility.py",
+      "size": 1627,
+      "sha256": "e9aca5ed90f296bfaa0871b09db435f629226eb314964df3e452ffb0830698eb"
+    },
+    {
+      "path": "tests/test_parser.js",
+      "size": 1364,
+      "sha256": "daa83c3bedbc6811dd39097fca9164c7fd16c902cf8fbd268c5e978c78808248"
+    }
+  ]
+}
