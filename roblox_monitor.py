@@ -1,9 +1,9 @@
-# Roblox background monitor - release 1.9.2
+# Roblox background monitor - release 2.0.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "1.9.2"
+VERSION = "2.0.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -313,7 +313,7 @@ def lobby_helper():
     folder = Path.home() / "Documents" / "RobloxBGDiagnostics" / "LOBBY"
     folder.mkdir(parents=True, exist_ok=True)
     logfile = folder / "lobby.log"
-    print("\nROBLOX LOBBY BOT V1.9.2")
+    print("\nROBLOX LOBBY BOT V2.0.0")
     print("Target: City Landscape / 1 player / Hard / Create")
     print("Bot will click only if the Roblox window is focused.")
     print("You must first walk onto the purple creation pad.")
@@ -621,8 +621,8 @@ def lobby_helper():
     # Only an explicitly configured COM device can receive mouse commands.
     import re
     hid_port=os.environ.get("ROBLOX_HID_PORT","").strip().upper()
-    backend=os.environ.get("ROBLOX_INPUT_BACKEND","HID").strip().upper()
-    if backend not in ("HID","SOFTWARE"):
+    backend=os.environ.get("ROBLOX_INPUT_BACKEND","TOUCH").strip().upper()
+    if backend not in ("TOUCH","HID","SOFTWARE"):
         log("INPUT_BACKEND_INVALID: "+backend+"; observe only")
         enabled=False
     if backend=="HID":
@@ -652,14 +652,116 @@ def lobby_helper():
     if backend=="HID" and not hid_port:
         enabled=False
     if mode=="2" and not enabled:
-        log("NO_INPUT: the USB HID controller is not ready. "+
-            "No clicks will be sent; stopping this run.")
-        print("")
-        print("HID HARDWARE REQUIRED: Arduino Leonardo or Micro (ATmega32U4).")
-        print("Flash ROBLOX_HID_LEONARDO.ino and connect the USB board.")
-        print("Install serial support once: py -m pip install pyserial")
-        print("Without the HID board, mode 3 cannot click in Roblox.")
+        log("NO_INPUT: backend="+backend+" is not ready; no clicks sent.")
+        if backend=="HID":
+            print("HID mode needs a flashed Arduino Leonardo/Micro.")
+            print("Install driver: py -m pip install pyserial")
+        else:
+            print("Input mode disabled; recheck ROBLOX_INPUT_BACKEND.")
         return 2
+    log("INPUT_BACKEND="+backend+
+        (" (Windows touch injection, no extra hardware)" if backend=="TOUCH" else ""))
+
+    # Pure Windows touch injection, no Arduino, no third-party drivers.
+    # Based on winuser.h POINTER_TOUCH_INFO and InjectTouchInput. Do NOT
+    # enter Roblox UI Navigation or interfere with its WASD bindings.
+    class TOUCH_POINT(ctypes.Structure):
+        _fields_=[("x",ctypes.c_int32),("y",ctypes.c_int32)]
+    class TOUCH_RECT(ctypes.Structure):
+        _fields_=[("left",ctypes.c_int32),("top",ctypes.c_int32),
+                  ("right",ctypes.c_int32),("bottom",ctypes.c_int32)]
+    class POINTER_INFO(ctypes.Structure):
+        _fields_=[
+            ("pointerType",ctypes.c_uint32),("pointerId",ctypes.c_uint32),
+            ("frameId",ctypes.c_uint32),("pointerFlags",ctypes.c_uint32),
+            ("sourceDevice",ctypes.c_void_p),("hwndTarget",ctypes.c_void_p),
+            ("ptPixelLocation",TOUCH_POINT),
+            ("ptHimetricLocation",TOUCH_POINT),
+            ("ptPixelLocationRaw",TOUCH_POINT),
+            ("ptHimetricLocationRaw",TOUCH_POINT),
+            ("dwTime",ctypes.c_uint32),("historyCount",ctypes.c_uint32),
+            ("InputData",ctypes.c_int32),("dwKeyStates",ctypes.c_uint32),
+            ("PerformanceCount",ctypes.c_uint64),
+            ("ButtonChangeType",ctypes.c_uint32)]
+    class POINTER_TOUCH_INFO(ctypes.Structure):
+        _fields_=[("pointerInfo",POINTER_INFO),
+                  ("touchFlags",ctypes.c_uint32),
+                  ("touchMask",ctypes.c_uint32),
+                  ("rcContact",TOUCH_RECT),
+                  ("rcContactRaw",TOUCH_RECT),
+                  ("orientation",ctypes.c_uint32),
+                  ("pressure",ctypes.c_uint32)]
+    touch_state={"initialized":False}
+    def click_touch(relx,rely,frame):
+        # Foreground only; do not move the mouse cursor.
+        if ui.IsIconic(hwnd) or ui.GetForegroundWindow()!=hwnd:
+            return "SKIP_NOT_FOREGROUND"
+        rect=RECT()
+        if not ui.GetClientRect(hwnd,ctypes.byref(rect)):
+            return "ERROR_CLIENT_RECT"
+        fw,fh=frame.shape[1],frame.shape[0]
+        cw,ch=rect.right-rect.left,rect.bottom-rect.top
+        extra_x,extra_y=fw-cw,fh-ch
+        if not (0<=extra_x<=50 and 0<=extra_y<=90):
+            log("TOUCH_GEOMETRY frame=%dx%d client=%dx%d" %
+                (fw,fh,cw,ch))
+            return "ERROR_TOUCH_GEOMETRY"
+        cx=int(relx*fw-extra_x/2)
+        cy=int(rely*fh-extra_y)
+        if not (0<=cx<cw and 0<=cy<ch):
+            return "ERROR_TOUCH_OUTSIDE_CLIENT"
+        target=POINT(cx,cy)
+        if not ui.ClientToScreen(hwnd,ctypes.byref(target)):
+            return "ERROR_TOUCH_CLIENT_TO_SCREEN"
+        if not (ctypes.sizeof(POINTER_INFO)==96 and
+                ctypes.sizeof(POINTER_TOUCH_INFO)==144):
+            log("TOUCH_ABI_MISMATCH info=%d touch=%d" %
+                (ctypes.sizeof(POINTER_INFO),ctypes.sizeof(POINTER_TOUCH_INFO)))
+            return "ERROR_TOUCH_ABI"
+        try:
+            touch_api=ctypes.WinDLL("user32",use_last_error=True)
+            initialize=touch_api.InitializeTouchInjection
+            initialize.argtypes=(ctypes.c_uint32,ctypes.c_uint32)
+            initialize.restype=ctypes.c_int
+            inject=touch_api.InjectTouchInput
+            inject.argtypes=(ctypes.c_uint32,ctypes.POINTER(POINTER_TOUCH_INFO))
+            inject.restype=ctypes.c_int
+            if not touch_state["initialized"]:
+                ctypes.set_last_error(0)
+                if not initialize(1,3):  # TOUCH_FEEDBACK_NONE
+                    code=ctypes.get_last_error()
+                    log("TOUCH_INIT_FAILED WinError="+str(code))
+                    return "ERROR_TOUCH_INIT"
+                touch_state["initialized"]=True
+            contact=POINTER_TOUCH_INFO()
+            contact.pointerInfo.pointerType=2  # PT_TOUCH
+            contact.pointerInfo.pointerId=0
+            contact.pointerInfo.ptPixelLocation=TOUCH_POINT(target.x,target.y)
+            contact.pointerInfo.pointerFlags=0x10006  # DOWN|INRANGE|INCONTACT
+            contact.touchMask=0x07  # area, orientation, pressure
+            contact.orientation=90
+            contact.pressure=512
+            contact.rcContact=TOUCH_RECT(target.x-3,target.y-3,
+                                         target.x+3,target.y+3)
+            contact.rcContactRaw=contact.rcContact
+            if ui.GetForegroundWindow()!=hwnd:
+                return "ERROR_TOUCH_FOCUS_LOST"
+            ctypes.set_last_error(0)
+            if not inject(1,ctypes.byref(contact)):
+                log("TOUCH_DOWN_FAILED WinError="+str(ctypes.get_last_error()))
+                return "ERROR_TOUCH_DOWN"
+            time.sleep(.085)
+            contact.pointerInfo.pointerFlags=0x40000  # POINTER_FLAG_UP
+            ctypes.set_last_error(0)
+            if not inject(1,ctypes.byref(contact)):
+                log("TOUCH_UP_FAILED WinError="+str(ctypes.get_last_error()))
+                return "ERROR_TOUCH_UP"
+            log("TOUCH_SENT screen=(%d,%d) client=(%d,%d) status=UNVERIFIED" %
+                (target.x,target.y,cx,cy))
+            return "INPUT_SENT_UNVERIFIED"
+        except (AttributeError,OSError) as exc:
+            log("TOUCH_API_UNAVAILABLE "+repr(exc))
+            return "ERROR_TOUCH_UNSUPPORTED"
 
     def usb_hid_mouse_click(relx,rely,frame):
         # USB serial commands go to a genuine HID board, not Windows SendInput.
@@ -773,7 +875,7 @@ def lobby_helper():
     def on_closed():
         stop.set()
 
-    # V1.9.2: strict sequential steps. Retry ONLY the last unconfirmed step.
+    # V2.0.0: strict sequential steps. Retry ONLY the last unconfirmed step.
     # Never re-click an earlier option after moving on, to avoid toggling it off.
     controller = None
     step_names = ("city","one","hard","create")
@@ -788,7 +890,7 @@ def lobby_helper():
     menu_present_count = 0
     menu_absent_count = 0
     completed = False
-    max_attempts = 1 if backend=="HID" else 2
+    max_attempts = 1 if backend in ("HID","TOUCH") else 2
     manual_prompted = False
     nav_phase = "off"
     nav_step_at = 0.0
@@ -811,7 +913,7 @@ def lobby_helper():
             "one": player_selected(feat)==1,
             "hard": feat["hard"]>.15 and feat["normal"]<.15
         }
-    log("Lobby v1.9.2 start; armed="+str(enabled))
+    log("Lobby v2.0.0 start; armed="+str(enabled))
     log("Strict sequence CITY -> ONE -> HARD -> CREATE; retry only unconfirmed step")
     log("Before/after click evidence in "+str(evidence_dir)+"; JPEG overwritten per step.")
     try:
@@ -903,8 +1005,12 @@ def lobby_helper():
                 reduced=cv2.resize(frame,(960,round(frame.shape[0]*960/frame.shape[1])))
                 cv2.imwrite(str(evidence_dir / "before_create.jpg"),reduced,
                             [cv2.IMWRITE_JPEG_QUALITY,70])
-                result=(usb_hid_mouse_click(*step_points[key],frame) if backend=="HID"
-                        else click(*step_points[key],frame))
+                if backend=="TOUCH":
+                    result=click_touch(*step_points[key],frame)
+                elif backend=="HID":
+                    result=usb_hid_mouse_click(*step_points[key],frame)
+                else:
+                    result=click(*step_points[key],frame)
                 if result=="INPUT_SENT_UNVERIFIED":
                     evidence_pending="create"
                 retries[key]+=1
@@ -968,11 +1074,17 @@ def lobby_helper():
             method="SENDINPUT" if retries[key]==1 else "LEGACY_MOUSE_EVENT"
             if backend=="HID":
                 method="USB_HID_LEONARDO"
+            elif backend=="TOUCH":
+                method="WIN32_TOUCH"
             log("INPUT_METHOD step="+key+" attempt="+str(retries[key])+
                 " method="+method+" frame_target="+str(target))
-            result=(usb_hid_mouse_click(*target,frame) if backend=="HID"
-                    else (click(*target,frame) if retries[key]==1
-                          else click_legacy(*target,frame)))
+            if backend=="TOUCH":
+                result=click_touch(*target,frame)
+            elif backend=="HID":
+                result=usb_hid_mouse_click(*target,frame)
+            else:
+                result=(click(*target,frame) if retries[key]==1
+                        else click_legacy(*target,frame))
             last_click=time.monotonic()
             awaiting_confirmation=(result=="INPUT_SENT_UNVERIFIED")
             if awaiting_confirmation:
@@ -1004,7 +1116,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V1.9.2 - choose mode:")
+    print("ROBLOX V2.0.0 - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
