@@ -1,4 +1,4 @@
-# BGXUNI_INTEGRATED_INSTALLER_V014
+# BGXUNI_INTEGRATED_INSTALLER_V015
 # Runs only when selected from the existing BGXAI_UPDATE.cmd -> BGXAI_SYNC.ps1.
 # Installs one SEPARATE, optional BGXUN1 party script. NEVER patches BDDEFAI/BGXGRP/BGXTANK.
 # Windows PowerShell 5.1; WeiDU 251; fail-closed with file backups and pinned GitHub assets.
@@ -44,7 +44,7 @@ function ValidCompiledScript() {
     [byte[]]$a=[IO.File]::ReadAllBytes($compiled)
     [byte[]]$b=[IO.File]::ReadAllBytes($assigned)
     if($a.Length -lt 120 -or (Sha256 $a) -ne (Sha256 $b)){return $false}
-    if(!([Text.Encoding]::ASCII.GetString($a)).Contains('BGXU014')) {return $false}
+    if(!([Text.Encoding]::ASCII.GetString($a)).Contains('BGXU015')) {return $false}
     return $true
 }
 $backupRoot=$null
@@ -57,11 +57,11 @@ try {
     if(Get-Process -Name Baldur,BaldursGate,InfinityLoader -ErrorAction SilentlyContinue) {
         throw 'Close the game AND InfinityLoader before updating scripts'
     }
-    Log 'BGXUNI 0.1.4 PARALLEL via existing BGXAI_UPDATE.cmd (no additional CMD needed)'
+    Log 'BGXUNI 0.1.5 PARALLEL via existing BGXAI_UPDATE.cmd (no additional CMD needed)'
     $manifestPath='BGXAI/pilots/BGXUNI_010/parallel/latest.json'
     $manifestBytes=FetchPinned $manifestPath
     $manifest=[Text.Encoding]::UTF8.GetString($manifestBytes) | ConvertFrom-Json
-    if($manifest.channel -ne 'BGXUNI-parallel' -or $manifest.version -ne '0.1.4-spacing-first-retreat-fallback') {
+    if($manifest.channel -ne 'BGXUNI-parallel' -or $manifest.version -ne '0.1.5-kite-action-diagnostic') {
         throw 'Unknown BGXUNI manifest'
     }
     $expected=@(
@@ -86,7 +86,7 @@ try {
     $tp2Bytes=[byte[]]$downloaded[$expected[1]]
     $bafText=[Text.Encoding]::UTF8.GetString($bafBytes)
     $tp2Text=[Text.Encoding]::UTF8.GetString($tp2Bytes)
-    if(!$bafText.Contains('BGXU014') -or !$bafText.Contains('ActionListEmpty()')){throw 'Invalid BGXUN1 BAF marker'}
+    if(!$bafText.Contains('BGXU015') -or !$bafText.Contains('ActionListEmpty()')){throw 'Invalid BGXUN1 BAF marker'}
     if(!$tp2Text.Contains('COMPILE ~BGXUNI/BGXUN1.BAF~') -or
        !$tp2Text.Contains('~scripts/BGXUN1.BS~') -or
        $tp2Text -match '(?i)(BDDEFAI|BGXGRP|BGXTANK|BGXRANG|BGXCAST|BGXHEAL)') {
@@ -103,7 +103,7 @@ try {
     }
     if(Test-Path -LiteralPath $installedTag) {
         $tag=[IO.File]::ReadAllText($installedTag)
-        if($tag -match '(?m)^version=0\.1\.3-unified-one-updater\s*$' -and
+        if($tag -match '(?m)^version=0\.1\.5-kite-action-diagnostic\s*$' -and
            (ValidCompiledScript)) {
             Log 'ALREADY CURRENT: compiled BGXUN1.BCS and BGXUN1.BS match; legacy scripts untouched.'
             exit 0
@@ -179,9 +179,9 @@ try {
         throw 'Compiled BGXUN1.BCS/BGXUN1.BS missing, wrong marker or unequal SHA256'
     }
     $finalHash=Sha256 (ReadScript 'scripts\BGXUN1.BS')
-    [IO.File]::WriteAllText($installedTag,('version=0.1.4-spacing-first-retreat-fallback'+[Environment]::NewLine+
+    [IO.File]::WriteAllText($installedTag,('version=0.1.5-kite-action-diagnostic'+[Environment]::NewLine+
        'sha256='+$finalHash+[Environment]::NewLine),[Text.Encoding]::ASCII)
-    Log ('SUCCESS BGXUNI 0.1.4: scripts\BGXUN1.BS SHA256='+$finalHash)
+    Log ('SUCCESS BGXUNI 0.1.5: scripts\BGXUN1.BS SHA256='+$finalHash)
     Log 'SAFE: existing Advanced AI (BDDEFAI) and original BGXAI combat scripts unchanged.'
     Log ('Backup directory: '+$backupRoot)
     exit 0
