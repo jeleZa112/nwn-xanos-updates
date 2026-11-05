@@ -109,8 +109,8 @@ def training_mode():
         "interval_sec": 5.0,
         "max_width": 1280,
         "jpeg_quality": 72,
-        "part_images": 100,
-        "session_limit_mb": 180,
+        "part_images": 25,
+        "session_limit_mb": 120,
         "max_minutes": 240,
         "event_cooldown": 6.0,
     }
@@ -120,8 +120,8 @@ def training_mode():
         with log_file.open("a", encoding="utf-8") as fp:
             fp.write(text + "\n")
     line("TRAINING session " + when + " (no Roblox control or memory access)")
-    line("5-second baseline snapshots; extra on large visual change. JPEG -> ZIP.")
-    line("STOP: Ctrl+C in this window. Do not close with X until ZIP parts finish.")
+    line("5-second snapshots plus event frames; ZIP every 25 frames, max 120 MB.")
+    line("STOP after loss: Ctrl+C in this window; wait for final ZIP part.")
     line("Output: " + str(target))
     with session_csv.open("w", newline="", encoding="utf-8") as fp:
         csv.writer(fp).writerow(["elapsed_s", "filename", "reason", "visual_difference"])
