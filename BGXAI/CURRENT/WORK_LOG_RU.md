@@ -328,3 +328,6 @@ User reports Foxx EET repack was updated, and their current game has SCS install
 
 ## 2026-11-05 — EPS 18.4 RECONFIRMED
 - User reminded that installing new AI scripts was in plan. Search of prior chat confirms Enhanced Powergaming Scripts v18.4 as a separate comparative player AI reference, install after SCS/EEex/HPS/AutoLoot, no SCS party AI #5000. Author site verified v18.4 2026-09-20 and SCS/EEex/IWD integration. It uses Advanced AI slot / `bddefai`; this may modify previously preferred vanilla enhanced AI functionality, especially bard song between spellcasts. Preserve original installed Foxx before EPS and test in separate copy or with robust backup; no BGXAI production install at same time. Distinguish EPS installed vs BGXAI Hybrid offline-only. Licensed code cannot be copied into BGXAI without permission.
+
+## 2026-11-05 — HPS INSTALLED USER-CONFIRMED
+- User states HPS Portraits Project installed on new Foxx. Component 6 chosen option 1, matching previous Foxx: add missing mod NPC portraits and replace mod NPC + party portraits. Exact new version/WeiDU verification still pending. Next user step install EET AutoLoot via official LCA-EET release and setup-AutoLoot.exe, then EPS 18.4 last, with backup first. Keep native bard behaviors available for comparison.
