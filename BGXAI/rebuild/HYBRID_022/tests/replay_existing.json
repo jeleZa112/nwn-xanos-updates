@@ -1,0 +1,214 @@
+[
+  {
+    "file": "BGXAI_COMBAT(20261105-093310).log",
+    "A1_attack_starts": 5,
+    "A1_retreat_starts": 4,
+    "A1_attack_retreat_switches": 5,
+    "risk_repeated_toggling": true,
+    "action_origin": "UNKNOWN",
+    "enemy_aggro": "UNKNOWN",
+    "actual_HP": "UNKNOWN",
+    "events": [
+      {
+        "kind": 105,
+        "pos": [
+          440,
+          1410
+        ],
+        "target": "136316959"
+      },
+      {
+        "kind": 105,
+        "pos": [
+          440,
+          1410
+        ],
+        "target": "136382496"
+      },
+      {
+        "kind": 105,
+        "pos": [
+          440,
+          1410
+        ],
+        "target": "136382496"
+      },
+      {
+        "kind": 355,
+        "pos": [
+          440,
+          1410
+        ],
+        "target": "136382496"
+      },
+      {
+        "kind": 105,
+        "pos": [
+          392,
+          1410
+        ],
+        "target": "136382496"
+      },
+      {
+        "kind": 355,
+        "pos": [
+          392,
+          1410
+        ],
+        "target": "136382496"
+      },
+      {
+        "kind": 105,
+        "pos": [
+          344,
+          1410
+        ],
+        "target": "136382496"
+      },
+      {
+        "kind": 355,
+        "pos": [
+          344,
+          1410
+        ],
+        "target": "136382496"
+      },
+      {
+        "kind": 355,
+        "pos": [
+          280,
+          1410
+        ],
+        "target": "136382496"
+      }
+    ]
+  },
+  {
+    "file": "BGXAI_COMBAT(20261105-080316).log",
+    "A1_attack_starts": 4,
+    "A1_retreat_starts": 2,
+    "A1_attack_retreat_switches": 2,
+    "risk_repeated_toggling": false,
+    "action_origin": "UNKNOWN",
+    "enemy_aggro": "UNKNOWN",
+    "actual_HP": "UNKNOWN",
+    "events": [
+      {
+        "kind": 105,
+        "pos": [
+          440,
+          1422
+        ],
+        "target": "136316959"
+      },
+      {
+        "kind": 355,
+        "pos": [
+          440,
+          1422
+        ],
+        "target": "136382496"
+      },
+      {
+        "kind": 355,
+        "pos": [
+          344,
+          1446
+        ],
+        "target": "136316959"
+      },
+      {
+        "kind": 105,
+        "pos": [
+          328,
+          1650
+        ],
+        "target": "136316959"
+      },
+      {
+        "kind": 105,
+        "pos": [
+          328,
+          1650
+        ],
+        "target": "136316959"
+      },
+      {
+        "kind": 105,
+        "pos": [
+          328,
+          1650
+        ],
+        "target": "136382496"
+      }
+    ]
+  },
+  {
+    "file": "BGXAI_COMBAT(20261105-064722).log",
+    "A1_attack_starts": 2,
+    "A1_retreat_starts": 5,
+    "A1_attack_retreat_switches": 3,
+    "risk_repeated_toggling": true,
+    "action_origin": "UNKNOWN",
+    "enemy_aggro": "UNKNOWN",
+    "actual_HP": "UNKNOWN",
+    "events": [
+      {
+        "kind": 105,
+        "pos": [
+          584,
+          1566
+        ],
+        "target": "136316959"
+      },
+      {
+        "kind": 355,
+        "pos": [
+          584,
+          1566
+        ],
+        "target": "136316959"
+      },
+      {
+        "kind": 105,
+        "pos": [
+          584,
+          1660
+        ],
+        "target": "136316959"
+      },
+      {
+        "kind": 355,
+        "pos": [
+          584,
+          1660
+        ],
+        "target": "136316959"
+      },
+      {
+        "kind": 355,
+        "pos": [
+          584,
+          1756
+        ],
+        "target": "136316959"
+      },
+      {
+        "kind": 355,
+        "pos": [
+          584,
+          1912
+        ],
+        "target": "136316959"
+      },
+      {
+        "kind": 355,
+        "pos": [
+          616,
+          2115
+        ],
+        "target": "136316959"
+      }
+    ]
+  }
+]
