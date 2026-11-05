@@ -1,4 +1,4 @@
-// BGXUN1 v0.1.7 — separate selectable party script for EET / SCS 35.21 / Insane.
+// BGXUN1 v0.1.8 — separate selectable party script for EET / SCS 35.21 / Insane.
 // New independent experimental pilot; never patches BDDEFAI, BGXGRP, BGXTANK.
 // Capability checks use current spells / weapon / thief stats, not NPC names or portrait slots.
 // REAL v0.1.3 pilot was installed and startup + FindTraps observed in EET. v0.1.4 was live-tested and FAILED to displace Imoen; v0.1.5 is unverified diagnostic.
@@ -49,6 +49,19 @@ THEN
  RESPONSE #100
   SetGlobal("BGXU017","LOCALS",1)
   DisplayStringHead(Myself,~BGXUN1 V017 TARGET-AWARE~)
+END
+
+// V018: live test 080316 confirmed two retreats in one encounter and three shots
+// in another. The earlier unconditional HP>55 attack gate could strand a wounded
+// archer after the attacker switched to a tank/familiar or left close range.
+// Do not confuse a read-only action probe with reliable PLAYER/AI attribution.
+IF
+ ActionListEmpty()
+ Global("BGXU018","LOCALS",0)
+THEN
+ RESPONSE #100
+  SetGlobal("BGXU018","LOCALS",1)
+  DisplayStringHead(Myself,~BGXUN1 V018 RESUME FIRE~)
 END
 
 // CRITICAL: a wounded companion should continue to get away, not exhaust a 3-try
@@ -258,11 +271,17 @@ THEN
   BattleSong()
 END
 
-// Low-cost ranged combat only with an ALREADY SELECTED ranged weapon.
+// Low-cost ranged combat with an ALREADY SELECTED ranged weapon.
+// V018: wounded archers may resume fire if enemy disengages OR has moved
+// beyond the immediate close-reach zone (8 units). Under current close
+// assault while wounded, do NOT replace priority emergency escape with fire.
 // Never equip-swaps or runs across a trap. Sneaking / invisible actor is respected.
 IF
  ActionListEmpty()
- HPPercentGT(Myself,55)
+ OR(3)
+  HPPercentGT(Myself,55)
+  !AttackedBy(NearestEnemyOf(Myself),DEFAULT)
+  !Range(NearestEnemyOf(Myself),8)
  Global("BDAI_DISABLE_ATTACK","LOCALS",0)
  !StateCheck(Myself,STATE_INVISIBLE)
  See(NearestEnemyOf(Myself))
