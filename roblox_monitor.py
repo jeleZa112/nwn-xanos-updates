@@ -24,21 +24,24 @@ def note(line):
 
 # Strategy policy is embedded so the existing one-file updater remains sufficient.
 def strategy_decision(in_match, money=None, turret_price=None, core_turrets=None,
-                      core_limit=3, frontline_ok=None, core_protected=False,
-                      perimeter_coverage=None, health=None):
+                      space_in_core=None, enemies_approaching=None,
+                      approach_protected=None, safe_to_expand=None, health=None):
+    """Observed user tactic: core first, threat-triggered defense, expand outward when full.
+    Returns a recommendation only; NEVER controls the game.
+    """
     if not in_match: return "LOBBY:WAIT"
-    if health is not None and health < .30: return "SURVIVE:RETREAT"
-    if frontline_ok is False: return "DEFENSE:REINFORCE_FRONT"
-    if core_turrets is None: return "OBSERVE:TURRET_COUNT_UNKNOWN"
-    if core_turrets == 0:
-        if money is None or turret_price is None: return "FIRST:OBSERVE_PRICE"
-        return "FIRST:PLACE_TURRET" if money >= turret_price else "FIRST:SAVE"
-    if core_turrets < core_limit:
-        if money is None or turret_price is None: return "CORE:OBSERVE_PRICE"
-        return "CORE:PLACE_NEXT" if money >= turret_price else "CORE:HOLD_BEHIND_TURRETS"
-    if frontline_ok is None or not core_protected: return "CORE:VERIFY_AND_PROTECT"
-    if perimeter_coverage is None: return "PERIMETER:SCOUT_APPROACHES"
-    return "MAINTAIN:REPAIR" if perimeter_coverage >= 1.0 else "PERIMETER:EXPAND"
+    if health is not None and health < .30: return "SURVIVE:ASSESS_SAFETY"
+    if enemies_approaching is True and approach_protected is False:
+        return "DEFENSE:BUILD_ON_APPROACH"
+    if core_turrets is None: return "OBSERVE:COUNT_TURRETS"
+    if money is None or turret_price is None: return "ECONOMY:READ_COST"
+    if money < turret_price: return "ECONOMY:SAVE_AT_CORE"
+    if core_turrets == 0: return "CORE:PLACE_FIRST"
+    if space_in_core is None: return "OBSERVE:ASSESS_SPACE"
+    if space_in_core: return "CORE:PLACE_MORE"
+    if safe_to_expand is None: return "EXPAND:CHECK_SAFE_ROUTE"
+    if safe_to_expand: return "EXPAND:STEP_OUT_PLACE_RETURN"
+    return "EXPAND:WAIT_FOR_SAFE_MOMENT"
 
 # Visual detection and independent controls are NOT implemented yet.
 # No gameplay decisions are executed in this monitoring release.
@@ -302,7 +305,7 @@ if run_mode_prompt() == "2":
 
 note(f"Roblox monitor {VERSION}, RAM-only analysis, {DURATION} sec")
 note("HUD detection is heuristic: no OCR; exact health/money/waves not yet available.")
-note("Policy loaded: first turret -> grouped core -> protected perimeter; observation only")
+note("Policy loaded: core turrets -> defend when enemies approach -> step out and place when core is full; observation only")
 try:
     import numpy as np
     from windows_capture import WindowsCapture, Frame, InternalCaptureControl
