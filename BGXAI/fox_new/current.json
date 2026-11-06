@@ -6,7 +6,7 @@
   "repo": "jeleZa112/nwn-xanos-updates",
   "branch": "bg-eet-ai",
   "game_root": "C:\\Games\\BG_EET_FOXX_NEW",
-  "summary_ru": "После ошибки 'Independent test clone already exists' BGXAI 033 безопасно осматривает существующую BGX32_TEST и при отдельной явной команде докопирует только отсутствующие файлы с полными SHA256 проверками, затем выполнит WeiDU только в копии. 27/27 офлайн тестов PASS; Windows ещё не проверен. Никогда не удаляет копию или не меняет рабочую Foxx.",
+  "summary_ru": "У пользователя неполная тестовая копия BGX32 (нет BDDEFAI и BGX31, нет отчёта WeiDU). BGXAI 033 безопасно проверяет существующую копию, SHA256 и отсутствие второго процесса 032, свободное место, затем докопирует только недостающие файлы и в тестовой EET проверит установку и откат BGX31. 29/29 офлайн-тестов PASS; Windows EET ещё не проверена. Оригинальный EPS 18.4 и рабочая игра не изменяются.",
   "files": [
     {
       "source": "BGXAI/fox_new/README_RU.md",
@@ -131,14 +131,14 @@
     {
       "source": "BGXAI/fox_new/src/recover_isolated_clone_033.py",
       "dest": "src/recover_isolated_clone_033.py",
-      "size": 14463,
-      "git_blob_sha": "36e9a55b253d7d81b792f09969937db0ce3398c3"
+      "size": 15360,
+      "git_blob_sha": "a8a72690f89134b1b5fbc7c08a4715d5f561c42f"
     },
     {
       "source": "BGXAI/fox_new/tests/test_recover_isolated_clone_033.py",
       "dest": "tests/test_recover_isolated_clone_033.py",
-      "size": 8777,
-      "git_blob_sha": "89950339fb6f8eace6e0d3b5f57db9e25894d246"
+      "size": 9673,
+      "git_blob_sha": "05bc8ae90e6c912e838098854e75db8bdf1f58e4"
     }
   ]
 }
