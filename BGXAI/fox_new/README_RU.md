@@ -51,7 +51,7 @@
 После очередного запуска одного `BGXAI_UPDATE.cmd` выполнить:
 
 ```powershell
-py -3 "C:\\Games\\BG_EET_FOXX_NEW\\BGXAI_DEV\\src\\eps_runtime_preflight_030.py"
+py -3 "C:\Games\BG_EET_FOXX_NEW\BGXAI_DEV\src\eps_runtime_preflight_030.py"
 ```
 
 `READY_FOR_ISOLATED_COMPILATION_REVIEW` — файлы и хеши проверены, разрешена **только последующая проверка в отдельной копии игры**. `BLOCKED_REVIEW` — несовпадение хешей, неподтверждённый исходный `BDDEFAI` или изменившийся список компонентов EPS. Даже при `READY`: это **не разрешение ставить BGXAI на живую Foxx**, и реальная компиляция WeiDU пока не выполнена. 13/13 офлайн-тестов PASS, запуск на Windows ещё не проверен.
