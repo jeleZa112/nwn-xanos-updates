@@ -1,18 +1,18 @@
 {
   "schema": 1,
   "channel": "fox-new-dev-only",
-  "version": "0.3.4-clone-movie-reconciliation",
+  "version": "0.3.5-compile-only-research",
   "status": "SOURCE_ONLY_NOT_INSTALLED_NOT_RUNTIME_VERIFIED",
   "repo": "jeleZa112/nwn-xanos-updates",
   "branch": "bg-eet-ai",
   "game_root": "C:\\Games\\BG_EET_FOXX_NEW",
-  "summary_ru": "У пользователя BGXAI 033 остановился на SHA256 mismatch movies/IWINTRO.WBM при проверке существующей тестовой копии BGX32_TEST. 034 проверяет SHA256 ВСЕХ 8881+ существующих файлов, блокирует любые несоответствия вне movies/*.WBM, сохраняет несовпадающие только видео в локальный карантин и восстанавливает исключительно в тестовой копии; далее использует 033 для копирования недостающих и изолированного теста WeiDU. 20/20 offline tests PASS, Windows runtime not tested. EPS/BDDEFAI в живой Foxx не изменяются.",
+  "summary_ru": "После аварии WinError2 карантина BGX34 пользователь устал от повторных пробных запусков. Полное копирование EET (032/033/034) снято с текущего маршрута. 035 позволяет исследовать прямую компиляцию собственного BAF в локальный BCS через WeiDU, с выводом --out/--tlkout/--ftlkout в BGXAI_LOCAL_BUILD; никакого TP2, полной копии EET, изменения EPS или игрового AI. 19/19 модельных тестов PASS; реальный Windows WeiDU не проверен. Пользователю пока ничего запускать не нужно.",
   "files": [
     {
       "source": "BGXAI/fox_new/README_RU.md",
       "dest": "README_RU.md",
-      "size": 22471,
-      "git_blob_sha": "e4e25e48919fda1e2ea0a674047465d45524b4be"
+      "size": 25836,
+      "git_blob_sha": "72eab5120e036964a3528d3399c481a48417d009"
     },
     {
       "source": "BGXAI/fox_new/src/role_advisor_024.js",
@@ -151,6 +151,18 @@
       "dest": "tests/test_reconcile_existing_clone_034.py",
       "size": 9836,
       "git_blob_sha": "9958c30f33a6c8b071a144bd3fa6c1ecd0c6da69"
+    },
+    {
+      "source": "BGXAI/fox_new/src/weidu_compile_only_035.py",
+      "dest": "src/weidu_compile_only_035.py",
+      "size": 7397,
+      "git_blob_sha": "1fc3c8845429da7a64c8911446d1c2031885d9dd"
+    },
+    {
+      "source": "BGXAI/fox_new/tests/test_compile_only_035.py",
+      "dest": "tests/test_compile_only_035.py",
+      "size": 5893,
+      "git_blob_sha": "ecde2f4fcd2fffa823b7fa43d095fbc571b40c1d"
     }
   ]
 }
