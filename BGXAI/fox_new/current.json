@@ -1,18 +1,18 @@
 {
   "schema": 1,
   "channel": "fox-new-dev-only",
-  "version": "0.3.0-eps-runtime-preflight",
+  "version": "0.3.1-isolated-stage",
   "status": "SOURCE_ONLY_NOT_INSTALLED_NOT_RUNTIME_VERIFIED",
   "repo": "jeleZa112/nwn-xanos-updates",
   "branch": "bg-eet-ai",
   "game_root": "C:\\Games\\BG_EET_FOXX_NEW",
-  "summary_ru": "BGXAI 030 сверяет локальные EPS 027/028 с текущими EPS/WeiDU/BDDEFAI, выявляет изменения и допускает только последующий тест компиляции на изолированной копии Foxx. 13/13 офлайн-тестов. В игру ничего не устанавливается. EPS 18.4 по-прежнему рабочий ИИ.",
+  "summary_ru": "После подтверждённого пользователем BGXAI 030 READY (235 EPS файлов, 3 компонента, неизменный BDDEFAI), 031 формирует локально отдельный пакет BGX31 для будущей компиляции на независимой копии EET. НЕ устанавливается, НЕ копирует EPS/BCS, НЕ меняет рабочую игру. 18/18 модельных офлайн-тестов.",
   "files": [
     {
       "source": "BGXAI/fox_new/README_RU.md",
       "dest": "README_RU.md",
-      "size": 9649,
-      "git_blob_sha": "77f3591eeb6d7f901f3a3b79fcb4b6d229a49de1"
+      "size": 11236,
+      "git_blob_sha": "3cb0bfcab4d2af2d9f34dff0804f640ce082b2b2"
     },
     {
       "source": "BGXAI/fox_new/src/role_advisor_024.js",
@@ -103,6 +103,18 @@
       "dest": "tests/test_eps_runtime_preflight_030.py",
       "size": 4954,
       "git_blob_sha": "967ae18c41de0195be499fda598bed7dac572408"
+    },
+    {
+      "source": "BGXAI/fox_new/src/build_isolated_package_031.py",
+      "dest": "src/build_isolated_package_031.py",
+      "size": 7638,
+      "git_blob_sha": "a6ddd8fc0c05dc2f7f567f5321c2f3c258142769"
+    },
+    {
+      "source": "BGXAI/fox_new/tests/test_isolated_package_031.py",
+      "dest": "tests/test_isolated_package_031.py",
+      "size": 5206,
+      "git_blob_sha": "ab0fba12fd2fffb18eafaab0c3ee538637a030a5"
     }
   ]
 }
