@@ -1,18 +1,18 @@
 {
   "schema": 1,
   "channel": "fox-new-dev-only",
-  "version": "0.2.8-eps-structure-audit",
+  "version": "0.3.0-eps-runtime-preflight",
   "status": "SOURCE_ONLY_NOT_INSTALLED_NOT_RUNTIME_VERIFIED",
   "repo": "jeleZa112/nwn-xanos-updates",
   "branch": "bg-eet-ai",
   "game_root": "C:\\Games\\BG_EET_FOXX_NEW",
-  "summary_ru": "BGXAI 028: безопасная сверка целостности личной копии EPS 18.4 (235 файлов по сообщению пользователя), счётчик скриптов и компонентов WeiDU; 12/12 офлайн-тестов PASS. Исполняемый игровой ИИ пока остаётся EPS; аудит НЕ устанавливает BGXAI в игру.",
+  "summary_ru": "BGXAI 030 сверяет локальные EPS 027/028 с текущими EPS/WeiDU/BDDEFAI, выявляет изменения и допускает только последующий тест компиляции на изолированной копии Foxx. 13/13 офлайн-тестов. В игру ничего не устанавливается. EPS 18.4 по-прежнему рабочий ИИ.",
   "files": [
     {
       "source": "BGXAI/fox_new/README_RU.md",
       "dest": "README_RU.md",
-      "size": 8053,
-      "git_blob_sha": "d49b18117c2af9c4f5f606b972ba87e4d174272f"
+      "size": 9649,
+      "git_blob_sha": "77f3591eeb6d7f901f3a3b79fcb4b6d229a49de1"
     },
     {
       "source": "BGXAI/fox_new/src/role_advisor_024.js",
@@ -91,6 +91,18 @@
       "dest": "tests/test_eps_structure_audit_028.py",
       "size": 3274,
       "git_blob_sha": "f01534cccf6eba712882539e0668e5cf6795b9be"
+    },
+    {
+      "source": "BGXAI/fox_new/src/eps_runtime_preflight_030.py",
+      "dest": "src/eps_runtime_preflight_030.py",
+      "size": 7519,
+      "git_blob_sha": "a1adc0bf161e9d372dc34ff61c326f429208abd4"
+    },
+    {
+      "source": "BGXAI/fox_new/tests/test_eps_runtime_preflight_030.py",
+      "dest": "tests/test_eps_runtime_preflight_030.py",
+      "size": 4954,
+      "git_blob_sha": "967ae18c41de0195be499fda598bed7dac572408"
     }
   ]
 }
