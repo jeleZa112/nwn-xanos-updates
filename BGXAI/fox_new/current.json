@@ -1,18 +1,18 @@
 {
   "schema": 1,
   "channel": "fox-new-dev-only",
-  "version": "0.3.1-isolated-stage",
+  "version": "0.3.2-isolated-weidu-test",
   "status": "SOURCE_ONLY_NOT_INSTALLED_NOT_RUNTIME_VERIFIED",
   "repo": "jeleZa112/nwn-xanos-updates",
   "branch": "bg-eet-ai",
   "game_root": "C:\\Games\\BG_EET_FOXX_NEW",
-  "summary_ru": "После подтверждённого пользователем BGXAI 030 READY (235 EPS файлов, 3 компонента, неизменный BDDEFAI), 031 формирует локально отдельный пакет BGX31 для будущей компиляции на независимой копии EET. НЕ устанавливается, НЕ копирует EPS/BCS, НЕ меняет рабочую игру. 18/18 модельных офлайн-тестов.",
+  "summary_ru": "Пользователь подтвердил 031 STAGED. BGXAI 032 копирует игру только в независимую папку-сосед после проверки диска, устанавливает BGX31 через WeiDU только в копии, затем пробует откат, сверяет BDDEFAI, TLK и сценарии. 28/28 офлайн unittest PASS; реальный Windows/WeiDU тест пока НЕ выполнен. Рабочая Foxx и EPS 18.4 не модифицируются.",
   "files": [
     {
       "source": "BGXAI/fox_new/README_RU.md",
       "dest": "README_RU.md",
-      "size": 11236,
-      "git_blob_sha": "3cb0bfcab4d2af2d9f34dff0804f640ce082b2b2"
+      "size": 14659,
+      "git_blob_sha": "2ec14b81379057d593cea3802f2bdbceb40a4b15"
     },
     {
       "source": "BGXAI/fox_new/src/role_advisor_024.js",
@@ -115,6 +115,18 @@
       "dest": "tests/test_isolated_package_031.py",
       "size": 5206,
       "git_blob_sha": "ab0fba12fd2fffb18eafaab0c3ee538637a030a5"
+    },
+    {
+      "source": "BGXAI/fox_new/src/weidu_isolated_test_032.py",
+      "dest": "src/weidu_isolated_test_032.py",
+      "size": 15100,
+      "git_blob_sha": "6810434695ac2ab5452c17fe80000627c3875d35"
+    },
+    {
+      "source": "BGXAI/fox_new/tests/test_weidu_isolated_032.py",
+      "dest": "tests/test_weidu_isolated_032.py",
+      "size": 10939,
+      "git_blob_sha": "dcdff183fb528af9188becbfcc79f572336306d3"
     }
   ]
 }
