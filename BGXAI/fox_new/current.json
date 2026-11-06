@@ -1,18 +1,18 @@
 {
   "schema": 1,
   "channel": "fox-new-dev-only",
-  "version": "0.3.2-isolated-weidu-test",
+  "version": "0.3.3-safe-existing-clone-recovery",
   "status": "SOURCE_ONLY_NOT_INSTALLED_NOT_RUNTIME_VERIFIED",
   "repo": "jeleZa112/nwn-xanos-updates",
   "branch": "bg-eet-ai",
   "game_root": "C:\\Games\\BG_EET_FOXX_NEW",
-  "summary_ru": "Пользователь подтвердил 031 STAGED. BGXAI 032 копирует игру только в независимую папку-сосед после проверки диска, устанавливает BGX31 через WeiDU только в копии, затем пробует откат, сверяет BDDEFAI, TLK и сценарии. 28/28 офлайн unittest PASS; реальный Windows/WeiDU тест пока НЕ выполнен. Рабочая Foxx и EPS 18.4 не модифицируются.",
+  "summary_ru": "После ошибки 'Independent test clone already exists' BGXAI 033 безопасно осматривает существующую BGX32_TEST и при отдельной явной команде докопирует только отсутствующие файлы с полными SHA256 проверками, затем выполнит WeiDU только в копии. 27/27 офлайн тестов PASS; Windows ещё не проверен. Никогда не удаляет копию или не меняет рабочую Foxx.",
   "files": [
     {
       "source": "BGXAI/fox_new/README_RU.md",
       "dest": "README_RU.md",
-      "size": 14659,
-      "git_blob_sha": "2ec14b81379057d593cea3802f2bdbceb40a4b15"
+      "size": 18108,
+      "git_blob_sha": "f820169df98d4986bc77def3718ba809594015a1"
     },
     {
       "source": "BGXAI/fox_new/src/role_advisor_024.js",
@@ -127,6 +127,18 @@
       "dest": "tests/test_weidu_isolated_032.py",
       "size": 10939,
       "git_blob_sha": "dcdff183fb528af9188becbfcc79f572336306d3"
+    },
+    {
+      "source": "BGXAI/fox_new/src/recover_isolated_clone_033.py",
+      "dest": "src/recover_isolated_clone_033.py",
+      "size": 14463,
+      "git_blob_sha": "36e9a55b253d7d81b792f09969937db0ce3398c3"
+    },
+    {
+      "source": "BGXAI/fox_new/tests/test_recover_isolated_clone_033.py",
+      "dest": "tests/test_recover_isolated_clone_033.py",
+      "size": 8777,
+      "git_blob_sha": "89950339fb6f8eace6e0d3b5f57db9e25894d246"
     }
   ]
 }
