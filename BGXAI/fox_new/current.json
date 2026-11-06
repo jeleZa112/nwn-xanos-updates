@@ -1,18 +1,18 @@
 {
   "schema": 1,
   "channel": "fox-new-dev-only",
-  "version": "0.3.3-safe-existing-clone-recovery",
+  "version": "0.3.4-clone-movie-reconciliation",
   "status": "SOURCE_ONLY_NOT_INSTALLED_NOT_RUNTIME_VERIFIED",
   "repo": "jeleZa112/nwn-xanos-updates",
   "branch": "bg-eet-ai",
   "game_root": "C:\\Games\\BG_EET_FOXX_NEW",
-  "summary_ru": "У пользователя неполная тестовая копия BGX32 (нет BDDEFAI и BGX31, нет отчёта WeiDU). BGXAI 033 безопасно проверяет существующую копию, SHA256 и отсутствие второго процесса 032, свободное место, затем докопирует только недостающие файлы и в тестовой EET проверит установку и откат BGX31. 29/29 офлайн-тестов PASS; Windows EET ещё не проверена. Оригинальный EPS 18.4 и рабочая игра не изменяются.",
+  "summary_ru": "У пользователя BGXAI 033 остановился на SHA256 mismatch movies/IWINTRO.WBM при проверке существующей тестовой копии BGX32_TEST. 034 проверяет SHA256 ВСЕХ 8881+ существующих файлов, блокирует любые несоответствия вне movies/*.WBM, сохраняет несовпадающие только видео в локальный карантин и восстанавливает исключительно в тестовой копии; далее использует 033 для копирования недостающих и изолированного теста WeiDU. 20/20 offline tests PASS, Windows runtime not tested. EPS/BDDEFAI в живой Foxx не изменяются.",
   "files": [
     {
       "source": "BGXAI/fox_new/README_RU.md",
       "dest": "README_RU.md",
-      "size": 18590,
-      "git_blob_sha": "bb4740d50eabae0f18816ae2a9645d885f9126af"
+      "size": 22471,
+      "git_blob_sha": "e4e25e48919fda1e2ea0a674047465d45524b4be"
     },
     {
       "source": "BGXAI/fox_new/src/role_advisor_024.js",
@@ -139,6 +139,18 @@
       "dest": "tests/test_recover_isolated_clone_033.py",
       "size": 9673,
       "git_blob_sha": "05bc8ae90e6c912e838098854e75db8bdf1f58e4"
+    },
+    {
+      "source": "BGXAI/fox_new/src/reconcile_existing_clone_034.py",
+      "dest": "src/reconcile_existing_clone_034.py",
+      "size": 11473,
+      "git_blob_sha": "69ae13676db6ba449487af14d1e3da1a0a1910af"
+    },
+    {
+      "source": "BGXAI/fox_new/tests/test_reconcile_existing_clone_034.py",
+      "dest": "tests/test_reconcile_existing_clone_034.py",
+      "size": 9836,
+      "git_blob_sha": "9958c30f33a6c8b071a144bd3fa6c1ecd0c6da69"
     }
   ]
 }
