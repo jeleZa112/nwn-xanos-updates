@@ -162,4 +162,22 @@ class TestRecovery(unittest.TestCase):
             self.assertFalse(mod.running_original_032(check=probe))
         finally:mod.os.name=prior
 
+    def test_28_low_disk_space_blocks_before_copy(self):
+        original=mod.shutil.disk_usage
+        mod.shutil.disk_usage=lambda _path:SimpleNamespace(free=0)
+        try:
+            with self.assertRaisesRegex(ValueError,'Insufficient disk space'):self.resume()
+            self.assertFalse((self.clone/'setup-BGX31.exe').exists())
+        finally:mod.shutil.disk_usage=original
+    def test_29_rollback_log_component_must_disappear(self):
+        def bad_uninstall_log(cmd, **kw):
+            r=self.fake_weidu(cmd,**kw)
+            if '--force-uninstall' in cmd:
+                clone=Path(kw['cwd'])
+                (clone/'WeiDU.log').write_text('// EPS\n~setup-BGX31.tp2~ #0 #0 // orphaned')
+            return r
+        r=self.resume(runner=bad_uninstall_log)
+        self.assertEqual(r['status'],'REVIEW_ISOLATED_WEIDU')
+        self.assertFalse(r['clone_weidu_component_removed'])
+
 if __name__=='__main__':unittest.main(verbosity=2)
