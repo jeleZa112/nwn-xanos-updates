@@ -152,6 +152,15 @@ def resume(root, *, enforce_root=True, preflight=None, process_probe=running_ori
         raise ValueError('Clone has changes/previous WeiDU run; preserved for inspection: ' + info['status'])
     if process_probe():
         raise ValueError('Original BGXAI 032 process STILL ACTIVE. Do not run two copies concurrently.')
+    # Earlier 032 space check may no longer reflect current free space.
+    # Preflight missing bytes + headroom BEFORE creating any new clone file.
+    missing_bytes = sum(state['sources'][rel][1] for rel in state['missing'])
+    available = shutil.disk_usage(clone).free
+    required = missing_bytes + max(old.MIN_EXTRA_BYTES, int(missing_bytes * 0.07))
+    if available < required:
+        raise ValueError('Insufficient disk space to resume TEST clone: need ' +
+                         str(round(required / 1024**3, 2)) + ' GiB; free ' +
+                         str(round(available / 1024**3, 2)) + ' GiB')
     before = old.capture_critical(root)
     weidu = old.choose_weidu(root)
     # Detect all hardlinks and checksum corruption in preexisting clone before writing.
@@ -208,6 +217,9 @@ def resume(root, *, enforce_root=True, preflight=None, process_probe=running_ori
             report['uninstall_exit_code']=uninstall_exit
             report['uninstall_output_tail']=uninstall_output[-14000:]
             report['resources_absent_after_rollback']=not bcs.exists() and not bs.exists()
+            after_log = clone / 'WeiDU.log'
+            report['clone_weidu_component_removed'] = after_log.is_file() and \
+                ('BGX31' not in after_log.read_text(encoding='utf-8-sig',errors='replace').upper())
         report['clone_bcs_matches_original_after_test']=old.digest(clone/'override/BDDEFAI.BCS') == before['override/BDDEFAI.BCS']
         clone_after=old.capture_critical(clone)
         report['clone_dialog_files_unchanged_after_rollback']=all(
@@ -216,6 +228,7 @@ def resume(root, *, enforce_root=True, preflight=None, process_probe=running_ori
             install_exit==0 and report.get('uninstall_exit_code')==0 and
             all(report['generated_resources'].values()) and
             report['weiDU_component_recorded_on_clone'] and report.get('resources_absent_after_rollback') and
+            report.get('clone_weidu_component_removed') and
             report['clone_dialog_files_unchanged_after_rollback'] and
             report['clone_bcs_matches_original_after_install'] and report['clone_bcs_matches_original_after_test']
         ) else 'REVIEW_ISOLATED_WEIDU'
