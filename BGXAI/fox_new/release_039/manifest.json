@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.9",
+  "status": "SOURCE_ONLY_OPT_IN_INSTALL_NOT_RUNTIME_VERIFIED",
+  "game_root": "C:\\Games\\BG_EET_FOXX_NEW",
+  "files": [
+    {
+      "source": "BGXAI/fox_new/release_039/BGXAI39_INSTALL.py",
+      "dest": "BGXAI39_INSTALL.py",
+      "size": 16229,
+      "sha256": "73b6540c4892155f668f6e686532bb13fdd310ece9b7f4f033898a8a25f0c737"
+    },
+    {
+      "source": "BGXAI/fox_new/release_039/setup-BGX39.tp2",
+      "dest": "setup-BGX39.tp2",
+      "size": 424,
+      "sha256": "64c4e56d10e746bc47a4b4e389098bdba2d4a27fbc475c4912c072fc5e558b96"
+    },
+    {
+      "source": "BGXAI/fox_new/release_039/BGX39/team_guard_fallback.baf",
+      "dest": "BGX39/team_guard_fallback.baf",
+      "size": 5279,
+      "sha256": "1d19a85a3ca30ad467b4234435e6647f548bf8bf422647a96b34a99b400e2742"
+    },
+    {
+      "source": "BGXAI/fox_new/release_039/SOURCE_MANIFEST.json",
+      "dest": "SOURCE_MANIFEST.json",
+      "size": 325,
+      "sha256": "fc89202be9218f87e589e21def5f0a59f9295c2346999e983e848eea72fd3e16"
+    },
+    {
+      "source": "BGXAI/fox_new/release_039/README_RU.txt",
+      "dest": "README_RU.txt",
+      "size": 3428,
+      "sha256": "2e8ddb4f257c0ddaa5d914575ba0d42696604bdc94093e027f9a10cf4a6a1ad3"
+    },
+    {
+      "source": "BGXAI/fox_new/release_039/tests/test_team_guard_039.py",
+      "dest": "tests/test_team_guard_039.py",
+      "size": 9061,
+      "sha256": "6817dccb45794bc1292ae05525bb5f3ee031538551541e88aaa2d47f89df081a"
+    }
+  ]
+}
