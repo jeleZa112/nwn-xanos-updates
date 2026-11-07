@@ -1,9 +1,9 @@
-# Roblox background monitor - release 2.2.1
+# Roblox background monitor - release 2.2.2
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "2.2.1"
+VERSION = "2.2.2"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -334,6 +334,11 @@ def battle_pilot():
     if consent not in ("YES","ДА"):
         print("No input performed.")
         return 0
+    # Do not accidentally bundle screenshots from a previous failed run.
+    for filename in ("battle.log","pilot_summary.txt","BATTLE_PILOT.zip",
+                     "probe_before.jpg","probe_after_W.jpg","probe_after_S.jpg",
+                     "probe_after_A.jpg","probe_after_D.jpg"):
+        (folder/filename).unlink(missing_ok=True)
 
     class MOUSEINPUT(ctypes.Structure):
         _fields_=[("dx",ctypes.c_int32),("dy",ctypes.c_int32),
