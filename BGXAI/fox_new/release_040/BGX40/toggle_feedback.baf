@@ -1,0 +1,27 @@
+// BGXAI 040 - visible ON/OFF feedback for the EXISTING F guard toggle.
+// EXTEND_TOP: overrides only the two earlier BGX38 toggle rules.
+// Same LOCALS and 2-second key cooldown; 038 / 039 protection unchanged.
+// One high-priority block runs per press, so original BGX38 won't re-toggle.
+IF
+  InParty(Myself)
+  HotKey(F)
+  !GlobalTimerNotExpired("BGX38_KEY_CD","LOCALS")
+  Global("BGX38_GUARD","LOCALS",0)
+THEN
+  RESPONSE #100
+    SetGlobal("BGX38_GUARD","LOCALS",1)
+    SetGlobalTimer("BGX38_KEY_CD","LOCALS",2)
+    DisplayStringHead(Myself,@0)
+END
+
+IF
+  InParty(Myself)
+  HotKey(F)
+  !GlobalTimerNotExpired("BGX38_KEY_CD","LOCALS")
+  Global("BGX38_GUARD","LOCALS",1)
+THEN
+  RESPONSE #100
+    SetGlobal("BGX38_GUARD","LOCALS",0)
+    SetGlobalTimer("BGX38_KEY_CD","LOCALS",2)
+    DisplayStringHead(Myself,@1)
+END
