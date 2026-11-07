@@ -1,7 +1,7 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "3.2.2",
-  "note": "Pinned minimal files fetched sequentially from HF, preserving partially downloaded weights; Qwen unaffected.",
+  "version": "3.2.3",
+  "note": "Fix false rejection of 119-byte tokens.txt while retaining large model.pt weight validation; no reinstall",
   "files": [
     {
       "path": "BG_RU_IMOEN_PROSODY_29/GENERATE_PROSODY_29.py",
@@ -21,7 +21,7 @@
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/EMOTION_ANALYSIS_32.py",
-      "sha256": "42653278c461c3c35f29c3bc991b384f00cc14fc9646ba3935c526bb528804cc"
+      "sha256": "a65e84737cff8e0a0a5d6022f81c8fa7a2a01be9fdd59d3c125865cfb923ea3e"
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/RUN_EMOTION_32.cmd",
