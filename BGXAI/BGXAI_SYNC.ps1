@@ -236,6 +236,48 @@ function Test041ReadOnly {
     }
     Write-Host 'NO GAME FILES CHANGED.'
 }
+function Test042EPSReadOnly {
+    # BGXAI 042 read-only BCS inspection: no WeiDU, Python, process calls, or game writes.
+    Write-Host ''
+    Write-Host 'BGXAI 042 - EPS GUARD / AUTOATTACK AUDIT (READ ONLY)'
+    $fileName=Join-Path $GameRoot 'override\BDDEFAI.BCS'
+    if(!(Test-Path -LiteralPath $fileName -PathType Leaf)){throw 'Current BDDEFAI.BCS missing'}
+    $bytes=[IO.File]::ReadAllBytes($fileName)
+    if($bytes.Length -gt 8000000 -or $bytes.Length -lt 50){throw 'Unexpected compiled BCS size'}
+    $bcs=[Text.Encoding]::GetEncoding(28591).GetString($bytes)
+    if(!$bcs.StartsWith(('SC'+[char]10))){throw 'Unexpected compiled BCS signature'}
+    $blockPattern=[regex]'(?s)CR\nCO\n(.*?)\nRS\n(.*?)\nRS\nCR(?=\n(?:CR|SC))'
+    $blocks=$blockPattern.Matches($bcs)
+    if($blocks.Count -lt 1){throw 'Unable to recognize complete BCS blocks'}
+    $modeCount=0;$guardCount=0;$modeActionList=0;$protectCount=0
+    $attackReeval=0;$attackOneRound=0
+    $interesting=@()
+    for($i=0;$i -lt $blocks.Count;$i++){
+        $condition=$blocks[$i].Groups[1].Value
+        $actions=$blocks[$i].Groups[2].Value
+        $isMode=$condition.Contains('BDAI_ATTACK_MODE')
+        $isGuard=$condition.Contains('BGX38_GUARD')
+        if($isMode){$modeCount++}
+        if($isGuard){$guardCount++}
+        if($isMode -and $condition.Contains('16427 ')){$modeActionList++}
+        $actionIds=@([regex]::Matches($actions,'(?:^|\n)(?:\d+)?AC\n(-?\d+)OB\n') | ForEach-Object {$_.Groups[1].Value})
+        $protectCount+=@($actionIds | Where-Object {$_ -eq '87'}).Count
+        $attackReeval+=@($actionIds | Where-Object {$_ -eq '134'}).Count
+        $attackOneRound+=@($actionIds | Where-Object {$_ -eq '105'}).Count
+        if(($isMode -or $isGuard) -and $interesting.Count -lt 12){
+            $interesting+=('  Block '+($i+1)+': mode='+$isMode+' guard='+$isGuard+
+                ' idle='+$condition.Contains('16427 ')+' actions='+($actionIds -join ','))
+        }
+    }
+    Write-Host ('Live BDDEFAI.BCS SHA256: '+(HashBytes $bytes))
+    Write-Host ('Bytes: '+$bytes.Length+'; complete blocks: '+$blocks.Count)
+    Write-Host ('EPS attack-mode blocks: '+$modeCount+' (ActionListEmpty: '+$modeActionList+')')
+    Write-Host ('BGXAI guard-mode blocks: '+$guardCount)
+    Write-Host ('Actions: ProtectObject='+$protectCount+' AttackReevaluate='+$attackReeval+' AttackOneRound='+$attackOneRound)
+    foreach($item in $interesting){Write-Host $item}
+    Write-Host 'Historical copies are NOT used for this audit; game resources READ ONLY.'
+    Write-Host '042 live patch NOT installed. No game files changed.'
+}
 Write-Host ''
 Write-Host ' BGXAI ONE-FILE UPDATER / EET Foxx / EPS 18.4'
 Write-Host ' Installed baseline: BGXAI 0381 + 039 (user-confirmed in-game).'
@@ -250,6 +292,7 @@ Write-Host ' 8 - Download/verify BGXAI 041 (own icon sources; no installation)'
 Write-Host ' 9 - Status of BGXAI 041 (game read-only)'
 Write-Host ' 10 - EXPERIMENTAL install BGXAI 041 (YES + WeiDU backup; only if 040 last)'
 Write-Host ' 11 - Roll back BGXAI 041 (YES; only if 041 last)'
+Write-Host ' 12 - BGXAI 042 EPS guard/autoattack audit (READ-ONLY)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -267,6 +310,7 @@ try {
       '9' {RunRelease $release041 '--status';break}
       '10' {SyncRelease $release041;RunRelease $release041 '--install';break}
       '11' {RunRelease $release041 '--uninstall';break}
+      '12' {Test042EPSReadOnly;break}
       default {throw 'Unknown menu option, no game change.'}
     }
     exit 0
