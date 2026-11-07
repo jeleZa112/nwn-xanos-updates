@@ -327,8 +327,9 @@ def battle_pilot():
         return 2
     print("\nROBLOX BATTLE PILOT V"+VERSION)
     print("Open an EXISTING MATCH in Roblox; do not use in the lobby.")
-    print("This ONE run tests short W/A/S/D movement, NOT turret placement.")
+    print("This ONE run tests a single 0.15-second W movement only.")
     print("Requires foreground Roblox. F8 = start once; F9 = cancel.")
+    print("Stand on wide safe ground away from edges first.")
     print("No repeated patrol, no purchases, no gamepad, no Arduino.")
     consent=input("Confirm movement probe: type YES [default NO]: ").strip().upper()
     if consent not in ("YES","ДА"):
@@ -448,6 +449,7 @@ def battle_pilot():
         return hits==4 and create>.07 and cancel>.07
 
     log("BATTLE_PROBE_START: waiting for F8 in Roblox; F9 cancels.")
+    log("PROBE_SAFETY: choose open safe ground, no edge. Only W 150ms; no building.")
     started=time.monotonic()
     controller=None
     try:
@@ -479,9 +481,8 @@ def battle_pilot():
             log("STOP_BLACK_LOADING_SCREEN: retry after match finishes loading.")
             return 2
         save_frame(baseline,"probe_before.jpg")
-        log("BATTLE_PROBE_ARMED: one short 4-key calibration; no shooting/building.")
-        actions=(("W",0x11,.20),("S",0x1f,.20),
-                 ("A",0x1e,.15),("D",0x20,.15))
+        log("BATTLE_PROBE_ARMED: ONE W key calibration 150ms; no shooting/building.")
+        actions=(("W",0x11,.15),)
         previous=baseline
         results=[]
         for label,scan,seconds in actions:
@@ -526,7 +527,7 @@ def battle_pilot():
             "; saved frames="+str(len(results)+1))
         (folder/"pilot_summary.txt").write_text(
             "Roblox battle motion pilot V"+VERSION+"\n"+
-            "Foreground-only; 4 scan-code pulses; no purchases.\n"+
+            "Foreground-only; 1 scan-code pulse (W 150ms); no purchases.\n"+
             "Scene change does NOT prove movement or correct controls.\n"+
             "Results: "+repr(results)+"\n"+
             "Upload battle.log and probe_before/after JPGs for UI mapping.\n",
@@ -542,8 +543,7 @@ def battle_pilot():
     bundle=folder/"BATTLE_PILOT.zip"
     with zipfile.ZipFile(bundle,"w",compression=zipfile.ZIP_DEFLATED) as z:
         for filename in ("battle.log","pilot_summary.txt","probe_before.jpg",
-                         "probe_after_W.jpg","probe_after_S.jpg",
-                         "probe_after_A.jpg","probe_after_D.jpg"):
+                         "probe_after_W.jpg"):
             item=folder/filename
             if item.exists():
                 z.write(item,arcname=filename)
@@ -1565,7 +1565,7 @@ def lobby_helper():
 
 def run_mode_prompt():
     print("")
-    print("ROBLOX V2.1.3 - choose mode:")
+    print("ROBLOX V"+VERSION+" - choose mode:")
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
