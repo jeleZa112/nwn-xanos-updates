@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.0.0
+# Roblox background monitor - release 3.0.1
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.0.0"
+VERSION = "3.0.1"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -1603,7 +1603,11 @@ def lobby_helper():
     q = queue.Queue(maxsize=1)
     stop = threading.Event()
     start = time.monotonic()
+    max_wait_seconds=max(150,min(1800,int(os.environ.get(
+        "ROBLOX_LOBBY_WAIT_SECONDS","900"))))
     last_update = 0.
+    last_wait_note=-30.
+    menu_confirmed_once=False
     modal_seen = 0
     stage = "WAIT_MENU"
     last_features = None
@@ -2321,6 +2325,10 @@ def lobby_helper():
             "hard": feat["hard_red"]>.18 and feat["normal"]<.12
         }
     log("Lobby v"+VERSION+" start; armed="+str(enabled))
+    log("PAD_AVAILABILITY_RULE: do not infer occupied/free from absent GUI; "+
+        "wait until the FOUR player tiles AND Create/Cancel appear.")
+    log("WAIT_WINDOW_SECONDS="+str(max_wait_seconds)+
+        " (default 900s to allow other player to leave the pad)")
     log("Strict sequence CITY -> ONE -> HARD(RED BORDER) -> CREATE")
     log("SYNTHETIC retries: up to 3 verified attempts for ONE, 2 for HARD; "+
         "CREATE strictly once. Alternate safe points inside the same tile.")
@@ -2328,7 +2336,7 @@ def lobby_helper():
     log("Before/after click evidence in "+str(evidence_dir)+"; JPEG overwritten per step.")
     try:
         controller=capture.start_free_threaded()
-        while not stop.is_set() and time.monotonic()-start < 150:
+        while not stop.is_set() and time.monotonic()-start < max_wait_seconds:
             try:
                 frame=q.get(timeout=.5)
             except queue.Empty:
@@ -2348,6 +2356,17 @@ def lobby_helper():
                 menu_present_count=0
                 previous_result=None
                 stable_count=0
+                now_wait=time.monotonic()
+                if not completed and step_index<3 and now_wait-last_wait_note>=30:
+                    log("WAIT_PAD_CREATION_GUI: no complete creation menu. "+
+                        "Possible reasons: pad occupied, player not on pad, "+
+                        "or lobby/loading UI. Occupancy UNKNOWN; no clicks.")
+                    last_wait_note=now_wait
+                    if ui.GetForegroundWindow()==hwnd:
+                        reduced=cv2.resize(
+                            frame,(960,round(frame.shape[0]*960/frame.shape[1])))
+                        cv2.imwrite(str(evidence_dir/"wait_pad_menu.jpg"),reduced,
+                                    [cv2.IMWRITE_JPEG_QUALITY,65])
                 if step_index==3 and awaiting_confirmation:
                     menu_absent_count+=1
                     if menu_absent_count>=4:
@@ -2359,6 +2378,10 @@ def lobby_helper():
             menu_present_count+=1
             if menu_present_count<4:
                 continue
+            if not menu_confirmed_once:
+                menu_confirmed_once=True
+                log("PAD_CREATION_GUI_CONFIRMED: four player tiles + Create/Cancel "+
+                    "stable; menu is available, proceed with guarded configuration.")
             flags=selected_flags(features)
             if previous_result==flags:
                 stable_count+=1
@@ -2551,6 +2574,9 @@ def lobby_helper():
             if not awaiting_confirmation:
                 log("STOP: OS rejected click")
                 break
+        if not completed and time.monotonic()-start>=max_wait_seconds:
+            log("LOBBY_WAIT_TIMEOUT: no independently confirmed match; "+
+                "pad may still be occupied or unreachable.")
         log("END lobby; dialog_disappeared="+str(completed)+
             "; attempts="+str(retries)+
             "; match start not independently confirmed")
