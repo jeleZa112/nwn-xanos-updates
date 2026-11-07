@@ -1,7 +1,7 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "3.2.3",
-  "note": "Fix false rejection of 119-byte tokens.txt while retaining large model.pt weight validation; no reinstall",
+  "version": "3.4.0",
+  "note": "Compare 4 original English WAV and 8 Russian WHOLE/PARTS with offline cached emotion2vec+; no reinstall",
   "files": [
     {
       "path": "BG_RU_IMOEN_PROSODY_29/GENERATE_PROSODY_29.py",
@@ -21,7 +21,7 @@
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/EMOTION_ANALYSIS_32.py",
-      "sha256": "a65e84737cff8e0a0a5d6022f81c8fa7a2a01be9fdd59d3c125865cfb923ea3e"
+      "sha256": "a5e95c8dfd49f3f1c1d5222416cd0c5049c98a0f3e022a5d32369e23483e0009"
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/RUN_EMOTION_32.cmd",
@@ -34,6 +34,22 @@
     {
       "path": "BG_RU_IMOEN_PROSODY_29/README_32_RU.txt",
       "sha256": "478094b042962bfbf70650e2dfd1e89d1d404caaea2e94a11190d5941f8595f3"
+    },
+    {
+      "path": "BG_RU_IMOEN_PROSODY_29/COMPARE_EN_RU_34.py",
+      "sha256": "d7de24e4d6a3d1acb157f6181e3609e3346994f9c61ed17fa74adabb7ce0a100"
+    },
+    {
+      "path": "BG_RU_IMOEN_PROSODY_29/RUN_COMPARE_EN_RU_34.cmd",
+      "sha256": "9340eaf69bcbec5c996498c606db7fe930daf693bea6a07a952ce773bd9ee307"
+    },
+    {
+      "path": "BG_RU_IMOEN_PROSODY_29/README_EN_RU_34_RU.txt",
+      "sha256": "bbb67842cb93bc0bb701cbf19093fcdeee93f807c06cdd24f3b63bce0c25f647"
+    },
+    {
+      "path": "BG_RU_IMOEN_PROSODY_29/REBUILD_EMOTION_REPORT_33.cmd",
+      "sha256": "461c9e39b95bb1a0f9a5e85d54624ae8937f757877c97c7f6d56381605c4e7d0"
     }
   ]
 }
