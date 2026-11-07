@@ -1,6 +1,7 @@
 """BGXAI 0.3.10 opt-in EET installer. Never duplicates the game.
 
-Only game resource modified BY WeiDU after explicit consent: override/BDDEFAI.BCS.
+WeiDU modifies override/BDDEFAI.BCS and adds two text strings to BOTH Russian
+TLK files when EXTEND_TOP uses the localized TRA. This is intended behavior.
 WeiDU also updates WeiDU.log and its usual mod-backup state; own source BAF is
 independent code; never redistributes compiled EPS code. Default = status.
 """
@@ -63,6 +64,26 @@ def snapshot(root: Path) -> dict:
         check_file(root/item)
     return {p:sha(root/p) for p in CRITICAL}
 
+
+def tlk_entry_count(path: Path) -> int:
+    """Read the TLK V1 count without changing the original or parsing text."""
+    check_file(path, min_size=18)
+    with path.open('rb') as stream:
+        header = stream.read(18)
+    if len(header) != 18 or header[:8] != b'TLK V1  ':
+        raise RuntimeError('Unsupported TLK header: ' + str(path))
+    count = int.from_bytes(header[10:14], 'little')
+    strings_offset = int.from_bytes(header[14:18], 'little')
+    size = path.stat().st_size
+    if count > 5_000_000 or strings_offset < 18 + count * 26 or strings_offset > size:
+        raise RuntimeError('Invalid TLK count/table offset: ' + str(path))
+    return count
+
+
+def tlk_growth(root: Path, backup: Path) -> dict[str, int]:
+    """WeiDU appends exactly @0/@1 to dialog and dialogf during install."""
+    return {name: tlk_entry_count(root / name) - tlk_entry_count(backup / name)
+            for name in ('lang/ru_ru/dialog.tlk', 'lang/ru_ru/dialogf.tlk')}
 
 def read_log(root: Path) -> list[str]:
     log = root/'WeiDU.log'
@@ -154,7 +175,7 @@ def verify_source(pkg: Path):
 
 def backup_folder(root: Path) -> Path:
     """Backup outside the troublesome BGXAI_LOCAL_BUILD directory."""
-    base = Path(os.environ.get('USERPROFILE', str(Path.home()))) / 'Documents' / 'BGXAI39_SAFE_BACKUPS'
+    base = Path(os.environ.get('USERPROFILE', str(Path.home()))) / 'Documents' / 'BGXAI40_SAFE_BACKUPS'
     if not base.is_dir():
         base.mkdir(parents=True, exist_ok=True)
     if link(base) or link(base.parent):
@@ -233,9 +254,16 @@ def run_install(root: Path, pkg: Path, *, real_root=True,
         # The modifier must show as installed and must have changed existing BCS.
         after=snapshot(root)
         report['live_after']=after
+        # New localized @0/@1 dialogue strings MUST change both TLK files.
+        # Prior 040 incorrectly rejected this expected result as REVIEW_INSTALL.
+        growth = tlk_growth(root, backup)
+        report['tlk_entry_growth'] = growth
+        report['weiDU_localized_strings_expected'] = 2
+        report['chitin_key_unchanged'] = after['chitin.key'] == before['chitin.key']
         report['status']='INSTALLED' if (result.returncode==0 and state and
             after['override/BDDEFAI.BCS']!=before['override/BDDEFAI.BCS'] and
-            all(after[k]==before[k] for k in CRITICAL if k!='override/BDDEFAI.BCS')) else 'REVIEW_INSTALL'
+            after['chitin.key']==before['chitin.key'] and
+            all(change==2 for change in growth.values())) else 'REVIEW_INSTALL'
         # If installation failed, NEVER overwrite WeiDU-managed game resources.
         # The original files are preserved in backup for diagnosis/WeiDU rollback.
     except (OSError,ValueError,RuntimeError,subprocess.TimeoutExpired) as e:
@@ -258,17 +286,26 @@ def run_install(root: Path, pkg: Path, *, real_root=True,
 
 
 def find_previous_backup(root: Path):
-    base=Path(os.environ.get('USERPROFILE',str(Path.home())))/'Documents'/'BGXAI39_SAFE_BACKUPS'
-    if not base.is_dir() or link(base):
-        return None
-    for item in sorted(base.glob('PRE_INSTALL_*/status.json'),reverse=True):
-        try:
-            x=json.loads(item.read_text(encoding='utf-8'))
-        except (OSError,json.JSONDecodeError):
+    """Keep access to REAL 040 backups made under mistaken BGXAI39 folder."""
+    docs=Path(os.environ.get('USERPROFILE',str(Path.home())))/'Documents'
+    candidates=[]
+    for name in ('BGXAI40_SAFE_BACKUPS', 'BGXAI39_SAFE_BACKUPS'):
+        base=docs/name
+        if not base.is_dir() or link(base):
             continue
-        if x.get('root')==str(root) and x.get('version')==VERSION:
-            return item.parent,x
-    return None
+        for item in base.glob('PRE_INSTALL_*/status.json'):
+            if link(item.parent) or link(item):
+                continue
+            try:
+                x=json.loads(item.read_text(encoding='utf-8'))
+            except (OSError,json.JSONDecodeError):
+                continue
+            if x.get('root')==str(root) and x.get('version')==VERSION:
+                candidates.append((item.parent.name,item.parent,x))
+    if not candidates:
+        return None
+    _,folder,metadata=max(candidates,key=lambda t:t[0])
+    return folder,metadata
 
 
 def run_uninstall(root: Path,pkg: Path,*,real_root=True,guard=check_processes,
@@ -288,10 +325,15 @@ def run_uninstall(root: Path,pkg: Path,*,real_root=True,guard=check_processes,
     after=snapshot(root)
     still=installed(read_log(root))
     restored=(after['override/BDDEFAI.BCS']==meta['original_hashes']['override/BDDEFAI.BCS'])
-    unchanged=all(after[k]==before[k] for k in CRITICAL if k!='override/BDDEFAI.BCS')
+    # The TLK files are rewritten on localization/rollback; compare original
+    # entry counts to the backed-up pre-install TLKs, not byte-for-byte hashes.
+    growth=tlk_growth(root,path)
+    unchanged=(after['chitin.key']==before['chitin.key'] and
+               all(change==0 for change in growth.values()))
     report={'status':'UNINSTALLED_AND_RESTORED' if p.returncode==0 and not still and restored and unchanged else 'REVIEW_UNINSTALL',
             'weiDU_exit_code':p.returncode,'weiDU_output_tail':((p.stdout or '')+'\n'+(p.stderr or ''))[-9000:],
-            'original_eps_restored':restored,'tlk_and_chitin_unchanged':unchanged,'backup':str(path)}
+            'original_eps_restored':restored,'tlk_entry_delta_after_rollback':growth,
+            'tlk_counts_restored_and_chitin_unchanged':unchanged,'backup':str(path)}
     (path/'uninstall_report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     return report
 
@@ -308,7 +350,7 @@ def status(root: Path,pkg: Path,*,real_root=True):
     print('EPS installed:',any('ENHANCED-POWERGAMING-SCRIPTS' in x.upper() for x in lines))
     print('BGX39 baseline installed:',base_installed(lines))
     print('BGX40 installed:',installed(lines))
-    print('Backup directory: Documents/BGXAI39_SAFE_BACKUPS')
+    print('Backup directory: Documents/BGXAI40_SAFE_BACKUPS (older 040 may be under BGXAI39_SAFE_BACKUPS)')
     try:
         running = inspect_processes()
         print('Windows process gate:', 'BLOCKED - ' + '; '.join(running) if running else 'CLEAR')
