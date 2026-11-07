@@ -2317,7 +2317,7 @@ def run_mode_prompt():
     print("  4 = BATTLE movement pilot (in-match F8, brief WASD, evidence)")
     print("  5 = ONE-TURRET pilot (F8, wait for green Z price, one Z attempt)")
     print("  6 = ROUTE demo (you walk once from spawn to the safe corner; keys+frames)")
-    print("  7 = ROUTE VISION (read-only scene checkpoints from existing route ZIP)")
+    print("  7 = ROUTE VISION (F10 marks defensive corner; NO game input)")
     try:
         choice = input("Choose mode 1-7 [1]: ").strip()
     except EOFError:
