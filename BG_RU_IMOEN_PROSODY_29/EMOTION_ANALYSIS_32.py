@@ -21,7 +21,11 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 SOURCES = HERE / 'INPUT_EN'
 OUT = HERE / 'ANALYSIS'
-MODEL_ID = 'iic/emotion2vec_plus_base'
+MODEL_ID = 'emotion2vec/emotion2vec_plus_base'
+# Same official weights via Hugging Face: bypass modelscope.cn repeated 10s timeouts.
+os.environ.setdefault('HF_HUB_ETAG_TIMEOUT', '120')
+os.environ.setdefault('HF_HUB_DOWNLOAD_TIMEOUT', '300')
+os.environ.setdefault('HF_HUB_DISABLE_SYMLINKS_WARNING', '1')
 TARGETS = ('IMOEN06_', 'IMOEN77A', 'IMOEN79A', 'IMOEN79B')
 EN_LABELS = ['angry','disgusted','fearful','happy','neutral','other','sad','surprised','unknown']
 RU_LABELS = {'angry':'злость/раздражение','disgusted':'отвращение','fearful':'страх','happy':'радость','neutral':'нейтральная речь','other':'другая эмоция','sad':'грусть','surprised':'удивление','unknown':'не определено'}
@@ -310,8 +314,13 @@ def main():
     except ImportError as e:
         raise RuntimeError('Install FunASR into the separate .venv_emotion32 using RUN_EMOTION_32.cmd') from e
     device='cuda' if torch.cuda.is_available() else 'cpu'
-    log('LOADING emotion2vec+ base on '+device+' (first time may download model weights)')
-    model=AutoModel(model=MODEL_ID,device=device)
+    log('LOADING official emotion2vec+ base via Hugging Face on '+device+' (reusing installed env)')
+    try:
+        model=AutoModel(model=MODEL_ID,hub='hf',device=device,disable_update=True)
+    except Exception as exc:
+        log('MODEL LOAD FAILED on Hugging Face: '+repr(exc))
+        log('Do not reinstall Python, Torch or Qwen; source WAVs remain unchanged.')
+        raise
     results=load_cache()
     keys=list(TARGETS) if args.pilot else sorted(files)
     errors=[]
