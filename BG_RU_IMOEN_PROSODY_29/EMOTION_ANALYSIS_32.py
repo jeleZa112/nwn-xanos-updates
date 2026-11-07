@@ -29,6 +29,23 @@ os.environ.setdefault('HF_HUB_DISABLE_SYMLINKS_WARNING', '1')
 TARGETS = ('IMOEN06_', 'IMOEN77A', 'IMOEN79A', 'IMOEN79B')
 EN_LABELS = ['angry','disgusted','fearful','happy','neutral','other','sad','surprised','unknown']
 RU_LABELS = {'angry':'злость/раздражение','disgusted':'отвращение','fearful':'страх','happy':'радость','neutral':'нейтральная речь','other':'другая эмоция','sad':'грусть','surprised':'удивление','unknown':'не определено'}
+
+# emotion2vec+ labels on Hugging Face are bilingual: "开心/happy",
+# "中立/neutral", "生气/angry", "<unk>". Older cached JSONs retain these
+# raw labels. Normalize only in reporting so prior inference is reusable.
+def canonical_emotion(label):
+    raw=str(label).strip().lower()
+    if raw in RU_LABELS:
+        return raw
+    if '/' in raw:
+        for part in reversed(raw.split('/')):
+            part=part.strip()
+            if part in RU_LABELS:
+                return part
+    if raw in ('<unk>', 'unk', '<unknown>'):
+        return 'unknown'
+    return 'unknown'
+
 ACTING_STYLE = {
     'angry': 'Напряжённее и резче, точные смысловые акценты; не превращать в крик автоматически.',
     'disgusted': 'Сдержанное неприятие или отвращение; сверить интонацию по оригиналу.',
@@ -263,16 +280,16 @@ def report(results,source_dir):
         w=csv.writer(f)
         w.writerow(['resource','emotion_top','model_score','emotion_second','model_score_2','duration_s','rms','intensity_dynamic_db','acting_direction_hypothesis','english_sha256','russian_text','human_notes'])
         for key,r in sorted(results.items()):
-            choices=r['model_ranking']
+            choices=[(canonical_emotion(label),score) for label,score in r['model_ranking']]
             a=choices[0];b=choices[1] if len(choices)>1 else ('unknown',0)
             st=r['acoustic']
             w.writerow([key,a[0],round(a[1],4),b[0],round(b[1],4),st['duration_s'],st['rms'],st['intensity_dynamic_db'],ACTING_STYLE.get(a[0],ACTING_STYLE['unknown']),r['source_sha256'],r['russian_text'],r['human_notes']])
     en = html.escape
     table=[]
     for key,r in sorted(results.items()):
-        choices=r['model_ranking'][:3]
+        choices=[(canonical_emotion(label),score) for label,score in r['model_ranking'][:3]]
         labels=' / '.join(f'{RU_LABELS.get(k,k)} {v:.2f}' for k,v in choices)
-        seg='; '.join(f'{s["start_s"]}-{s["end_s"]}с: {RU_LABELS.get(s["ranking"][0][0],s["ranking"][0][0])}' for s in r['segments'])
+        seg='; '.join(f'{part["start_s"]}-{part["end_s"]}с: {RU_LABELS.get(canonical_emotion(part["ranking"][0][0]),"не определено")}' for part in r['segments'])
         table.append('<tr><td>'+en(key)+'</td><td>'+en(labels)+'</td><td>'+en(str(r['acoustic']['duration_s']))+'</td><td>'+en(r['russian_text'])+'</td><td>'+en(seg)+'</td><td>'+en(ACTING_STYLE.get(choices[0][0],ACTING_STYLE['unknown']))+'</td><td>'+en(r['human_notes'])+'</td></tr>')
     doc='''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Имоуэн — эмоции оригинала 3.2</title><style>
 body{font:15px system-ui,Segoe UI,sans-serif;max-width:1300px;margin:24px auto;padding:0 14px;line-height:1.45}table{width:100%;border-collapse:collapse}td,th{border:1px solid #ddd;padding:9px;text-align:left;vertical-align:top}th{position:sticky;top:0;background:#eee;color:#111}tr:nth-child(2n){background:rgba(120,120,120,.06)}.warn{border-left:3px solid #b58c44;padding:8px 16px;background:rgba(128,128,128,.07)}
@@ -292,6 +309,7 @@ def self_test():
 def main():
     p=argparse.ArgumentParser()
     p.add_argument('--check',action='store_true')
+    p.add_argument('--report-only',action='store_true',help='Rebuild reports using existing saved JSON; does not load any ML models')
     p.add_argument('--pilot',action='store_true')
     p.add_argument('--all',action='store_true')
     p.add_argument('--self-test',action='store_true')
@@ -305,6 +323,13 @@ def main():
         log('CHECK '+key+' '+str(round(wav_len(files[key]),2))+'s')
     if args.check:
         log('CHECK OK. Existing Qwen models and voices untouched.')
+        return
+    if args.report_only:
+        cached=load_cache()
+        if not cached:
+            raise RuntimeError('No completed emotion scores saved: ANALYSIS/RESULTS_EMOTION_32.json')
+        report(cached,source)
+        log('REPORT REBUILT from '+str(len(cached))+' cached emotional profiles. No model load or download.')
         return
     if not args.pilot and not args.all:
         raise RuntimeError('Use --pilot or --all to run the actual model.')
