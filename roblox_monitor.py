@@ -1,9 +1,9 @@
-# Roblox background monitor - release 2.8.0
+# Roblox background monitor - release 2.9.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "2.8.0"
+VERSION = "2.9.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -347,7 +347,7 @@ def training_mode():
 
 
 # === V2.2: in-match movement probe. No blind combat/turret actions. ===
-def battle_pilot(build_once=False):
+def battle_pilot(build_once=False, require_corner=False):
     """One opt-in, foreground-only short WASD calibration in an existing match.
 
     This is a controlled input probe, NOT an autonomous strategy. It records
@@ -360,8 +360,11 @@ def battle_pilot(build_once=False):
     import numpy as np
     from windows_capture import WindowsCapture, Frame, InternalCaptureControl
 
+    if require_corner and not build_once:
+        raise ValueError("Corner safety gate requires turret mode")
     folder = (Path.home() / "Documents" / "RobloxBGDiagnostics" /
-              ("TURRET" if build_once else "BATTLE"))
+              ("TURRET_CORNER" if require_corner else
+               "TURRET" if build_once else "BATTLE"))
     folder.mkdir(parents=True, exist_ok=True)
     log_path = folder / "battle.log"
     events = []
@@ -385,17 +388,24 @@ def battle_pilot(build_once=False):
     if not hwnd:
         print("BATTLE: Roblox window not found. Start the game first.")
         return 2
-    print("\nROBLOX "+("ONE-TURRET PILOT" if build_once else "BATTLE PILOT")+" V"+VERSION)
+    print("\nROBLOX "+("GUARDED CORNER TURRET" if require_corner else
+                         "ONE-TURRET PILOT" if build_once else
+                         "BATTLE PILOT")+" V"+VERSION)
     print("Open an EXISTING MATCH in Roblox; do not use in the lobby.")
     if build_once:
         print("Move to your safe main defensive position before starting.")
-        print("After YES and F8: wait for Z price to turn GREEN on 4 frames.")
+        if require_corner:
+            print("Requires SAFE_CORNER_CALIBRATION.zip from V2.8 F10 marking.")
+            print("Checks 4 fresh frames: calibrated corner AND GREEN Z price.")
+        else:
+            print("After YES and F8: wait for Z price to turn GREEN on 4 frames.")
         print("At most ONE Z press is allowed; game may spend currency.")
         print("No movement, no aiming, no repeated purchases.")
     else:
         print("This ONE run tests a single 0.15-second W movement only.")
         print("Stand on wide safe ground away from edges first.")
-    print("Requires foreground Roblox. F8 = start once; F9 = cancel.")
+    print("Requires foreground Roblox. F8 = start once; F10 = cancel.")
+    print("F9 opens Roblox developer console: do NOT use F9.")
     print("No gamepad, no Arduino. Switching to Chrome cancels input.")
     consent=input(("Confirm ONE potential in-game Z purchase: type YES [default NO]: "
                    if build_once else
@@ -405,6 +415,8 @@ def battle_pilot(build_once=False):
         return 0
     # Do not accidentally bundle screenshots from a previous failed run.
     for filename in ("battle.log","pilot_summary.txt","BATTLE_PILOT.zip",
+                     "TURRET_PILOT.zip","CORNER_TURRET_PILOT.zip",
+                     "turret_before.jpg","turret_after.jpg",
                      "probe_before.jpg","probe_after_W.jpg","probe_after_S.jpg",
                      "probe_after_A.jpg","probe_after_D.jpg"):
         (folder/filename).unlink(missing_ok=True)
@@ -448,6 +460,74 @@ def battle_pilot(build_once=False):
             log("KEY_INPUT_ERROR scan="+hex(scan)+
                 " down="+str(down)+" WinError="+str(ctypes.get_last_error()))
         return count==1
+
+    # Calibration is manually labelled by the user on the safe defensive
+    # corner. This is visual camera similarity, NOT proof of world coordinates.
+    # Require multiple independent reference matches, then consecutive frames.
+    # If the scene changes, we refuse to place a turret.
+    corner_refs=[]
+    corner_orb=None
+    corner_matcher=None
+    if require_corner:
+        calib=(Path.home()/"Documents"/"RobloxBGDiagnostics"/"ROUTE"/
+               "SAFE_CORNER_CALIBRATION.zip")
+        if not calib.is_file():
+            log("CORNER_CALIBRATION_MISSING: "+str(calib))
+            print("Run menu 7 at the defensive corner and press F10 once.")
+            return 2
+        corner_orb=cv2.ORB_create(nfeatures=900,fastThreshold=10)
+        corner_matcher=cv2.BFMatcher(cv2.NORM_HAMMING)
+        def corner_descriptors(image):
+            h,w=image.shape[:2]
+            if h<260 or w<400:
+                return None
+            if w!=1100:
+                image=cv2.resize(image,(1100,round(h*1100/w)),
+                                 interpolation=cv2.INTER_AREA)
+                h,w=image.shape[:2]
+            crop=image[int(h*.08):int(h*.73),int(w*.08):int(w*.91)]
+            gray=cv2.cvtColor(crop,cv2.COLOR_BGR2GRAY)
+            pts,desc=corner_orb.detectAndCompute(gray,None)
+            return desc
+        try:
+            with zipfile.ZipFile(calib) as z:
+                if z.testzip():
+                    raise ValueError("CRC failed")
+                if "MANUAL_MARK.txt" not in z.namelist():
+                    raise ValueError("missing explicit F10 mark")
+                names=sorted(x for x in z.namelist() if
+                             x.startswith("corner_") and x.endswith(".jpg"))
+                if len(names)!=5:
+                    raise ValueError("expected exactly 5 saved views")
+                for name in names:
+                    raw=np.frombuffer(z.read(name),dtype=np.uint8)
+                    frame=cv2.imdecode(raw,cv2.IMREAD_COLOR)
+                    if frame is None:raise ValueError("bad image "+name)
+                    desc=corner_descriptors(frame)
+                    if desc is None or len(desc)<45:
+                        raise ValueError("weak reference "+name)
+                    corner_refs.append(desc)
+        except (OSError,ValueError,zipfile.BadZipFile,cv2.error) as exc:
+            log("CORNER_CALIBRATION_INVALID: "+repr(exc))
+            return 2
+        log("CORNER_CALIBRATION_LOADED: "+str(len(corner_refs))+" real views.")
+    def corner_signal(frame):
+        if not require_corner:
+            return True,0,[]
+        desc=corner_descriptors(frame)
+        if desc is None or len(desc)<40:
+            return False,0,[]
+        counts=[]
+        for ref in corner_refs:
+            try:
+                pairings=corner_matcher.knnMatch(desc,ref,k=2)
+                counts.append(sum(1 for pair in pairings if
+                                  len(pair)==2 and
+                                  pair[0].distance<.70*pair[1].distance))
+            except cv2.error:
+                counts.append(0)
+        votes=sum(1 for n in counts if n>=45)
+        return votes>=3 and max(counts,default=0)>=65,votes,counts
 
     frames=queue.Queue(maxsize=1)
     stop=threading.Event()
@@ -517,10 +597,13 @@ def battle_pilot(build_once=False):
         return hits==4 and create>.07 and cancel>.07
 
     log(("TURRET_PILOT_START" if build_once else "BATTLE_PROBE_START")+
-        ": waiting for F8 in Roblox; F9 cancels.")
+        ": waiting for F8 in Roblox; F10 cancels.")
     if build_once:
-        log("PILOT_RULE: read dynamic HUD affordability; one Z key only "+
-            "after 4 stable GREEN readings; no repeated purchases.")
+        log("PILOT_RULE: dynamic HUD affordability; one Z maximum "+
+            "after 4 verified GREEN readings"+(
+                " AND 4 SAFE_CORNER frames." if require_corner else "."))
+        if require_corner:
+            log("CORNER_GATE_ON: never buy at UNKNOWN camera angle.")
     else:
         log("PROBE_SAFETY: choose open safe ground, no edge. Only W 150ms; no building.")
     started=time.monotonic()
@@ -529,8 +612,8 @@ def battle_pilot(build_once=False):
         controller=capture.start_free_threaded()
         prior_f8=False
         while time.monotonic()-started<180 and not stop.is_set():
-            if pressed(0x78):  # F9
-                log("BATTLE_PROBE_CANCELLED_F9")
+            if pressed(0x79):  # F10
+                log("BATTLE_PROBE_CANCELLED_F10")
                 return 0
             f8=pressed(0x77) # F8
             if f8 and not prior_f8 and foreground():
@@ -558,14 +641,15 @@ def battle_pilot(build_once=False):
             # separate fresh frames, while Roblox owns the foreground.
             # One Z press maximum, even if the price remains green afterward.
             green_frames=0
+            safe_frames=0
             last_report=0.
             tried=False
             result_code="TIMEOUT_WAITING_FOR_GREEN"
             deadline=time.monotonic()+240
             while not stop.is_set() and time.monotonic()<deadline:
-                if pressed(0x78):
-                    result_code="CANCELLED_F9"
-                    log("TURRET_CANCELLED_F9")
+                if pressed(0x79):
+                    result_code="CANCELLED_F10"
+                    log("TURRET_CANCELLED_F10")
                     break
                 if not foreground():
                     result_code="FOREGROUND_LOST"
@@ -580,7 +664,12 @@ def battle_pilot(build_once=False):
                     log("TURRET_STOP_LOBBY_DETECTED")
                     break
                 signal,red_score,green_score=turret_price_color_signal(img)
-                if signal=="GREEN":
+                at_corner,votes,corner_scores=corner_signal(img)
+                if at_corner:
+                    safe_frames+=1
+                else:
+                    safe_frames=0
+                if signal=="GREEN" and at_corner:
                     green_frames+=1
                 else:
                     green_frames=0
@@ -588,18 +677,22 @@ def battle_pilot(build_once=False):
                 if now-last_report>=6:
                     log("TURRET_WAIT price="+signal+
                         " stable_green="+str(green_frames)+
+                        " stable_corner="+str(safe_frames)+
+                        " votes="+str(votes)+
+                        " matches="+str(corner_scores)+
                         " red="+str(red_score)+" green="+str(green_score))
                     last_report=now
-                if green_frames<4:
+                if green_frames<4 or (require_corner and safe_frames<4):
                     continue
                 # Do not issue a key if the window changed focus after the
                 # evidence frame or if user cancelled.
-                if not foreground() or pressed(0x78):
+                if not foreground() or pressed(0x79):
                     result_code="FOCUS_OR_CANCEL"
                     break
                 save_frame(img,"turret_before.jpg")
                 log("TURRET_Z_READY: 4 consecutive GREEN frames; "+
-                    "dynamic price affordable at this moment, position assumed safe.")
+                    ("4 visual SAFE_CORNER frames (viewpoint only)." if require_corner
+                     else "position assumed safe."))
                 tried=True
                 down=key(0x2c,True)  # US scan-code Z
                 if not down:
@@ -609,8 +702,8 @@ def battle_pilot(build_once=False):
                 try:
                     end=time.monotonic()+.10
                     while time.monotonic()<end:
-                        if pressed(0x78) or not foreground() or stop.is_set():
-                            log("TURRET_Z_CANCEL_DURING_KEY")
+                        if pressed(0x79) or not foreground() or stop.is_set():
+                            log("TURRET_Z_CANCEL_DURING_KEY_F10")
                             break
                         time.sleep(.01)
                 finally:
@@ -633,7 +726,9 @@ def battle_pilot(build_once=False):
                 "One-turret pilot V"+VERSION+"\n"+
                 "Dynamic price; 4 stable green frames; ONE Z only.\n"+
                 "No moving, attacking, mouse clicks, or automatic repeat.\n"+
-                "Position must be set by user in this experimental release.\n"+
+                ("Uses calibrated SAFE_CORNER scene, not coordinates.\n"
+                 if require_corner else
+                 "Position must be set by user in this experimental release.\n")+
                 "Status: "+result_code+"\n"+
                 "Z_SENT_GAME_UNVERIFIED means game outcome is unknown.\n",
                 encoding="utf-8")
@@ -645,7 +740,7 @@ def battle_pilot(build_once=False):
             results=[]
             for label,scan,seconds in actions:
                 if not foreground() or pressed(0x78) or stop.is_set():
-                    log("STOP_FOCUS_LOST_OR_F9 before="+label)
+                    log("STOP_FOCUS_LOST_OR_F10 before="+label)
                     break
                 down=key(scan,True)
                 if not down:
@@ -698,7 +793,8 @@ def battle_pilot(build_once=False):
     finally:
         stop.set()  # capture callback stops itself; no borrowed-frame stop race
     # One uploadable bundle: source images + precise event log + summary.
-    bundle=folder/("TURRET_PILOT.zip" if build_once else "BATTLE_PILOT.zip")
+    bundle=folder/("CORNER_TURRET_PILOT.zip" if require_corner else
+                   "TURRET_PILOT.zip" if build_once else "BATTLE_PILOT.zip")
     filenames=(("battle.log","pilot_summary.txt","turret_before.jpg",
                 "turret_after.jpg") if build_once else
                ("battle.log","pilot_summary.txt","probe_before.jpg",
@@ -2318,8 +2414,9 @@ def run_mode_prompt():
     print("  5 = ONE-TURRET pilot (F8, wait for green Z price, one Z attempt)")
     print("  6 = ROUTE demo (you walk once from spawn to the safe corner; keys+frames)")
     print("  7 = ROUTE VISION (F10 marks defensive corner; NO game input)")
+    print("  8 = GUARDED TURRET (calibrated corner + green Z, one build attempt)")
     try:
-        choice = input("Choose mode 1-7 [1]: ").strip()
+        choice = input("Choose mode 1-8 [1]: ").strip()
     except EOFError:
         choice = "1"
     return choice
@@ -2337,6 +2434,8 @@ if selected_mode == "6":
     raise SystemExit(route_demo())
 if selected_mode == "7":
     raise SystemExit(route_visual_observer())
+if selected_mode == "8":
+    raise SystemExit(battle_pilot(build_once=True,require_corner=True))
 
 # ------------ End demonstration recording ------------
 
