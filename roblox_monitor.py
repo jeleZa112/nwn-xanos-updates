@@ -1,9 +1,9 @@
-# Roblox background monitor - release 2.5.0
+# Roblox background monitor - release 2.6.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "2.5.0"
+VERSION = "2.6.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -726,7 +726,9 @@ def route_demo():
     F9 ends the demonstration. One ZIP contains key spans and sampled frames.
     """
     import ctypes
+    from ctypes import wintypes
     import queue
+    import threading
     import csv
     import zipfile
     import cv2
@@ -761,10 +763,10 @@ def route_demo():
     print("\nROBLOX ROUTE DEMO V"+VERSION)
     print("Start a match; stand at the initial spawn point.")
     print("After YES, switch to Roblox: F8 starts recording.")
-    print("Walk ONCE to your main safe defensive corner; press F9 there.")
-    print("Only W/A/S/D/SPACE/SHIFT are measured while Roblox is active.")
+    print("Walk ONCE to your main safe defensive corner; press F10 there.")
+    print("Records W/A/S/D/SPACE/SHIFT and available mouse-camera deltas.")
     print("No key injection, no mouse logging and no complete gameplay required.")
-    print("Max route length 50s, max 26 saved JPGs. F9 stops.")
+    print("Max route length 50s, max 26 saved JPGs. F10 stops. F9 opens console!")
     if input("Record ONE route? Type YES [default NO]: ").strip().upper() not in ("YES","ДА"):
         return 0
     frame_queue=queue.Queue(maxsize=1)
@@ -802,7 +804,7 @@ def route_demo():
         return name
     keys={"W":0x57,"A":0x41,"S":0x53,"D":0x44,
           "SPACE":0x20,"SHIFT":0x10}
-    log("ROUTE_WAIT_F8: no input sent. Play route yourself.")
+    log("ROUTE_WAIT_F8: F8 starts, F10 stops; no game input sent.")
     started=None
     spans=[]
     screenshots=[]
@@ -810,19 +812,102 @@ def route_demo():
     last_save=-99.
     last_sample=None
     max_duration=50.
+    # Focus-scoped diagnostics for the user's REAL mouse movements only.
+    # WH_MOUSE_LL events may not contain Roblox raw-camera deltas. In that
+    # case mouse.csv can be empty and a route cannot safely be replayed.
+    mouse_samples=[]
+    mouse_lock=threading.Lock()
+    mouse_hook_ready=threading.Event()
+    mouse_hook_meta={"thread_id":0,"installed":False}
+    class MSLLHOOKSTRUCT(ctypes.Structure):
+        _fields_=[("pt",wintypes.POINT),("mouseData",wintypes.DWORD),
+                  ("flags",wintypes.DWORD),("time",wintypes.DWORD),
+                  ("dwExtraInfo",ctypes.c_size_t)]
+    HOOKPROC=ctypes.WINFUNCTYPE(ctypes.c_ssize_t,ctypes.c_int,
+                                wintypes.WPARAM,wintypes.LPARAM)
+    ui.SetWindowsHookExW.argtypes=(ctypes.c_int,HOOKPROC,ctypes.c_void_p,wintypes.DWORD)
+    ui.SetWindowsHookExW.restype=ctypes.c_void_p
+    ui.CallNextHookEx.argtypes=(ctypes.c_void_p,ctypes.c_int,wintypes.WPARAM,wintypes.LPARAM)
+    ui.CallNextHookEx.restype=ctypes.c_ssize_t
+    ui.UnhookWindowsHookEx.argtypes=(ctypes.c_void_p,)
+    ui.UnhookWindowsHookEx.restype=wintypes.BOOL
+    ui.GetMessageW.argtypes=(ctypes.POINTER(wintypes.MSG),ctypes.c_void_p,
+                             wintypes.UINT,wintypes.UINT)
+    ui.GetMessageW.restype=ctypes.c_int
+    ui.PostThreadMessageW.argtypes=(wintypes.DWORD,wintypes.UINT,
+                                    wintypes.WPARAM,wintypes.LPARAM)
+    ui.PostThreadMessageW.restype=wintypes.BOOL
+    kernel=ctypes.WinDLL("kernel32",use_last_error=True)
+    kernel.GetCurrentThreadId.restype=wintypes.DWORD
+    kernel.GetModuleHandleW.argtypes=(wintypes.LPCWSTR,)
+    kernel.GetModuleHandleW.restype=ctypes.c_void_p
+    def collect_mouse():
+        last=None
+        last_at=-10.0
+        @HOOKPROC
+        def listener(code,wparam,lparam):
+            nonlocal last,last_at
+            try:
+                if code>=0 and int(wparam)==0x0200 and focused():
+                    data=ctypes.cast(lparam,ctypes.POINTER(MSLLHOOKSTRUCT)).contents
+                    if data.flags & 1:
+                        return ui.CallNextHookEx(None,code,wparam,lparam)
+                    x,y=data.pt.x,data.pt.y
+                    elapsed=time.monotonic()-started
+                    if last is not None and 0<=elapsed<=50.5:
+                        dx,dy=x-last[0],y-last[1]
+                        # Ignore cursor recenter warps; sample <=50 Hz.
+                        if (dx or dy) and abs(dx)<250 and abs(dy)<250 and elapsed-last_at>=.02:
+                            with mouse_lock:
+                                if len(mouse_samples)<2500:
+                                    mouse_samples.append((round(elapsed,3),dx,dy))
+                            last_at=elapsed
+                    last=(x,y)
+                else:
+                    last=None
+            except Exception:
+                pass
+            return ui.CallNextHookEx(None,code,wparam,lparam)
+        hook=None
+        try:
+            mouse_hook_meta["thread_id"]=int(kernel.GetCurrentThreadId())
+            hook=ui.SetWindowsHookExW(14,listener,kernel.GetModuleHandleW(None),0)
+            mouse_hook_meta["installed"]=bool(hook)
+            mouse_hook_ready.set()
+            if hook:
+                message=wintypes.MSG()
+                while not stop.is_set():
+                    if ui.GetMessageW(ctypes.byref(message),None,0,0)<=0:break
+                    ui.TranslateMessage(ctypes.byref(message))
+                    ui.DispatchMessageW(ctypes.byref(message))
+        except Exception as exc:
+            log("MOUSE_CAPTURE_ERROR "+repr(exc))
+        finally:
+            mouse_hook_ready.set()
+            if hook:ui.UnhookWindowsHookEx(hook)
+    mouse_thread=None
+    def stop_mouse():
+        if mouse_thread is not None and mouse_thread.is_alive():
+            tid=mouse_hook_meta["thread_id"]
+            if tid:ui.PostThreadMessageW(tid,0x0012,0,0)  # WM_QUIT
+            mouse_thread.join(timeout=2.5)
     controller=None
     try:
         controller=cap.start_free_threaded()
         deadline=time.monotonic()+180
         prior=False
         while not stop.is_set() and time.monotonic()<deadline:
-            if down(0x78):
-                log("ROUTE_ABORTED_BEFORE_START")
+            if down(0x79):
+                log("ROUTE_ABORTED_BEFORE_START_F10")
                 return 0
             now=down(0x77)
             if now and not prior and focused():
                 started=time.monotonic()
-                log("ROUTE_RECORDING_START: W/A/S/D/SPACE/SHIFT only.")
+                mouse_thread=threading.Thread(target=collect_mouse,name="RobloxRouteMouse",daemon=True)
+                mouse_thread.start()
+                mouse_hook_ready.wait(timeout=2.0)
+                log("ROUTE_MOUSE_HOOK installed="+str(mouse_hook_meta["installed"]))
+                log("ROUTE_RECORDING_START: keyboard + mouse deltas; Roblox foreground only.")
                 break
             prior=now
             time.sleep(.05)
@@ -831,8 +916,8 @@ def route_demo():
             return 0
         while not stop.is_set():
             elapsed=time.monotonic()-started
-            if down(0x78):
-                log("ROUTE_FINISHED_F9 elapsed=%.2fs"%elapsed)
+            if down(0x79):
+                log("ROUTE_FINISHED_F10 elapsed=%.2fs"%elapsed)
                 break
             if elapsed>=max_duration:
                 log("ROUTE_MAX_DURATION_REACHED")
@@ -865,6 +950,14 @@ def route_demo():
             writer.writerow(["key","start_seconds","end_seconds","duration_seconds"])
             for k,a,b in sorted(spans,key=lambda x:x[1]):
                 writer.writerow([k,a,b,round(b-a,3)])
+        stop_mouse()
+        with (folder/"mouse.csv").open("w",encoding="utf-8",newline="") as out:
+            writer=csv.writer(out)
+            writer.writerow(["elapsed_seconds","mouse_dx","mouse_dy"])
+            with mouse_lock:writer.writerows(mouse_samples)
+        log("ROUTE_MOUSE_SUMMARY samples="+str(len(mouse_samples))+
+            " installed="+str(mouse_hook_meta["installed"])+
+            " NOTE: captured mouse is not confirmed camera yaw.")
         with (folder/"screenshots.csv").open("w",encoding="utf-8",newline="") as out:
             writer=csv.writer(out)
             writer.writerow(["elapsed_seconds","filename"])
@@ -873,7 +966,8 @@ def route_demo():
             "ROUTE_DEMO V"+VERSION+"\n"
             "Manual demonstration from spawn to defensive corner.\n"
             "W/A/S/D/SPACE/SHIFT keys only when Roblox foreground.\n"
-            "F8 starts, F9 stops. No programmatic movement or purchases.\n"
+            "F8 starts, F10 stops; F9 opens developer console.\n"
+            "No game input is sent; mouse.csv is diagnostic only.\n"
             "Time-sequence is a demonstration, not a safe autonomous route until\n"
             "orientation, collisions and recovery are validated.\n",
             encoding="utf-8")
@@ -886,8 +980,8 @@ def route_demo():
             bad=z.testzip()
             if bad:raise RuntimeError("ROUTE_ZIP_CORRUPT: "+bad)
         tmp.replace(bundle)
-        log("ROUTE_SUMMARY key_intervals=%d frames=%d"%(
-            len(spans),len(screenshots)))
+        log("ROUTE_SUMMARY key_intervals=%d frames=%d mouse_samples=%d"%(
+            len(spans),len(screenshots),len(mouse_samples)))
         log("ROUTE_BUNDLE_READY: "+str(bundle))
         return 0
     except KeyboardInterrupt:
@@ -898,6 +992,7 @@ def route_demo():
         return 2
     finally:
         stop.set()
+        stop_mouse()
 
 
 # Menu stays in the *same downloaded Python file*.
