@@ -20,7 +20,7 @@ if errorlevel 1 goto STOP
 set "MODULE=%~dp0roblox_monitor.py"
 set "DOWNLOAD=%~dp0roblox_monitor.py.download"
 set "RB_DL_PATH=%DOWNLOAD%"
-set "MIN_VERSION=2.2.2"
+set "MIN_VERSION=2.5.0"
 
 if exist "%DOWNLOAD%" del /q "%DOWNLOAD%" >nul 2>&1
 echo.
@@ -38,7 +38,7 @@ echo.
 echo [2] Checking downloaded code and release version...
 call :CHECK_VERSION "%DOWNLOAD%"
 if errorlevel 1 (
-  echo ERROR: Downloaded file is not valid V2.2.2 or newer.
+  echo ERROR: Downloaded file is not valid V2.5.0 or newer.
   if exist "%DOWNLOAD%" del /q "%DOWNLOAD%" >nul 2>&1
   goto LOCAL_CHECK
 )
@@ -68,7 +68,7 @@ echo.
 echo [2] Checking existing local module for offline use...
 call :CHECK_VERSION "%MODULE%"
 if errorlevel 1 (
-  echo STOP: local file is older than V2.2.2, or invalid.
+  echo STOP: local file is older than V2.5.0, or invalid.
   echo DO NOT choose mode 4 in an older release - it does not exist.
   echo Download roblox_monitor.py through Chrome and save beside this CMD.
   echo https://github.com/jeleZa112/nwn-xanos-updates/blob/roblox-bg-monitor/roblox_monitor.py
@@ -79,7 +79,7 @@ if errorlevel 1 (
   echo ERROR: Local Python source is invalid.
   goto STOP
 )
-echo OFFLINE MODE: valid local V2.2.2+ module found.
+echo OFFLINE MODE: valid local V2.5.0+ module found.
 
 :RUN_CHECK
 echo.
