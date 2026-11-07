@@ -1,7 +1,7 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "3.2.1",
-  "note": "emotion2vec HF source hotfix for ModelScope.cn read timeouts; existing environment and voices preserved",
+  "version": "3.2.2",
+  "note": "Pinned minimal files fetched sequentially from HF, preserving partially downloaded weights; Qwen unaffected.",
   "files": [
     {
       "path": "BG_RU_IMOEN_PROSODY_29/GENERATE_PROSODY_29.py",
@@ -21,7 +21,7 @@
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/EMOTION_ANALYSIS_32.py",
-      "sha256": "2e403e4ab28159dcc2047b714a1ce5154442224c3d4c6c535c74b52c79d68159"
+      "sha256": "42653278c461c3c35f29c3bc991b384f00cc14fc9646ba3935c526bb528804cc"
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/RUN_EMOTION_32.cmd",
