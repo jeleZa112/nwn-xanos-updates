@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "06f2321fb501a9ed639137d833f410b6225a4de8",
+  "commit": "a150bbbb2bf4ebd9ad331ffea156bc9fbbda4559",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
   "script_sha256": "8dda2e87538bb407918df10f78ef54c05fd2a47285c291e86a0a7840fa6fef25",
   "script_size": 10039,
-  "description": "One-file EET Foxx updater; immutable script commit and SHA256. No GitHub API."
+  "description": "Same one-file EET Foxx updater; 040 localized TLK postinstall verification hotfix, immutable commit and SHA256. No GitHub API."
 }
