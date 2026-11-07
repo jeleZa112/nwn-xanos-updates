@@ -6,6 +6,7 @@ on:
     paths:
       - roblox_monitor.py
       - tests/test_touch_abi.py
+      - tests/test_battle_input_abi.py
       - ROBLOX_HID_LEONARDO/**
       - .github/workflows/roblox-hid-check.yml
   workflow_dispatch:
@@ -22,6 +23,7 @@ jobs:
         run: |
           python -m py_compile roblox_monitor.py
           python tests/test_touch_abi.py
+          python tests/test_battle_input_abi.py
 
   arduino-leonardo:
     runs-on: ubuntu-latest
