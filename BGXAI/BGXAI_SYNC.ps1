@@ -1,4 +1,4 @@
-# BGXAI single-entry updater, Foxx + EPS + safe opt-in 038/039/040 addons.
+# BGXAI single-entry updater, Foxx + EPS + safe opt-in 038/039/040/041 addons.
 # F mode feedback (040) ships as source with verified SHA256, no new CMD.
 param([string]$GameRoot='.')
 $ErrorActionPreference='Stop'
@@ -14,6 +14,15 @@ if(!(Test-Path -LiteralPath $pinnedFile -PathType Leaf)){Write-Host 'STOP: pinne
 $commitId=[IO.File]::ReadAllText($pinnedFile).Trim()
 if($commitId -notmatch '^[a-fA-F0-9]{40}$'){Write-Host 'STOP: invalid pinned GitHub commit';exit 2}
 $remoteRoot='BGXAI/fox_new/'
+$release041=@{
+    id='041';version='0.3.11';manifest=$remoteRoot+'release_041/manifest.json';prefix=$remoteRoot+'release_041/';
+    localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_041';installer='BGXAI41_INSTALL.py';
+    names=@('BGXAI41_INSTALL.py','README_RU.md','SOURCE_MANIFEST.json','build_assets.py',
+            'setup-BGX41.tp2','BGX41/icon.tra','BGX41/toggle_icon.baf',
+            'combat_ru/GLOSSARY_RU.md','combat_ru/explain_attack.py','combat_ru/parse_attack_feedback.py',
+            'tests/test_attack_parser_041.py','tests/test_attack_ru.py','tests/test_installer_041.py',
+            'tests/test_runtime_semantics_041.py','tests/test_source_041.py')
+}
 $release040=@{
     id='040';version='0.3.10';manifest=$remoteRoot+'release_040/manifest.json';prefix=$remoteRoot+'release_040/';
     localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_040';installer='BGXAI40_INSTALL.py';
@@ -25,7 +34,7 @@ $release039=@{
     names=@('BGXAI39_INSTALL.py','setup-BGX39.tp2','BGX39/team_guard_fallback.baf','SOURCE_MANIFEST.json','README_RU.txt','tests/test_team_guard_039.py')
 }
 function Get-PinnedBytes([string]$remotePath) {
-    if($remotePath -notmatch '^BGXAI/fox_new/release_0(39|40)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
+    if($remotePath -notmatch '^BGXAI/fox_new/release_0(39|40|41)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
         throw ('Remote source path blocked: '+$remotePath)
     }
     # All sources are publicly hosted; pin content by immutable commit and SHA256 manifest.
@@ -91,6 +100,48 @@ function VerifiedManifest($spec) {
     if($seen.Count -ne $spec.names.Count){throw 'Missing release files'}
     return $seen
 }
+function Generate041Assets($spec) {
+    if($spec.id -ne '041'){return}
+    $checked=VerifiedManifest $spec
+    foreach($name in $spec.names) {
+        $f=Join-Path $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
+        AssertNotReparse $f
+        if((HashFile $f) -cne $checked[$name].sha){throw ('Unverified BGX41 generator/source: '+$name)}
+    }
+    $manifest=[Text.Encoding]::UTF8.GetString((Get-PinnedBytes $spec.manifest)) | ConvertFrom-Json
+    $expected=@('BGX41/BGX41IC.BAM','BGX41/BGX41ON.SPL','BGX41/BGX41OF.SPL')
+    $generated=@($manifest.generated_files)
+    if($generated.Count -ne 3){throw 'BGX41: incorrect generated asset count'}
+    $seen=@{}
+    foreach($x in $generated) {
+        $name=[string]$x.dest
+        if(($expected -cnotcontains $name) -or $seen.ContainsKey($name) -or $x.size -le 0 -or $x.size -gt 5000 -or [string]$x.sha256 -cnotmatch '^[a-f0-9]{64}$'){
+            throw 'BGX41: invalid binary metadata'
+        }
+        $seen[$name]=$x
+    }
+    $isCurrent=$true
+    foreach($name in $expected) {
+        $dest=Join-Path $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
+        AssertNotReparse (Split-Path -Parent $dest)
+        AssertNotReparse $dest
+        if((HashFile $dest) -cne [string]$seen[$name].sha256) {$isCurrent=$false}
+    }
+    if(!$isCurrent) {
+        Write-Host 'BGX41: building OWN icon assets from SHA256-verified source (no game changes).'
+        $builder=Join-Path $spec.localPath 'build_assets.py'
+        & py -3 $builder
+        if($LASTEXITCODE -ne 0){throw ('BGX41: asset generator exited '+$LASTEXITCODE)}
+    }
+    foreach($name in $expected) {
+        $dest=Join-Path $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
+        if(!(Test-Path -LiteralPath $dest -PathType Leaf)){throw ('BGX41: generated binary missing '+$name)}
+        if((Get-Item -LiteralPath $dest).Length -ne [int]$seen[$name].size -or (HashFile $dest) -cne [string]$seen[$name].sha256){
+            throw ('BGX41: generated checksum mismatch '+$name)
+        }
+        Write-Host (' VERIFIED generated '+$name)
+    }
+}
 function SyncRelease($spec){
     AssertNotReparse $GameRoot
     AssertNotReparse (Join-Path $GameRoot 'BGXAI_DEV')
@@ -109,7 +160,7 @@ function SyncRelease($spec){
         $dest=Join-Path $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
         if((HashFile $dest) -cne $list[$name].sha){$isCurrent=$false}
     }
-    if($isCurrent){Write-Host ('BGXAI '+$spec.id+' sources already verified. Game unchanged.');return}
+    if($isCurrent){Generate041Assets $spec;Write-Host ('BGXAI '+$spec.id+' sources already verified. Game unchanged.');return}
     $stamp=(Get-Date -Format 'yyyyMMdd_HHmmss_fff')
     $oldCopy=Join-Path $cacheDir ($spec.id+'_backup_'+$stamp)
     foreach($name in $spec.names){
@@ -133,6 +184,7 @@ function SyncRelease($spec){
         [IO.File]::Move($temp,$dest)
         if((HashFile $dest) -cne $list[$name].sha){throw ('Source file hash failure: '+$name)}
     }
+    Generate041Assets $spec
     Write-Host ('BGXAI '+$spec.id+' SOURCE SYNC DONE. Live scripts and WeiDU unchanged.')
 }
 function RunRelease($spec,[string]$mode){
@@ -143,6 +195,7 @@ function RunRelease($spec,[string]$mode){
         AssertNotReparse $dest
         if((HashFile $dest) -cne $list[$name].sha){throw ('Unverified local source; select source sync first: '+$name)}
     }
+    Generate041Assets $spec
     $installerPath=Join-Path $spec.localPath $spec.installer
     if($mode -eq '--install' -or $mode -eq '--uninstall'){
         Write-Host 'WARNING: experimental WeiDU change; requires explicit YES.'
@@ -193,6 +246,10 @@ Write-Host ' 4 - Roll back ONLY BGXAI 040 (YES + WeiDU)'
 Write-Host ' 5 - Status of BGXAI 039 (read-only)'
 Write-Host ' 6 - Roll back BGXAI 039 ONLY (must first uninstall 040)'
 Write-Host ' 7 - BGXAI 041 game precheck (READ-ONLY; NO INSTALL)' 
+Write-Host ' 8 - Download/verify BGXAI 041 (own icon sources; no installation)'
+Write-Host ' 9 - Status of BGXAI 041 (game read-only)'
+Write-Host ' 10 - EXPERIMENTAL install BGXAI 041 (YES + WeiDU backup; only if 040 last)'
+Write-Host ' 11 - Roll back BGXAI 041 (YES; only if 041 last)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -206,6 +263,10 @@ try {
       '5' {RunRelease $release039 '--status';break}
       '6' {RunRelease $release039 '--uninstall';break}
       '7' {Test041ReadOnly;break}
+      '8' {SyncRelease $release041;break}
+      '9' {RunRelease $release041 '--status';break}
+      '10' {SyncRelease $release041;RunRelease $release041 '--install';break}
+      '11' {RunRelease $release041 '--uninstall';break}
       default {throw 'Unknown menu option, no game change.'}
     }
     exit 0
