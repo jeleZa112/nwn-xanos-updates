@@ -314,12 +314,38 @@ def main():
     except ImportError as e:
         raise RuntimeError('Install FunASR into the separate .venv_emotion32 using RUN_EMOTION_32.cmd') from e
     device='cuda' if torch.cuda.is_available() else 'cpu'
-    log('LOADING official emotion2vec+ base via Hugging Face on '+device+' (reusing installed env)')
+    # Isolate downloads from model construction. The checkpoint is ~1.12 GB;
+    # total "4/9 files" is NOT a useful indicator of checkpoint progress.
+    # Sequential downloads avoid multiple concurrent stalled requests. The HF
+    # cache is reused, and no prior voices, models or generated WAVs are changed.
+    from huggingface_hub import hf_hub_download
+    revision='b318240bfe67db81a8c572ecb37ce9c3759b81c9'
+    required=('config.yaml','configuration.json','tokens.txt','model.pt')
+    resolved=[]
+    for filename in required:
+        log('MODEL FILE '+filename+' — checking cache / downloading if needed')
+        if filename=='model.pt':
+            log('MODEL WEIGHTS ~1.12 GB. This file can take much longer than the 3 small files.')
+        try:
+            local=Path(hf_hub_download(repo_id=MODEL_ID,filename=filename,revision=revision))
+        except Exception as exc:
+            log('DOWNLOAD ERROR on '+filename+': '+repr(exc))
+            log('Already cached files are kept. Run again to retry; do not reinstall dependencies.')
+            raise
+        size=local.stat().st_size
+        if size<128 or (filename=='model.pt' and size<500_000_000):
+            raise RuntimeError('Unexpected model file size: '+filename+' '+str(size))
+        log('MODEL FILE READY '+filename+' '+str(round(size/1048576,1))+' MiB')
+        resolved.append(local)
+    model_dir=resolved[0].parent
+    if any(p.parent!=model_dir for p in resolved):
+        raise RuntimeError('Model files resolved from different snapshots')
+    log('LOADING local complete emotion2vec+ model on '+device+' (no new hub download)')
     try:
-        model=AutoModel(model=MODEL_ID,hub='hf',device=device,disable_update=True)
+        model=AutoModel(model=str(model_dir),device=device,disable_update=True)
     except Exception as exc:
-        log('MODEL LOAD FAILED on Hugging Face: '+repr(exc))
-        log('Do not reinstall Python, Torch or Qwen; source WAVs remain unchanged.')
+        log('MODEL LOAD ERROR (weights already downloaded): '+repr(exc))
+        log('Do not reinstall Python, Torch, Qwen, or redownload the files.')
         raise
     results=load_cache()
     keys=list(TARGETS) if args.pilot else sorted(files)
