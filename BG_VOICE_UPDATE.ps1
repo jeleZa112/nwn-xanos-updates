@@ -15,7 +15,7 @@ try {
  $manifestPath = Join-Path $stage 'manifest.json'
  Invoke-WebRequest -UseBasicParsing -Uri ($base + '/release_manifest.json') -OutFile $manifestPath -TimeoutSec 90
  $manifest = Get-Content -Raw -Encoding UTF8 $manifestPath | ConvertFrom-Json
- if ($manifest.project -ne 'BG_VOICE_RU' -or $manifest.version -notmatch '^\\d+\\.\\d+(\\.\\d+)?) { throw 'Unexpected release manifest' }
+ if ($manifest.project -ne 'BG_VOICE_RU' -or $manifest.version -notmatch '^[0-9]+[.][0-9]+([.][0-9]+)?$') { throw 'Unexpected release manifest' }
  $entries = @($manifest.files)
  if ($entries.Count -lt 3) {throw 'Incomplete manifest'}
  # Download + validate *every* file before installing anything.
