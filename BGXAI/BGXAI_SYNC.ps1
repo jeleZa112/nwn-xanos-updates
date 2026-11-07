@@ -20,7 +20,7 @@ $head=Join-Path $cache 'head.txt'
 if(!(Test-Path -LiteralPath $head -PathType Leaf)){Write-Host 'STOP: pinned GitHub commit missing';exit 2}
 $commit=[IO.File]::ReadAllText($head).Trim()
 if($commit -notmatch '^[a-fA-F0-9]{40}$'){Write-Host 'STOP: invalid GitHub commit';exit 2}
-$home=Join-Path $GameRoot 'BGXAI_DEV\experimental_039'
+$bgxSourceDir=Join-Path $GameRoot 'BGXAI_DEV\experimental_039'
 $manifestName='BGXAI/fox_new/release_039/manifest.json'
 $names=@('BGXAI39_INSTALL.py','setup-BGX39.tp2','BGX39/team_guard_fallback.baf','SOURCE_MANIFEST.json','README_RU.txt','tests/test_team_guard_039.py')
 $remotePrefix='BGXAI/fox_new/release_039/'
@@ -58,7 +58,7 @@ function AssertNotReparse([string]$item){
 function Sync039 {
     AssertNotReparse $GameRoot
     AssertNotReparse (Join-Path $GameRoot 'BGXAI_DEV')
-    AssertNotReparse $home
+    AssertNotReparse $bgxSourceDir
     Write-Host 'BGXAI: downloading original 039 source at pinned GitHub commit ...'
     $manifestBytes=Get-VerifiedGitHubBytes $manifestName
     $manifest=[Text.Encoding]::UTF8.GetString($manifestBytes) | ConvertFrom-Json
@@ -83,14 +83,14 @@ function Sync039 {
     # All network/manifest validation is complete before modifying local source files.
     $currentVerified=$true
     foreach($n in $names){
-        $file=Join-Path $home ($n.Replace('/',[IO.Path]::DirectorySeparatorChar))
+        $file=Join-Path $bgxSourceDir ($n.Replace('/',[IO.Path]::DirectorySeparatorChar))
         if(!(SameFile $file $pending[$n].hash)){$currentVerified=$false}
     }
     if($currentVerified){Write-Host ' BGXAI 039 source ALREADY CURRENT. Live EET untouched.';return}
-    if(!(Test-Path -LiteralPath $home -PathType Container)) {New-Item -ItemType Directory -Path $home -Force | Out-Null}
+    if(!(Test-Path -LiteralPath $bgxSourceDir -PathType Container)) {New-Item -ItemType Directory -Path $bgxSourceDir -Force | Out-Null}
     $bakBase=Join-Path $cache ('039_backup_'+(Get-Date -Format 'yyyyMMdd_HHmmss_fff'))
     foreach($n in $names){
-        $target=Join-Path $home ($n.Replace('/',[IO.Path]::DirectorySeparatorChar))
+        $target=Join-Path $bgxSourceDir ($n.Replace('/',[IO.Path]::DirectorySeparatorChar))
         AssertNotReparse (Split-Path -Parent $target)
         AssertNotReparse $target
         if(Test-Path -LiteralPath $target){
@@ -100,7 +100,7 @@ function Sync039 {
         }
     }
     foreach($n in $names){
-        $target=Join-Path $home ($n.Replace('/',[IO.Path]::DirectorySeparatorChar))
+        $target=Join-Path $bgxSourceDir ($n.Replace('/',[IO.Path]::DirectorySeparatorChar))
         [IO.Directory]::CreateDirectory((Split-Path -Parent $target))|Out-Null
         $tmp=$target+'.bgx39.tmp'
         if(Test-Path -LiteralPath $tmp){throw ('Unresolved previous temporary update: '+$tmp)}
@@ -113,7 +113,7 @@ function Sync039 {
     Write-Host ' BGXAI 039 source VERIFIED and SYNCED. Live BDDEFAI and WeiDU untouched.'
 }
 function Run039([string]$mode){
-    $script=Join-Path $home 'BGXAI39_INSTALL.py'
+    $script=Join-Path $bgxSourceDir 'BGXAI39_INSTALL.py'
     if(!(Test-Path -LiteralPath $script)){throw '039 source not synced; choose option 1 first'}
     if($mode -eq '--install' -or $mode -eq '--uninstall'){
         # The Python installer re-verifies its own source manifest, processes,
