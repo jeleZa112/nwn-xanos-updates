@@ -1,7 +1,7 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "2.9.1",
-  "note": "Code only; local audio remains private",
+  "version": "3.2.0",
+  "note": "Code only. Emotion model runs locally. No original WAV uploaded to public GitHub.",
   "files": [
     {
       "path": "BG_RU_IMOEN_PROSODY_29/GENERATE_PROSODY_29.py",
@@ -18,6 +18,22 @@
     {
       "path": "BG_VOICE_UPDATE.cmd",
       "sha256": "38fcfe70a5c310796ceb6605e186b45ad4458d63ba87448c7e52e5e55f57feb1"
+    },
+    {
+      "path": "BG_RU_IMOEN_EMOTION_32/RUN_EMOTION_32.py",
+      "sha256": "e493664ab8aac1e7befb89056232305a978d814ee2cce1ac5f14091fd105a855"
+    },
+    {
+      "path": "BG_RU_IMOEN_EMOTION_32/SETUP_EMOTION_32.cmd",
+      "sha256": "5618add08814a61ca1132041c6e0a46b103f6708f7d44069a666649331ffdb18"
+    },
+    {
+      "path": "BG_RU_IMOEN_EMOTION_32/RUN_EMOTION_32.cmd",
+      "sha256": "d2d973c7c5d11f2f85877ef0a822ccb6476b3e3c5c51bd806096c08a7e8180e9"
+    },
+    {
+      "path": "BG_RU_IMOEN_EMOTION_32/README_RU.txt",
+      "sha256": "f059f23457bcb182f3969aa3c1cccd0d1d2cb0a8eb1bc7fd0917e8464ca3166f"
     }
   ]
 }
