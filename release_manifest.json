@@ -1,7 +1,7 @@
 {
   "project": "BG_VOICE_RU",
   "version": "3.2.0",
-  "note": "Code-only, 4-line emotion2vec+ pilot; separate env; no synthetic emotion results",
+  "note": "Local original-English emotion2vec analyzer, no uploaded audio",
   "files": [
     {
       "path": "BG_RU_IMOEN_PROSODY_29/GENERATE_PROSODY_29.py",
@@ -20,20 +20,20 @@
       "sha256": "38fcfe70a5c310796ceb6605e186b45ad4458d63ba87448c7e52e5e55f57feb1"
     },
     {
-      "path": "BG_RU_IMOEN_PROSODY_29/EMOTION_ANALYZER_32.py",
-      "sha256": "dbde7089f9b093706291fbc3ecf86737f20553ed111885778ef395e751699948"
+      "path": "BG_RU_IMOEN_PROSODY_29/EMOTION_ANALYSIS_32.py",
+      "sha256": "1120f04ed9c7108ceb1e6de57725a66f54504824ac3132aae5769b085c36cf4c"
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/RUN_EMOTION_32.cmd",
-      "sha256": "98be09d917528e6b9c7e76cc1e7f09e840888bea30ecd8b67dcd82fedf13131c"
+      "sha256": "b0170df32a286e9a78b6dceba01508bdcc43cc6ddfb3ea6a78d458c343125a9d"
     },
     {
-      "path": "BG_RU_IMOEN_PROSODY_29/RUN_ALL_EMOTION_32.cmd",
-      "sha256": "ea95816adc2b83da5024ca5b0613a4e3a5a8667f43926bad5a7b8036ad263215"
+      "path": "BG_RU_IMOEN_PROSODY_29/RUN_ALL_102_32.cmd",
+      "sha256": "fe484b698967c16072739a73c873182891a2a45bc10896c79f28a3f2e871f310"
     },
     {
-      "path": "BG_RU_IMOEN_PROSODY_29/README_EMOTION_32_RU.txt",
-      "sha256": "4af618e3da9fbbc37d6d3d6868aba7f0c7d9933cf360dbd232623fe07bd77319"
+      "path": "BG_RU_IMOEN_PROSODY_29/README_32_RU.txt",
+      "sha256": "478094b042962bfbf70650e2dfd1e89d1d404caaea2e94a11190d5941f8595f3"
     }
   ]
 }
