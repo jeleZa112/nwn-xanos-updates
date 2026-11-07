@@ -1,9 +1,9 @@
-# Roblox background monitor - release 2.6.0
+# Roblox background monitor - release 2.7.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "2.6.0"
+VERSION = "2.7.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -715,6 +715,181 @@ def battle_pilot(build_once=False):
             return 2
     log("BUNDLE_READY: "+str(bundle))
     log("Output: "+str(folder))
+    return 0
+
+
+# === Visual route checkpoints, sourced from the user's existing ROUTE_DEMO.zip. ===
+# No guessing from raw WASD timings; this is the safety sensor for future routes.
+def route_visual_observer():
+    """Conservative route camera-position recognizer, READ-ONLY.
+
+    Loads the already recorded route frames from Documents. Classifies only
+    scenes strongly matching the demonstrated view, NOT world coordinates.
+    Unknown/ambiguous views are rejected. Does not press ANY Roblox keys.
+    """
+    import zipfile
+    import queue
+    import re
+    import cv2
+    import numpy as np
+    from windows_capture import WindowsCapture, Frame, InternalCaptureControl
+
+    root=Path.home()/"Documents"/"RobloxBGDiagnostics"/"ROUTE"
+    source=root/"ROUTE_DEMO.zip"
+    out=root/"VISUAL_ROUTE_REPORT.txt"
+    if not source.is_file():
+        print("ROUTE_VISION: existing ROUTE_DEMO.zip not found: "+str(source))
+        print("No movements attempted; route recording must exist first.")
+        return 2
+    stages=("START","TURN_TO_RAMP","RAMP_BASE","RAMP_ASCENT",
+            "RAMP_TOP","CORNER_APPROACH","SAFE_CORNER")
+    indexes=((0,1),(2,3),(4,),(5,),(6,),(7,8),(9,10))
+    which={i:label for label,ids in zip(stages,indexes) for i in ids}
+    orb=cv2.ORB_create(nfeatures=800,fastThreshold=10)
+    matcher=cv2.BFMatcher(cv2.NORM_HAMMING)
+    def descriptor(img):
+        h,w=img.shape[:2]
+        if h<250 or w<400:
+            return None
+        region=img[int(.08*h):int(.73*h),int(.08*w):int(.91*w)]
+        gray=cv2.cvtColor(region,cv2.COLOR_BGR2GRAY)
+        _points,desc=orb.detectAndCompute(gray,None)
+        return desc
+    def match_count(query,reference):
+        if query is None or reference is None or len(query)<6 or len(reference)<6:
+            return 0
+        try:
+            pairs=matcher.knnMatch(query,reference,k=2)
+            return sum(1 for p in pairs if len(p)==2 and
+                       p[0].distance < .70*p[1].distance)
+        except cv2.error:
+            return 0
+    references=[]
+    try:
+        with zipfile.ZipFile(source) as package:
+            if package.testzip():
+                raise ValueError("ZIP CRC check failed")
+            items=[name for name in package.namelist() if
+                   re.fullmatch(r"route_(\d{2})_\d{3}\.\ds\.jpg",name)]
+            for name in sorted(items):
+                index=int(re.search(r"route_(\d{2})_",name).group(1))
+                if index not in which:
+                    continue
+                raw=np.frombuffer(package.read(name),dtype=np.uint8)
+                image=cv2.imdecode(raw,cv2.IMREAD_COLOR)
+                if image is None:
+                    continue
+                desc=descriptor(image)
+                if desc is None or len(desc)<35:
+                    continue
+                references.append((index,which[index],desc))
+    except (OSError,ValueError,zipfile.BadZipFile) as exc:
+        print("ROUTE_VISION_REFERENCE_ERROR: "+repr(exc))
+        return 2
+    if len(references)<9:
+        print("ROUTE_VISION: insufficient reference frames (need 9+, have "+
+              str(len(references))+"). No movement.")
+        return 2
+    def classify(desc,except_index=None):
+        per_stage={stage:0 for stage in stages}
+        for index,stage,ref in references:
+            if index==except_index:
+                continue
+            per_stage[stage]=max(per_stage[stage],match_count(desc,ref))
+        ordered=sorted(per_stage.items(),key=lambda item:item[1],reverse=True)
+        first,n=ordered[0]
+        other=ordered[1][1]
+        # Weak coincidences and ties are never treated as positioning.
+        label=first if n>=35 and n>=2.0*max(1,other) else "UNKNOWN"
+        return label,n,other
+    # Always validate against the old archive before trying live observation.
+    checks=[]
+    for index,stage,ref in references:
+        label,n,other=classify(ref,except_index=index)
+        checks.append("%02d %-16s other_frame=%-16s good=%3d second=%3d"%
+                      (index,stage,label,n,other))
+    report=[
+        "ROBLOX route visual anchors V"+VERSION,
+        "Reference ZIP: "+str(source),
+        "Reference frames: "+str(len(references)),
+        "This is visual scene matching, NOT localization or route navigation.",
+        "Never replay original timed key spans near a platform edge.",
+        "Other-frame cross-check (same screenshot excluded):",
+        *checks,
+    ]
+    def log(message):
+        line=time.strftime("[%H:%M:%S] ")+message
+        print(line,flush=True)
+        report.append(line)
+    log("VISION_READY: "+str(len(references))+
+        " reference images, model does not control Roblox.")
+    frames=queue.Queue(maxsize=1)
+    stop=threading.Event()
+    cap=WindowsCapture(cursor_capture=None,draw_border=None,
+                       monitor_index=None,window_name="Roblox")
+    @cap.event
+    def on_frame_arrived(frame: Frame,control: InternalCaptureControl):
+        if stop.is_set():
+            control.stop()
+            return
+        try:
+            latest=frame.frame_buffer[:,:,:3].copy()
+            if frames.full():
+                try:frames.get_nowait()
+                except queue.Empty:pass
+            frames.put_nowait(latest)
+        except (ValueError,queue.Full):
+            pass
+    @cap.event
+    def on_closed():
+        stop.set()
+    controller=None
+    start=time.monotonic()
+    last_sample=0.
+    last_print=0.
+    last_stage="UNKNOWN"
+    consecutive=0
+    stable_points=[]
+    try:
+        controller=cap.start_free_threaded()
+        log("VISION_WATCH: observe restored Roblox for up to 90 seconds.")
+        log("No mouse/keyboard injection and no new route demonstration.")
+        while not stop.is_set() and time.monotonic()-start<90:
+            try:img=frames.get(timeout=.7)
+            except queue.Empty:continue
+            now=time.monotonic()
+            if now-last_sample<.65:continue
+            last_sample=now
+            stage,n,runnerup=classify(descriptor(img))
+            if stage==last_stage:
+                consecutive+=1
+            else:
+                consecutive=1
+                last_stage=stage
+            if stage!="UNKNOWN" and consecutive>=3:
+                if not stable_points or stable_points[-1]!=stage:
+                    stable_points.append(stage)
+                    log("VISUAL_CHECKPOINT "+stage+" matches="+str(n)+
+                        " alternative="+str(runnerup))
+            elif now-last_print>8:
+                log("VISION_CHECK: "+stage+" matches="+str(n)+
+                    " alternative="+str(runnerup)+
+                    " stable_frames="+str(consecutive))
+                last_print=now
+        log("VISION_DONE: observed="+repr(stable_points))
+        log("Automation disabled: cannot infer safe direction from frame labels.")
+    except KeyboardInterrupt:
+        log("VISION_STOP_REQUESTED")
+    except Exception:
+        log("VISION_ERROR "+traceback.format_exc())
+        return 2
+    finally:
+        stop.set()
+        try:
+            out.write_text("\n".join(report)+"\n",encoding="utf-8")
+            print("ROUTE_REPORT: "+str(out))
+        except OSError as exc:
+            print("ROUTE_REPORT_WRITE_ERROR "+repr(exc))
     return 0
 
 
@@ -2010,8 +2185,9 @@ def run_mode_prompt():
     print("  4 = BATTLE movement pilot (in-match F8, brief WASD, evidence)")
     print("  5 = ONE-TURRET pilot (F8, wait for green Z price, one Z attempt)")
     print("  6 = ROUTE demo (you walk once from spawn to the safe corner; keys+frames)")
+    print("  7 = ROUTE VISION (read-only scene checkpoints from existing route ZIP)")
     try:
-        choice = input("Choose mode 1-6 [1]: ").strip()
+        choice = input("Choose mode 1-7 [1]: ").strip()
     except EOFError:
         choice = "1"
     return choice
@@ -2027,6 +2203,8 @@ if selected_mode == "5":
     raise SystemExit(battle_pilot(build_once=True))
 if selected_mode == "6":
     raise SystemExit(route_demo())
+if selected_mode == "7":
+    raise SystemExit(route_visual_observer())
 
 # ------------ End demonstration recording ------------
 
