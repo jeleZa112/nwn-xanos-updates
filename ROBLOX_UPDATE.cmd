@@ -105,7 +105,7 @@ echo Program exited with code %ERRORLEVEL%.
 goto STOP
 
 :CHECK_VERSION
-py -3 -c "import ast,sys; t=ast.parse(open(sys.argv[1],encoding='utf-8').read()); a=[n.value.value for n in t.body if isinstance(n,ast.Assign) and any(isinstance(x,ast.Name) and x.id=='VERSION' for x in n.targets) and isinstance(n.value,ast.Constant) and isinstance(n.value.value,str)]; v=a[0] if a else '0.0.0'; print('Found version:',v); sys.exit(0 if tuple(map(int,v.split('.'))) >= (2,2,2) else 2)" "%~1"
+py -3 -c "import ast,sys; t=ast.parse(open(sys.argv[1],encoding='utf-8').read()); a=[n.value.value for n in t.body if isinstance(n,ast.Assign) and any(isinstance(x,ast.Name) and x.id=='VERSION' for x in n.targets) and isinstance(n.value,ast.Constant) and isinstance(n.value.value,str)]; v=a[0] if a else '0.0.0'; print('Found version:',v); sys.exit(0 if tuple(map(int,v.split('.'))) >= (2,5,0) else 2)" "%~1"
 exit /b %ERRORLEVEL%
 
 :STOP
