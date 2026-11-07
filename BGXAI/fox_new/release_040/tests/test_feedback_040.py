@@ -66,17 +66,28 @@ class IsolatedWeiDUMock(unittest.TestCase):
   self.root=Path(t.name)/'EET';self.root.mkdir()
   for p in ('override','lang/ru_ru'):(self.root/p).mkdir(parents=True,exist_ok=True)
   for name in mod.CRITICAL:
-   p=self.root/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(b'X'+name.encode())
+   p=self.root/name;p.parent.mkdir(parents=True,exist_ok=True)
+   if name.endswith('.tlk'):
+    self.write_tlk(p,1)
+   else:
+    p.write_bytes(b'X'+name.encode())
+  self.old_tlks={name:(self.root/name).read_bytes() for name in mod.CRITICAL if name.endswith('.tlk')}
   (self.root/mod.WEIDU).write_bytes(b'MZ'+b'0'*130000)
   self.log=self.root/'WeiDU.log';self.write([EPS,V38,V39])
   self.profile=Path(t.name)/'HOME';self.profile.mkdir()
+ def write_tlk(self,p,count):
+  # Real TLK v1 header + count of 26-byte entries; no string texts required.
+  header=b'TLK V1  '+(0).to_bytes(2,'little')+count.to_bytes(4,'little')+(18+26*count).to_bytes(4,'little')
+  p.write_bytes(header+b'\x00'*(26*count))
  def write(self,lines):self.log.write_text('\n'.join(lines)+'\n',encoding='utf-8')
  def fake(self,cmd,**kwargs):
   a=self.root/'override/BDDEFAI.BCS'
   if '--force-install' in cmd:
    a.write_bytes(a.read_bytes()+b'BGX40_COMPILED');self.write([EPS,V38,V39,V40])
+   for n in self.old_tlks:self.write_tlk(self.root/n,3)
   if '--force-uninstall' in cmd:
    a.write_bytes(a.read_bytes().replace(b'BGX40_COMPILED',b''));self.write([EPS,V38,V39])
+   for n,v in self.old_tlks.items():(self.root/n).write_bytes(v)
   return SimpleNamespace(returncode=0,stdout='mock',stderr='')
  def call(self):
   with patch.dict(os.environ,{'USERPROFILE':str(self.profile)}):
@@ -115,6 +126,36 @@ class IsolatedWeiDUMock(unittest.TestCase):
   with contextlib.redirect_stdout(io.StringIO()) as output:mod.status(self.root,BASE,real_root=False)
   self.assertIn('BGX39 baseline installed: True',output.getvalue())
   self.assertEqual(old,mod.snapshot(self.root));self.assertEqual(log,self.log.read_bytes())
+ def test_success_requires_two_russian_localized_entries_per_tlk(self):
+  data=self.call()
+  self.assertEqual(data['status'],'INSTALLED')
+  self.assertEqual(data['tlk_entry_growth'],{'lang/ru_ru/dialog.tlk':2,'lang/ru_ru/dialogf.tlk':2})
+  self.assertTrue((self.root/'chitin.key').exists())
+ def test_changed_tlks_without_matching_increment_is_review(self):
+  def partial_tlk(cmd,**kw):
+   (self.root/'override/BDDEFAI.BCS').write_bytes(b'CHANGED_BCS')
+   self.write([EPS,V38,V39,V40])
+   self.write_tlk(self.root/'lang/ru_ru/dialog.tlk',2)
+   self.write_tlk(self.root/'lang/ru_ru/dialogf.tlk',3)
+   return SimpleNamespace(returncode=0,stdout='ok',stderr='')
+  with patch.dict(os.environ,{'USERPROFILE':str(self.profile)}):
+   d=mod.run_install(self.root,BASE,real_root=False,guard=lambda:None,runner=partial_tlk)
+  self.assertEqual(d['status'],'REVIEW_INSTALL')
+ def test_040_backup_directory_is_not_the_old_039_folder(self):
+  self.call()
+  self.assertTrue((self.profile/'Documents'/'BGXAI40_SAFE_BACKUPS').is_dir())
+ def test_legacy_040_backup_in_039_folder_is_discoverable(self):
+  d=self.call()
+  modern=Path(d['backup'])
+  old_dir=modern.parents[1]/'BGXAI39_SAFE_BACKUPS'/modern.name
+  old_dir.parent.mkdir(parents=True,exist_ok=True)
+  shutil.move(modern,old_dir)
+  with patch.dict(os.environ,{'USERPROFILE':str(self.profile)}):
+   prior=mod.find_previous_backup(self.root)
+   self.assertEqual(prior[0],old_dir)
+ def test_invalid_tlk_header_is_rejected(self):
+  p=self.root/'lang/ru_ru/dialog.tlk';p.write_bytes(b'not a TLK')
+  with self.assertRaisesRegex(RuntimeError,'Unsafe|TLK header'):mod.tlk_entry_count(p)
  def test_no_false_success(self):
   def false_ok(cmd,**kw):
    self.write([EPS,V38,V39,V40]);return SimpleNamespace(returncode=0,stdout='',stderr='')
