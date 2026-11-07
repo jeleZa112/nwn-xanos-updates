@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "e2a711591a3f2cc99eba3f52dd542f95d657a3f5",
+  "commit": "3f7279e0cb730882ff57b7657c5cc1a178c6112a",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "8dda2e87538bb407918df10f78ef54c05fd2a47285c291e86a0a7840fa6fef25",
-  "script_size": 10039,
-  "description": "One-file EET Foxx updater with verified 040 localized TLK install/rollback status fix. No GitHub API."
+  "script_sha256": "0a32bc5216f331cd813f9aef18523d3dff5714febdcdbc7a35bece7987fd27e2",
+  "script_size": 12237,
+  "description": "Same one-file EET Foxx updater, no GitHub API. Option 7 is BGXAI 041 READ-ONLY EET/WeiDU precheck; no 041 install."
 }
