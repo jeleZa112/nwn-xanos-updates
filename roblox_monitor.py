@@ -1,9 +1,9 @@
-# Roblox background monitor - release 2.7.0
+# Roblox background monitor - release 2.8.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "2.7.0"
+VERSION = "2.8.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -729,7 +729,9 @@ def route_visual_observer():
     """
     import zipfile
     import queue
+    import ctypes
     import re
+    import json
     import cv2
     import numpy as np
     from windows_capture import WindowsCapture, Frame, InternalCaptureControl
@@ -737,6 +739,7 @@ def route_visual_observer():
     root=Path.home()/"Documents"/"RobloxBGDiagnostics"/"ROUTE"
     source=root/"ROUTE_DEMO.zip"
     out=root/"VISUAL_ROUTE_REPORT.txt"
+    calibrated=root/"SAFE_CORNER_CALIBRATION.zip"
     if not source.is_file():
         print("ROUTE_VISION: existing ROUTE_DEMO.zip not found: "+str(source))
         print("No movements attempted; route recording must exist first.")
@@ -751,6 +754,12 @@ def route_visual_observer():
         h,w=img.shape[:2]
         if h<250 or w<400:
             return None
+        # Match saved reference frames at the same pixel scale.
+        # Original demo is 1100px wide; WGC live images can be 1649/1920px.
+        if w!=1100:
+            img=cv2.resize(img,(1100,max(1,round(h*1100/w))),
+                           interpolation=cv2.INTER_AREA)
+            h,w=img.shape[:2]
         region=img[int(.08*h):int(.73*h),int(.08*w):int(.91*w)]
         gray=cv2.cvtColor(region,cv2.COLOR_BGR2GRAY)
         _points,desc=orb.detectAndCompute(gray,None)
@@ -790,6 +799,36 @@ def route_visual_observer():
         print("ROUTE_VISION: insufficient reference frames (need 9+, have "+
               str(len(references))+"). No movement.")
         return 2
+    def load_safe_calibration():
+        """Load only user-marked real Roblox scenes; never synthesize a label."""
+        if not calibrated.is_file():
+            return 0
+        items=[]
+        try:
+            with zipfile.ZipFile(calibrated) as z:
+                if z.testzip():
+                    raise ValueError("bad calibration ZIP CRC")
+                files=sorted(name for name in z.namelist()
+                             if re.fullmatch(r"corner_\d\d\.jpg",name))
+                if len(files)<3 or len(files)>8:
+                    raise ValueError("expected 3-8 reference frames")
+                for filename in files:
+                    raw=np.frombuffer(z.read(filename),dtype=np.uint8)
+                    decoded=cv2.imdecode(raw,cv2.IMREAD_COLOR)
+                    if decoded is None:continue
+                    desc=descriptor(decoded)
+                    if desc is None or len(desc)<45:continue
+                    items.append(desc)
+        except (OSError,ValueError,zipfile.BadZipFile) as exc:
+            print("ROUTE_CALIBRATION_INVALID: "+repr(exc))
+            return 0
+        if len(items)<3:
+            print("ROUTE_CALIBRATION_TOO_FEW_USABLE_IMAGES: "+str(len(items)))
+            return 0
+        for i,desc in enumerate(items):
+            references.append((100+i,"SAFE_CORNER",desc))
+        return len(items)
+    restored=load_safe_calibration()
     def classify(desc,except_index=None):
         per_stage={stage:0 for stage in stages}
         for index,stage,ref in references:
@@ -812,6 +851,7 @@ def route_visual_observer():
         "ROBLOX route visual anchors V"+VERSION,
         "Reference ZIP: "+str(source),
         "Reference frames: "+str(len(references)),
+        "Additional user-marked corner views: "+str(restored),
         "This is visual scene matching, NOT localization or route navigation.",
         "Never replay original timed key spans near a platform edge.",
         "Other-frame cross-check (same screenshot excluded):",
@@ -823,6 +863,12 @@ def route_visual_observer():
         report.append(line)
     log("VISION_READY: "+str(len(references))+
         " reference images, model does not control Roblox.")
+    log("CAMERA_NOTE: SAFE_CORNER in previous session was UNKNOWN after "+
+        "camera rotation; will NOT lower match thresholds.")
+    log("CALIBRATION_OPTION: at the SAFE CORNER, keep Roblox foreground "+
+        "and press F10 ONCE to add this camera view (no movement sent).")
+    if restored:
+        log("CALIBRATION_RESTORED: "+str(restored)+" extra reference frames.")
     frames=queue.Queue(maxsize=1)
     stop=threading.Event()
     cap=WindowsCapture(cursor_capture=None,draw_border=None,
@@ -843,6 +889,80 @@ def route_visual_observer():
     @cap.event
     def on_closed():
         stop.set()
+    ui=ctypes.WinDLL("user32",use_last_error=True)
+    ui.FindWindowW.argtypes=(ctypes.c_wchar_p,ctypes.c_wchar_p)
+    ui.FindWindowW.restype=ctypes.c_void_p
+    ui.GetForegroundWindow.restype=ctypes.c_void_p
+    ui.IsIconic.argtypes=(ctypes.c_void_p,)
+    ui.IsIconic.restype=ctypes.c_int
+    ui.GetAsyncKeyState.argtypes=(ctypes.c_int,)
+    ui.GetAsyncKeyState.restype=ctypes.c_short
+    hwnd=ui.FindWindowW(None,"Roblox")
+    def foreground():
+        return bool(hwnd and ui.GetForegroundWindow()==hwnd and
+                    not ui.IsIconic(hwnd))
+    def stop_key():
+        # F10 is not used by this observer for any game control.
+        return bool(ui.GetAsyncKeyState(0x79)&0x8000)
+    def mark_corner():
+        # Human labels the known destination by pressing F10 there.
+        # Never label an unknown scene based on low-confidence matching.
+        if not foreground():
+            log("CORNER_MARK_SKIPPED: Roblox must be foreground.")
+            return False
+        collected=[]
+        for i in range(5):
+            if stop.is_set() or not foreground():
+                log("CORNER_MARK_ABORTED: capture ended or focus was lost.")
+                return False
+            try:
+                current=frames.get(timeout=1.2)
+            except queue.Empty:
+                log("CORNER_MARK_ABORTED: no fresh Roblox frame.")
+                return False
+            h,w=current.shape[:2]
+            if w>1100:
+                current=cv2.resize(current,(1100,round(h*1100/w)),
+                                   interpolation=cv2.INTER_AREA)
+            d=descriptor(current)
+            if d is None or len(d)<45:
+                log("CORNER_MARK_ABORTED: insufficient visible scene texture.")
+                return False
+            ok,jpg=cv2.imencode(".jpg",current,
+                                [cv2.IMWRITE_JPEG_QUALITY,78])
+            if not ok:
+                log("CORNER_MARK_ABORTED: JPEG encode failed.")
+                return False
+            collected.append((current,d,jpg.tobytes()))
+            time.sleep(.22)
+        # Require sufficient cross-frame matches so a blank/loading screen,
+        # occluded UI or rapid camera turn cannot become a reference.
+        cross=[match_count(collected[i][1],collected[i+1][1])
+               for i in range(4)]
+        if min(cross)<40:
+            log("CORNER_MARK_REJECTED: unstable view cross_matches="+str(cross))
+            return False
+        tmp=calibrated.with_suffix(".tmp")
+        try:
+            with zipfile.ZipFile(tmp,"w",zipfile.ZIP_DEFLATED) as z:
+                for i,(_,_,jpg) in enumerate(collected):
+                    z.writestr("corner_%02d.jpg"%i,jpg)
+                z.writestr("MANUAL_MARK.txt",
+                           "F10 confirmed by player at the defensive corner.\n"
+                           "No map coordinates or path are inferred.\n"
+                           "This is a visual viewpoint reference only.\n")
+            with zipfile.ZipFile(tmp) as z:
+                if z.testzip():raise ValueError("bad saved ZIP")
+            tmp.replace(calibrated)
+        except (OSError,ValueError,zipfile.BadZipFile) as exc:
+            log("CORNER_MARK_SAVE_FAILED: "+repr(exc))
+            return False
+        references[:]=[(i,stage,desc) for i,stage,desc in references if i<100]
+        for i,(_,desc,_) in enumerate(collected):
+            references.append((100+i,"SAFE_CORNER",desc))
+        log("CORNER_MARK_SAVED: 5 user-confirmed views, cross_matches="+
+            str(cross)+" location="+str(calibrated))
+        return True
     controller=None
     start=time.monotonic()
     last_sample=0.
@@ -850,12 +970,22 @@ def route_visual_observer():
     last_stage="UNKNOWN"
     consecutive=0
     stable_points=[]
+    previous_f10=False
+    marked_this_run=False
     try:
         controller=cap.start_free_threaded()
         log("VISION_WATCH: observe restored Roblox for up to 90 seconds.")
         log("No mouse/keyboard injection and no new route demonstration.")
         while not stop.is_set() and time.monotonic()-start<90:
-            try:img=frames.get(timeout=.7)
+            f10=stop_key()
+            if f10 and not previous_f10 and not marked_this_run:
+                if mark_corner():
+                    marked_this_run=True
+                    last_stage="UNKNOWN"
+                    consecutive=0
+                    log("CALIBRATION_ACTIVE: continuing visual comparison.")
+            previous_f10=f10
+            try:img=frames.get(timeout=.08)
             except queue.Empty:continue
             now=time.monotonic()
             if now-last_sample<.65:continue
@@ -877,6 +1007,8 @@ def route_visual_observer():
                     " stable_frames="+str(consecutive))
                 last_print=now
         log("VISION_DONE: observed="+repr(stable_points))
+        log("CALIBRATION_STATUS: saved_this_run="+str(marked_this_run)+
+            " previously_loaded="+str(restored))
         log("Automation disabled: cannot infer safe direction from frame labels.")
     except KeyboardInterrupt:
         log("VISION_STOP_REQUESTED")
