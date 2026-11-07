@@ -1,7 +1,7 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "3.2.0",
-  "note": "Local original-English emotion2vec analyzer, no uploaded audio",
+  "version": "3.2.1",
+  "note": "emotion2vec HF source hotfix for ModelScope.cn read timeouts; existing environment and voices preserved",
   "files": [
     {
       "path": "BG_RU_IMOEN_PROSODY_29/GENERATE_PROSODY_29.py",
@@ -21,7 +21,7 @@
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/EMOTION_ANALYSIS_32.py",
-      "sha256": "1120f04ed9c7108ceb1e6de57725a66f54504824ac3132aae5769b085c36cf4c"
+      "sha256": "2e403e4ab28159dcc2047b714a1ce5154442224c3d4c6c535c74b52c79d68159"
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/RUN_EMOTION_32.cmd",
