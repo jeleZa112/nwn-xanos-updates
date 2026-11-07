@@ -21,7 +21,7 @@ try {
  # Download + validate *every* file before installing anything.
  foreach ($item in $entries) {
   $name = [string]$item.path
-  if ($name -notmatch '^(BG_RU_IMOEN_PROSODY_29/[A-Za-z0-9_.-]+|BG_VOICE_UPDATE.cmd)$') {throw ('Disallowed filename: ' + $name)}
+  if ($name -notmatch '^(BG_RU_IMOEN_PROSODY_29/[A-Za-z0-9_.-]+|BG_RU_IMOEN_EMOTION_32/[A-Za-z0-9_.-]+|BG_VOICE_UPDATE.cmd)$') {throw ('Disallowed filename: ' + $name)}
   $local = Join-Path $stage ($name -replace '/', [IO.Path]::DirectorySeparatorChar)
   New-Item -ItemType Directory -Force -Path (Split-Path -Parent $local) | Out-Null
   Invoke-WebRequest -UseBasicParsing -Uri ($base + '/' + $name) -OutFile $local -TimeoutSec 90
@@ -50,7 +50,7 @@ try {
  }
  Write-Host ('SUCCESS: BG Voice RU ' + $manifest.version)
  Write-Host ('Backup folder: ' + $backup)
- Write-Host 'Next: BG_RU_IMOEN_PROSODY_29\\RUN_PROSODY_29.cmd'
+ Write-Host 'Next: BG_RU_IMOEN_EMOTION_32\\SETUP_EMOTION_32.cmd (once), then RUN_EMOTION_32.cmd'
 } catch {
  Write-Host ('UPDATE FAILED: ' + $_.Exception.Message) -ForegroundColor Red
  Write-Host ('No generated WAV/model/game files were changed. Stage: ' + $stage)
