@@ -1,0 +1,201 @@
+// BGXAI 039 (ORIGINAL CODE): lower-priority team protection atop installed BGX38 + EPS.
+// Guard selected via existing BGX38_GUARD=1 (F hotkey); no new keys / no changes to EPS.
+// EXTEND_BOTTOM after existing BGX38: prioritize protagonist if 038 wants to guard.
+// Never guard self (InPartySlot); refuse to interrupt existing actions (ActionListEmpty).
+// First prioritize wounded (below 65%) ward, then any directly threatened ally.
+// Priority amongst equal threats is static: Player3,4,5,6,2. This is NOT full threat AI.
+// ProtectObject may be persistent: no automatic cancellation is claimed.
+// Urgent ward Player3; guardian cannot protect itself.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  ActionListEmpty()
+  InParty(Player3)
+  !InPartySlot(Myself,2)
+  See(Player3)
+  Range(Player3,10)
+  See(NearestEnemyOf(Player3))
+  Range(NearestEnemyOf(Player3),7)
+  HPPercentLT(Player3,65)
+  !GlobalTimerNotExpired("BGX39_TEAM_CD","LOCALS")
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGX39_TEAM_CD","LOCALS",8)
+    ProtectObject(Player3,6)
+END
+
+// Urgent ward Player4; guardian cannot protect itself.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  ActionListEmpty()
+  InParty(Player4)
+  !InPartySlot(Myself,3)
+  See(Player4)
+  Range(Player4,10)
+  See(NearestEnemyOf(Player4))
+  Range(NearestEnemyOf(Player4),7)
+  HPPercentLT(Player4,65)
+  !GlobalTimerNotExpired("BGX39_TEAM_CD","LOCALS")
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGX39_TEAM_CD","LOCALS",8)
+    ProtectObject(Player4,6)
+END
+
+// Urgent ward Player5; guardian cannot protect itself.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  ActionListEmpty()
+  InParty(Player5)
+  !InPartySlot(Myself,4)
+  See(Player5)
+  Range(Player5,10)
+  See(NearestEnemyOf(Player5))
+  Range(NearestEnemyOf(Player5),7)
+  HPPercentLT(Player5,65)
+  !GlobalTimerNotExpired("BGX39_TEAM_CD","LOCALS")
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGX39_TEAM_CD","LOCALS",8)
+    ProtectObject(Player5,6)
+END
+
+// Urgent ward Player6; guardian cannot protect itself.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  ActionListEmpty()
+  InParty(Player6)
+  !InPartySlot(Myself,5)
+  See(Player6)
+  Range(Player6,10)
+  See(NearestEnemyOf(Player6))
+  Range(NearestEnemyOf(Player6),7)
+  HPPercentLT(Player6,65)
+  !GlobalTimerNotExpired("BGX39_TEAM_CD","LOCALS")
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGX39_TEAM_CD","LOCALS",8)
+    ProtectObject(Player6,6)
+END
+
+// Urgent ward Player2; guardian cannot protect itself.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  ActionListEmpty()
+  InParty(Player2)
+  !InPartySlot(Myself,1)
+  See(Player2)
+  Range(Player2,10)
+  See(NearestEnemyOf(Player2))
+  Range(NearestEnemyOf(Player2),7)
+  HPPercentLT(Player2,65)
+  !GlobalTimerNotExpired("BGX39_TEAM_CD","LOCALS")
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGX39_TEAM_CD","LOCALS",8)
+    ProtectObject(Player2,6)
+END
+
+// Threat ward Player3; guardian cannot protect itself.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  ActionListEmpty()
+  InParty(Player3)
+  !InPartySlot(Myself,2)
+  See(Player3)
+  Range(Player3,10)
+  See(NearestEnemyOf(Player3))
+  Range(NearestEnemyOf(Player3),7)
+  !GlobalTimerNotExpired("BGX39_TEAM_CD","LOCALS")
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGX39_TEAM_CD","LOCALS",8)
+    ProtectObject(Player3,6)
+END
+
+// Threat ward Player4; guardian cannot protect itself.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  ActionListEmpty()
+  InParty(Player4)
+  !InPartySlot(Myself,3)
+  See(Player4)
+  Range(Player4,10)
+  See(NearestEnemyOf(Player4))
+  Range(NearestEnemyOf(Player4),7)
+  !GlobalTimerNotExpired("BGX39_TEAM_CD","LOCALS")
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGX39_TEAM_CD","LOCALS",8)
+    ProtectObject(Player4,6)
+END
+
+// Threat ward Player5; guardian cannot protect itself.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  ActionListEmpty()
+  InParty(Player5)
+  !InPartySlot(Myself,4)
+  See(Player5)
+  Range(Player5,10)
+  See(NearestEnemyOf(Player5))
+  Range(NearestEnemyOf(Player5),7)
+  !GlobalTimerNotExpired("BGX39_TEAM_CD","LOCALS")
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGX39_TEAM_CD","LOCALS",8)
+    ProtectObject(Player5,6)
+END
+
+// Threat ward Player6; guardian cannot protect itself.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  ActionListEmpty()
+  InParty(Player6)
+  !InPartySlot(Myself,5)
+  See(Player6)
+  Range(Player6,10)
+  See(NearestEnemyOf(Player6))
+  Range(NearestEnemyOf(Player6),7)
+  !GlobalTimerNotExpired("BGX39_TEAM_CD","LOCALS")
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGX39_TEAM_CD","LOCALS",8)
+    ProtectObject(Player6,6)
+END
+
+// Threat ward Player2; guardian cannot protect itself.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  ActionListEmpty()
+  InParty(Player2)
+  !InPartySlot(Myself,1)
+  See(Player2)
+  Range(Player2,10)
+  See(NearestEnemyOf(Player2))
+  Range(NearestEnemyOf(Player2),7)
+  !GlobalTimerNotExpired("BGX39_TEAM_CD","LOCALS")
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGX39_TEAM_CD","LOCALS",8)
+    ProtectObject(Player2,6)
+END
