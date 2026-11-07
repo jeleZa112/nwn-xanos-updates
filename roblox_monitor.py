@@ -1,9 +1,9 @@
-# Roblox background monitor - release 2.9.2
+# Roblox background monitor - release 3.0.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "2.9.2"
+VERSION = "3.0.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -1181,12 +1181,13 @@ def route_visual_observer():
     return 0
 
 
-def route_demo():
-    """Record ONE short player-driven route from spawn to the known safe corner.
+def route_demo(destination="corner"):
+    """Record ONE short route from game spawn to corner OR main lobby to creation pad.
 
     No injection, no AI movement, no background key logging. Samples only
     W/A/S/D/Space/Shift while Roblox is the foreground window and F8 arms it.
-    F9 ends the demonstration. One ZIP contains key spans and sampled frames.
+    F10 ends the walk. In lobby mode, also observe whether the creation modal opens.
+    One ZIP contains key spans and sampled frames; no game inputs are sent.
     """
     import ctypes
     from ctypes import wintypes
@@ -1197,7 +1198,9 @@ def route_demo():
     import cv2
     from windows_capture import WindowsCapture, Frame, InternalCaptureControl
 
-    root=Path.home()/"Documents"/"RobloxBGDiagnostics"/"ROUTE"
+    is_lobby=destination=="lobby"
+    root=(Path.home()/"Documents"/"RobloxBGDiagnostics"/
+          ("LOBBY_PAD_ROUTE" if is_lobby else "ROUTE"))
     root.mkdir(parents=True,exist_ok=True)
     stamp=time.strftime("%Y%m%d_%H%M%S")
     folder=root/stamp
@@ -1223,14 +1226,21 @@ def route_demo():
         return 2
     def focused():return ui.GetForegroundWindow()==hwnd and not ui.IsIconic(hwnd)
     def down(vk):return bool(ui.GetAsyncKeyState(vk)&0x8000)
-    print("\nROBLOX ROUTE DEMO V"+VERSION)
-    print("Start a match; stand at the initial spawn point.")
-    print("After YES, switch to Roblox: F8 starts recording.")
-    print("Walk ONCE to your main safe defensive corner; press F10 there.")
-    print("Records W/A/S/D/SPACE/SHIFT and available mouse-camera deltas.")
-    print("No key injection, no mouse logging and no complete gameplay required.")
-    print("Max route length 50s, max 26 saved JPGs. F10 stops. F9 opens console!")
-    if input("Record ONE route? Type YES [default NO]: ").strip().upper() not in ("YES","ДА"):
+    print("\nROBLOX "+("MAIN LOBBY TO CREATION PAD" if is_lobby else
+                       "BATTLE ROUTE DEMO")+" V"+VERSION)
+    if is_lobby:
+        print("Start in the COMMON LOBBY after the game returns you there.")
+        print("F8: start recording; walk ONCE to the purple CREATION PAD.")
+        print("F10 ON THE PAD: mark arrival; bot then observes it up to 45s.")
+        print("If the pad is occupied, stand there and wait naturally.")
+        print("Never guess that a pad is free: only the creation GUI proves it.")
+    else:
+        print("Start a match; stand at the initial spawn point.")
+        print("F8 begins; walk ONCE to the defensive corner; F10 stops.")
+    print("Records W/A/S/D/SPACE/SHIFT and optional mouse deltas.")
+    print("No programmatic clicks, movements, purchases or auto-creation.")
+    print("F9 opens Roblox console; DO NOT press F9.")
+    if input("Record this ONE route? Type YES [default NO]: ").strip().upper() not in ("YES","ДА"):
         return 0
     frame_queue=queue.Queue(maxsize=1)
     stop=threading.Event()
@@ -1274,7 +1284,8 @@ def route_demo():
     active={}
     last_save=-99.
     last_sample=None
-    max_duration=50.
+    max_duration=65. if is_lobby else 50.
+    arrival_marked=False
     # Focus-scoped diagnostics for the user's REAL mouse movements only.
     # WH_MOUSE_LL events may not contain Roblox raw-camera deltas. In that
     # case mouse.csv can be empty and a route cannot safely be replayed.
@@ -1380,7 +1391,9 @@ def route_demo():
         while not stop.is_set():
             elapsed=time.monotonic()-started
             if down(0x79):
-                log("ROUTE_FINISHED_F10 elapsed=%.2fs"%elapsed)
+                arrival_marked=True
+                log(("LOBBY_PAD_ARRIVAL_F10" if is_lobby else
+                     "ROUTE_FINISHED_F10")+" elapsed=%.2fs"%elapsed)
                 break
             if elapsed>=max_duration:
                 log("ROUTE_MAX_DURATION_REACHED")
@@ -1421,21 +1434,113 @@ def route_demo():
         log("ROUTE_MOUSE_SUMMARY samples="+str(len(mouse_samples))+
             " installed="+str(mouse_hook_meta["installed"])+
             " NOTE: captured mouse is not confirmed camera yaw.")
+        # On arrival at the pad, gather evidence of wait/busy/free scene.
+        # Lack of a creation dialog is NOT proof of another player occupying it.
+        wait_records=[]
+        if is_lobby and arrival_marked and focused() and not stop.is_set():
+            log("LOBBY_PAD_WAIT_START: up to 45 seconds; no game inputs.")
+            while down(0x79) and not stop.is_set():
+                time.sleep(.05)  # avoid treating F10 still held as cancel
+            def creation_gui_visible(img):
+                if img is None:
+                    return False
+                h,w=img.shape[:2]
+                def crop(box):
+                    x1,y1,x2,y2=box
+                    return img[max(0,int(y1*h)):min(h,int(y2*h)),
+                               max(0,int(x1*w)):min(w,int(x2*w)),:3]
+                digits=((.369,.716,.396,.785),(.449,.716,.476,.785),
+                        (.529,.716,.556,.785),(.609,.716,.636,.785))
+                for box in digits:
+                    p=crop(box)
+                    if p.size==0:
+                        return False
+                    b,g,r=[p[:,:,k].astype(int) for k in range(3)]
+                    diff=np.maximum.reduce([b,g,r])-np.minimum.reduce([b,g,r])
+                    if not float(((b>165)&(g>165)&(r>165)&(diff<80)).mean())>.025:
+                        return False
+                def border(rect,kind):
+                    x1,y1,x2,y2=rect
+                    thickness=.009
+                    rois=(crop((x1,y1,x2,y1+thickness)),
+                          crop((x1,y2-thickness,x2,y2)),
+                          crop((x1,y1,x1+thickness,y2)),
+                          crop((x2-thickness,y1,x2,y2)))
+                    scores=[]
+                    for patch in rois:
+                        if patch.size==0:continue
+                        hh,ss,vv=cv2.split(cv2.cvtColor(patch,cv2.COLOR_BGR2HSV))
+                        mask=((hh>=35)&(hh<=90)&(ss>95)&(vv>80)
+                              if kind=="green" else
+                              ((hh<12)|(hh>170))&(ss>100)&(vv>90))
+                        scores.append(float(mask.mean()))
+                    return max(scores,default=0.0)
+                return (border((.359,.833,.481,.914),"green")>.08 and
+                        border((.519,.833,.642,.914),"red")>.08)
+            # Avoid too many files; save a few annotated timestamps, plus
+            # the first affirmative creation menu evidence.
+            import numpy as np
+            wait_start=time.monotonic()
+            last_wait_snap=-100.
+            confirmed=0
+            old_f10=False
+            while not stop.is_set() and time.monotonic()-wait_start<45:
+                if not focused():
+                    log("LOBBY_PAD_WAIT_FOCUS_LOST: observation stops.")
+                    break
+                current_f10=down(0x79)
+                if current_f10 and not old_f10:
+                    log("LOBBY_PAD_WAIT_STOP_F10")
+                    break
+                old_f10=current_f10
+                current=frame()
+                if current is not None:
+                    visible=creation_gui_visible(current)
+                    confirmed=confirmed+1 if visible else 0
+                    elapsed_wait=time.monotonic()-wait_start
+                    if (elapsed_wait-last_wait_snap>=3.0 or confirmed==3):
+                        h,w=current.shape[:2]
+                        if w>1100:
+                            current=cv2.resize(current,(1100,round(h*1100/w)))
+                        name="pad_%02d.jpg"%len(wait_records)
+                        if cv2.imwrite(str(folder/name),current,
+                                       [cv2.IMWRITE_JPEG_QUALITY,72]):
+                            wait_records.append((round(elapsed_wait,1),name,
+                                "CREATE_GUI_VISIBLE" if visible else
+                                "NO_GUI__OCCUPANCY_UNKNOWN"))
+                            last_wait_snap=elapsed_wait
+                    if confirmed>=3:
+                        log("LOBBY_PAD_MENU_VISIBLE: confirms creation GUI "+
+                            "opened, not that match was created.")
+                        break
+                time.sleep(.3)
+            log("LOBBY_PAD_WAIT_END: recorded="+str(len(wait_records))+
+                " snapshots; no clicks performed.")
+        if is_lobby:
+            with (folder/"pad_observations.csv").open(
+                    "w",encoding="utf-8",newline="") as out:
+                writer=csv.writer(out)
+                writer.writerow(["seconds_after_arrival","filename","observation"])
+                writer.writerows(wait_records)
         with (folder/"screenshots.csv").open("w",encoding="utf-8",newline="") as out:
             writer=csv.writer(out)
             writer.writerow(["elapsed_seconds","filename"])
             writer.writerows(screenshots)
         (folder/"README.txt").write_text(
-            "ROUTE_DEMO V"+VERSION+"\n"
-            "Manual demonstration from spawn to defensive corner.\n"
-            "W/A/S/D/SPACE/SHIFT keys only when Roblox foreground.\n"
-            "F8 starts, F10 stops; F9 opens developer console.\n"
-            "No game input is sent; mouse.csv is diagnostic only.\n"
-            "Time-sequence is a demonstration, not a safe autonomous route until\n"
-            "orientation, collisions and recovery are validated.\n",
+            ("LOBBY_PAD_ROUTE" if is_lobby else "ROUTE_DEMO")+" V"+VERSION+"\n"+
+            ("Manual route from common lobby spawn to purple creation pad.\n"
+             "F10 marks arrival; pad_observations.csv tracks creation GUI.\n"
+             "No GUI means UNKNOWN (could be occupied OR not reached).\n"
+             if is_lobby else
+             "Manual demonstration from match spawn to defensive corner.\n")+
+            "W/A/S/D/SPACE/SHIFT while Roblox foreground.\n"+
+            "F8 starts, F10 marks destination; F9 opens developer console.\n"+
+            "No game input is sent; mouse.csv is diagnostic only.\n"+
+            "Timed route is NOT a safe autonomous route without orientation,\n"+
+            "collision, occupancy and recovery checks.\n",
             encoding="utf-8")
-        bundle=root/"ROUTE_DEMO.zip"
-        tmp=root/"ROUTE_DEMO.tmp"
+        bundle=root/("LOBBY_PAD_ROUTE.zip" if is_lobby else "ROUTE_DEMO.zip")
+        tmp=root/("LOBBY_PAD_ROUTE.tmp" if is_lobby else "ROUTE_DEMO.tmp")
         with zipfile.ZipFile(tmp,"w",compression=zipfile.ZIP_DEFLATED) as z:
             for item in folder.iterdir():
                 if item.is_file():z.write(item,arcname=item.name)
@@ -2475,8 +2580,9 @@ def run_mode_prompt():
     print("  6 = ROUTE demo (you walk once from spawn to the safe corner; keys+frames)")
     print("  7 = ROUTE VISION (F10 marks defensive corner; NO game input)")
     print("  8 = GUARDED TURRET (calibrated corner + green Z, one build attempt)")
+    print("  9 = LOBBY PAD demo (from returned lobby to pad, F8/F10; observe wait)")
     try:
-        choice = input("Choose mode 1-8 [1]: ").strip()
+        choice = input("Choose mode 1-9 [1]: ").strip()
     except EOFError:
         choice = "1"
     return choice
@@ -2496,6 +2602,8 @@ if selected_mode == "7":
     raise SystemExit(route_visual_observer())
 if selected_mode == "8":
     raise SystemExit(battle_pilot(build_once=True,require_corner=True))
+if selected_mode == "9":
+    raise SystemExit(route_demo(destination="lobby"))
 
 # ------------ End demonstration recording ------------
 
