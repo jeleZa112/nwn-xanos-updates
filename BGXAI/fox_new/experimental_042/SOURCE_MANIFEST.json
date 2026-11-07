@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "project": "BGXAI 042 EPS-AI guard priority read-only research",
+  "status": "READ_ONLY_NO_INSTALL",
+  "files": [
+    {
+      "path": "README_RU.md",
+      "size": 4238,
+      "sha256": "db00c6a72bb9266d527c6e411398fa1401b6155286e079872924a07d754f8561"
+    },
+    {
+      "path": "build_manifest.py",
+      "size": 614,
+      "sha256": "cd55885567bc78134a3f9303a65dfda89fdda8f9332b00bb814a9cc068204726"
+    },
+    {
+      "path": "combat_ru/ROADMAP_RU.md",
+      "size": 3223,
+      "sha256": "260e48be57f479496cb14c99b1f46e20ae67bd1ac326c34a1038697131745e65"
+    },
+    {
+      "path": "combat_ru/feedback_status.py",
+      "size": 1549,
+      "sha256": "d100fb55bee73e61a605ea60473dcec83365f7d50d599cc28444f003a5a5b52e"
+    },
+    {
+      "path": "guard/PRIORITY_FIX_DESIGN_RU.md",
+      "size": 4362,
+      "sha256": "12e0e5ef0c5a6fdbca492f66a23b1c01e0edef97aa889f5b639963a28e383c46"
+    },
+    {
+      "path": "scan_eps_bcs.py",
+      "size": 4789,
+      "sha256": "4a3734292a9b08ca3f94b4b1477a86d12b8528839ad4ba732c97f71d060411f6"
+    },
+    {
+      "path": "tests/test_combat_status.py",
+      "size": 868,
+      "sha256": "fefe077b522b9cff1af11997c21bca8d8c0db702120ece90b6789fc496ef0c40"
+    },
+    {
+      "path": "tests/test_priority_audit.py",
+      "size": 2352,
+      "sha256": "c93e7512d17c5ae8d5a2389f7a280b6fe0cfce1dbe6bc875ce7aee535ebff2c7"
+    }
+  ]
+}
