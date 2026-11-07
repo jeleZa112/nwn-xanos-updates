@@ -1,9 +1,9 @@
-# Roblox background monitor - release 2.9.0
+# Roblox background monitor - release 2.9.1
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "2.9.0"
+VERSION = "2.9.1"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -448,6 +448,10 @@ def battle_pilot(build_once=False, require_corner=False):
         return win.GetForegroundWindow()==hwnd and not win.IsIconic(hwnd)
     def pressed(vk):
         return bool(win.GetAsyncKeyState(vk)&0x8000)
+    def user_is_moving():
+        # Do not buy while the user is moving, aiming or jumping.
+        return any(pressed(vk) for vk in
+                   (0x57,0x41,0x53,0x44,0x20,0x10))
     def key(scan,down):
         ev=INPUT()
         ev.type=1  # INPUT_KEYBOARD
@@ -643,6 +647,7 @@ def battle_pilot(build_once=False, require_corner=False):
             green_frames=0
             safe_frames=0
             last_report=0.
+            last_verify=0.
             tried=False
             result_code="TIMEOUT_WAITING_FOR_GREEN"
             deadline=time.monotonic()+240
@@ -659,12 +664,19 @@ def battle_pilot(build_once=False, require_corner=False):
                 if img is None:
                     green_frames=0
                     continue
+                if time.monotonic()-last_verify<.32:
+                    continue
+                last_verify=time.monotonic()
                 if looks_like_creation_menu(img):
                     result_code="LOBBY_DETECTED"
                     log("TURRET_STOP_LOBBY_DETECTED")
                     break
                 signal,red_score,green_score=turret_price_color_signal(img)
                 at_corner,votes,corner_scores=corner_signal(img)
+                if user_is_moving():
+                    green_frames=0
+                    safe_frames=0
+                    continue
                 if at_corner:
                     safe_frames+=1
                 else:
@@ -686,8 +698,8 @@ def battle_pilot(build_once=False, require_corner=False):
                     continue
                 # Do not issue a key if the window changed focus after the
                 # evidence frame or if user cancelled.
-                if not foreground() or pressed(0x79):
-                    result_code="FOCUS_OR_CANCEL"
+                if not foreground() or pressed(0x79) or user_is_moving():
+                    result_code="FOCUS_CANCEL_OR_MOVEMENT"
                     break
                 save_frame(img,"turret_before.jpg")
                 log("TURRET_Z_READY: 4 consecutive GREEN frames; "+
