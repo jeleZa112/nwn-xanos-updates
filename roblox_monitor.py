@@ -1,9 +1,9 @@
-# Roblox background monitor - release 2.1.3
+# Roblox background monitor - release 2.2.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "2.1.3"
+VERSION = "2.2.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -285,6 +285,257 @@ def training_mode():
     return 0
 
 
+
+
+# === V2.2: in-match movement probe. No blind combat/turret actions. ===
+def battle_pilot():
+    """One opt-in, foreground-only short WASD calibration in an existing match.
+
+    This is a controlled input probe, NOT an autonomous strategy. It records
+    before/after images, releases every key, and will not touch upgrades.
+    """
+    import ctypes
+    import queue
+    import cv2
+    import numpy as np
+    from windows_capture import WindowsCapture, Frame, InternalCaptureControl
+
+    folder = Path.home() / "Documents" / "RobloxBGDiagnostics" / "BATTLE"
+    folder.mkdir(parents=True, exist_ok=True)
+    log_path = folder / "battle.log"
+    events = []
+    def log(message):
+        record = time.strftime("[%H:%M:%S] ") + str(message)
+        print(record, flush=True)
+        with log_path.open("a", encoding="utf-8") as fp:
+            fp.write(record + "\n")
+        events.append(record)
+
+    win = ctypes.WinDLL("user32", use_last_error=True)
+    win.SetProcessDPIAware()
+    win.FindWindowW.argtypes=(ctypes.c_wchar_p,ctypes.c_wchar_p)
+    win.FindWindowW.restype=ctypes.c_void_p
+    win.GetForegroundWindow.restype=ctypes.c_void_p
+    win.IsIconic.argtypes=(ctypes.c_void_p,)
+    win.IsIconic.restype=ctypes.c_int
+    win.GetAsyncKeyState.argtypes=(ctypes.c_int,)
+    win.GetAsyncKeyState.restype=ctypes.c_short
+    hwnd=win.FindWindowW(None,"Roblox")
+    if not hwnd:
+        print("BATTLE: Roblox window not found. Start the game first.")
+        return 2
+    print("\nROBLOX BATTLE PILOT V"+VERSION)
+    print("Open an EXISTING MATCH in Roblox; do not use in the lobby.")
+    print("This ONE run tests short W/A/S/D movement, NOT turret placement.")
+    print("Requires foreground Roblox. F8 = start once; F9 = cancel.")
+    print("No repeated patrol, no purchases, no gamepad, no Arduino.")
+    consent=input("Confirm movement probe: type YES [default NO]: ").strip().upper()
+    if consent not in ("YES","ДА"):
+        print("No input performed.")
+        return 0
+
+    class MOUSEINPUT(ctypes.Structure):
+        _fields_=[("dx",ctypes.c_int32),("dy",ctypes.c_int32),
+                  ("mouseData",ctypes.c_uint32),("dwFlags",ctypes.c_uint32),
+                  ("time",ctypes.c_uint32),("dwExtraInfo",ctypes.c_void_p)]
+    class KEYBDINPUT(ctypes.Structure):
+        _fields_=[("wVk",ctypes.c_uint16),("wScan",ctypes.c_uint16),
+                  ("dwFlags",ctypes.c_uint32),("time",ctypes.c_uint32),
+                  ("dwExtraInfo",ctypes.c_void_p)]
+    class HARDWAREINPUT(ctypes.Structure):
+        _fields_=[("uMsg",ctypes.c_uint32),("wParamL",ctypes.c_uint16),
+                  ("wParamH",ctypes.c_uint16)]
+    class INPUTUNION(ctypes.Union):
+        _fields_=[("mi",MOUSEINPUT),("ki",KEYBDINPUT),("hi",HARDWAREINPUT)]
+    class INPUT(ctypes.Structure):
+        _anonymous_=("data",)
+        _fields_=[("type",ctypes.c_uint32),("data",INPUTUNION)]
+    if ctypes.sizeof(INPUT)!=40 or ctypes.sizeof(KEYBDINPUT)!=24:
+        log("STOP_INVALID_INPUT_ABI: INPUT=%d KEYBD=%d" %
+            (ctypes.sizeof(INPUT),ctypes.sizeof(KEYBDINPUT)))
+        return 2
+    win.SendInput.argtypes=(ctypes.c_uint32,ctypes.POINTER(INPUT),ctypes.c_int32)
+    win.SendInput.restype=ctypes.c_uint32
+
+    def foreground():
+        return win.GetForegroundWindow()==hwnd and not win.IsIconic(hwnd)
+    def pressed(vk):
+        return bool(win.GetAsyncKeyState(vk)&0x8000)
+    def key(scan,down):
+        ev=INPUT()
+        ev.type=1  # INPUT_KEYBOARD
+        ev.ki.wVk=0
+        ev.ki.wScan=scan
+        ev.ki.dwFlags=0x0008 | (0 if down else 0x0002)  # SCANCODE + optional UP
+        ctypes.set_last_error(0)
+        count=win.SendInput(1,ctypes.byref(ev),ctypes.sizeof(INPUT))
+        if count!=1:
+            log("KEY_INPUT_ERROR scan="+hex(scan)+
+                " down="+str(down)+" WinError="+str(ctypes.get_last_error()))
+        return count==1
+
+    frames=queue.Queue(maxsize=1)
+    stop=threading.Event()
+    capture=WindowsCapture(cursor_capture=None,draw_border=None,
+                           monitor_index=None,window_name="Roblox")
+    @capture.event
+    def on_frame_arrived(frame: Frame, control: InternalCaptureControl):
+        if stop.is_set():
+            control.stop()
+            return
+        try:
+            img=frame.frame_buffer[:,:,:3].copy()
+            if frames.full():
+                try:frames.get_nowait()
+                except queue.Empty:pass
+            frames.put_nowait(img)
+        except (queue.Full,ValueError):
+            pass
+    @capture.event
+    def on_closed():
+        stop.set()
+
+    def get_frame(timeout=4):
+        deadline=time.monotonic()+timeout
+        while not stop.is_set() and time.monotonic()<deadline:
+            try:
+                return frames.get(timeout=min(.4, max(.05,deadline-time.monotonic())))
+            except queue.Empty:
+                pass
+        return None
+    def resize_frame(frame):
+        h,w=frame.shape[:2]
+        if w<=1000:return frame
+        return cv2.resize(frame,(1000,round(h*1000/w)))
+    def save_frame(frame,filename):
+        out=folder/filename
+        cv2.imwrite(str(out),resize_frame(frame),[cv2.IMWRITE_JPEG_QUALITY,75])
+        return out
+
+    def looks_like_creation_menu(img):
+        # The lobby chooser has 4 white number tiles AND green Create + red
+        # Cancel buttons at fixed normalized locations. Only block on all.
+        h,w=img.shape[:2]
+        def area(r):
+            x1,y1,x2,y2=r
+            return img[int(y1*h):int(y2*h),int(x1*w):int(x2*w)]
+        digits=[(.369,.716,.396,.785),(.449,.716,.476,.785),
+                (.529,.716,.556,.785),(.609,.716,.636,.785)]
+        hits=0
+        for region in digits:
+            z=area(region)
+            if z.size==0:continue
+            b,g,r=[z[:,:,k].astype(np.int16) for k in range(3)]
+            white=(b>165)&(g>165)&(r>165)&(
+                np.maximum(np.maximum(b,g),r)-np.minimum(np.minimum(b,g),r)<80)
+            hits+=int(float(white.mean())>.025)
+        def color_fraction(region,color):
+            z=area(region)
+            if z.size==0:return 0.0
+            hsv=cv2.cvtColor(z,cv2.COLOR_BGR2HSV)
+            hh,ss,vv=cv2.split(hsv)
+            if color=="green":
+                return float(((hh>=35)&(hh<=90)&(ss>95)&(vv>80)).mean())
+            return float((((hh<12)|(hh>170))&(ss>100)&(vv>90)).mean())
+        create=color_fraction((.359,.833,.481,.914),"green")
+        cancel=color_fraction((.519,.833,.642,.914),"red")
+        return hits==4 and create>.07 and cancel>.07
+
+    log("BATTLE_PROBE_START: waiting for F8 in Roblox; F9 cancels.")
+    started=time.monotonic()
+    controller=None
+    try:
+        controller=capture.start_free_threaded()
+        prior_f8=False
+        while time.monotonic()-started<180 and not stop.is_set():
+            if pressed(0x78):  # F9
+                log("BATTLE_PROBE_CANCELLED_F9")
+                return 0
+            f8=pressed(0x77) # F8
+            if f8 and not prior_f8 and foreground():
+                break
+            prior_f8=f8
+            time.sleep(.05)
+        else:
+            log("BATTLE_PROBE_TIMEOUT_OR_CLOSED")
+            return 0
+        if not foreground():
+            log("STOP_FOREGROUND_REQUIRED")
+            return 0
+        baseline=get_frame()
+        if baseline is None:
+            log("STOP_NO_FRAME")
+            return 2
+        if looks_like_creation_menu(baseline):
+            log("STOP_LOBBY_DETECTED: enter the match before movement.")
+            return 2
+        if float(np.mean(baseline))<18:
+            log("STOP_BLACK_LOADING_SCREEN: retry after match finishes loading.")
+            return 2
+        save_frame(baseline,"probe_before.jpg")
+        log("BATTLE_PROBE_ARMED: one short 4-key calibration; no shooting/building.")
+        actions=(("W",0x11,.20),("S",0x1f,.20),
+                 ("A",0x1e,.15),("D",0x20,.15))
+        previous=baseline
+        results=[]
+        for label,scan,seconds in actions:
+            if not foreground() or pressed(0x78) or stop.is_set():
+                log("STOP_FOCUS_LOST_OR_F9 before="+label)
+                break
+            down=key(scan,True)
+            if not down:
+                log("STOP_CANNOT_SEND_KEY "+label)
+                break
+            try:
+                end=time.monotonic()+seconds
+                while time.monotonic()<end:
+                    if not foreground() or pressed(0x78) or stop.is_set():
+                        log("STOP_DURING_KEY "+label)
+                        break
+                    time.sleep(.02)
+            finally:
+                key(scan,False)
+            # Wait a moment for frame/camera response; no shared held keys.
+            time.sleep(.55)
+            next_frame=get_frame(3)
+            if next_frame is None:
+                log("STOP_NO_NEW_FRAME_AFTER "+label)
+                break
+            save_frame(next_frame,"probe_after_"+label+".jpg")
+            a=resize_frame(previous)
+            b=resize_frame(next_frame)
+            if a.shape==b.shape:
+                # Exclude HUD strips: logs only a rough scene-change metric,
+                # NOT verified character displacement.
+                y1,y2=int(a.shape[0]*.20),int(a.shape[0]*.75)
+                motion=float(cv2.absdiff(a[y1:y2],b[y1:y2]).mean())
+            else:
+                motion=-1.
+            log("KEY_SENT key="+label+" held_ms="+str(int(seconds*1000))+
+                " scene_change="+str(round(motion,2))+
+                " (not proof of movement)")
+            results.append((label,round(motion,2)))
+            previous=next_frame
+        log("BATTLE_PROBE_END: "+str(results)+
+            "; saved frames="+str(len(results)+1))
+        (folder/"pilot_summary.txt").write_text(
+            "Roblox battle motion pilot V"+VERSION+"\n"+
+            "Foreground-only; 4 scan-code pulses; no purchases.\n"+
+            "Scene change does NOT prove movement or correct controls.\n"+
+            "Results: "+repr(results)+"\n"+
+            "Upload battle.log and probe_before/after JPGs for UI mapping.\n",
+            encoding="utf-8")
+    except KeyboardInterrupt:
+        log("BATTLE_PROBE_CTRL_C")
+    except Exception:
+        log("BATTLE_PROBE_ERROR "+traceback.format_exc())
+        return 2
+    finally:
+        stop.set()  # capture callback stops itself; no borrowed-frame stop race
+    log("Output: "+str(folder))
+    return 0
+
+
 # Menu stays in the *same downloaded Python file*.
 # No new CMD files are necessary.
 
@@ -313,7 +564,7 @@ def lobby_helper():
     folder = Path.home() / "Documents" / "RobloxBGDiagnostics" / "LOBBY"
     folder.mkdir(parents=True, exist_ok=True)
     logfile = folder / "lobby.log"
-    print("\nROBLOX LOBBY BOT V2.1.3")
+    print("\nROBLOX LOBBY BOT V"+VERSION)
     print("Target: City Landscape / 1 player / Hard / Create")
     print("Bot will click only if the Roblox window is focused.")
     print("You must first walk onto the purple creation pad.")
@@ -1042,7 +1293,7 @@ def lobby_helper():
             # a hovered-but-unselected Hard tile for the chosen difficulty.
             "hard": feat["hard_red"]>.18 and feat["normal"]<.12
         }
-    log("Lobby v2.1.3 start; armed="+str(enabled))
+    log("Lobby v"+VERSION+" start; armed="+str(enabled))
     log("Strict sequence CITY -> ONE -> HARD(RED BORDER) -> CREATE")
     log("SYNTHETIC retries: up to 3 verified attempts for ONE, 2 for HARD; "+
         "CREATE strictly once. Alternate safe points inside the same tile.")
@@ -1297,8 +1548,9 @@ def run_mode_prompt():
     print("  1 = monitor 120 seconds (no screenshots)")
     print("  2 = LEARN human gameplay (5-second JPEGs, ZIP parts)")
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
+    print("  4 = BATTLE movement pilot (in-match F8, brief WASD, evidence)")
     try:
-        choice = input("Choose 1 or 2 [1]: ").strip()
+        choice = input("Choose mode 1-4 [1]: ").strip()
     except EOFError:
         choice = "1"
     return choice
@@ -1308,6 +1560,8 @@ if selected_mode == "2":
     raise SystemExit(training_mode())
 if selected_mode == "3":
     raise SystemExit(lobby_helper())
+if selected_mode == "4":
+    raise SystemExit(battle_pilot())
 
 # ------------ End demonstration recording ------------
 
@@ -1319,7 +1573,7 @@ try:
     from windows_capture import WindowsCapture, Frame, InternalCaptureControl
 except Exception as exc:
     note("DEPENDENCY ERROR: " + str(exc))
-    note("Run: py -3 -m pip install --user windows-capture==2.1.3 numpy opencv-python")
+    note("Run: py -3 -m pip install --user windows-capture==2.0.1 numpy opencv-python")
     sys.exit(2)
 
 stats = {"received": 0, "analyzed": 0, "changes": 0, "last": 0.0, "errors": 0, "left": 0.0, "center": 0.0, "right": 0.0, "possible_match": 0, "hud_mode": "UNCONFIRMED", "hud_strength": 0.0}
