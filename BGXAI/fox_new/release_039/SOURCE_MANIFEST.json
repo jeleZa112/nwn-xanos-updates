@@ -1,0 +1,13 @@
+{
+  "version": "0.3.9",
+  "files": {
+    "setup-BGX39.tp2": {
+      "sha256": "64c4e56d10e746bc47a4b4e389098bdba2d4a27fbc475c4912c072fc5e558b96",
+      "size": 424
+    },
+    "BGX39/team_guard_fallback.baf": {
+      "sha256": "1d19a85a3ca30ad467b4234435e6647f548bf8bf422647a96b34a99b400e2742",
+      "size": 5279
+    }
+  }
+}
