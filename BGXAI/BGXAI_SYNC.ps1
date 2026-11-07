@@ -28,37 +28,30 @@ function Get-PinnedBytes([string]$remotePath) {
     if($remotePath -notmatch '^BGXAI/fox_new/release_0(39|40)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
         throw ('Remote source path blocked: '+$remotePath)
     }
-    # Download the exact public file at the pinned SHA; avoid GitHub REST API quotas.
-    # The manifest allowlist and per-file SHA256 checks remain mandatory.
-    $rawUri='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/'+$commitId+'/'+$remotePath
-    $requestHeaders=@{'User-Agent'='BGXAI-Foxx-Onefile';'Cache-Control'='no-cache'}
+    # All sources are publicly hosted; pin content by immutable commit and SHA256 manifest.
+    # No requests to api.github.com: avoid unauthenticated per-IP rate limiting.
+    $urls=@(
+        ('https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/'+$commitId+'/'+$remotePath),
+        ('https://cdn.jsdelivr.net/gh/jeleZa112/nwn-xanos-updates@'+$commitId+'/'+$remotePath)
+    )
     [IO.Directory]::CreateDirectory($cacheDir) | Out-Null
     $temporaryFile=Join-Path $cacheDir ('pinned_'+[guid]::NewGuid().ToString('N')+'.tmp')
+    $failures=@()
     try {
-        try {
-            Invoke-WebRequest -Uri $rawUri -Headers $requestHeaders -TimeoutSec 60 -UseBasicParsing -OutFile $temporaryFile -ErrorAction Stop | Out-Null
-            $rawBytes=[IO.File]::ReadAllBytes($temporaryFile)
-            if($rawBytes.Length -lt 1 -or $rawBytes.Length -gt 500000) {throw ('Unexpected pinned RAW file size: '+$remotePath)}
-            return ,$rawBytes
-        } catch {
-            $rawFailure=$_.Exception.Message
-            Write-Host ('Pinned RAW failed for '+$remotePath+'; trying GitHub API.')
-            $headers=@{'User-Agent'='BGXAI-Foxx-Onefile';'Accept'='application/vnd.github+json';'Cache-Control'='no-cache'}
-            $apiUri='https://api.github.com/repos/jeleZa112/nwn-xanos-updates/contents/'+$remotePath+'?ref='+$commitId
+        foreach($uri in $urls) {
             try {
-                $record=Invoke-RestMethod -Uri $apiUri -Headers $headers -TimeoutSec 60 -UseBasicParsing -ErrorAction Stop
-                if([string]$record.encoding -ne 'base64' -or !$record.content) {throw ('Invalid pinned API response: '+$remotePath)}
-                $apiBytes=[Convert]::FromBase64String(([string]$record.content -replace '\s',''))
-                if($apiBytes.Length -lt 1 -or $apiBytes.Length -gt 500000) {throw ('Unexpected pinned API file size: '+$remotePath)}
-                return ,$apiBytes
+                Invoke-WebRequest -Uri $uri -Headers @{'User-Agent'='BGXAI-Foxx-Onefile'} -TimeoutSec 60 -UseBasicParsing -OutFile $temporaryFile -ErrorAction Stop | Out-Null
+                $rawBytes=[IO.File]::ReadAllBytes($temporaryFile)
+                if($rawBytes.Length -lt 1 -or $rawBytes.Length -gt 500000) {throw ('Unexpected pinned source byte count: '+$remotePath)}
+                return ,$rawBytes
             } catch {
-                throw ('Both pinned downloads failed for '+$remotePath+'. RAW: '+$rawFailure+'; API: '+$_.Exception.Message)
+                $failures+=($_.Exception.Message)
+                if(Test-Path -LiteralPath $temporaryFile){Remove-Item -LiteralPath $temporaryFile -Force -ErrorAction SilentlyContinue}
             }
         }
+        throw ('Both raw source hosts failed for '+$remotePath+': '+($failures -join '; '))
     } finally {
-        if(Test-Path -LiteralPath $temporaryFile) {
-            Remove-Item -LiteralPath $temporaryFile -Force -ErrorAction SilentlyContinue
-        }
+        if(Test-Path -LiteralPath $temporaryFile){Remove-Item -LiteralPath $temporaryFile -Force -ErrorAction SilentlyContinue}
     }
 }
 function HashBytes([byte[]]$payload) {
