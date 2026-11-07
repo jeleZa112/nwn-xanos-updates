@@ -151,6 +151,38 @@ function RunRelease($spec,[string]$mode){
     & py -3 $installerPath $mode
     if($LASTEXITCODE -ne 0){throw ('BGXAI '+$spec.id+' installer returned code '+$LASTEXITCODE)}
 }
+function Test041ReadOnly {
+    # No Python, WeiDU, installation, file writes, or game processes are invoked.
+    Write-Host ''
+    Write-Host 'BGXAI 041 - GAME PRECHECK (READ ONLY; NO INSTALL)'
+    $logPath=Join-Path $GameRoot 'WeiDU.log'
+    if(!(Test-Path -LiteralPath $logPath -PathType Leaf)){throw 'WeiDU.log missing'}
+    $lines=@(Get-Content -LiteralPath $logPath -ErrorAction Stop)
+    $active=@($lines | Where-Object { $_.TrimStart().StartsWith('~') })
+    $has039=@($active | Where-Object { $_ -match 'BGX39[^~]*[.]TP2~' }).Count -gt 0
+    $has040=@($active | Where-Object { $_ -match 'BGX40[^~]*[.]TP2~' }).Count -gt 0
+    $has041=@($active | Where-Object { $_ -match 'BGX41[^~]*[.]TP2~' }).Count -gt 0
+    $is040Last=$active.Count -gt 0 -and $active[-1] -match 'BGX40[^~]*[.]TP2~'
+    $eps=@($active | Where-Object { $_.ToUpperInvariant().Contains('ENHANCED-POWERGAMING-SCRIPTS') }).Count -gt 0
+    Write-Host ('EPS in WeiDU.log: '+$eps)
+    Write-Host ('BGX39 in WeiDU.log: '+$has039)
+    Write-Host ('BGX40 in WeiDU.log: '+$has040)
+    Write-Host ('BGX41 in WeiDU.log: '+$has041)
+    Write-Host ('BGX40 is LAST installed WeiDU mod: '+$is040Last)
+    $stat=Join-Path $GameRoot 'override\STATDESC.2DA'
+    Write-Host ('STATDESC.2DA in override: '+(Test-Path -LiteralPath $stat -PathType Leaf))
+    Write-Host 'NOTE: STATDESC may exist in game archives even when not in override.'
+    $bcs=Join-Path $GameRoot 'override\BDDEFAI.BCS'
+    Write-Host ('EPS script in override: '+(Test-Path -LiteralPath $bcs -PathType Leaf))
+    $toolsOk=(Test-Path -LiteralPath (Join-Path $GameRoot 'setup-enhanced-powergaming-scripts.exe') -PathType Leaf)
+    Write-Host ('WeiDU executable available: '+$toolsOk)
+    if($eps -and $has039 -and $has040 -and !$has041 -and $is040Last -and $toolsOk -and (Test-Path -LiteralPath $bcs -PathType Leaf)) {
+        Write-Host 'BGXAI 041 READ-ONLY PRECHECK: BASELINE OK; binary/icon compilation is NOT yet proven.'
+    } else {
+        Write-Host 'BGXAI 041 READ-ONLY PRECHECK: REVIEW REQUIRED; do NOT install 041.'
+    }
+    Write-Host 'NO GAME FILES CHANGED.'
+}
 Write-Host ''
 Write-Host ' BGXAI ONE-FILE UPDATER / EET Foxx / EPS 18.4'
 Write-Host ' Installed baseline: BGXAI 0381 + 039 (user-confirmed in-game).'
@@ -160,6 +192,7 @@ Write-Host ' 3 - EXPERIMENTAL install BGXAI 040 (YES + WeiDU backup)'
 Write-Host ' 4 - Roll back ONLY BGXAI 040 (YES + WeiDU)'
 Write-Host ' 5 - Status of BGXAI 039 (read-only)'
 Write-Host ' 6 - Roll back BGXAI 039 ONLY (must first uninstall 040)'
+Write-Host ' 7 - BGXAI 041 game precheck (READ-ONLY; NO INSTALL)' 
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -172,6 +205,7 @@ try {
       '4' {RunRelease $release040 '--uninstall';break}
       '5' {RunRelease $release039 '--status';break}
       '6' {RunRelease $release039 '--uninstall';break}
+      '7' {Test041ReadOnly;break}
       default {throw 'Unknown menu option, no game change.'}
     }
     exit 0
