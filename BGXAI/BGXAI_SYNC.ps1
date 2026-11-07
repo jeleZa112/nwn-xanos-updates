@@ -1,338 +1,148 @@
-# BGXAI GitHub updater v0.6.26 verified squad compilation pilot. Separate branch; never touches NWN main.
-param([string]$GameRoot=".")
+# BGXAI SAFE ONE-FILE UPDATE channel 039. Public code ONLY, no telemetry.
+# This file is fetched automatically by the EXISTING BGXAI_UPDATE.cmd in game root.
+# Source sync is harmless to live scripts. WeiDU requires separate explicit menu + YES.
+param([string]$GameRoot='.')
 $ErrorActionPreference='Stop'
 $ProgressPreference='SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
 $GameRoot=(Resolve-Path -LiteralPath $GameRoot).Path
+$expectedRoot='C:\Games\BG_EET_FOXX_NEW'
+if($GameRoot.TrimEnd('\') -ine $expectedRoot) {
+    Write-Host 'STOP: this update channel is ONLY for C:\Games\BG_EET_FOXX_NEW.'
+    exit 2
+}
+if(!(Test-Path -LiteralPath (Join-Path $GameRoot 'chitin.key') -PathType Leaf)) {
+    Write-Host 'STOP: no chitin.key found.'
+    exit 2
+}
 $cache=Join-Path $env:LOCALAPPDATA 'BGXAI_UPDATER'
-New-Item -ItemType Directory -Path $cache -Force | Out-Null
-$log=Join-Path $GameRoot 'BGXAI_UPDATE.log'
-function Log([string]$message) {
-    $line='['+(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')+'] '+$message
-    Write-Host $line
-    Add-Content -LiteralPath $log -Value $line -Encoding UTF8
+$head=Join-Path $cache 'head.txt'
+if(!(Test-Path -LiteralPath $head -PathType Leaf)){Write-Host 'STOP: pinned GitHub commit missing';exit 2}
+$commit=[IO.File]::ReadAllText($head).Trim()
+if($commit -notmatch '^[a-fA-F0-9]{40}$'){Write-Host 'STOP: invalid GitHub commit';exit 2}
+$home=Join-Path $GameRoot 'BGXAI_DEV\experimental_039'
+$manifestName='BGXAI/fox_new/release_039/manifest.json'
+$names=@('BGXAI39_INSTALL.py','setup-BGX39.tp2','BGX39/team_guard_fallback.baf','SOURCE_MANIFEST.json','README_RU.txt','tests/test_team_guard_039.py')
+$remotePrefix='BGXAI/fox_new/release_039/'
+function Get-VerifiedGitHubBytes([string]$path){
+    $headers=@{'User-Agent'='BGXAI-039-Safe-Updater';'Accept'='application/vnd.github+json';'Cache-Control'='no-cache'}
+    $uri='https://api.github.com/repos/jeleZa112/nwn-xanos-updates/contents/'+$path+'?ref='+$commit
+    $record=Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -TimeoutSec 60 -UseBasicParsing
+    if([string]$record.encoding -ne 'base64' -or !$record.content){throw ('Invalid response: '+$path)}
+    $bytes=[Convert]::FromBase64String(([string]$record.content -replace '\s',''))
+    return ,$bytes
 }
-function GetFile([string]$name,[string]$commit) {
-    $h=@{'User-Agent'='BGXAI-EET-Updater';'Accept'='application/vnd.github+json';'Cache-Control'='no-cache'}
-    $api='https://api.github.com/repos/jeleZa112/nwn-xanos-updates/contents/'
-    $v=Invoke-RestMethod -Uri ($api+$name+'?ref='+$commit) -Headers $h -TimeoutSec 50 -UseBasicParsing
-    if($v.encoding -ne 'base64' -or !$v.content) { throw ('Bad GitHub response: '+$name) }
-    return ,([Convert]::FromBase64String(([string]$v.content -replace '\s','')))
-}
-function Hash([byte[]]$bytes) {
+function HashBytes([byte[]]$bytes){
     $h=[Security.Cryptography.SHA256]::Create()
     try {return ([BitConverter]::ToString($h.ComputeHash($bytes))).Replace('-','').ToLowerInvariant()}
     finally {$h.Dispose()}
 }
-function RepairUserScriptShadow([string]$pinnedCommit) {
-    $auditFile='BGXAI/BGXAI_RESOURCE_AUDIT.ps1'
-    if($script:ActiveVersion -eq '0.6.27-role-profile-install-pilot') {$auditFile='BGXAI/BGXAI_RESOURCE_AUDIT_627.ps1'}
-    [byte[]]$auditBytes=GetFile $auditFile $pinnedCommit
-    $auditText=[Text.Encoding]::UTF8.GetString($auditBytes)
-    if($auditBytes.Length -lt 3000 -or !$auditText.Contains("AUDIT SUCCESS") -or !$auditText.Contains("SyncOwnedFile")) {
-        throw 'Unexpected resource audit script; refusing to execute'
-    }
-    $auditPath=Join-Path $cache 'BGXAI_RESOURCE_AUDIT.latest.ps1'
-    [IO.File]::WriteAllBytes($auditPath,$auditBytes)
-    Log 'Checking user Documents script shadows (backup before any update).'
-    & $auditPath -GameRoot $GameRoot
-    if(!$?) {throw 'BGXAI shadow resource audit failed'}
-    Log 'User script shadow audit completed. See BGXAI_RESOURCE_AUDIT.txt'
-}
-# BGXAI_ONE_FILE_SELECTOR_019_GUARD
-# Experimental BGXUN1 v018 temporarily PAUSED after real 105/355 oscillation.
-# No game files changed by choices 1 and 3. Original BGXAI_UPDATE.cmd unchanged.
-Write-Host ''
-Write-Host ' BGXAI UPDATE - SAFE STOCK BASELINE REBUILD'
-Write-Host ' 1 = BGXUN1 experimental installer [PAUSED: known combat regression]'
-Write-Host ' 2 = Update legacy BGXAI 0.6.x role scripts (original behavior)'
-Write-Host ' 3 = Exit without changes [default]'
-Write-Host ''
-$bgxChoice=Read-Host 'Choose [3]'
-if([string]::IsNullOrWhiteSpace($bgxChoice)) {$bgxChoice='3'}
-if($bgxChoice -eq '3'){Write-Host 'No files changed.';exit 0}
-if($bgxChoice -eq '1'){
-    Write-Host 'PAUSED: BGXUN1 0.1.8 failed real ranged retreat/reengage tests.'
-    Write-Host 'Use the existing working Advanced AI in the character script menu.'
-    Write-Host 'No files have been modified.'
-    exit 0
-}
-if($bgxChoice -ne '2'){Write-Host 'Invalid choice; nothing changed.';exit 1}
-# Choice 2 falls through unchanged to the historic BGXAI 0.6.x try/catch below.
-
-try {
-    if(!(Test-Path -LiteralPath (Join-Path $GameRoot 'chitin.key'))) { throw 'Missing chitin.key. Run in game root.' }
-    if(Get-Process -Name Baldur,BaldursGate,baldur -ErrorAction SilentlyContinue) { throw 'Close Baldurs Gate before updating.' }
-    $commit=[IO.File]::ReadAllText((Join-Path $cache 'head.txt')).Trim()
-    if($commit -notmatch '^[a-fA-F0-9]{40}$') {throw 'Invalid commit marker'}
-    $manifest=[Text.Encoding]::UTF8.GetString((GetFile 'BGXAI/latest.json' $commit)) | ConvertFrom-Json
-    if($manifest.channel -ne 'pilot') { throw 'Unknown channel' }
-    $version=[string]$manifest.version
-    $verifiedTag=''
-    if($version -eq '0.6.21-verified-compile-pilot') {$verifiedTag='621'}
-    if($version -eq '0.6.22-intercept-melee-pilot') {$verifiedTag='622'}
-    if($version -eq '0.6.23-formation-rescue-pilot') {$verifiedTag='623'}
-    if($version -eq '0.6.24-support-survival-pilot') {$verifiedTag='624'}
-    if($version -eq '0.6.25-healthy-engage-pilot') {$verifiedTag='625'}
-    if($version -eq '0.6.25-no-premature-formation-pilot') {$verifiedTag='625'}
-    if($version -eq '0.6.26-squad-two-tank-pilot') {$verifiedTag='626'}
-    if($version -eq '0.6.27-role-profile-install-pilot') {$verifiedTag='626'}
-    $script:ActiveVersion=$version
-    $ownedNames=@('BGXGRP','BGXTANK')
-    if($version -eq '0.6.27-role-profile-install-pilot') {$ownedNames+=@('BGXRANG','BGXSCOUT','BGXCAST','BGXHEAL')}
-    $ownedMarkers=@{BGXGRP='BGXVER26';BGXTANK='BGXVER26';BGXRANG='BGXRV02';BGXSCOUT='BGXSV02';BGXCAST='BGXCV02';BGXHEAL='BGXHV02'}
-    if($version -eq '0.6.23-formation-rescue-pilot') {$verifiedTag='623'}
-    $expectedCompiledMarker=''
-    if($verifiedTag) {$expectedCompiledMarker='BGXVER'+$verifiedTag.Substring(1)}
-
-    if($version -notmatch '^[A-Za-z0-9._-]+$') {throw 'Invalid version'}
-    $rel=[string]$manifest.package_path
-    if($rel -notmatch '^BGXAI/releases/[A-Za-z0-9._-]+\.zip\.b64$') {throw 'Invalid package path'}
-    $marker=Join-Path $GameRoot 'BGXAI\bgxai-updater-version.txt'
-    Log ('Target BGXAI '+$version)
-    $alreadyCurrent=(Test-Path $marker) -and ([IO.File]::ReadAllText($marker).Trim() -eq $version)
-    if($alreadyCurrent -and $verifiedTag) {
-        foreach($name in $ownedNames) {
-            $activeFile=Join-Path $GameRoot ('scripts\'+$name+'.BS')
-            if(!(Test-Path -LiteralPath $activeFile)) {
-                $alreadyCurrent=$false
-                break
-            }
-            $activeBytes=[IO.File]::ReadAllBytes($activeFile)
-            if(!([Text.Encoding]::ASCII.GetString($activeBytes)).Contains([string]$ownedMarkers[$name])) {
-                $alreadyCurrent=$false
-                break
-            }
-        }
-        if(!$alreadyCurrent) {Log ('Version marker says current, but an active script version marker is missing; rebuilding.')}
-    }
-    if($alreadyCurrent) {
-        Log 'Already current; combat scripts untouched. Auditing higher-priority user script folders.'
-        RepairUserScriptShadow $commit
-        exit 0
-    }
-    $b64=[Text.Encoding]::ASCII.GetString((GetFile $rel $commit)).Trim()
-    if($b64 -notmatch '^[A-Za-z0-9+/=]+$') {throw 'Invalid base64 package'}
-    [byte[]]$bytes=[Convert]::FromBase64String($b64)
-    if($bytes.Length -ne [int]$manifest.package_size) {throw 'Size mismatch'}
-    if((Hash $bytes) -ne [string]$manifest.package_sha256) {throw 'SHA256 mismatch'}
-    $stamp=Get-Date -Format 'yyyyMMdd_HHmmss'
-    $stage=Join-Path $cache ('stage_'+$stamp)
-    New-Item -ItemType Directory -Path $stage -Force | Out-Null
-    $allowed=@('BGXAI/BGXAI.TP2','BGXAI/AI_BAF/BGXATK.BAF','BGXAI/AI_BAF/BGXSCUT.BAF','BGXAI/AI_BAF/BGXHEAL.BAF','BGXAI/AI_BAF/BGXWARD.BAF','BGXAI/AI_BAF/BGXHYBR.BAF','BGXAI/AI_BAF/BGXMANU.BAF','BGXAI/AI_BAF/BGXSAFE.BAF','BGXAI/AI_BAF/BGXDBG.BAF','BGXAI/AI_BAF/BGXGRP.BAF','BGXAI/AI_BAF/BGXTANK.BAF')
-    Add-Type -AssemblyName System.IO.Compression
-    $mem=New-Object System.IO.MemoryStream
-    $mem.Write($bytes,0,$bytes.Length)
-    $mem.Position=0
-    $zip=[System.IO.Compression.ZipArchive]::new($mem,[System.IO.Compression.ZipArchiveMode]::Read)
-    $seen=@()
+function SameFile([string]$f,[string]$expected){
+    if(!(Test-Path -LiteralPath $f -PathType Leaf)){return $false}
+    $h=[Security.Cryptography.SHA256]::Create()
     try {
-        foreach($e in $zip.Entries) {
-            $p=$e.FullName.Replace('\','/')
-            if($p -eq 'README_RU.txt') {continue}
-            if(($allowed -notcontains $p) -or ($seen -contains $p)) {throw ('Unexpected archive file: '+$p)}
-            $seen+= $p
-            $out=Join-Path $stage ($p.Replace('/',[IO.Path]::DirectorySeparatorChar))
-            New-Item -ItemType Directory -Path (Split-Path -Parent $out) -Force | Out-Null
-            $stream=$e.Open()
-            $w=[IO.File]::Create($out)
-            try {$stream.CopyTo($w)} finally {$stream.Dispose();$w.Dispose()}
-        }
-    } finally {$zip.Dispose();$mem.Dispose()}
-    if($seen.Count -ne $allowed.Count) {throw 'Incomplete package'}
-    # v0.6.17 hotfix overlay: retrieve individual BAF source files at the pinned GitHub commit.
-    if($version -eq '0.6.17-tank-pursuit-recover-pilot' -or $version -eq '0.6.18-formation-cohesion-pilot' -or $version -eq '0.6.19-emergency-guard-pilot' -or $version -eq '0.6.20-liveness-first-pilot') {
-        $hotfix='0.6.17'
-        if($version -eq '0.6.18-formation-cohesion-pilot') {$hotfix='0.6.18'}
-        if($version -eq '0.6.19-emergency-guard-pilot') {$hotfix='0.6.19'}
-        if($version -eq '0.6.20-liveness-first-pilot') {$hotfix='0.6.20'}
-        $patches=@{
-            'BGXAI/AI_BAF/BGXTANK.BAF'=('BGXAI/hotfix/BGXTANK_'+$hotfix+'.BAF')
-            'BGXAI/AI_BAF/BGXGRP.BAF'=('BGXAI/hotfix/BGXGRP_'+$hotfix+'.BAF')
-        }
-        if($version -eq '0.6.20-liveness-first-pilot') {
-            $patches['BGXAI/BGXAI.TP2']='BGXAI/hotfix/BGXAI_0.6.20.TP2'
-        }
-        foreach($target in $patches.Keys) {
-            [byte[]]$patch=GetFile $patches[$target] $commit
-            $patchText=[Text.Encoding]::UTF8.GetString($patch)
-            if($patch.Length -lt 300 -or !$patchText.Contains($hotfix)) {throw ('Invalid hotfix script: '+$target)}
-            $dst=Join-Path $stage ($target.Replace('/',[IO.Path]::DirectorySeparatorChar))
-            [IO.File]::WriteAllBytes($dst,$patch)
-            Log ('Staged verified hotfix BAF: '+$target)
+        $stream=[IO.File]::OpenRead($f)
+        try{$sum=([BitConverter]::ToString($h.ComputeHash($stream))).Replace('-','').ToLowerInvariant()}
+        finally{$stream.Dispose()}
+    } finally{$h.Dispose()}
+    return $sum -eq $expected
+}
+function AssertNotReparse([string]$item){
+    if(Test-Path -LiteralPath $item){
+        $obj=Get-Item -LiteralPath $item -Force
+        if(($obj.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){
+            throw ('Refusing redirected/reparse source path: '+$item)
         }
     }
-
-
-    # Compile under fresh resource names; select exact source for each pilot.
-    $extraFiles=@()
-    if($verifiedTag) {
-        $extraPatches=@{'BGXAI/BGXAI.TP2'=('BGXAI/hotfix/BGXAI_0.6.'+$verifiedTag.Substring(1)+'.TP2')}
-        $extraPatches[('BGXAI/AI_BAF/BGG'+$verifiedTag+'.BAF')]=('BGXAI/hotfix/BGG'+$verifiedTag+'.BAF')
-        $extraPatches[('BGXAI/AI_BAF/BGT'+$verifiedTag+'.BAF')]=('BGXAI/hotfix/BGT'+$verifiedTag+'.BAF')
-        if($version -eq '0.6.27-role-profile-install-pilot') {
-            $extraPatches['BGXAI/BGXAI.TP2']='BGXAI/hotfix/BGXAI_0.6.27.TP2'
-            $extraPatches['BGXAI/AI_BAF/BGR002.BAF']='BGXAI/prototypes/BGR002.BAF'
-            $extraPatches['BGXAI/AI_BAF/BGS002.BAF']='BGXAI/prototypes/BGS002.BAF'
-            $extraPatches['BGXAI/AI_BAF/BGC002.BAF']='BGXAI/prototypes/BGC002.BAF'
-            $extraPatches['BGXAI/AI_BAF/BGH002.BAF']='BGXAI/prototypes/BGH002.BAF'
-        }
-        foreach($sourceTarget in $extraPatches.Keys) {
-            [byte[]]$extraBytes=GetFile $extraPatches[$sourceTarget] $commit
-            $extraText=[Text.Encoding]::UTF8.GetString($extraBytes)
-            if($extraBytes.Length -lt 500) {throw ('Too short: '+$sourceTarget)}
-            if($sourceTarget.EndsWith('.BAF')) {
-                $expected=$expectedCompiledMarker
-                if($version -eq '0.6.27-role-profile-install-pilot') {
-                    switch -Exact ($sourceTarget) {
-                        'BGXAI/AI_BAF/BGR002.BAF' {$expected='BGXRV02'}
-                        'BGXAI/AI_BAF/BGS002.BAF' {$expected='BGXSV02'}
-                        'BGXAI/AI_BAF/BGC002.BAF' {$expected='BGXCV02'}
-                        'BGXAI/AI_BAF/BGH002.BAF' {$expected='BGXHV02'}
-                    }
-                }
-                if(!$extraText.Contains($expected)){throw ('Source lacks version marker '+$expected+': '+$sourceTarget)}
-            }
-            if($sourceTarget.EndsWith('.TP2')) {
-                $tp2Marker='BGXAI v0.6.'+$verifiedTag.Substring(1)+' VERIFIED COMPILE'
-                if($version -eq '0.6.27-role-profile-install-pilot'){$tp2Marker='BGXAI v0.6.27 ROLE PROFILES'}
-                if(!$extraText.Contains($tp2Marker)){throw 'Wrong TP2 version'}
-            }
-            $extraDest=Join-Path $stage ($sourceTarget.Replace('/',[IO.Path]::DirectorySeparatorChar))
-            New-Item -ItemType Directory -Path (Split-Path -Parent $extraDest) -Force | Out-Null
-            [IO.File]::WriteAllBytes($extraDest,$extraBytes)
-            Log ('Staged unique compilation source '+$sourceTarget)
-        }
-        $extraFiles=@(('BGXAI/AI_BAF/BGG'+$verifiedTag+'.BAF'),('BGXAI/AI_BAF/BGT'+$verifiedTag+'.BAF'))
-        if($version -eq '0.6.27-role-profile-install-pilot') {$extraFiles+=@('BGXAI/AI_BAF/BGR002.BAF','BGXAI/AI_BAF/BGS002.BAF','BGXAI/AI_BAF/BGC002.BAF','BGXAI/AI_BAF/BGH002.BAF')}
+}
+function Sync039 {
+    AssertNotReparse $GameRoot
+    AssertNotReparse (Join-Path $GameRoot 'BGXAI_DEV')
+    AssertNotReparse $home
+    Write-Host 'BGXAI: downloading original 039 source at pinned GitHub commit ...'
+    $manifestBytes=Get-VerifiedGitHubBytes $manifestName
+    $manifest=[Text.Encoding]::UTF8.GetString($manifestBytes) | ConvertFrom-Json
+    if($manifest.schema -ne 1 -or $manifest.channel -ne 'bgxai-fox-new-safe-source' -or $manifest.version -ne '0.3.9'){
+        throw 'Unrecognized 039 release manifest'
     }
-
-    $setup=Join-Path $GameRoot 'setup-BGXAI.exe'
-    if(!(Test-Path $setup)) {
-        $source=Join-Path $GameRoot 'setup-stratagems.exe'
-        if(!(Test-Path $source)) {throw 'WeiDU exe missing'}
-        Copy-Item -LiteralPath $source -Destination $setup -Force
-    }
-    $mod=Join-Path $GameRoot 'BGXAI'
-    $backup=Join-Path $cache ('backup_'+$stamp)
-
-    $liveBackupDir=$null
-    if($verifiedTag) {
-        $liveBackupDir=Join-Path $cache ('active_pre_weidu_'+$verifiedTag+'_'+$stamp)
-        New-Item -ItemType Directory -Path $liveBackupDir -Force | Out-Null
-        foreach($scriptName in $ownedNames) {
-            foreach($pair in @(
-                @{folder='override';ext='BCS'},
-                @{folder='scripts';ext='BS'}
-            )) {
-                $original=Join-Path $GameRoot ($pair.folder+'\'+$scriptName+'.'+$pair.ext)
-                if(Test-Path -LiteralPath $original) {
-                    $safeCopy=Join-Path $liveBackupDir ($pair.folder+'_'+$scriptName+'.'+$pair.ext)
-                    Copy-Item -LiteralPath $original -Destination $safeCopy -Force
-                }
-            }
+    if($manifest.files.Count -ne $names.Count){throw 'Wrong 039 file count'}
+    $pending=@{}
+    foreach($file in @($manifest.files)) {
+        $name=[string]$file.dest
+        $source=[string]$file.source
+        if(($names -cnotcontains $name) -or $pending.ContainsKey($name)) {throw 'Unknown/duplicate 039 file'}
+        if($source -cne ($remotePrefix+$name)) {throw 'Unexpected source path'}
+        $bytes=Get-VerifiedGitHubBytes $source
+        if($bytes.Length -ne [int]$file.size -or (HashBytes $bytes) -ne [string]$file.sha256){
+            throw ('SHA256/size mismatch: '+$name)
         }
-        Log ('BACKUP active game scripts before WeiDU: '+$liveBackupDir)
+        $pending[$name]=@{bytes=$bytes;hash=[string]$file.sha256}
+        Write-Host (' VERIFIED '+$name)
     }
-    $hadOld=Test-Path $mod
-    if($hadOld) {Copy-Item -LiteralPath $mod -Destination $backup -Recurse -Force}
-    $weiduLog=Join-Path $GameRoot 'WeiDU.log'
-    $installed=$false
-    if(Test-Path $weiduLog) {
-        $installed=Select-String -LiteralPath $weiduLog -Pattern 'BGXAI[\\/]BGXAI\.TP2' -Quiet
-        Copy-Item -LiteralPath $weiduLog -Destination (Join-Path $cache ('WeiDU_'+$stamp+'.log')) -Force
+    if($pending.Count -ne $names.Count){throw 'Missing 039 source'}
+    # All network/manifest validation is complete before modifying local source files.
+    $currentVerified=$true
+    foreach($n in $names){
+        $file=Join-Path $home ($n.Replace('/',[IO.Path]::DirectorySeparatorChar))
+        if(!(SameFile $file $pending[$n].hash)){$currentVerified=$false}
     }
-    foreach($p in ($allowed + $extraFiles)) {
-        $src=Join-Path $stage ($p.Replace('/',[IO.Path]::DirectorySeparatorChar))
-        $dst=Join-Path $GameRoot ($p.Replace('/',[IO.Path]::DirectorySeparatorChar))
-        New-Item -ItemType Directory -Path (Split-Path -Parent $dst) -Force | Out-Null
-        Copy-Item -LiteralPath $src -Destination $dst -Force
-    }
-    Log ('Package SHA256 verified; backup='+$backup)
-    Push-Location $GameRoot
-    try {
-        if($installed) {& $setup '--noautoupdate' '--no-exit-pause' '--reinstall' '0'}
-        else {& $setup '--noautoupdate' '--no-exit-pause' '--language' '0' '--force-install' '0'}
-        $code=$LASTEXITCODE
-    } finally {Pop-Location}
-    if($code -ne 0) {
-        Log ('WeiDU FAILED code='+$code+'; see setup-BGXAI.DEBUG')
-
-        if($verifiedTag -and $liveBackupDir) {
-            foreach($entry in @(Get-ChildItem -LiteralPath $liveBackupDir -File -ErrorAction SilentlyContinue)) {
-                if($entry.Name -match '^(override|scripts)_(BGXGRP|BGXTANK|BGXRANG|BGXSCOUT|BGXCAST|BGXHEAL)\.(BCS|BS)$') {
-                    $restoreDest=Join-Path $GameRoot ($Matches[1]+'\'+$Matches[2]+'.'+$Matches[3])
-                    Copy-Item -LiteralPath $entry.FullName -Destination $restoreDest -Force -ErrorAction Continue
-                }
-            }
-            Log 'RESTORED pre-WeiDU active scripts following compile failure.'
-        }
-
-        if($hadOld) {
-            Remove-Item -LiteralPath $mod -Recurse -Force -ErrorAction SilentlyContinue
-            Copy-Item -LiteralPath $backup -Destination $mod -Recurse -Force
-            Log 'Old BGXAI sources restored; game-level WeiDU rollback is NOT guaranteed.'
-        }
-        exit 1
-    }
-
-    # Verify new compiled script provenance before activating old alias names.
-    if($verifiedTag) {
-        $verifyHelperRemote='BGXAI/BGXAI_VERIFY_ACTIVATE_'+$verifiedTag+'.ps1'
-        $helperSuccess='BGXAI v0.6.'+$verifiedTag.Substring(1)+' VERIFIED ACTIVATION SUCCESS'
-        if($version -eq '0.6.27-role-profile-install-pilot') {
-            $verifyHelperRemote='BGXAI/BGXAI_VERIFY_ACTIVATE_627.ps1'
-            $helperSuccess='BGXAI v0.6.27 VERIFIED ACTIVATION SUCCESS'
-        }
-        [byte[]]$helper=GetFile $verifyHelperRemote $commit
-        $helperText=[Text.Encoding]::UTF8.GetString($helper)
-        if($helper.Length -lt 3000 -or !$helperText.Contains($helperSuccess)) {
-            throw 'Invalid compiler verification helper'
-        }
-        $helperPath=Join-Path $cache ('BGXAI_VERIFY_ACTIVATE_'+$verifiedTag+'.latest.ps1')
-        [IO.File]::WriteAllBytes($helperPath,$helper)
-        Log ('Proving freshly compiled '+$expectedCompiledMarker+' BCS resources before activation.')
-        & $helperPath -GameRoot $GameRoot -CacheRoot $cache
-        if(!$?) {throw 'Compiler verification/activation failed'}
-        foreach($scriptName in $ownedNames) {
-            $compiledBytes=[IO.File]::ReadAllBytes((Join-Path $GameRoot ('scripts\'+$scriptName+'.BS')))
-            if(!([Text.Encoding]::ASCII.GetString($compiledBytes)).Contains([string]$ownedMarkers[$scriptName])) {
-                throw ('ACTIVE VERSION MARKER MISSING '+$scriptName+' '+$ownedMarkers[$scriptName])
-            }
-            Log ('VERIFIED ACTIVE '+$ownedMarkers[$scriptName]+' '+$scriptName)
+    if($currentVerified){Write-Host ' BGXAI 039 source ALREADY CURRENT. Live EET untouched.';return}
+    if(!(Test-Path -LiteralPath $home -PathType Container)) {New-Item -ItemType Directory -Path $home -Force | Out-Null}
+    $bakBase=Join-Path $cache ('039_backup_'+(Get-Date -Format 'yyyyMMdd_HHmmss_fff'))
+    foreach($n in $names){
+        $target=Join-Path $home ($n.Replace('/',[IO.Path]::DirectorySeparatorChar))
+        AssertNotReparse (Split-Path -Parent $target)
+        AssertNotReparse $target
+        if(Test-Path -LiteralPath $target){
+            $b=Join-Path $bakBase ($n.Replace('/',[IO.Path]::DirectorySeparatorChar))
+            [IO.Directory]::CreateDirectory((Split-Path -Parent $b))|Out-Null
+            [IO.File]::Copy($target,$b,$false)
         }
     }
-    # Verify *installed* compiled scripts. The BAF source alone is not proof of game installation.
-    if($version -eq '0.6.20-liveness-first-pilot') {
-        foreach($name in @('BGXGRP','BGXTANK')) {
-            $bcs=Join-Path $GameRoot ('override\' + $name + '.BCS')
-            $bs=Join-Path $GameRoot ('scripts\' + $name + '.BS')
-            if(!(Test-Path -LiteralPath $bcs) -or !(Test-Path -LiteralPath $bs)) {
-                throw ('Missing compiled script: '+$name)
-            }
-            [byte[]]$compiled=[IO.File]::ReadAllBytes($bcs)
-            [byte[]]$assigned=[IO.File]::ReadAllBytes($bs)
-            if($compiled.Length -lt 100 -or $assigned.Length -lt 100 -or (Hash $compiled) -ne (Hash $assigned)) {
-                throw ('Compiled script mismatch: '+$name)
-            }
-            Log ('VERIFY compiled '+$name+': override BCS == scripts BS')
-        }
+    foreach($n in $names){
+        $target=Join-Path $home ($n.Replace('/',[IO.Path]::DirectorySeparatorChar))
+        [IO.Directory]::CreateDirectory((Split-Path -Parent $target))|Out-Null
+        $tmp=$target+'.bgx39.tmp'
+        if(Test-Path -LiteralPath $tmp){throw ('Unresolved previous temporary update: '+$tmp)}
+        [IO.File]::WriteAllBytes($tmp,[byte[]]$pending[$n].bytes)
+        if(!(SameFile $tmp $pending[$n].hash)){throw ('Staged hash mismatch: '+$n)}
+        if(Test-Path -LiteralPath $target){[IO.File]::Delete($target)}
+        [IO.File]::Move($tmp,$target)
+        if(!(SameFile $target $pending[$n].hash)){throw ('Installed source hash mismatch: '+$n)}
     }
-    RepairUserScriptShadow $commit
-    [IO.File]::WriteAllText($marker,$version,[Text.Encoding]::ASCII)
-    Log ('SUCCESS: BGXAI '+$version+' installed; selectable role scripts: '+($ownedNames -join ', '))
-    Log ('Diagnostic: '+$version+'; EEex telemetry unchanged. Test only after verified binary/version markers.')
-    exit 0
+    Write-Host ' BGXAI 039 source VERIFIED and SYNCED. Live BDDEFAI and WeiDU untouched.'
+}
+function Run039([string]$mode){
+    $script=Join-Path $home 'BGXAI39_INSTALL.py'
+    if(!(Test-Path -LiteralPath $script)){throw '039 source not synced; choose option 1 first'}
+    if($mode -eq '--install' -or $mode -eq '--uninstall'){
+        # The Python installer re-verifies its own source manifest, processes,
+        # last WeiDU mod, and original backup; asks for typed YES separately.
+        Write-Host ' CAUTION: EXPERIMENTAL 039 NOT TESTED IN REAL EET.'
+        Write-Host ' Installer is opt-in and will NOT modify files without YES.'
+    }
+    & py -3 $script $mode
+    if($LASTEXITCODE -ne 0){throw ('BGXAI39 installer returned '+$LASTEXITCODE)}
+}
+Write-Host ''
+Write-Host ' BGXAI ONE-FILE UPDATER / EET Foxx / EPS 18.4'
+Write-Host ' Installed gameplay checkpoint: BGXAI 0381 (user-confirmed).'
+Write-Host ' 1 - Download/verify source BGXAI 039 (no game script changes)'
+Write-Host ' 2 - Read-only status of BGXAI 039'
+Write-Host ' 3 - EXPERIMENTAL install 039 on top of 038 (requires YES)'
+Write-Host ' 4 - WeiDU rollback of 039 ONLY (requires YES)'
+Write-Host ' 0 - Exit [default]'
+$choice=Read-Host 'Choice [0]'
+if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
+if($choice -eq '0'){Write-Host 'No changes.';exit 0}
+try{
+    if($choice -eq '1'){Sync039;exit 0}
+    if($choice -eq '2'){Run039 '--status';exit 0}
+    if($choice -eq '3'){Sync039;Run039 '--install';exit 0}
+    if($choice -eq '4'){Run039 '--uninstall';exit 0}
+    throw 'Unknown menu option: no changes.'
 } catch {
-    if($verifiedTag -and $liveBackupDir -and (Test-Path -LiteralPath $liveBackupDir)) {
-        foreach($entry in @(Get-ChildItem -LiteralPath $liveBackupDir -File -ErrorAction SilentlyContinue)) {
-            if($entry.Name -match '^(override|scripts)_(BGXGRP|BGXTANK|BGXRANG|BGXSCOUT|BGXCAST|BGXHEAL)\.(BCS|BS)$') {
-                $restoreDest=Join-Path $GameRoot ($Matches[1]+'\'+$Matches[2]+'.'+$Matches[3])
-                Copy-Item -LiteralPath $entry.FullName -Destination $restoreDest -Force -ErrorAction Continue
-            }
-        }
-        Log 'RESTORED pre-WeiDU active scripts following activation failure; WeiDU metadata rollback not guaranteed.'
-    }
-    Log ('FAILED: '+$_.Exception.Message)
+    Write-Host ('BGXAI 039 STOP: '+$_.Exception.Message)
+    Write-Host 'No automatic rollback or repeated WeiDU attempts. Preserve the reports.'
     exit 1
 }
