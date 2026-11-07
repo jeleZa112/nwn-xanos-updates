@@ -5,8 +5,8 @@
   "files": [
     {
       "path": "README_RU.md",
-      "size": 4238,
-      "sha256": "db00c6a72bb9266d527c6e411398fa1401b6155286e079872924a07d754f8561"
+      "size": 4277,
+      "sha256": "95cf32a10a95b0ef8b1fbd7c8546af266462f62560cb70f0a28e1030f9bfa50b"
     },
     {
       "path": "build_manifest.py",
