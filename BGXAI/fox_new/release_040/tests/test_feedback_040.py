@@ -135,7 +135,7 @@ class IsolatedWeiDUMock(unittest.TestCase):
   def partial_tlk(cmd,**kw):
    (self.root/'override/BDDEFAI.BCS').write_bytes(b'CHANGED_BCS')
    self.write([EPS,V38,V39,V40])
-   self.write_tlk(self.root/'lang/ru_ru/dialog.tlk',2)
+   self.write_tlk(self.root/'lang/ru_ru/dialog.tlk',5)
    self.write_tlk(self.root/'lang/ru_ru/dialogf.tlk',3)
    return SimpleNamespace(returncode=0,stdout='ok',stderr='')
   with patch.dict(os.environ,{'USERPROFILE':str(self.profile)}):
@@ -153,6 +153,25 @@ class IsolatedWeiDUMock(unittest.TestCase):
   with patch.dict(os.environ,{'USERPROFILE':str(self.profile)}):
    prior=mod.find_previous_backup(self.root)
    self.assertEqual(prior[0],old_dir)
+ def test_install_can_reuse_previous_identical_strings(self):
+  def reuse(cmd,**kw):
+   a=self.root/'override/BDDEFAI.BCS';a.write_bytes(a.read_bytes()+b'BGX40_COMPILED')
+   self.write([EPS,V38,V39,V40])
+   return SimpleNamespace(returncode=0,stdout='reused localized strings',stderr='')
+  with patch.dict(os.environ,{'USERPROFILE':str(self.profile)}):
+   d=mod.run_install(self.root,BASE,real_root=False,guard=lambda:None,runner=reuse)
+  self.assertEqual(d['status'],'INSTALLED')
+  self.assertEqual(d['tlk_entry_growth'],{'lang/ru_ru/dialog.tlk':0,'lang/ru_ru/dialogf.tlk':0})
+ def test_uninstall_can_leave_unused_strings_in_tlk(self):
+  self.call()
+  def uninstall_retains(cmd,**kw):
+   a=self.root/'override/BDDEFAI.BCS'
+   a.write_bytes(a.read_bytes().replace(b'BGX40_COMPILED',b''))
+   self.write([EPS,V38,V39]);return SimpleNamespace(returncode=0,stdout='WeiDU left unused TLK strings',stderr='')
+  with patch.dict(os.environ,{'USERPROFILE':str(self.profile)}):
+   d=mod.run_uninstall(self.root,BASE,real_root=False,guard=lambda:None,runner=uninstall_retains)
+  self.assertEqual(d['status'],'UNINSTALLED_AND_RESTORED')
+  self.assertTrue(all(v==2 for v in d['tlk_entry_delta_after_rollback'].values()))
  def test_invalid_tlk_header_is_rejected(self):
   p=self.root/'lang/ru_ru/dialog.tlk';p.write_bytes(b'not a TLK')
   with self.assertRaisesRegex(RuntimeError,'Unsafe|TLK header'):mod.tlk_entry_count(p)
