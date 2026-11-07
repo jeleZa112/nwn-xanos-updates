@@ -1,9 +1,9 @@
-# Roblox background monitor - release 2.4.0
+# Roblox background monitor - release 2.5.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "2.4.0"
+VERSION = "2.5.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -716,6 +716,188 @@ def battle_pilot(build_once=False):
     log("BUNDLE_READY: "+str(bundle))
     log("Output: "+str(folder))
     return 0
+
+
+def route_demo():
+    """Record ONE short player-driven route from spawn to the known safe corner.
+
+    No injection, no AI movement, no background key logging. Samples only
+    W/A/S/D/Space/Shift while Roblox is the foreground window and F8 arms it.
+    F9 ends the demonstration. One ZIP contains key spans and sampled frames.
+    """
+    import ctypes
+    import queue
+    import csv
+    import zipfile
+    import cv2
+    from windows_capture import WindowsCapture, Frame, InternalCaptureControl
+
+    root=Path.home()/"Documents"/"RobloxBGDiagnostics"/"ROUTE"
+    root.mkdir(parents=True,exist_ok=True)
+    stamp=time.strftime("%Y%m%d_%H%M%S")
+    folder=root/stamp
+    folder.mkdir(parents=True,exist_ok=True)
+    log_path=folder/"route.log"
+    def log(message):
+        line=time.strftime("[%H:%M:%S] ")+str(message)
+        print(line,flush=True)
+        with log_path.open("a",encoding="utf-8") as out:out.write(line+"\n")
+
+    ui=ctypes.WinDLL("user32",use_last_error=True)
+    ui.SetProcessDPIAware()
+    ui.FindWindowW.argtypes=(ctypes.c_wchar_p,ctypes.c_wchar_p)
+    ui.FindWindowW.restype=ctypes.c_void_p
+    ui.GetForegroundWindow.restype=ctypes.c_void_p
+    ui.IsIconic.argtypes=(ctypes.c_void_p,)
+    ui.IsIconic.restype=ctypes.c_int
+    ui.GetAsyncKeyState.argtypes=(ctypes.c_int,)
+    ui.GetAsyncKeyState.restype=ctypes.c_short
+    hwnd=ui.FindWindowW(None,"Roblox")
+    if not hwnd:
+        print("ROUTE: Roblox window not found.")
+        return 2
+    def focused():return ui.GetForegroundWindow()==hwnd and not ui.IsIconic(hwnd)
+    def down(vk):return bool(ui.GetAsyncKeyState(vk)&0x8000)
+    print("\nROBLOX ROUTE DEMO V"+VERSION)
+    print("Start a match; stand at the initial spawn point.")
+    print("After YES, switch to Roblox: F8 starts recording.")
+    print("Walk ONCE to your main safe defensive corner; press F9 there.")
+    print("Only W/A/S/D/SPACE/SHIFT are measured while Roblox is active.")
+    print("No key injection, no mouse logging and no complete gameplay required.")
+    print("Max route length 50s, max 26 saved JPGs. F9 stops.")
+    if input("Record ONE route? Type YES [default NO]: ").strip().upper() not in ("YES","ДА"):
+        return 0
+    frame_queue=queue.Queue(maxsize=1)
+    stop=threading.Event()
+    cap=WindowsCapture(cursor_capture=None,draw_border=None,
+                       monitor_index=None,window_name="Roblox")
+    @cap.event
+    def on_frame_arrived(frame: Frame,control: InternalCaptureControl):
+        if stop.is_set():
+            control.stop()
+            return
+        try:
+            img=frame.frame_buffer[:,:,:3].copy()
+            if frame_queue.full():
+                try:frame_queue.get_nowait()
+                except queue.Empty:pass
+            frame_queue.put_nowait(img)
+        except (queue.Full,ValueError):
+            pass
+    @cap.event
+    def on_closed():stop.set()
+    def frame():
+        latest=None
+        while True:
+            try:latest=frame_queue.get_nowait()
+            except queue.Empty:break
+        return latest
+    def save(img,index,elapsed):
+        if img is None:return None
+        h,w=img.shape[:2]
+        if w>1100:img=cv2.resize(img,(1100,round(h*1100/w)))
+        name="route_%02d_%05.1fs.jpg"%(index,elapsed)
+        if not cv2.imwrite(str(folder/name),img,[cv2.IMWRITE_JPEG_QUALITY,72]):
+            return None
+        return name
+    keys={"W":0x57,"A":0x41,"S":0x53,"D":0x44,
+          "SPACE":0x20,"SHIFT":0x10}
+    log("ROUTE_WAIT_F8: no input sent. Play route yourself.")
+    started=None
+    spans=[]
+    screenshots=[]
+    active={}
+    last_save=-99.
+    last_sample=None
+    max_duration=50.
+    controller=None
+    try:
+        controller=cap.start_free_threaded()
+        deadline=time.monotonic()+180
+        prior=False
+        while not stop.is_set() and time.monotonic()<deadline:
+            if down(0x78):
+                log("ROUTE_ABORTED_BEFORE_START")
+                return 0
+            now=down(0x77)
+            if now and not prior and focused():
+                started=time.monotonic()
+                log("ROUTE_RECORDING_START: W/A/S/D/SPACE/SHIFT only.")
+                break
+            prior=now
+            time.sleep(.05)
+        if started is None:
+            log("ROUTE_TIMEOUT_NO_F8")
+            return 0
+        while not stop.is_set():
+            elapsed=time.monotonic()-started
+            if down(0x78):
+                log("ROUTE_FINISHED_F9 elapsed=%.2fs"%elapsed)
+                break
+            if elapsed>=max_duration:
+                log("ROUTE_MAX_DURATION_REACHED")
+                break
+            if not focused():
+                log("ROUTE_STOP_FOREGROUND_LOST elapsed=%.2fs"%elapsed)
+                break
+            pressed={k for k,vk in keys.items() if down(vk)}
+            for k in list(active):
+                if k not in pressed:
+                    spans.append((k,round(active.pop(k),3),round(elapsed,3)))
+            for k in pressed:
+                if k not in active:active[k]=elapsed
+            if last_sample is None or elapsed-last_save>=1.8:
+                current=frame()
+                if current is not None and len(screenshots)<26:
+                    name=save(current,len(screenshots),elapsed)
+                    if name:screenshots.append((round(elapsed,2),name))
+                    last_save=elapsed
+                    last_sample=current
+            time.sleep(.033)
+        elapsed=time.monotonic()-started
+        for k,v in active.items():spans.append((k,round(v,3),round(elapsed,3)))
+        final_frame=frame()
+        if final_frame is not None and len(screenshots)<26:
+            name=save(final_frame,len(screenshots),elapsed)
+            if name:screenshots.append((round(elapsed,2),name))
+        with (folder/"keys.csv").open("w",encoding="utf-8",newline="") as out:
+            writer=csv.writer(out)
+            writer.writerow(["key","start_seconds","end_seconds","duration_seconds"])
+            for k,a,b in sorted(spans,key=lambda x:x[1]):
+                writer.writerow([k,a,b,round(b-a,3)])
+        with (folder/"screenshots.csv").open("w",encoding="utf-8",newline="") as out:
+            writer=csv.writer(out)
+            writer.writerow(["elapsed_seconds","filename"])
+            writer.writerows(screenshots)
+        (folder/"README.txt").write_text(
+            "ROUTE_DEMO V"+VERSION+"\n"
+            "Manual demonstration from spawn to defensive corner.\n"
+            "W/A/S/D/SPACE/SHIFT keys only when Roblox foreground.\n"
+            "F8 starts, F9 stops. No programmatic movement or purchases.\n"
+            "Time-sequence is a demonstration, not a safe autonomous route until\n"
+            "orientation, collisions and recovery are validated.\n",
+            encoding="utf-8")
+        bundle=root/"ROUTE_DEMO.zip"
+        tmp=root/"ROUTE_DEMO.tmp"
+        with zipfile.ZipFile(tmp,"w",compression=zipfile.ZIP_DEFLATED) as z:
+            for item in folder.iterdir():
+                if item.is_file():z.write(item,arcname=item.name)
+        with zipfile.ZipFile(tmp) as z:
+            bad=z.testzip()
+            if bad:raise RuntimeError("ROUTE_ZIP_CORRUPT: "+bad)
+        tmp.replace(bundle)
+        log("ROUTE_SUMMARY key_intervals=%d frames=%d"%(
+            len(spans),len(screenshots)))
+        log("ROUTE_BUNDLE_READY: "+str(bundle))
+        return 0
+    except KeyboardInterrupt:
+        log("ROUTE_CTRL_C")
+        return 0
+    except Exception:
+        log("ROUTE_ERROR "+traceback.format_exc())
+        return 2
+    finally:
+        stop.set()
 
 
 # Menu stays in the *same downloaded Python file*.
@@ -1732,8 +1914,9 @@ def run_mode_prompt():
     print("  3 = LOBBY assistant (observe / confirmed foreground clicks)")
     print("  4 = BATTLE movement pilot (in-match F8, brief WASD, evidence)")
     print("  5 = ONE-TURRET pilot (F8, wait for green Z price, one Z attempt)")
+    print("  6 = ROUTE demo (you walk once from spawn to the safe corner; keys+frames)")
     try:
-        choice = input("Choose mode 1-5 [1]: ").strip()
+        choice = input("Choose mode 1-6 [1]: ").strip()
     except EOFError:
         choice = "1"
     return choice
@@ -1747,6 +1930,8 @@ if selected_mode == "4":
     raise SystemExit(battle_pilot())
 if selected_mode == "5":
     raise SystemExit(battle_pilot(build_once=True))
+if selected_mode == "6":
+    raise SystemExit(route_demo())
 
 # ------------ End demonstration recording ------------
 
