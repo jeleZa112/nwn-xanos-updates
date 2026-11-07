@@ -25,165 +25,31 @@ $release039=@{
     names=@('BGXAI39_INSTALL.py','setup-BGX39.tp2','BGX39/team_guard_fallback.baf','SOURCE_MANIFEST.json','README_RU.txt','tests/test_team_guard_039.py')
 }
 function Get-PinnedBytes([string]$remotePath) {
-    if($remotePath -notmatch '^BGXAI/fox_new/release_0(39|40)/[A-Za-z0-9_./-]+
-function HashBytes([byte[]]$payload) {
-    $hasher=[Security.Cryptography.SHA256]::Create()
-    try {return ([BitConverter]::ToString($hasher.ComputeHash($payload))).Replace('-','').ToLowerInvariant()}
-    finally {$hasher.Dispose()}
-}
-function HashFile([string]$filePath) {
-    if(!(Test-Path -LiteralPath $filePath -PathType Leaf)){return ''}
-    $hasher=[Security.Cryptography.SHA256]::Create()
-    try {
-        $stream=[IO.File]::OpenRead($filePath)
-        try{return ([BitConverter]::ToString($hasher.ComputeHash($stream))).Replace('-','').ToLowerInvariant()}
-        finally {$stream.Dispose()}
-    } finally {$hasher.Dispose()}
-}
-function AssertNotReparse([string]$item) {
-    if(Test-Path -LiteralPath $item){
-        $node=Get-Item -LiteralPath $item -Force
-        if(($node.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){throw ('Reparse path blocked: '+$item)}
-    }
-}
-function VerifiedManifest($spec) {
-    $bytes=Get-PinnedBytes $spec.manifest
-    if($bytes.Length -gt 30000){throw 'Oversized manifest'}
-    $m=[Text.Encoding]::UTF8.GetString($bytes) | ConvertFrom-Json
-    if($m.schema -ne 1 -or $m.channel -ne 'bgxai-fox-new-safe-source' -or $m.version -ne $spec.version){throw 'Unexpected release manifest'}
-    $items=@($m.files)
-    if($items.Count -ne $spec.names.Count){throw 'Unexpected release source count'}
-    $seen=@{}
-    foreach($entry in $items){
-        $file=[string]$entry.dest;$remote=[string]$entry.source
-        if(($spec.names -cnotcontains $file) -or $seen.ContainsKey($file) -or $remote -cne ($spec.prefix+$file)){throw 'Release path not in allowlist'}
-        if($entry.size -le 0 -or $entry.size -gt 500000 -or [string]$entry.sha256 -cnotmatch '^[a-f0-9]{64}$'){throw 'Bad release size/hash'}
-        $seen[$file]=@{sha=[string]$entry.sha256;size=[int]$entry.size;remote=$remote}
-    }
-    if($seen.Count -ne $spec.names.Count){throw 'Missing release files'}
-    return $seen
-}
-function SyncRelease($spec){
-    AssertNotReparse $GameRoot
-    AssertNotReparse (Join-Path $GameRoot 'BGXAI_DEV')
-    AssertNotReparse $spec.localPath
-    Write-Host ('Downloading and verifying BGXAI '+$spec.id+' from pinned GitHub commit ...')
-    $list=VerifiedManifest $spec
-    $payload=@{}
-    foreach($name in $spec.names){
-        $bytes=Get-PinnedBytes $list[$name].remote
-        if($bytes.Length -ne $list[$name].size -or (HashBytes $bytes) -cne $list[$name].sha){throw ('SHA256 mismatch: '+$name)}
-        $payload[$name]=$bytes
-        Write-Host (' VERIFIED '+$name)
-    }
-    $isCurrent=$true
-    foreach($name in $spec.names){
-        $dest=Join-Path $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
-        if((HashFile $dest) -cne $list[$name].sha){$isCurrent=$false}
-    }
-    if($isCurrent){Write-Host ('BGXAI '+$spec.id+' sources already verified. Game unchanged.');return}
-    $stamp=(Get-Date -Format 'yyyyMMdd_HHmmss_fff')
-    $oldCopy=Join-Path $cacheDir ($spec.id+'_backup_'+$stamp)
-    foreach($name in $spec.names){
-        $dest=Join-Path $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
-        AssertNotReparse (Split-Path -Parent $dest)
-        AssertNotReparse $dest
-        if(Test-Path -LiteralPath $dest){
-            $oldFile=Join-Path $oldCopy ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
-            [IO.Directory]::CreateDirectory((Split-Path -Parent $oldFile))|Out-Null
-            [IO.File]::Copy($dest,$oldFile,$false)
-        }
-    }
-    foreach($name in $spec.names){
-        $dest=Join-Path $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
-        [IO.Directory]::CreateDirectory((Split-Path -Parent $dest))|Out-Null
-        $temp=$dest+'.bgxsync.tmp'
-        if(Test-Path -LiteralPath $temp){throw ('Unresolved temp file, stop: '+$temp)}
-        [IO.File]::WriteAllBytes($temp,[byte[]]$payload[$name])
-        if((HashFile $temp) -cne $list[$name].sha){throw ('Staged file hash failure: '+$name)}
-        if(Test-Path -LiteralPath $dest){[IO.File]::Delete($dest)}
-        [IO.File]::Move($temp,$dest)
-        if((HashFile $dest) -cne $list[$name].sha){throw ('Source file hash failure: '+$name)}
-    }
-    Write-Host ('BGXAI '+$spec.id+' SOURCE SYNC DONE. Live scripts and WeiDU unchanged.')
-}
-function RunRelease($spec,[string]$mode){
-    # Before executing local Python, verify every local byte against pinned GitHub manifest.
-    $list=VerifiedManifest $spec
-    foreach($name in $spec.names){
-        $dest=Join-Path $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
-        AssertNotReparse $dest
-        if((HashFile $dest) -cne $list[$name].sha){throw ('Unverified local source; select source sync first: '+$name)}
-    }
-    $installerPath=Join-Path $spec.localPath $spec.installer
-    if($mode -eq '--install' -or $mode -eq '--uninstall'){
-        Write-Host 'WARNING: experimental WeiDU change; requires explicit YES.'
-        Write-Host 'Game/InfinityLoader/WeiDU must be closed. Preflight, backup and rollback gates active.'
-    }
-    & py -3 $installerPath $mode
-    if($LASTEXITCODE -ne 0){throw ('BGXAI '+$spec.id+' installer returned code '+$LASTEXITCODE)}
-}
-Write-Host ''
-Write-Host ' BGXAI ONE-FILE UPDATER / EET Foxx / EPS 18.4'
-Write-Host ' Installed baseline: BGXAI 0381 + 039 (user-confirmed in-game).'
-Write-Host ' 1 - Download/verify NEW BGXAI 040 (F key shows Guard ON/OFF; source only)'
-Write-Host ' 2 - Status of BGXAI 040 (read-only)'
-Write-Host ' 3 - EXPERIMENTAL install BGXAI 040 (YES + WeiDU backup)'
-Write-Host ' 4 - Roll back ONLY BGXAI 040 (YES + WeiDU)'
-Write-Host ' 5 - Status of BGXAI 039 (read-only)'
-Write-Host ' 6 - Roll back BGXAI 039 ONLY (must first uninstall 040)'
-Write-Host ' 0 - Exit [default]'
-$choice=Read-Host 'Choice [0]'
-if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
-if($choice -eq '0'){Write-Host 'No changes.';exit 0}
-try {
-    switch($choice){
-      '1' {SyncRelease $release040;break}
-      '2' {RunRelease $release040 '--status';break}
-      '3' {SyncRelease $release040;RunRelease $release040 '--install';break}
-      '4' {RunRelease $release040 '--uninstall';break}
-      '5' {RunRelease $release039 '--status';break}
-      '6' {RunRelease $release039 '--uninstall';break}
-      default {throw 'Unknown menu option, no game change.'}
-    }
-    exit 0
-} catch {
-    Write-Host ('BGXAI STOP: '+$_.Exception.Message) -ForegroundColor Red
-    Write-Host 'Do not repeat failed installs automatically. Existing working AI left for review.'
-    exit 1
-}
- -or $remotePath.Contains('..')) {
+    if($remotePath -notmatch '^BGXAI/fox_new/release_0(39|40)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
         throw ('Remote source path blocked: '+$remotePath)
     }
-    # The launcher has already pinned a specific 40-digit commit from GitHub.
-    # Public raw files avoid the unauthenticated GitHub Contents API 60/hour quota.
-    # Release bytes are independently SHA256-verified against the pinned manifest.
+    # Download the exact public file at the pinned SHA; avoid GitHub REST API quotas.
+    # The manifest allowlist and per-file SHA256 checks remain mandatory.
     $rawUri='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/'+$commitId+'/'+$remotePath
     $requestHeaders=@{'User-Agent'='BGXAI-Foxx-Onefile';'Cache-Control'='no-cache'}
     [IO.Directory]::CreateDirectory($cacheDir) | Out-Null
-    $temporaryFile=Join-Path $cacheDir ('pinned_040_'+[guid]::NewGuid().ToString('N')+'.tmp')
+    $temporaryFile=Join-Path $cacheDir ('pinned_'+[guid]::NewGuid().ToString('N')+'.tmp')
     try {
         try {
             Invoke-WebRequest -Uri $rawUri -Headers $requestHeaders -TimeoutSec 60 -UseBasicParsing -OutFile $temporaryFile -ErrorAction Stop | Out-Null
             $rawBytes=[IO.File]::ReadAllBytes($temporaryFile)
-            if($rawBytes.Length -lt 1 -or $rawBytes.Length -gt 500000) {
-                throw ('Unexpected pinned raw file size: '+$remotePath)
-            }
+            if($rawBytes.Length -lt 1 -or $rawBytes.Length -gt 500000) {throw ('Unexpected pinned RAW file size: '+$remotePath)}
             return ,$rawBytes
         } catch {
             $rawFailure=$_.Exception.Message
-            Write-Host ('Pinned RAW unavailable ('+$remotePath+'); trying GitHub API fallback.')
+            Write-Host ('Pinned RAW failed for '+$remotePath+'; trying GitHub API.')
             $headers=@{'User-Agent'='BGXAI-Foxx-Onefile';'Accept'='application/vnd.github+json';'Cache-Control'='no-cache'}
             $apiUri='https://api.github.com/repos/jeleZa112/nwn-xanos-updates/contents/'+$remotePath+'?ref='+$commitId
             try {
                 $record=Invoke-RestMethod -Uri $apiUri -Headers $headers -TimeoutSec 60 -UseBasicParsing -ErrorAction Stop
-                if([string]$record.encoding -ne 'base64' -or !$record.content) {
-                    throw ('Invalid pinned API response: '+$remotePath)
-                }
+                if([string]$record.encoding -ne 'base64' -or !$record.content) {throw ('Invalid pinned API response: '+$remotePath)}
                 $apiBytes=[Convert]::FromBase64String(([string]$record.content -replace '\s',''))
-                if($apiBytes.Length -lt 1 -or $apiBytes.Length -gt 500000) {
-                    throw ('Unexpected pinned API file size: '+$remotePath)
-                }
+                if($apiBytes.Length -lt 1 -or $apiBytes.Length -gt 500000) {throw ('Unexpected pinned API file size: '+$remotePath)}
                 return ,$apiBytes
             } catch {
                 throw ('Both pinned downloads failed for '+$remotePath+'. RAW: '+$rawFailure+'; API: '+$_.Exception.Message)
