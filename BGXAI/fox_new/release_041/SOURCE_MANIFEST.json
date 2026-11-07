@@ -1,0 +1,74 @@
+{
+  "files": {
+    "BGX41/BGX41IC.BAM": {
+      "sha256": "9cc81ec633a0e4bc691a6339fac008982f8356f69d54fce037fe3616377a456c",
+      "size": 1210
+    },
+    "BGX41/BGX41OF.SPL": {
+      "sha256": "b7454e2964bf91f727ef0b307c41bf0e8fb05105431795a084f81361f9381f15",
+      "size": 202
+    },
+    "BGX41/BGX41ON.SPL": {
+      "sha256": "710a2f49f986a71aefbd1ec6e03c8e1614b95b29eae99ae0331da3b5cbbc945c",
+      "size": 250
+    },
+    "BGX41/icon.tra": {
+      "sha256": "f50953ae86ec1eca1ee317f492b5bb157f62667697bfad9463d60b3e83173df2",
+      "size": 103
+    },
+    "BGX41/toggle_icon.baf": {
+      "sha256": "4426d9b04fc3b5c83474450d43f2ddb91cc426e7a12ca4f93f89568ccc91516d",
+      "size": 1352
+    },
+    "BGXAI41_INSTALL.py": {
+      "sha256": "46636f537011b1ea31952a4f8fd6bd57f724b9ae811f1f95585ec5bbb78f2891",
+      "size": 14401
+    },
+    "README_RU.md": {
+      "sha256": "0d0f42f8d942cb7ea1725ac800898762f9b844d72326de9634f63f451a371d88",
+      "size": 7840
+    },
+    "build_assets.py": {
+      "sha256": "6a05ca33c578cd02349ca3493a2f21b61ef41e7ffc7704e77c63df984d3f4325",
+      "size": 3550
+    },
+    "combat_ru/GLOSSARY_RU.md": {
+      "sha256": "f2dafcdd7c589a92c4c1a9de96291dfbf553bac179e2cb953a744eefa2c66a62",
+      "size": 2652
+    },
+    "combat_ru/explain_attack.py": {
+      "sha256": "bcf79afc0be9b1f283522e68e2837f1d001fa977548de2558d700f2740ea330f",
+      "size": 2164
+    },
+    "combat_ru/parse_attack_feedback.py": {
+      "sha256": "0f861993a1f539da1ce7cb6bf82daad23a6cbf0cd341de19883da376e1261ae6",
+      "size": 3657
+    },
+    "setup-BGX41.tp2": {
+      "sha256": "ee9aff3978b68ea02267091806586e1b9b9e3b3d0b9ef6f2240cabec6aa46692",
+      "size": 1611
+    },
+    "tests/test_attack_parser_041.py": {
+      "sha256": "a7710e0281d17dc0e065da61aab1c7c306250be65869af21e7e63efcc65c8644",
+      "size": 1545
+    },
+    "tests/test_attack_ru.py": {
+      "sha256": "f444b6087a3ac35662232c5a06f497edd2715a36e7df51b5c39f88c8f0ec61f9",
+      "size": 1294
+    },
+    "tests/test_installer_041.py": {
+      "sha256": "d8dddecee8a16547ba4f41aa03f8465ab9ac1b6030a46f85326a62c8231837a7",
+      "size": 6331
+    },
+    "tests/test_runtime_semantics_041.py": {
+      "sha256": "6f85dd5e4b6b44cb35416659718be450dff161d158ab181b995e3a4cc7f0b8a4",
+      "size": 2445
+    },
+    "tests/test_source_041.py": {
+      "sha256": "1dbc6792ebaa51357b99507e3a34d1c45bb984603d5bbbca04734f7ccfa119e1",
+      "size": 2863
+    }
+  },
+  "status": "OPT_IN_041_INSTALLER",
+  "version": "0.3.11-041-candidate"
+}

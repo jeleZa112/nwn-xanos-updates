@@ -1,0 +1,43 @@
+// BGXAI 041 EXPERIMENTAL. Standalone ON/OFF icon overlay; requires installed 040.
+// Preserves BGX38_GUARD, the original F key, 2s cooldown, and 040 Russian feedback.
+// EXTEND_TOP shadows ONLY the existing two F toggle blocks; guard actions unchanged.
+// Source-only; not yet WeiDU compiled or tested in live EET. Do not install directly.
+IF
+  InParty(Myself)
+  HotKey(F)
+  !GlobalTimerNotExpired("BGX38_KEY_CD","LOCALS")
+  Global("BGX38_GUARD","LOCALS",0)
+THEN
+  RESPONSE #100
+    SetGlobal("BGX38_GUARD","LOCALS",1)
+    SetGlobal("BGX41_ICON_INIT","LOCALS",1)
+    SetGlobalTimer("BGX38_KEY_CD","LOCALS",2)
+    ApplySpellRES("BGX41ON",Myself)
+    DisplayStringHead(Myself,@0)
+END
+
+IF
+  InParty(Myself)
+  HotKey(F)
+  !GlobalTimerNotExpired("BGX38_KEY_CD","LOCALS")
+  Global("BGX38_GUARD","LOCALS",1)
+THEN
+  RESPONSE #100
+    SetGlobal("BGX38_GUARD","LOCALS",0)
+    SetGlobal("BGX41_ICON_INIT","LOCALS",1)
+    SetGlobalTimer("BGX38_KEY_CD","LOCALS",2)
+    ApplySpellRES("BGX41OF",Myself)
+    DisplayStringHead(Myself,@1)
+END
+
+// One-time restore for pre-existing 040 saves already in guard mode. Idle only; no interrupted actions.
+IF
+  InParty(Myself)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX41_ICON_INIT","LOCALS",0)
+  ActionListEmpty()
+THEN
+  RESPONSE #100
+    SetGlobal("BGX41_ICON_INIT","LOCALS",1)
+    ApplySpellRES("BGX41ON",Myself)
+END

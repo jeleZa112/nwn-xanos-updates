@@ -1,0 +1,36 @@
+// BGXAI 041 EXPERIMENTAL SOURCE ONLY - NEVER install without Windows WeiDU proof.
+// New 12x12 portrait icon: dynamic STATDESC row and 142/321 spell effects.
+// Preserves BDDEFAI EPS + BGX38 + BGX39 + BGX40; must be the LAST WeiDU mod.
+BACKUP ~BGX41/backup~
+AUTHOR ~BGXAI original EET addon~
+VERSION ~0.3.11-source-only-icon-prototype~
+LANGUAGE ~Russian~ ~ru_ru~ ~BGX41/icon.tra~
+BEGIN ~BGXAI 041 - Show actual guard ON at portrait, keep F feedback~
+REQUIRE_PREDICATE GAME_IS ~eet~ ~This code requires EET~
+REQUIRE_PREDICATE FILE_EXISTS_IN_GAME ~BDDEFAI.BCS~ ~EPS advanced AI resource missing~
+REQUIRE_PREDICATE FILE_EXISTS_IN_GAME ~STATDESC.2DA~ ~Custom icon table missing~
+
+// Unique index, no fixed portrait-icon collision with other mods.
+DEFINE_ACTION_FUNCTION BGX41_NEW_ICON
+  INT_VAR string = 0
+  STR_VAR bam_file = ~BGX41IC~
+  RET icon
+  BEGIN
+  COPY_EXISTING ~STATDESC.2DA~ ~override~
+    COUNT_2DA_ROWS 3 count
+    READ_2DA_ENTRY (count - 1) 0 3 icon
+    SET icon += 1
+  APPEND ~STATDESC.2DA~ ~%icon% %string% %bam_file%~
+  END
+
+// Use a normal integer strref in STATDESC; icon can be named in RU tooltip.
+LAF BGX41_NEW_ICON INT_VAR string = RESOLVE_STR_REF(@2) STR_VAR bam_file = ~BGX41IC~ RET icon END
+
+COPY ~BGX41/BGX41IC.BAM~ ~override/BGX41IC.BAM~
+COPY ~BGX41/BGX41ON.SPL~ ~override/BGX41ON.SPL~
+  PATCH_IF SOURCE_SIZE != 250 BEGIN PATCH_FAIL ~Unexpected BGX41ON SPL size~ END
+  // 0x72 header + 0x28 ext + 0x30 first effect + 0x8 parameter2 -> 0xd2.
+  WRITE_LONG 0xd2 icon
+COPY ~BGX41/BGX41OF.SPL~ ~override/BGX41OF.SPL~
+
+EXTEND_TOP ~BDDEFAI.BCS~ ~BGX41/toggle_icon.baf~ USING ~BGX41/icon.tra~
