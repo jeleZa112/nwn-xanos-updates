@@ -1,9 +1,9 @@
-# Roblox background monitor - release 2.2.2
+# Roblox background monitor - release 2.3.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "2.2.2"
+VERSION = "2.3.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -25,7 +25,8 @@ def note(line):
 # Strategy policy is embedded so the existing one-file updater remains sufficient.
 def strategy_decision(in_match, money=None, turret_price=None, core_turrets=None,
                       space_in_core=None, enemies_approaching=None,
-                      approach_protected=None, safe_to_expand=None, health=None):
+                      approach_protected=None, safe_to_expand=None, health=None,
+                      turret_affordable=None):
     """Observed user tactic: core first, threat-triggered defense, expand outward when full.
     Returns a recommendation only; NEVER controls the game.
     """
@@ -34,8 +35,12 @@ def strategy_decision(in_match, money=None, turret_price=None, core_turrets=None
     if enemies_approaching is True and approach_protected is False:
         return "DEFENSE:BUILD_ON_APPROACH"
     if core_turrets is None: return "OBSERVE:COUNT_TURRETS"
-    if money is None or turret_price is None: return "ECONOMY:READ_COST"
-    if money < turret_price: return "ECONOMY:SAVE_AT_CORE"
+    # Cost changes when turrets are built or destroyed: never hardcode $240.
+    if turret_affordable is False: return "ECONOMY:SAVE_AT_CORE"
+    if turret_affordable is not True:
+        if money is None or turret_price is None: return "ECONOMY:READ_COST"
+        if money < turret_price: return "ECONOMY:SAVE_AT_CORE"
+    # A green price alone is NOT permission to press Z or place a turret.
     if core_turrets == 0: return "CORE:PLACE_FIRST"
     if space_in_core is None: return "OBSERVE:ASSESS_SPACE"
     if space_in_core: return "CORE:PLACE_MORE"
@@ -68,6 +73,60 @@ def hud_signals(raw_frame):
     bar_strength = float(row_fraction.max()) if len(row_fraction) else 0.0
     mode = "POSSIBLE_MATCH" if bar_strength > .52 and green_fraction > .035 else "UNCONFIRMED"
     return mode, round(green_fraction, 4), round(bar_strength, 4)
+
+def turret_price_color_signal(raw_frame):
+    """Observe dynamically priced Z turret, without OCR or clicks.
+
+    RED = currently unaffordable, GREEN = appears affordable;
+    UNKNOWN = indeterminate. No numeric price or purchase is inferred.
+    Prices can rise after building and fall after a turret is destroyed.
+    """
+    import cv2
+    import numpy as np
+    h,w=raw_frame.shape[:2]
+    if h<400 or w<900:
+        return "UNKNOWN",0.0,0.0
+    frame=raw_frame[:,:,:3]
+    band=frame[int(h*.20):int(h*.45),int(w*.934):int(w*.983)]
+    if band.size==0:
+        return "UNKNOWN",0.0,0.0
+    hsv=cv2.cvtColor(band,cv2.COLOR_BGR2HSV)
+    hue,sat,val=cv2.split(hsv)
+    blue=(hue>82)&(hue<111)&(sat>125)&(val>105)
+    row_density=blue.mean(axis=1)
+    rows=np.flatnonzero(row_density>.34)
+    start=None
+    count=0
+    prev=-10
+    required=max(4,int(round(4*w/1280)))
+    for y in rows:
+        if int(y)==prev+1:
+            count+=1
+        else:
+            count=1
+            start=int(y)
+        if count>=required:
+            break
+        prev=int(y)
+    else:
+        return "UNKNOWN",0.0,0.0
+    top=int(h*.20)+start
+    y1=max(0,top-int(3*w/1280))
+    y2=min(h,top+int(24*w/1280))
+    roi=frame[y1:y2,int(w*.951):int(w*.991)]
+    if roi.size==0:
+        return "UNKNOWN",0.0,0.0
+    hsv=cv2.cvtColor(roi,cv2.COLOR_BGR2HSV)
+    hue,sat,val=cv2.split(hsv)
+    red=(((hue<12)|(hue>170))&(sat>110)&(val>95)).mean()
+    green=(((hue>=35)&(hue<=92))&(sat>90)&(val>95)).mean()
+    red,green=float(red),float(green)
+    if green>.08 and green>red*1.7:
+        return "GREEN",round(red,3),round(green,3)
+    if red>.07 and red>green*1.7:
+        return "RED",round(red,3),round(green,3)
+    return "UNKNOWN",round(red,3),round(green,3)
+
 
 # Explicitly opt in to a single 0.2-second background 'W' test via environment.
 # This is NOT enabled by the normal one-file updater. It never takes input focus.
@@ -1597,14 +1656,14 @@ except Exception as exc:
     note("Run: py -3 -m pip install --user windows-capture==2.0.1 numpy opencv-python")
     sys.exit(2)
 
-stats = {"received": 0, "analyzed": 0, "changes": 0, "last": 0.0, "errors": 0, "left": 0.0, "center": 0.0, "right": 0.0, "possible_match": 0, "hud_mode": "UNCONFIRMED", "hud_strength": 0.0}
+stats = {"received": 0, "analyzed": 0, "changes": 0, "last": 0.0, "errors": 0, "left": 0.0, "center": 0.0, "right": 0.0, "possible_match": 0, "hud_mode": "UNCONFIRMED", "hud_strength": 0.0, "turret_price_signal":"UNKNOWN","turret_color_samples":{"RED":0,"GREEN":0,"UNKNOWN":0}}
 lock = threading.Lock()
 start = time.monotonic()
 previous = None
 last_sample = 0.0
 stopping = threading.Event()
 with CSV.open("w", encoding="utf-8") as f:
-    f.write("elapsed_sec,frames,motion_score,changed,left_motion,center_motion,right_motion,hud_mode,hud_strength\n")
+    f.write("elapsed_sec,frames,motion_score,changed,left_motion,center_motion,right_motion,hud_mode,hud_strength,turret_price_color,red_fraction,green_fraction\n")
 
 capture = WindowsCapture(cursor_capture=None, draw_border=None,
                          monitor_index=None, window_name="Roblox")
@@ -1626,6 +1685,7 @@ def on_frame_arrived(frame: Frame, control: InternalCaptureControl):
         image = frame.frame_buffer[::16, ::16, :3]
         current = image.copy()
         hud_mode, green_fraction, hud_strength = hud_signals(frame.frame_buffer)
+        turret_color,price_red,price_green=turret_price_color_signal(frame.frame_buffer)
         motion = 0.0
         if previous is not None and previous.shape == current.shape:
             motion = float(np.abs(current.astype(np.int16) -
@@ -1648,9 +1708,11 @@ def on_frame_arrived(frame: Frame, control: InternalCaptureControl):
             stats["hud_mode"] = hud_mode
             stats["hud_strength"] = hud_strength
             stats["possible_match"] += int(hud_mode == "POSSIBLE_MATCH")
+            stats["turret_color_samples"][turret_color] += 1
+            stats["turret_price_signal"] = turret_color
             count = stats["received"]
         with CSV.open("a", encoding="utf-8") as f:
-            f.write(f"{now-start:.1f},{count},{motion:.3f},{changed},{region_motion[0]:.3f},{region_motion[1]:.3f},{region_motion[2]:.3f},{hud_mode},{hud_strength:.3f}\n")
+            f.write(f"{now-start:.1f},{count},{motion:.3f},{changed},{region_motion[0]:.3f},{region_motion[1]:.3f},{region_motion[2]:.3f},{hud_mode},{hud_strength:.3f},{turret_color},{price_red:.3f},{price_green:.3f}\n")
     except Exception as exc:
         with lock:
             stats["errors"] += 1
@@ -1694,6 +1756,9 @@ finally:
               f"Possible-match samples (heuristic): {stats['possible_match']}\n"
               f"Last HUD status: {stats['hud_mode']}\n"
               f"Last HUD strength: {stats['hud_strength']:.3f}\n"
+              f"Turret Z price affordability (color only): {stats['turret_price_signal']}\n"
+              f"Turret affordability samples: {stats['turret_color_samples']}\n"
+              f"Prices are dynamic; no automatic purchases in this release.\n"
               f"Input test: {'enabled' if os.environ.get('ROBLOX_BG_CONTROL_TEST') == '1' else 'disabled'}\n"
               f"Errors: {stats['errors']}\n"
               f"Screenshots saved: 0\n")
