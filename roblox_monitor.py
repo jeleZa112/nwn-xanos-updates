@@ -1,9 +1,9 @@
-# Roblox background monitor - release 2.9.1
+# Roblox background monitor - release 2.9.2
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "2.9.1"
+VERSION = "2.9.2"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -406,7 +406,9 @@ def battle_pilot(build_once=False, require_corner=False):
         print("Stand on wide safe ground away from edges first.")
     print("Requires foreground Roblox. F8 = start once; F10 = cancel.")
     print("F9 opens Roblox developer console: do NOT use F9.")
-    print("No gamepad, no Arduino. Switching to Chrome cancels input.")
+    print("No gamepad or Arduino. Chrome may cover Roblox: observation pauses")
+    print("input while unfocused and resumes only after returning to Roblox.")
+    print("No key is ever sent to Chrome; only foreground Roblox receives Z.")
     consent=input(("Confirm ONE potential in-game Z purchase: type YES [default NO]: "
                    if build_once else
                    "Confirm movement probe: type YES [default NO]: ")).strip().upper()
@@ -417,6 +419,7 @@ def battle_pilot(build_once=False, require_corner=False):
     for filename in ("battle.log","pilot_summary.txt","BATTLE_PILOT.zip",
                      "TURRET_PILOT.zip","CORNER_TURRET_PILOT.zip",
                      "turret_before.jpg","turret_after.jpg",
+                     "turret_observation_start.jpg","turret_gate_blocked.jpg",
                      "probe_before.jpg","probe_after_W.jpg","probe_after_S.jpg",
                      "probe_after_A.jpg","probe_after_D.jpg"):
         (folder/filename).unlink(missing_ok=True)
@@ -648,7 +651,12 @@ def battle_pilot(build_once=False, require_corner=False):
             safe_frames=0
             last_report=0.
             last_verify=0.
+            last_blocked_frame=0.
+            paused_for_focus=False
             tried=False
+            save_frame(baseline,"turret_observation_start.jpg")
+            log("TURRET_DIAGNOSTIC_SAVED: turret_observation_start.jpg "+
+                "(before any possible Z; may show camera/affordability mismatch)")
             result_code="TIMEOUT_WAITING_FOR_GREEN"
             deadline=time.monotonic()+240
             while not stop.is_set() and time.monotonic()<deadline:
@@ -657,9 +665,31 @@ def battle_pilot(build_once=False, require_corner=False):
                     log("TURRET_CANCELLED_F10")
                     break
                 if not foreground():
-                    result_code="FOREGROUND_LOST"
-                    log("TURRET_STOP_FOREGROUND_LOST")
-                    break
+                    if not paused_for_focus:
+                        log("TURRET_PAUSED_NO_FOCUS: Chrome/other window active; "+
+                            "no inputs will be sent.")
+                        paused_for_focus=True
+                    green_frames=0
+                    safe_frames=0
+                    # Keep the capture alive, but never accumulate readiness
+                    # while Roblox is behind another application.
+                    time.sleep(.20)
+                    continue
+                if paused_for_focus:
+                    paused_for_focus=False
+                    green_frames=0
+                    safe_frames=0
+                    last_verify=time.monotonic()
+                    # Discard previously cached frames from when Roblox was
+                    # covered so only fresh gameplay evidence can arm the key.
+                    try:
+                        while True:frames.get_nowait()
+                    except queue.Empty:
+                        pass
+                    log("TURRET_RESUMED_FOCUS: readiness reset; "+
+                        "require four new GREEN+corner frames.")
+                    time.sleep(.33)
+                    continue
                 img=get_frame(timeout=2)
                 if img is None:
                     green_frames=0
@@ -694,13 +724,28 @@ def battle_pilot(build_once=False, require_corner=False):
                         " matches="+str(corner_scores)+
                         " red="+str(red_score)+" green="+str(green_score))
                     last_report=now
+                # Save a fresh diagnostic before failure/timeout if the gate
+                # cannot arm. Previous pilot had *zero* screenshots on RED.
+                if (now-last_blocked_frame>=20 and
+                    (signal!="GREEN" or (require_corner and not at_corner))):
+                    save_frame(img,"turret_gate_blocked.jpg")
+                    last_blocked_frame=now
+                    log("TURRET_GATE_EVIDENCE: turret_gate_blocked.jpg "+
+                        "price="+signal+" corner_votes="+str(votes))
                 if green_frames<4 or (require_corner and safe_frames<4):
                     continue
                 # Do not issue a key if the window changed focus after the
                 # evidence frame or if user cancelled.
                 if not foreground() or pressed(0x79) or user_is_moving():
-                    result_code="FOCUS_CANCEL_OR_MOVEMENT"
-                    break
+                    # Never send Z on an inconclusive/transition frame.
+                    green_frames=0
+                    safe_frames=0
+                    log("TURRET_READY_RESET: focus/cancel/movement "+
+                        "changed before action; no key sent.")
+                    if pressed(0x79):
+                        result_code="CANCELLED_F10"
+                        break
+                    continue
                 save_frame(img,"turret_before.jpg")
                 log("TURRET_Z_READY: 4 consecutive GREEN frames; "+
                     ("4 visual SAFE_CORNER frames (viewpoint only)." if require_corner
@@ -742,7 +787,9 @@ def battle_pilot(build_once=False, require_corner=False):
                  if require_corner else
                  "Position must be set by user in this experimental release.\n")+
                 "Status: "+result_code+"\n"+
-                "Z_SENT_GAME_UNVERIFIED means game outcome is unknown.\n",
+                "Z_SENT_GAME_UNVERIFIED means game outcome is unknown.\n"+
+                "Observe-only while Roblox is not the foreground window.\n"+
+                "A GREEN price alone is not safe position confirmation.\n",
                 encoding="utf-8")
         else:
             save_frame(baseline,"probe_before.jpg")
@@ -807,8 +854,9 @@ def battle_pilot(build_once=False, require_corner=False):
     # One uploadable bundle: source images + precise event log + summary.
     bundle=folder/("CORNER_TURRET_PILOT.zip" if require_corner else
                    "TURRET_PILOT.zip" if build_once else "BATTLE_PILOT.zip")
-    filenames=(("battle.log","pilot_summary.txt","turret_before.jpg",
-                "turret_after.jpg") if build_once else
+    filenames=(("battle.log","pilot_summary.txt",
+                "turret_observation_start.jpg","turret_gate_blocked.jpg",
+                "turret_before.jpg","turret_after.jpg") if build_once else
                ("battle.log","pilot_summary.txt","probe_before.jpg",
                 "probe_after_W.jpg"))
     with zipfile.ZipFile(bundle,"w",compression=zipfile.ZIP_DEFLATED) as z:
