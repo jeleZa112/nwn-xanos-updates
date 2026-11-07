@@ -1,9 +1,9 @@
-# Roblox background monitor - release 2.2.0
+# Roblox background monitor - release 2.2.1
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "2.2.0"
+VERSION = "2.2.1"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -296,6 +296,7 @@ def battle_pilot():
     """
     import ctypes
     import queue
+    import zipfile
     import cv2
     import numpy as np
     from windows_capture import WindowsCapture, Frame, InternalCaptureControl
@@ -532,6 +533,21 @@ def battle_pilot():
         return 2
     finally:
         stop.set()  # capture callback stops itself; no borrowed-frame stop race
+    # One uploadable bundle: source images + precise event log + summary.
+    bundle=folder/"BATTLE_PILOT.zip"
+    with zipfile.ZipFile(bundle,"w",compression=zipfile.ZIP_DEFLATED) as z:
+        for filename in ("battle.log","pilot_summary.txt","probe_before.jpg",
+                         "probe_after_W.jpg","probe_after_S.jpg",
+                         "probe_after_A.jpg","probe_after_D.jpg"):
+            item=folder/filename
+            if item.exists():
+                z.write(item,arcname=filename)
+    with zipfile.ZipFile(bundle) as z:
+        corrupt=z.testzip()
+        if corrupt:
+            log("ZIP_VALIDATION_FAILED "+str(corrupt))
+            return 2
+    log("BUNDLE_READY: "+str(bundle))
     log("Output: "+str(folder))
     return 0
 
