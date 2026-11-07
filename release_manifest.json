@@ -1,0 +1,23 @@
+{
+  "project": "BG_VOICE_RU",
+  "version": "2.9.1",
+  "note": "Code only; local audio remains private",
+  "files": [
+    {
+      "path": "BG_RU_IMOEN_PROSODY_29/GENERATE_PROSODY_29.py",
+      "sha256": "d869515ba6ac95ac88849af9fa3da0bf51453e966166a6b18c4e081eec9c9656"
+    },
+    {
+      "path": "BG_RU_IMOEN_PROSODY_29/RUN_PROSODY_29.cmd",
+      "sha256": "5a0bc42ebc73a2cc6e664962672593d50f6fe57c21719e8dc0c5265689a54636"
+    },
+    {
+      "path": "BG_RU_IMOEN_PROSODY_29/README_RU.txt",
+      "sha256": "06c073b22cc88ed6724044cb21095bdb2e4e8bae54af469a18579b80143162e9"
+    },
+    {
+      "path": "BG_VOICE_UPDATE.cmd",
+      "sha256": "38fcfe70a5c310796ceb6605e186b45ad4458d63ba87448c7e52e5e55f57feb1"
+    }
+  ]
+}
