@@ -1,0 +1,17 @@
+{
+  "version": "0.3.10",
+  "files": {
+    "setup-BGX40.tp2": {
+      "sha256": "b597cbba9716fac98465f8928e115d0baf05a3a143c1a45269dbe3e9bcf763b0",
+      "size": 509
+    },
+    "BGX40/toggle_feedback.baf": {
+      "sha256": "df5242bda53669ba8530b5ee6df068fa6f4ca428d8996597c794e50a0db487f8",
+      "size": 815
+    },
+    "BGX40/lang/ru_ru/feedback.tra": {
+      "sha256": "34dd7f5cb011a0486d25ae74588bb6a9972fe6879b08453f47e9fee9f498d83e",
+      "size": 58
+    }
+  }
+}
