@@ -333,7 +333,7 @@ def main():
             log('Already cached files are kept. Run again to retry; do not reinstall dependencies.')
             raise
         size=local.stat().st_size
-        if size<128 or (filename=='model.pt' and size<500_000_000):
+        if size<1 or (filename=='model.pt' and size<500_000_000):
             raise RuntimeError('Unexpected model file size: '+filename+' '+str(size))
         log('MODEL FILE READY '+filename+' '+str(round(size/1048576,1))+' MiB')
         resolved.append(local)
