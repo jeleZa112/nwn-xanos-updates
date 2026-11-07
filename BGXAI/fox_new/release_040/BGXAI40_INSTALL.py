@@ -81,7 +81,7 @@ def tlk_entry_count(path: Path) -> int:
 
 
 def tlk_growth(root: Path, backup: Path) -> dict[str, int]:
-    """WeiDU appends exactly @0/@1 to dialog and dialogf during install."""
+    """WeiDU adds up to two strings (it reuses existing identical entries)."""
     return {name: tlk_entry_count(root / name) - tlk_entry_count(backup / name)
             for name in ('lang/ru_ru/dialog.tlk', 'lang/ru_ru/dialogf.tlk')}
 
@@ -254,16 +254,16 @@ def run_install(root: Path, pkg: Path, *, real_root=True,
         # The modifier must show as installed and must have changed existing BCS.
         after=snapshot(root)
         report['live_after']=after
-        # New localized @0/@1 dialogue strings MUST change both TLK files.
-        # Prior 040 incorrectly rejected this expected result as REVIEW_INSTALL.
+        # New localized @0/@1 strings may be ADDED or REUSED by WeiDU.
+        # Prior 040 incorrectly rejected expected TLK changes as REVIEW_INSTALL.
         growth = tlk_growth(root, backup)
         report['tlk_entry_growth'] = growth
-        report['weiDU_localized_strings_expected'] = 2
+        report['maximum_new_localized_strings_per_tlk'] = 2
         report['chitin_key_unchanged'] = after['chitin.key'] == before['chitin.key']
         report['status']='INSTALLED' if (result.returncode==0 and state and
             after['override/BDDEFAI.BCS']!=before['override/BDDEFAI.BCS'] and
             after['chitin.key']==before['chitin.key'] and
-            all(change==2 for change in growth.values())) else 'REVIEW_INSTALL'
+            all(0<=change<=2 for change in growth.values())) else 'REVIEW_INSTALL'
         # If installation failed, NEVER overwrite WeiDU-managed game resources.
         # The original files are preserved in backup for diagnosis/WeiDU rollback.
     except (OSError,ValueError,RuntimeError,subprocess.TimeoutExpired) as e:
@@ -325,15 +325,15 @@ def run_uninstall(root: Path,pkg: Path,*,real_root=True,guard=check_processes,
     after=snapshot(root)
     still=installed(read_log(root))
     restored=(after['override/BDDEFAI.BCS']==meta['original_hashes']['override/BDDEFAI.BCS'])
-    # The TLK files are rewritten on localization/rollback; compare original
-    # entry counts to the backed-up pre-install TLKs, not byte-for-byte hashes.
+    # WeiDU normally leaves unreferenced new TLK strings after uninstall.
+    # Count may stay +2 or be back at 0; BOTH are safe and expected.
     growth=tlk_growth(root,path)
     unchanged=(after['chitin.key']==before['chitin.key'] and
-               all(change==0 for change in growth.values()))
+               all(0<=change<=2 for change in growth.values()))
     report={'status':'UNINSTALLED_AND_RESTORED' if p.returncode==0 and not still and restored and unchanged else 'REVIEW_UNINSTALL',
             'weiDU_exit_code':p.returncode,'weiDU_output_tail':((p.stdout or '')+'\n'+(p.stderr or ''))[-9000:],
             'original_eps_restored':restored,'tlk_entry_delta_after_rollback':growth,
-            'tlk_counts_restored_and_chitin_unchanged':unchanged,'backup':str(path)}
+            'tlk_counts_safe_and_chitin_unchanged':unchanged,'backup':str(path)}
     (path/'uninstall_report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     return report
 
