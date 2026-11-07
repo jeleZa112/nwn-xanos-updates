@@ -1,0 +1,9 @@
+// BGXAI 040 - solely visible status above the hero on existing F toggle.
+// Does not replace EPS, BGX38 or BGX39. Must be installed AFTER BGX39.
+BACKUP ~BGX40/backup~
+AUTHOR ~BGXAI original EET extension~
+VERSION ~0.3.10-guard-mode-feedback~
+BEGIN ~BGXAI 040 - Show guard ON/OFF after F key~
+REQUIRE_PREDICATE GAME_IS ~eet~ ~EET is required~
+REQUIRE_PREDICATE FILE_EXISTS_IN_GAME ~BDDEFAI.BCS~ ~BDDEFAI.BCS required~
+EXTEND_TOP ~BDDEFAI.BCS~ ~BGX40/toggle_feedback.baf~ USING ~BGX40/lang/ru_ru/feedback.tra~
