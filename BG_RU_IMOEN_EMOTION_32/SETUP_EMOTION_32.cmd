@@ -12,10 +12,14 @@ if not errorlevel 1 (
  if not errorlevel 1 (
   py -3.12 -m venv "%VENV%"
  ) else (
-  echo Python 3.11 or 3.12 required for isolated emotion environment.
-  echo Install official Python 3.11. No Qwen files touched.
-  pause
-  exit /b 1
+  py -3.13 -V >nul 2>&1
+  if not errorlevel 1 (
+   py -3.13 -m venv "%VENV%"
+  ) else (
+   echo Python 3.11, 3.12 or 3.13 required. No Qwen files touched.
+   pause
+   exit /b 1
+  )
  )
 )
 if errorlevel 1 (echo VENV FAILED & pause & exit /b 1)
