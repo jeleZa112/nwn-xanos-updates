@@ -7,8 +7,8 @@
     {
       "source": "BGXAI/fox_new/release_040/BGXAI40_INSTALL.py",
       "dest": "BGXAI40_INSTALL.py",
-      "size": 18436,
-      "sha256": "37f64dbae20fdb09897db1064e4f4c5b2f3bd19576fe38ec063e3102ad684be3"
+      "size": 18428,
+      "sha256": "112a025375d0bba655b788792015afc3f0fcd8560af461bddd57654b86c555b9"
     },
     {
       "source": "BGXAI/fox_new/release_040/setup-BGX40.tp2",
@@ -37,14 +37,14 @@
     {
       "source": "BGXAI/fox_new/release_040/README_RU.txt",
       "dest": "README_RU.txt",
-      "size": 2549,
-      "sha256": "c8fb2c8993332bdeb196c1aced939fee534b9b7501dbeca77a5e4e9a5827f638"
+      "size": 2981,
+      "sha256": "63e4e9697ccb679e8381810d04137ff2e65d3b45cb6b1ed9df7be4c8c60259d9"
     },
     {
       "source": "BGXAI/fox_new/release_040/tests/test_feedback_040.py",
       "dest": "tests/test_feedback_040.py",
-      "size": 8868,
-      "sha256": "111cfcaf7834a3c873dd013e70c940c389072876a6e9ad3f58b7ea2bf802f108"
+      "size": 10076,
+      "sha256": "8fb44dbd5cc569ef277f2fb567f5501db57d1d494d7c4008d9b7f4d1b9b25112"
     }
   ]
 }
