@@ -8,7 +8,11 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 OUT = HERE/'EMOTION_32_RESULTS'
 TARGETS = ('IMOEN06_', 'IMOEN77A', 'IMOEN79A', 'IMOEN79B')
-MODEL_NAME = 'iic/emotion2vec_plus_base'
+MODEL_NAME = 'emotion2vec/emotion2vec_plus_base'
+# Hugging Face hosts the same model weights as ModelScope; timeouts are in seconds.
+os.environ.setdefault('HF_HUB_ETAG_TIMEOUT', '120')
+os.environ.setdefault('HF_HUB_DOWNLOAD_TIMEOUT', '300')
+os.environ.setdefault('HF_HUB_DISABLE_SYMLINKS_WARNING', '1')
 LABEL_RU = {'angry':'злость','disgusted':'отвращение','fearful':'страх',
             'happy':'радость','neutral':'нейтрально','other':'другое',
             'sad':'грусть','surprised':'удивление','unknown':'неопределённо'}
@@ -195,8 +199,13 @@ def main():
     if args.check:return
     files=copy_sources(source,wanted)
     from funasr import AutoModel
-    log('Loading emotion2vec+ base; model files may download on first use (separate environment).')
-    model=AutoModel(model=MODEL_NAME,device='cpu',disable_update=True)
+    log('Loading emotion2vec+ base from Hugging Face (MS timeout bypass, CPU, no reinstall).')
+    try:
+        model=AutoModel(model=MODEL_NAME,hub='hf',device='cpu',disable_update=True)
+    except Exception as exc:
+        log('MODEL DOWNLOAD/LOAD FAILED via Hugging Face. Existing environment and original audio are unchanged.')
+        log('DETAIL '+repr(exc))
+        raise
     rows=analyze(model,files)
     generate_report(rows,len(keys))
     log('DONE. No Rask/Qwen/game/WAV originals changed.')
