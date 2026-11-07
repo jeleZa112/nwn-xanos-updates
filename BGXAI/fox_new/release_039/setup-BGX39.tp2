@@ -1,0 +1,8 @@
+// Independent optional additive extension to installed BGX38 / EPS 18.4.
+BACKUP ~BGX39/backup~
+AUTHOR ~BGXAI original EET extension~
+VERSION ~0.3.9-team-guard-eps-in-place~
+BEGIN ~BGXAI 039 - Team guard fallback for existing BGX38 / EPS~
+REQUIRE_PREDICATE GAME_IS ~eet~ ~EET is required~
+REQUIRE_PREDICATE FILE_EXISTS_IN_GAME ~BDDEFAI.BCS~ ~BDDEFAI.BCS required~
+EXTEND_BOTTOM ~BDDEFAI.BCS~ ~BGX39/team_guard_fallback.baf~
