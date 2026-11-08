@@ -1,0 +1,29 @@
+{
+  "tick": 20,
+  "threat": {
+    "enemy_uid": "Shank",
+    "ally_uid": "Jade",
+    "reason": "CONFIRMED_ATTACK",
+    "score": 16.6667,
+    "distance": 4.0,
+    "eta": null
+  },
+  "interceptor_uid": "Guard_A",
+  "cover_uid": "Guard_B",
+  "intents": [
+    {
+      "actor": "Guard_A",
+      "kind": "INTERCEPT_WHEN_IDLE",
+      "enemy": "Shank",
+      "protect": "Jade",
+      "warning": "ADVISORY_NOT_GAME_COMMAND"
+    },
+    {
+      "actor": "Guard_B",
+      "kind": "COVER_HOLD_POSITION",
+      "protect": "Jade",
+      "warning": "NO_MOVEMENT_ISSUED"
+    }
+  ],
+  "withheld_reason": null
+}
