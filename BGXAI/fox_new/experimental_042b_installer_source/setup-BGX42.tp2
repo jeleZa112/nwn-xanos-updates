@@ -1,0 +1,4 @@
+BACKUP ~BGX42/backup~
+AUTHOR ~BGXAI 042B experimental~
+BEGIN ~BGXAI 042B experimental guard priority (EPS 18.4 exact hash only)~
+COPY ~BGX42/staged/BDDEFAI.BCS~ ~override/BDDEFAI.BCS~
