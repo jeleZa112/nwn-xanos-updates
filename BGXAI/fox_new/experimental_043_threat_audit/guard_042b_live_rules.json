@@ -1,0 +1,236 @@
+{
+  "status": "PASS / OFFLINE 043 READ-ONLY THREAT AUDIT",
+  "source_bcs_sha256": "86d80953be464a3f10da8e1dc031b907801860b7f1f15b3ea6fb9d25e485f3f5",
+  "installed_042b_sha256": "8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0",
+  "guard_rule_count": 11,
+  "guard_positions": [
+    1032,
+    1033,
+    1034,
+    1035,
+    1036,
+    1037,
+    1038,
+    1039,
+    1040,
+    1041,
+    1042
+  ],
+  "rule_groups": {
+    "personal_hero": 1,
+    "priority_hp_below_65": 5,
+    "team_fallback": 5
+  },
+  "uses_idle_gate_all": true,
+  "guard_action_only": [
+    115,
+    87
+  ],
+  "explicit_attackedby_or_help_in_guard": false,
+  "observed_unchanged_cooldowns_seconds": {
+    "personal": 6,
+    "team": 8
+  },
+  "rules": [
+    {
+      "block": 1032,
+      "target_selector": 21,
+      "target": "Player1",
+      "hp_below_65_priority": false,
+      "cooldown_seconds": 6,
+      "range_predicates": [
+        10,
+        8
+      ],
+      "action_ids": [
+        115,
+        87
+      ],
+      "uses_action_list_empty": true,
+      "explicit_attackedby_or_help": false,
+      "see_triggers": 2
+    },
+    {
+      "block": 1033,
+      "target_selector": 23,
+      "target": "Player3",
+      "hp_below_65_priority": true,
+      "cooldown_seconds": 8,
+      "range_predicates": [
+        10,
+        7
+      ],
+      "action_ids": [
+        115,
+        87
+      ],
+      "uses_action_list_empty": true,
+      "explicit_attackedby_or_help": false,
+      "see_triggers": 2
+    },
+    {
+      "block": 1034,
+      "target_selector": 24,
+      "target": "Player4",
+      "hp_below_65_priority": true,
+      "cooldown_seconds": 8,
+      "range_predicates": [
+        10,
+        7
+      ],
+      "action_ids": [
+        115,
+        87
+      ],
+      "uses_action_list_empty": true,
+      "explicit_attackedby_or_help": false,
+      "see_triggers": 2
+    },
+    {
+      "block": 1035,
+      "target_selector": 25,
+      "target": "Player5",
+      "hp_below_65_priority": true,
+      "cooldown_seconds": 8,
+      "range_predicates": [
+        10,
+        7
+      ],
+      "action_ids": [
+        115,
+        87
+      ],
+      "uses_action_list_empty": true,
+      "explicit_attackedby_or_help": false,
+      "see_triggers": 2
+    },
+    {
+      "block": 1036,
+      "target_selector": 26,
+      "target": "Player6",
+      "hp_below_65_priority": true,
+      "cooldown_seconds": 8,
+      "range_predicates": [
+        10,
+        7
+      ],
+      "action_ids": [
+        115,
+        87
+      ],
+      "uses_action_list_empty": true,
+      "explicit_attackedby_or_help": false,
+      "see_triggers": 2
+    },
+    {
+      "block": 1037,
+      "target_selector": 22,
+      "target": "Player2",
+      "hp_below_65_priority": true,
+      "cooldown_seconds": 8,
+      "range_predicates": [
+        10,
+        7
+      ],
+      "action_ids": [
+        115,
+        87
+      ],
+      "uses_action_list_empty": true,
+      "explicit_attackedby_or_help": false,
+      "see_triggers": 2
+    },
+    {
+      "block": 1038,
+      "target_selector": 23,
+      "target": "Player3",
+      "hp_below_65_priority": false,
+      "cooldown_seconds": 8,
+      "range_predicates": [
+        10,
+        7
+      ],
+      "action_ids": [
+        115,
+        87
+      ],
+      "uses_action_list_empty": true,
+      "explicit_attackedby_or_help": false,
+      "see_triggers": 2
+    },
+    {
+      "block": 1039,
+      "target_selector": 24,
+      "target": "Player4",
+      "hp_below_65_priority": false,
+      "cooldown_seconds": 8,
+      "range_predicates": [
+        10,
+        7
+      ],
+      "action_ids": [
+        115,
+        87
+      ],
+      "uses_action_list_empty": true,
+      "explicit_attackedby_or_help": false,
+      "see_triggers": 2
+    },
+    {
+      "block": 1040,
+      "target_selector": 25,
+      "target": "Player5",
+      "hp_below_65_priority": false,
+      "cooldown_seconds": 8,
+      "range_predicates": [
+        10,
+        7
+      ],
+      "action_ids": [
+        115,
+        87
+      ],
+      "uses_action_list_empty": true,
+      "explicit_attackedby_or_help": false,
+      "see_triggers": 2
+    },
+    {
+      "block": 1041,
+      "target_selector": 26,
+      "target": "Player6",
+      "hp_below_65_priority": false,
+      "cooldown_seconds": 8,
+      "range_predicates": [
+        10,
+        7
+      ],
+      "action_ids": [
+        115,
+        87
+      ],
+      "uses_action_list_empty": true,
+      "explicit_attackedby_or_help": false,
+      "see_triggers": 2
+    },
+    {
+      "block": 1042,
+      "target_selector": 22,
+      "target": "Player2",
+      "hp_below_65_priority": false,
+      "cooldown_seconds": 8,
+      "range_predicates": [
+        10,
+        7
+      ],
+      "action_ids": [
+        115,
+        87
+      ],
+      "uses_action_list_empty": true,
+      "explicit_attackedby_or_help": false,
+      "see_triggers": 2
+    }
+  ],
+  "limits": "Counts and trigger names are compiled script evidence only, not runtime timing; no safe pre-emption of active casts/manual commands proved.",
+  "decision": "Do not install 043 yet. Need strictly class-aware threat arbitration and engine-safe handling of existing actions."
+}
