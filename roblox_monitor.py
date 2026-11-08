@@ -1,4 +1,4 @@
-# Roblox background monitor - release 3.0.1
+# Roblox background monitor - release 3.2.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
@@ -1663,7 +1663,17 @@ def replay_obs_video():
     """
     import csv
     import cv2
-    source=input("Path to existing 2026-11-08 OBS MP4: ").strip().strip('"')
+    source=input("Path to existing 2026-11-08 OBS MP4 (Enter=auto-search): ").strip().strip('"')
+    if not source:
+        filename="2026-11-08 12-05-36.mp4"
+        candidates=(Path.home()/filename,
+                    Path.home()/"Videos"/filename,
+                    Path.home()/"Desktop"/filename,
+                    Path.home()/"Downloads"/filename,
+                    Path.home()/"Documents"/filename,
+                    Path.home()/"Videos"/"Captures"/filename)
+        source=str(next((p for p in candidates if p.is_file()),""))
+        if source:print("VIDEO_FOUND:",source)
     if not Path(source).is_file():
         print("VIDEO_NOT_FOUND: no game input; keep the old file unchanged.")
         return 2
