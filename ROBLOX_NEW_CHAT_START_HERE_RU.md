@@ -25,3 +25,7 @@
 
 ## 2026-11-08 — latest V3.3.0
 Код V3.3.0 commit `53a5e9b7c44f35a158539e78b7b36b7d9ffa07f0`. Новый пункт 12 `PAD SCOUT` через прежний `ROBLOX_UPDATE.cmd` использует уже существующее OBS-видео 191.27 с и создаёт приватный `PAD_SCOUT_OLD_VIDEO.zip` (12 размеченных кадров+CSV). Реальный классификатор свободной площадки и автоматический маршрут пока не доказаны; никогда не ходить вслепую.
+
+## 08.11.2026 — V3.4.0 latest
+Code commit `875b5e9e238e65f477dfb8392530e006a349fe90`. Current read-only detector recognizes `Лобби готово!` and countdown signs in saved PAD_SCOUT images. Return scene 190–191s: right READY, left+center COUNTDOWN. Offline analysis already completed; there is **no need to ask for the old video or ZIP again**. Do not move to right pad without pose calibration. Read private review at Library `/ROBLOX_BG_AI/RESEARCH/PAD_SIGNS_V34_REVIEW_RU.md`.
+
