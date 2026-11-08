@@ -63,9 +63,11 @@ try {
     }
     try {
         $pinPath='BGXAI/fox_new/BOOTSTRAP_PIN.json'
+        # Unique query per launch prevents stale branch-ref pin across HTTP/proxy/CDN caches.
+        $cacheNonce=[DateTime]::UtcNow.Ticks.ToString()
         $pinSources=@(
-          ('https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-eet-ai/'+$pinPath),
-          ('https://cdn.jsdelivr.net/gh/jeleZa112/nwn-xanos-updates@bg-eet-ai/'+$pinPath)
+          ('https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-eet-ai/'+$pinPath+'?bgxnonce='+$cacheNonce),
+          ('https://cdn.jsdelivr.net/gh/jeleZa112/nwn-xanos-updates@bg-eet-ai/'+$pinPath+'?bgxnonce='+$cacheNonce)
         )
         Download-Limited $pinSources $temporaryPin 4096
         $pin=[IO.File]::ReadAllText($temporaryPin,[Text.Encoding]::UTF8) | ConvertFrom-Json
