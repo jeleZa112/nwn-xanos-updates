@@ -1,7 +1,7 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "3.5.0",
-  "note": "Real laughter splice for IMOEN06_ and IMOEN77A from local English originals; old Russian PARTS preserved; no new model",
+  "version": "3.6.0",
+  "note": "Test of brighter Rask01 x-vector reference vs mixed Rask01/Rask75 for IMOEN77A; original laugh preserved, Qwen cache reused",
   "files": [
     {
       "path": "BG_RU_IMOEN_PROSODY_29/GENERATE_PROSODY_29.py",
@@ -62,6 +62,18 @@
     {
       "path": "BG_RU_IMOEN_PROSODY_29/README_LAUGH_35_RU.txt",
       "sha256": "d2bf1a0d83580fc8d461c8e7e3b7311c32907133c3d842feeee4500cc3245a0f"
+    },
+    {
+      "path": "BG_RU_IMOEN_PROSODY_29/REFERENCE_PILOT_36.py",
+      "sha256": "08d00ed9fabce8ff4a4e8ee19bb506e1bdf5c3ba21b36943fda15dad2f7705cf"
+    },
+    {
+      "path": "BG_RU_IMOEN_PROSODY_29/RUN_REFERENCE_36.cmd",
+      "sha256": "08b132f31ccba69153d29b95ed05a4a91f09a68f5a160e0a469d9912b98e4889"
+    },
+    {
+      "path": "BG_RU_IMOEN_PROSODY_29/README_REFERENCE_36_RU.txt",
+      "sha256": "571e55a21bf59c8b095e432227fcd1cd33dc9ee5a738d713a6d7220f7c37dcaa"
     }
   ]
 }
