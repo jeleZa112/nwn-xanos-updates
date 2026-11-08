@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.4.1
+# Roblox background monitor - release 3.4.2
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.4.1"
+VERSION = "3.4.2"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -2084,32 +2084,46 @@ def pad_sign_replay():
 
 
 def pad_sign_live_observer():
-    """Read-only 120s visual sign observer; no movement, clicks or OCR."""
+    """Read-only live sign diagnostics: small private ZIP, no game controls.
+
+    Keep the original CSV output; add 3 low-resolution captures so a zero-hit
+    result can be diagnosed without another full OBS recording.
+    """
     import queue
     import csv
     import ctypes
     import cv2
+    import zipfile
+    import io
     from windows_capture import WindowsCapture,Frame,InternalCaptureControl
+
     root=Path.home()/'Documents'/'RobloxBGDiagnostics'/'PAD_SCOUT'
     root.mkdir(parents=True,exist_ok=True)
     output=root/'PAD_SIGN_LIVE_REPORT.csv'
+    bundle=root/'PAD_SIGN_LIVE_DIAGNOSTICS.zip'
     cap=WindowsCapture(cursor_capture=None,draw_border=None,
                        monitor_index=None,window_name='Roblox')
     queue_frames=queue.Queue(maxsize=1)
     stop=threading.Event()
+
     @cap.event
     def on_frame_arrived(frame:Frame,control:InternalCaptureControl):
         if stop.is_set():
-            control.stop();return
+            control.stop()
+            return
         try:
             image=frame.frame_buffer[:,:,:3].copy()
             if queue_frames.full():
                 try:queue_frames.get_nowait()
                 except queue.Empty:pass
             queue_frames.put_nowait(image)
-        except (queue.Full,ValueError):pass
+        except (queue.Full,ValueError):
+            pass
+
     @cap.event
-    def on_closed():stop.set()
+    def on_closed():
+        stop.set()
+
     win=ctypes.WinDLL('user32',use_last_error=True)
     win.FindWindowW.argtypes=(ctypes.c_wchar_p,ctypes.c_wchar_p)
     win.FindWindowW.restype=ctypes.c_void_p
@@ -2120,42 +2134,115 @@ def pad_sign_live_observer():
     def pressed():
         return bool(hwnd and win.GetForegroundWindow()==hwnd and
                     win.GetAsyncKeyState(0x79)&0x8000)
-    print('PAD SIGNS: READ ONLY. NO WASD/MOUSE, F10 stops in Roblox.')
+
+    print('PAD SIGNS V'+VERSION+': READ ONLY. NO WASD/MOUSE.')
+    print('No OBS required. F10 in Roblox stops; 6-10 seconds is enough.')
     controller=None
-    start=time.monotonic();last=0;last_note=None
+    start=time.monotonic()
+    last=0.0
+    last_note=None
+    saved=[]
+    rows=0
+    error=None
     try:
         controller=cap.start_free_threaded()
         with output.open('w',newline='',encoding='utf-8-sig') as fp:
             writer=csv.writer(fp)
-            writer.writerow(['elapsed','signs','advice'])
+            writer.writerow(['elapsed','signs','advice','frame_width',
+                             'frame_height','aspect_h_over_w',
+                             'scene_hint','detection_reason'])
             while not stop.is_set() and time.monotonic()-start<120:
-                if pressed():break
-                try:img=queue_frames.get(timeout=.5)
-                except queue.Empty:continue
+                if pressed():
+                    break
+                try:
+                    img=queue_frames.get(timeout=.5)
+                except queue.Empty:
+                    continue
                 now=time.monotonic()
-                if now-last<.85:continue
+                if now-last<.85:
+                    continue
                 last=now
+                H,W=img.shape[:2]
+                elapsed=round(now-start,1)
+                ratio=H/max(1,W)
+                scene,_features=lifecycle_scene_hint(img)
                 signs=pad_sign_hints(img)
+                if W<500 or H<300:
+                    reason='FRAME_TOO_SMALL'
+                elif not .48<=ratio<=.62:
+                    reason='ASPECT_OUTSIDE_TEMPLATE_RANGE'
+                elif not signs:
+                    reason='NO_SIGN_TEMPLATE_MATCH'
+                else:
+                    reason='SIGN_CANDIDATES'
                 description=';'.join(
                     f"{s['relative_side']}:{s['status']}:{s['confidence']}"
                     for s in signs)
                 advice=pad_sign_decision(signs)
-                writer.writerow([round(now-start,1),description,advice])
-                if description!=last_note:
-                    print('PAD_SIGNS '+description+' | '+advice,flush=True)
-                    last_note=description
+                writer.writerow([elapsed,description,advice,W,H,
+                                 round(ratio,4),scene,reason])
+                rows+=1
+                # Three bounded images from the exact WGC frames. This is the
+                # only local image evidence, never uploaded or published by code.
+                if ((len(saved)==0) or
+                    (len(saved)==1 and elapsed>=3.0) or
+                    (len(saved)==2 and elapsed>=7.0)):
+                    preview=cv2.resize(img,(960,540),interpolation=cv2.INTER_AREA)
+                    ok,encoded=cv2.imencode('.jpg',preview,
+                                             [cv2.IMWRITE_JPEG_QUALITY,62])
+                    if ok:
+                        saved.append(('live_%02d.jpg'%len(saved),
+                                      encoded.tobytes(),elapsed,scene,reason))
+                current_note=reason+' '+description+' scene='+scene
+                if current_note!=last_note:
+                    print('PAD_SIGNS '+current_note+' | '+advice,flush=True)
+                    last_note=current_note
         print('PAD_SIGN_LIVE_REPORT: '+str(output))
-        return 0
     except KeyboardInterrupt:
-        return 0
+        print('PAD_SIGNS_CANCELLED: saving collected diagnostics')
     except Exception:
-        print('PAD_SIGN_LIVE_ERROR '+traceback.format_exc())
-        return 2
+        error=traceback.format_exc()
+        print('PAD_SIGN_LIVE_ERROR '+error)
     finally:
         stop.set()
         if controller is not None:
             try:controller.stop()
             except Exception:pass
+    # Finalize evidence even when every recognition result was UNKNOWN.
+    try:
+        tmp=root/'PAD_SIGN_LIVE_DIAGNOSTICS.tmp'
+        with zipfile.ZipFile(tmp,'w',compression=zipfile.ZIP_DEFLATED) as z:
+            if output.is_file():
+                z.write(output,arcname='PAD_SIGN_LIVE_REPORT.csv')
+            meta=[
+                'ROBLOX PAD SIGN LIVE DIAGNOSTICS V'+VERSION,
+                'Source: 3 scaled Windows Graphics Capture frames (max).',
+                'No game keys or mouse clicks sent by this mode.',
+                'Screenshots are PRIVATE: they may show other players or UI.',
+                'Do NOT post this ZIP publicly on GitHub.',
+                'UNKNOWN => no movement. READY_SIGN alone is NOT a free slot.',
+                'Samples logged: '+str(rows),
+                'Snapshots captured: '+str(len(saved)),
+                'Error: '+(error or 'none'),
+            ]
+            for name,jpeg,at,scene,reason in saved:
+                z.writestr(name,jpeg)
+                meta.append('%s at %.1fs scene=%s reason=%s'%(name,at,scene,reason))
+            z.writestr('DIAGNOSTICS_README.txt','\n'.join(meta)+'\n')
+        with zipfile.ZipFile(tmp) as check:
+            bad=check.testzip()
+            if bad:
+                raise RuntimeError('Corrupt diagnostic ZIP member: '+bad)
+        tmp.replace(bundle)
+        print('PAD_SIGN_DIAGNOSTIC_BUNDLE: '+str(bundle))
+        if not saved:
+            print('NO_FRAMES_CAPTURED: check Roblox not minimized.')
+    except Exception:
+        print('PAD_SIGN_BUNDLE_ERROR '+traceback.format_exc())
+        return 2
+    return 2 if error else 0
+
+
 # === End V3.4 PAD SIGNS ===
 
 
