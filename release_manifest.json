@@ -1,7 +1,7 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "4.3.1",
-  "note": "Slow PyPI connection hotfix: 120-second pip socket timeout and 5 retries; reuse existing isolated VoxCPM2 venv",
+  "version": "4.3.2",
+  "note": "VoxCPM2 optional PyPI mirror fallback for future retry; current running installs should not be interrupted.",
   "files": [
     {
       "path": "BG_RU_IMOEN_PROSODY_29/GENERATE_PROSODY_29.py",
@@ -81,7 +81,7 @@
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/RUN_VOXCPM2_01.cmd",
-      "sha256": "cc22244aed3397e5eab06bf480b75993885a0985dfb355e063b4cc2f7d5dbb90"
+      "sha256": "446ffddfbffc2fc04afbc7554c5a3bb6cb17dc839b3bfe9bd06f07ab6b5eae8d"
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/README_VOXCPM2_01_RU.txt",
