@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.5.6
+# Roblox background monitor - release 3.5.7
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.5.6"
+VERSION = "3.5.7"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -3587,6 +3587,7 @@ class AutoPilotPadReselect:
         self.reselections=0
         self.busy_frames=0
         self.lost_frames=0
+        self.lost_since=None
         self.excluded_x=None
         self.excluded_until=0.0
 
@@ -3601,7 +3602,7 @@ class AutoPilotPadReselect:
         return [s for s in signs if s.get('status')!='READY_SIGN'
                 or abs(s.get('center_x',-9)-self.excluded_x)>.13]
 
-    def check(self, signs, target_x):
+    def check(self, signs, target_x, now):
         if target_x is None:
             return ('RESELECT', None, 'NO_LOCKED_TARGET')
         countdown=[s for s in signs if
@@ -3611,6 +3612,7 @@ class AutoPilotPadReselect:
         if countdown:
             self.busy_frames+=1
             self.lost_frames=0
+            self.lost_since=None
             if self.busy_frames>=2:
                 return ('RESELECT',None,'TRACKED_PAD_COUNTDOWN')
             return ('WAIT',None,'COUNTDOWN_NEEDS_CONFIRMATION')
@@ -3625,14 +3627,21 @@ class AutoPilotPadReselect:
               abs(s.get('center_x',-9)-target_x)<=.19]
         if near:
             self.lost_frames=0
+            self.lost_since=None
             x=min(near,key=lambda s:abs(s.get('center_x',0)-target_x))['center_x']
             return ('TRACK',x,'SAME_SIGN_NEARBY')
         # A completely different READY sign is NOT a continuation of the
         # locked pad. Pause and get a new stable target while not moving.
+        # A single WGC frame may omit the label after WASD, from player
+        # occlusion, camera motion, or resizing. This does NOT prove a pad
+        # was occupied. Stay motionless for at least 5 seconds and require
+        # >=7 sampled misses before considering another pad.
+        if self.lost_since is None:
+            self.lost_since=now
         self.lost_frames+=1
-        if self.lost_frames>=2:
-            return ('RESELECT',None,'LOCKED_READY_DISAPPEARED')
-        return ('WAIT',None,'READY_LOCK_UNCERTAIN')
+        if self.lost_frames>=7 and now-self.lost_since>=5.0:
+            return ('RESELECT',None,'READY_UNSEEN_FOR_5S')
+        return ('WAIT',None,'READY_TEMPORARILY_HIDDEN')
 
     def begin_reselection(self, old_x, now):
         if self.reselections>=2:
@@ -3642,6 +3651,7 @@ class AutoPilotPadReselect:
         self.excluded_until=now+9.0
         self.busy_frames=0
         self.lost_frames=0
+        self.lost_since=None
         return True
 
 
@@ -3713,7 +3723,11 @@ class AutoPilotPolicy:
                 near=[o for o in old if o[1]==side and abs(o[0]-x)<=.13]
                 if near:matches.append(min(near,key=lambda a:abs(a[0]-x))[0])
             if len(matches)>=3 and max(matches)-min(matches)<=.18:
-                candidates.append((sum(matches)/len(matches),side))
+                # The historical average is ONLY for stability checking.
+                # Use the current sign position for actual movement. The
+                # 06:48:45 live log had current x=.634 but locked x=.504,
+                # causing a misleading forward command.
+                candidates.append((x,side))
         if not candidates:return None
         candidates.sort(key=lambda row:(abs(row[0]-.5),row[0]))
         self.sign_misses=0
@@ -4278,6 +4292,8 @@ def autopilot_mode():
     route_started=False
     pad_attempts=0
     last_pad_report_at=begin-10
+    last_pad_pause_at=begin-10
+    last_pad_pause_reason=None
     last_live_frame=None
     def reselect_pad(why,now):
         # No blind step to the next visible sign. Stop, preserve the overall
@@ -4464,10 +4480,14 @@ def autopilot_mode():
                     if motion.stop_reason():
                         halt_reason='PAD_'+motion.stop_reason();break
                 signs=pad_sign_hints(frame)
-                status,x,why=pad_reselect.check(signs,brain.target_x)
+                status,x,why=pad_reselect.check(signs,brain.target_x,now)
                 if status=='WAIT':
-                    log('PAD_PAUSE '+why+' target_x='+str(brain.target_x))
+                    if why!=last_pad_pause_reason or now-last_pad_pause_at>=3.0:
+                        log('PAD_PAUSE '+why+' target_x='+str(brain.target_x))
+                        last_pad_pause_at=now
+                        last_pad_pause_reason=why
                     continue
+                last_pad_pause_reason=None
                 if status=='RESELECT':
                     if not reselect_pad(why,now):
                         halt_reason='PAD_RESELECT_LIMIT_'+why;break
