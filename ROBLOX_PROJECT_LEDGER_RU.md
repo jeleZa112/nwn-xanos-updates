@@ -322,3 +322,9 @@
 - WARNING: READY_SIGN is a *sign*, not confirmed free matchmaking slot or permission to move. LEFT/CENTER/RIGHT are screen-relative; rotation/movement to the right-side pad after return has not been calibrated. No blind WASD, no 45s occupied-pad wait.
 - Next: multi-frame tracking, camera pose and sign-to-pad mapping, then tiny bounded turning/walking pilot with immediate stop on UNKNOWN; only then connect original City/1/Hard menu helper.
 
+## 2026-11-08 — V3.4.1 hotfix: режим 14 падал сразу после старта
+- Пользователь показал traceback из Windows (`C:\Users\Drevo\Desktop\roblox_monitor.py`, строки 3353 и 2100): `ValueError: Invalid Event Handler Use on_frame_arrived Or on_closed` при выборе режима `14 — PAD SIGNS LIVE`.
+- Причина подтверждена чтением исходника V3.4.0: новый обработчик событий `@cap.event` использовал имена `arrived` и `closed`, но `windows_capture` регистрирует только `on_frame_arrived` и `on_closed`.
+- Исправлено в `roblox_monitor.py` V3.4.1, GitHub commit `dd101bcd58debf941fb8880d88b335f87a7413d1`: в функции `pad_sign_live_observer` изменены только два имени обработчика (и номер версии). Проверены все 16 декорированных обработчиков файла: имена только `on_frame_arrived`/`on_closed`.
+- Локальный игровой тест V3.4.1 ещё не подтверждён; не говорить, что живой захват уже успешно запущен.
+- Действие пользователя: повторно открыть прежний `ROBLOX_UPDATE.cmd` (скачает V3.4.1), выбрать 14, оставить Roblox открытым в лобби, при необходимости остановить F10; прислать только `Documents\RobloxBGDiagnostics\PAD_SCOUT\PAD_SIGN_LIVE_REPORT.csv`. Не требовать новый видеоролик.
