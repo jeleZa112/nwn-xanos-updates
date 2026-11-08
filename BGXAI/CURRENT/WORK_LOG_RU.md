@@ -727,3 +727,13 @@ User reports Foxx EET repack was updated, and their current game has SCS install
 - **Do not claim 042B tested on Windows EET**: current output is static/mocked; no real PowerShell 5.1, WeiDU 25100/game test of 042B yet. Existing 041 keeps working until user explicitly chooses 15 and confirms.
 - **NEXT USER ACTION ONLY**: run original `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`, select **13**, paste complete read-only result. Do NOT choose 15 yet. If 13 not visible due to CDN cache, review bootstrap pin/commit without replacing CMD and without repeated fight tests. After 13 BASELINE OK, one controlled opt-in install and in-game validation, checking EPS autoattack ON, two defenders, manual commands, bard song/casts. Russian Extra Combat Info remains unfinished.
 - Full report GitHub `BGXAI/CURRENT/BGXAI_042B_ONEFILE_RELEASE_20261109_RU.md` commit `de82b50b4084702c4d4148bd1b1b7b3cacb5a4cf`; Library `CURRENT/BGXAI_042B_ONEFILE_RELEASE_20261109_RU.md`.
+
+## 2026-11-09 — LIVE Windows PRECHECK 042B пункт 13: BASELINE OK
+
+- Пользователь реально запустил прежний `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd` и выбрал **13**.
+- Точный вывод: `EPS installed: True; WeiDU available: True`, `BGX41 present: True; 041 last: True`, `BGX42 present: False; 042 last: False`.
+- `Live BCS SHA256: 86d80953be464a3f10da8e1dc031b907801860b7f1f15b3ea6fb9d25e485f3f5` — совпадает с pin исходного EET BCS.
+- Итог: `BGXAI 042B PRECHECK: BASELINE OK. NOT INSTALLED.` / `NO GAME FILES CHANGED.`
+- Это только успешный реальный Windows preflight, **не** доказательство установки/компиляции 042B и **не** тест боевой логики.
+- Следующее одно действие для пользователя после закрытия игры и InfinityLoader: повторно открыть прежний `BGXAI_UPDATE.cmd`, выбрать **15**, внимательно проверить вывод, ввести `YES` только для осознанной экспериментальной установки. Пункт 15 автоматически вызывает проверенную загрузку исходников; 14 отдельно не обязателен. Установщик обязан ещё раз проверить исходный hash, BGX41-last, отсутствие процессов и записать внешние backups, затем WeiDU backup. При `REVIEW` / `BLOCKED` не повторять, сохранить вывод и backup/report, анализировать причину. При успехе нужно получить строку `INSTALLED_EXPERIMENTAL` и checks, затем только следующий игровой тест; старую 041 не откатывать.
+- Все предыдущие журналы, 76 offline tests, pinned dispatcher/manifest and original game BCS remain unchanged. Русская расшифровка Extra Combat Info непосредственно в игре пока не внедрена.
