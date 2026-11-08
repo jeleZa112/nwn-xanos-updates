@@ -1,0 +1,35 @@
+{
+  "status": "SOURCE_ONLY_OFFLINE_PREVIEW_NEVER_INSTALLED",
+  "source_042b_sha256": "8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0",
+  "candidate_043a_sha256": "396a68a7b87ebfe12d68b1303d6dcbc43ce2fe5dd8bdf7d970542f317f4b645e",
+  "bytes": 2229764,
+  "blocks": 1057,
+  "changed_blocks": [
+    1032,
+    1033,
+    1034,
+    1035,
+    1036,
+    1037,
+    1038,
+    1039,
+    1040,
+    1041,
+    1042
+  ],
+  "changed_only_range_parameters": true,
+  "player1_enemy_distance": {
+    "from": 8,
+    "to": 9
+  },
+  "player2_6_enemy_distance": {
+    "from": 7,
+    "to": 9
+  },
+  "protected_ally_distance_unchanged": 10,
+  "compiled_guard_action_unchanged": true,
+  "eps_magic_bard_f_ui_unmodified": true,
+  "does_not_allocate_two_guard_roles": true,
+  "gameplay_runtime_verified": false,
+  "caveat": "Earlier range may cause earlier approach or extra chasing; real in-game behaviour UNVERIFIED."
+}
