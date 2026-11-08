@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.5.4
+# Roblox background monitor - release 3.5.5
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.5.4"
+VERSION = "3.5.5"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -2120,13 +2120,16 @@ def pad_sign_hints(raw):
         region=gray[24:184,:]
         source=_live_ready_v351_template()
         hits=[]
-        for scale in (.72,.79,.86,.93,1.,1.07,1.14,1.21,1.28,1.35):
+        # Small distant signs (the 2026-11-09 live lobby screenshot)
+        # render at ~0.60x the saved 126px text template. Do not loosen
+        # similarity globally; small-scale candidates require >=0.80.
+        for scale in (.59,.60,.61,.62,.72,.79,.86,.93,1.,1.07,1.14,1.21,1.28,1.35):
             tile=cv2.resize(source,None,fx=scale,fy=scale,
                              interpolation=cv2.INTER_AREA)
             if tile.shape[0]>=region.shape[0] or tile.shape[1]>=region.shape[1]:
                 continue
             heat=cv2.matchTemplate(region,tile,cv2.TM_CCOEFF_NORMED)
-            ys,xs=np.where((heat>=.72)&
+            ys,xs=np.where((heat >= (.80 if scale<.70 else .72))&
                 (heat==cv2.dilate(heat,np.ones((9,25),np.uint8))))
             for y,x in zip(ys,xs):
                 hits.append((float(heat[y,x]),int(x),int(y+24),
