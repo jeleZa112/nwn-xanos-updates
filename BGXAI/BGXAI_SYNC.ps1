@@ -33,8 +33,15 @@ $release039=@{
     localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_039';installer='BGXAI39_INSTALL.py';
     names=@('BGXAI39_INSTALL.py','setup-BGX39.tp2','BGX39/team_guard_fallback.baf','SOURCE_MANIFEST.json','README_RU.txt','tests/test_team_guard_039.py')
 }
+$release042b=@{
+    id='042B';version='0.3.12-042B';manifest=$remoteRoot+'release_042b/manifest.json';prefix=$remoteRoot+'release_042b/';
+    localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_042b';installer='BGXAI42_INSTALL.py';
+    names=@('BGXAI42_INSTALL.py','build_042b_preview.py','guard_source_042a.py',
+            'setup-BGX42.tp2','SOURCE_MANIFEST.json','README_RU.md',
+            'BGX42/tests/test_installer_042b.py','BGX42/tests/test_recovery_gate.py')
+}
 function Get-PinnedBytes([string]$remotePath) {
-    if($remotePath -notmatch '^BGXAI/fox_new/release_0(39|40|41)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
+    if($remotePath -notmatch '^BGXAI/fox_new/release_0(39|40|41|42b)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
         throw ('Remote source path blocked: '+$remotePath)
     }
     # All sources are publicly hosted; pin content by immutable commit and SHA256 manifest.
@@ -276,7 +283,38 @@ function Test042EPSReadOnly {
     Write-Host ('Actions: ProtectObject='+$protectCount+' AttackReevaluate='+$attackReeval+' AttackOneRound='+$attackOneRound)
     foreach($item in $interesting){Write-Host $item}
     Write-Host 'Historical copies are NOT used for this audit; game resources READ ONLY.'
-    Write-Host '042 live patch NOT installed. No game files changed.'
+    Write-Host '042 audit only; no game files changed by this option.'
+}
+function Test042BReadOnly {
+    # Current game state only: no Python, WeiDU, download or write.
+    Write-Host ''
+    Write-Host 'BGXAI 042B - LIVE EET READ-ONLY PREFLIGHT'
+    $log=Join-Path $GameRoot 'WeiDU.log'
+    if(!(Test-Path -LiteralPath $log -PathType Leaf)){throw 'WeiDU.log missing'}
+    $active=@(Get-Content -LiteralPath $log | Where-Object { $_.TrimStart().StartsWith('~') })
+    $has41=@($active | Where-Object { $_ -match 'BGX41[^~]*[.]TP2~' }).Count -gt 0
+    $has42=@($active | Where-Object { $_ -match 'BGX42[^~]*[.]TP2~' }).Count -gt 0
+    $last41=$active.Count -gt 0 -and $active[-1] -match 'BGX41[^~]*[.]TP2~'
+    $last42=$active.Count -gt 0 -and $active[-1] -match 'BGX42[^~]*[.]TP2~'
+    $eps=@($active | Where-Object { $_.ToUpperInvariant().Contains('ENHANCED-POWERGAMING-SCRIPTS') }).Count -gt 0
+    $bcs=Join-Path $GameRoot 'override\BDDEFAI.BCS'
+    if(!(Test-Path -LiteralPath $bcs -PathType Leaf)){throw 'BDDEFAI.BCS missing'}
+    $hash=HashFile $bcs
+    $orig='86d80953be464a3f10da8e1dc031b907801860b7f1f15b3ea6fb9d25e485f3f5'
+    $patched='8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0'
+    $weidu=Test-Path -LiteralPath (Join-Path $GameRoot 'setup-enhanced-powergaming-scripts.exe') -PathType Leaf
+    Write-Host ('EPS installed: '+$eps+'; WeiDU available: '+$weidu)
+    Write-Host ('BGX41 present: '+$has41+'; 041 last: '+$last41)
+    Write-Host ('BGX42 present: '+$has42+'; 042 last: '+$last42)
+    Write-Host ('Live BCS SHA256: '+$hash)
+    if($eps -and $weidu -and $has41 -and !$has42 -and $last41 -and $hash -ceq $orig) {
+       Write-Host 'BGXAI 042B PRECHECK: BASELINE OK. NOT INSTALLED.'
+    } elseif($eps -and $has42 -and $last42 -and $hash -ceq $patched) {
+       Write-Host 'BGXAI 042B PRECHECK: PATCH PRESENT. For backup status choose 16.'
+    } else {
+       Write-Host 'BGXAI 042B PRECHECK: REVIEW REQUIRED. DO NOT INSTALL.'
+    }
+    Write-Host 'NO GAME FILES CHANGED.'
 }
 Write-Host ''
 Write-Host ' BGXAI ONE-FILE UPDATER / EET Foxx / EPS 18.4'
@@ -293,6 +331,11 @@ Write-Host ' 9 - Status of BGXAI 041 (game read-only)'
 Write-Host ' 10 - EXPERIMENTAL install BGXAI 041 (YES + WeiDU backup; only if 040 last)'
 Write-Host ' 11 - Roll back BGXAI 041 (YES; only if 041 last)'
 Write-Host ' 12 - BGXAI 042 EPS guard/autoattack audit (READ-ONLY)'
+Write-Host ' 13 - BGXAI 042B LIVE preflight (READ-ONLY; NO INSTALL)'
+Write-Host ' 14 - Download/verify BGXAI 042B SOURCE ONLY'
+Write-Host ' 15 - EXPERIMENTAL install BGXAI 042B (YES + WeiDU backups)'
+Write-Host ' 16 - BGXAI 042B status (READ-ONLY; first download via 14)'
+Write-Host ' 17 - Roll back BGXAI 042B (YES; only if last + verified backups)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -311,6 +354,11 @@ try {
       '10' {SyncRelease $release041;RunRelease $release041 '--install';break}
       '11' {RunRelease $release041 '--uninstall';break}
       '12' {Test042EPSReadOnly;break}
+      '13' {Test042BReadOnly;break}
+      '14' {SyncRelease $release042b;break}
+      '15' {SyncRelease $release042b;RunRelease $release042b '--install';break}
+      '16' {RunRelease $release042b '--status';break}
+      '17' {SyncRelease $release042b;RunRelease $release042b '--uninstall';break}
       default {throw 'Unknown menu option, no game change.'}
     }
     exit 0
