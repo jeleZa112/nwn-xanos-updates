@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.5.5
+# Roblox background monitor - release 3.5.6
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.5.5"
+VERSION = "3.5.6"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -3577,6 +3577,74 @@ def lobby_helper():
 # lifecycle_scene_hint and turret_price_color_signal functions.
 # No additional Python file or CMD is needed on the user's computer.
 
+class AutoPilotPadReselect:
+    """Do not chase a pad after it becomes busy or the tracked sign jumps.
+
+    This is a screen-relative, bounded reacquisition; NOT world navigation.
+    No command to Roblox is emitted by this policy.
+    """
+    def __init__(self):
+        self.reselections=0
+        self.busy_frames=0
+        self.lost_frames=0
+        self.excluded_x=None
+        self.excluded_until=0.0
+
+    def reset(self):
+        self.__init__()
+
+    def candidates(self, signs, now):
+        # Exclude the previous abandoned label only while standing still.
+        # Keep BUSY signs to prevent choosing an overlapping READY false hit.
+        if self.excluded_x is None or now>=self.excluded_until:
+            return signs
+        return [s for s in signs if s.get('status')!='READY_SIGN'
+                or abs(s.get('center_x',-9)-self.excluded_x)>.13]
+
+    def check(self, signs, target_x):
+        if target_x is None:
+            return ('RESELECT', None, 'NO_LOCKED_TARGET')
+        countdown=[s for s in signs if
+                   s.get('status')=='COUNTDOWN_SIGN' and
+                   s.get('confidence',0)>=.72 and
+                   abs(s.get('center_x',-9)-target_x)<.105]
+        if countdown:
+            self.busy_frames+=1
+            self.lost_frames=0
+            if self.busy_frames>=2:
+                return ('RESELECT',None,'TRACKED_PAD_COUNTDOWN')
+            return ('WAIT',None,'COUNTDOWN_NEEDS_CONFIRMATION')
+        self.busy_frames=0
+        ready=[s for s in signs if s.get('status')=='READY_SIGN'
+               and s.get('confidence',0)>=.65
+               and not any(b.get('status')=='COUNTDOWN_SIGN' and
+                           b.get('confidence',0)>=.64 and
+                           abs(s.get('center_x',-9)-b.get('center_x',-8))<.115
+                           for b in signs)]
+        near=[s for s in ready if
+              abs(s.get('center_x',-9)-target_x)<=.19]
+        if near:
+            self.lost_frames=0
+            x=min(near,key=lambda s:abs(s.get('center_x',0)-target_x))['center_x']
+            return ('TRACK',x,'SAME_SIGN_NEARBY')
+        # A completely different READY sign is NOT a continuation of the
+        # locked pad. Pause and get a new stable target while not moving.
+        self.lost_frames+=1
+        if self.lost_frames>=2:
+            return ('RESELECT',None,'LOCKED_READY_DISAPPEARED')
+        return ('WAIT',None,'READY_LOCK_UNCERTAIN')
+
+    def begin_reselection(self, old_x, now):
+        if self.reselections>=2:
+            return False
+        self.reselections+=1
+        self.excluded_x=old_x
+        self.excluded_until=now+9.0
+        self.busy_frames=0
+        self.lost_frames=0
+        return True
+
+
 class AutoPilotPolicy:
     """Pure state/decision policy; unit-testable without Windows or Roblox."""
     def __init__(self):
@@ -4184,6 +4252,7 @@ def autopilot_mode():
     @cap.event
     def on_closed():stop.set()
     brain=AutoPilotPolicy()
+    pad_reselect=AutoPilotPadReselect()
     motion=AutoPilotMotionGuard()
     return_gate=AutoPilotReturnGate()
     route=AutoPilotRoute()
@@ -4210,6 +4279,30 @@ def autopilot_mode():
     pad_attempts=0
     last_pad_report_at=begin-10
     last_live_frame=None
+    def reselect_pad(why,now):
+        # No blind step to the next visible sign. Stop, preserve the overall
+        # movement budget, and require three fresh READY samples.
+        nonlocal wait_until,menu_candidate_since
+        old_x=brain.target_x
+        if not pad_reselect.begin_reselection(old_x,now):
+            log('PAD_RESELECT_EXHAUSTED reason='+why)
+            return False
+        motion.reset()
+        brain.target_x=None
+        brain.last_x=None
+        brain.no_progress=0
+        brain.sign_misses=0
+        brain.ready_history=[]
+        brain.stage='DISCOVER'
+        # Keep brain.move_actions, move_seconds and stage_since: retries may
+        # not bypass the original 34-step/12-second/45-second cap.
+        menu_candidate_since=None
+        wait_until=now+1.2
+        transition('LOBBY','PAD_RESELECT '+why,now)
+        log('PAD_RESELECT reason='+why+' old_x='+str(old_x)+
+            ' attempt='+str(pad_reselect.reselections)+'/2')
+        return True
+
     def transition(next_stage,why,now):
         nonlocal stage,stage_since,last_phase
         if stage!=next_stage:
@@ -4263,6 +4356,7 @@ def autopilot_mode():
             recovery=return_gate.observe(stage,scene,now,brain.match_index)
             if recovery=='RETURNED_LOBBY':
                 motion.reset()
+                pad_reselect.reset()
                 brain.reset_lobby(now)
                 return_gate.reset()
                 transition('LOBBY','four verified lobby frames after a match',now)
@@ -4283,6 +4377,7 @@ def autopilot_mode():
                 brain.turret_actions=0;brain.last_turret_at=0.0
             if stage=='WAIT_FOR_GAME':
                 if lobby_visible>=3:
+                    pad_reselect.reset()
                     brain.reset_lobby(now)
                     transition('LOBBY','lobby seen',now)
                 elif match_visible>=3:
@@ -4294,6 +4389,7 @@ def autopilot_mode():
                 continue
             if stage=='RESULTS_WAIT':
                 if lobby_visible>=3:
+                    pad_reselect.reset()
                     brain.reset_lobby(now)
                     return_gate.reset()
                     transition('LOBBY','auto-return to lobby',now)
@@ -4316,7 +4412,9 @@ def autopilot_mode():
                     log('PAD_HITS '+str([(s['status'],s['center_x'],s['confidence'])
                          for s in signs[:7]])+' frame='+str(w)+'x'+str(h))
                     last_pad_report_at=now
-                target=brain.ready_sign(signs)
+                # Exclusion applies to only READY after abandoning a pad.
+                # Occupied signs are retained for ready_sign's busy veto.
+                target=brain.ready_sign(pad_reselect.candidates(signs,now))
                 if target is None:
                     if now-stage_since>35:
                         # PRIVATE image for a real gameplay run, not a new test mode.
@@ -4328,6 +4426,7 @@ def autopilot_mode():
                         halt_reason='READY_SIGN_NOT_STABLE';break
                     continue
                 brain.target_x=target
+                pad_reselect.excluded_x=None
                 transition('LOBBY_NAV','ready sign stable, approaching with feedback',now)
                 brain.stage_since=now
                 brain.last_x=None
@@ -4362,21 +4461,14 @@ def autopilot_mode():
                     if motion.stop_reason():
                         halt_reason='PAD_'+motion.stop_reason();break
                 signs=pad_sign_hints(frame)
-                ready=[s for s in signs if s.get('status')=='READY_SIGN'
-                       and s.get('confidence',0)>=.65 and
-                       not any(b.get('status')=='COUNTDOWN_SIGN' and
-                               abs(s.get('center_x',-1)-b.get('center_x',-2))<.115
-                               for b in signs)]
-                if not ready:
-                    brain.sign_misses+=1
-                    if brain.sign_misses>=5:
-                        halt_reason='TARGET_SIGN_LOST_5_FRAMES';break
+                status,x,why=pad_reselect.check(signs,brain.target_x)
+                if status=='WAIT':
+                    log('PAD_PAUSE '+why+' target_x='+str(brain.target_x))
                     continue
-                brain.sign_misses=0
-                current=min(ready,key=lambda s:abs(s.get('center_x',0)-brain.target_x))
-                x=current.get('center_x',0)
-                if abs(x-brain.target_x)>.20:
-                    halt_reason='TARGET_SWITCH_AMBIGUITY';break
+                if status=='RESELECT':
+                    if not reselect_pad(why,now):
+                        halt_reason='PAD_RESELECT_LIMIT_'+why;break
+                    continue
                 brain.target_x=x
                 action,key,duration=brain.lobby_movement(x,now)
                 if action=='HALT':
