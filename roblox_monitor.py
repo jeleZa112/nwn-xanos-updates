@@ -3,7 +3,7 @@
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.0.1"
+VERSION = "3.0.2"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -1231,7 +1231,7 @@ def route_demo(destination="corner"):
     if is_lobby:
         print("Start in the COMMON LOBBY after the game returns you there.")
         print("F8: start recording; walk ONCE to the purple CREATION PAD.")
-        print("F10 ON THE PAD: mark arrival; bot then observes it up to 45s.")
+        print("F10 immediately at the purple pad; NO standing or waiting on it.")
         print("If the pad is occupied, stand there and wait naturally.")
         print("Never guess that a pad is free: only the creation GUI proves it.")
     else:
@@ -1272,7 +1272,7 @@ def route_demo(destination="corner"):
         h,w=img.shape[:2]
         if w>1100:img=cv2.resize(img,(1100,round(h*1100/w)))
         name="route_%02d_%05.1fs.jpg"%(index,elapsed)
-        if not cv2.imwrite(str(folder/name),img,[cv2.IMWRITE_JPEG_QUALITY,72]):
+        if not cv2.imwrite(str(folder/name),img,[cv2.IMWRITE_JPEG_QUALITY,65 if is_lobby else 72]):
             return None
         return name
     keys={"W":0x57,"A":0x41,"S":0x53,"D":0x44,
@@ -1407,9 +1407,9 @@ def route_demo(destination="corner"):
                     spans.append((k,round(active.pop(k),3),round(elapsed,3)))
             for k in pressed:
                 if k not in active:active[k]=elapsed
-            if last_sample is None or elapsed-last_save>=1.8:
+            if last_sample is None or elapsed-last_save>=(.70 if is_lobby else 1.8):
                 current=frame()
-                if current is not None and len(screenshots)<26:
+                if current is not None and len(screenshots)<(95 if is_lobby else 26):
                     name=save(current,len(screenshots),elapsed)
                     if name:screenshots.append((round(elapsed,2),name))
                     last_save=elapsed
@@ -1418,7 +1418,7 @@ def route_demo(destination="corner"):
         elapsed=time.monotonic()-started
         for k,v in active.items():spans.append((k,round(v,3),round(elapsed,3)))
         final_frame=frame()
-        if final_frame is not None and len(screenshots)<26:
+        if final_frame is not None and len(screenshots)<(95 if is_lobby else 26):
             name=save(final_frame,len(screenshots),elapsed)
             if name:screenshots.append((round(elapsed,2),name))
         with (folder/"keys.csv").open("w",encoding="utf-8",newline="") as out:
@@ -1434,94 +1434,26 @@ def route_demo(destination="corner"):
         log("ROUTE_MOUSE_SUMMARY samples="+str(len(mouse_samples))+
             " installed="+str(mouse_hook_meta["installed"])+
             " NOTE: captured mouse is not confirmed camera yaw.")
-        # On arrival at the pad, gather evidence of wait/busy/free scene.
-        # Lack of a creation dialog is NOT proof of another player occupying it.
+        # User confirms Roblox ejects players who stand on this pad.
+        # Capture only the immediate F10 arrival frame: NO wait.
         wait_records=[]
-        if is_lobby and arrival_marked and focused() and not stop.is_set():
-            log("LOBBY_PAD_WAIT_START: up to 45 seconds; no game inputs.")
-            while down(0x79) and not stop.is_set():
-                time.sleep(.05)  # avoid treating F10 still held as cancel
-            def creation_gui_visible(img):
-                if img is None:
-                    return False
-                h,w=img.shape[:2]
-                def crop(box):
-                    x1,y1,x2,y2=box
-                    return img[max(0,int(y1*h)):min(h,int(y2*h)),
-                               max(0,int(x1*w)):min(w,int(x2*w)),:3]
-                digits=((.369,.716,.396,.785),(.449,.716,.476,.785),
-                        (.529,.716,.556,.785),(.609,.716,.636,.785))
-                for box in digits:
-                    p=crop(box)
-                    if p.size==0:
-                        return False
-                    b,g,r=[p[:,:,k].astype(int) for k in range(3)]
-                    diff=np.maximum.reduce([b,g,r])-np.minimum.reduce([b,g,r])
-                    if not float(((b>165)&(g>165)&(r>165)&(diff<80)).mean())>.025:
-                        return False
-                def border(rect,kind):
-                    x1,y1,x2,y2=rect
-                    thickness=.009
-                    rois=(crop((x1,y1,x2,y1+thickness)),
-                          crop((x1,y2-thickness,x2,y2)),
-                          crop((x1,y1,x1+thickness,y2)),
-                          crop((x2-thickness,y1,x2,y2)))
-                    scores=[]
-                    for patch in rois:
-                        if patch.size==0:continue
-                        hh,ss,vv=cv2.split(cv2.cvtColor(patch,cv2.COLOR_BGR2HSV))
-                        mask=((hh>=35)&(hh<=90)&(ss>95)&(vv>80)
-                              if kind=="green" else
-                              ((hh<12)|(hh>170))&(ss>100)&(vv>90))
-                        scores.append(float(mask.mean()))
-                    return max(scores,default=0.0)
-                return (border((.359,.833,.481,.914),"green")>.08 and
-                        border((.519,.833,.642,.914),"red")>.08)
-            # Avoid too many files; save a few annotated timestamps, plus
-            # the first affirmative creation menu evidence.
-            import numpy as np
-            wait_start=time.monotonic()
-            last_wait_snap=-100.
-            confirmed=0
-            old_f10=False
-            while not stop.is_set() and time.monotonic()-wait_start<45:
-                if not focused():
-                    log("LOBBY_PAD_WAIT_FOCUS_LOST: observation stops.")
-                    break
-                current_f10=down(0x79)
-                if current_f10 and not old_f10:
-                    log("LOBBY_PAD_WAIT_STOP_F10")
-                    break
-                old_f10=current_f10
-                current=frame()
-                if current is not None:
-                    visible=creation_gui_visible(current)
-                    confirmed=confirmed+1 if visible else 0
-                    elapsed_wait=time.monotonic()-wait_start
-                    if (elapsed_wait-last_wait_snap>=3.0 or confirmed==3):
-                        h,w=current.shape[:2]
-                        if w>1100:
-                            current=cv2.resize(current,(1100,round(h*1100/w)))
-                        name="pad_%02d.jpg"%len(wait_records)
-                        if cv2.imwrite(str(folder/name),current,
-                                       [cv2.IMWRITE_JPEG_QUALITY,72]):
-                            wait_records.append((round(elapsed_wait,1),name,
-                                "CREATE_GUI_VISIBLE" if visible else
-                                "NO_GUI__OCCUPANCY_UNKNOWN"))
-                            last_wait_snap=elapsed_wait
-                    if confirmed>=3:
-                        log("LOBBY_PAD_MENU_VISIBLE: confirms creation GUI "+
-                            "opened, not that match was created.")
-                        break
-                time.sleep(.3)
-            log("LOBBY_PAD_WAIT_END: recorded="+str(len(wait_records))+
-                " snapshots; no clicks performed.")
         if is_lobby:
+            arrival=frame()
+            if arrival is not None:
+                h,w=arrival.shape[:2]
+                if w>1100:
+                    arrival=cv2.resize(arrival,(1100,round(h*1100/w)))
+                if cv2.imwrite(str(folder/"pad_arrival.jpg"),arrival,
+                               [cv2.IMWRITE_JPEG_QUALITY,72]):
+                    wait_records.append((0.0,"pad_arrival.jpg",
+                                         "ARRIVAL_ONLY__OCCUPANCY_UNKNOWN"))
+                    log("PAD_ARRIVAL_FRAME_SAVED: no wait; Roblox may eject player.")
             with (folder/"pad_observations.csv").open(
                     "w",encoding="utf-8",newline="") as out:
                 writer=csv.writer(out)
                 writer.writerow(["seconds_after_arrival","filename","observation"])
                 writer.writerows(wait_records)
+            log("PAD_NO_WAIT: user confirmed standing on pad triggers ejection.")
         with (folder/"screenshots.csv").open("w",encoding="utf-8",newline="") as out:
             writer=csv.writer(out)
             writer.writerow(["elapsed_seconds","filename"])
@@ -1529,7 +1461,7 @@ def route_demo(destination="corner"):
         (folder/"README.txt").write_text(
             ("LOBBY_PAD_ROUTE" if is_lobby else "ROUTE_DEMO")+" V"+VERSION+"\n"+
             ("Manual route from common lobby spawn to purple creation pad.\n"
-             "F10 marks arrival; pad_observations.csv tracks creation GUI.\n"
+             "F10 marks arrival: game may eject player; NO WAIT.\n"
              "No GUI means UNKNOWN (could be occupied OR not reached).\n"
              if is_lobby else
              "Manual demonstration from match spawn to defensive corner.\n")+
@@ -2606,7 +2538,7 @@ def run_mode_prompt():
     print("  6 = ROUTE demo (you walk once from spawn to the safe corner; keys+frames)")
     print("  7 = ROUTE VISION (F10 marks defensive corner; NO game input)")
     print("  8 = GUARDED TURRET (calibrated corner + green Z, one build attempt)")
-    print("  9 = LOBBY PAD demo (from returned lobby to pad, F8/F10; observe wait)")
+    print("  9 = LOBBY PAD demo (F8 route, F10 arrival; NO WAIT on pad)")
     try:
         choice = input("Choose mode 1-9 [1]: ").strip()
     except EOFError:
