@@ -1,0 +1,10 @@
+{
+  "provenance": "OFFLINE_FIXTURE",
+  "tick": 20,
+  "party_ai_on": true,
+  "allies": [{"uid": "34", "x": 0, "y": 0, "hp": 1, "max_hp": 6}],
+  "defenders": [
+    {"uid": "D1", "x": 3, "y": 0, "hp": 14, "max_hp": 14, "role": "frontline", "busy": "idle"},
+    {"uid": "D2", "x": 0, "y": 2, "hp": 14, "max_hp": 14, "role": "frontline", "busy": "idle"}
+  ]
+}
