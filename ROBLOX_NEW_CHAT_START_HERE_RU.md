@@ -40,3 +40,6 @@ First V3.5.0 complete-mode 15 test stopped at `READY_SIGN_NOT_STABLE` with no mo
 
 ## 2026-11-09 — V3.5.2
 Последний исходник `roblox_monitor.py` в ветке `roblox-bg-monitor`, commit `55ab305e7c0adae7e2e098204013fd84d49afc00`. Пункт 15 — experimental autodrive; V3.5.1 sign detection improved from real screenshot, V3.5.2 return/recovery gate prevents stuck defender if results omitted, captures last stage image. 30 offline checks including real historic video CSV passed. No successful live cycle yet, no further user microtests required. Keep GUI controls fail-closed.
+
+## 09.11.2026 — V3.5.3 current
+Latest Roblox bot V3.5.3 commit `1ff72fd47562c71b484c3f9cbd0755ff4242bb28` in branch `roblox-bg-monitor`. Главный прогресс: исправлено меню создания на реальных 9/11с кадрах, а также добавлен ORB-контроль визуального движения после каждого WASD шага (3 no-motion или 4 unknown останавливают). 46+30=76 локальных тестов без Windows/Roblox. Не проверен полный цикл. Никаких дополнительных OBS записей и серий тестов. Читай `RESEARCH/V353_FIX_NOTE_RU.md` в приватной библиотеке ROBLOX_BG_AI.
