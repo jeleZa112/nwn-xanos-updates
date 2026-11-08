@@ -43,3 +43,6 @@ First V3.5.0 complete-mode 15 test stopped at `READY_SIGN_NOT_STABLE` with no mo
 
 ## 09.11.2026 — V3.5.3 current
 Latest Roblox bot V3.5.3 commit `1ff72fd47562c71b484c3f9cbd0755ff4242bb28` in branch `roblox-bg-monitor`. Главный прогресс: исправлено меню создания на реальных 9/11с кадрах, а также добавлен ORB-контроль визуального движения после каждого WASD шага (3 no-motion или 4 unknown останавливают). 46+30=76 локальных тестов без Windows/Roblox. Не проверен полный цикл. Никаких дополнительных OBS записей и серий тестов. Читай `RESEARCH/V353_FIX_NOTE_RU.md` в приватной библиотеке ROBLOX_BG_AI.
+
+## 09.11.2026 — V3.5.4
+Последний GitHub `roblox_monitor.py`, ветка `roblox-bg-monitor`, commit `f71b6326da85bfaabc4cc8803e32dbc852ddcf43`. Доказано по user live log: LOBBY_NAV выполнил 10 A/W с visual motion ORB (20–37 px), затем `SCENE CREATION_MENU` и аварийный stop `LOBBY_NAV_UNKNOWN_SCENE` (bug в условиях подтверждения: >=2, а сразу первый кадр не-lobby = STOP). В V3.5.4 первый кадр больше не abort; переключение в MENU только после 3 реальных modal=True, кандидат сохраняет приватный JPEG, ложный сигнал => таймаут 6с. Live full match still unverified. No new video needed.
