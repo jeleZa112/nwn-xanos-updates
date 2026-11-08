@@ -1,0 +1,172 @@
+{
+  "sha256": "86d80953be464a3f10da8e1dc031b907801860b7f1f15b3ea6fb9d25e485f3f5",
+  "bytes": 2229760,
+  "blocks": 1057,
+  "total_actions": 2262,
+  "attack_block_numbers": [
+    1032,
+    1045
+  ],
+  "attack_conditions": [
+    {
+      "number": 1032,
+      "action_ids": [
+        3
+      ],
+      "action_list_empty": true,
+      "has_disable_attack_toggle": true,
+      "has_attack_mode_setting": false,
+      "has_guard_gate": false
+    },
+    {
+      "number": 1045,
+      "action_ids": [
+        3
+      ],
+      "action_list_empty": true,
+      "has_disable_attack_toggle": true,
+      "has_attack_mode_setting": false,
+      "has_guard_gate": false
+    }
+  ],
+  "protect_block_numbers": [
+    1047,
+    1048,
+    1049,
+    1050,
+    1051,
+    1052,
+    1053,
+    1054,
+    1055,
+    1056,
+    1057
+  ],
+  "protect_conditions": [
+    {
+      "number": 1047,
+      "action_list_empty": true,
+      "guard_enabled": true
+    },
+    {
+      "number": 1048,
+      "action_list_empty": true,
+      "guard_enabled": true
+    },
+    {
+      "number": 1049,
+      "action_list_empty": true,
+      "guard_enabled": true
+    },
+    {
+      "number": 1050,
+      "action_list_empty": true,
+      "guard_enabled": true
+    },
+    {
+      "number": 1051,
+      "action_list_empty": true,
+      "guard_enabled": true
+    },
+    {
+      "number": 1052,
+      "action_list_empty": true,
+      "guard_enabled": true
+    },
+    {
+      "number": 1053,
+      "action_list_empty": true,
+      "guard_enabled": true
+    },
+    {
+      "number": 1054,
+      "action_list_empty": true,
+      "guard_enabled": true
+    },
+    {
+      "number": 1055,
+      "action_list_empty": true,
+      "guard_enabled": true
+    },
+    {
+      "number": 1056,
+      "action_list_empty": true,
+      "guard_enabled": true
+    },
+    {
+      "number": 1057,
+      "action_list_empty": true,
+      "guard_enabled": true
+    }
+  ],
+  "attack_mode_setting_blocks": 59,
+  "attack_mode_actions": {
+    "30": 2,
+    "269": 1,
+    "0": 39,
+    "31": 18
+  },
+  "guard_flag_blocks": 18,
+  "guard_action_blocks": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    1047,
+    1048,
+    1049,
+    1050,
+    1051,
+    1052,
+    1053,
+    1054,
+    1055,
+    1056,
+    1057
+  ],
+  "global_actions": {
+    "0": 578,
+    "109": 29,
+    "113": 1,
+    "115": 290,
+    "13": 5,
+    "133": 3,
+    "147": 1,
+    "149": 2,
+    "160": 43,
+    "174": 2,
+    "18": 1,
+    "269": 109,
+    "296": 2,
+    "3": 2,
+    "30": 362,
+    "31": 275,
+    "33": 2,
+    "34": 51,
+    "36": 59,
+    "385": 6,
+    "476": 13,
+    "63": 5,
+    "86": 410,
+    "87": 11
+  },
+  "protect_branches_after_attack": true,
+  "read_only": true,
+  "interpretation": "Compiled rule inventory, not proof of runtime choices; no installation.",
+  "simulation": {
+    "preview_only": true,
+    "input_sha256": "86d80953be464a3f10da8e1dc031b907801860b7f1f15b3ea6fb9d25e485f3f5",
+    "simulated_sha256": "adb3b888123278810ade0f3cffdcc2c102558ae16871ddcb4ecc044641377149",
+    "simulated_changed_blocks": [
+      1032,
+      1045
+    ],
+    "changed_action_ids": false,
+    "changed_non_target_blocks": false,
+    "preview_bytes": 2229910,
+    "not_verified": "Runtime, WeiDU compilation, manual commands, existing in-flight Attack, and bard behavior."
+  }
+}
