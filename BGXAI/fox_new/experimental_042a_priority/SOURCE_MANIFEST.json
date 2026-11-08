@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "version": "042a-source-only",
+  "base_bcs_sha256": "86d80953be464a3f10da8e1dc031b907801860b7f1f15b3ea6fb9d25e485f3f5",
+  "files": {
+    "README_RU.md": "886cc7ca31c572a809ba9f6d8226db6d90dde0dd8a1a56436847a7e6a7148551",
+    "build_042_preview.py": "e4e107c1d3f9d2c61f4167ce324791398abc558f48cdb57daf606b43e9d04b8f",
+    "tests/test_priority_preview.py": "5eeba6970e96d162c58ba35dd65044a57592833962a14fae708b6e6ff1393c8f"
+  }
+}
