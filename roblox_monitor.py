@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.5.3
+# Roblox background monitor - release 3.5.4
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.5.3"
+VERSION = "3.5.4"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -4192,6 +4192,7 @@ def autopilot_mode():
     last_frame_at=begin
     last_phase=''
     menu_visible=0
+    menu_candidate_since=None
     match_visible=0
     result_visible=0
     lobby_visible=0
@@ -4235,7 +4236,9 @@ def autopilot_mode():
             scene,info=lifecycle_scene_hint(frame)
             modal,feat=autopilot_menu_features(frame)
             if modal:scene='CREATION_MENU'
-            if scene=='CREATION_MENU':menu_visible+=1
+            # Only the four-digit + button-color visual modal guard may
+            # confirm the creation dialog; lifecycle hints are not sufficient.
+            if modal:menu_visible+=1
             else:menu_visible=0
             if scene=='MATCH':match_visible+=1
             else:match_visible=0
@@ -4248,7 +4251,7 @@ def autopilot_mode():
             if scene!=last_phase:
                 log('SCENE '+scene+' stage='+stage)
                 last_phase=scene
-            if menu_visible>=3 and stage not in ('MENU','WAIT_MATCH'):
+            if modal and menu_visible>=3 and stage not in ('MENU','WAIT_MATCH'):
                 transition('MENU','creation dialog confirmed',now)
                 brain.menu_index=0;brain.menu_tries={}
                 brain.menu_confirmations=0;brain.create_sent=False
@@ -4327,12 +4330,25 @@ def autopilot_mode():
                 brain.last_x=None
                 continue
             if stage=='LOBBY_NAV':
-                if menu_visible>=2:
-                    motion.reset()
-                    transition('MENU','menu opened on pad',now)
-                    brain.menu_index=0;brain.menu_tries={}
-                    brain.menu_confirmations=0;brain.create_sent=False
+                # First frame of the pad's creation dialog is not an error.
+                # Wait for three consecutive verified modal frames without
+                # movement or clicks. Reject persistent false positives.
+                if scene=='CREATION_MENU':
+                    if menu_candidate_since is None:
+                        menu_candidate_since=now
+                        log('MENU_CANDIDATE: modal='+str(modal)+
+                            ' digits='+str(feat.get('digits'))+
+                            ' create='+str(round(feat.get('create',0),3))+
+                            ' cancel='+str(round(feat.get('cancel',0),3)))
+                        try:
+                            small=cv2.resize(frame,(960,540),interpolation=cv2.INTER_AREA)
+                            cv2.imwrite(str(root/'AUTOPILOT_MENU_CANDIDATE.jpg'),small,
+                                        [cv2.IMWRITE_JPEG_QUALITY,62])
+                        except Exception:pass
+                    if now-menu_candidate_since>6.0:
+                        halt_reason='MENU_CANDIDATE_NOT_CONFIRMED_6S';break
                     continue
+                menu_candidate_since=None
                 if scene not in ('LOBBY','LOBBY_COUNTDOWN_OR_PORTAL'):
                     halt_reason='LOBBY_NAV_UNKNOWN_SCENE';break
                 if now-last_action<.65:continue
