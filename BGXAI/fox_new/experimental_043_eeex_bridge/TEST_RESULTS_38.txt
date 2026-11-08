@@ -1,0 +1,43 @@
+test_bad_schema (test_eeex_bridge_043.BridgeTests.test_bad_schema) ... ok
+test_empty (test_eeex_bridge_043.BridgeTests.test_empty) ... ok
+test_false_target (test_eeex_bridge_043.BridgeTests.test_false_target) ... ok
+test_infinite_position_block (test_eeex_bridge_043.BridgeTests.test_infinite_position_block) ... ok
+test_manual_unknown (test_eeex_bridge_043.BridgeTests.test_manual_unknown) ... ok
+test_no_dispatch (test_eeex_bridge_043.BridgeTests.test_no_dispatch) ... ok
+test_no_future_claim (test_eeex_bridge_043.BridgeTests.test_no_future_claim) ... ok
+test_no_mutating_lua_calls (test_eeex_bridge_043.BridgeTests.test_no_mutating_lua_calls) ... ok
+test_nonmonotonic (test_eeex_bridge_043.BridgeTests.test_nonmonotonic) ... ok
+test_one_round (test_eeex_bridge_043.BridgeTests.test_one_round) ... ok
+test_party_actor (test_eeex_bridge_043.BridgeTests.test_party_actor) ... ok
+test_position_missing (test_eeex_bridge_043.BridgeTests.test_position_missing) ... ok
+test_single_attack (test_eeex_bridge_043.BridgeTests.test_single_attack) ... ok
+test_spoofed_evidence (test_eeex_bridge_043.BridgeTests.test_spoofed_evidence) ... ok
+test_too_many (test_eeex_bridge_043.BridgeTests.test_too_many) ... ok
+test_untagged_origin (test_eeex_bridge_043.BridgeTests.test_untagged_origin) ... ok
+test_version (test_eeex_bridge_043.BridgeTests.test_version) ... ok
+test_visibility_unknown (test_eeex_bridge_043.BridgeTests.test_visibility_unknown) ... ok
+test_wrong_opcode (test_eeex_bridge_043.BridgeTests.test_wrong_opcode) ... ok
+test_action_105 (test_eeex_bridge_043.LuaRuntimeTests.test_action_105) ... ok
+test_copy_snapshot (test_eeex_bridge_043.LuaRuntimeTests.test_copy_snapshot) ... ok
+test_disabled (test_eeex_bridge_043.LuaRuntimeTests.test_disabled) ... ok
+test_enemy_attack (test_eeex_bridge_043.LuaRuntimeTests.test_enemy_attack) ... ok
+test_filter_neutral_action (test_eeex_bridge_043.LuaRuntimeTests.test_filter_neutral_action) ... ok
+test_filter_nonparty_target (test_eeex_bridge_043.LuaRuntimeTests.test_filter_nonparty_target) ... ok
+test_filter_party_attack (test_eeex_bridge_043.LuaRuntimeTests.test_filter_party_attack) ... ok
+test_hooks (test_eeex_bridge_043.LuaRuntimeTests.test_hooks) ... ok
+test_install_idempotent (test_eeex_bridge_043.LuaRuntimeTests.test_install_idempotent) ... ok
+test_lua_syntax (test_eeex_bridge_043.LuaRuntimeTests.test_lua_syntax) ... ok
+test_missing_field_safe (test_eeex_bridge_043.LuaRuntimeTests.test_missing_field_safe) ... ok
+test_reset_is_private (test_eeex_bridge_043.LuaRuntimeTests.test_reset_is_private) ... ok
+test_ring_bound (test_eeex_bridge_043.LuaRuntimeTests.test_ring_bound) ... ok
+test_disabled_party_ai (test_eeex_bridge_043.PolicyPipelineTests.test_disabled_party_ai) ... ok
+test_manual_guard_excluded (test_eeex_bridge_043.PolicyPipelineTests.test_manual_guard_excluded) ... ok
+test_provenance_protection (test_eeex_bridge_043.PolicyPipelineTests.test_provenance_protection) ... ok
+test_target_protection (test_eeex_bridge_043.PolicyPipelineTests.test_target_protection) ... ok
+test_two_guard_pipeline (test_eeex_bridge_043.PolicyPipelineTests.test_two_guard_pipeline) ... ok
+test_zero_events (test_eeex_bridge_043.PolicyPipelineTests.test_zero_events) ... ok
+
+----------------------------------------------------------------------
+Ran 38 tests in 0.010s
+
+OK
