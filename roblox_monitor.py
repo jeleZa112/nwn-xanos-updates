@@ -1,11 +1,71 @@
-# Roblox background monitor - release 3.4.2
+# Roblox background monitor - release 3.4.3
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.4.2"
+VERSION = "3.4.3"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
+
+def verified_roblox_hwnd():
+    """Return ONLY the real game-client HWND; never a browser tab about Roblox.
+
+    windows_capture window_name is substring-based. ChatGPT/browser titles
+    containing 'Roblox' were accidentally captured in V3.4.1-V3.4.2.
+    Exact title plus owning executable verification is required before WGC.
+    This function is Windows-only and called only by live capture modes.
+    """
+    import ctypes
+    from ctypes import wintypes
+    win=ctypes.WinDLL("user32",use_last_error=True)
+    win.FindWindowW.argtypes=(wintypes.LPCWSTR,wintypes.LPCWSTR)
+    win.FindWindowW.restype=wintypes.HWND
+    win.GetWindowThreadProcessId.argtypes=(
+        wintypes.HWND,ctypes.POINTER(wintypes.DWORD))
+    win.GetWindowThreadProcessId.restype=wintypes.DWORD
+    win.IsWindow.argtypes=(wintypes.HWND,)
+    win.IsWindow.restype=wintypes.BOOL
+    win.IsIconic.argtypes=(wintypes.HWND,)
+    win.IsIconic.restype=wintypes.BOOL
+    hwnd=win.FindWindowW(None,"Roblox")
+    if not hwnd or not win.IsWindow(hwnd):
+        raise RuntimeError(
+            "CAPTURE_BLOCKED_NO_GAME_WINDOW: launch the real Roblox game "
+            "and leave its window open; browser titles do not count.")
+    if win.IsIconic(hwnd):
+        raise RuntimeError(
+            "CAPTURE_BLOCKED_MINIMIZED: restore the actual Roblox game window.")
+    pid=wintypes.DWORD()
+    if not win.GetWindowThreadProcessId(hwnd,ctypes.byref(pid)) or not pid.value:
+        raise RuntimeError("CAPTURE_BLOCKED_NO_GAME_PROCESS_ID")
+    kernel=ctypes.WinDLL("kernel32",use_last_error=True)
+    kernel.OpenProcess.argtypes=(wintypes.DWORD,wintypes.BOOL,wintypes.DWORD)
+    kernel.OpenProcess.restype=wintypes.HANDLE
+    kernel.CloseHandle.argtypes=(wintypes.HANDLE,)
+    kernel.CloseHandle.restype=wintypes.BOOL
+    kernel.QueryFullProcessImageNameW.argtypes=(
+        wintypes.HANDLE,wintypes.DWORD,wintypes.LPWSTR,
+        ctypes.POINTER(wintypes.DWORD))
+    kernel.QueryFullProcessImageNameW.restype=wintypes.BOOL
+    process=kernel.OpenProcess(0x1000,False,pid.value)
+    if not process:
+        raise RuntimeError("CAPTURE_BLOCKED_GAME_PROCESS_UNVERIFIED")
+    try:
+        image_path=ctypes.create_unicode_buffer(32768)
+        length=wintypes.DWORD(len(image_path))
+        if not kernel.QueryFullProcessImageNameW(
+                process,0,image_path,ctypes.byref(length)):
+            raise RuntimeError("CAPTURE_BLOCKED_GAME_EXE_UNVERIFIED")
+        exe=image_path.value.rsplit("\\",1)[-1].lower()
+    finally:
+        kernel.CloseHandle(process)
+    if exe not in ("robloxplayerbeta.exe","robloxplayer.exe",
+                   "windows10universal.exe"):
+        raise RuntimeError(
+            "CAPTURE_BLOCKED_NOT_GAME_EXE: "+exe+
+            "; refusing to capture Chrome/other app.")
+    return int(hwnd)
+
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
 ROOT.mkdir(parents=True, exist_ok=True)
 LOG = ROOT / "monitor.log"
@@ -234,7 +294,7 @@ def training_mode():
         line("Part saved: " + final.name + " / %.1f MB total" % (bytes_total/1048576))
 
     capture = WindowsCapture(
-        cursor_capture=None, draw_border=None, monitor_index=None, window_name="Roblox"
+        cursor_capture=None, draw_border=None, monitor_index=None, window_hwnd=verified_roblox_hwnd()
     )
 
     @capture.event
@@ -539,7 +599,7 @@ def battle_pilot(build_once=False, require_corner=False):
     frames=queue.Queue(maxsize=1)
     stop=threading.Event()
     capture=WindowsCapture(cursor_capture=None,draw_border=None,
-                           monitor_index=None,window_name="Roblox")
+                           monitor_index=None,window_hwnd=verified_roblox_hwnd())
     @capture.event
     def on_frame_arrived(frame: Frame, control: InternalCaptureControl):
         if stop.is_set():
@@ -1028,7 +1088,7 @@ def route_visual_observer():
     frames=queue.Queue(maxsize=1)
     stop=threading.Event()
     cap=WindowsCapture(cursor_capture=None,draw_border=None,
-                       monitor_index=None,window_name="Roblox")
+                       monitor_index=None,window_hwnd=verified_roblox_hwnd())
     @cap.event
     def on_frame_arrived(frame: Frame,control: InternalCaptureControl):
         if stop.is_set():
@@ -1245,7 +1305,7 @@ def route_demo(destination="corner"):
     frame_queue=queue.Queue(maxsize=1)
     stop=threading.Event()
     cap=WindowsCapture(cursor_capture=None,draw_border=None,
-                       monitor_index=None,window_name="Roblox")
+                       monitor_index=None,window_hwnd=verified_roblox_hwnd())
     @cap.event
     def on_frame_arrived(frame: Frame,control: InternalCaptureControl):
         if stop.is_set():
@@ -2102,7 +2162,7 @@ def pad_sign_live_observer():
     output=root/'PAD_SIGN_LIVE_REPORT.csv'
     bundle=root/'PAD_SIGN_LIVE_DIAGNOSTICS.zip'
     cap=WindowsCapture(cursor_capture=None,draw_border=None,
-                       monitor_index=None,window_name='Roblox')
+                       monitor_index=None,window_hwnd=verified_roblox_hwnd())
     queue_frames=queue.Queue(maxsize=1)
     stop=threading.Event()
 
@@ -2265,7 +2325,7 @@ def lifecycle_observer():
     frames=queue.Queue(maxsize=1)
     stop=threading.Event()
     cap=WindowsCapture(cursor_capture=None,draw_border=None,
-                       monitor_index=None,window_name="Roblox")
+                       monitor_index=None,window_hwnd=verified_roblox_hwnd())
     @cap.event
     def on_frame_arrived(frame:Frame,control:InternalCaptureControl):
         if stop.is_set():
@@ -3036,7 +3096,7 @@ def lobby_helper():
                     pass
 
     capture = WindowsCapture(cursor_capture=None,draw_border=None,
-                             monitor_index=None,window_name="Roblox")
+                             monitor_index=None,window_hwnd=verified_roblox_hwnd())
 
     @capture.event
     def on_frame_arrived(frame: Frame, control: InternalCaptureControl):
@@ -3462,7 +3522,7 @@ with CSV.open("w", encoding="utf-8") as f:
     f.write("elapsed_sec,frames,motion_score,changed,left_motion,center_motion,right_motion,hud_mode,hud_strength,turret_price_color,red_fraction,green_fraction\n")
 
 capture = WindowsCapture(cursor_capture=None, draw_border=None,
-                         monitor_index=None, window_name="Roblox")
+                         monitor_index=None, window_hwnd=verified_roblox_hwnd())
 
 @capture.event
 def on_frame_arrived(frame: Frame, control: InternalCaptureControl):
