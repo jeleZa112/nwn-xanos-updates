@@ -208,7 +208,13 @@ function RunRelease($spec,[string]$mode){
         Write-Host 'WARNING: experimental WeiDU change; requires explicit YES.'
         Write-Host 'Game/InfinityLoader/WeiDU must be closed. Preflight, backup and rollback gates active.'
     }
-    & py -3 $installerPath $mode
+    # BGXAI42_INSTALL.py uses NO CLI flag for read-only status.
+    # Keep legacy 039/040/041 --status semantics unchanged.
+    if($spec.id -eq '042B' -and $mode -eq '--status'){
+        & py -3 $installerPath
+    } else {
+        & py -3 $installerPath $mode
+    }
     if($LASTEXITCODE -ne 0){throw ('BGXAI '+$spec.id+' installer returned code '+$LASTEXITCODE)}
 }
 function Test041ReadOnly {
