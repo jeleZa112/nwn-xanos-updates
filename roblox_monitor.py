@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.5.1
+# Roblox background monitor - release 3.5.2
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.5.1"
+VERSION = "3.5.2"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -3829,6 +3829,53 @@ class AutoPilotRoute:
         return 'UNKNOWN',max(counts.values(),default=0)
 
 
+
+class AutoPilotReturnGate:
+    """Pure phase recovery policy for a game that automatically returns to lobby.
+
+    Never issues input. A confirmed game HUD is required before recognizing a
+    defeat/return, and multiple independent samples are required for recovery.
+    If the HUD disappears and no legitimate lobby appears, wait safely then
+    terminate rather than continuing to press Z or replay WASD in the lobby.
+    """
+    def __init__(self):
+        self.danger_hits=0
+        self.loading_hits=0
+        self.lobby_hits=0
+        self.last_match_at=None
+        self.wait_since=None
+
+    def reset(self):
+        self.danger_hits=0
+        self.loading_hits=0
+        self.lobby_hits=0
+        self.last_match_at=None
+        self.wait_since=None
+
+    def observe(self,stage,scene,now,confirmed_matches):
+        if confirmed_matches<1 or stage not in (
+                'MATCH_ROUTE','MATCH_DEFEND','WAIT_FOR_RETURN'):
+            return None
+        self.danger_hits=self.danger_hits+1 if scene=='DANGER_OR_DEFEAT' else 0
+        self.loading_hits=self.loading_hits+1 if scene=='LOADING' else 0
+        self.lobby_hits=self.lobby_hits+1 if scene=='LOBBY' else 0
+        if scene=='MATCH':
+            self.last_match_at=now
+        if self.lobby_hits>=4:
+            return 'RETURNED_LOBBY'
+        if stage=='WAIT_FOR_RETURN':
+            if self.wait_since is None:self.wait_since=now
+            if now-self.wait_since>100:
+                return 'RETURN_TIMEOUT'
+            return None
+        if self.danger_hits>=3 or self.loading_hits>=3:
+            self.wait_since=now
+            return 'WAIT_FOR_RETURN'
+        if self.last_match_at is not None and now-self.last_match_at>18:
+            self.wait_since=now
+            return 'WAIT_FOR_RETURN'
+        return None
+
 class AutoPilotInput:
     """Foreground-only press/click; never send input to a browser."""
     VK_F10=0x79
@@ -4017,6 +4064,7 @@ def autopilot_mode():
     @cap.event
     def on_closed():stop.set()
     brain=AutoPilotPolicy()
+    return_gate=AutoPilotReturnGate()
     route=AutoPilotRoute()
     route.load()
     controller=None
@@ -4039,6 +4087,7 @@ def autopilot_mode():
     route_started=False
     pad_attempts=0
     last_pad_report_at=begin-10
+    last_live_frame=None
     def transition(next_stage,why,now):
         nonlocal stage,stage_since,last_phase
         if stage!=next_stage:
@@ -4062,6 +4111,7 @@ def autopilot_mode():
                     halt_reason='CAPTURE_STALLED';break
                 continue
             last_frame_at=now
+            last_live_frame=frame
             if now-last_sample<.45:continue
             last_sample=now
             scene,info=lifecycle_scene_hint(frame)
@@ -4086,8 +4136,22 @@ def autopilot_mode():
                 brain.menu_confirmations=0;brain.create_sent=False
             if result_visible>=2:
                 transition('RESULTS_WAIT','defeat/results seen',now)
+            recovery=return_gate.observe(stage,scene,now,brain.match_index)
+            if recovery=='RETURNED_LOBBY':
+                brain.reset_lobby(now)
+                return_gate.reset()
+                transition('LOBBY','four verified lobby frames after a match',now)
+                log('RETURN_COMPLETE: lobby cycle resumed without new game input')
+                continue
+            if recovery=='WAIT_FOR_RETURN':
+                transition('WAIT_FOR_RETURN','game HUD gone/defeat/loading verified',now)
+                log('RETURN_WAIT: no movement or turret presses until lobby confirmed')
+                continue
+            if recovery=='RETURN_TIMEOUT':
+                halt_reason='RETURN_TIMEOUT_NO_VERIFIED_LOBBY';break
             if match_visible>=3 and stage in ('WAIT_MATCH','MENU','WAIT_FOR_GAME'):
                 brain.match_index+=1
+                return_gate.reset()
                 transition('MATCH_ROUTE','in-game HUD verified',now)
                 route_started=False;route_since=now;route.idx=0
                 brain.turret_actions=0;brain.last_turret_at=0.0
@@ -4096,6 +4160,8 @@ def autopilot_mode():
                     brain.reset_lobby(now)
                     transition('LOBBY','lobby seen',now)
                 elif match_visible>=3:
+                    brain.match_index+=1
+                    return_gate.reset()
                     transition('MATCH_ROUTE','already in match',now)
                 elif now-stage_since>25:
                     halt_reason='INITIAL_SCENE_UNKNOWN';break
@@ -4103,9 +4169,14 @@ def autopilot_mode():
             if stage=='RESULTS_WAIT':
                 if lobby_visible>=3:
                     brain.reset_lobby(now)
+                    return_gate.reset()
                     transition('LOBBY','auto-return to lobby',now)
                 elif now-stage_since>90:
                     halt_reason='RESULTS_RETURN_TIMEOUT';break
+                continue
+            if stage=='WAIT_FOR_RETURN':
+                # Results and even loading screens can be skipped by Roblox.
+                # Recovery gate above accepts only 4 positive lobby samples.
                 continue
             if stage=='LOBBY':
                 if scene not in ('LOBBY','LOBBY_COUNTDOWN_OR_PORTAL'):
@@ -4194,6 +4265,7 @@ def autopilot_mode():
             if stage=='WAIT_MATCH':
                 if match_visible>=3:
                     brain.match_index+=1
+                    return_gate.reset()
                     transition('MATCH_ROUTE','match confirmed after create',now)
                     route_since=now;route.idx=0;route_started=False
                     brain.turret_actions=0;brain.last_turret_at=0.0
@@ -4257,6 +4329,14 @@ def autopilot_mode():
             halt_reason='SESSION_LIMIT_OR_GAME_CLOSED'
         log('AUTOPILOT_STOP '+halt_reason+' matches='+str(brain.match_index)+
             ' turret_presses='+str(brain.turret_actions))
+        if halt_reason!='USER_F10' and last_live_frame is not None:
+            try:
+                image=cv2.resize(last_live_frame,(960,540),interpolation=cv2.INTER_AREA)
+                name=root/'AUTOPILOT_LAST_STATE.jpg'
+                cv2.imwrite(str(name),image,[cv2.IMWRITE_JPEG_QUALITY,60])
+                log('LAST_STATE_IMAGE='+str(name))
+            except Exception as exc:
+                log('LAST_STATE_IMAGE_FAILED '+type(exc).__name__)
         return 0 if halt_reason=='USER_F10' else 2
     except Exception:
         log('AUTOPILOT_EXCEPTION '+traceback.format_exc())
@@ -4267,6 +4347,7 @@ def autopilot_mode():
             try:controller.stop()
             except Exception:pass
 # === End ROBLOX V3.5 AUTOPILOT ===
+
 
 
 
