@@ -36,11 +36,26 @@ if not exist "%PILOT_PY%" (
 )
 "%PILOT_PY%" -c "import voxcpm, soundfile, scipy, torch; print('VoxCPM env:', torch.__version__, 'CUDA=',torch.cuda.is_available())" >nul 2>&1
 if errorlevel 1 (
- echo Installing VoxCPM2 via official PyPI in ISOLATED environment.
- echo Using 120-second network timeout and retries. This may download multiple large packages.
- set "PIP_DEFAULT_TIMEOUT=120"
- set "PIP_RETRIES=5"
- "%PILOT_PY%" -m pip install --disable-pip-version-check --timeout 120 --retries 5 --index-url https://pypi.org/simple voxcpm soundfile scipy
+ echo Official PyPI has repeatedly timed out. Checking HTTPS mirrors (maximum 12s each).
+ echo External mirrors are optional package indexes; Qwen and original WAVs are untouched.
+ set "VOX_PIP_INDEX="
+ powershell.exe -NoProfile -Command "$ProgressPreference='SilentlyContinue'; try { $r=Invoke-WebRequest -UseBasicParsing -TimeoutSec 12 -Uri 'https://pypi.tuna.tsinghua.edu.cn/simple/voxcpm/'; if($r.StatusCode -eq 200){exit 0} } catch{}; exit 1" >nul 2>&1
+ if not errorlevel 1 set "VOX_PIP_INDEX=https://pypi.tuna.tsinghua.edu.cn/simple"
+ if not defined VOX_PIP_INDEX (
+  powershell.exe -NoProfile -Command "$ProgressPreference='SilentlyContinue'; try { $r=Invoke-WebRequest -UseBasicParsing -TimeoutSec 12 -Uri 'https://mirrors.aliyun.com/pypi/simple/voxcpm/'; if($r.StatusCode -eq 200){exit 0} } catch{}; exit 1" >nul 2>&1
+  if not errorlevel 1 set "VOX_PIP_INDEX=https://mirrors.aliyun.com/pypi/simple/"
+ )
+ if not defined VOX_PIP_INDEX (
+  echo ERROR: Neither Tsinghua nor Aliyun PyPI mirror responded.
+  echo This is a network/proxy problem; pip and Qwen were not modified.
+  echo Check VPN proxy routing and try again; do not reinstall everything.
+  pause
+  exit /b 2
+ )
+ echo Installing through responsive mirror: !VOX_PIP_INDEX!
+ set "PIP_DEFAULT_TIMEOUT=90"
+ set "PIP_RETRIES=2"
+ "%PILOT_PY%" -m pip install --disable-pip-version-check --timeout 90 --retries 2 --index-url "!VOX_PIP_INDEX!" voxcpm soundfile scipy
  if errorlevel 1 (
   echo Install failed; Qwen untouched, see errors above.
   pause
