@@ -312,3 +312,13 @@
 - Реальная доступность у всех кандидатов пока `UNVERIFIED` — статус текста и число игроков ещё не прочитаны. Снимки меню 9/11с используются как отрицательный контроль. Не считать текущий код автоподходом.
 - Локально проверена компиляция нового модуля, синтетическое распознавание 4/4 и полноценное построение валидного ZIP на 192-секундном синтетическом MP4. На оригинальном видео пока не проверено.
 - Дальше один точечный запуск существующего обновлятора с пунктом 12, пользователь пришлёт только малый ZIP. По реальным кадрам разметить знаки свободных/занятых площадок, затем разрабатывать осторожную навигацию; не требовать новую запись, не ждать на площадке 45 секунд.
+
+## 2026-11-08 — V3.4.0 PAD SIGN recognizer; live game control still disabled
+- Received user's `PAD_SCOUT_OLD_VIDEO.zip`: 12 JPG of old OBS, 15 files total, CRC OK. Analyzed 0,2,4,5,6,7,9,11,188,189,190,191 sec visually and using OpenCV pixel-pattern matching. No OCR.
+- At return (190–191s): LEFT and CENTER show countdown/player signs, RIGHT shows `Лобби готово!`; detector confidence (190s): LEFT .69 COUNTDOWN, CENTER .90 COUNTDOWN, RIGHT .93 READY. At 191s: LEFT .71, CENTER .80, RIGHT .87.
+- At 4–6s: LEFT COUNTDOWN, CENTER READY; at 4s RIGHT READY too. At 7s trophy obscures center READY so this sign stays UNKNOWN. 9/11 menu and 188/189 loading: no sign hits. 0/2 with F9 developer console: conflicting detections RIGHT => AMBIGUOUS, no target.
+- V3.4.0 `roblox_monitor.py` released, final commit `875b5e9e238e65f477dfb8392530e006a349fe90`. Compact grayscale templates of **fixed game UI text only**, no player names/pictures; local testing passed 12 frames plus blank/noise/aspect negative cases. 13 = PAD SIGN REPLAY of old PAD_SCOUT zip, generates review ZIP; 14 = PAD SIGNS LIVE read-only 120s capture, CSV output. These modes **never send game input**.
+- Local private `PAD_SIGN_EVIDENCE_V34.zip` has 12 labeled JPEG + CSV + TXT; ZIP CRC OK. Do not publish user screenshots or other player names on public GitHub.
+- WARNING: READY_SIGN is a *sign*, not confirmed free matchmaking slot or permission to move. LEFT/CENTER/RIGHT are screen-relative; rotation/movement to the right-side pad after return has not been calibrated. No blind WASD, no 45s occupied-pad wait.
+- Next: multi-frame tracking, camera pose and sign-to-pad mapping, then tiny bounded turning/walking pilot with immediate stop on UNKNOWN; only then connect original City/1/Hard menu helper.
+
