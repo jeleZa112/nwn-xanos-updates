@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "release": "BGXAI_043_EEEX_117_READ_ONLY_BRIDGE_SOURCE_ONLY",
+  "status": "SOURCE_ONLY_NOT_INSTALLED",
+  "tested": "38/38 OFFLINE: Python unittest + Lua 5.4 simulation",
+  "upstream_eeex_tag": "v1.1.7",
+  "upstream_eeex_commit": "cd016e03d7c62968d8ab917f44eef09bef25593a",
+  "game_resource_included": false,
+  "game_action_dispatch_enabled": false,
+  "files": {
+    "M_BGX43Probe.lua": {
+      "size": 4550,
+      "sha256": "3550cd3946e76056cc9113ee62e88ca88ccfa28faefb3ffc02d1403e74a6fffe"
+    },
+    "eeex_bridge_043.py": {
+      "size": 5962,
+      "sha256": "cafb40b84e1b187e9339049ed9753397ef6403a03b079f97f345c15da0f0dc79"
+    },
+    "intercept_policy.py": {
+      "size": 10764,
+      "sha256": "660ba40bdd8939915a88435667ca3d307ba5e6c52af4f8e0357c95ec18688935"
+    },
+    "test_eeex_bridge_043.py": {
+      "size": 10430,
+      "sha256": "6de892f163900b3799b4f6987fc0b305aa72a8b20d16ff0c870457ee25edfabe"
+    },
+    "README_RU.md": {
+      "size": 6875,
+      "sha256": "6b35819a7d420b0cf2af5488df71e4c0853e4310a14f7219b3d1c08f4e36c556"
+    },
+    "EEEX_117_API_VERIFICATION.md": {
+      "size": 1393,
+      "sha256": "4068d3454c93226880fba1c7db50385f5028f28be08ce4584cac768e17775e0e"
+    },
+    "sample_eeex_snapshot.json": {
+      "size": 496,
+      "sha256": "0b23830e824a11b1ea466f765b720999077a894e91449286624b899386cee9de"
+    },
+    "sample_offline_tactics.json": {
+      "size": 355,
+      "sha256": "c88a67b733829760a1d3e99bc0e4cdb9b82fcb2d1a0a5e494c6f6ab99e80a278"
+    },
+    "SAMPLE_BRIDGE_OUTPUT.json": {
+      "size": 1603,
+      "sha256": "154ab3ca72df76458aebca653783e77080652ce14723b4a3cb6ee0056ca048c4"
+    },
+    "TEST_RESULTS_38.txt": {
+      "size": 3321,
+      "sha256": "7ffa811cb4d6de1f6a9c42e801b8279466f80a1c74673c2e59484c4bb49555c2"
+    }
+  }
+}
