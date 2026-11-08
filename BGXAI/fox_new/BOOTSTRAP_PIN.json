@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "9e7a6f9af0d6e1354b48de4a14cb930c5e6a9d33",
+  "commit": "a4566faa59d726f6fb59b035f139e5867f917a56",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "322fed0854e27f49eb21e8800263adc03d31341d2ed21cab965e67a9aaeef0ac",
-  "script_size": 21403,
-  "description": "Permanent BGXAI updater: options 1-12 preserved; 13 read-only 042B preflight, 14 source sync, 15 experimental YES WeiDU install, 16 status, 17 verified WeiDU rollback. Source only; no automatic live patch."
+  "script_sha256": "c25eb4610d02f133f28cbd8e023b547b4092e293e938dfbb02103117748c4c7b",
+  "script_size": 21636,
+  "description": "Permanent BGXAI updater (1-17); hotfix 042B option 16 calls Python status with no --status argument, preserving 041 and all install/rollback gates."
 }
