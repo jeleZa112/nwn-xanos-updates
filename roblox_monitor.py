@@ -4428,7 +4428,10 @@ def autopilot_mode():
                 brain.target_x=target
                 pad_reselect.excluded_x=None
                 transition('LOBBY_NAV','ready sign stable, approaching with feedback',now)
-                brain.stage_since=now
+                # Preserve the total time limit across reselections. Reset
+                # only on the first target of this lobby cycle.
+                if brain.move_actions==0:
+                    brain.stage_since=now
                 brain.last_x=None
                 continue
             if stage=='LOBBY_NAV':
