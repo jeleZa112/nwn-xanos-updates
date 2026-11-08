@@ -37,3 +37,6 @@ Code commit `875b5e9e238e65f477dfb8392530e006a349fe90`. Current read-only detect
 
 ## 2026-11-09 — Roblox V3.5.1 latest
 First V3.5.0 complete-mode 15 test stopped at `READY_SIGN_NOT_STABLE` with no movement, 0 matches. Screenshot showed READY label, but no source WGC frame was saved. Latest GitHub code V3.5.1 commit `1fa1507bfbd1277dd686562d98856b48d8dbcf44` improves READY sign match from that screenshot and 3/6 temporal stability, stops on no-progress, stores direct useful failure screenshot. 25 offline tests passed. Keep old single ROBLOX_UPDATE.cmd. No new video or separate diagnostics needed. Do not claim real-life match creation already works.
+
+## 2026-11-09 — V3.5.2
+Последний исходник `roblox_monitor.py` в ветке `roblox-bg-monitor`, commit `55ab305e7c0adae7e2e098204013fd84d49afc00`. Пункт 15 — experimental autodrive; V3.5.1 sign detection improved from real screenshot, V3.5.2 return/recovery gate prevents stuck defender if results omitted, captures last stage image. 30 offline checks including real historic video CSV passed. No successful live cycle yet, no further user microtests required. Keep GUI controls fail-closed.
