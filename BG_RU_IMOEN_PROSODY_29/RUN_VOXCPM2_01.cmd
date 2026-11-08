@@ -37,7 +37,10 @@ if not exist "%PILOT_PY%" (
 "%PILOT_PY%" -c "import voxcpm, soundfile, scipy, torch; print('VoxCPM env:', torch.__version__, 'CUDA=',torch.cuda.is_available())" >nul 2>&1
 if errorlevel 1 (
  echo Installing VoxCPM2 via official PyPI in ISOLATED environment.
- "%PILOT_PY%" -m pip install --disable-pip-version-check voxcpm soundfile scipy
+ echo Using 120-second network timeout and retries. This may download multiple large packages.
+ set "PIP_DEFAULT_TIMEOUT=120"
+ set "PIP_RETRIES=5"
+ "%PILOT_PY%" -m pip install --disable-pip-version-check --timeout 120 --retries 5 --index-url https://pypi.org/simple voxcpm soundfile scipy
  if errorlevel 1 (
   echo Install failed; Qwen untouched, see errors above.
   pause
