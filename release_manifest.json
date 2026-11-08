@@ -1,7 +1,7 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "3.6.0",
-  "note": "Test of brighter Rask01 x-vector reference vs mixed Rask01/Rask75 for IMOEN77A; original laugh preserved, Qwen cache reused",
+  "version": "4.3.0",
+  "note": "VoxCPM2 isolated Russian acting-style generation pilot for IMOEN77A, no Rask/Qwen/game files changed; local GPU execution pending.",
   "files": [
     {
       "path": "BG_RU_IMOEN_PROSODY_29/GENERATE_PROSODY_29.py",
@@ -74,6 +74,18 @@
     {
       "path": "BG_RU_IMOEN_PROSODY_29/README_REFERENCE_36_RU.txt",
       "sha256": "571e55a21bf59c8b095e432227fcd1cd33dc9ee5a738d713a6d7220f7c37dcaa"
+    },
+    {
+      "path": "BG_RU_IMOEN_PROSODY_29/VOXCPM2_PILOT_01.py",
+      "sha256": "501bb1bfe98042235d1b606bebb88bf6478459429099ee97fa35527cfdeaf8f1"
+    },
+    {
+      "path": "BG_RU_IMOEN_PROSODY_29/RUN_VOXCPM2_01.cmd",
+      "sha256": "ac802d239a909225717bb6768c668a303f56945298a5d7ed3f6c9a53f3cfa33c"
+    },
+    {
+      "path": "BG_RU_IMOEN_PROSODY_29/README_VOXCPM2_01_RU.txt",
+      "sha256": "7ac09e8c8380b86132d033e94431ff573af1123ee349b11d275951dd35c49b52"
     }
   ]
 }
