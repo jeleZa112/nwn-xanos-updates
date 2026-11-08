@@ -762,3 +762,20 @@ User reports Foxx EET repack was updated, and their current game has SCS install
 - Updated **GitHub-only** branch `BGXAI_UPDATE.cmd` to append fresh `?bgxnonce=<UtcNow.Ticks>` to both branch pin URL sources; SHA256 verification and onefile architecture unchanged. Commit `d270a2814ca62aa8b8784e35374039a16687195c`, blob `861a6d46b34b63bc30f0f8547d3ef7bf93b6a8bc`. **Existing Windows CMD is not auto-replaced.** No game files were changed.
 - **Immediate, read-only status workaround**: launch `cmd /k py -3 "C:\Games\BG_EET_FOXX_NEW\BGXAI_DEV\experimental_042b\BGXAI42_INSTALL.py"` without any Python CLI args. This is exactly what fixed option 16 would call. No reinstall, no WeiDU, no game file mutations. Expect `STATUS: 042B INSTALLED; verified rollback backup:`. Need user to send output.
 - Checkpoint GitHub `BGXAI/CURRENT/BGXAI_042B_BOOTSTRAP_CACHE_AND_STATUS_20261109_RU.md` commit `8a8b09bbd98bef83856fe8e82bd99550c70acac5`; Library `/BALDURS_GATE_EET_AI/CURRENT/BGXAI_042B_BOOTSTRAP_CACHE_AND_STATUS_20261109_RU.md`.
+
+## 2026-11-09 — BGXAI 042B READ-ONLY STATUS ПОДТВЕРЖДЁН В ЖИВОЙ WINDOWS EET
+
+Пользователь успешно выполнил: `cmd /k py -3 "C:\Games\BG_EET_FOXX_NEW\BGXAI_DEV\experimental_042b\BGXAI42_INSTALL.py"` без аргументов, обходя старый закешированный dispatcher с неподдерживаемым `--status`.
+
+Фактический вывод:
+- `BGXAI 042B / EPS 18.4 / READ ONLY STATUS`;
+- `SOURCE SHA256: ALL VERIFIED`;
+- `BGX41 installed: True`, `BGX42 installed: True`;
+- `Last BGXAI 041: False`, `Last BGXAI 042: True` — штатный порядок, **041 НЕ удалена**;
+- `Current BCS SHA256: 8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0` — точный хеш 042B;
+- `STATUS: 042B INSTALLED; verified rollback backup:` + `%USERPROFILE%\Documents\BGXAI42_SAFE_BACKUPS\PRE_INSTALL_20261108T225100245753Z`;
+- `NO GAME FILES CHANGED`.
+
+**Вывод:** установка 042B и доступность проверенной внешней резервной копии подтверждены реальным запуском. **НО эффективность охраны с EPS autoattack ON и совместимость с песнями/заклинаниями всё ещё НЕ проверены в самой игре.**
+
+**NEXT: ОДИН игровой сценарий:** F GUARD=ON у двух защитников Джахейры (как в ранее успешном сценарии), у обоих EPS персональное «Атаковать врагов»=ON, общий ИИ партии ON, враг атакует Джахейру; наблюдать оба/один/ни одного защитника и отсутствие зависания. Никаких массовых тестов/нового установщика. После успеха отдельно проверить песню барда и заклинания. Не повторять установку 15. Отдельно остаётся кеш старого локального bootstrap; GitHub обновлён, но локальный CMD не заменён.
