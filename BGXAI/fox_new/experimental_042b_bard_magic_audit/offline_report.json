@@ -1,0 +1,191 @@
+{
+  "status": "PASS - COMPILED BCS NON-INTERFERENCE ONLY; GAMEPLAY UNVERIFIED",
+  "baseline_sha256": "86d80953be464a3f10da8e1dc031b907801860b7f1f15b3ea6fb9d25e485f3f5",
+  "installed_042b_sha256": "8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0",
+  "all_checks_passed": true,
+  "checks_count": 31,
+  "checks": {
+    "all_1057_blocks": true,
+    "first_7_F_icon_blocks_identical": true,
+    "all_first_1031_blocks_unchanged": true,
+    "no_attack_3_in_candidate": true,
+    "exactly_two_AttackOneRound_105": true,
+    "11_ProtectObject_87_preserved": true,
+    "all_non_attack_action_multiset_preserved": true,
+    "11_guard_blocks_exact_bytes": true,
+    "guard_priority_is_after_song_and_before_new_attack": true,
+    "2_unchanged_bard_BattleSong_blocks": true,
+    "bard_skill_mode_triggers_unchanged": true,
+    "BDAI_skill_mode_blocks_pre_guard_unchanged": true,
+    "spell_opcode_31_count": true,
+    "spell_opcode_31_block_bytes": true,
+    "spell_opcode_31_priority_unchanged": true,
+    "spell_opcode_34_count": true,
+    "spell_opcode_34_block_bytes": true,
+    "spell_opcode_34_priority_unchanged": true,
+    "spell_opcode_63_count": true,
+    "spell_opcode_63_block_bytes": true,
+    "spell_opcode_63_priority_unchanged": true,
+    "spell_opcode_160_count": true,
+    "spell_opcode_160_block_bytes": true,
+    "spell_opcode_160_priority_unchanged": true,
+    "BDAI_mode_gates_unmodified": true,
+    "SetInterrupt_opcode_unmodified": true,
+    "Continue_action_count_unmodified": true,
+    "exactly_2_attack_blocks_rewritten": true,
+    "attack_round_blocks_not_prior_to_guard": true,
+    "other_1046_blocks_in_same_order": true,
+    "exactly_2_changed_remaining_blocks": true
+  },
+  "song": {
+    "BattleSong_action_id": 296,
+    "blocks": [
+      987,
+      988
+    ],
+    "blocks_identical": true,
+    "precede_11_guard_blocks": true
+  },
+  "spells": {
+    "31": {
+      "count": 275,
+      "first": [
+        46,
+        47,
+        48,
+        50,
+        51,
+        53,
+        54,
+        68,
+        69,
+        70
+      ],
+      "last": [
+        968,
+        969,
+        970,
+        971,
+        973,
+        977,
+        978,
+        979,
+        980,
+        981
+      ]
+    },
+    "34": {
+      "count": 51,
+      "first": [
+        49,
+        52,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62
+      ],
+      "last": [
+        522,
+        829,
+        830,
+        835,
+        850,
+        853,
+        972,
+        974,
+        975,
+        976
+      ]
+    },
+    "63": {
+      "count": 5,
+      "first": [
+        148,
+        208,
+        340,
+        341,
+        350
+      ],
+      "last": [
+        148,
+        208,
+        340,
+        341,
+        350
+      ]
+    },
+    "160": {
+      "count": 42,
+      "first": [
+        1,
+        2,
+        3,
+        13,
+        14,
+        15,
+        16,
+        17,
+        233,
+        234
+      ],
+      "last": [
+        431,
+        438,
+        445,
+        452,
+        459,
+        460,
+        467,
+        474,
+        481,
+        488
+      ]
+    }
+  },
+  "changes": {
+    "moved_guard_blocks": [
+      [
+        1047,
+        1048,
+        1049,
+        1050,
+        1051,
+        1052,
+        1053,
+        1054,
+        1055,
+        1056,
+        1057
+      ],
+      [
+        1032,
+        1033,
+        1034,
+        1035,
+        1036,
+        1037,
+        1038,
+        1039,
+        1040,
+        1041,
+        1042
+      ]
+    ],
+    "Attack_to_AttackOneRound": [
+      [
+        1032,
+        1045
+      ],
+      [
+        1043,
+        1056
+      ]
+    ],
+    "other_1046_blocks_order_preserved": true
+  },
+  "limitations": "Does NOT prove runtime song continuity, spell animation/cast survival, or responsiveness to threat during a song. Scripts in other assigned slots are out of scope."
+}
