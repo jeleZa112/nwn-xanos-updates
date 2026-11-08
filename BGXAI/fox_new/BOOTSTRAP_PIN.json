@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "81cef6f4f29c3c38fac195fd46e5b32a83d64be3",
+  "commit": "9e7a6f9af0d6e1354b48de4a14cb930c5e6a9d33",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "779e5d1bb83740f16e878c9bea9415e154f66907c8d62fc92efe35826493957c",
-  "script_size": 18340,
-  "description": "Permanent BGXAI updater; option 12 read-only EPS guard/autoattack audit; BGXAI 042 NOT installed, no GitHub REST API."
+  "script_sha256": "322fed0854e27f49eb21e8800263adc03d31341d2ed21cab965e67a9aaeef0ac",
+  "script_size": 21403,
+  "description": "Permanent BGXAI updater: options 1-12 preserved; 13 read-only 042B preflight, 14 source sync, 15 experimental YES WeiDU install, 16 status, 17 verified WeiDU rollback. Source only; no automatic live patch."
 }
