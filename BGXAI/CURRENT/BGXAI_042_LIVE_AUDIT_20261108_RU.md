@@ -5,7 +5,7 @@
 ## Проверенная фактура (скриншот пользователя)
 
 - Файл: `C:\Games\BG_EET_FOXX_NEW\override\BDDEFAI.BCS` (путь ожидаемый в инструменте).
-- SHA256: `86d80953be464a3f10da8e1dc031b907801860b7f1f5b3ea6fb9d25e485f3f5`
+- SHA256: `86d80953be464a3f10da8e1dc031b907801860b7f1f15b3ea6fb9d25e485f3f5`
 - Размер: 2 229 760 байт; распознано 1057 полных блоков `CR`.
 - `BDAI_ATTACK_MODE` обнаружен в условиях 59 блоков. Из них сканер пометил `ActionListEmpty`: 0.
 - `BGX38_GUARD` обнаружен в условиях 18 блоков.
@@ -34,3 +34,7 @@
 - Реальный пользовательский Windows screenshot от 08.11.2026.
 - GitHub `BGXAI/fox_new/experimental_042/scan_eps_bcs.py`, `guard/PRIORITY_FIX_DESIGN_RU.md`, `BGXAI/BGXAI_SYNC.ps1` и handoff.
 - Описание EPS 18.4: https://www.morpheus-mart.com/enhanced-powergaming-scripts
+
+
+## Дополнение после полного анализа 08.11.2026 — исправление первого счётчика
+Первый подсчёт action ID пропускал ПЕРВОЕ действие каждого блока (`RE\n100AC\nID`). В живом BCS реально есть **две** длительные `Attack()`: блоки 1032 и 1045, обе до **11** `ProtectObject()` в 1047–1057. Ровно 59 блоков по `BDAI_ATTACK_MODE` почти все NoAction/Spell и НЕ соответствуют 59 обычным атакам. Их нельзя массово ограничивать. Сохранённое историческое значение SHA содержало одну пропущенную цифру `1`; исправлено на 64-символьную проверенную сумму. Полный разбор и офлайн-вариант — `BGXAI/CURRENT/BGXAI_042_LIVE_BCS_PRIORITY_REVIEW_RU_20261108.md`; source-only v2 и 8 unit tests: `BGXAI/fox_new/experimental_042/v2/`. Никаких изменений игры или установок 042 не было.
