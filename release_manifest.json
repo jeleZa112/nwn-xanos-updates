@@ -1,7 +1,7 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "3.4.0",
-  "note": "Compare 4 original English WAV and 8 Russian WHOLE/PARTS with offline cached emotion2vec+; no reinstall",
+  "version": "3.5.0",
+  "note": "Real laughter splice for IMOEN06_ and IMOEN77A from local English originals; old Russian PARTS preserved; no new model",
   "files": [
     {
       "path": "BG_RU_IMOEN_PROSODY_29/GENERATE_PROSODY_29.py",
@@ -50,6 +50,18 @@
     {
       "path": "BG_RU_IMOEN_PROSODY_29/REBUILD_EMOTION_REPORT_33.cmd",
       "sha256": "461c9e39b95bb1a0f9a5e85d54624ae8937f757877c97c7f6d56381605c4e7d0"
+    },
+    {
+      "path": "BG_RU_IMOEN_PROSODY_29/MAKE_LAUGH_35.py",
+      "sha256": "bb856d7fb50f075b3ac3f0cde5cef23e65484b125ed97c57603442051d4232e0"
+    },
+    {
+      "path": "BG_RU_IMOEN_PROSODY_29/RUN_LAUGH_35.cmd",
+      "sha256": "52c195f9323396f31c372642b36861af10be6096e91cb927a6702711e619f3f9"
+    },
+    {
+      "path": "BG_RU_IMOEN_PROSODY_29/README_LAUGH_35_RU.txt",
+      "sha256": "d2bf1a0d83580fc8d461c8e7e3b7311c32907133c3d842feeee4500cc3245a0f"
     }
   ]
 }
