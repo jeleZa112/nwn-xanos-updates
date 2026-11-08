@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "project": "BGXAI",
+  "stage": "043 OFFLINE TWO-GUARD ARBITRATION + RANGE PREVIEW",
+  "status": "SOURCE_ONLY_NOT_INSTALLED",
+  "installed_baseline": "042B",
+  "tests_passed": 72,
+  "tests_total": 72,
+  "input_bcs_sha256": "8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0",
+  "candidate_preview_sha256": "396a68a7b87ebfe12d68b1303d6dcbc43ce2fe5dd8bdf7d970542f317f4b645e",
+  "contains_game_data": false,
+  "files": {
+    "intercept_policy.py": {
+      "size": 10764,
+      "sha256": "660ba40bdd8939915a88435667ca3d307ba5e6c52af4f8e0357c95ec18688935"
+    },
+    "test_intercept_policy.py": {
+      "size": 10407,
+      "sha256": "1f6edd131fb636b35f1dec49c42e94493c601b1cd800d77f4d3a6854549618e4"
+    },
+    "preview_guard_ranges_043.py": {
+      "size": 5209,
+      "sha256": "cd262a8aa6039fa90a1d12883b8a6efa26cb2d58796c5e427bd2ab0183866484"
+    },
+    "test_preview_guard_ranges_043.py": {
+      "size": 3162,
+      "sha256": "09ed0f03b1eafdcbf2b46b72ee2d9c297c5ae51da9d2c70ff22f6062d43a89de"
+    },
+    "README_RU.md": {
+      "size": 8162,
+      "sha256": "b1663f41757b021dd18c4da043901dea39cedd6288ef507dd8489a8c595bc169"
+    },
+    "preview_report.json": {
+      "size": 910,
+      "sha256": "7afe10916a44b69a8d14418f22eeaada87e42fb7e5f8345dfd397d63d221cbb2"
+    },
+    "example_Jade_Shank.json": {
+      "size": 592,
+      "sha256": "e5a58c77c1cac71ba2112cdae2bdc59629125ee89558e76327be7cb1ad70a572"
+    },
+    "test_results_043.txt": {
+      "size": 7706,
+      "sha256": "63f1cf27ce7196b9868c5abd18f81404efa633ca67b659313040c25938676a4d"
+    }
+  }
+}
