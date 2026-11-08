@@ -1,7 +1,7 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "4.3.2",
-  "note": "VoxCPM2 optional PyPI mirror fallback for future retry; current running installs should not be interrupted.",
+  "version": "4.3.3",
+  "note": "Fix CPU-only torch in VoxCPM2 venv: auto-install official CUDA 12.8 torch/torchaudio 2.11.0 when unavailable; Qwen and approved voices untouched",
   "files": [
     {
       "path": "BG_RU_IMOEN_PROSODY_29/GENERATE_PROSODY_29.py",
@@ -81,7 +81,7 @@
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/RUN_VOXCPM2_01.cmd",
-      "sha256": "446ffddfbffc2fc04afbc7554c5a3bb6cb17dc839b3bfe9bd06f07ab6b5eae8d"
+      "sha256": "df2e2fb934a8d247391a90bd2fa387bc83dd522b0e1c24c64c4c468c13789b26"
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/README_VOXCPM2_01_RU.txt",
