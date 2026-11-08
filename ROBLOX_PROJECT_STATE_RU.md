@@ -348,3 +348,7 @@
 
 ## 2026-11-08 — V3.3.0 (PAD SCOUT OFFLINE)
 GitHub `roblox_monitor.py` V3.3.0 commit `53a5e9b7c44f35a158539e78b7b36b7d9ffa07f0`: добавлен режим 12, определение геометрических кандидатов на площадки из 12 кадров старого MP4. Выход `Documents/RobloxBGDiagnostics/PAD_SCOUT/PAD_SCOUT_OLD_VIDEO.zip` содержит рамки/CSV/JSON. Синтетические тесты прошли, реальный видео-тест ещё не проведён. Площадки пока не классифицируются как свободные/занятые; автоматический подход НЕ включен. Старый единственный `ROBLOX_UPDATE.cmd` автоматически загрузит код.
+
+## 2026-11-08 — Version 3.4.0 PAD SIGNS
+GitHub code commit `875b5e9e238e65f477dfb8392530e006a349fe90`. Analyzed user's PAD_SCOUT ZIP (12 JPEG, no extra video): return frames 190/191s show LEFT/CENTER COUNTDOWN_SIGN, RIGHT READY_SIGN. Menu/loading are negative controls, F9 console causes right-side ambiguity and is rejected. Added 13 (offline ZIP review), 14 (passive live sign observer), no Roblox input. The autonomous path to right pad is **not implemented** because camera yaw and pad-world correspondence have not been verified.
+
