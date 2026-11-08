@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.2.0
+# Roblox background monitor - release 3.2.1
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.2.0"
+VERSION = "3.2.1"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -1561,7 +1561,11 @@ def lifecycle_scene_hint(img):
         return "LOADING",scores
     if scores["result_blue"]>.37 and scores["result_orange"]>.18:
         return "RESULTS",scores
-    if scores["red_fog"]>.26:
+    # OBS regression 2026-11-08: defeat fog was ~.09-.14, while ordinary
+    # battle effects reached .18 but kept the top HUD text visible.
+    # Require BOTH two-region fog and HUD disappearance; color alone is unsafe.
+    if (scores["red_fog"]>.08 and
+        scores["top_white"]<.012 and scores["purple"]<.015):
         return "DANGER_OR_DEFEAT",scores
     digits=((.369,.716,.396,.785),(.449,.716,.476,.785),
             (.529,.716,.556,.785),(.609,.716,.636,.785))
@@ -1738,8 +1742,10 @@ def replay_obs_video():
                "Input video was only READ (not copied/published).",
                f"Video duration={duration:.2f}s fps={fps:.2f} samples={total if check_timeline else 'unscored'}",
                "Heuristic timestamp labels are approximate, not manually verified for every frame.",
-               f"Raw exact video labels={exact}/{total}" if check_timeline else
+               f"Raw exact video labels={exact}/{total} ({100*exact/total:.1f}%)" if check_timeline and total else
                  "Different clip length: per-frame ground-truth comparison disabled.",
+               f"LAST_GUARDED={gate.state} LAST_RAW={gate.candidate} samples={gate.hits}/3",
+               "End-of-video can cut off the final 3-sample lobby confirmation; this is not a failed auto-return.",
                "KNOWN LIMITATION: no verified repeat path from returned lobby.",
                "No keyboard/mouse clicks or purchases were attempted.",
                "EVENTS:"]+events
