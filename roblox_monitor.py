@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.5.2
+# Roblox background monitor - release 3.5.3
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.5.2"
+VERSION = "3.5.3"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -3680,11 +3680,17 @@ class AutoPilotPolicy:
         vals=[features.get('p1',0),features.get('p2',0),
               features.get('p3',0),features.get('p4',0)]
         active=[i for i,v in enumerate(vals) if v>.15]
-        return {
-            'city': features.get('city',0)>.15 and features.get('cave',0)<.12,
-            'one': active==[0],
-            'hard': features.get('hard_red',0)>.18 and features.get('normal',0)<.12,
-        }
+        # Check the ACTUAL short bottom edge of the map tile, not the
+        # whole map panel. Old ROIs sampled the neighboring cave card and
+        # were contaminated by other yellow rectangles. Video frames 009
+        # and 011 both have City selected and hard changes between frames.
+        city=features.get('city_bottom_gold',features.get('city',0))>.18
+        cave=features.get('cave_bottom_gold',features.get('cave',0))>.12
+        hard=features.get('hard_top_red',features.get('hard_red',0))>.12
+        normal=features.get('normal_top_green',features.get('normal',0))>.12
+        return {'city':city and not cave,
+                'one':active==[0],
+                'hard':hard and not normal}
 
     def menu_next(self, features, now):
         """Return (click, x, y, reason), or no-click/wait/halt decision."""
@@ -3876,6 +3882,88 @@ class AutoPilotReturnGate:
             return 'WAIT_FOR_RETURN'
         return None
 
+class AutoPilotMotionGuard:
+    """Verify screenshot motion after short user-authorized WASD pulses.
+
+    Camera-relative ORB motion is NOT proof of reaching a destination.
+    Its purpose is only to stop repeated blind input when world geometry
+    stays frozen or visual evidence cannot be evaluated. No game commands.
+    """
+    def __init__(self):
+        import cv2
+        self.cv2=cv2
+        self.orb=cv2.ORB_create(nfeatures=650,fastThreshold=12)
+        self.matcher=cv2.BFMatcher(cv2.NORM_HAMMING)
+        self.before=None
+        self.no_motion=0
+        self.uncertain=0
+        self.last_result=None
+
+    def describe(self,frame):
+        import cv2
+        if frame is None or len(frame.shape)<3:return None
+        H,W=frame.shape[:2]
+        if W<500 or H<300:return None
+        view=cv2.resize(frame[:,:,:3],(960,540),interpolation=cv2.INTER_AREA)
+        region=cv2.cvtColor(view[70:350,70:890],cv2.COLOR_BGR2GRAY)
+        keypoints,desc=self.orb.detectAndCompute(region,None)
+        return keypoints,desc
+
+    def arm(self,frame):
+        self.before=self.describe(frame)
+
+    def verify(self,frame):
+        import numpy as np
+        if self.before is None:return 'NO_PENDING',0.,0
+        before=self.before
+        self.before=None
+        after=self.describe(frame)
+        if before is None or after is None or before[1] is None or after[1] is None:
+            self.uncertain+=1
+            self.last_result=('UNKNOWN',0.,0)
+            return self.last_result
+        ka,da=before
+        kb,db=after
+        if len(da)<20 or len(db)<20:
+            self.uncertain+=1
+            self.last_result=('UNKNOWN',0.,0)
+            return self.last_result
+        try:
+            matched=self.matcher.knnMatch(da,db,k=2)
+            pairs=[(p[0].queryIdx,p[0].trainIdx) for p in matched
+                   if len(p)==2 and p[0].distance<.70*p[1].distance]
+            if len(pairs)<16:
+                self.uncertain+=1
+                self.last_result=('UNKNOWN',0.,len(pairs))
+                return self.last_result
+            displacement=float(np.median([
+                np.hypot(ka[i].pt[0]-kb[j].pt[0],ka[i].pt[1]-kb[j].pt[1])
+                for i,j in pairs]))
+            if displacement<1.7:
+                self.no_motion+=1
+                self.last_result=('NO_MOTION',round(displacement,2),len(pairs))
+            else:
+                self.no_motion=0
+                self.uncertain=0
+                self.last_result=('MOTION',round(displacement,2),len(pairs))
+            return self.last_result
+        except cv2.error:
+            self.uncertain+=1
+            self.last_result=('UNKNOWN',0.,0)
+            return self.last_result
+
+    def stop_reason(self):
+        if self.no_motion>=3:return 'NO_BACKGROUND_MOTION_AFTER_3_KEYS'
+        if self.uncertain>=4:return 'CANNOT_VERIFY_MOTION_4_TIMES'
+        return None
+
+    def reset(self):
+        self.before=None
+        self.no_motion=0
+        self.uncertain=0
+        self.last_result=None
+
+
 class AutoPilotInput:
     """Foreground-only press/click; never send input to a browser."""
     VK_F10=0x79
@@ -3974,9 +4062,18 @@ class AutoPilotInput:
 
 
 def autopilot_menu_features(frame):
-    """Read creation-menu state using the same fixed proportions as mode 3."""
+    """Read City/1/Hard state with image evidence; do not infer from HUD.
+
+    Uses normalized 960x540 UI coordinates checked against the user's
+    original annotated menu video frames 009 and 011 (NOT a live test).
+    """
     import cv2, numpy as np
+    if frame is None or len(frame.shape)<3:return False,{}
     h,w=frame.shape[:2]
+    if h<300 or w<500 or not .46<=h/w<=.68:return False,{}
+    if (w,h)!=(960,540):
+        frame=cv2.resize(frame[:,:,:3],(960,540),interpolation=cv2.INTER_AREA)
+        h,w=540,960
     def patch(box):
         x1,y1,x2,y2=box
         return frame[int(y1*h):int(y2*h),int(x1*w):int(x2*w),:3]
@@ -4015,7 +4112,27 @@ def autopilot_menu_features(frame):
         white=(pix.min(2)>165)&((pix.max(2)-pix.min(2))<80)
         d+=int(float(white.mean())>.025)
     feats['digits']=d
-    modal=feats['create']>.08 and feats['cancel']>.08 and d==4
+    def localized(rect,color):
+        x1,y1,x2,y2=rect
+        roi=frame[y1:y2,x1:x2,:3]
+        if not roi.size:return 0.0
+        hh,ss,vv=cv2.split(cv2.cvtColor(roi,cv2.COLOR_BGR2HSV))
+        if color=='gold':m=(hh>=18)&(hh<=42)&(ss>100)&(vv>90)
+        elif color=='red':m=((hh<12)|(hh>170))&(ss>100)&(vv>90)
+        else:m=(hh>=35)&(hh<=90)&(ss>95)&(vv>80)
+        return float(m.mean())
+    # Narrow strips follow the actual in-game button borders. The old
+    # "cave" ROI was falsely positive on both real menu frames because
+    # it included another yellow game element / visual annotations.
+    feats['city_bottom_gold']=localized((340,334,450,343),'gold')
+    feats['cave_bottom_gold']=localized((510,330,623,338),'gold')
+    feats['hard_top_red']=localized((643,352,725,355),'red')
+    feats['normal_top_green']=localized((642,326,724,330),'green')
+    feats['cancel_bottom_red']=localized((505,468,615,474),'red')
+    # The old .08 cancel perimeter threshold failed on user's actual
+    # 11-second clip (.068) despite a clearly visible creation panel.
+    modal=(feats['create']>.14 and feats['cancel_bottom_red']>.12 and
+           d==4 and any(feats['p'+str(k)]>.15 for k in (1,2,3,4)))
     return modal,feats
 
 
@@ -4064,6 +4181,7 @@ def autopilot_mode():
     @cap.event
     def on_closed():stop.set()
     brain=AutoPilotPolicy()
+    motion=AutoPilotMotionGuard()
     return_gate=AutoPilotReturnGate()
     route=AutoPilotRoute()
     route.load()
@@ -4138,12 +4256,14 @@ def autopilot_mode():
                 transition('RESULTS_WAIT','defeat/results seen',now)
             recovery=return_gate.observe(stage,scene,now,brain.match_index)
             if recovery=='RETURNED_LOBBY':
+                motion.reset()
                 brain.reset_lobby(now)
                 return_gate.reset()
                 transition('LOBBY','four verified lobby frames after a match',now)
                 log('RETURN_COMPLETE: lobby cycle resumed without new game input')
                 continue
             if recovery=='WAIT_FOR_RETURN':
+                motion.reset()
                 transition('WAIT_FOR_RETURN','game HUD gone/defeat/loading verified',now)
                 log('RETURN_WAIT: no movement or turret presses until lobby confirmed')
                 continue
@@ -4208,6 +4328,7 @@ def autopilot_mode():
                 continue
             if stage=='LOBBY_NAV':
                 if menu_visible>=2:
+                    motion.reset()
                     transition('MENU','menu opened on pad',now)
                     brain.menu_index=0;brain.menu_tries={}
                     brain.menu_confirmations=0;brain.create_sent=False
@@ -4215,6 +4336,12 @@ def autopilot_mode():
                 if scene not in ('LOBBY','LOBBY_COUNTDOWN_OR_PORTAL'):
                     halt_reason='LOBBY_NAV_UNKNOWN_SCENE';break
                 if now-last_action<.65:continue
+                if motion.before is not None:
+                    kind,shift,features=motion.verify(frame)
+                    log('NAV_MOTION '+kind+' shift='+str(shift)+
+                        ' features='+str(features))
+                    if motion.stop_reason():
+                        halt_reason='PAD_'+motion.stop_reason();break
                 signs=pad_sign_hints(frame)
                 ready=[s for s in signs if s.get('status')=='READY_SIGN'
                        and s.get('confidence',0)>=.65 and
@@ -4235,6 +4362,7 @@ def autopilot_mode():
                 action,key,duration=brain.lobby_movement(x,now)
                 if action=='HALT':
                     halt_reason=key;break
+                motion.arm(frame)
                 if not io.keys(key,duration):
                     halt_reason='GAME_KEY_NOT_CONFIRMED_BY_WIN32';break
                 last_action=time.monotonic()
@@ -4294,9 +4422,17 @@ def autopilot_mode():
                     if route.idx>=16 and tag=='START':
                         halt_reason='ROUTE_NO_VISUAL_PROGRESS';break
                     if now-last_action<.46:continue
+                    if motion.before is not None:
+                        kind,shift,features=motion.verify(frame)
+                        if route.idx%4==0:
+                            log('ROUTE_MOTION '+kind+' shift='+str(shift)+
+                                ' features='+str(features))
+                        if motion.stop_reason():
+                            halt_reason='ROUTE_'+motion.stop_reason();break
                     if route.idx>=len(route.steps):
                         halt_reason='ROUTE_FINISHED_WITHOUT_CORNER_CONFIRMATION';break
                     t,keys,duration=route.steps[route.idx]
+                    motion.arm(frame)
                     if not io.keys(keys,duration):
                         halt_reason='ROUTE_KEY_FAILED';break
                     route.idx+=1;last_action=time.monotonic()
@@ -4347,6 +4483,7 @@ def autopilot_mode():
             try:controller.stop()
             except Exception:pass
 # === End ROBLOX V3.5 AUTOPILOT ===
+
 
 
 
