@@ -1,7 +1,7 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "4.3.3",
-  "note": "Fix CPU-only torch in VoxCPM2 venv: auto-install official CUDA 12.8 torch/torchaudio 2.11.0 when unavailable; Qwen and approved voices untouched",
+  "version": "4.3.4",
+  "note": "Fix Windows CMD batch parser syntax error after preflight by replacing all parenthesized command blocks with robust labels; isolated CUDA repair retained",
   "files": [
     {
       "path": "BG_RU_IMOEN_PROSODY_29/GENERATE_PROSODY_29.py",
@@ -81,7 +81,7 @@
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/RUN_VOXCPM2_01.cmd",
-      "sha256": "df2e2fb934a8d247391a90bd2fa387bc83dd522b0e1c24c64c4c468c13789b26"
+      "sha256": "40fbc998fcf1eedc61d8f6eea8184c92f269263ac819bf3f23d1fbd8004ebb10"
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/README_VOXCPM2_01_RU.txt",
