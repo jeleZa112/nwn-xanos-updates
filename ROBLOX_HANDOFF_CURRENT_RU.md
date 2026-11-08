@@ -199,3 +199,7 @@ ChatGPT не видит игру онлайн сам по себе. Изучен
 
 ## 2026-11-08 — V3.3.0, требуется единственный офлайн-результат
 Код `roblox_monitor.py` V3.3.0 commit `53a5e9b7c44f35a158539e78b7b36b7d9ffa07f0`. **Пункт 12** в прежнем `ROBLOX_UPDATE.cmd` читает старый `2026-11-08 12-05-36.mp4` с ПК, по Enter ищет автоматически; выдаёт небольшой `Documents/RobloxBGDiagnostics/PAD_SCOUT/PAD_SCOUT_OLD_VIDEO.zip`. Он НЕ управляет игрой, не распознаёт занятость из одного цвета. Когда пользователь пришлёт ZIP: визуально проверить порталы, построить детектор надписей/игроков и стабильный выбор; лишь потом навигация короткими проверяемыми шагами. Не просить новое длинное видео.
+
+## 2026-11-08 — last checkpoint V3.4.0
+User uploaded PAD_SCOUT_OLD_VIDEO.zip and it was fully reviewed. On post-defeat return 190–191s: right sign says `Лобби готово!`, center+left have `Начало через ...`/player count. New main code `roblox_monitor.py` V3.4.0 commit `875b5e9e238e65f477dfb8392530e006a349fe90`; 13 = offline PAD SIGN REPLAY (already run locally, no user rerun required), 14 = read-only live sign observer (not yet tested in game). A private annotated result ZIP `PAD_SIGN_EVIDENCE_V34.zip` exists in ChatGPT Library /ROBLOX_BG_AI/RESEARCH. Do NOT claim automated navigation or guaranteed availability from sign alone. Next: temporal confirmation, sign-to-pad assignment and camera-turn calibration, then a short controlled approach.
+
