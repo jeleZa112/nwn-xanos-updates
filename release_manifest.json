@@ -1,7 +1,7 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "4.3.0",
-  "note": "VoxCPM2 isolated Russian acting-style generation pilot for IMOEN77A, no Rask/Qwen/game files changed; local GPU execution pending.",
+  "version": "4.3.1",
+  "note": "Slow PyPI connection hotfix: 120-second pip socket timeout and 5 retries; reuse existing isolated VoxCPM2 venv",
   "files": [
     {
       "path": "BG_RU_IMOEN_PROSODY_29/GENERATE_PROSODY_29.py",
@@ -81,7 +81,7 @@
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/RUN_VOXCPM2_01.cmd",
-      "sha256": "ac802d239a909225717bb6768c668a303f56945298a5d7ed3f6c9a53f3cfa33c"
+      "sha256": "cc22244aed3397e5eab06bf480b75993885a0985dfb355e063b4cc2f7d5dbb90"
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/README_VOXCPM2_01_RU.txt",
