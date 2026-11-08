@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "version": "0.3.13-043-PROBE",
+  "installed": true,
+  "enabled": true,
+  "origin_verifiable": false,
+  "queue_verifiable": false,
+  "events": [{
+    "schema": 1,
+    "event": "NONPARTY_ATTACK_STARTED_ON_PARTY",
+    "actor_id": 12,
+    "target_id": 34,
+    "action_id": 3,
+    "actor_x": 4,
+    "actor_y": 0,
+    "action_origin": "UNKNOWN",
+    "visibility": "UNKNOWN",
+    "hostility": "CONFIRMED_BY_EXPLICIT_ATTACK_ACTION",
+    "party_ids": [34, 67],
+    "sequence": 1
+  }]
+}
