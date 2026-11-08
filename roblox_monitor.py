@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.4.3
+# Roblox background monitor - release 3.5.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.4.3"
+VERSION = "3.5.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -3448,6 +3448,684 @@ def lobby_helper():
 # === End lobby assistant ===
 
 
+# === ROBLOX V3.5 AUTOPILOT: single-window, bounded, visual-feedback controller ===
+# This module is embedded in roblox_monitor.py BEFORE run_mode_prompt().
+# It uses the existing verified_roblox_hwnd, pad_sign_hints,
+# lifecycle_scene_hint and turret_price_color_signal functions.
+# No additional Python file or CMD is needed on the user's computer.
+
+class AutoPilotPolicy:
+    """Pure state/decision policy; unit-testable without Windows or Roblox."""
+    def __init__(self):
+        self.target_x = None
+        self.last_x = None
+        self.no_progress = 0
+        self.move_actions = 0
+        self.move_seconds = 0.0
+        self.menu_index = 0
+        self.menu_tries = {}
+        self.menu_confirmations = 0
+        self.last_menu_action = 0.0
+        self.create_sent = False
+        self.in_match_hits = 0
+        self.ready_history = []
+        self.match_index = 0
+        self.turret_actions = 0
+        self.last_turret_at = 0.0
+        self.stage = 'DISCOVER'
+        self.stage_since = 0.0
+
+    def reset_lobby(self, now):
+        self.target_x = None
+        self.last_x = None
+        self.no_progress = 0
+        self.move_actions = 0
+        self.move_seconds = 0.0
+        self.ready_history = []
+        self.stage = 'DISCOVER'
+        self.stage_since = now
+        self.menu_index = 0
+        self.menu_tries = {}
+        self.menu_confirmations = 0
+        self.last_menu_action = 0.0
+        self.create_sent = False
+        self.in_match_hits = 0
+        self.turret_actions = 0
+        self.last_turret_at = 0.0
+
+    def ready_sign(self, signs):
+        """Require the same READY sign in 3 recent captures, avoid conflicts."""
+        strong = [s for s in signs if s.get('status') == 'READY_SIGN'
+                  and s.get('confidence',0)>=.65]
+        busy = [s for s in signs if s.get('status') == 'COUNTDOWN_SIGN'
+                and s.get('confidence',0)>=.65]
+        # Stable screen-relative groups, not unique world identifiers.
+        groups = []
+        for sign in strong:
+            x = sign.get('center_x',-1)
+            if x<.04 or x>.96:
+                continue
+            if any(abs(x-b.get('center_x',-2))<.11 for b in busy):
+                continue
+            groups.append((x,sign.get('relative_side','UNKNOWN')))
+        self.ready_history.append(groups)
+        self.ready_history = self.ready_history[-4:]
+        if len(self.ready_history)<3:
+            return None
+        candidates=[]
+        for x,side in groups:
+            matched=[]
+            for older in self.ready_history[-3:]:
+                near=[z for z in older if z[1]==side and abs(z[0]-x)<.11]
+                if near: matched.append(min(near,key=lambda z:abs(z[0]-x))[0])
+            if len(matched)==3:
+                candidates.append((sum(matched)/3,side))
+        if not candidates:
+            return None
+        # The center is preferable: fewer lateral steps / uncertainties.
+        candidates.sort(key=lambda row:(abs(row[0]-.5),row[0]))
+        return candidates[0][0]
+
+    def lobby_movement(self, x, now):
+        """Choose at most one short key pulse; stop on ambiguous progress."""
+        if self.move_actions>=34 or self.move_seconds>=12 or now-self.stage_since>45:
+            return ('HALT','LOBBY_LIMIT_REACHED',0.0)
+        if self.last_x is not None and self.stage == 'ALIGN':
+            if abs(x-.50)>abs(self.last_x-.50)+.025:
+                self.no_progress+=1
+            elif abs(x-.50)<abs(self.last_x-.50)-.012:
+                self.no_progress=max(0,self.no_progress-1)
+            if self.no_progress>=3:
+                return ('HALT','ALIGNMENT_NOT_IMPROVING',0.0)
+        self.last_x=x
+        if abs(x-.5)>.11:
+            self.stage='ALIGN'
+            duration=.18 if abs(x-.5)<.20 else .26
+            key='D' if x>.5 else 'A'
+        else:
+            self.stage='APPROACH'
+            duration=.22
+            key='W'
+        self.move_actions+=1
+        self.move_seconds+=duration
+        return ('KEY',key,duration)
+
+    @staticmethod
+    def menu_flags(features):
+        """Same selection semantics as the previously tested lobby helper."""
+        vals=[features.get('p1',0),features.get('p2',0),
+              features.get('p3',0),features.get('p4',0)]
+        active=[i for i,v in enumerate(vals) if v>.15]
+        return {
+            'city': features.get('city',0)>.15 and features.get('cave',0)<.12,
+            'one': active==[0],
+            'hard': features.get('hard_red',0)>.18 and features.get('normal',0)<.12,
+        }
+
+    def menu_next(self, features, now):
+        """Return (click, x, y, reason), or no-click/wait/halt decision."""
+        flags=self.menu_flags(features)
+        steps=('city','one','hard')
+        targets={'city':(.400,.585),'one':(.382,.745),
+                 'hard':(.710,.707),'create':(.420,.870)}
+        if self.create_sent:
+            return ('WAIT',None,None,'CREATE_ALREADY_SENT')
+        if now-self.last_menu_action<1.1:
+            return ('WAIT',None,None,'UI_SETTLE')
+        for i in range(self.menu_index):
+            if not flags[steps[i]]:
+                return ('HALT',None,None,'VERIFIED_SETTING_CHANGED_'+steps[i])
+        if self.menu_index<3:
+            step=steps[self.menu_index]
+            if flags[step]:
+                self.menu_confirmations+=1
+                if self.menu_confirmations>=3:
+                    self.menu_index+=1
+                    self.menu_confirmations=0
+                return ('WAIT',None,None,'CONFIRM_'+step)
+            self.menu_confirmations=0
+            if self.menu_tries.get(step,0)>=1:
+                return ('HALT',None,None,'UNVERIFIED_CLICK_'+step)
+            self.menu_tries[step]=self.menu_tries.get(step,0)+1
+            self.last_menu_action=now
+            x,y=targets[step]
+            return ('CLICK',x,y,'SET_'+step)
+        if not all(flags.values()):
+            return ('HALT',None,None,'MENU_FLAGS_INCONSISTENT')
+        self.menu_confirmations+=1
+        if self.menu_confirmations<3:
+            return ('WAIT',None,None,'VERIFY_ALL_BEFORE_CREATE')
+        self.create_sent=True
+        self.last_menu_action=now
+        x,y=targets['create']
+        return ('CLICK',x,y,'CREATE_ONCE')
+
+
+class AutoPilotRoute:
+    """Use ONLY recorded user input spans, with live scene and ORB checkpoints.
+
+    The archive can be missing or have unusable mouse data; then the route is
+    unavailable and movement stops rather than guessing a path near the ramp.
+    """
+    def __init__(self):
+        self.steps=[]
+        self.references=[]
+        self.idx=0
+        self.ready=False
+        self.note='ROUTE_DEMO_NOT_FOUND'
+        self.orb=None
+        self.matcher=None
+
+    def load(self):
+        import zipfile, csv, io, re, cv2, numpy as np
+        source=Path.home()/'Documents'/'RobloxBGDiagnostics'/'ROUTE'/'ROUTE_DEMO.zip'
+        if not source.is_file():return False
+        try:
+            with zipfile.ZipFile(source) as z:
+                if z.testzip():raise ValueError('ZIP CRC')
+                if 'keys.csv' not in z.namelist():
+                    self.note='KEY_TIMING_MISSING';return False
+                rows=list(csv.DictReader(io.StringIO(z.read('keys.csv').decode('utf-8-sig'))))
+                spans=[]
+                for row in rows:
+                    key=row.get('key','').upper()
+                    if key not in ('W','A','S','D','SPACE','SHIFT'):continue
+                    a,b=float(row['start_seconds']),float(row['end_seconds'])
+                    if a<0 or b<=a or b>40 or b-a>10:raise ValueError('INVALID_KEY_TIMING')
+                    spans.append((a,b,key))
+                if not spans: self.note='EMPTY_ROUTE_KEYS';return False
+                total=max(x[1] for x in spans)
+                # Camera-motion replay is not calibrated. Do not replay risky
+                # route if it relied on substantial mouse movement.
+                if 'mouse.csv' in z.namelist():
+                    moves=list(csv.DictReader(io.StringIO(z.read('mouse.csv').decode('utf-8-sig'))))
+                    total_mouse=0
+                    for m in moves:
+                        total_mouse+=abs(float(m.get('mouse_dx',0)))+abs(float(m.get('mouse_dy',0)))
+                    if total_mouse>80:
+                        self.note='CAMERA_ROTATION_NOT_CALIBRATED'
+                        return False
+                # Discretize recorded key spans into 150ms time slices.
+                # Do not merge different keys: diagonal timing matters.
+                dt=.15
+                self.steps=[]
+                t=0.0
+                while t<total:
+                    active=tuple(sorted(k for a,b,k in spans if a<t+dt/2<b))
+                    if active:self.steps.append((round(t,2),active,min(dt,total-t)))
+                    t+=dt
+                names=sorted(n for n in z.namelist() if
+                             re.fullmatch(r'route_\d\d_\d+\.\ds\.jpg',n))
+                if len(names)<9:
+                    self.note='TOO_FEW_ROUTE_IMAGES';return False
+                self.orb=cv2.ORB_create(nfeatures=800,fastThreshold=10)
+                self.matcher=cv2.BFMatcher(cv2.NORM_HAMMING)
+                for name in names:
+                    index=int(name.split('_')[1])
+                    if index not in (0,1,2,3,9,10):continue
+                    img=cv2.imdecode(np.frombuffer(z.read(name),dtype=np.uint8),cv2.IMREAD_COLOR)
+                    if img is None:continue
+                    desc=self.describe(img)
+                    if desc is not None and len(desc)>=30:self.references.append((index,desc))
+                if len(self.references)<4:
+                    self.note='INSUFFICIENT_VISUAL_ROUTE_ANCHORS';return False
+                self.ready=True
+                self.note='READY_VISUAL_ROUTE_REPLAY'
+                return True
+        except Exception as exc:
+            self.note='ROUTE_INVALID_'+type(exc).__name__
+            return False
+
+    def describe(self,img):
+        import cv2
+        h,w=img.shape[:2]
+        if h<250 or w<400:return None
+        if w!=1100:
+            img=cv2.resize(img,(1100,round(h*1100/w)),interpolation=cv2.INTER_AREA)
+            h,w=img.shape[:2]
+        roi=img[int(.08*h):int(.73*h),int(.08*w):int(.91*w),:3]
+        _,d=self.orb.detectAndCompute(cv2.cvtColor(roi,cv2.COLOR_BGR2GRAY),None)
+        return d
+
+    def classify(self,img):
+        if not self.references:return 'UNKNOWN',0
+        descriptor=self.describe(img)
+        if descriptor is None or len(descriptor)<20:return 'UNKNOWN',0
+        counts={}
+        for idx,ref in self.references:
+            try:
+                knn=self.matcher.knnMatch(descriptor,ref,k=2)
+                n=sum(1 for pair in knn if len(pair)==2 and pair[0].distance<.70*pair[1].distance)
+            except Exception:n=0
+            counts[idx]=max(n,counts.get(idx,0))
+        first=max((counts.get(i,0) for i in (0,1)),default=0)
+        corner=max((counts.get(i,0) for i in (9,10)),default=0)
+        if corner>=35 and corner>first*1.8:return 'SAFE_CORNER',corner
+        if first>=35 and first>corner*1.8:return 'START',first
+        return 'UNKNOWN',max(counts.values(),default=0)
+
+
+class AutoPilotInput:
+    """Foreground-only press/click; never send input to a browser."""
+    VK_F10=0x79
+    SCANS={'W':0x11,'A':0x1e,'S':0x1f,'D':0x20,
+           'Z':0x2c,'SPACE':0x39,'SHIFT':0x2a}
+    def __init__(self,hwnd):
+        import ctypes
+        from ctypes import wintypes
+        self.ctypes=ctypes
+        self.u=ctypes.WinDLL('user32',use_last_error=True)
+        self.hwnd=hwnd
+        self.u.GetForegroundWindow.restype=wintypes.HWND
+        self.u.IsIconic.argtypes=(wintypes.HWND,)
+        self.u.IsIconic.restype=wintypes.BOOL
+        self.u.GetAsyncKeyState.argtypes=(ctypes.c_int,)
+        self.u.GetAsyncKeyState.restype=ctypes.c_short
+        self.u.SetProcessDPIAware()
+        class MOUSEINPUT(ctypes.Structure):
+            _fields_=[('dx',ctypes.c_long),('dy',ctypes.c_long),
+                      ('mouseData',ctypes.c_ulong),('dwFlags',ctypes.c_ulong),
+                      ('time',ctypes.c_ulong),('dwExtraInfo',ctypes.c_void_p)]
+        class KEYBDINPUT(ctypes.Structure):
+            _fields_=[('wVk',ctypes.c_ushort),('wScan',ctypes.c_ushort),
+                      ('dwFlags',ctypes.c_ulong),('time',ctypes.c_ulong),
+                      ('dwExtraInfo',ctypes.c_void_p)]
+        class UNION(ctypes.Union):
+            _fields_=[('mi',MOUSEINPUT),('ki',KEYBDINPUT)]
+        class INPUT(ctypes.Structure):
+            _anonymous_=('data',)
+            _fields_=[('type',ctypes.c_ulong),('data',UNION)]
+        self.MOUSEINPUT,self.KEYBDINPUT,self.INPUT=MOUSEINPUT,KEYBDINPUT,INPUT
+        self.u.SendInput.argtypes=(ctypes.c_uint,ctypes.POINTER(INPUT),ctypes.c_int)
+        self.u.SendInput.restype=ctypes.c_uint
+        self.u.GetClientRect.argtypes=(wintypes.HWND,ctypes.c_void_p)
+        self.u.ClientToScreen.argtypes=(wintypes.HWND,ctypes.c_void_p)
+        self.u.SetCursorPos.argtypes=(ctypes.c_int,ctypes.c_int)
+
+    def focused(self):
+        return bool(self.u.GetForegroundWindow()==self.hwnd and
+                    not self.u.IsIconic(self.hwnd))
+    def stop_pressed(self):
+        return bool(self.u.GetAsyncKeyState(self.VK_F10)&0x8000)
+    def _send_key(self,key,up=False):
+        if not self.focused():return False
+        ev=self.INPUT();ev.type=1
+        ev.ki=self.KEYBDINPUT(0,self.SCANS[key],0x0008 | (0x0002 if up else 0),0,None)
+        return self.u.SendInput(1,self.ctypes.byref(ev),self.ctypes.sizeof(self.INPUT))==1
+    def keys(self,keys,duration):
+        if isinstance(keys,str):keys=(keys,)
+        keys=tuple(k for k in keys if k in self.SCANS)
+        if not keys or not 0.04<=duration<=.33 or not self.focused():return False
+        down=[]
+        try:
+            for k in keys:
+                if not self._send_key(k):return False
+                down.append(k)
+            time.sleep(duration)
+            return self.focused()
+        finally:
+            for k in reversed(down):
+                # Release even if focus changed, preventing stuck keys.
+                ev=self.INPUT();ev.type=1
+                ev.ki=self.KEYBDINPUT(0,self.SCANS[k],0x0008|0x0002,0,None)
+                self.u.SendInput(1,self.ctypes.byref(ev),self.ctypes.sizeof(self.INPUT))
+
+    def click(self,relx,rely,frame):
+        import ctypes
+        from ctypes import wintypes
+        class POINT(ctypes.Structure):
+            _fields_=[('x',ctypes.c_long),('y',ctypes.c_long)]
+        class RECT(ctypes.Structure):
+            _fields_=[('left',ctypes.c_long),('top',ctypes.c_long),
+                      ('right',ctypes.c_long),('bottom',ctypes.c_long)]
+        if not self.focused():return False
+        rect=RECT()
+        if not self.u.GetClientRect(self.hwnd,ctypes.byref(rect)):return False
+        w,h=rect.right-rect.left,rect.bottom-rect.top
+        fh,fw=frame.shape[:2]
+        extra_y,extra_x=fh-h,fw-w
+        if not (w>300 and h>300 and 0<=extra_x<=50 and 0<=extra_y<=90):return False
+        x=int(relx*fw-extra_x/2);y=int(rely*fh-extra_y)
+        if not (0<=x<w and 0<=y<h):return False
+        p=POINT(x,y)
+        if not self.u.ClientToScreen(self.hwnd,ctypes.byref(p)):return False
+        if not self.u.SetCursorPos(p.x,p.y):return False
+        time.sleep(.12)
+        if not self.focused():return False
+        def mouse(flag):
+            ev=self.INPUT();ev.type=0
+            ev.mi=self.MOUSEINPUT(0,0,0,flag,0,None)
+            return self.u.SendInput(1,ctypes.byref(ev),ctypes.sizeof(self.INPUT))==1
+        down=mouse(0x0002)
+        time.sleep(.12)
+        up=mouse(0x0004)
+        return down and up
+
+
+def autopilot_menu_features(frame):
+    """Read creation-menu state using the same fixed proportions as mode 3."""
+    import cv2, numpy as np
+    h,w=frame.shape[:2]
+    def patch(box):
+        x1,y1,x2,y2=box
+        return frame[int(y1*h):int(y2*h),int(x1*w):int(x2*w),:3]
+    def mask(box,color):
+        a=patch(box)
+        if not a.size:return 0.0
+        hsv=cv2.cvtColor(a,cv2.COLOR_BGR2HSV)
+        hh,ss,vv=cv2.split(hsv)
+        if color=='green':m=(hh>=35)&(hh<=90)&(ss>95)&(vv>80)
+        elif color=='red':m=((hh<12)|(hh>170))&(ss>100)&(vv>90)
+        else:m=(hh>=18)&(hh<=42)&(ss>100)&(vv>90)
+        return float(m.mean())
+    def border(r,color):
+        x1,y1,x2,y2=r;p=.009
+        return max(mask(z,color) for z in ((x1,y1,x2,y1+p),
+                    (x1,y2-p,x2,y2),(x1,y1,x1+p,y2),(x2-p,y1,x2,y2)))
+    feats={
+       'city':border((.347,.517,.496,.647),'yellow'),
+       'cave':border((.505,.517,.653,.647),'yellow'),
+       'p1':border((.346,.672,.416,.805),'green'),
+       'p2':border((.426,.672,.496,.805),'green'),
+       'p3':border((.505,.672,.575,.805),'green'),
+       'p4':border((.583,.672,.655,.805),'green'),
+       'normal':border((.666,.620,.757,.670),'green'),
+       'hard_red':border((.666,.674,.757,.720),'red'),
+       'create':border((.359,.833,.481,.914),'green'),
+       'cancel':border((.519,.833,.642,.914),'red'),
+    }
+    digits=((.369,.716,.396,.785),(.449,.716,.476,.785),
+            (.529,.716,.556,.785),(.609,.716,.636,.785))
+    d=0
+    for box in digits:
+        a=patch(box)
+        if not a.size:continue
+        pix=a.astype(np.int16)
+        white=(pix.min(2)>165)&((pix.max(2)-pix.min(2))<80)
+        d+=int(float(white.mean())>.025)
+    feats['digits']=d
+    modal=feats['create']>.08 and feats['cancel']>.08 and d==4
+    return modal,feats
+
+
+def autopilot_mode():
+    """Single capture controller: pad->menu->match->route->turret->return.
+
+    Experimental executable controller, NOT claimed in-game verified.
+    F10 stops. Caps all movements; errors halt instead of improvising.
+    """
+    import queue, ctypes, csv, traceback
+    import cv2
+    from windows_capture import WindowsCapture,Frame,InternalCaptureControl
+    root=Path.home()/'Documents'/'RobloxBGDiagnostics'/'AUTOPILOT'
+    root.mkdir(parents=True,exist_ok=True)
+    logfile=root/'AUTOPILOT_LOG.txt'
+    events=[]
+    def log(s):
+        line=time.strftime('[%H:%M:%S] ')+str(s)
+        print(line,flush=True)
+        events.append(line)
+        with logfile.open('a',encoding='utf-8') as fp:fp.write(line+'\n')
+    logfile.write_text('ROBLOX AUTOPILOT V'+VERSION+'\n',encoding='utf-8')
+    print('AUTOPILOT: lobby -> City / 1 / Hard -> match -> route -> turrets -> repeat.')
+    print('EXPERIMENTAL. Real game input, requires Roblox foreground. F10 STOP.')
+    if input('Type YES once to enable game control [NO]: ').strip().upper()!='YES':
+        log('NOT_ARMED');return 0
+    try:
+        hwnd=verified_roblox_hwnd()
+        io=AutoPilotInput(hwnd)
+    except Exception as e:
+        log('GAME_WINDOW_FAILED '+repr(e));return 2
+    q=queue.Queue(maxsize=1)
+    stop=threading.Event()
+    cap=WindowsCapture(cursor_capture=None,draw_border=None,
+                       monitor_index=None,window_hwnd=hwnd)
+    @cap.event
+    def on_frame_arrived(frame:Frame,control:InternalCaptureControl):
+        if stop.is_set():control.stop();return
+        try:
+            img=frame.frame_buffer[:,:,:3].copy()
+            if q.full():
+                try:q.get_nowait()
+                except queue.Empty:pass
+            q.put_nowait(img)
+        except (queue.Full,ValueError):pass
+    @cap.event
+    def on_closed():stop.set()
+    brain=AutoPilotPolicy()
+    route=AutoPilotRoute()
+    route.load()
+    controller=None
+    begin=time.monotonic()
+    last_sample=0.0
+    last_action=0.0
+    last_frame_at=begin
+    last_phase=''
+    menu_visible=0
+    match_visible=0
+    result_visible=0
+    lobby_visible=0
+    price_green=0
+    wait_until=0.0
+    halt_reason=None
+    stage='WAIT_FOR_GAME'
+    stage_since=begin
+    progress_last=None
+    route_since=None
+    route_started=False
+    pad_attempts=0
+    def transition(next_stage,why,now):
+        nonlocal stage,stage_since,last_phase
+        if stage!=next_stage:
+            log('STATE '+stage+' -> '+next_stage+' : '+why)
+            stage=next_stage;stage_since=now;last_phase=''
+    try:
+        controller=cap.start_free_threaded()
+        log('CAPTURE_GAME_HWND='+str(hwnd)+' ROUTE='+route.note)
+        while not stop.is_set() and time.monotonic()-begin<7200:
+            now=time.monotonic()
+            if io.stop_pressed() and io.focused():
+                halt_reason='USER_F10';break
+            if not io.focused():
+                if now-last_frame_at>30:
+                    halt_reason='FOREGROUND_NOT_ROBLOX_30S';break
+                time.sleep(.15)
+                continue
+            try:frame=q.get(timeout=.4)
+            except queue.Empty:
+                if now-last_frame_at>8:
+                    halt_reason='CAPTURE_STALLED';break
+                continue
+            last_frame_at=now
+            if now-last_sample<.45:continue
+            last_sample=now
+            scene,info=lifecycle_scene_hint(frame)
+            modal,feat=autopilot_menu_features(frame)
+            if modal:scene='CREATION_MENU'
+            if scene=='CREATION_MENU':menu_visible+=1
+            else:menu_visible=0
+            if scene=='MATCH':match_visible+=1
+            else:match_visible=0
+            if scene=='RESULTS':result_visible+=1
+            else:result_visible=0
+            if (scene in ('LOBBY','LOBBY_COUNTDOWN_OR_PORTAL') and not modal
+                    and stage not in ('WAIT_MATCH','MENU')):
+                lobby_visible+=1
+            else:lobby_visible=0
+            if scene!=last_phase:
+                log('SCENE '+scene+' stage='+stage)
+                last_phase=scene
+            if menu_visible>=3 and stage not in ('MENU','WAIT_MATCH'):
+                transition('MENU','creation dialog confirmed',now)
+                brain.menu_index=0;brain.menu_tries={}
+                brain.menu_confirmations=0;brain.create_sent=False
+            if result_visible>=2:
+                transition('RESULTS_WAIT','defeat/results seen',now)
+            if match_visible>=3 and stage in ('WAIT_MATCH','MENU','WAIT_FOR_GAME'):
+                brain.match_index+=1
+                transition('MATCH_ROUTE','in-game HUD verified',now)
+                route_started=False;route_since=now;route.idx=0
+                brain.turret_actions=0;brain.last_turret_at=0.0
+            if stage=='WAIT_FOR_GAME':
+                if lobby_visible>=3:
+                    brain.reset_lobby(now)
+                    transition('LOBBY','lobby seen',now)
+                elif match_visible>=3:
+                    transition('MATCH_ROUTE','already in match',now)
+                elif now-stage_since>25:
+                    halt_reason='INITIAL_SCENE_UNKNOWN';break
+                continue
+            if stage=='RESULTS_WAIT':
+                if lobby_visible>=3:
+                    brain.reset_lobby(now)
+                    transition('LOBBY','auto-return to lobby',now)
+                elif now-stage_since>90:
+                    halt_reason='RESULTS_RETURN_TIMEOUT';break
+                continue
+            if stage=='LOBBY':
+                if scene not in ('LOBBY','LOBBY_COUNTDOWN_OR_PORTAL'):
+                    if now-stage_since>20:
+                        halt_reason='LOBBY_SCENE_NOT_CONFIRMED';break
+                    continue
+                if now<wait_until:continue
+                signs=pad_sign_hints(frame)
+                target=brain.ready_sign(signs)
+                if target is None:
+                    if now-stage_since>20:
+                        halt_reason='READY_SIGN_NOT_STABLE';break
+                    continue
+                brain.target_x=target
+                transition('LOBBY_NAV','ready sign stable, approaching with feedback',now)
+                brain.stage_since=now
+                brain.last_x=None
+                continue
+            if stage=='LOBBY_NAV':
+                if menu_visible>=2:
+                    transition('MENU','menu opened on pad',now)
+                    brain.menu_index=0;brain.menu_tries={}
+                    brain.menu_confirmations=0;brain.create_sent=False
+                    continue
+                if scene not in ('LOBBY','LOBBY_COUNTDOWN_OR_PORTAL'):
+                    halt_reason='LOBBY_NAV_UNKNOWN_SCENE';break
+                if now-last_action<.65:continue
+                signs=pad_sign_hints(frame)
+                ready=[s for s in signs if s.get('status')=='READY_SIGN'
+                       and s.get('confidence',0)>=.65]
+                if not ready:
+                    halt_reason='TARGET_SIGN_LOST';break
+                current=min(ready,key=lambda s:abs(s.get('center_x',0)-brain.target_x))
+                x=current.get('center_x',0)
+                if abs(x-brain.target_x)>.20:
+                    halt_reason='TARGET_SWITCH_AMBIGUITY';break
+                brain.target_x=x
+                action,key,duration=brain.lobby_movement(x,now)
+                if action=='HALT':
+                    halt_reason=key;break
+                if not io.keys(key,duration):
+                    halt_reason='GAME_KEY_NOT_CONFIRMED_BY_WIN32';break
+                last_action=time.monotonic()
+                log('NAV '+key+' '+str(duration)+' x='+str(round(x,3))+
+                    ' steps='+str(brain.move_actions))
+                if brain.move_actions>=34:
+                    halt_reason='PAD_MENU_NOT_OPEN_AFTER_34_STEPS';break
+                continue
+            if stage=='MENU':
+                if not modal:
+                    if brain.create_sent:
+                        transition('WAIT_MATCH','create dialog closed',now)
+                    elif now-stage_since>8:
+                        halt_reason='CREATION_DIALOG_LOST';break
+                    continue
+                if menu_visible<3:continue
+                if now-last_action<.6:continue
+                action,x,y,why=brain.menu_next(feat,now)
+                if action=='HALT':halt_reason=why;break
+                if action=='CLICK':
+                    if not io.click(x,y,frame):
+                        halt_reason='MENU_CLICK_NOT_SENT_'+why;break
+                    log('MENU_ACTION '+why+' (not proof of click effect)')
+                    last_action=time.monotonic()
+                    if why=='CREATE_ONCE':
+                        transition('WAIT_MATCH','create once sent; await match HUD',now)
+                continue
+            if stage=='WAIT_MATCH':
+                if match_visible>=3:
+                    brain.match_index+=1
+                    transition('MATCH_ROUTE','match confirmed after create',now)
+                    route_since=now;route.idx=0;route_started=False
+                    brain.turret_actions=0;brain.last_turret_at=0.0
+                elif now-stage_since>75:
+                    halt_reason='CREATE_NOT_CONFIRMED_IN_GAME';break
+                continue
+            if stage=='MATCH_ROUTE':
+                if scene in ('DANGER_OR_DEFEAT','RESULTS','LOADING'):
+                    continue
+                if scene!='MATCH':
+                    if now-stage_since>12:
+                        halt_reason='MATCH_SCENE_LOST_DURING_ROUTE';break
+                    continue
+                if route.ready:
+                    tag,score=route.classify(frame)
+                    if tag=='SAFE_CORNER':
+                        log('CORNER_CONFIRMED matches='+str(score))
+                        transition('MATCH_DEFEND','reached defensive corner',now)
+                        continue
+                    if route.idx==0 and tag!='START':
+                        if now-stage_since>10:
+                            halt_reason='MATCH_START_POSE_UNMATCHED';break
+                        continue
+                    # A recorded route that still shows the START viewpoint
+                    # after multiple commands has not demonstrated progress.
+                    if route.idx>=16 and tag=='START':
+                        halt_reason='ROUTE_NO_VISUAL_PROGRESS';break
+                    if now-last_action<.46:continue
+                    if route.idx>=len(route.steps):
+                        halt_reason='ROUTE_FINISHED_WITHOUT_CORNER_CONFIRMATION';break
+                    t,keys,duration=route.steps[route.idx]
+                    if not io.keys(keys,duration):
+                        halt_reason='ROUTE_KEY_FAILED';break
+                    route.idx+=1;last_action=time.monotonic()
+                    if route.idx%10==0:log('ROUTE_STEP '+str(route.idx)+'/'+str(len(route.steps)))
+                    if now-stage_since>45:
+                        halt_reason='ROUTE_TIMEOUT';break
+                else:
+                    halt_reason='ROUTE_UNAVAILABLE_'+route.note;break
+                continue
+            if stage=='MATCH_DEFEND':
+                if scene!='MATCH':continue
+                tag,score=route.classify(frame)
+                if tag!='SAFE_CORNER':
+                    halt_reason='DEFENSIVE_CORNER_LOST';break
+                if brain.turret_actions>=12:continue
+                if now-brain.last_turret_at<5:continue
+                cost,red,green=turret_price_color_signal(frame)
+                price_green=(price_green+1) if cost=='GREEN' else 0
+                if price_green<4:continue
+                if not io.keys('Z',.10):
+                    halt_reason='TURRET_KEY_FAILED';break
+                brain.turret_actions+=1
+                brain.last_turret_at=time.monotonic()
+                price_green=0
+                log('TURRET_Z_SENT_UNVERIFIED count='+str(brain.turret_actions))
+                continue
+            if now-stage_since>180:
+                halt_reason='STATE_TIMEOUT_'+stage;break
+        if halt_reason is None:
+            halt_reason='SESSION_LIMIT_OR_GAME_CLOSED'
+        log('AUTOPILOT_STOP '+halt_reason+' matches='+str(brain.match_index)+
+            ' turret_presses='+str(brain.turret_actions))
+        return 0 if halt_reason=='USER_F10' else 2
+    except Exception:
+        log('AUTOPILOT_EXCEPTION '+traceback.format_exc())
+        return 2
+    finally:
+        stop.set()
+        if controller is not None:
+            try:controller.stop()
+            except Exception:pass
+# === End ROBLOX V3.5 AUTOPILOT ===
+
+
 def run_mode_prompt():
     print("")
     print("ROBLOX V"+VERSION+" - choose mode:")
@@ -3465,8 +4143,9 @@ def run_mode_prompt():
     print(" 12 = PAD SCOUT: offline portal geometry from old video; no game input")
     print(" 13 = PAD SIGN REPLAY: read old PAD SCOUT ZIP, identify signs offline")
     print(" 14 = PAD SIGNS LIVE: read-only lobby sign observer; NO movement")
+    print(" 15 = AUTOPILOT: lobby -> match -> corner -> turrets -> return (YES/F10)")
     try:
-        choice = input("Choose mode 1-14 [1]: ").strip()
+        choice = input("Choose mode 1-15 [1]: ").strip()
     except EOFError:
         choice = "1"
     return choice
@@ -3498,6 +4177,8 @@ if selected_mode == "13":
     raise SystemExit(pad_sign_replay())
 if selected_mode == "14":
     raise SystemExit(pad_sign_live_observer())
+if selected_mode == "15":
+    raise SystemExit(autopilot_mode())
 
 # ------------ End demonstration recording ------------
 
