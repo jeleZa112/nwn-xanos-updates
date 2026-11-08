@@ -3,7 +3,7 @@
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.1.0"
+VERSION = "3.2.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -1547,10 +1547,22 @@ def lifecycle_scene_hint(img):
       "lobby_gold":colored((0,.45,.13,.64),"orange"),
       "lobby_cyan":colored((.36,.81,.67,.99),"cyan"),
     }
+    # A fullscreen reddish defeat overlay may contain misleading HUD colors.
+    # Require red dominance in two *separate* parts of the image so a single
+    # red turret/button cannot be mistaken for the loss overlay.
+    def red_fog(box):
+        p=patch(box)[::3,::3,:3].astype(np.int16)
+        if not p.size:return 0.
+        b,g,r=p[:,:,0],p[:,:,1],p[:,:,2]
+        return float(((r>100)&(r>g+34)&(r>b+28)).mean())
+    scores["red_fog"]=min(red_fog((.12,.12,.48,.82)),
+                          red_fog((.52,.12,.88,.82)))
     if scores["brightness"]<44:
         return "LOADING",scores
     if scores["result_blue"]>.37 and scores["result_orange"]>.18:
         return "RESULTS",scores
+    if scores["red_fog"]>.26:
+        return "DANGER_OR_DEFEAT",scores
     digits=((.369,.716,.396,.785),(.449,.716,.476,.785),
             (.529,.716,.556,.785),(.609,.716,.636,.785))
     white_digits=0
@@ -1571,12 +1583,166 @@ def lifecycle_scene_hint(img):
         return "LOBBY_COUNTDOWN_OR_PORTAL",scores
     if scores["lobby_gold"]>.09 and scores["lobby_cyan"]>.011:
         return "LOBBY",scores
-    if (scores["left_green"]>.10 or
-        (scores["top_white"]>.045 and scores["purple"]<.10)):
+    # A MATCH requires *both* the independent green side HUD and
+    # top-center white HUD. A single color cue was too permissive.
+    if (scores["left_green"]>.10 and scores["top_white"]>.025
+        and scores["red_fog"]<.20):
         return "MATCH",scores
-    if scores["purple"]>.09 or scores["lobby_gold"]>.10:
+    if scores["purple"]>.09 and scores["red_fog"]<.20:
         return "LOBBY",scores
     return "UNKNOWN",scores
+
+
+class LifecycleGate:
+    """Evidence-only phase tracker. NEVER authorizes keyboard or mouse input.
+
+    Three consecutive samples and plausible transitions are required.
+    UNKNOWN disarms immediately; a persistent unexpected jump resets rather
+    than silently skipping the missing transition.
+    """
+    ALLOWED = {
+        'UNKNOWN': {'LOBBY','CREATION_MENU','LOBBY_COUNTDOWN_OR_PORTAL',
+                    'LOADING','MATCH','DANGER_OR_DEFEAT','RESULTS'},
+        'LOBBY': {'CREATION_MENU','LOBBY_COUNTDOWN_OR_PORTAL','LOADING'},
+        'CREATION_MENU': {'LOBBY','LOBBY_COUNTDOWN_OR_PORTAL','LOADING'},
+        'LOBBY_COUNTDOWN_OR_PORTAL': {'LOBBY','CREATION_MENU','LOADING'},
+        'LOADING': {'LOBBY','MATCH','RESULTS'},
+        'MATCH': {'DANGER_OR_DEFEAT','RESULTS','LOADING'},
+        'DANGER_OR_DEFEAT': {'MATCH','RESULTS','LOADING'},
+        'RESULTS': {'LOADING','LOBBY'},
+    }
+    def __init__(self):
+        self.state='UNKNOWN'
+        self.candidate='UNKNOWN'
+        self.hits=0
+        self.last_at=None
+
+    def observe(self, raw, now):
+        """Returns (confirmed_state, optional_event). No actions."""
+        event=None
+        if self.last_at is not None and now-self.last_at>3.0:
+            if self.state!='UNKNOWN':
+                event='STALE_CAPTURE '+self.state+' -> UNKNOWN'
+            self.state='UNKNOWN'
+            self.candidate='UNKNOWN'
+            self.hits=0
+        self.last_at=now
+        if raw==self.candidate:
+            self.hits+=1
+        else:
+            self.candidate=raw
+            self.hits=1
+        if raw=='UNKNOWN':
+            if self.hits>=2 and self.state!='UNKNOWN':
+                event='UNCERTAIN '+self.state+' -> UNKNOWN'
+                self.state='UNKNOWN'
+            return self.state,event
+        if raw==self.state:
+            return self.state,event
+        if self.hits<3:
+            return self.state,event
+        if raw in self.ALLOWED.get(self.state,set()):
+            old=self.state
+            self.state=raw
+            return self.state,'TRANSITION '+old+' -> '+raw
+        if self.hits==3:
+            event='REJECTED '+self.state+' -> '+raw+' (missing intermediate state)'
+        if self.hits>=8:
+            event='RESYNC_REQUIRED '+self.state+' -> UNKNOWN; persistent '+raw
+            self.state='UNKNOWN'
+            self.candidate='UNKNOWN'
+            self.hits=0
+        return self.state,event
+
+
+def replay_obs_video():
+    """Offline 1fps regression of user's EXISTING 2026-11-08 OBS clip.
+
+    Does not launch/capture/control Roblox, and does not copy the video.
+    Outputs only a small CSV and event report under RobloxBGDiagnostics.
+    """
+    import csv
+    import cv2
+    source=input("Path to existing 2026-11-08 OBS MP4: ").strip().strip('"')
+    if not Path(source).is_file():
+        print("VIDEO_NOT_FOUND: no game input; keep the old file unchanged.")
+        return 2
+    capture=cv2.VideoCapture(source)
+    if not capture.isOpened():
+        print("VIDEO_NOT_DECODABLE")
+        return 2
+    fps=capture.get(cv2.CAP_PROP_FPS)
+    nframes=capture.get(cv2.CAP_PROP_FRAME_COUNT)
+    duration=nframes/fps if fps>0 else 0
+    if not 20<=duration<=600:
+        capture.release()
+        print("VIDEO_DURATION_UNEXPECTED:",duration,"seconds (expected 191)")
+        return 2
+    root=Path.home()/"Documents"/"RobloxBGDiagnostics"/"OBS_REPLAY"
+    root.mkdir(parents=True,exist_ok=True)
+    report=root/"OBS_REPLAY_REPORT.txt"
+    csvpath=root/"OBS_REPLAY_1FPS.csv"
+    gate=LifecycleGate()
+    events=[]
+    exact=0
+    total=0
+    # The expected timeline applies ONLY to the specific 191.27s clip.
+    check_timeline=185<=duration<=196
+    def expected(t):
+        if t<8:return "LOBBY"
+        if t<12:return "CREATION_MENU"
+        if t<19:return "LOBBY_COUNTDOWN_OR_PORTAL"
+        if t<24:return "LOADING"
+        if t<161:return "MATCH"
+        if t<181:return "DANGER_OR_DEFEAT"
+        if t<186:return "RESULTS"
+        if t<189:return "LOADING"
+        return "LOBBY"
+    try:
+        with csvpath.open("w",newline="",encoding="utf-8-sig") as f:
+            writer=csv.writer(f)
+            writer.writerow(("sec","expected_video","raw","guarded",
+                             "brightness","red_fog","purple","left_green",
+                             "top_white","event"))
+            for sec in range(min(600,int(duration)+1)):
+                capture.set(cv2.CAP_PROP_POS_MSEC,sec*1000.)
+                ok,frame=capture.read()
+                if not ok:
+                    events.append(f"{sec:03d}s VIDEO_DECODE_FAILURE")
+                    continue
+                raw,detail=lifecycle_scene_hint(frame)
+                guarded,event=gate.observe(raw,float(sec))
+                truth=expected(sec) if check_timeline else "NO_GROUND_TRUTH"
+                if check_timeline:
+                    total+=1
+                    exact+=int(raw==truth)
+                writer.writerow((sec,truth,raw,guarded,
+                       round(detail.get("brightness",0),2),
+                       round(detail.get("red_fog",0),3),
+                       round(detail.get("purple",0),3),
+                       round(detail.get("left_green",0),3),
+                       round(detail.get("top_white",0),3),event or ""))
+                if event:
+                    events.append(f"{sec:03d}s {event} raw={raw}")
+        lines=["ROBLOX_OBS_REPLAY_V"+VERSION,
+               "Input video was only READ (not copied/published).",
+               f"Video duration={duration:.2f}s fps={fps:.2f} samples={total if check_timeline else 'unscored'}",
+               "Heuristic timestamp labels are approximate, not manually verified for every frame.",
+               f"Raw exact video labels={exact}/{total}" if check_timeline else
+                 "Different clip length: per-frame ground-truth comparison disabled.",
+               "KNOWN LIMITATION: no verified repeat path from returned lobby.",
+               "No keyboard/mouse clicks or purchases were attempted.",
+               "EVENTS:"]+events
+        report.write_text("\n".join(lines)+"\n",encoding="utf-8")
+        print("\n".join(lines[:7]))
+        print("Report:",report)
+        print("CSV:",csvpath)
+        return 0
+    except Exception:
+        print("OBS_REPLAY_ERROR:",traceback.format_exc())
+        return 2
+    finally:
+        capture.release()
 
 
 def lifecycle_observer():
@@ -1631,9 +1797,7 @@ def lifecycle_observer():
     controller=None
     first=time.monotonic()
     last_check=0.
-    candidate="UNKNOWN"
-    stable=0
-    committed="UNKNOWN"
+    gate=LifecycleGate()
     image_count=0
     try:
         controller=cap.start_free_threaded()
@@ -1649,18 +1813,12 @@ def lifecycle_observer():
             if now-last_check<.8:continue
             last_check=now
             state,details=lifecycle_scene_hint(img)
-            if state==candidate:
-                stable+=1
-            else:
-                candidate=state
-                stable=1
-            if stable<3 or state=="UNKNOWN" or state==committed:
+            committed,event=gate.observe(state,now)
+            if not event:
                 continue
-            prior=committed
-            committed=state
-            log("TRANSITION "+prior+" -> "+state+
-                " confidence=3_contiguous_samples brightness="+
-                str(round(details.get("brightness",0),1)))
+            log(event+" raw="+state+" brightness="+
+                str(round(details.get("brightness",0),1))+
+                " red_fog="+str(round(details.get("red_fog",0),3)))
             if image_count<35:
                 out=img
                 h,w=img.shape[:2]
@@ -1669,7 +1827,7 @@ def lifecycle_observer():
                 name="state_%02d_%s.jpg"%(image_count,state)
                 cv2.imwrite(str(root/name),out,[cv2.IMWRITE_JPEG_QUALITY,73])
                 image_count+=1
-        log("FINISHED: last_stable="+committed+
+        log("FINISHED: last_stable="+gate.state+
             " screenshots="+str(image_count))
     except KeyboardInterrupt:
         log("INTERRUPTED")
@@ -2741,9 +2899,10 @@ def run_mode_prompt():
     print("  7 = ROUTE VISION (F10 marks defensive corner; NO game input)")
     print("  8 = GUARDED TURRET (calibrated corner + green Z, one build attempt)")
     print("  9 = LOBBY PAD demo (F8 route, F10 arrival; NO WAIT on pad)")
-    print(" 10 = LIFECYCLE observer (menu/load/match/results/return; no game input)")
+    print(" 10 = LIFECYCLE observer (guarded phases; no game input)")
+    print(" 11 = OFFLINE replay of existing OBS MP4 (no Roblox or game input)")
     try:
-        choice = input("Choose mode 1-10 [1]: ").strip()
+        choice = input("Choose mode 1-11 [1]: ").strip()
     except EOFError:
         choice = "1"
     return choice
@@ -2767,6 +2926,8 @@ if selected_mode == "9":
     raise SystemExit(route_demo(destination="lobby"))
 if selected_mode == "10":
     raise SystemExit(lifecycle_observer())
+if selected_mode == "11":
+    raise SystemExit(replay_obs_video())
 
 # ------------ End demonstration recording ------------
 
