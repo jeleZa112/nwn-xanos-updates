@@ -52,3 +52,6 @@ Latest main Roblox one-file source in branch `roblox-bg-monitor`: `roblox_monito
 
 ## 09.11.2026 — V3.5.6 latest
 Code `roblox_monitor.py`, GitHub `jeleZa112/nwn-xanos-updates` branch `roblox-bg-monitor`, commit `9e85bb65f882368e8fdd44b000ad9fda2d07b9bf`. User's last live V3.5.5 attempt: target READY during NAV but shifted/disappeared and stopped TARGET_SWITCH_AMBIGUITY; user stated others occupied pad. V3.5.6: 2-frame BUSY/LOST confirmation → PAUSE and reselect up to twice with 9s blocked old x and preserved total motion budget; unit checks 10/10 passed, NOT live verified. No fresh OBS videos; old updater menu 15 and F10. Repo NWN/BGXAI branches remain unchanged.
+
+## 2026-11-09 — latest V3.5.7
+GitHub `jeleZa112/nwn-xanos-updates` branch `roblox-bg-monitor`, code `roblox_monitor.py`, commit `5ea10a975f8cc5cfcf5e63bb345e92765872b81a`. User's V3.5.6 real log: recognized READY .634, NAV W with x=.504 after historical averaging, ORB motion, two missed detections then premature reselection at 06:48:48. New V3.5.7 targets current x; does not declare occupied merely because two READY frames absent: waits >=5s and >=7 missing unless verified COUNTDOWN twice. 13/13 offline tests passed; still no successful complete game loop. Maintain no additional recordings, single menu mode15. Critical: uploaded 19-line log is truncated without final STOP.
