@@ -1,7 +1,7 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "4.3.4",
-  "note": "Fix Windows CMD batch parser syntax error after preflight by replacing all parenthesized command blocks with robust labels; isolated CUDA repair retained",
+  "version": "4.4.0",
+  "note": "Offline export of English original WAVs for all three BG Voice RU characters, no FFmpeg or PyPI, no network downloads, no model/game changes.",
   "files": [
     {
       "path": "BG_RU_IMOEN_PROSODY_29/GENERATE_PROSODY_29.py",
@@ -86,6 +86,14 @@
     {
       "path": "BG_RU_IMOEN_PROSODY_29/README_VOXCPM2_01_RU.txt",
       "sha256": "7ac09e8c8380b86132d033e94431ff573af1123ee349b11d275951dd35c49b52"
+    },
+    {
+      "path": "BG_RU_IMOEN_PROSODY_29/EXPORT_RUTUBE_SOURCES_45.py",
+      "sha256": "b9c35383edf6e966cd395cc34bbe91be9c790313b25beecef7e26d520947f962"
+    },
+    {
+      "path": "BG_RU_IMOEN_PROSODY_29/RUN_EXPORT_RUTUBE_SOURCES_45.cmd",
+      "sha256": "7fa1d8727178dbfda9b7af563df92dd56e0a389906300c5b8c0778b46a67037c"
     }
   ]
 }
