@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.2.1
+# Roblox background monitor - release 3.3.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.2.1"
+VERSION = "3.3.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -1761,6 +1761,164 @@ def replay_obs_video():
         capture.release()
 
 
+# === Roblox PAD SCOUT V3.3: offline geometry survey, no Roblox input ===
+
+def pad_scout_candidates(raw):
+    """Find candidate violet portal surfaces; NEVER infer available/occupied.
+
+    Input: a BGR/BGRA frame. Return (candidate boxes, preview BGR) at 960px width.
+    Candidate ids are ephemeral and must not be interpreted as world locations.
+    """
+    import cv2
+    import numpy as np
+    if raw is None or raw.ndim!=3 or raw.shape[0]<250 or raw.shape[1]<400:
+        return [],None
+    h,w=raw.shape[:2]
+    dest_w=960
+    scene=cv2.resize(raw[:,:,:3],(dest_w,max(1,round(h*dest_w/w))),
+                     interpolation=cv2.INTER_AREA)
+    H,W=scene.shape[:2]
+    hsv=cv2.cvtColor(scene,cv2.COLOR_BGR2HSV)
+    # Saturated pink-purple pads only in main scene. HUD and menu masks excluded.
+    purple=cv2.inRange(hsv,(119,68,72),(173,255,255))
+    purple[:int(H*.14),:]=0
+    purple[int(H*.84):,:]=0
+    purple[:,:int(W*.04)]=0
+    purple[:,int(W*.96):]=0
+    purple=cv2.morphologyEx(purple,cv2.MORPH_CLOSE,
+                            np.ones((5,9),dtype=np.uint8))
+    purple=cv2.morphologyEx(purple,cv2.MORPH_OPEN,
+                            np.ones((3,3),dtype=np.uint8))
+    count,labels,stats,_=cv2.connectedComponentsWithStats(purple,8)
+    candidates=[]
+    for i in range(1,count):
+        x,y,bw,bh,area=[int(k) for k in stats[i]]
+        if area<max(95,int(W*H*.00017)) or bw<20 or bh<12:
+            continue
+        if bw>W*.57 or bh>H*.52 or bw/bh>9 or bh/bw>5:
+            continue
+        # Reject areas obviously overlapping the on-screen creation menu;
+        # the calling function also marks those frames as NOT_FOR_PAD_PICKING.
+        cx=(x+bw*.5)/W
+        cy=(y+bh*.5)/H
+        density=area/max(1,bw*bh)
+        candidates.append({'x':x,'y':y,'w':bw,'h':bh,
+                           'x_center':round(cx,4),'y_center':round(cy,4),
+                           'density':round(float(density),3),'area':area,
+                           'status':'UNVERIFIED'})
+    # Larger contiguous colored regions first. At most 12 visually reviewable.
+    candidates.sort(key=lambda z:(-z['area'],z['x'],z['y']))
+    return candidates[:12],scene
+
+
+def pad_scout_offline():
+    """Create a compact portal-evidence ZIP from the EXISTING OBS video.
+
+    No game launched, no input or foreground requirements, no usernames OCR'd,
+    no private footage uploaded anywhere by this script.
+    """
+    import csv
+    import cv2
+    import zipfile
+    import json
+    import traceback
+    import shutil
+    video=input('Existing OBS 2026-11-08 12-05-36.mp4 (Enter=auto-find): ').strip().strip('"')
+    if not video:
+        name='2026-11-08 12-05-36.mp4'
+        paths=(Path.home()/name,Path.home()/'Videos'/name,
+               Path.home()/'Desktop'/name,Path.home()/'Downloads'/name,
+               Path.home()/'Documents'/name,
+               Path.home()/'Videos'/'Captures'/name)
+        video=str(next((p for p in paths if p.is_file()),''))
+    if not video or not Path(video).is_file():
+        print('PAD_SCOUT_VIDEO_NOT_FOUND. Source MP4 was not changed.')
+        return 2
+    cap=cv2.VideoCapture(video)
+    if not cap.isOpened():
+        print('PAD_SCOUT_VIDEO_OPEN_FAILED')
+        return 2
+    try:
+        fps=cap.get(cv2.CAP_PROP_FPS)
+        count=cap.get(cv2.CAP_PROP_FRAME_COUNT)
+        duration=count/fps if fps>0 else 0.
+        if not 185<=duration<=196:
+            print('PAD_SCOUT_EXPECTED_ORIGINAL_191_SEC_CLIP. Found',round(duration,1))
+            return 2
+        folder=Path.home()/'Documents'/'RobloxBGDiagnostics'/'PAD_SCOUT'
+        folder.mkdir(parents=True,exist_ok=True)
+        target=folder/'PAD_SCOUT_OLD_VIDEO.zip'
+        # The original video has portal overview only at 0-7sec and after
+        # respawn near 189-191sec. Two menu frames are negative controls.
+        sample_seconds=(0,2,4,5,6,7,9,11,188,189,190,191)
+        index=[]
+        rows=[]
+        artifacts=[]
+        for second in sample_seconds:
+            cap.set(cv2.CAP_PROP_POS_MSEC,second*1000.)
+            ok,frame=cap.read()
+            if not ok:
+                rows.append((second,'DECODE_FAILED',0,'','','','',''))
+                continue
+            stage=('LOBBY_OVERVIEW' if second<8 else
+                   'MENU_NEGATIVE_CONTROL' if second<12 else
+                   'RETURN_LOADING_OR_LOBBY')
+            proposals,preview=pad_scout_candidates(frame)
+            if preview is None:
+                continue
+            for idx,p in enumerate(proposals,1):
+                p['frame_second']=second
+                p['candidate_index']=idx
+                rows.append((second,stage,idx,p['x'],p['y'],p['w'],p['h'],p['density']))
+                cv2.rectangle(preview,(p['x'],p['y']),
+                              (p['x']+p['w'],p['y']+p['h']),(0,255,255),2)
+                cv2.putText(preview,str(idx),(p['x'],max(16,p['y']-3)),
+                            cv2.FONT_HERSHEY_SIMPLEX,.55,(0,255,255),2)
+            cv2.rectangle(preview,(0,0),(preview.shape[1],32),(0,0,0),-1)
+            cv2.putText(preview,('TIME %03d  '%second+stage+'  STATUS UNKNOWN'),
+                        (7,23),cv2.FONT_HERSHEY_SIMPLEX,.57,(255,255,255),1)
+            ok,encoded=cv2.imencode('.jpg',preview,[cv2.IMWRITE_JPEG_QUALITY,68])
+            if ok:
+                artifacts.append(('view_%03ds.jpg'%second,encoded.tobytes()))
+            index.append({'sec':second,'stage':stage,'candidates':len(proposals)})
+        if not artifacts:
+            print('PAD_SCOUT_NO_DECODABLE_FRAMES')
+            return 2
+        import io
+        out=io.StringIO()
+        writer=csv.writer(out)
+        writer.writerow(('second','video_stage','candidate_id','x','y','w','h','purple_density'))
+        writer.writerows(rows)
+        guide=('ROBLOX PAD SCOUT '+VERSION+'\n'
+               'Offline detection only. No Roblox commands were issued.\n'
+               'Purple shape != free or occupied portal. ALL statuses UNKNOWN.\n'
+               'Boxes and ids are relative to each frame, not stable pad IDs.\n'
+               'Images may contain other player names: keep archive private.\n'
+               'At video 9,11s the lobby menu is deliberately NEGATIVE CONTROL.\n'
+               'Goal: identify distinct creation-pad signs and text for calibration.\n'
+               'No autonomous route until pad status and camera pose verified.\n')
+        tmp=target.with_suffix('.tmp')
+        with zipfile.ZipFile(tmp,'w',compression=zipfile.ZIP_DEFLATED) as z:
+            z.writestr('README.txt',guide)
+            z.writestr('pad_candidates.csv',out.getvalue().encode('utf-8-sig'))
+            z.writestr('pad_index.json',json.dumps(index,ensure_ascii=False,indent=2))
+            for filename,payload in artifacts:z.writestr(filename,payload)
+        with zipfile.ZipFile(tmp) as z:
+            bad=z.testzip()
+            if bad:raise ValueError('BAD_ZIP_ITEM '+bad)
+        tmp.replace(target)
+        print('PAD_SCOUT_READY: '+str(target))
+        print('Frames='+str(len(artifacts))+' candidates='+str(len(rows)))
+        print('NO GAME INPUT. Free vs occupied is NOT YET proven.')
+        return 0
+    except Exception:
+        print('PAD_SCOUT_ERROR '+traceback.format_exc())
+        return 2
+    finally:
+        cap.release()
+# === End PAD SCOUT V3.3 ===
+
+
 def lifecycle_observer():
     """Observe start/menu/load/match/defeat/return without any Roblox input."""
     import queue
@@ -2917,8 +3075,9 @@ def run_mode_prompt():
     print("  9 = LOBBY PAD demo (F8 route, F10 arrival; NO WAIT on pad)")
     print(" 10 = LIFECYCLE observer (guarded phases; no game input)")
     print(" 11 = OFFLINE replay of existing OBS MP4 (no Roblox or game input)")
+    print(" 12 = PAD SCOUT: offline portal geometry from old video; no game input")
     try:
-        choice = input("Choose mode 1-11 [1]: ").strip()
+        choice = input("Choose mode 1-12 [1]: ").strip()
     except EOFError:
         choice = "1"
     return choice
@@ -2944,6 +3103,8 @@ if selected_mode == "10":
     raise SystemExit(lifecycle_observer())
 if selected_mode == "11":
     raise SystemExit(replay_obs_video())
+if selected_mode == "12":
+    raise SystemExit(pad_scout_offline())
 
 # ------------ End demonstration recording ------------
 
