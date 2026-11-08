@@ -34,3 +34,6 @@ Code commit `875b5e9e238e65f477dfb8392530e006a349fe90`. Current read-only detect
 
 ## 08.11.2026 — обновление V3.4.3: источник 30 UNKNOWN
 Был обнаружен реальный корень ошибки PAD SIGNS LIVE: WGC по `window_name='Roblox'` захватывал окно Chrome с ChatGPT чатом «Изучение проекта Roblox». Живые изображения `live_01.jpg` и `live_02.jpg` это прямо подтверждают. V3.4.3 commit `ddc757e583c7f77ec4fa035f6e5935a6e66db450`: все 8 захватов заменены на проверенный HWND игрового Roblox-процесса. Пока нет нового живого подтверждения. Следующий тест: только режим 14 (8–10 секунд), прислать маленький diagnostic ZIP. Приватные снимки чата не выкладывать на GitHub.
+
+## 2026-11-09 — Roblox V3.5.1 latest
+First V3.5.0 complete-mode 15 test stopped at `READY_SIGN_NOT_STABLE` with no movement, 0 matches. Screenshot showed READY label, but no source WGC frame was saved. Latest GitHub code V3.5.1 commit `1fa1507bfbd1277dd686562d98856b48d8dbcf44` improves READY sign match from that screenshot and 3/6 temporal stability, stops on no-progress, stores direct useful failure screenshot. 25 offline tests passed. Keep old single ROBLOX_UPDATE.cmd. No new video or separate diagnostics needed. Do not claim real-life match creation already works.
