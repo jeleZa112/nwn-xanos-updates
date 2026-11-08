@@ -1,0 +1,13 @@
+{
+  "version": "042b-source-only",
+  "schema": 1,
+  "source_sha256": "86d80953be464a3f10da8e1dc031b907801860b7f1f15b3ea6fb9d25e485f3f5",
+  "preview_sha256": "8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0",
+  "files": {
+    "README_RU.md": "536f244801cee5a62646f447eaffe6bd420e0480a55acd727bd070dbafb8faf0",
+    "build_042b_preview.py": "0e553e285d0d2792debc9c7637c68dde8127fc55df8664c0952d6f8d6f0b27e6",
+    "guard_source_042a.py": "e4e107c1d3f9d2c61f4167ce324791398abc558f48cdb57daf606b43e9d04b8f",
+    "tests/test_bounded_attack.py": "94489f4abe584d9d1ae7342e5eeb7884ed45e938ebcbea51d9afc7be67565530",
+    "tests/test_priority_preview.py": "fa3e0b2706b6ca199c16d6c05b76271adfab1e6643bd98e8116b8cba808bfebe"
+  }
+}
