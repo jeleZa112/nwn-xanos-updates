@@ -46,3 +46,6 @@ Latest Roblox bot V3.5.3 commit `1ff72fd47562c71b484c3f9cbd0755ff4242bb28` in br
 
 ## 09.11.2026 — V3.5.4
 Последний GitHub `roblox_monitor.py`, ветка `roblox-bg-monitor`, commit `f71b6326da85bfaabc4cc8803e32dbc852ddcf43`. Доказано по user live log: LOBBY_NAV выполнил 10 A/W с visual motion ORB (20–37 px), затем `SCENE CREATION_MENU` и аварийный stop `LOBBY_NAV_UNKNOWN_SCENE` (bug в условиях подтверждения: >=2, а сразу первый кадр не-lobby = STOP). В V3.5.4 первый кадр больше не abort; переключение в MENU только после 3 реальных modal=True, кандидат сохраняет приватный JPEG, ложный сигнал => таймаут 6с. Live full match still unverified. No new video needed.
+
+## 09.11.2026 — V3.5.5 CURRENT
+Latest main Roblox one-file source in branch `roblox-bg-monitor`: `roblox_monitor.py` commit `775befec7d26e1b46744b57104f208aed82b9274`. User's live screenshot V3.5.4 showed 0 READY on small visible distant label. Offline visual matching found exact issue: old template scales begin .72, screenshot needs .60 (correlation .896). Version 3.5.5 adds .59/.60/.61/.62 and strict low-scale >=.80. New screenshot now one READY at x=.696, negative menu/loading clear. 14 offline checks pass. No real-game test yet.
