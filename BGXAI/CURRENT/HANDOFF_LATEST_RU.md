@@ -897,3 +897,12 @@ User requested "делай" to actually develop better AI after repeated failed 
 - Это только успешный реальный Windows preflight, **не** доказательство установки/компиляции 042B и **не** тест боевой логики.
 - Следующее одно действие для пользователя после закрытия игры и InfinityLoader: повторно открыть прежний `BGXAI_UPDATE.cmd`, выбрать **15**, внимательно проверить вывод, ввести `YES` только для осознанной экспериментальной установки. Пункт 15 автоматически вызывает проверенную загрузку исходников; 14 отдельно не обязателен. Установщик обязан ещё раз проверить исходный hash, BGX41-last, отсутствие процессов и записать внешние backups, затем WeiDU backup. При `REVIEW` / `BLOCKED` не повторять, сохранить вывод и backup/report, анализировать причину. При успехе нужно получить строку `INSTALLED_EXPERIMENTAL` и checks, затем только следующий игровой тест; старую 041 не откатывать.
 - Все предыдущие журналы, 76 offline tests, pinned dispatcher/manifest and original game BCS remain unchanged. Русская расшифровка Extra Combat Info непосредственно в игре пока не внедрена.
+
+## 2026-11-09 — BGXAI 042B реально УСТАНОВЛЕН в Windows (пункт 15, YES)
+
+- Пользователь запустил исходный `BGXAI_UPDATE.cmd`, verified pinned script `9e7a6f9af0d6`, выбрал **15**, 8/8 source hashes VERIFIED, подтвердил `YES`.
+- Результат реального WeiDU/установщика: **`BGXAI 042B: INSTALLED_EXPERIMENTAL`**, `weidu_success=True`, `installed_as_last=True`, `exact_preview_in_override=True`, `chitin_unchanged=True`. Команда завершилась без ошибки.
+- Резервная копия создана: `%USERPROFILE%\Documents\BGXAI42_SAFE_BACKUPS\PRE_INSTALL_20261108T225100245753Z` (не раскрывать реальный Windows username). Оригинальный BCS SHA256 `86d80953be464a3f10da8e1dc031b907801860b7f1f15b3ea6fb9d25e485f3f5`, эталон 042B SHA256 `8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0`.
+- **041 НЕ удалён**, 042B поверх него последний. Не запускать пункт 15 повторно и не копировать BCS вручную.
+- **NEXT** (ровно один безопасный шаг): открыть тот же updater → **16 — статус 042B READ ONLY**, убедиться в `STATUS: 042B INSTALLED; verified rollback backup` и том же SHA256. Если OK, один игровой тест: два охранника F=ON и их EPS «Атаковать врагов»=ON, общий AI ON, противник атакует защищаемого; затем проверить отсутствие сбоя бардовской песни/ручных команд. Никаких массовых повторных тестов.
+- Реальная игра и откат пока НЕ проверены. `BGXAI_UPDATE.cmd`, pinned dispatcher, GitHub main/NWN не менять без причины. Сохранён полный checkpoint `CURRENT/BGXAI_042B_INSTALL_LIVE_OK_20261109_RU.md`.
