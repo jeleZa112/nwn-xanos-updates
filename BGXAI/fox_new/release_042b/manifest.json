@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.12-042B",
+  "files": [
+    {
+      "dest": "BGXAI42_INSTALL.py",
+      "source": "BGXAI/fox_new/release_042b/BGXAI42_INSTALL.py",
+      "size": 15263,
+      "sha256": "d5ab5f917f31ceaf0a581e42d9266f354fb4b51cffa1af80e45dff029541b933"
+    },
+    {
+      "dest": "build_042b_preview.py",
+      "source": "BGXAI/fox_new/release_042b/build_042b_preview.py",
+      "size": 3524,
+      "sha256": "0e553e285d0d2792debc9c7637c68dde8127fc55df8664c0952d6f8d6f0b27e6"
+    },
+    {
+      "dest": "guard_source_042a.py",
+      "source": "BGXAI/fox_new/release_042b/guard_source_042a.py",
+      "size": 5359,
+      "sha256": "e4e107c1d3f9d2c61f4167ce324791398abc558f48cdb57daf606b43e9d04b8f"
+    },
+    {
+      "dest": "setup-BGX42.tp2",
+      "source": "BGXAI/fox_new/release_042b/setup-BGX42.tp2",
+      "size": 184,
+      "sha256": "8a818469f4f7d1c5944785b9ee1fd055ff172e8cfcde12d985259f6ff3884c33"
+    },
+    {
+      "dest": "SOURCE_MANIFEST.json",
+      "source": "BGXAI/fox_new/release_042b/SOURCE_MANIFEST.json",
+      "size": 939,
+      "sha256": "c2c52791bd31caec4ad5f835a8601d3ea084d9b5ebcaa5361cf81149dfdf1d10"
+    },
+    {
+      "dest": "README_RU.md",
+      "source": "BGXAI/fox_new/release_042b/README_RU.md",
+      "size": 5008,
+      "sha256": "7253901a4287b2118fa5a3e257983f63731e10f40be293a943d8f0451affa020"
+    },
+    {
+      "dest": "BGX42/tests/test_installer_042b.py",
+      "source": "BGXAI/fox_new/release_042b/BGX42/tests/test_installer_042b.py",
+      "size": 5680,
+      "sha256": "52d2b91210aedb26f200b9d35da316049c0fead128fe5dc57a9d6a53d8587ac7"
+    },
+    {
+      "dest": "BGX42/tests/test_recovery_gate.py",
+      "source": "BGXAI/fox_new/release_042b/BGX42/tests/test_recovery_gate.py",
+      "size": 2966,
+      "sha256": "c4100d981916bb26088cb0444604e71eaa7de24c56797a1251df3bd78d605e75"
+    }
+  ],
+  "status": "EXPERIMENTAL_OPT_IN_INSTALL_042B; no automatic game write",
+  "readme": "README_RU.md"
+}
