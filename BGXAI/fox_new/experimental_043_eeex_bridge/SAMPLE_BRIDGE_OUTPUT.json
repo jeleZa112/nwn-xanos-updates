@@ -1,0 +1,64 @@
+{
+  "observer": {
+    "schema": 1,
+    "mode": "READ_ONLY_ADVISORY",
+    "upstream_version": "0.3.13-043-PROBE",
+    "events_considered": 1,
+    "warnings": [],
+    "attack_alerts": [
+      {
+        "sequence": 1,
+        "actor_id": 12,
+        "target_id": 34,
+        "action_id": 3,
+        "actor_x": 4.0,
+        "actor_y": 0.0,
+        "action_origin": "UNKNOWN",
+        "visibility": "UNKNOWN",
+        "event": "NONPARTY_ATTACK_STARTED_ON_PARTY"
+      }
+    ],
+    "queue_origin_known": false,
+    "engine_visibility_known": false,
+    "execution_allowed": false,
+    "action_commands": [],
+    "next_step": "VERIFY_MANUAL_ACTION_PROVENANCE_BEFORE_ANY_DISPATCH"
+  },
+  "offline_policy": {
+    "mode": "OFFLINE_FIXTURE_ONLY",
+    "source_event_sequence": 1,
+    "engine_visibility_known": false,
+    "manual_action_origin_known": false,
+    "policy_plan": {
+      "tick": 20,
+      "threat": {
+        "enemy_uid": "12",
+        "ally_uid": "34",
+        "reason": "CONFIRMED_ATTACK",
+        "score": 16.6667,
+        "distance": 4.0,
+        "eta": null
+      },
+      "interceptor_uid": "D1",
+      "cover_uid": "D2",
+      "intents": [
+        {
+          "actor": "D1",
+          "kind": "INTERCEPT_WHEN_IDLE",
+          "enemy": "12",
+          "protect": "34",
+          "warning": "ADVISORY_NOT_GAME_COMMAND"
+        },
+        {
+          "actor": "D2",
+          "kind": "COVER_HOLD_POSITION",
+          "protect": "34",
+          "warning": "NO_MOVEMENT_ISSUED"
+        }
+      ],
+      "withheld_reason": null
+    },
+    "execution_allowed": false,
+    "action_commands": []
+  }
+}
