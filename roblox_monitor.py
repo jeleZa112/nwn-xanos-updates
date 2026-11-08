@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.4.0
+# Roblox background monitor - release 3.4.1
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.4.0"
+VERSION = "3.4.1"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -2098,7 +2098,7 @@ def pad_sign_live_observer():
     queue_frames=queue.Queue(maxsize=1)
     stop=threading.Event()
     @cap.event
-    def arrived(frame:Frame,control:InternalCaptureControl):
+    def on_frame_arrived(frame:Frame,control:InternalCaptureControl):
         if stop.is_set():
             control.stop();return
         try:
@@ -2109,7 +2109,7 @@ def pad_sign_live_observer():
             queue_frames.put_nowait(image)
         except (queue.Full,ValueError):pass
     @cap.event
-    def closed():stop.set()
+    def on_closed():stop.set()
     win=ctypes.WinDLL('user32',use_last_error=True)
     win.FindWindowW.argtypes=(ctypes.c_wchar_p,ctypes.c_wchar_p)
     win.FindWindowW.restype=ctypes.c_void_p
