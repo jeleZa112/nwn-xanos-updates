@@ -3,7 +3,7 @@
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.0.2"
+VERSION = "3.1.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 ROOT = Path.home() / "Documents" / "RobloxBGDiagnostics" / "CURRENT"
@@ -1499,6 +1499,193 @@ def route_demo(destination="corner"):
 # No new CMD files are necessary.
 
 # === V1.0 Lobby assistant: conservative foreground-only workflow ===
+
+# === Life-cycle visual states checked against user's 2026-11-08 OBS session. ===
+def lifecycle_scene_hint(img):
+    """Conservative VISUAL hint only: never authorize a click/move by itself.
+
+    Trained on the user's 191s OBS recording. Colors/text geometry can change
+    between Roblox versions, aspect ratios, camera angles and OBS crop.
+    Returns UNKNOWN unless multiple visual cues agree. No OCR or memory access.
+    """
+    import cv2
+    import numpy as np
+    h,w=img.shape[:2]
+    if h<280 or w<500:
+        return "UNKNOWN",{}
+    img=img[:,:,:3]
+    def patch(box):
+        x1,y1,x2,y2=box
+        return img[max(0,round(y1*h)):min(h,round(y2*h)),
+                   max(0,round(x1*w)):min(w,round(x2*w))]
+    def colored(box,color):
+        p=patch(box)
+        if p.size==0:return 0.
+        hh,ss,vv=cv2.split(cv2.cvtColor(p,cv2.COLOR_BGR2HSV))
+        if color=="purple":mask=(hh>=122)&(hh<=170)&(ss>=48)&(vv>=75)
+        elif color=="orange":mask=(hh>=5)&(hh<=28)&(ss>=115)&(vv>=115)
+        elif color=="blue":mask=(hh>=90)&(hh<=132)&(ss>=50)&(vv>=15)&(vv<130)
+        elif color=="green":mask=(hh>=36)&(hh<=94)&(ss>=85)&(vv>=85)
+        elif color=="cyan":mask=(hh>=83)&(hh<=102)&(ss>=125)&(vv>=95)
+        elif color=="white":mask=(ss<45)&(vv>165)
+        elif color=="red":mask=((hh<12)|(hh>170))&(ss>110)&(vv>90)
+        else:return 0.
+        return float(mask.mean())
+    def frame_color(box,color):
+        x1,y1,x2,y2=box
+        thick=.009
+        boxes=((x1,y1,x2,y1+thick),(x1,y2-thick,x2,y2),
+               (x1,y1,x1+thick,y2),(x2-thick,y1,x2,y2))
+        return max(colored(z,color) for z in boxes)
+    scores={
+      "brightness":float(np.mean(img)),
+      "purple":colored((.25,.37,.75,.78),"purple"),
+      "left_green":colored((0,.20,.065,.67),"green"),
+      "top_white":colored((.39,.03,.62,.09),"white"),
+      "result_blue":colored((.35,.26,.65,.75),"blue"),
+      "result_orange":colored((.37,.80,.63,.90),"orange"),
+      "lobby_gold":colored((0,.45,.13,.64),"orange"),
+      "lobby_cyan":colored((.36,.81,.67,.99),"cyan"),
+    }
+    if scores["brightness"]<44:
+        return "LOADING",scores
+    if scores["result_blue"]>.37 and scores["result_orange"]>.18:
+        return "RESULTS",scores
+    digits=((.369,.716,.396,.785),(.449,.716,.476,.785),
+            (.529,.716,.556,.785),(.609,.716,.636,.785))
+    white_digits=0
+    for box in digits:
+        p=patch(box)
+        if p.size==0:continue
+        b,g,r=[p[:,:,i].astype(np.int16) for i in range(3)]
+        mask=(b>165)&(g>165)&(r>165)&(
+            (np.maximum(np.maximum(b,g),r)-
+             np.minimum(np.minimum(b,g),r))<80)
+        white_digits+=float(mask.mean())>.025
+    scores["digits"]=int(white_digits)
+    if (scores["purple"]>.11 and white_digits==4 and
+        frame_color((.359,.833,.481,.914),"green")>.08 and
+        frame_color((.519,.833,.642,.914),"red")>.08):
+        return "CREATION_MENU",scores
+    if scores["purple"]>.32:
+        return "LOBBY_COUNTDOWN_OR_PORTAL",scores
+    if scores["lobby_gold"]>.09 and scores["lobby_cyan"]>.011:
+        return "LOBBY",scores
+    if (scores["left_green"]>.10 or
+        (scores["top_white"]>.045 and scores["purple"]<.10)):
+        return "MATCH",scores
+    if scores["purple"]>.09 or scores["lobby_gold"]>.10:
+        return "LOBBY",scores
+    return "UNKNOWN",scores
+
+
+def lifecycle_observer():
+    """Observe start/menu/load/match/defeat/return without any Roblox input."""
+    import queue
+    import ctypes
+    import cv2
+    from windows_capture import WindowsCapture,Frame,InternalCaptureControl
+    root=Path.home()/"Documents"/"RobloxBGDiagnostics"/"LIFECYCLE"
+    root.mkdir(parents=True,exist_ok=True)
+    log_file=root/"LIFECYCLE_REPORT.txt"
+    loglines=["ROBLOX V"+VERSION+" lifecycle observer",
+              "Video-derived VISUAL HINTS: not verified coordinates.",
+              "State transitions are observations; no keys or mouse clicks."]
+    def log(event):
+        line=time.strftime("[%H:%M:%S] ")+event
+        loglines.append(line)
+        print(line,flush=True)
+    frames=queue.Queue(maxsize=1)
+    stop=threading.Event()
+    cap=WindowsCapture(cursor_capture=None,draw_border=None,
+                       monitor_index=None,window_name="Roblox")
+    @cap.event
+    def on_frame_arrived(frame:Frame,control:InternalCaptureControl):
+        if stop.is_set():
+            control.stop()
+            return
+        try:
+            latest=frame.frame_buffer[:,:,:3].copy()
+            if frames.full():
+                try:frames.get_nowait()
+                except queue.Empty:pass
+            frames.put_nowait(latest)
+        except (queue.Full,ValueError):
+            pass
+    @cap.event
+    def on_closed():
+        stop.set()
+    ui=ctypes.WinDLL("user32",use_last_error=True)
+    ui.GetAsyncKeyState.argtypes=(ctypes.c_int,)
+    ui.GetAsyncKeyState.restype=ctypes.c_short
+    ui.FindWindowW.argtypes=(ctypes.c_wchar_p,ctypes.c_wchar_p)
+    ui.FindWindowW.restype=ctypes.c_void_p
+    ui.GetForegroundWindow.restype=ctypes.c_void_p
+    hwnd=ui.FindWindowW(None,"Roblox")
+    def stop_pressed():
+        # Only used if Roblox has focus: avoids reacting to other apps.
+        return bool(hwnd and ui.GetForegroundWindow()==hwnd and
+                    ui.GetAsyncKeyState(0x79)&0x8000)
+    print("LIFECYCLE OBSERVER: read-only; no game control; up to 15 min.")
+    print("F10 stops observer while Roblox is in foreground.")
+    controller=None
+    first=time.monotonic()
+    last_check=0.
+    candidate="UNKNOWN"
+    stable=0
+    committed="UNKNOWN"
+    image_count=0
+    try:
+        controller=cap.start_free_threaded()
+        while not stop.is_set() and time.monotonic()-first<900:
+            if stop_pressed():
+                log("STOP_F10")
+                break
+            try:
+                img=frames.get(timeout=.5)
+            except queue.Empty:
+                continue
+            now=time.monotonic()
+            if now-last_check<.8:continue
+            last_check=now
+            state,details=lifecycle_scene_hint(img)
+            if state==candidate:
+                stable+=1
+            else:
+                candidate=state
+                stable=1
+            if stable<3 or state=="UNKNOWN" or state==committed:
+                continue
+            prior=committed
+            committed=state
+            log("TRANSITION "+prior+" -> "+state+
+                " confidence=3_contiguous_samples brightness="+
+                str(round(details.get("brightness",0),1)))
+            if image_count<35:
+                out=img
+                h,w=img.shape[:2]
+                if w>1100:
+                    out=cv2.resize(img,(1100,round(h*1100/w)))
+                name="state_%02d_%s.jpg"%(image_count,state)
+                cv2.imwrite(str(root/name),out,[cv2.IMWRITE_JPEG_QUALITY,73])
+                image_count+=1
+        log("FINISHED: last_stable="+committed+
+            " screenshots="+str(image_count))
+    except KeyboardInterrupt:
+        log("INTERRUPTED")
+    except Exception:
+        log("ERROR "+traceback.format_exc())
+        return 2
+    finally:
+        stop.set()
+        try:
+            log_file.write_text("\n".join(loglines)+"\n",encoding="utf-8")
+        except OSError as exc:
+            print("LIFECYCLE_WRITE_ERROR "+repr(exc))
+        print("LIFECYCLE_REPORT: "+str(log_file))
+    return 0
+
+
 def lobby_helper():
     """Guided lobby creation from the already-open Roblox creation pad.
 
@@ -1540,6 +1727,8 @@ def lobby_helper():
     last_update = 0.
     last_wait_note=-30.
     menu_confirmed_once=False
+    pending_match_logged=False
+    match_confirmations=0
     modal_seen = 0
     stage = "WAIT_MENU"
     last_features = None
@@ -2300,10 +2489,23 @@ def lobby_helper():
                         cv2.imwrite(str(evidence_dir/"wait_pad_menu.jpg"),reduced,
                                     [cv2.IMWRITE_JPEG_QUALITY,65])
                 if step_index==3 and awaiting_confirmation:
-                    menu_absent_count+=1
-                    if menu_absent_count>=4:
+                    # A disappearing Create dialog is NOT match confirmation:
+                    # the real video has a portal countdown + loading transition.
+                    if not pending_match_logged:
+                        log("CREATE_DIALOG_CLOSED: observing game HUD; "+
+                            "DO NOT assume start from closed menu.")
+                        pending_match_logged=True
+                    scene,metrics=lifecycle_scene_hint(frame)
+                    match_confirmations=(match_confirmations+1
+                                         if scene=="MATCH" else 0)
+                    if match_confirmations>=3:
                         completed=True
-                        log("CREATE_DIALOG_CLOSED: possible success; verify countdown in Roblox")
+                        log("MATCH_CONFIRMED: three fresh in-game HUD frames "+
+                            "after Create, no input sent after Create.")
+                        break
+                    if time.monotonic()-last_click>45:
+                        log("STOP_CREATE_UNVERIFIED: HUD never confirmed within "+
+                            "45s; do not repeat Create.")
                         break
                 continue
             menu_absent_count=0
@@ -2337,7 +2539,7 @@ def lobby_helper():
                 ready_override_logged=True
             if step_index>=3 and awaiting_confirmation:
                 # We have sent Create. Do not click anything else.
-                if time.monotonic()-last_click>7:
+                if time.monotonic()-last_click>12:
                     log("STOP: Create was sent, dialog stayed open. No auto-repeat.")
                     break
                 continue
@@ -2539,8 +2741,9 @@ def run_mode_prompt():
     print("  7 = ROUTE VISION (F10 marks defensive corner; NO game input)")
     print("  8 = GUARDED TURRET (calibrated corner + green Z, one build attempt)")
     print("  9 = LOBBY PAD demo (F8 route, F10 arrival; NO WAIT on pad)")
+    print(" 10 = LIFECYCLE observer (menu/load/match/results/return; no game input)")
     try:
-        choice = input("Choose mode 1-9 [1]: ").strip()
+        choice = input("Choose mode 1-10 [1]: ").strip()
     except EOFError:
         choice = "1"
     return choice
@@ -2562,6 +2765,8 @@ if selected_mode == "8":
     raise SystemExit(battle_pilot(build_once=True,require_corner=True))
 if selected_mode == "9":
     raise SystemExit(route_demo(destination="lobby"))
+if selected_mode == "10":
+    raise SystemExit(lifecycle_observer())
 
 # ------------ End demonstration recording ------------
 
