@@ -29,3 +29,5 @@
 ## 08.11.2026 — V3.4.0 latest
 Code commit `875b5e9e238e65f477dfb8392530e006a349fe90`. Current read-only detector recognizes `Лобби готово!` and countdown signs in saved PAD_SCOUT images. Return scene 190–191s: right READY, left+center COUNTDOWN. Offline analysis already completed; there is **no need to ask for the old video or ZIP again**. Do not move to right pad without pose calibration. Read private review at Library `/ROBLOX_BG_AI/RESEARCH/PAD_SIGNS_V34_REVIEW_RU.md`.
 
+## 08.11.2026 — V3.4.2
+После V3.4.1 пользователь прислал live CSV: все 25/25 кадров `UNKNOWN`; нет информации об изображении. V3.4.2 commit `74619012f3bc22432f6f4b29272f4d10bd204ead`, пункт 14 создаёт приватный `PAD_SIGN_LIVE_DIAGNOSTICS.zip` (до 3 JPEG+CSV+README) из 8–10-секундного теста. Старое OBS-видео НЕ переснимать. Полученный ZIP изучать на признаки смещения интерфейса/формата кадра, не публиковать игровые имена на GitHub.
