@@ -62,6 +62,32 @@ if errorlevel 1 (
   exit /b 1
  )
 )
+rem The default PyPI torch on this Windows machine was CPU-only.
+rem Repair ONLY the isolated VoxCPM venv with official matching CUDA wheels.
+"%PILOT_PY%" -c "import torch,sys; print('PyTorch:',torch.__version__,'CUDA runtime:',torch.version.cuda,'CUDA available:',torch.cuda.is_available());sys.exit(0 if torch.cuda.is_available() else 2)"
+if errorlevel 1 (
+ echo.
+ echo CPU-only PyTorch detected. Installing the OFFICIAL NVIDIA CUDA 12.8 build
+ echo into .venv_voxcpm2 ONLY. This may download a large PyTorch wheel.
+ echo Qwen CUDA, existing voice references and generated WAVs are untouched.
+ set "PIP_DEFAULT_TIMEOUT=120"
+ set "PIP_RETRIES=3"
+ "%PILOT_PY%" -m pip install --disable-pip-version-check --timeout 120 --retries 3 --index-url https://download.pytorch.org/whl/cu128 "torch==2.11.0" "torchaudio==2.11.0"
+ if errorlevel 1 (
+  echo CUDA wheel install failed. Existing Qwen installation unchanged.
+  echo Check connection to download.pytorch.org; do not delete the venv.
+  pause
+  exit /b 3
+ )
+ "%PILOT_PY%" -c "import torch,sys; print('PyTorch:',torch.__version__,'CUDA runtime:',torch.version.cuda,'CUDA available:',torch.cuda.is_available());sys.exit(0 if torch.cuda.is_available() else 2)"
+ if errorlevel 1 (
+  echo CUDA still unavailable. Check NVIDIA driver or library errors above.
+  echo Do not install further packages blindly. Qwen is unchanged.
+  pause
+  exit /b 4
+ )
+)
+echo CUDA CHECK OK. Starting the separate VoxCPM2 generator.
 "%PILOT_PY%" -X utf8 "%MAIN%" --run
 set "RC=%ERRORLEVEL%"
 if "%RC%"=="0" (
