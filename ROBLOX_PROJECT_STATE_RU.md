@@ -352,3 +352,5 @@ GitHub `roblox_monitor.py` V3.3.0 commit `53a5e9b7c44f35a158539e78b7b36b7d9ffa07
 ## 2026-11-08 — Version 3.4.0 PAD SIGNS
 GitHub code commit `875b5e9e238e65f477dfb8392530e006a349fe90`. Analyzed user's PAD_SCOUT ZIP (12 JPEG, no extra video): return frames 190/191s show LEFT/CENTER COUNTDOWN_SIGN, RIGHT READY_SIGN. Menu/loading are negative controls, F9 console causes right-side ambiguity and is rejected. Added 13 (offline ZIP review), 14 (passive live sign observer), no Roblox input. The autonomous path to right pad is **not implemented** because camera yaw and pad-world correspondence have not been verified.
 
+## 2026-11-08 — hotfix V3.4.1
+Скриншот пользователя подтверждает ошибку при первом запуске режима 14: библиотека `windows_capture` отвергла `@cap.event def arrived/closed` до захвата. Код исправлен на `on_frame_arrived/on_closed`, commit `dd101bcd58debf941fb8880d88b335f87a7413d1`; все 16 обработчиков файла сверены по именам. **Проверка на Windows и в Roblox после фикса ещё ожидается**. Остальная стратегия и режимы без изменений.
