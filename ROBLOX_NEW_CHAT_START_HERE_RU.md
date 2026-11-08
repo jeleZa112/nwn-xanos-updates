@@ -49,3 +49,6 @@ Latest Roblox bot V3.5.3 commit `1ff72fd47562c71b484c3f9cbd0755ff4242bb28` in br
 
 ## 09.11.2026 — V3.5.5 CURRENT
 Latest main Roblox one-file source in branch `roblox-bg-monitor`: `roblox_monitor.py` commit `775befec7d26e1b46744b57104f208aed82b9274`. User's live screenshot V3.5.4 showed 0 READY on small visible distant label. Offline visual matching found exact issue: old template scales begin .72, screenshot needs .60 (correlation .896). Version 3.5.5 adds .59/.60/.61/.62 and strict low-scale >=.80. New screenshot now one READY at x=.696, negative menu/loading clear. 14 offline checks pass. No real-game test yet.
+
+## 09.11.2026 — V3.5.6 latest
+Code `roblox_monitor.py`, GitHub `jeleZa112/nwn-xanos-updates` branch `roblox-bg-monitor`, commit `9e85bb65f882368e8fdd44b000ad9fda2d07b9bf`. User's last live V3.5.5 attempt: target READY during NAV but shifted/disappeared and stopped TARGET_SWITCH_AMBIGUITY; user stated others occupied pad. V3.5.6: 2-frame BUSY/LOST confirmation → PAUSE and reselect up to twice with 9s blocked old x and preserved total motion budget; unit checks 10/10 passed, NOT live verified. No fresh OBS videos; old updater menu 15 and F10. Repo NWN/BGXAI branches remain unchanged.
