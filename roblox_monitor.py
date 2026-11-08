@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.5.0
+# Roblox background monitor - release 3.5.1
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.5.0"
+VERSION = "3.5.1"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -1990,7 +1990,7 @@ _PAD_SIGN_TEMPLATES = [
     ('BUSY', 119, 24, 'c-j?~iE|U@8OFV*cBPfHl2*60x~0{9-?uEumSjsl0Aqtqh&fV@gaQE?QpmxTP@vPKB}da_Xfs38G+~$ynWmGb%|Vhjg-+6G3pfD+1QVbbY-8D2qRRIVJm34g^FGf{q3AfdZPoMJEtXB`YN?=>@zw1Eqsx}9S~;|G`LY#j9$MOCmg?GjJG)2ogMDkOo1#UPR-<ubOYPZG%$3MQQ(bB?Z4}ZHlTysc)N-{*ucyRDi%Ku!Nl8r16Hro_Tp^bTDTzd;_a?*9ctR&dGfoYyqC_&GMs4Ja1xh31@Psm@8e=j$LlLi4LrE=+O5>&t27`j($&_+2r8Js#3WL$)@iDqUIMxv`*_<u|?WMIUqixBE)70H#Qz%4oimw#vgXR9-N<LNUC=@FTMpg_D_7-Jw4~GSU2pa=I2*hCy#$mHCzEtB%i}*aDSRy2NILbm1wt!^e0AC<6D+DaINFt_SR7mUfa*VPnY+72W(Mkjc4u)_slZ`}05*AG27z7d^sLgbDX5!(nhcR0nPDeVOPC2Ct4g?bf46$JtgdrG$5R4}vg=(uxLJCBbfIwgXz+^_VSwtY#KxxP?MG2*b*5ELyQK@AxTg_40WGY%KqjaqaP!L907{)>ggN%(JT!?aac9$!)-g0{^;PW^byTj!*;2?mr0g%f9V3-A?5Q_!L400}CERm7~PpnWXxEu(fvprqyE}XQN`bYXK9D+7zXaXU18l4(rYi!|uvCF4XD@+^$BXE-eR}_<6ecVD4Y(9&xb2^;ibS9U}rc=peG8zte5srdIuz)sROB%vJ1VB)jwySwUiAYUxg=)se$OH&#=o;$l%VCtEx3|BiC95)MRa_QVZ8Rtdt=8gOBF=<`a=DhPl2f>wfu+3#*qG4bc*{bm#qDrK5)rF2n8<Zhx{HPOELQ;V*=#P-21#(34Wa-DKoYZwR!Av}vb9K`&#9(Zn6_h4@8X(JW*K~7u;SAg{PAees1izaDv}?z)3!3*8y4zx2Fl}9%j{->I_~FcLke7oqnIv`ibk{9s7`P3L{rIFt=e7Tz&u1@*JFUDo!gQnz?SKl%H`4sc}gzA)w(@aos8g{%frJ<7Rn{e!qtPz7IxPbFCAP^N~i@&3K!BYTg*?DJsg@=aNRZ`VK5McL5q?mHb|mv2<=aW{jqp3<aPUFQI|0kP2~_aj;_D-1W)wxx9b3$L;)!P$UwC<rH~3K+%63S4SZv3+P)QQmS-3>9q+5=4T+9wz9%9J*ySJ>l)!p32dC{?9!D%>(|Qo0l|Q*qSMVXpp|jum+gOyRGo9+TB?D5AFXeZ5td2+o#!$iT#y$`@a{n<2Uzc}t#8L-IqFx)RSvrj4!JsT0Habylb#S19iuereH8`|+6;6`bpiq}>=k=_y6NDv}S2z(%S5*RPWx(Qp-<?dhxmSMJobki3+(x?wasvu`s*v_}dwd;O?qP_90PAk;=ks2f*o1u6Y))<kUcX$Vu3sn(UcWN^jh)sVx%>6p7?t_7K6`!y!twPpTXQd7Uanp@)3~vhd!Tu#S$_qy{-Zv5J}x<P@A~*6fW^c4=cetlfGc!*CW-)fHFEm${O9iNm!@xSH$OSQBt3DfC9Bxjn7KIKoZ8rS=%MXbr|@I<*6{A#NF-hu`lRtAw)mTw=Nj|m^K);lojOOd`5Pt<7LPR6GynZE{n1t8>FJ~8D-*-NySR2|eRF=z(7N02azJYuAD@h<QdZ($O}{{`NIZZ4ovowJyB`go9QVCA`{QGC`ydn|*Ux@+{GB^DS24+vPwREoGxhg2Uzw!QRR?e0*(DOqd`NvUPF|nmfn!r4&^0`LZO54lBRl3k*gMuN9lo<qd*JNqX5*=&w@$ch5C3Iuv9pt5(D9oUlh3WadY6HDn$+E!F>7e&<cANRZFrxZoW1>~4?;lXvDy77{BnJxWvu@6Sc77|zJ00LlpJsV`H#~(l!kLBuv>T7-!&!N|1>M8G57YZnR?@)m6KoY+PFIKTw|;4$n3hwdr$9p^#>9C{!_PqZlJSX{mhN_bXKjq(&!Wrm}Ba$t(H18adFq)CjtlN&s_aD451*lZE8P{|LfV^i)MCK?_Oa8+|0<S8_uy))t4s@vVPfk6u2=%y*2yP%9#sll<A4bfB3=0wHv=U@5%PM4mXZIdGD<M_fsRXn$*47nQs2i9P}kOj5YS9{IM<HefMZqk<tEj`k*ggynZ_ED7fCZweh|A(N-V=oA2y_z+X&kG)~{2ywKzdfuij4T<Dd#YxDDuk4}%51yj>t_F}zxt5ZsZ7nG~M!}V?8(MEmxZ?+fj&d**uC|dN@)ZA?U;_-X)*IpCYeY+d==GP~+yC<5>*%M~kF+5S9xgCDJdG7vs&hd%I4fpOq2*lF*EL>ERP@$QXiBty<q71?QWij-@QByHu*;28%YCSU0vuagBjS!*gKq=x`szR~SmMu~DZ|5KLI1rD+x?$@A7H`3}*I(W9_#=Jsp$!kz;ucq?XK=V=veVM=sx?_!(YI|yHre-JSF-aF5C*|kdbc`;B-(HiKm{Nmv?ueKkkhQ=sR&+sP;YW5A=ns*+U+ut&Fd=}5ebZel)F;xd~JMG%$OM*mtg{o=y_~YOc_+>YF%NoiK2KMz9yEBx~*D!d){lZ$1;&{dsijVTkZiM07DTLj-wFHZ{;xnumKL!p7RBY7NJszYs0yy*T{uPi^URKzxSo%Zyq_YrQ1wkFd()Te3hLs6-p5x8wEvR$Lfg4q2<V}u6T@5Kp+6Jwb5)Mmh>}>(ctigf=;V9-C29ErvShpfUr3%sMP^n6y)PTE0iV4T0WX6n2dZj<4Y$Tv;aXQ%)p*gXWoDJ{nP(Eb!@qp&*!n^@uX3~#`pxqFwPhg>+kd`Gr3IGNhtIEF__PV5tTogO?6~^4vWcY4W^@3W2n1WZ10B<n8g(e*l>$2fbSoIAOPFdv!LBqOjs$Fz-VLiQXUH8%4ZL~^Y_nBfAZO9fBMyutVC`qbSG0fST5z0bU2Z(#TKPq3v0zhPikR+r|c{sPzw(f7NaGQPA3bwfXmL<+-_GOInWW#LMWn=OT=OU4&ngH0U!c^AdVqj?My_w;|z(YwL+BuLb(LDw*B+5x1RawyC+`ST22bo9kr1{xr4`rAru#TeBN3l8}BX`a<R&W(Wpx2R<>A0=non6u2>@5yRaCKd97B5%jNdyRSpnAS_jR-F%W2Lxs9}z3qX8*FjFY`^FbZS5(pszX~7msg$ItEKl#Few@(~i-xa|mLyM}p!jPP-BnTKKc|;}<4(5u%-X+UN7A>oo8LwE15W!3+?Tkmgk?-LmmkRs*!C)j1X>WZAL@^X>L)Z`-09wUB007q#iDk;UgpCv`xkRfQ`6PhF%bk1P`@_K>zwpMc-jtusDff5m_|3<o+0#EGPzuDPVP`t!&*e6(@5+RFhjI}o!~un=l+oyj`{bm|mQ1$Tt)p5>IujB5{{a`W?g0'),
 ]
 
-def pad_sign_hints(raw):
+def _pad_sign_hints_reference(raw):
     """Locate READY_SIGN and COUNTDOWN_SIGN in 960x540-normalized Roblox view.
 
     The messages describe the sign, not the true pad availability. Screens with
@@ -2044,6 +2044,126 @@ def pad_sign_hints(raw):
             break
     results.sort(key=lambda r:r['center_x'])
     return results
+
+
+# === ROBLOX V3.5.1: alternative READY sign for current live client ===
+# Template cropped only from the game's on-screen label 'Лобби готово!'.
+# No player names, avatars or other screenshots are embedded.
+_LIVE_READY_V351_SHAPE=(22,126)
+_LIVE_READY_V351_DATA=(
+    'c-mc-c~nzZ8o>WncCx%RZ%YE%h<SiW_Jt5Yr;0Pv8P3?EJ)?*QG-'
+    'BNc2OTXgomyLa3IQw(E-f>T)q>PzMB5%aOFN28TPvbHR(q@pC>WCOzqu~~iv1l<&dodT-rxPc@8*6a8_LScN=ixsf#Txgd`ziODo'
+    'KhY2!i5xmZZ5jEHO2R!!Xhdac~01NoER_N=3(E1)k?r6h#r3A~Q85B_$P+_)Ja7R46b)F2k`c&eXip(u5rSnI*e|lI)~{D5>3JWj'
+    'GEeifbC3s+n@tb9QQmT~bq|5|d?QWTa=LN#cZi_N=7%NSZK-qM|0niqvA&YQ%DrE*?ADF@XthKYSL0-6}?N-'
+    '~k%EL32C`hfCOL5;5h+Y1MO~Q<OY;8p)U@QxeLxed{Q+0xzJfuqpzRr>CYYUYqO>1bm^$1R|0xD3KkLVppDz0zA4_!KuzjgZ@fJK'
+    '=U|mW&xyqNa3pDOy`}XGAG5!$!VDx7)8(wg`b2^FhQV5Oop_n>6vmRLBAA|7YB-MjS%^G5J0O^W@d0Y1xjUYWFq_m$8$pUvx&py='
+    'm_wbLdmd7xm+p%l_{6YWHOaX!RvWUrO1@U!D$7Vl`X?llV%~3XQig6r_H9-'
+    'ij?&9j4tTI1u8iyX?9YQf=cZ8<q(ceo8>(G&9oVSVHCgn@AvmF+iBt~{O327FB@3u6kM&StTd{aR|mTUeAmr0S(5$qty{MSo8*RL'
+    '-`&5tRr%||ThjLrmDG-'
+    '#_wIIZY1r{wgM;68T9iubsk`^TTAof~hoF@bD1wrX#iU$S84}Q8Gd_eGO$dNumW{yZ2n?C<?_g{!79GeVZ=eB0zbd3U;B(IZ2yUB'
+    'E;<E=J78&a@T!D$lv9aydV-'
+    'o<e@r&GBk=Ud0Xg8tjhv83ufXnHY8xVN_BTE(7+pwPDQLR`Ol_yatrZQv<1d56#U;!`LmDk{#f{Iai4Zjah+mDUIeqsp5I*&YsLm'
+    '0BlP5|7_L3Z5$^ob&0AA44te-'
+    '>`%Tb7K$u{l}!KSGyrXKbuI`#PM=XoZ2aMi^aEa2>wPBoD+^2|UX&EEku@PibW+KM)X?#3GC!+4DwW4})EUKJp&yCa5pqGBX5!Ch'
+    '5=M3eyf>1V^LO_7gaRor8WYwKNu)PtO~MMx3mM@p8iQ7#h|6@Zj|KPxj!Sz*RZc2oEjHp6GG`%|x+J%aPp`u+j%%5RcovW3Y+GK7'
+    ')Sl9@Ox}1sKo_!3Lh{hOgD_@c8b%UX*!_T5Ujff+zamA4=whSZuLm--{EQVbo8W?n9e!9VQ+|$KPbH!KF-'
+    'M8;p4PUtO{atYl}V<;>DhponL_g-$A-d2txpX=(_L%Kr(S9B~!SP<`+LM_hsPbUOg-Sr2zC27|$j?5v(U4Yx&V8$9u4S%+aCLoJI'
+    '&R?6K^V?k{{TofB&WYGn<At=Idml4#zL}KZus(Q|DQlE^%E39Ov$rCUddM6TFBW#I0-'
+    'MZ@uG^p#IJ*{sTfkq73zscSNcSNIc(ypl-kG0ng!siB^Z5Z}*JSxcbmp+XB=+s|_bB;g8#uimYCz?V(KsPR&i*(DG$;30$c002LU'
+    '_hO%3qh1I82%lD=){REqZ-{d(b$(}milNy8i>SuF#ZZt4|i-1yS4Ct@OOPdf$7i_h{4crb#v^)vArsRSa=5|=<#|?-'
+    'w&~g=(95d_3k*D-'
+    'EU<z58!JVx}8{NhJ9H`plkotW78Uq<rjOH9KGe>xl<eStxkL1{&T%=xCJ?`+1cB(PgKz_b~KQt()PWg+wI8TbtEJ@T{iQ|?vD?Z7'
+    'C7wUn;nbNNLJ}+Kl_(*if8LP+S?B=*P?z^)7`Vzf~!>xp9b+s`*d6QeTZZ6Oa-'
+    '5<7mWtfT&Kr9SG3rCKEKB|*KEmmatc<>kR*lbMH6zeu+W@qcY2&QF(=nycRB2HjRwm+l#F>=Dm|SM7*ZjV6R01MxI%%hQUoTKDM&'
+    '`EK~0lM+|1K<wkm`!0E&}QI+x4i_INx+9>3S?_xgRlB5#q;VbJN+8jVJ}+0_Pv-sX0D+|q04)9rG*oGz!s>2Nq~wj3=@s|5zN2$G'
+    'hX2}99SpgzlKHG;sgKPx*Q45D8E$7QPYXfco5=PCC2{eIMK{XVbTF;BD<8Z{cNTC!&s7G`O5dYw*Zc6+_v#17ofJW&*L=jIyqx-'
+    '6~K(MeJzbt8JFoffoeWaoZXcFpTPWEZr&)+8<E_7$TpA7@?`dY@;lMfxdwj>{@AQe#tFf0DbM+C*m)?YY?+WS6QW*(qv9=rmd)e$'
+    'k=C|5SF?ak|iC)LZgxPO%_QoHM6%QF)xj<@3=ub52g#{9KDDnsZF197l=QWHgyfX8$h`3l=PxFHvSg1<~t`-eOy>#i-'
+    'L|XX|pzW^;~Cr%!-'
+    '#r89`)9JASIG8&C~y}@9NW2!i1+ZYZvw;euqq$P|7M?UEK>lB@>tt~BW?;mYzl?E*>t)0g^!r_*daQpi+IDY(SxEaxM^vHW{t>LE'
+    'Trlw};?fAnuP3TFut*x~sEGgp8!*SkOpSN+R+i5E;t*R(0^0{9O)~-'
+    'RUMTBbRqweEfxS|66*Hz;4p_90*dJ#HsUXOqIssz>5)hkz4mAj;4x3F?aso(3g*{oJivA?LuX|p?=2#4Knx7h<_sFQi)rE)l3E?1'
+    '(;Rr?xuglcR5^xDZon>KBzJ9zfO#lF5vh|8Bd{;+M!hPnei@7C9E-'
+    '?rh^^>vM>dv=6E>+066YwqpsJ%i}!>F)lhIaCu2u3r6CS4+dTx?t6c6)WquZr;2pxN3E<1`(7t8Qk8mb>oJ$XlmUW6rdEGv{K`~-'
+    '8=pdYiz%c'
+)
+
+
+def _live_ready_v351_template():
+    import cv2
+    import numpy as np
+    import zlib
+    import base64
+    from functools import lru_cache
+    # Read-only template initialized once per process.
+    return np.frombuffer(zlib.decompress(base64.b85decode(
+        ''.join(_LIVE_READY_V351_DATA))),dtype=np.uint8).reshape(
+        _LIVE_READY_V351_SHAPE)
+
+
+def pad_sign_hints(raw):
+    """Read old + current READY text from the *verified* Roblox WGC frame.
+
+    Both detections only describe an on-screen sign. They do not prove
+    occupancy, walkability, menu availability, or player orientation.
+    """
+    import cv2
+    import numpy as np
+    old=_pad_sign_hints_reference(raw)
+    if raw is None or len(raw.shape)<3:return old
+    H,W=raw.shape[:2]
+    if H<300 or W<500 or not (.46<=H/max(W,1)<=.68):return old
+    try:
+        view=cv2.resize(raw[:,:,:3],(960,540),interpolation=cv2.INTER_AREA)
+        gray=cv2.cvtColor(view,cv2.COLOR_BGR2GRAY)
+        # UI signs in both the recorded OBS and live Roblox screenshots.
+        region=gray[24:184,:]
+        source=_live_ready_v351_template()
+        hits=[]
+        for scale in (.72,.79,.86,.93,1.,1.07,1.14,1.21,1.28,1.35):
+            tile=cv2.resize(source,None,fx=scale,fy=scale,
+                             interpolation=cv2.INTER_AREA)
+            if tile.shape[0]>=region.shape[0] or tile.shape[1]>=region.shape[1]:
+                continue
+            heat=cv2.matchTemplate(region,tile,cv2.TM_CCOEFF_NORMED)
+            ys,xs=np.where((heat>=.72)&
+                (heat==cv2.dilate(heat,np.ones((9,25),np.uint8))))
+            for y,x in zip(ys,xs):
+                hits.append((float(heat[y,x]),int(x),int(y+24),
+                             int(tile.shape[1]),int(tile.shape[0])))
+        hits.sort(reverse=True)
+        signs=list(old)
+        for confidence,x,y,w,h in hits:
+            cx=x+w/2
+            cy=y+h/2
+            if not .04<cx/960<.96:continue
+            conflict=False
+            duplicate_index=None
+            for i,sign in enumerate(signs):
+                dx=abs(sign['center_x']-cx/960)
+                sy=sign.get('y',-1000)+sign.get('h',0)/2
+                if dx<.095 and abs(cy-sy)<42:
+                    if sign['status']!='READY_SIGN':conflict=True
+                    else: duplicate_index=i
+            if conflict:continue
+            item=dict(status='READY_SIGN',confidence=round(confidence,3),
+                      x=x,y=y,w=w,h=h,
+                      center_x=round(cx/960,3),
+                      relative_side=('LEFT' if cx<345 else
+                                     'RIGHT' if cx>615 else 'CENTER'),
+                      availability='UNVERIFIED')
+            if duplicate_index is not None:
+                if signs[duplicate_index]['confidence']<item['confidence']:
+                    signs[duplicate_index]=item
+                continue
+            signs.append(item)
+            if len(signs)>=7:break
+        signs.sort(key=lambda a:a.get('center_x',0))
+        return signs
+    except (cv2.error,ValueError):
+        return old
+
+# === End alternate live sign ===
 
 
 def pad_sign_decision(hints):
@@ -3469,6 +3589,7 @@ class AutoPilotPolicy:
         self.create_sent = False
         self.in_match_hits = 0
         self.ready_history = []
+        self.sign_misses = 0
         self.match_index = 0
         self.turret_actions = 0
         self.last_turret_at = 0.0
@@ -3482,6 +3603,7 @@ class AutoPilotPolicy:
         self.move_actions = 0
         self.move_seconds = 0.0
         self.ready_history = []
+        self.sign_misses = 0
         self.stage = 'DISCOVER'
         self.stage_since = now
         self.menu_index = 0
@@ -3494,36 +3616,36 @@ class AutoPilotPolicy:
         self.last_turret_at = 0.0
 
     def ready_sign(self, signs):
-        """Require the same READY sign in 3 recent captures, avoid conflicts."""
-        strong = [s for s in signs if s.get('status') == 'READY_SIGN'
-                  and s.get('confidence',0)>=.65]
-        busy = [s for s in signs if s.get('status') == 'COUNTDOWN_SIGN'
+        """Lock onto a visible READY sign 3 of 6 frames (allow brief flicker).
+
+        Each movement still needs a *fresh* target detection. A countdown
+        sign within 0.115 screen-width blocks candidate movement.
+        """
+        strong=[s for s in signs if s.get('status')=='READY_SIGN'
                 and s.get('confidence',0)>=.65]
-        # Stable screen-relative groups, not unique world identifiers.
-        groups = []
-        for sign in strong:
-            x = sign.get('center_x',-1)
-            if x<.04 or x>.96:
+        busy=[s for s in signs if s.get('status')=='COUNTDOWN_SIGN'
+              and s.get('confidence',0)>=.64]
+        current=[]
+        for s in strong:
+            x=s.get('center_x',-1)
+            if not .04<x<.96:continue
+            if any(abs(x-b.get('center_x',-2))<.115 for b in busy):
                 continue
-            if any(abs(x-b.get('center_x',-2))<.11 for b in busy):
-                continue
-            groups.append((x,sign.get('relative_side','UNKNOWN')))
-        self.ready_history.append(groups)
-        self.ready_history = self.ready_history[-4:]
-        if len(self.ready_history)<3:
-            return None
+            current.append((x,s.get('relative_side','UNKNOWN')))
+        self.ready_history.append(current)
+        self.ready_history=self.ready_history[-6:]
+        if len(self.ready_history)<3 or not current:return None
         candidates=[]
-        for x,side in groups:
-            matched=[]
-            for older in self.ready_history[-3:]:
-                near=[z for z in older if z[1]==side and abs(z[0]-x)<.11]
-                if near: matched.append(min(near,key=lambda z:abs(z[0]-x))[0])
-            if len(matched)==3:
-                candidates.append((sum(matched)/3,side))
-        if not candidates:
-            return None
-        # The center is preferable: fewer lateral steps / uncertainties.
+        for x,side in current:
+            matches=[]
+            for old in self.ready_history:
+                near=[o for o in old if o[1]==side and abs(o[0]-x)<=.13]
+                if near:matches.append(min(near,key=lambda a:abs(a[0]-x))[0])
+            if len(matches)>=3 and max(matches)-min(matches)<=.18:
+                candidates.append((sum(matches)/len(matches),side))
+        if not candidates:return None
         candidates.sort(key=lambda row:(abs(row[0]-.5),row[0]))
+        self.sign_misses=0
         return candidates[0][0]
 
     def lobby_movement(self, x, now):
@@ -3534,8 +3656,10 @@ class AutoPilotPolicy:
             if abs(x-.50)>abs(self.last_x-.50)+.025:
                 self.no_progress+=1
             elif abs(x-.50)<abs(self.last_x-.50)-.012:
-                self.no_progress=max(0,self.no_progress-1)
-            if self.no_progress>=3:
+                self.no_progress=0
+            elif abs(x-self.last_x)<.007:
+                self.no_progress+=1
+            if self.no_progress>=4:
                 return ('HALT','ALIGNMENT_NOT_IMPROVING',0.0)
         self.last_x=x
         if abs(x-.5)>.11:
@@ -3914,6 +4038,7 @@ def autopilot_mode():
     route_since=None
     route_started=False
     pad_attempts=0
+    last_pad_report_at=begin-10
     def transition(next_stage,why,now):
         nonlocal stage,stage_since,last_phase
         if stage!=next_stage:
@@ -3989,9 +4114,20 @@ def autopilot_mode():
                     continue
                 if now<wait_until:continue
                 signs=pad_sign_hints(frame)
+                if now-last_pad_report_at>=3:
+                    h,w=frame.shape[:2]
+                    log('PAD_HITS '+str([(s['status'],s['center_x'],s['confidence'])
+                         for s in signs[:7]])+' frame='+str(w)+'x'+str(h))
+                    last_pad_report_at=now
                 target=brain.ready_sign(signs)
                 if target is None:
-                    if now-stage_since>20:
+                    if now-stage_since>35:
+                        # PRIVATE image for a real gameplay run, not a new test mode.
+                        try:
+                            small=cv2.resize(frame,(960,540),interpolation=cv2.INTER_AREA)
+                            cv2.imwrite(str(root/'AUTOPILOT_LAST_LOBBY.jpg'),small,
+                                        [cv2.IMWRITE_JPEG_QUALITY,60])
+                        except Exception:pass
                         halt_reason='READY_SIGN_NOT_STABLE';break
                     continue
                 brain.target_x=target
@@ -4010,9 +4146,16 @@ def autopilot_mode():
                 if now-last_action<.65:continue
                 signs=pad_sign_hints(frame)
                 ready=[s for s in signs if s.get('status')=='READY_SIGN'
-                       and s.get('confidence',0)>=.65]
+                       and s.get('confidence',0)>=.65 and
+                       not any(b.get('status')=='COUNTDOWN_SIGN' and
+                               abs(s.get('center_x',-1)-b.get('center_x',-2))<.115
+                               for b in signs)]
                 if not ready:
-                    halt_reason='TARGET_SIGN_LOST';break
+                    brain.sign_misses+=1
+                    if brain.sign_misses>=5:
+                        halt_reason='TARGET_SIGN_LOST_5_FRAMES';break
+                    continue
+                brain.sign_misses=0
                 current=min(ready,key=lambda s:abs(s.get('center_x',0)-brain.target_x))
                 x=current.get('center_x',0)
                 if abs(x-brain.target_x)>.20:
@@ -4124,6 +4267,7 @@ def autopilot_mode():
             try:controller.stop()
             except Exception:pass
 # === End ROBLOX V3.5 AUTOPILOT ===
+
 
 
 def run_mode_prompt():
