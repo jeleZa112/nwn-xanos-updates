@@ -746,3 +746,11 @@ User reports Foxx EET repack was updated, and their current game has SCS install
 - **041 НЕ удалён**, 042B поверх него последний. Не запускать пункт 15 повторно и не копировать BCS вручную.
 - **NEXT** (ровно один безопасный шаг): открыть тот же updater → **16 — статус 042B READ ONLY**, убедиться в `STATUS: 042B INSTALLED; verified rollback backup` и том же SHA256. Если OK, один игровой тест: два охранника F=ON и их EPS «Атаковать врагов»=ON, общий AI ON, противник атакует защищаемого; затем проверить отсутствие сбоя бардовской песни/ручных команд. Никаких массовых повторных тестов.
 - Реальная игра и откат пока НЕ проверены. `BGXAI_UPDATE.cmd`, pinned dispatcher, GitHub main/NWN не менять без причины. Сохранён полный checkpoint `CURRENT/BGXAI_042B_INSTALL_LIVE_OK_20261109_RU.md`.
+
+## 2026-11-09 — FIX: пункт 16 статус 042B (реальный Windows argparse error code 2)
+
+- Пользователь выбрал `16` после успешно установленной 042B. Получено `BGXAI42_INSTALL.py: error: unrecognized arguments: --status`. Это **ошибка вызова**, а не падение WeiDU: до изменения игры не дошло. 042B и резервные копии в сохранности.
+- Исправлен строго один вызов в `BGXAI/BGXAI_SYNC.ps1`: для **только** `042B / --status` запускать Python **без CLI параметра**; другие 039/040/041 и установка 15/откат 17 оставлены прежними. Ни `BGXAI42_INSTALL.py`, ни исходный `BDDEFAI.BCS` не изменены.
+- Hotfix GitHub dispatcher commit **`a4566faa59d726f6fb59b035f139e5867f917a56`**, 21636 ASCII байт, SHA256 `c25eb4610d02f133f28cbd8e023b547b4092e293e938dfbb02103117748c4c7b`, `BGXAI/fox_new/BOOTSTRAP_PIN.json` commit `50ec67f1f33c7642b7424313885a45f672261738`. 10/10 static integration assertions PASS; PowerShell runtime not available locally.
+- Отчёт: `BGXAI/CURRENT/BGXAI_042B_STATUS_16_HOTFIX_20261109_RU.md` GitHub commit `d04f1f568a43b0f9c8c15d2f3ae98a18a8df09fb`, Library `/BALDURS_GATE_EET_AI/CURRENT/BGXAI_042B_STATUS_16_HOTFIX_20261109_RU.md`.
+- **NEXT USER ACTION:** использовать тот же `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`, увидеть `verified pinned script a4566faa59d7`, выбрать 16, прислать вывод. Должно быть `STATUS: 042B INSTALLED; verified rollback backup:`. **Не переустанавливать** и не сбрасывать 042B. Игровые проверки охраны (EPS attack ON) всё ещё впереди.
