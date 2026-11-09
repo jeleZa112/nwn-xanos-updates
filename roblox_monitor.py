@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.5.8
+# Roblox background monitor - release 3.5.9
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.5.8"
+VERSION = "3.5.9"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -4106,6 +4106,35 @@ class AutoPilotMotionGuard:
         self.last_result=None
 
 
+def autopilot_disable_console_selection():
+    """Disable Windows QuickEdit only during real autopilot sessions.
+
+    Classic conhost prepends 'Select'/'Выбрать' to its title when the
+    console is in mark mode. This can pause a running Python process.
+    Keep Ctrl+C and normal console output enabled.
+    """
+    try:
+        import ctypes
+        from ctypes import wintypes
+        kernel=ctypes.WinDLL('kernel32',use_last_error=True)
+        kernel.GetStdHandle.argtypes=(wintypes.DWORD,)
+        kernel.GetStdHandle.restype=wintypes.HANDLE
+        kernel.GetConsoleMode.argtypes=(wintypes.HANDLE,
+                                        ctypes.POINTER(wintypes.DWORD))
+        kernel.GetConsoleMode.restype=wintypes.BOOL
+        kernel.SetConsoleMode.argtypes=(wintypes.HANDLE,wintypes.DWORD)
+        kernel.SetConsoleMode.restype=wintypes.BOOL
+        h=kernel.GetStdHandle(0xFFFFFFF6) # STD_INPUT_HANDLE = -10
+        mode=wintypes.DWORD()
+        if not h or not kernel.GetConsoleMode(h,ctypes.byref(mode)):
+            return False
+        # ENABLE_EXTENDED_FLAGS required to modify ENABLE_QUICK_EDIT_MODE.
+        desired=(mode.value|0x0080)&~0x0040
+        return bool(kernel.SetConsoleMode(h,desired))
+    except (OSError,AttributeError,ValueError):
+        return False
+
+
 class AutoPilotInput:
     """Foreground-only press/click; never send input to a browser."""
     VK_F10=0x79
@@ -4118,6 +4147,8 @@ class AutoPilotInput:
         self.u=ctypes.WinDLL('user32',use_last_error=True)
         self.hwnd=hwnd
         self.u.GetForegroundWindow.restype=wintypes.HWND
+        self.u.SetForegroundWindow.argtypes=(wintypes.HWND,)
+        self.u.SetForegroundWindow.restype=wintypes.BOOL
         self.u.IsIconic.argtypes=(wintypes.HWND,)
         self.u.IsIconic.restype=wintypes.BOOL
         self.u.GetAsyncKeyState.argtypes=(ctypes.c_int,)
@@ -4146,6 +4177,24 @@ class AutoPilotInput:
     def focused(self):
         return bool(self.u.GetForegroundWindow()==self.hwnd and
                     not self.u.IsIconic(self.hwnd))
+    def focus_game_once(self):
+        """Only after explicit YES: bring the verified game HWND to foreground.
+
+        Do NOT steal focus back later: clicking another app must always pause
+        control. Win32 may deny activation, in which case the user can click
+        Roblox manually, and no keys/clicks are sent until it is foreground.
+        """
+        if self.focused():
+            return True
+        if self.u.IsIconic(self.hwnd):
+            return False
+        self.u.SetForegroundWindow(self.hwnd)
+        until=time.monotonic()+1.5
+        while time.monotonic()<until:
+            if self.focused():
+                return True
+            time.sleep(.10)
+        return self.focused()
     def stop_pressed(self):
         return bool(self.u.GetAsyncKeyState(self.VK_F10)&0x8000)
     def _send_key(self,key,up=False):
@@ -4299,11 +4348,21 @@ def autopilot_mode():
     logfile.write_text('ROBLOX AUTOPILOT V'+VERSION+'\n',encoding='utf-8')
     print('AUTOPILOT: lobby -> City / 1 / Hard -> match -> route -> turrets -> repeat.')
     print('EXPERIMENTAL. Real game input, requires Roblox foreground. F10 STOP.')
+    # Protect running automation from accidental conhost text-selection pause.
+    if autopilot_disable_console_selection():
+        log('CONSOLE_QUICKEDIT_DISABLED')
+    else:
+        log('CONSOLE_QUICKEDIT_NOT_AVAILABLE')
     if input('Type YES once to enable game control [NO]: ').strip().upper()!='YES':
         log('NOT_ARMED');return 0
     try:
         hwnd=verified_roblox_hwnd()
         io=AutoPilotInput(hwnd)
+        if io.focus_game_once():
+            log('ROBLOX_FOREGROUND_AUTO_OK')
+        else:
+            log('ROBLOX_FOREGROUND_AUTO_DENIED: click game window once; '+
+                'no game commands until focus is confirmed')
     except Exception as e:
         log('GAME_WINDOW_FAILED '+repr(e));return 2
     q=queue.Queue(maxsize=1)
@@ -4333,6 +4392,7 @@ def autopilot_mode():
     last_sample=0.0
     last_action=0.0
     last_frame_at=begin
+    last_focus_note=begin-10
     last_phase=''
     menu_visible=0
     menu_candidate_since=None
@@ -4389,6 +4449,12 @@ def autopilot_mode():
             if io.stop_pressed() and io.focused():
                 halt_reason='USER_F10';break
             if not io.focused():
+                # Never attempt to re-focus the game after a user intentionally
+                # opens another app. Pause, explain once, and stop after 30 s.
+                if now-last_focus_note>=10:
+                    log('GAME_FOCUS_PAUSED: click Roblox to resume; '+
+                        'no input sent to other windows')
+                    last_focus_note=now
                 if now-last_frame_at>30:
                     halt_reason='FOREGROUND_NOT_ROBLOX_30S';break
                 time.sleep(.15)
