@@ -1,0 +1,4 @@
+BACKUP ~BGX44/backup~
+AUTHOR ~BGXAI 044 independent diagnostic, no combat AI commands~
+BEGIN ~BGXAI 044 read-only EEex diagnostic (Ctrl+Alt+F11)~
+COPY ~BGX44/M_BGX44Diag.lua~ ~override/M_BGX44Diag.lua~
