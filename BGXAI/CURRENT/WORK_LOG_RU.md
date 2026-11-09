@@ -875,3 +875,24 @@ BGXAI: update/status action completed.
 **Confirmed**: passive Lua `M_BGX43Probe.lua` installed, 043P is the last WeiDU component, 042B is preserved and still doing combat control, EET BCS/chitin/EEex untouched, external backup created. No in-game EEex callback has yet been verified; DO NOT interpret installer success as real event monitoring or AI protection.
 
 **NEXT**: run same existing updater → **21 — BGXAI 043P status (READ ONLY)**, paste complete output; confirm installed SHA and verified rollback backup. After confirmation, launch InfinityLoader for a single *natural* gameplay fight (no forced repeat against Shank) and watch for once-only observer UI notification; no new AI commands from 043P. If BLOCKED/REVIEW, preserve exact text, no repeat installations. NEVER choose option 20 again; 22 is rollback only when needed.
+
+## 2026-11-09 — 043P LIVE STATUS fully verified (Windows updater option 21)
+
+After successful WeiDU opt-in 043P install, user ran same onefile updater **21 READ-ONLY**. Actual output:
+```
+BGXAI 043 EEex OBSERVER / READ-ONLY STATUS
+BGX42 installed: True
+BGX43 installed: True
+BGX43 is last: True
+Current BCS unchanged: True
+EEex boot present: True
+Observer file present: True
+Observer file SHA256 matches: True
+Verified rollback backup: %USERPROFILE%\Documents\BGXAI43_SAFE_BACKUPS\PRE_INSTALL_20261109T003244491365Z
+NOTE: Live callback firing is NOT established by filesystem status
+NO GAME FILES CHANGED
+BGXAI: update/status action completed.
+```
+**Conclusion:** real 043P installed correctly and verified; actual EEex Lua callback/event delivery **not yet tested**. First unique display string in actual `M_BGX43Probe.lua` is `BGXAI 043 observer: party attack seen (NO AI COMMANDS)` sent once via `Infinity_DisplayString` if available. A missing notification is inconclusive if that display API isn't available, or if the attack event didn't match criteria.
+
+**NEXT SINGLE USER ACTION:** launch usual EET via InfinityLoader and play to a natural hostile NPC attack targeting a party member. Observe for that one-time message; report yes/no/screenshot. No repeat Shank test, no manual BCS editing, no reinstall 20. 043P only observes, 042B continues combat. After live validation, develop safeguarded bridge to choose interceptor/cover; don't misstate active 043 AI control. GitHub updater 18–22 remains in place; source and backups preserved.
