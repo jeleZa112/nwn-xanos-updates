@@ -18,11 +18,11 @@ def synthetic_original():
     for idx in range(1,1058):
         acts=[115,87] if 1032<=idx<=1042 else [105] if idx in (1043,1056) else [0]
         parts.append(block(idx,acts,guard=1032<=idx<=1042,f=idx==1))
-    return b'SC\n'+b''.join(parts)
+    return b'SC\n'+b''.join(parts)+b'SC\n'
 
 
 def compiled_receiver():
-    return b'SC\n'+b''.join([block(n,[30,36]) if n<=2 else block(n,[30,115,87]) for n in range(1,9)])
+    return b'SC\n'+b''.join([block(n,[30,36]) if n<=2 else block(n,[30,115,87]) for n in range(1,9)])+b'SC\n'
 
 
 def test_insert_exactly_after_F_before_guards(monkeypatch):
@@ -33,7 +33,8 @@ def test_insert_exactly_after_F_before_guards(monkeypatch):
     assert proof['total_blocks']==1065
     old_blocks=b.segment(original,1057);new_blocks=b.segment(new,1065)
     assert old_blocks[:1031]==new_blocks[:1031]
-    assert new_blocks[1031:1039]==b.segment(compiled_receiver(),8)
+    inserted=b.segment(compiled_receiver(),8)
+    assert new_blocks[1031:1039]==inserted[:-1]+[inserted[-1][:-3]]
     assert new_blocks[1039:]==old_blocks[1031:]
     assert b.actions(new_blocks[1042])==[115,87]
     assert b.actions(new_blocks[1050])==[105]
@@ -46,7 +47,7 @@ def test_hash_pin_blocks_unknown_042b():
 
 def test_corrupt_splice_is_rejected():
     with pytest.raises(ValueError,match='NEW_RECEIVER_ACTION_IDS_UNEXPECTED'):
-        b.verify_insert(b'SC\n'+block(1,[3])+b''.join(block(x,[0]) for x in range(2,9)))
+        b.verify_insert(b'SC\n'+block(1,[3])+b''.join(block(x,[0]) for x in range(2,9))+b'SC\n')
 
 
 def test_056_source_never_clears_actions():
@@ -167,13 +168,18 @@ def test_staged_hash_verification_fails_if_modified(tmp_path,monkeypatch):
     assert not (g/i.EXECUTABLE).exists()
 
 
-def test_compiled_receiver_missing_last_newline_is_normalized_before_splice(monkeypatch):
+def test_compiled_receiver_extra_SC_footer_is_stripped_before_splice(monkeypatch):
     old=synthetic_original()
     monkeypatch.setattr(b,'PIN_BCS',b.sha(old))
     monkeypatch.setattr(b,'PIN_BCS_BYTES',len(old))
-    nofinal=compiled_receiver().rstrip(b'\n')
-    assert nofinal.endswith(b'CR')
-    patched,proof=b.combine(old,nofinal)
-    assert proof['compiler_final_newline_normalized']
-    assert patched.endswith(b'CR\n')
-    assert len(b.segment(patched,1065))==1065
+    combined,proof=b.combine(old,compiled_receiver())
+    assert proof['compiled_fragment_internal_SC_removed']
+    assert combined.endswith(b'CR\nSC\n')
+    assert len(combined)==len(old)+len(compiled_receiver())-6
+    assert len(b.segment(combined,1065))==1065
+
+
+def test_receiver_without_SC_footer_is_rejected():
+    malformed=compiled_receiver()[:-3]
+    with pytest.raises(ValueError,match='BCS_MISSING_FINAL_SC_FOOTER'):
+        b.verify_insert(malformed)
