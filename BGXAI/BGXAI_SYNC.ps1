@@ -55,14 +55,14 @@ $release044=@{
             'BGX44/tests/test_lua_044.py','SOURCE_MANIFEST.json')
 }
 $release045=@{
-    id='045';version='0.3.16-045-RESREF-FIX';manifest=$remoteRoot+'release_045/manifest.json';prefix=$remoteRoot+'release_045/';
+    id='045';version='0.3.16b-045-RESREF-FIX';manifest=$remoteRoot+'release_045b/manifest.json';prefix=$remoteRoot+'release_045b/';
     localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_045';installer='BGXAI45_INSTALL.py';
     names=@('BGXAI45_INSTALL.py','BGX45/setup-BGX45.tp2','BGX45/M_BX43.lua',
             'BGX45/M_BX44.lua','README_RU.md','BGX45/tests/test_installer_045.py',
             'BGX45/tests/test_lua_045.py','SOURCE_MANIFEST.json')
 }
 function Get-PinnedBytes([string]$remotePath) {
-    if($remotePath -notmatch '^BGXAI/fox_new/release_0(39|40|41|42b|43p|44|45)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
+    if($remotePath -notmatch '^BGXAI/fox_new/release_0(39|40|41|42b|43p|44|45|45b)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
         throw ('Remote source path blocked: '+$remotePath)
     }
     # All sources are publicly hosted; pin content by immutable commit and SHA256 manifest.
