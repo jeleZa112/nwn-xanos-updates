@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.6.4
+# Roblox background monitor - release 3.6.5
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.6.4"
+VERSION = "3.6.5"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -3745,89 +3745,114 @@ def lobby_helper():
 # No additional Python file or CMD is needed on the user's computer.
 
 class AutoPilotVisualReadyLock:
-    """Conservative local image tracker for an ALREADY verified READY sign.
+    """Fail-closed LK optical-flow follower for a previously verified READY sign.
 
-    A visual match is not real pad-availability evidence. It can bridge short
-    label-detection gaps only, with two confirmations and two movement pulses.
+    Text-template matching is used to CREATE this lock, not to keep it alive.
+    Only points inside the original sign rectangle are followed. Camera motion
+    may change the text scale, but flow must remain spatially coherent. A
+    visual-only lock NEVER establishes pad availability or menu state.
     """
+    MAX_FALLBACK_PULSES = 6
+
     def __init__(self):
         self.reset()
 
     def reset(self):
-        self.template = None
+        self.prev_gray = None
+        self.points = None
         self.xy = None
         self.hits = 0
-        self.last_visual_x = None
         self.fallback_pulses = 0
+        self.last_quality = 0.0
+
+    @staticmethod
+    def grayscale(frame):
+        import cv2
+        if frame is None or len(frame.shape) < 3:
+            return None
+        h,w = frame.shape[:2]
+        if h < 300 or w < 500 or not .46 <= h / max(w,1) <= .68:
+            return None
+        view = cv2.resize(frame[:,:,:3], (960,540), interpolation=cv2.INTER_AREA)
+        return cv2.cvtColor(view,cv2.COLOR_BGR2GRAY)
 
     def seed(self, frame, sign):
-        import cv2
-        if frame is None or not sign or sign.get('status') != 'READY_SIGN':
+        import cv2,numpy as np
+        if not sign or sign.get('status') != 'READY_SIGN' or \
+           float(sign.get('confidence',0)) < .65:
             return False
-        if float(sign.get('confidence', 0)) < .65:
-            return False
-        h,w=frame.shape[:2]
-        if h < 300 or w < 500:
-            return False
-        gray=cv2.cvtColor(cv2.resize(frame[:,:,:3], (960,540),
-                   interpolation=cv2.INTER_AREA), cv2.COLOR_BGR2GRAY)
-        x,y,bw,bh=(int(sign.get(k, 0)) for k in ('x','y','w','h'))
-        x1=max(0,x-3);y1=max(0,y-2)
-        x2=min(960,x+bw+3);y2=min(540,y+bh+2)
-        tile=gray[y1:y2,x1:x2].copy()
-        if tile.shape[0]<10 or tile.shape[1]<45 or tile.shape[1]>230:
-            return False
-        if float(tile.std())<14:
-            return False
-        self.template=tile
-        self.xy=((x1+x2)/2,(y1+y2)/2)
+        gray=self.grayscale(frame)
+        if gray is None:return False
+        try:
+            x,y,w,h=[int(sign[k]) for k in ('x','y','w','h')]
+        except (KeyError,ValueError,TypeError):return False
+        x1=max(1,x-6);y1=max(22,y-4)
+        x2=min(959,x+w+6);y2=min(265,y+h+4)
+        if x2-x1<45 or y2-y1<12 or x2-x1>250:return False
+        mask=np.zeros_like(gray,dtype=np.uint8)
+        mask[y1:y2,x1:x2]=255
+        points=cv2.goodFeaturesToTrack(gray,maxCorners=90,qualityLevel=.008,
+                                       minDistance=3,mask=mask,blockSize=3)
+        if points is None or len(points)<12:return False
+        self.prev_gray=gray
+        self.points=points.astype(np.float32)
+        self.xy=(float(x+w/2),float(y+h/2))
         self.hits=0
-        self.last_visual_x=None
         self.fallback_pulses=0
+        self.last_quality=0.0
         return True
 
     def match(self, frame):
-        import cv2
-        if self.template is None or self.xy is None or frame is None:
+        import cv2,numpy as np
+        if self.prev_gray is None or self.points is None or self.xy is None:
             return None
-        h,w=frame.shape[:2]
-        if h<300 or w<500:return None
-        gray=cv2.cvtColor(cv2.resize(frame[:,:,:3],(960,540),
-                     interpolation=cv2.INTER_AREA),cv2.COLOR_BGR2GRAY)
+        gray=self.grayscale(frame)
+        if gray is None:return None
+        start=self.points
+        opts=dict(winSize=(31,31),maxLevel=3,
+                  criteria=(cv2.TERM_CRITERIA_EPS|cv2.TERM_CRITERIA_COUNT,30,.008))
+        new,status,_=cv2.calcOpticalFlowPyrLK(self.prev_gray,gray,start,None,**opts)
+        if new is None or status is None:
+            self.hits=0;return None
+        back,valid_back,_=cv2.calcOpticalFlowPyrLK(gray,self.prev_gray,new,None,**opts)
+        if back is None or valid_back is None:
+            self.hits=0;return None
+        p0=start.reshape(-1,2)
+        p1=new.reshape(-1,2)
+        pback=back.reshape(-1,2)
+        fb=np.linalg.norm(pback-p0,axis=1)
+        good=(status.reshape(-1)>0)&(valid_back.reshape(-1)>0)&(fb<=2.8)
+        if int(good.sum())<12 or float(good.mean())<.52:
+            self.hits=0;return None
+        old=p0[good];cur=p1[good]
+        delta=cur-old
+        dx,dy=np.median(delta,axis=0)
+        spread=np.linalg.norm(delta-np.array([dx,dy]),axis=1)
+        keep=spread<=7
+        if int(keep.sum())<12 or float(keep.mean())<.70:
+            self.hits=0;return None
+        dx,dy=np.median(delta[keep],axis=0)
         cx,cy=self.xy
-        # Local only: do not hop across the screen to another READY label.
-        left=max(0,int(cx-125));right=min(960,int(cx+125))
-        top=max(20,int(cy-68));bottom=min(260,int(cy+68))
-        roi=gray[top:bottom,left:right]
-        best=None
-        for scale in (.78,.86,.94,1.,1.08,1.16,1.25):
-            tile=cv2.resize(self.template,None,fx=scale,fy=scale,
-                             interpolation=cv2.INTER_AREA)
-            th,tw=tile.shape[:2]
-            if th<10 or tw<35 or th>=roi.shape[0] or tw>=roi.shape[1]:
-                continue
-            heat=cv2.matchTemplate(roi,tile,cv2.TM_CCOEFF_NORMED)
-            _,score,_,loc=cv2.minMaxLoc(heat)
-            mx=left+loc[0]+tw/2;my=top+loc[1]+th/2
-            if best is None or score>best[0]:best=(score,mx,my)
-        if best is None or best[0]<.87:
-            self.hits=0
-            self.last_visual_x=None
+        tx,ty=float(cx+dx),float(cy+dy)
+        if not (25<tx<935 and 30<ty<245 and abs(dx)<95 and abs(dy)<75):
+            self.hits=0;return None
+        # Reject large texture jumps or inconsistent sign trajectories.
+        if np.median(spread[keep])>4.5:
+            self.hits=0;return None
+        self.xy=(tx,ty)
+        self.points=cur[keep].reshape(-1,1,2).astype(np.float32)
+        self.prev_gray=gray
+        self.hits+=1
+        self.last_quality=round(float(keep.sum()/len(p0)),3)
+        if self.hits<2 or self.fallback_pulses>=self.MAX_FALLBACK_PULSES:
             return None
-        _,x,y=best
-        if self.last_visual_x is not None and abs(x-self.last_visual_x)<28:
-            self.hits+=1
-        else:self.hits=1
-        self.last_visual_x=x
-        self.xy=(x,y)
-        if self.hits<2 or self.fallback_pulses>=2:
-            return None
-        return {'status':'VISUAL_READY_TRACK','center_x':round(x/960,3),
-                'confidence':round(float(best[0]),3),
+        return {'status':'VISUAL_READY_FLOW',
+                'center_x':round(tx/960,3),
+                'confidence':self.last_quality,
                 'availability':'UNVERIFIED'}
 
     def used_fallback_pulse(self):
-        if self.fallback_pulses>=2:return False
+        if self.fallback_pulses>=self.MAX_FALLBACK_PULSES:return False
         self.fallback_pulses+=1
         return True
 
@@ -4892,17 +4917,23 @@ def autopilot_mode():
                         ' features='+str(features))
                     if motion.stop_reason():
                         halt_reason='PAD_'+motion.stop_reason();break
+                # Advance optical flow on EVERY sampled navigation frame.
+                # Merely running the follower after a text miss loses the
+                # intermediate frames needed for perspective/zoom changes.
+                visual_flow=visual_ready.match(frame)
                 signs=pad_sign_hints(frame)
                 status,x,why=pad_reselect.check(signs,brain.target_x,now)
                 if status=='WAIT':
                     # Only for a temporarily absent READY label: try to
                     # match the exact recently seen badge locally in WGC.
                     # Never use visual fallback when countdown is suspected.
-                    local=(visual_ready.match(frame)
+                    local=(visual_flow
                            if why=='READY_TEMPORARILY_HIDDEN' else None)
                     if (local is not None and
+                            local.get('confidence',0)>=.60 and
                             abs(local['center_x']-brain.target_x)<.18 and
-                            visual_ready.fallback_pulses<2):
+                            visual_ready.fallback_pulses<
+                                visual_ready.MAX_FALLBACK_PULSES):
                         action,key,unused=brain.lobby_movement(
                             local['center_x'],now)
                         if action=='HALT':
@@ -4915,7 +4946,8 @@ def autopilot_mode():
                         log('NAV_VISUAL_FALLBACK '+key+
                             ' x='+str(local['center_x'])+
                             ' confidence='+str(local['confidence'])+
-                            ' pulse='+str(visual_ready.fallback_pulses)+'/2')
+                            ' pulse='+str(visual_ready.fallback_pulses)+'/'+
+                                str(visual_ready.MAX_FALLBACK_PULSES))
                         continue
                     if why!=last_pad_pause_reason or now-last_pad_pause_at>=3.0:
                         log('PAD_PAUSE '+why+' target_x='+str(brain.target_x))
