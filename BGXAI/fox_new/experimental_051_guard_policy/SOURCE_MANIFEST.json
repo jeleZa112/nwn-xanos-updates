@@ -1,0 +1,20 @@
+{
+  "project": "BGXAI",
+  "version": "051-OFFLINE-ACTIVE-GUARD-POLICY",
+  "status": "SOURCE_ONLY_NO_INSTALLER",
+  "based_on": "049 successful live hit/advisory, 050 offline F-reading policy",
+  "files": {
+    "guard_policy_051.py": {
+      "sha256": "2dbfc9584760ff7dadd676afcf2529240a7b7a900de5731441f8d41b46c35a1c",
+      "bytes": 4037
+    },
+    "test_guard_policy_051.py": {
+      "sha256": "9dddcdaec58db2e8e7ed89052aa0f856be9b092a33238d2291476b0936d6bf2d",
+      "bytes": 3693
+    },
+    "DESIGN_RU.md": {
+      "sha256": "b8a88c3c3a4aedf7aa2258cae17d805b143e27271278b1ba3b0b6ca0a19a465c",
+      "bytes": 6424
+    }
+  }
+}
