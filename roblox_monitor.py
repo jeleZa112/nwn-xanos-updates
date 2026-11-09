@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.7.1
+# Roblox background monitor - release 3.7.2
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.7.1"
+VERSION = "3.7.2"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -4830,12 +4830,15 @@ def autopilot_mode():
     last_pad_report_at=begin-10
     last_pad_pause_at=begin-10
     last_pad_pause_reason=None
+    # Separate search deadline from the global movement/action budget.
+    # A confirmed BUSY pad may turn READY without the player moving.
+    pad_search_since=None
     last_live_frame=None
     console_hwnd=0
     def reselect_pad(why,now):
         # No blind step to the next visible sign. Stop, preserve the overall
         # movement budget, and require three fresh READY samples.
-        nonlocal wait_until,menu_candidate_since
+        nonlocal wait_until,menu_candidate_since,pad_search_since
         old_x=brain.target_x
         if not pad_reselect.begin_reselection(old_x,now,why):
             log('PAD_RESELECT_EXHAUSTED reason='+why+
@@ -4854,6 +4857,7 @@ def autopilot_mode():
         # not bypass the original 34-step/12-second/45-second cap.
         menu_candidate_since=None
         wait_until=now+1.2
+        pad_search_since=now
         transition('LOBBY','PAD_RESELECT '+why,now)
         log('PAD_RESELECT reason='+why+' old_x='+str(old_x)+
             ' confirmed_busy='+str(pad_reselect.reselections)+'/2'+
@@ -4907,6 +4911,8 @@ def autopilot_mode():
                 if menu_candidate_since is not None:
                     menu_candidate_since+=pause_seconds
                 wait_until+=pause_seconds
+                if pad_search_since is not None:
+                    pad_search_since+=pause_seconds
                 last_action+=pause_seconds
                 last_sample=0.0
                 motion.reset()
@@ -5019,6 +5025,18 @@ def autopilot_mode():
                 # Occupied signs are retained for ready_sign's busy veto.
                 target=brain.ready_sign(pad_reselect.candidates(signs,now))
                 if target is None:
+                    # After a confirmed pad occupation, wait briefly for
+                    # availability instead of treating the ordinary 12s
+                    # startup timer as a failure. Never move toward BUSY.
+                    busy_signs=[z for z in signs if z.get('status') in
+                                ('COUNTDOWN_SIGN','CREATING_SIGN')]
+                    if pad_search_since is not None:
+                        if now-pad_search_since>=30.0:
+                            halt_reason='NO_FREE_PAD_AFTER_30S_RESELECT';break
+                        if busy_signs and now-last_pad_report_at<1.0:
+                            log('PAD_OCCUPIED_WAIT remaining_s='+
+                                str(round(30-(now-pad_search_since),1)))
+                        continue
                     # Distant READY text can be unreadable/occluded from spawn.
                     # In independently verified LOBBY, attempt only a short
                     # bounded approach; WGC checks actual motion after each step.
@@ -5061,6 +5079,7 @@ def autopilot_mode():
                         halt_reason='READY_SIGN_NOT_STABLE_12S';break
                     continue
                 brain.target_x=target
+                pad_search_since=None
                 spawn_approach_enabled=False
                 motion.reset()
                 visual_ready.reset()
