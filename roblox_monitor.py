@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.6.1
+# Roblox background monitor - release 3.6.2
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.6.1"
+VERSION = "3.6.2"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -3634,6 +3634,94 @@ def lobby_helper():
 # lifecycle_scene_hint and turret_price_color_signal functions.
 # No additional Python file or CMD is needed on the user's computer.
 
+class AutoPilotVisualReadyLock:
+    """Conservative local image tracker for an ALREADY verified READY sign.
+
+    A visual match is not real pad-availability evidence. It can bridge short
+    label-detection gaps only, with two confirmations and two movement pulses.
+    """
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.template = None
+        self.xy = None
+        self.hits = 0
+        self.last_visual_x = None
+        self.fallback_pulses = 0
+
+    def seed(self, frame, sign):
+        import cv2
+        if frame is None or not sign or sign.get('status') != 'READY_SIGN':
+            return False
+        if float(sign.get('confidence', 0)) < .65:
+            return False
+        h,w=frame.shape[:2]
+        if h < 300 or w < 500:
+            return False
+        gray=cv2.cvtColor(cv2.resize(frame[:,:,:3], (960,540),
+                   interpolation=cv2.INTER_AREA), cv2.COLOR_BGR2GRAY)
+        x,y,bw,bh=(int(sign.get(k, 0)) for k in ('x','y','w','h'))
+        x1=max(0,x-3);y1=max(0,y-2)
+        x2=min(960,x+bw+3);y2=min(540,y+bh+2)
+        tile=gray[y1:y2,x1:x2].copy()
+        if tile.shape[0]<10 or tile.shape[1]<45 or tile.shape[1]>230:
+            return False
+        if float(tile.std())<14:
+            return False
+        self.template=tile
+        self.xy=((x1+x2)/2,(y1+y2)/2)
+        self.hits=0
+        self.last_visual_x=None
+        self.fallback_pulses=0
+        return True
+
+    def match(self, frame):
+        import cv2
+        if self.template is None or self.xy is None or frame is None:
+            return None
+        h,w=frame.shape[:2]
+        if h<300 or w<500:return None
+        gray=cv2.cvtColor(cv2.resize(frame[:,:,:3],(960,540),
+                     interpolation=cv2.INTER_AREA),cv2.COLOR_BGR2GRAY)
+        cx,cy=self.xy
+        # Local only: do not hop across the screen to another READY label.
+        left=max(0,int(cx-125));right=min(960,int(cx+125))
+        top=max(20,int(cy-68));bottom=min(260,int(cy+68))
+        roi=gray[top:bottom,left:right]
+        best=None
+        for scale in (.78,.86,.94,1.,1.08,1.16,1.25):
+            tile=cv2.resize(self.template,None,fx=scale,fy=scale,
+                             interpolation=cv2.INTER_AREA)
+            th,tw=tile.shape[:2]
+            if th<10 or tw<35 or th>=roi.shape[0] or tw>=roi.shape[1]:
+                continue
+            heat=cv2.matchTemplate(roi,tile,cv2.TM_CCOEFF_NORMED)
+            _,score,_,loc=cv2.minMaxLoc(heat)
+            mx=left+loc[0]+tw/2;my=top+loc[1]+th/2
+            if best is None or score>best[0]:best=(score,mx,my)
+        if best is None or best[0]<.87:
+            self.hits=0
+            self.last_visual_x=None
+            return None
+        _,x,y=best
+        if self.last_visual_x is not None and abs(x-self.last_visual_x)<28:
+            self.hits+=1
+        else:self.hits=1
+        self.last_visual_x=x
+        self.xy=(x,y)
+        if self.hits<2 or self.fallback_pulses>=2:
+            return None
+        return {'status':'VISUAL_READY_TRACK','center_x':round(x/960,3),
+                'confidence':round(float(best[0]),3),
+                'availability':'UNVERIFIED'}
+
+    def used_fallback_pulse(self):
+        if self.fallback_pulses>=2:return False
+        self.fallback_pulses+=1
+        return True
+
+
 class AutoPilotPadReselect:
     """Do not chase a pad after it becomes busy or the tracked sign jumps.
 
@@ -4429,6 +4517,7 @@ def autopilot_mode():
     @cap.event
     def on_closed():stop.set()
     brain=AutoPilotPolicy()
+    visual_ready=AutoPilotVisualReadyLock()
     pad_reselect=AutoPilotPadReselect()
     motion=AutoPilotMotionGuard()
     return_gate=AutoPilotReturnGate()
@@ -4469,6 +4558,7 @@ def autopilot_mode():
             log('PAD_RESELECT_EXHAUSTED reason='+why)
             return False
         motion.reset()
+        visual_ready.reset()
         brain.target_x=None
         brain.last_x=None
         brain.no_progress=0
@@ -4548,6 +4638,7 @@ def autopilot_mode():
             recovery=return_gate.observe(stage,scene,now,brain.match_index)
             if recovery=='RETURNED_LOBBY':
                 motion.reset()
+                visual_ready.reset()
                 pad_reselect.reset()
                 brain.reset_lobby(now)
                 return_gate.reset()
@@ -4569,6 +4660,7 @@ def autopilot_mode():
                 brain.turret_actions=0;brain.last_turret_at=0.0
             if stage=='WAIT_FOR_GAME':
                 if lobby_visible>=3:
+                    visual_ready.reset()
                     pad_reselect.reset()
                     brain.reset_lobby(now)
                     transition('LOBBY','lobby seen',now)
@@ -4581,6 +4673,7 @@ def autopilot_mode():
                 continue
             if stage=='RESULTS_WAIT':
                 if lobby_visible>=3:
+                    visual_ready.reset()
                     pad_reselect.reset()
                     brain.reset_lobby(now)
                     return_gate.reset()
@@ -4618,6 +4711,13 @@ def autopilot_mode():
                         halt_reason='READY_SIGN_NOT_STABLE';break
                     continue
                 brain.target_x=target
+                visual_ready.reset()
+                locked=[z for z in signs if
+                        z.get('status')=='READY_SIGN'
+                        and abs(z.get('center_x',-9)-target)<.10]
+                if locked:
+                    strong=max(locked,key=lambda z:z.get('confidence',0))
+                    visual_ready.seed(frame,strong)
                 pad_reselect.excluded_x=None
                 transition('LOBBY_NAV','ready sign stable, approaching with feedback',now)
                 # Preserve the total time limit across reselections. Reset
@@ -4658,6 +4758,28 @@ def autopilot_mode():
                 signs=pad_sign_hints(frame)
                 status,x,why=pad_reselect.check(signs,brain.target_x,now)
                 if status=='WAIT':
+                    # Only for a temporarily absent READY label: try to
+                    # match the exact recently seen badge locally in WGC.
+                    # Never use visual fallback when countdown is suspected.
+                    local=(visual_ready.match(frame)
+                           if why=='READY_TEMPORARILY_HIDDEN' else None)
+                    if (local is not None and
+                            abs(local['center_x']-brain.target_x)<.18 and
+                            visual_ready.fallback_pulses<2):
+                        action,key,unused=brain.lobby_movement(
+                            local['center_x'],now)
+                        if action=='HALT':
+                            halt_reason=key;break
+                        motion.arm(frame)
+                        if not io.keys(key,.12):
+                            halt_reason='VISUAL_FALLBACK_INPUT_FAILED';break
+                        visual_ready.used_fallback_pulse()
+                        last_action=time.monotonic()
+                        log('NAV_VISUAL_FALLBACK '+key+
+                            ' x='+str(local['center_x'])+
+                            ' confidence='+str(local['confidence'])+
+                            ' pulse='+str(visual_ready.fallback_pulses)+'/2')
+                        continue
                     if why!=last_pad_pause_reason or now-last_pad_pause_at>=3.0:
                         log('PAD_PAUSE '+why+' target_x='+str(brain.target_x))
                         last_pad_pause_at=now
@@ -4669,6 +4791,11 @@ def autopilot_mode():
                         halt_reason='PAD_RESELECT_LIMIT_'+why;break
                     continue
                 brain.target_x=x
+                seen=[z for z in signs if z.get('status')=='READY_SIGN'
+                      and abs(z.get('center_x',-9)-x)<.07]
+                if seen:
+                    visual_ready.seed(frame,max(seen,
+                        key=lambda z:z.get('confidence',0)))
                 action,key,duration=brain.lobby_movement(x,now)
                 if action=='HALT':
                     halt_reason=key;break
