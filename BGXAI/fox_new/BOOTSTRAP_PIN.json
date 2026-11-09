@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "a4566faa59d726f6fb59b035f139e5867f917a56",
+  "commit": "96e3e797ecedb1c49f67b76494ca8827ca6ec012",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "c25eb4610d02f133f28cbd8e023b547b4092e293e938dfbb02103117748c4c7b",
-  "script_size": 21636,
-  "description": "Permanent BGXAI updater (1-17); hotfix 042B option 16 calls Python status with no --status argument, preserving 041 and all install/rollback gates."
+  "script_sha256": "6e95696df1a32e8be94c5d573449a22e647772e2ae53bf6d30bb286b2f566b54",
+  "script_size": 24864,
+  "description": "One-file EET updater: 1-17 unchanged; 18 passive 043P preflight; 19 source sync; 20 opt-in passive EEex WeiDU; 21 status; 22 verified rollback. No automatic game changes."
 }
