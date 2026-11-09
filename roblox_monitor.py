@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.6.8
+# Roblox background monitor - release 3.6.9
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.6.8"
+VERSION = "3.6.9"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -4987,11 +4987,16 @@ def autopilot_mode():
                     # READY text is too small/occluded to match from here.
                     # Only on the known grate scene, allow a tiny, bounded
                     # forward route while WGC verifies each physical shift.
-                    if (not spawn_approach_enabled and
-                            spawn_approach_steps==0 and
-                            autopilot_spawn_grate_hint(frame)):
+                    if not spawn_approach_enabled and spawn_approach_steps==0:
+                        # The historical grate criterion passed on an older
+                        # saved image but did not trigger in live V3.6.8.
+                        # LOBBY scene is already independently verified.
+                        # Execute at most 12 short W impulses, require WGC
+                        # movement after each one, and never infer pad state.
                         spawn_approach_enabled=True
-                        log('SPAWN_GRATE_CONFIRMED: bounded W approach enabled')
+                        log('SPAWN_APPROACH_ENABLED: verified LOBBY; '+
+                            'grate='+str(autopilot_spawn_grate_hint(frame))+
+                            '; max_12_short_W_steps; motion verified by WGC')
                     if spawn_approach_enabled and spawn_approach_steps<12:
                         if motion.before is not None:
                             kind,shift,features=motion.verify(frame)
