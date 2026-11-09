@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "c206be2a41897b13a2a9b8f2bb085be9dd927f49",
+  "commit": "c749257795b175fe216ac51950b9f2778428121a",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
   "script_sha256": "428ddbb8431fa052b45a15fe1fbced19875121f8182c35c95d18fe663f939872",
   "script_size": 43294,
-  "description": "BGXAI 054: read-only WeiDU BAF compile check menu 53-54; no install. Legacy menu 1-52 preserved and BGX49 remains live."
+  "description": "BGXAI 054: source-only read-only WeiDU BAF compile check options 53-54, 14 offline safety tests; installed 049 untouched."
 }
