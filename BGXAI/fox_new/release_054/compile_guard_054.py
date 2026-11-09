@@ -6,7 +6,7 @@ with a temporary output directory, not a mod installer. If anything in the
 watched live baseline changes, fail and leave evidence; do NOT auto-restore.
 """
 from __future__ import annotations
-import argparse, hashlib,json,os,re,subprocess,sys,tempfile
+import argparse, hashlib,json,os,re,shutil,subprocess,sys,tempfile
 from pathlib import Path
 import verify_053_baseline as preflight
 
@@ -18,7 +18,7 @@ DANGEROUS={'ClearActions','ActionOverride','Attack','AttackReevaluate',
            'SetGlobal','ChangeAIScript'}
 # SetGlobal only in reset/cooldown blocks of trusted baseline, so exact BAF SHA gate
 # prevents arbitrary modifications; the set is informational, not a full parser.
-MAX_COMPILER_SECONDS=90
+MAX_COMPILER_SECONDS=25
 
 def digest(path:Path)->str:
     h=hashlib.sha256()
@@ -167,16 +167,30 @@ def compile_readonly(game:Path,source:Path,exe:Path,runner=subprocess.run)->dict
     with tempfile.TemporaryDirectory(prefix='BGXAI_054_COMPILE_') as tmp:
         work=Path(tmp); out=work/'out';out.mkdir()
         local=work/COMPILE_NAME;local.write_bytes(source.read_bytes())
-        # --tlkin avoids --use-lang which may save a setting in weidu.conf.
-        cmd=[str(exe),'--noautoupdate','--game',str(game),
-             '--tlkin',str(tlk),
+        # CRITICAL: setup-*.exe automatically runs matching TP2 installers.
+        # Use a copy named 'weidu.exe' INSIDE THE TEMPORARY DIRECTORY.
+        # Explicit --no-auto-tp2 and --no-exit-pause are belts-and-braces.
+        # Both input and output, any debug file and the executable copy stay in tmp.
+        sandbox_weidu=work/'weidu.exe'
+        if exe.is_symlink():raise ValueError('WEIDU_EXECUTABLE_SYMLINK_DENIED')
+        verified_binary_sha=digest(exe)
+        shutil.copy2(exe,sandbox_weidu)
+        if digest(sandbox_weidu)!=verified_binary_sha:
+            raise ValueError('TEMP_WEIDU_COPY_SHA_MISMATCH')
+        temp_debug=work/'weidu_054.debug'
+        cmd=[str(sandbox_weidu),'--noautoupdate','--no-auto-tp2',
+             '--no-exit-pause','--game',str(game),
+             '--tlkin',str(tlk),'--log',str(temp_debug),
              '--script-style','BG2','--out',str(out),str(local)]
+        report['compiler_source_sha256']=verified_binary_sha
+        report['compiler_staged_as']='TEMP_WEIDU_EXE'
         try:
-            # WeiDU 251 discovers chitin.key / KEY resources relative to its working
-            # directory even with --game and an absolute --tlkin path.
-            # Input BAF and --out both remain in the temporary directory.
-            proc=runner(cmd,cwd=str(game),capture_output=True,text=True,
-                        encoding='utf-8',errors='replace',timeout=MAX_COMPILER_SECONDS,check=False)
+            # WeiDU finds chitin.key / IDS via the game CWD; the CLI executable
+            # has NO setup-* prefix and therefore cannot auto-install its TP2.
+            # EOF stdin prevents a hidden interactive prompt from hanging.
+            proc=runner(cmd,cwd=str(game),stdin=subprocess.DEVNULL,
+                        capture_output=True,text=True,encoding='utf-8',
+                        errors='replace',timeout=MAX_COMPILER_SECONDS,check=False)
             report['return_code']=proc.returncode
             report['stdout_tail']=(proc.stdout or '')[-1200:]
             report['stderr_tail']=(proc.stderr or '')[-1200:]
@@ -196,8 +210,19 @@ def compile_readonly(game:Path,source:Path,exe:Path,runner=subprocess.run)->dict
                 report['compiler_output_first8']=valid[0].open('rb').read(8).hex()
                 report['status']='COMPILED_TEMP_ONLY'
             else:report['status']='COMPILER_FAILED'
-        except (OSError,subprocess.TimeoutExpired) as e:
-            report['status']='COMPILER_ERROR';report['error']=str(e)[:250]
+        except subprocess.TimeoutExpired as e:
+            report['status']='COMPILER_TIMEOUT'
+            report['timeout_seconds']=MAX_COMPILER_SECONDS
+            def as_text(value):
+                if isinstance(value,bytes):return value.decode('utf-8',errors='replace')
+                return value or ''
+            report['stdout_tail']=as_text(e.stdout)[-1200:]
+            report['stderr_tail']=as_text(e.stderr)[-1200:]
+            report['reason']='WeiDU did not terminate with closed stdin; no installation attempted'
+        except OSError as e:
+            report['status']='COMPILER_ERROR'
+            report['error_type']=type(e).__name__
+            report['reason']=str(e)[-400:]
         finally:
             report['live_after']=snapshot(game,tlk)
             report['live_unchanged']=before==report['live_after']
