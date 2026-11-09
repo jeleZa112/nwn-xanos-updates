@@ -5,6 +5,7 @@ on:
     paths:
       - 'BGXAI/fox_new/experimental_056_active_guard/**'
       - '.github/workflows/bgxai-056-active-guard.yml'
+      - 'BGXAI/BGXAI_SYNC.ps1'
   workflow_dispatch:
 jobs:
   real-weidu:
@@ -27,3 +28,14 @@ jobs:
         run: python -m pytest -q BGXAI/fox_new/experimental_056_active_guard/tests
       - name: Compile 056 BAF with real WeiDU 251 and test offline 1057+8 splice
         run: python BGXAI/fox_new/experimental_056_active_guard/ci_weidu_056.py
+      - name: Check BGXAI pinned updater PowerShell syntax (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $errors = $null
+          $tokens = $null
+          [System.Management.Automation.Language.Parser]::ParseFile('BGXAI/BGXAI_SYNC.ps1', [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) { foreach ($e in $errors) { Write-Error $e.Message }; exit 1 }
+          $script = [System.IO.File]::ReadAllText('BGXAI/BGXAI_SYNC.ps1')
+          foreach ($i in 55..59) { if (-not $script.Contains("'" + $i + "' {")) { throw "Missing menu option $i" } }
+          Write-Host 'BGXAI updater syntax and menu 55-59 PASS'
