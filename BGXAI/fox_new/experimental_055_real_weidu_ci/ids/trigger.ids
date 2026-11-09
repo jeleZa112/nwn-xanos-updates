@@ -1,0 +1,10 @@
+IDS V1.0
+0x400F Global(S:Name*,S:Area*,I:Value*)
+0x4018 Range(O:Object*,I:Range*)
+0x401C See(O:Object*)
+0x402B ActionListEmpty()
+0x4034 GlobalGT(S:Name*,S:Area*,I:Value*)
+0x4041 GlobalTimerNotExpired(S:Name*,S:Area*)
+0x4043 InParty(O:Object*)
+0x4090 InPartySlot(O:Object*,I:Slot*)
+0x40C9 ModalState(I:State*MODAL)
