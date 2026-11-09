@@ -1,0 +1,4 @@
+BACKUP ~BGX43/backup~
+AUTHOR ~BGXAI 043 passive EEex observer (no gameplay actions)~
+BEGIN ~BGXAI 043 EEex read-only event observer (opt-in)~
+COPY ~BGX43/M_BGX43Probe.lua~ ~override/M_BGX43Probe.lua~
