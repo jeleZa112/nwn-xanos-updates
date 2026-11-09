@@ -1169,3 +1169,12 @@ User selected option 30 in Windows and input YES. SHA source sync succeeded; Pyt
 Onefile dispatcher menu options 1-32 unchanged; option 30 now uses `0.3.16b-045-RESREF-FIX`, `release_045b`. Pinned commit `0863d0b49ab015aefbb2a4dabd19446ed897b4d9`, SHA256 `b0f6fa5216ae2b8b312221edb18f4143c5cb48a8b4660b98053b70e0bbb6b644` (31943 bytes); pin commit `ee8ba92f6bd96cc78dec5bb1fe0ef2466ef06bce`. Current 045B **NOT INSTALLED in user's EET**.
 
 Next action: close game/InfinityLoader, run SAME existing `BGXAI_UPDATE.cmd` to fetch fresh pin, choose **30** once and `YES`; confirm output states 045B source and `INSTALLED_PASSIVE_045`. If BLOCKED/REVIEW, stop and send full output, no blind retry. If installed, launch via InfinityLoader, press Ctrl+Alt+F11 once. No repeated Shank fight.
+
+
+## 2026-11-09 — CRITICAL: live 045B attempt BLOCKED because BGX45 **already last** in WeiDU.log
+
+User launched onefile pinned `0863d0b49ab0` verified SHA, chose option 30, all 8 release sources VERIFIED, `YES`, and Python preflight blocked **before running WeiDU this time**:
+```
+BGXAI 045 BLOCKED: Expected BGX44 as LAST WeiDU component; observed='~BGX45\\SETUP-BGX45.TP2~ #0 #0 // BGXAI 045 EEex passive Lua autoload resref fix'
+```
+Unlike earlier suspected format-regex mismatch, the observed terminal WeiDU.log line confirms **BGX45 has an installed component record and is last**. This is NOT proof that its files are complete or correct; its installation may have occurred in a prior unseen step. Do NOT install option 30 again, alter/remove WeiDU.log, perform rollback 32 or manually copy Lua files. Need source of truth via **option 31 (READ ONLY)**: it prints `BGX45 installed`, `BGX45 last`, both deployed short Lua `override/M_BX43.lua`, `override/M_BX44.lua` `present`/SHA matches, baseline 042B/043P/044 intact, and verified backup status. Until then classify state `045_PRESENT_IN_WEIDU_LOG, FILES_UNVERIFIED` and do NOT request another battle or hotkey. Not yet claim 045 successfully operational. 045B code re-read confirms status handler is read-only and deployed filename/hash checks are present.
