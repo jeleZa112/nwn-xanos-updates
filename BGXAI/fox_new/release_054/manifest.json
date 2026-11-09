@@ -7,8 +7,8 @@
     {
       "dest": "compile_guard_054.py",
       "source": "BGXAI/fox_new/release_054/compile_guard_054.py",
-      "size": 11334,
-      "sha256": "92318fdffb00c244c19ab52edea7dfb004eba6e4ce4d419eb9a571cf87875806"
+      "size": 11989,
+      "sha256": "5defcb711d3882dcf5c66ddbfde33bd1cd5c06c89ddaa901ee5c53b7c2a52964"
     },
     {
       "dest": "verify_053_baseline.py",
@@ -25,21 +25,21 @@
     {
       "dest": "test_compile_054.py",
       "source": "BGXAI/fox_new/release_054/test_compile_054.py",
-      "size": 9019,
-      "sha256": "efa198684e8a884d915e7379c226cc800d37f039c9548f0c94ed866cc7d52085"
+      "size": 11013,
+      "sha256": "8777ce4ab79fec5befd5fcd4a4b22118980e48cda342edf133bc6a66dc697753"
     },
     {
       "dest": "README_RU.md",
       "source": "BGXAI/fox_new/release_054/README_RU.md",
-      "size": 6043,
-      "sha256": "0aa13c1f25e69d0bfb80f236af5d23c2df7bd397e796504bc235517f1a5929b1"
+      "size": 7615,
+      "sha256": "6a52034545b0554c350994c40ed7747cb1bc6e41d74b7c01c0e10a6a4834b8e7"
     },
     {
       "dest": "SOURCE_MANIFEST.json",
       "source": "BGXAI/fox_new/release_054/SOURCE_MANIFEST.json",
-      "size": 882,
-      "sha256": "a463f8275c131b3624f42700820fab7552a4e8686fd9f87dba7994abe6eaecb2"
+      "size": 924,
+      "sha256": "c4e7c5ee4a16086bca0bb90109ab9bd14155e32a42158d011d037394dc0762a6"
     }
   ],
-  "notes": "054-R1 hotfix: locale in weidu.conf, exact selected dialog.tlk; 20 tests"
+  "notes": "054-R2 hotfix: run WeiDU cwd=EET game root, BAF and BCS in temporary output; detect fatal error even with exit code 0; 23 tests"
 }
