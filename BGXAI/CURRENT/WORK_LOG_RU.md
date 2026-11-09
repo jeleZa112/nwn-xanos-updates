@@ -953,3 +953,22 @@ Checkpoint GitHub `BGXAI/CURRENT/BGXAI_043P_RUNTIME_DIAG_READONLY_20261109_RU.md
 - Existing one-file dispatcher `BGXAI/BGXAI_SYNC.ps1` retains menu options 1–22 and adds 23 (read-only 044 precheck), 24 (source-only), 25 (opt-in WeiDU install), 26 (read-only status), 27 (verified rollback). Pinned immutable commit `a51f2c42a02dfa796e34722012adf95f30aff7da`, SHA256 `57be8fa5f1df7b67334990cf895932ec9c6237c7b6fae54781ffad43ccbdd4ba`, 28,164 bytes; pin update commit `8b7554af3d23deba514ccf174f48520307fdfaba`, checksum reverified. Existing Windows CMD cache-busting bootstrap should acquire updated pin.
 - Library: `/BALDURS_GATE_EET_AI/CURRENT/BGXAI_044_RELEASE_CHECKPOINT_20261109_RU.md` and `/BALDURS_GATE_EET_AI/BUILD/BGXAI_044_DIAG_RELEASE/`; GitHub checkpoint `BGXAI/CURRENT/BGXAI_044_RELEASE_CHECKPOINT_20261109_RU.md`, commit `65d6a05c03568218f849a2a58e9975bc13abcbf4`.
 - **NEXT USER STEP:** close game/InfinityLoader; open existing `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`, check menu 23–27; **25** does verified download/preflight+backup before optional YES. If success, choose 26 status (optional), launch via InfinityLoader, press Ctrl+Alt+F11 in game without repeating Shank; send displayed status. On BLOCKED/REVIEW STOP; do not retry blindly. Do not use 20 again, do not alter 042B. **044 is published, NOT installed on user's Windows yet.**
+
+## 2026-11-09 — Windows LIVE: 044 DIAG INSTALLED_PASSIVE_044
+
+Пользователь реально запустил прежний `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`, выбрал **25**; загрузка и SHA256-верификация всех семи исходников 044 прошли (7 × VERIFIED), введён `YES`. Фактический вывод:
+```text
+BGXAI 044: INSTALLED_PASSIVE_044
+  weidu_zero : True
+  044_last : True
+  diagnostic_installed : True
+  043_observer_unchanged : True
+  042b_unchanged : True
+  chitin_unchanged : True
+  eeex_unchanged : True
+Backup: C:\Users\Drevo\Documents\BGXAI44_SAFE_BACKUPS\PRE_INSTALL_20261109T144231271226Z
+BGXAI: update/status action completed.
+```
+Таким образом, **044 впервые подтверждён установленным в Windows через реальный WeiDU**, последним компонентом; 043-P/042B, chitin.key и EEex остались без изменений, отдельный backup создан. Это **не** подтверждает работу клавиатурного хука или 043-P в реальной игре; лишь наличие диагностического файла и корректность установки.
+
+**Ближайшее действие:** открыть игру через InfinityLoader, загрузить любое сохранение, нажать **Ctrl+Alt+F11** и прислать скриншот строки `BGX44 043P=...` (loaded/listener/attacks/errors). Никаких новых боёв с Шанком, установки 25/20 повторно, изменения BCS, ручного копирования Lua, повторных игровых архивов. При отсутствии строки диагностировать hotkey/UI/EEex без необоснованного вывода о 043-P. Режим 044 только read-only, активный intercept/cover 043 пока offline.
