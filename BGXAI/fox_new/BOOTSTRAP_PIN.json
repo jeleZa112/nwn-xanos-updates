@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "a51f2c42a02dfa796e34722012adf95f30aff7da",
+  "commit": "cf92755b0074a3f70d5cc7be2211085ca36f9fb4",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "57be8fa5f1df7b67334990cf895932ec9c6237c7b6fae54781ffad43ccbdd4ba",
-  "script_size": 28164,
-  "description": "One-file EET updater; 1-22 unchanged; 23 read-only 044 preflight; 24 source-only sync; 25 opt-in isolated EEex Lua diagnostic; 26 status; 27 verified WeiDU rollback. Working 042B/043P unaffected."
+  "script_sha256": "96b2d4823fb0dbd7ab538547cbaefaef9eb0a31d7fb470c5ed5887e5d7f010a4",
+  "script_size": 31936,
+  "description": "One-file EET updater: previous options 1-27 unchanged, added BGXAI 045 8-char M_*.lua autoload correction: 28 read-only preflight; 29 sources; 30 opt-in two-file WeiDU; 31 status; 32 rollback. No auto-install."
 }
