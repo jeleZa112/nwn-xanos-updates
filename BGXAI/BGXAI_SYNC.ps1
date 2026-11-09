@@ -95,8 +95,14 @@ $release054=@{
     names=@('compile_guard_054.py','verify_053_baseline.py','BGX52_guard_receiver_PREVIEW.baf',
             'test_compile_054.py','README_RU.md','SOURCE_MANIFEST.json')
 }
+$release056=@{
+    id='056';version='0.3.22-056-ACTIVE-GUARD-OPTIN';
+    manifest=$remoteRoot+'experimental_056_active_guard/manifest.json';prefix=$remoteRoot+'experimental_056_active_guard/';
+    localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_056';installer='BGXAI56_INSTALL.py';
+    names=@('BGX56/M_BX43.lua','BGX56/BGX56_RECEIVER.baf','BGX56/setup-BGX56.tp2','BGXAI56_BUILDER.py','BGXAI56_INSTALL.py','README_RU.md','tests/test_056.py','tests/test_lua_056.py','ci_weidu_056.py','ids/trigger.ids','ids/action.ids','ids/object.ids','ids/modal.ids','SOURCE_MANIFEST.json')
+}
 function Get-PinnedBytes([string]$remotePath) {
-    if($remotePath -notmatch '^BGXAI/fox_new/release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
+    if($remotePath -notmatch '^BGXAI/fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
         throw ('Remote source path blocked: '+$remotePath)
     }
     # All sources are publicly hosted; pin content by immutable commit and SHA256 manifest.
@@ -625,6 +631,11 @@ Write-Host ' 51 - BGXAI 049 status (READ ONLY; after 49/50)'
 Write-Host ' 52 - Roll back BGXAI 049 (YES; only if last + verified backup)'
 Write-Host ' 53 - BGXAI 054 download/verify read-only compiler SOURCES'
 Write-Host ' 54 - BGXAI 054 compile BAF READ ONLY (NO INSTALL / no TP2)'
+Write-Host ' 55 - BGXAI 056 active guard PRECHECK (READ ONLY, sources verified)'
+Write-Host ' 56 - Download/verify BGXAI 056 ACTIVE GUARD SOURCE ONLY'
+Write-Host ' 57 - EXPERIMENTAL install BGXAI 056 ACTIVE F GUARD (YES + WeiDU backups)'
+Write-Host ' 58 - BGXAI 056 active guard STATUS (READ ONLY)'
+Write-Host ' 59 - Roll back BGXAI 056 (YES + verified last WeiDU backup)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -685,6 +696,11 @@ try {
       '52' {SyncRelease $release049;RunRelease $release049 '--uninstall';break}
       '53' {SyncRelease $release054;break}
       '54' {SyncRelease $release054;RunRelease $release054 '--compile-readonly';break}
+      '55' {SyncRelease $release056;RunRelease $release056 '--precheck';break}
+      '56' {SyncRelease $release056;break}
+      '57' {SyncRelease $release056;RunRelease $release056 '--install';break}
+      '58' {RunRelease $release056 '--status';break}
+      '59' {SyncRelease $release056;RunRelease $release056 '--uninstall';break}
       default {throw 'Unknown menu option, no game change.'}
     }
     exit 0
