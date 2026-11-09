@@ -1,0 +1,27 @@
+name: BGXAI 055 - Real WeiDU 251 BAF grammar (no game)
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - '.github/workflows/bgxai-055-real-weidu.yml'
+      - 'BGXAI/fox_new/release_054/**'
+      - 'BGXAI/fox_new/experimental_055_real_weidu_ci/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-weidu-251:
+    name: WeiDU 251 on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Run actual WeiDU 251 BAF grammar check with --nogame
+        run: python BGXAI/fox_new/experimental_055_real_weidu_ci/ci_weidu_055.py
