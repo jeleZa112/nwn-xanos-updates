@@ -120,13 +120,15 @@ def real_weidu_smoke() -> dict:
         report['compiler_output_sha256'] = hashlib.sha256(data).hexdigest()
         report['compiler_output_bytes'] = len(data)
         report['compiler_output_first8'] = data[:8].hex()
-        # Validate the ACTUAL compiled BCS action IDs instead of trusting
-        # compilation exit status or matching size/hash alone.
-        report['compiled_rule_blocks'] = len(re.findall(rb'(?m)^(?:[0-9]+)?CR\r?$', data))
+        # Validate ACTUAL compiled BCS: 8 blocks yield 16 CR delimiters
+        # (opening and closing) in WeiDU's text-encoded BCS format.
+        # Exact actions: 8 SetGlobal, 2 Continue, 6 ProtectObject,
+        # 6 SetGlobalTimer. Do not confuse delimiters with block count.
+        report['compiled_cr_delimiters'] = len(re.findall(rb'(?m)^(?:[0-9]+)?CR\r?$', data))
         action_ids = [int(x) for x in re.findall(rb'(?:^|\n)(?:[0-9]+)?AC\r?\n(-?[0-9]+)OB\r?\n', data)]
         counts = {str(k): action_ids.count(k) for k in (30, 36, 87, 115)}
         report['compiled_action_ids_counts'] = counts
-        if report['compiled_rule_blocks'] != 8 or len(action_ids) != 22 or counts != {'30':8,'36':2,'87':6,'115':6}:
+        if report['compiled_cr_delimiters'] != 16 or len(action_ids) != 22 or counts != {'30':8,'36':2,'87':6,'115':6}:
             report['status'] = 'COMPILED_BCS_STRUCTURE_MISMATCH'
             report['action_ids_found'] = action_ids
             return report
