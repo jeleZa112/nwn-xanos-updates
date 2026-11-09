@@ -1,0 +1,5 @@
+BACKUP ~BGX56/backup~
+AUTHOR ~BGXAI 056 - guarded active bodyguard for Foxx EET EPS 18.4~
+BEGIN ~BGXAI 056 F-gated confirmed-hit bodyguard, no action cancellation~
+COPY ~BGX56/staged/BDDEFAI.BCS~ ~override/BDDEFAI.BCS~
+COPY ~BGX56/M_BX43.lua~ ~override/M_BX43.lua~
