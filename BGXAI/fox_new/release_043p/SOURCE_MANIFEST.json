@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "status": "OPT_IN_READ_ONLY_EEEX_PROBE",
+  "version": "0.3.14-043-PROBE",
+  "required_bcs_sha256": "8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0",
+  "files": {
+    "BGXAI43_PROBE_INSTALL.py": {
+      "size": 17140,
+      "sha256": "918b76c4aed6599bd143fc5e5c87907dec106744ffc6b54e77ee1ac49f3f4c9c"
+    },
+    "BGX43/setup-BGX43.tp2": {
+      "size": 200,
+      "sha256": "c71f6bf6bcde4705cc71ff4ba7823e732f8d1289766f32103d1607c0eb94add5"
+    },
+    "BGX43/M_BGX43Probe.lua": {
+      "size": 5072,
+      "sha256": "f1e6fcc6989512bee5e217a66ef42ea48a828c407c7009e6012a90b95d5db19f"
+    },
+    "BGX43/tests/test_installer_043.py": {
+      "size": 10320,
+      "sha256": "8da047b0109d4a19c1468d05ea4559d5db4ea82cfb976d658557acb934bfecfe"
+    },
+    "README_RU.md": {
+      "size": 6146,
+      "sha256": "963af74edf2d2b9ee4265802eb05640a3df5d4c9c42c7c943d711c138be80b75"
+    },
+    "eeex_bridge_043.py": {
+      "size": 5962,
+      "sha256": "cafb40b84e1b187e9339049ed9753397ef6403a03b079f97f345c15da0f0dc79"
+    },
+    "intercept_policy.py": {
+      "size": 10764,
+      "sha256": "660ba40bdd8939915a88435667ca3d307ba5e6c52af4f8e0357c95ec18688935"
+    },
+    "test_eeex_bridge_043.py": {
+      "size": 11486,
+      "sha256": "3c8b6e93fb882e06f6b5a1a475d70417264005d162738f5580e0bf8acc1aba7e"
+    }
+  }
+}
