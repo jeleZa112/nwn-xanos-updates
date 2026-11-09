@@ -856,3 +856,22 @@ BGXAI: update/status action completed.
 All live preflight conditions PASS. **043P is NOT installed**; working 042B remains installed and its compiled BCS hash is confirmed.
 
 NEXT SINGLE USER ACTION: Close game and InfinityLoader, launch same `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`, select **20**, enter exact `YES`. Updater will synchronize/verify immutable 043P source, external backup, guarded isolated WeiDU observer install; **only `override/M_BGX43Probe.lua`** is added. No BCS/AI commands/TLK/UI.MENU changes. User should paste full installer output. On BLOCKED/REVIEW/STOP do not repeat, preserve reports. After success option **21** status then one ordinary in-game observation without forced fight. 043P is passive attack observer **not** AI interceptor/cover yet.
+
+## 2026-11-09 — BGXAI 043P passive EEex observer УСТАНОВЛЕН (LIVE Windows, option 20)
+
+User ran existing onefile `BGXAI_UPDATE.cmd` → **20** → verified nine 043P source files from pinned immutable GitHub commit → typed exact `YES`. The real installer completed:
+```
+BGXAI 043: INSTALLED_PASSIVE_043
+  weidu_exit_zero : True
+  043_last : True
+  observer_in_override : True
+  042b_bcs_unchanged : True
+  chitin_unchanged : True
+  eeex_unchanged : True
+Backup: %USERPROFILE%\Documents\BGXAI43_SAFE_BACKUPS\PRE_INSTALL_20261109T003244491365Z
+BGXAI: update/status action completed.
+```
+
+**Confirmed**: passive Lua `M_BGX43Probe.lua` installed, 043P is the last WeiDU component, 042B is preserved and still doing combat control, EET BCS/chitin/EEex untouched, external backup created. No in-game EEex callback has yet been verified; DO NOT interpret installer success as real event monitoring or AI protection.
+
+**NEXT**: run same existing updater → **21 — BGXAI 043P status (READ ONLY)**, paste complete output; confirm installed SHA and verified rollback backup. After confirmation, launch InfinityLoader for a single *natural* gameplay fight (no forced repeat against Shank) and watch for once-only observer UI notification; no new AI commands from 043P. If BLOCKED/REVIEW, preserve exact text, no repeat installations. NEVER choose option 20 again; 22 is rollback only when needed.
