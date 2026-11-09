@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.6.3
+# Roblox background monitor - release 3.6.4
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.6.3"
+VERSION = "3.6.4"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -3840,6 +3840,7 @@ class AutoPilotPadReselect:
     """
     def __init__(self):
         self.reselections=0
+        self.lost_reacquisitions=0
         self.busy_frames=0
         self.lost_frames=0
         self.lost_since=None
@@ -3902,12 +3903,28 @@ class AutoPilotPadReselect:
             return ('RESELECT',None,'READY_UNSEEN_FOR_5S')
         return ('WAIT',None,'READY_TEMPORARILY_HIDDEN')
 
-    def begin_reselection(self, old_x, now):
-        if self.reselections>=2:
-            return False
-        self.reselections+=1
-        self.excluded_x=old_x
-        self.excluded_until=now+9.0
+    def begin_reselection(self, old_x, now, reason):
+        """Differentiate unobserved labels from *confirmed* occupied pads.
+
+        Lost READY can be caused by player occlusion/camera perspective:
+        it must NOT consume the limited BUSY-pad retry count. Do not move
+        during reacquisition, and cap each cause independently.
+        """
+        occupied=(reason=='TRACKED_PAD_BUSY_OR_COUNTDOWN')
+        if occupied:
+            if self.reselections>=2:
+                return False
+            self.reselections+=1
+            self.excluded_x=old_x
+            self.excluded_until=now+9.0
+        else:
+            if self.lost_reacquisitions>=3:
+                return False
+            self.lost_reacquisitions+=1
+            # Don't ban an unverified sign; it might still be the only
+            # available pad or simply hidden from the current camera angle.
+            self.excluded_x=None
+            self.excluded_until=0.0
         self.busy_frames=0
         self.lost_frames=0
         self.lost_since=None
@@ -4671,8 +4688,10 @@ def autopilot_mode():
         # movement budget, and require three fresh READY samples.
         nonlocal wait_until,menu_candidate_since
         old_x=brain.target_x
-        if not pad_reselect.begin_reselection(old_x,now):
-            log('PAD_RESELECT_EXHAUSTED reason='+why)
+        if not pad_reselect.begin_reselection(old_x,now,why):
+            log('PAD_RESELECT_EXHAUSTED reason='+why+
+                ' busy='+str(pad_reselect.reselections)+
+                ' lost='+str(pad_reselect.lost_reacquisitions))
             return False
         motion.reset()
         visual_ready.reset()
@@ -4688,7 +4707,8 @@ def autopilot_mode():
         wait_until=now+1.2
         transition('LOBBY','PAD_RESELECT '+why,now)
         log('PAD_RESELECT reason='+why+' old_x='+str(old_x)+
-            ' attempt='+str(pad_reselect.reselections)+'/2')
+            ' confirmed_busy='+str(pad_reselect.reselections)+'/2'+
+            ' visual_reacquire='+str(pad_reselect.lost_reacquisitions)+'/3')
         return True
 
     def transition(next_stage,why,now):
