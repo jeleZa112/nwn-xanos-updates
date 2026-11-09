@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "259bb2301faec59f8bb425d7fa6bb59ab3b261d9",
+  "commit": "fa19cf3aee49389654edeec67ecfeaee8c13e522",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "0af64b8418a9328cfc159110d0507ce73f08895ad34e036817c9e200c4203e48",
-  "script_size": 39933,
-  "description": "BGXAI 048: passive actual weapon-hit observer via EEex 1.1.7 with explicit attacker/target, options 43-47. Previous 1-42 unchanged. Requires BGX47 last."
+  "script_sha256": "de14c7089ac494a10cda1ff974eb2f68610355354e1131bb811d18d6606092be",
+  "script_size": 42600,
+  "description": "BGXAI 049 passive guard advisory based on confirmed weapon hits; options 48-52, legacy 1-47 preserved. BGX48 required last."
 }
