@@ -29,8 +29,14 @@ def segment(raw:bytes,expected:int):
     starts=[m.start(1) for m in BLOCK_START.finditer(raw)]
     if len(starts)!=expected or starts[0]!=3:raise ValueError(f'BLOCK_COUNT_EXPECTED_{expected}_GOT_{len(starts)}')
     blocks=[raw[a:b] for a,b in zip(starts,starts[1:]+[len(raw)])]
-    if not all(b.startswith(b'CR\nCO\n') and b.endswith(b'CR\n') for b in blocks):
-        raise ValueError('BCS_UNEXPECTED_CR_BOUNDARY')
+    # WeiDU may omit a final newline on the LAST compiled block; internal
+    # block separators must still be CR\nCO\n, and there must be RS.
+    if not all(b.startswith(b'CR\nCO\n') and b.count(b'\nRS\n')>=2 for b in blocks):
+        raise ValueError('BCS_UNEXPECTED_CR_OR_RS_BOUNDARY')
+    if not all(b.endswith(b'CR\n') for b in blocks[:-1]):
+        raise ValueError('BCS_INTERNAL_BLOCK_NO_CR_LF')
+    if not blocks[-1].endswith((b'CR\n',b'CR')):
+        raise ValueError('BCS_LAST_BLOCK_NO_END_CR')
     if b'SC\n'+b''.join(blocks)!=raw:raise AssertionError('BCS_LOSSLESS_ROUNDTRIP')
     return blocks
 
@@ -59,17 +65,23 @@ def combine(old:bytes,insert:bytes,*,strict:bool=True):
     if strict:before=verify_old(old)
     else:before=segment(old,PIN_BLOCKS)
     new=verify_insert(insert)
+    # A single WeiDU-compiled BCS may have a trailing CR with no LF. When
+    # inserting it before an existing block, supply the missing block separator.
+    new = list(new)
+    normalized=not new[-1].endswith(b'\n')
+    if normalized:new[-1]+=b'\n'
     candidate=b'SC\n'+b''.join(before[:INSERT_INDEX]+new+before[INSERT_INDEX:])
     merged=segment(candidate,PIN_BLOCKS+8)
     if merged[:INSERT_INDEX]!=before[:INSERT_INDEX]:raise AssertionError('EARLIER_F_OR_EPS_BLOCK_CHANGED')
     if merged[INSERT_INDEX:INSERT_INDEX+8]!=new:raise AssertionError('RECEIVER_INSERTION_NOT_EXACT')
     if merged[INSERT_INDEX+8:]!=before[INSERT_INDEX:]:raise AssertionError('EXISTING_EPS_BLOCK_CHANGED')
     if Counter(merged)!=Counter(before+new):raise AssertionError('BLOCK_MULTISETS_DIFFER')
-    if len(candidate)!=len(old)+len(insert)-3:raise AssertionError('SIZE_MISMATCH')
+    if len(candidate)!=len(old)+len(insert)-3+(1 if normalized else 0):raise AssertionError('SIZE_MISMATCH')
     return candidate,{'old_sha':sha(old),'new_receiver_sha':sha(insert),
                       'patched_sha':sha(candidate),'old_blocks':len(before),
                       'inserted_blocks':len(new),'total_blocks':len(merged),
                       'insert_before_original_block':INSERT_INDEX+1,
+                      'compiler_final_newline_normalized':normalized,
                       'existing_bcs_blocks_byte_identical':True,
                       'original_F_toggle_precedes_receiver':True,
                       'original_guard_follows_receiver':True}
