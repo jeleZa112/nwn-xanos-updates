@@ -903,3 +903,15 @@ BGXAI: update/status action completed.
 - Пользователь: «ничего и не среагировала зашита может что далеко ?». Нельзя объявлять 042B/043P сломанными по этому кадру: в логе пока **нет записи начала удара/ранения после снятия паузы**; EEex 043P `M_BGX43Probe.lua` действительно регистрирует только NONPARTY `Attack(3)` / `AttackOneRound(105)` при конкретном target_id в party. Реакция на диалог/«замечен враг» не предусмотрена. Один раз `Infinity_DisplayString` только если API существует и вызов удаётся; отсутствие строки неоднозначно.
 - Сторожевые блоки 042B требуют `ActionListEmpty`, `See`, `Range`, таймер F-режима и условий другого EPS; две дистанции на блок 10 и 8 (Player1) либо 10 и 7 (Player2–6). Фактические расстояния и режим F каждого защитника из скриншота доказать невозможно. При паузе они не исполняют новые действия.
 - **Next safe user action:** в текущем эпизоде, не повторяя бой с Шанком и не рискуя Джейд на 1 HP, убедиться что F ON у обоих охранников и общий AI ON, подвести охранников ближе к защищаемому, укрыть или вылечить Джейд, затем снять паузу и наблюдать первые 1–2 секунды реального боя. При отсутствии охраны **после начала атаки** запрашивать один скриншот с журналом и F/настройкой автоатаки; не менять 042B наугад. После реального начала `Attack` если 043P не показывает строку, диагностировать callback/display API вместо повторной переустановки.
+
+## 2026-11-09 — 043P diagnostic without reinstallation: in-game Lua console
+
+User asked next step after 043P installed+status and screenshot on autopause after Shank dialogue with no observer notice and no guard movement. Official EEex docs verified: `M_*.lua` loads from `override`, `Infinity_DisplayString` is an on-screen UI utility, and Lua console is Ctrl+Space when Debug Mode is enabled (BGEE 2.0+). On paused "enemy spotted" screen **no action-start event is established**; no notice is expected without an actual Attack(3)/AttackOneRound(105) targeting party. Cannot conclude 043P broken.
+
+One read-only console command prepared; **requires no installation/repeat fight**, and does not touch saves/BCS/WeiDU:
+```
+Infinity_DisplayString("043P loaded=", tostring(BGX43Probe~=nil), " listener=", tostring(BGX43Probe and BGX43Probe.installed), " hits=", tostring(BGX43Probe and #BGX43Probe.events or 0), " notice=", tostring(BGX43Probe and BGX43Probe.firstNoticeShown), " err=", tostring(BGX43Probe and BGX43Probe.lastError))
+```
+Expected before combat if loaded: `loaded=true listener=true hits=0 notice=false`. If `loaded=false` module failed to load, if `listener=false` hook registration failed, if `hits>0` actual enemy Attack event captured. User only needs to send screen display, or say Ctrl+Space console is unavailable; if console unavailable plan optional safe hotkey read-only diagnostic module, don't blindly modify Baldur.lua.
+
+Checkpoint GitHub `BGXAI/CURRENT/BGXAI_043P_RUNTIME_DIAG_READONLY_20261109_RU.md` commit `c75bcffe4d7d343f798283c19b0cbd079e6cf636` and Library `/BALDURS_GATE_EET_AI/CURRENT/BGXAI_043P_RUNTIME_DIAG_READONLY_20261109_RU.md`. 042B and 043P installed are unchanged; 043 interceptor/cover Python only offline.
