@@ -88,7 +88,38 @@ def real_weidu_smoke() -> dict:
         report['parse_output'] = parsed.stdout[-3200:]
         success = 'successfully parsed as type [BAF]' in parsed.stdout
         failure = 'NOT successfully parsed as type [BAF]' in parsed.stdout
-        report['status'] = 'REAL_WEIDU_BAF_GRAMMAR_PASS' if parsed.returncode == 0 and success and not failure else 'REAL_WEIDU_BAF_GRAMMAR_FAILED'
+        if not (parsed.returncode == 0 and success and not failure):
+            report['status'] = 'REAL_WEIDU_BAF_GRAMMAR_FAILED'
+            return report
+        # Same real WeiDU binary, isolated BCS generation with only public IDS
+        # fixture. This is a *synthetic* compile, NOT validation against EET.
+        out = root/'bcs_output'
+        out.mkdir()
+        compiled = subprocess.run([str(tool), *safe_flags,
+                                   '--search-ids', str(IDS_DIR),
+                                   '--search', str(IDS_DIR),
+                                   '--script-style', 'BG2',
+                                   '--out', str(out), str(baf)],
+                                  cwd=root, input='', text=True,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT, timeout=25, check=False)
+        report['compile_exit'] = compiled.returncode
+        report['compile_output'] = compiled.stdout[-3000:]
+        candidates = [f for f in out.rglob('*') if f.is_file()
+                      and f.suffix.casefold() == '.bcs' and f.stem.casefold() == baf.stem.casefold()]
+        if not candidates:
+            candidates = [f for f in root.rglob('*') if f.is_file()
+                          and f.suffix.casefold() == '.bcs' and f.stem.casefold() == baf.stem.casefold()]
+        bad = bool(re.search(r'(?m)^\s*(?:FATAL ERROR:|ERROR:)', compiled.stdout))
+        if compiled.returncode != 0 or bad or len(candidates) != 1 or candidates[0].stat().st_size == 0:
+            report['status'] = 'REAL_WEIDU_BCS_COMPILE_FAILED'
+            report['generated_bcs_files'] = [str(x.relative_to(root)) for x in candidates]
+            return report
+        output = candidates[0]
+        report['compiler_output_sha256'] = hashlib.sha256(output.read_bytes()).hexdigest()
+        report['compiler_output_bytes'] = output.stat().st_size
+        report['compiler_output_first8'] = output.read_bytes()[:8].hex()
+        report['status'] = 'REAL_WEIDU_BAF_AND_BCS_PASS'
         return report
 
 
@@ -99,4 +130,4 @@ if __name__ == '__main__':
         result = {'status': 'CI_ERROR', 'error': type(e).__name__, 'detail': str(e)[:400],
                   'game_files_accessed': False, 'installation_performed': False}
     print(json.dumps(result, ensure_ascii=False, indent=2))
-    sys.exit(0 if result['status'] == 'REAL_WEIDU_BAF_GRAMMAR_PASS' else 1)
+    sys.exit(0 if result['status'] == 'REAL_WEIDU_BAF_AND_BCS_PASS' else 1)
