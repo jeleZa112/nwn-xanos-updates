@@ -1,0 +1,5 @@
+BACKUP ~BGX45/backup~
+AUTHOR ~BGXAI 045 EEex read-only Lua 8-character resref loader fix~
+BEGIN ~BGXAI 045 EEex passive Lua autoload resref fix~
+COPY ~BGX45/M_BX43.lua~ ~override/M_BX43.lua~
+COPY ~BGX45/M_BX44.lua~ ~override/M_BX44.lua~
