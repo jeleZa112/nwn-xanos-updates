@@ -1,7 +1,8 @@
--- BGXAI 043 / EEex v1.1.7 observation-only bridge. NOT A COMBAT AI INSTALLER.
--- Loaded as M_*.lua only after a future explicit, verified installation.
--- Read-only CGameSprite/action fields; never calls QueueResponse, ClearActions,
--- ActionOverride, SetGlobal, mutating engine APIs, filesystem I/O or network.
+-- BGXAI 056: EEex confirmed weapon-hit listener with F-gated BCS requests.
+-- Loaded as M_BX43.lua only after separately confirmed guarded 056 install.
+-- Writes BGX52_* LOCALS to one selected F-enabled guardian; never sends
+-- Attack/ProtectObject, clears a queued player action or accesses the filesystem.
+-- BCS verifies the live idle/modal/F/TTL conditions before ProtectObject.
 
 BGX43Probe = BGX43Probe or {}
 local P = BGX43Probe
@@ -160,9 +161,8 @@ function P.onStarted(sprite, action)
     end
 end
 
--- Prepare a strictly read-only bridge record for a future, separately approved
--- BGXAI guard engine. This list is NOT an assignment of active bodyguards:
--- the current Lua observer cannot verify who has the 042B guard switch on.
+-- The advisory itself lists portraits; it does NOT assign a bodyguard.
+-- BGX52Bridge.prepare() separately checks the F switch for each guardian.
 local function makeGuardSignal(event, portraitIDs)
     if not event or event.event ~= "NONPARTY_WEAPON_HIT_ON_PARTY" then return nil end
     if type(event.actor_id) ~= "number" or type(event.target_id) ~= "number" then return nil end
@@ -188,7 +188,7 @@ local function makeGuardSignal(event, portraitIDs)
         ability_to_intercept = "UNKNOWN",
         confirmation = "ENGINE_WEAPON_HIT_CONTEXT",
         action_command_sent = false,
-        dispatch_status = "DISABLED_PASSIVE_ONLY",
+        dispatch_status = "ADVISORY_ONLY_BCS_BRIDGE_SEPARATE",
     }
 end
 
@@ -364,7 +364,7 @@ function P.onWeaponHit(context)
             P.guardSignals[#P.guardSignals + 1] = guardRecord
             P.guardSignalCount = P.guardSignalCount + 1
             P.lastGuardSignal = guardRecord
-            -- BGX52 experimental bridge is disabled by default. Does not queue actions.
+            -- 056 opt-in bridge writes an F-gated BCS request; queues no Lua actions.
             if BGX52Bridge then
                 local ok052 = pcall(BGX52Bridge.prepare, guardRecord)
                 if not ok052 then P.guardSignalErrors=P.guardSignalErrors+1 end
