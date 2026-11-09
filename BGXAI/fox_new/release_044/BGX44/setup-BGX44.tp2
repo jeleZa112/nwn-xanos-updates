@@ -1,0 +1,4 @@
+BACKUP ~BGX44/backup~
+AUTHOR ~BGXAI 044 passive EEex diagnostic (no game actions)~
+BEGIN ~BGXAI 044 read-only Ctrl+Alt+F11 runtime diagnostic (opt-in)~
+COPY ~BGX44/M_BGX44Diag.lua~ ~override/M_BGX44Diag.lua~
