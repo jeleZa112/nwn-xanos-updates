@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.6.7
+# Roblox background monitor - release 3.6.8
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.6.7"
+VERSION = "3.6.8"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -4542,6 +4542,26 @@ class AutoPilotInput:
 
 
 
+
+def autopilot_spawn_grate_hint(frame):
+    """Conservative landmark for the recorded distant lobby spawn, not a pad.
+    This only authorizes a few observation-verified W pulses. It never
+    declares a FREE pad or overrides occupied signs.
+    """
+    import cv2,numpy as np
+    if frame is None or len(frame.shape)<3:return False
+    H,W=frame.shape[:2]
+    if W<500 or H<300 or not .46<=H/max(W,1)<=.68:return False
+    view=cv2.resize(frame[:,:,:3],(960,540),interpolation=cv2.INTER_AREA)
+    gray=cv2.cvtColor(view,cv2.COLOR_BGR2GRAY)
+    # The near spawn ramp has a distinctive black floor grate.
+    # All crops contain only game scenery, no player names or chat text.
+    grate=gray[400:475,290:620]
+    dark=float(np.mean(grate<80))
+    bright=float(np.mean(grate>170))
+    edges=float(np.mean(cv2.Canny(grate,80,160)>0))
+    return (.30<dark<.64 and bright<.12 and .09<edges<.30)
+
 class AutoPilotBackgroundInput(AutoPilotInput):
     """Experimental HWND-addressed WM input, never OS-global SendInput.
 
@@ -4776,6 +4796,8 @@ def autopilot_mode():
     last_action=0.0
     last_frame_at=begin
     last_focus_note=begin-10
+    spawn_approach_steps=0
+    spawn_approach_enabled=False
     last_phase=''
     menu_visible=0
     menu_candidate_since=None
@@ -4955,6 +4977,34 @@ def autopilot_mode():
                 # Occupied signs are retained for ready_sign's busy veto.
                 target=brain.ready_sign(pad_reselect.candidates(signs,now))
                 if target is None:
+                    # The last verified user screenshot is the distant spawn:
+                    # READY text is too small/occluded to match from here.
+                    # Only on the known grate scene, allow a tiny, bounded
+                    # forward route while WGC verifies each physical shift.
+                    if (not spawn_approach_enabled and
+                            spawn_approach_steps==0 and
+                            autopilot_spawn_grate_hint(frame)):
+                        spawn_approach_enabled=True
+                        log('SPAWN_GRATE_CONFIRMED: bounded W approach enabled')
+                    if spawn_approach_enabled and spawn_approach_steps<12:
+                        if motion.before is not None:
+                            kind,shift,features=motion.verify(frame)
+                            log('SPAWN_MOTION '+kind+' shift='+str(shift)+
+                                ' features='+str(features))
+                            if motion.stop_reason():
+                                halt_reason='SPAWN_'+motion.stop_reason();break
+                        if now-last_action>=.65:
+                            motion.arm(frame)
+                            if not io.keys('W',.22):
+                                halt_reason='SPAWN_FORWARD_INPUT_REJECTED';break
+                            spawn_approach_steps+=1
+                            last_action=time.monotonic()
+                            log('SPAWN_APPROACH W 0.22s step='+
+                                str(spawn_approach_steps)+'/12')
+                        continue
+                    if spawn_approach_enabled and spawn_approach_steps>=12:
+                        halt_reason='SPAWN_READY_NOT_FOUND_AFTER_12_STEPS'
+                        break
                     if now-stage_since>12:
                         # PRIVATE image for a real gameplay run, not a new test mode.
                         try:
@@ -4965,6 +5015,8 @@ def autopilot_mode():
                         halt_reason='READY_SIGN_NOT_STABLE_12S';break
                     continue
                 brain.target_x=target
+                spawn_approach_enabled=False
+                motion.reset()
                 visual_ready.reset()
                 locked=[z for z in signs if
                         z.get('status')=='READY_SIGN'
