@@ -1,0 +1,36 @@
+{
+  "version": "0.3.17-046-ATTACK-FILTER",
+  "status": "OPT_IN_PASSIVE_FILTER_FIX",
+  "required_baseline": {
+    "override/BDDEFAI.BCS": "8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0",
+    "override/M_BGX43Probe.lua": "f1e6fcc6989512bee5e217a66ef42ea48a828c407c7009e6012a90b95d5db19f",
+    "override/M_BGX44Diag.lua": "a7bdfba10cdb3cc26351072dac0c6f375e03b4ce3a288f0eb15db945411dd33f",
+    "override/M_BX44.lua": "a7bdfba10cdb3cc26351072dac0c6f375e03b4ce3a288f0eb15db945411dd33f"
+  },
+  "files": {
+    "BGX46/M_BX43.lua": {
+      "size": 6725,
+      "sha256": "1c1e314e1f14a693fa0b10d7450e737447a992e9d7900fb7112437f75c26a6a3"
+    },
+    "BGX46/setup-BGX46.tp2": {
+      "size": 189,
+      "sha256": "73d8593bfb9d07e661402290d8bf1b4fc1f798611a86dbfc5f264fa18380a23e"
+    },
+    "BGXAI46_INSTALL.py": {
+      "size": 15220,
+      "sha256": "db279aac8d8fbf576d8ffcd5aa819d4a98fb34a32c3953e5db718dd6c50f00d8"
+    },
+    "README_RU.md": {
+      "size": 3850,
+      "sha256": "24e2de994f7da24d47542598478fb1e806c50fceb0451713200f88239751500f"
+    },
+    "BGX46/tests/test_lua_046.py": {
+      "size": 4615,
+      "sha256": "4ca2ba037e564149e12dd5c82dfda94274900ce1857a46cd6b78f127e0a5ab2d"
+    },
+    "BGX46/tests/test_installer_046.py": {
+      "size": 4758,
+      "sha256": "f39912e4cab79ccb2c50ac02213ac66232ad2c37a15e1ce2021b78bad5cd9b43"
+    }
+  }
+}
