@@ -7,8 +7,8 @@
     {
       "dest": "compile_guard_054.py",
       "source": "BGXAI/fox_new/release_054/compile_guard_054.py",
-      "size": 8523,
-      "sha256": "39755d3bbd3d4f2b54f65edefb2fbdf52040c63c601c757446a0758d31fd1f16"
+      "size": 11334,
+      "sha256": "92318fdffb00c244c19ab52edea7dfb004eba6e4ce4d419eb9a571cf87875806"
     },
     {
       "dest": "verify_053_baseline.py",
@@ -25,20 +25,21 @@
     {
       "dest": "test_compile_054.py",
       "source": "BGXAI/fox_new/release_054/test_compile_054.py",
-      "size": 6083,
-      "sha256": "2621cd1caaaf9313b739dea1bddf3edf2c685418d469a4630d1038d010d62978"
+      "size": 9019,
+      "sha256": "efa198684e8a884d915e7379c226cc800d37f039c9548f0c94ed866cc7d52085"
     },
     {
       "dest": "README_RU.md",
       "source": "BGXAI/fox_new/release_054/README_RU.md",
-      "size": 4544,
-      "sha256": "4c00bccc5a7cb07a68c58d5d9c1306c162172f6ae3ccfcb0c9a95d102c5ca40c"
+      "size": 6043,
+      "sha256": "0aa13c1f25e69d0bfb80f236af5d23c2df7bd397e796504bc235517f1a5929b1"
     },
     {
       "dest": "SOURCE_MANIFEST.json",
       "source": "BGXAI/fox_new/release_054/SOURCE_MANIFEST.json",
-      "size": 745,
-      "sha256": "e4fd9a8b3d2cb9c37986892e3095878b4e14f3199acb4f5b0baf49bcd0d9b84f"
+      "size": 882,
+      "sha256": "a463f8275c131b3624f42700820fab7552a4e8686fd9f87dba7994abe6eaecb2"
     }
-  ]
+  ],
+  "notes": "054-R1 hotfix: locale in weidu.conf, exact selected dialog.tlk; 20 tests"
 }
