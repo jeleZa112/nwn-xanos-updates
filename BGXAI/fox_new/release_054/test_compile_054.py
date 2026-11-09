@@ -33,7 +33,8 @@ def test_valid_compile_is_temporary_and_readonly(tmp_path,monkeypatch):
     game,exe=make_game(tmp_path);gate_ok(monkeypatch)
     before=mod.snapshot(game)
     def fake_runner(cmd,**kwargs):
-        assert kwargs['cwd']!=str(game)
+        assert kwargs['cwd']==str(game)
+        assert Path(cmd[-1]).parent!=game
         assert '--out' in cmd and '--tlkin' in cmd and '--use-lang' not in cmd
         assert '--force-install' not in cmd
         dest=Path(cmd[cmd.index('--out')+1]);dest.joinpath(mod.COMPILE_NAME.replace('.baf','.bcs')).write_bytes(b'SC\n0CR\n')
@@ -179,3 +180,39 @@ def test_tlk_mutated_during_compile_is_review(tmp_path,monkeypatch):
         return subprocess.CompletedProcess(cmd,0,'','')
     result=mod.compile_readonly(game,SOURCE,exe,runner=runner)
     assert result['status']=='REVIEW_LIVE_HASH_CHANGED' and not result['live_unchanged']
+
+
+def test_weidu_fatal_even_zero_exit_is_failure(tmp_path,monkeypatch):
+    game,exe=make_game(tmp_path);gate_ok(monkeypatch)
+    before=mod.snapshot(game)
+    def faulty_weidu(cmd,**kwargs):
+        assert kwargs['cwd']==str(game)
+        return subprocess.CompletedProcess(cmd,0,'FATAL ERROR: Failure("Not a game directory")','')
+    result=mod.compile_readonly(game,SOURCE,exe,runner=faulty_weidu)
+    assert result['status']=='WEIDU_FATAL_ERROR'
+    assert result['weidu_fatal_in_output'] and result['live_unchanged']
+    assert result['install_performed'] is False and mod.snapshot(game)==before
+
+def test_zero_exit_with_error_message_and_fake_output_still_fails(tmp_path,monkeypatch):
+    game,exe=make_game(tmp_path);gate_ok(monkeypatch)
+    def faulty_weidu(cmd,**kwargs):
+        dest=Path(cmd[cmd.index('--out')+1])
+        dest.joinpath('BX52CHK.bcs').write_bytes(b'SC\n')
+        return subprocess.CompletedProcess(cmd,0,'ERROR: Unable to find ACTION.IDS','')
+    result=mod.compile_readonly(game,SOURCE,exe,runner=faulty_weidu)
+    assert result['status']=='WEIDU_FATAL_ERROR'
+    assert result['live_unchanged']
+
+def test_weidu_arguments_source_and_output_stay_in_temp(tmp_path,monkeypatch):
+    game,exe=make_game(tmp_path);gate_ok(monkeypatch)
+    def fake_weidu(cmd,**kwargs):
+        assert kwargs['cwd']==str(game)
+        assert '--noautoupdate' in cmd and '--tlkin' in cmd
+        assert '--force-install' not in cmd and '--use-lang' not in cmd
+        source=Path(cmd[-1]);out=Path(cmd[cmd.index('--out')+1])
+        assert source.parent!=game and out!=game and game not in out.parents
+        assert source.name=='BX52CHK.baf' and source.parent==out.parent
+        out.joinpath('BX52CHK.bcs').write_bytes(b'SC\n0CR\n')
+        return subprocess.CompletedProcess(cmd,0,'Compiled','')
+    report=mod.compile_readonly(game,SOURCE,exe,runner=fake_weidu)
+    assert report['status']=='COMPILED_TEMP_ONLY' and report['live_unchanged']
