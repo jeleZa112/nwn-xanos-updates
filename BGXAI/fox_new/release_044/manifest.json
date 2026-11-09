@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.15-044-DIAG",
+  "status": "OPT_IN_READ_ONLY_DIAGNOSTIC",
+  "files": [
+    {
+      "dest": "BGXAI44_INSTALL.py",
+      "source": "BGXAI/fox_new/release_044/BGXAI44_INSTALL.py",
+      "size": 16916,
+      "sha256": "ed5a3c29c0541e16e85efbc277d40c45b9e6583ee5b0c8068572bf70d78b8337"
+    },
+    {
+      "dest": "BGX44/setup-BGX44.tp2",
+      "source": "BGXAI/fox_new/release_044/BGX44/setup-BGX44.tp2",
+      "size": 208,
+      "sha256": "d17774e44f52435911551e7f003850e14e4c8639f6c8d3acc18d1b6803eae61e"
+    },
+    {
+      "dest": "BGX44/M_BGX44Diag.lua",
+      "source": "BGXAI/fox_new/release_044/BGX44/M_BGX44Diag.lua",
+      "size": 2674,
+      "sha256": "a7bdfba10cdb3cc26351072dac0c6f375e03b4ce3a288f0eb15db945411dd33f"
+    },
+    {
+      "dest": "README_RU.md",
+      "source": "BGXAI/fox_new/release_044/README_RU.md",
+      "size": 3593,
+      "sha256": "d93e1168fb6dd27fbd697d49f8865e96e1a4e79159b29746936342c9dc198c02"
+    },
+    {
+      "dest": "BGX44/tests/test_installer_044.py",
+      "source": "BGXAI/fox_new/release_044/BGX44/tests/test_installer_044.py",
+      "size": 5348,
+      "sha256": "b6bf77a7e28154f46b4bf525cc294184c79e4de89b78ee59b56007472c61a6b7"
+    },
+    {
+      "dest": "BGX44/tests/test_lua_044.py",
+      "source": "BGXAI/fox_new/release_044/BGX44/tests/test_lua_044.py",
+      "size": 3765,
+      "sha256": "e4be906ec3d20aecc09cd963d0231fa91464e0c22a18cc69166780b138bfc01a"
+    },
+    {
+      "dest": "SOURCE_MANIFEST.json",
+      "source": "BGXAI/fox_new/release_044/SOURCE_MANIFEST.json",
+      "size": 1135,
+      "sha256": "ccffaee00b11f039dda8d72e708a573ac0df3a3b8b6a851b245fc78fde7d1cb5"
+    }
+  ]
+}
