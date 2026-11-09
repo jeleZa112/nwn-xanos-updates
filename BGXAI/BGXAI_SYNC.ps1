@@ -47,8 +47,15 @@ $release043p=@{
             'BGX43/tests/test_installer_043.py','README_RU.md','eeex_bridge_043.py',
             'intercept_policy.py','test_eeex_bridge_043.py','SOURCE_MANIFEST.json')
 }
+$release044=@{
+    id='044';version='0.3.15-044-DIAG';manifest=$remoteRoot+'release_044/manifest.json';prefix=$remoteRoot+'release_044/';
+    localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_044';installer='BGXAI44_INSTALL.py';
+    names=@('BGXAI44_INSTALL.py','BGX44/setup-BGX44.tp2','BGX44/M_BGX44Diag.lua',
+            'README_RU.md','BGX44/tests/test_installer_044.py',
+            'BGX44/tests/test_lua_044.py','SOURCE_MANIFEST.json')
+}
 function Get-PinnedBytes([string]$remotePath) {
-    if($remotePath -notmatch '^BGXAI/fox_new/release_0(39|40|41|42b|43p)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
+    if($remotePath -notmatch '^BGXAI/fox_new/release_0(39|40|41|42b|43p|44)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
         throw ('Remote source path blocked: '+$remotePath)
     }
     # All sources are publicly hosted; pin content by immutable commit and SHA256 manifest.
@@ -361,6 +368,39 @@ function Test043PReadOnly {
     }
     Write-Host 'NO GAME FILES CHANGED.'
 }
+function Test044ReadOnly {
+    # Live EET preflight ONLY. No network, Python, WeiDU, writes or installs.
+    Write-Host ''
+    Write-Host 'BGXAI 044 / EEex hotkey diagnosis - READ-ONLY PREFLIGHT'
+    $log=Join-Path $GameRoot 'WeiDU.log'
+    if(!(Test-Path -LiteralPath $log -PathType Leaf)){throw 'WeiDU.log missing'}
+    $lines=@(Get-Content -LiteralPath $log | Where-Object { $_.TrimStart().StartsWith('~') })
+    $has42=@($lines | Where-Object { $_ -match 'BGX42[^~]*[.]TP2~' }).Count -gt 0
+    $has43=@($lines | Where-Object { $_ -match 'BGX43[^~]*[.]TP2~' }).Count -gt 0
+    $has44=@($lines | Where-Object { $_ -match 'BGX44[^~]*[.]TP2~' }).Count -gt 0
+    $last43=$lines.Count -gt 0 -and $lines[-1] -match 'BGX43[^~]*[.]TP2~'
+    $last44=$lines.Count -gt 0 -and $lines[-1] -match 'BGX44[^~]*[.]TP2~'
+    $bcs=HashFile (Join-Path $GameRoot 'override\BDDEFAI.BCS')
+    $obs=HashFile (Join-Path $GameRoot 'override\M_BGX43Probe.lua')
+    $goodBCS=$bcs -ceq '8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0'
+    $goodObs=$obs -ceq 'f1e6fcc6989512bee5e217a66ef42ea48a828c407c7009e6012a90b95d5db19f'
+    $loader=Test-Path -LiteralPath (Join-Path $GameRoot 'InfinityLoader.exe') -PathType Leaf
+    $eeex=Test-Path -LiteralPath (Join-Path $GameRoot 'override\M___EEex.lua') -PathType Leaf
+    $diag=Test-Path -LiteralPath (Join-Path $GameRoot 'override\M_BGX44Diag.lua') -PathType Leaf
+    Write-Host ('042B installed='+$has42+'; 043P installed='+$has43+'; 043P last='+$last43)
+    Write-Host ('044 installed='+$has44+'; 044 last='+$last44+'; 044 lua exists='+$diag)
+    Write-Host ('042B exact BCS hash='+$goodBCS+'; 043P exact Lua hash='+$goodObs)
+    Write-Host ('EEex boot='+$eeex+'; InfinityLoader='+$loader)
+    if($has42 -and $has43 -and $last43 -and !$has44 -and !$diag -and
+       $goodBCS -and $goodObs -and $eeex -and $loader) {
+        Write-Host 'BGXAI 044 PREFLIGHT: BASELINE OK. NOT INSTALLED.'
+    } elseif($has44 -and $last44 -and $diag -and $goodBCS -and $goodObs) {
+        Write-Host 'BGXAI 044 PREFLIGHT: ALREADY INSTALLED. Choose 26 for status.'
+    } else {
+        Write-Host 'BGXAI 044 PREFLIGHT: REVIEW REQUIRED. DO NOT INSTALL.'
+    }
+    Write-Host 'NO GAME FILES CHANGED.'
+}
 Write-Host ''
 Write-Host ' BGXAI ONE-FILE UPDATER / EET Foxx / EPS 18.4'
 Write-Host ' Installed baseline: BGXAI 0381 + 039 (user-confirmed in-game).'
@@ -386,6 +426,11 @@ Write-Host ' 19 - Download/verify BGXAI 043P source ONLY'
 Write-Host ' 20 - EXPERIMENTAL install PASSIVE BGXAI 043P (YES + WeiDU backup)'
 Write-Host ' 21 - BGXAI 043P status (READ ONLY; needs 19 first)'
 Write-Host ' 22 - Roll back BGXAI 043P (YES; only if last + verified backup)'
+Write-Host ' 23 - BGXAI 044 hotkey diagnostic PRECHECK (READ ONLY)'
+Write-Host ' 24 - Download/verify BGXAI 044 source ONLY'
+Write-Host ' 25 - EXPERIMENTAL install PASSIVE BGXAI 044 (YES + WeiDU backup)'
+Write-Host ' 26 - BGXAI 044 status (READ ONLY; after 24/25)'
+Write-Host ' 27 - Roll back BGXAI 044 (YES; only if last + verified backup)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -414,6 +459,11 @@ try {
       '20' {SyncRelease $release043p;RunRelease $release043p '--install';break}
       '21' {RunRelease $release043p '--status';break}
       '22' {SyncRelease $release043p;RunRelease $release043p '--uninstall';break}
+      '23' {Test044ReadOnly;break}
+      '24' {SyncRelease $release044;break}
+      '25' {SyncRelease $release044;RunRelease $release044 '--install';break}
+      '26' {RunRelease $release044 '--status';break}
+      '27' {SyncRelease $release044;RunRelease $release044 '--uninstall';break}
       default {throw 'Unknown menu option, no game change.'}
     }
     exit 0
