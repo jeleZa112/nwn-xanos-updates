@@ -27,6 +27,7 @@ ASSETS = {
 }
 REPO_ROOT = Path(__file__).resolve().parents[3]  # root of GitHub checkout
 SOURCE_REPO_PATH = 'BGXAI/fox_new/experimental_056_active_guard/BGX56/BGX56_RECEIVER.baf'
+TP2_REPO_PATH = 'BGXAI/fox_new/experimental_056_active_guard/BGX56/setup-BGX56.tp2'
 IDS_DIR = Path(__file__).resolve().parent/'ids'
 
 
@@ -90,6 +91,21 @@ def real_weidu_smoke() -> dict:
         failure = 'NOT successfully parsed as type [BAF]' in parsed.stdout
         if not (parsed.returncode == 0 and success and not failure):
             report['status'] = 'REAL_WEIDU_BAF_GRAMMAR_FAILED'
+            return report
+        # Parse the EXACT two-file WeiDU TP2 with the REAL WeiDU 251 binary.
+        tp2_canonical = subprocess.run(['git','show','HEAD:'+TP2_REPO_PATH],
+                       cwd=REPO_ROOT,stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+                       timeout=12,check=True).stdout
+        tp2_file = root/'setup-BGX56.tp2'
+        tp2_file.write_bytes(tp2_canonical)
+        tp2 = subprocess.run([str(tool), *safe_flags, '--parse-check','TP2',str(tp2_file)],
+                     cwd=root,input='',text=True,stdout=subprocess.PIPE,
+                     stderr=subprocess.STDOUT,timeout=25,check=False)
+        report['tp2_parse_exit']=tp2.returncode
+        report['tp2_parse_output']=tp2.stdout[-900:]
+        if tp2.returncode!=0 or 'successfully parsed as type [TP2]' not in tp2.stdout \
+            or 'NOT successfully parsed' in tp2.stdout:
+            report['status']='REAL_WEIDU_TP2_GRAMMAR_FAILED'
             return report
         # Same real WeiDU binary, isolated BCS generation with only public IDS
         # fixture. This is a *synthetic* compile, NOT validation against EET.
