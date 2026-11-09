@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.6.6
+# Roblox background monitor - release 3.6.7
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.6.6"
+VERSION = "3.6.7"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -4541,6 +4541,88 @@ class AutoPilotInput:
         return down and up
 
 
+
+class AutoPilotBackgroundInput(AutoPilotInput):
+    """Experimental HWND-addressed WM input, never OS-global SendInput.
+
+    Roblox may ignore posted messages because it can read raw device state.
+    Never claim a posted message proves gameplay input; the existing WGC
+    visual/motion guards must verify the result or stop.
+    """
+    VK={'W':0x57,'A':0x41,'S':0x53,'D':0x44,
+        'Z':0x5A,'SPACE':0x20,'SHIFT':0x10}
+
+    def __init__(self,hwnd):
+        super().__init__(hwnd)
+        from ctypes import wintypes
+        self.u.IsWindow.argtypes=(wintypes.HWND,)
+        self.u.IsWindow.restype=wintypes.BOOL
+        self.u.IsWindowVisible.argtypes=(wintypes.HWND,)
+        self.u.IsWindowVisible.restype=wintypes.BOOL
+        self.u.PostMessageW.argtypes=(wintypes.HWND,ctypes.c_uint,
+                                      wintypes.WPARAM,wintypes.LPARAM)
+        self.u.PostMessageW.restype=wintypes.BOOL
+
+    def focused(self):
+        # Meaning in this subclass: the verified game target is still usable.
+        # Do NOT require GetForegroundWindow()==hwnd.
+        return bool(self.u.IsWindow(self.hwnd) and
+                    self.u.IsWindowVisible(self.hwnd) and
+                    not self.u.IsIconic(self.hwnd))
+
+    def focus_game_once(self):
+        # Explicitly NEVER call SetForegroundWindow for background mode.
+        return self.focused()
+
+    def _post(self,msg,vk,lp):
+        return bool(self.focused() and
+                    self.u.PostMessageW(self.hwnd,msg,vk,lp))
+
+    def keys(self,keys,duration):
+        if isinstance(keys,str):keys=(keys,)
+        keys=tuple(k for k in keys if k in self.VK)
+        if not keys or not .04<=duration<=.33 or not self.focused():
+            return False
+        down=[]
+        try:
+            for key in keys:
+                scan=self.SCANS[key]
+                if not self._post(0x0100,self.VK[key],1|(scan<<16)):
+                    return False
+                down.append(key)
+            time.sleep(duration)
+            return self.focused()
+        finally:
+            for key in reversed(down):
+                scan=self.SCANS[key]
+                self._post(0x0101,self.VK[key],1|(scan<<16)|0xC0000000)
+
+    def click(self,relx,rely,frame):
+        from ctypes import wintypes
+        class RECT(self.ctypes.Structure):
+            _fields_=[('left',self.ctypes.c_long),
+                      ('top',self.ctypes.c_long),
+                      ('right',self.ctypes.c_long),
+                      ('bottom',self.ctypes.c_long)]
+        if not self.focused():return False
+        rect=RECT()
+        if not self.u.GetClientRect(self.hwnd,self.ctypes.byref(rect)):
+            return False
+        w,h=rect.right-rect.left,rect.bottom-rect.top
+        fh,fw=frame.shape[:2]
+        extra_y,extra_x=fh-h,fw-w
+        if not (w>300 and h>300 and 0<=extra_x<=50 and 0<=extra_y<=90):
+            return False
+        x=int(relx*fw-extra_x/2)
+        y=int(rely*fh-extra_y)
+        if not (0<=x<w and 0<=y<h):return False
+        xy=((y&0xffff)<<16)|(x&0xffff)
+        if not self._post(0x0200,0,xy):return False
+        if not self._post(0x0201,1,xy):return False
+        time.sleep(.08)
+        return self._post(0x0202,0,xy)
+
+
 def autopilot_menu_features(frame):
     """Locate the creation menu at varying vertical UI positions.
 
@@ -4647,7 +4729,9 @@ def autopilot_mode():
         with logfile.open('a',encoding='utf-8') as fp:fp.write(line+'\n')
     logfile.write_text('ROBLOX AUTOPILOT V'+VERSION+'\n',encoding='utf-8')
     print('AUTOPILOT: lobby -> City / 1 / Hard -> match -> route -> turrets -> repeat.')
-    print('EXPERIMENTAL. Real game input, requires Roblox foreground. F10 STOP.')
+    background_mode=os.environ.get('ROBLOX_BG_INPUT','1')!='0'
+    print('EXPERIMENTAL '+('BACKGROUND WM input (unverified by Roblox)' if
+          background_mode else 'FOREGROUND SendInput')+'. F10 STOP.')
     # Protect running automation from accidental conhost text-selection pause.
     if autopilot_disable_console_selection():
         log('CONSOLE_QUICKEDIT_DISABLED')
@@ -4657,7 +4741,10 @@ def autopilot_mode():
         log('NOT_ARMED');return 0
     try:
         hwnd=verified_roblox_hwnd()
-        io=AutoPilotInput(hwnd)
+        io=(AutoPilotBackgroundInput(hwnd) if background_mode
+            else AutoPilotInput(hwnd))
+        log('INPUT_BACKEND='+('POSTMESSAGE_BG_EXPERIMENTAL' if background_mode
+                            else 'SENDINPUT_FOREGROUND'))
     except Exception as e:
         log('GAME_WINDOW_FAILED '+repr(e));return 2
     q=queue.Queue(maxsize=1)
@@ -4743,13 +4830,17 @@ def autopilot_mode():
             log('STATE '+stage+' -> '+next_stage+' : '+why)
             stage=next_stage;stage_since=now;last_phase=''
     try:
-        console_hwnd=autopilot_minimize_console()
-        log('CONSOLE_MINIMIZED='+str(bool(console_hwnd)))
-        if io.focus_game_once():
-            log('ROBLOX_FOREGROUND_AUTO_OK')
+        if background_mode:
+            log('BACKGROUND_WINDOW_TARGET_VERIFIED: no focus stealing, '+
+                'no global mouse or keyboard. WGC must verify all effects.')
         else:
-            log('ROBLOX_FOREGROUND_AUTO_DENIED: click game window once; '+
-                'no game commands until focus is confirmed')
+            console_hwnd=autopilot_minimize_console()
+            log('CONSOLE_MINIMIZED='+str(bool(console_hwnd)))
+            if io.focus_game_once():
+                log('ROBLOX_FOREGROUND_AUTO_OK')
+            else:
+                log('ROBLOX_FOREGROUND_AUTO_DENIED: click game window once; '+
+                    'no game commands until focus is confirmed')
         controller=cap.start_free_threaded()
         log('CAPTURE_GAME_HWND='+str(hwnd)+' ROUTE='+route.note)
         while not stop.is_set() and time.monotonic()-begin<7200:
@@ -4864,14 +4955,14 @@ def autopilot_mode():
                 # Occupied signs are retained for ready_sign's busy veto.
                 target=brain.ready_sign(pad_reselect.candidates(signs,now))
                 if target is None:
-                    if now-stage_since>35:
+                    if now-stage_since>12:
                         # PRIVATE image for a real gameplay run, not a new test mode.
                         try:
                             small=cv2.resize(frame,(960,540),interpolation=cv2.INTER_AREA)
                             cv2.imwrite(str(root/'AUTOPILOT_LAST_LOBBY.jpg'),small,
                                         [cv2.IMWRITE_JPEG_QUALITY,60])
                         except Exception:pass
-                        halt_reason='READY_SIGN_NOT_STABLE';break
+                        halt_reason='READY_SIGN_NOT_STABLE_12S';break
                     continue
                 brain.target_x=target
                 visual_ready.reset()
