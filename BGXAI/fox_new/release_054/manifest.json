@@ -7,8 +7,8 @@
     {
       "dest": "compile_guard_054.py",
       "source": "BGXAI/fox_new/release_054/compile_guard_054.py",
-      "size": 8088,
-      "sha256": "9d35e9a06692189999a6a4b71e66beeb6752f7c5189d3259aef9cebc8652a497"
+      "size": 8523,
+      "sha256": "39755d3bbd3d4f2b54f65edefb2fbdf52040c63c601c757446a0758d31fd1f16"
     },
     {
       "dest": "verify_053_baseline.py",
@@ -25,20 +25,20 @@
     {
       "dest": "test_compile_054.py",
       "source": "BGXAI/fox_new/release_054/test_compile_054.py",
-      "size": 4982,
-      "sha256": "1feda8c3ee311a61c2eba2a0f995ee2df5ddfd831d7e09aadaa8299366c921f2"
+      "size": 6083,
+      "sha256": "2621cd1caaaf9313b739dea1bddf3edf2c685418d469a4630d1038d010d62978"
     },
     {
       "dest": "README_RU.md",
       "source": "BGXAI/fox_new/release_054/README_RU.md",
-      "size": 4341,
-      "sha256": "20f7a29272791c2b7877fb94cccba73a0e9274987852eb4a0ccf82b52c38a143"
+      "size": 4544,
+      "sha256": "4c00bccc5a7cb07a68c58d5d9c1306c162172f6ae3ccfcb0c9a95d102c5ca40c"
     },
     {
       "dest": "SOURCE_MANIFEST.json",
       "source": "BGXAI/fox_new/release_054/SOURCE_MANIFEST.json",
       "size": 745,
-      "sha256": "2d58a483dcf47b64ef3e2f18ab1bf9c77fecbe6d6d4efe7f0f8879f350c22bcb"
+      "sha256": "e4fd9a8b3d2cb9c37986892e3095878b4e14f3199acb4f5b0baf49bcd0d9b84f"
     }
   ]
 }
