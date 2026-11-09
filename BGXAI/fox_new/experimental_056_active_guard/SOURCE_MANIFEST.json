@@ -54,8 +54,8 @@
       "sha256": "bf3c5fadffff2980df86c9a9c9562df8ac3bd7f0f794dccb5d89c9c2782c7157"
     },
     "tests/test_lua_056.py": {
-      "size": 4825,
-      "sha256": "11e47bdaaa992f17f95e29c5191ac5c28c8ec04fc35b43d4037e0cb43abcba02"
+      "size": 4832,
+      "sha256": "a844e9999e6f8fcd9d54bb06e04fa7aa617550db10b40742e45a92c4b32ded11"
     }
   }
 }
