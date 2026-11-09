@@ -18,8 +18,8 @@
       "sha256": "942393059b928ce69d3dddf8da04285cdca90ce99ce466460e99e886239d325e"
     },
     "BGXAI56_BUILDER.py": {
-      "size": 5866,
-      "sha256": "e7da9a847669bf8bc09c2e430b9fcf12117562bbc964e9517a36cf9acada4309"
+      "size": 6579,
+      "sha256": "0e3f2df0abca52140cc0be3040a6e0cba1af04fd547c456c75781e6d1326bab5"
     },
     "BGXAI56_INSTALL.py": {
       "size": 16173,
@@ -30,8 +30,8 @@
       "sha256": "06694133a89243991f28c4e2b4898e633ea37fd6fc326ede57774113ee97f9f9"
     },
     "tests/test_056.py": {
-      "size": 7256,
-      "sha256": "b48ac132c51f9ea7117c9aad077f932e4e87b2dc730b0259de0e61b8ff9f0ee6"
+      "size": 7736,
+      "sha256": "0283282f5ce1936be663c30bdde0750bd693238a96ca4ef67c00652a4c49faa2"
     },
     "ci_weidu_056.py": {
       "size": 8642,
