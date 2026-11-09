@@ -139,7 +139,7 @@ def real_weidu_smoke() -> dict:
         def dummy_block(i):
             return (b'CR\nCO\n'+str(i).encode('ascii')+b'\nRS\n'
                     b'RP\n100\nAC\n0OB\nOB\nAC\nRS\nCR\n')
-        baseline=b'SC\n'+b''.join(dummy_block(i) for i in range(1057))
+        baseline=b'SC\n'+b''.join(dummy_block(i) for i in range(1057))+b'SC\n'
         staged, proof=combine(baseline,data,strict=False)
         if proof['total_blocks']!=1065 or not proof['original_F_toggle_precedes_receiver']:
             report['status']='BCS_SPLICE_STRUCTURE_MISMATCH'
