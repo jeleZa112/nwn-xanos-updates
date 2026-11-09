@@ -26,15 +26,76 @@ def digest(path:Path)->str:
         for chunk in iter(lambda:f.read(1024*256),b''):h.update(chunk)
     return h.hexdigest()
 
-def live_paths(game:Path)->list[Path]:
-    base=['WeiDU.log','chitin.key','override/BDDEFAI.BCS','override/M_BX43.lua',
-          'override/M_BX44.lua','weidu.conf','lang/ru_ru/dialog.tlk','lang/ru_ru/dialogf.tlk']
-    return [game/x for x in base]
+def resolve_dialog_tlk(game:Path)->Path:
+    """Read selected game language from weidu.conf; never mutate it or guess a mismatched locale.
 
-def snapshot(game:Path)->dict:
-    return {str(p.relative_to(game)).lower():
+    Case-fold the language *directory name* because WeiDU 251 installations may store
+    lowercase lang_dir even when the actual lang directory has a mixed-case name.
+    """
+    conf=game/'weidu.conf'
+    selected=None
+    if conf.exists():
+        if not conf.is_file() or conf.is_symlink():
+            raise ValueError('WEIDU_CONF_UNSAFE')
+        cfg=conf.read_text(encoding='utf-8-sig',errors='replace')
+        for line in cfg.splitlines():
+            m=re.fullmatch(r'\s*lang_dir\s*=\s*([a-zA-Z0-9_-]+)\s*',line,re.I)
+            if m:
+                selected=m.group(1).casefold()
+                break
+
+    # The game root dialog.tlk is possible for classic games, but EET commonly uses
+    # lang/<code>/dialog.tlk. Only select a language that exists as a real directory.
+    candidates={}
+    folder=game/'lang'
+    if folder.is_dir() and not folder.is_symlink():
+        for child in folder.iterdir():
+            if child.is_symlink() or not child.is_dir():continue
+            tlk=child/'dialog.tlk'
+            if tlk.is_symlink() or not tlk.is_file():continue
+            candidates.setdefault(child.name.casefold(),[]).append(tlk)
+
+    def candidate(code:str)->Path|None:
+        found=candidates.get(code,[])
+        if len(found)>1:
+            raise ValueError('DIALOG_TLK_LANGUAGE_AMBIGUOUS: '+code)
+        return found[0] if found else None
+
+    if selected:
+        chosen=candidate(selected)
+        if chosen is None:
+            raise ValueError('DIALOG_TLK_CONFIGURED_LANGUAGE_MISSING: '+selected+
+                             '; available='+','.join(sorted(candidates)))
+        return chosen
+
+    # Avoid silent language changes when weidu.conf has no lang_dir. Russian is
+    # allowed as a known target of this particular EET build; other languages
+    # require a unique candidate (or explicit configuration).
+    chosen=candidate('ru_ru')
+    if chosen is not None:return chosen
+    all_tlks=[path for paths in candidates.values() for path in paths]
+    if len(all_tlks)==1:return all_tlks[0]
+    root=game/'dialog.tlk'
+    if not all_tlks and root.is_file() and not root.is_symlink():return root
+    raise ValueError('DIALOG_TLK_LANGUAGE_UNRESOLVED: available='+
+                     ','.join(sorted(candidates))+'; check weidu.conf (read only)')
+
+
+def live_paths(game:Path,tlk:Path|None=None)->list[Path]:
+    base=['WeiDU.log','chitin.key','override/BDDEFAI.BCS','override/M_BX43.lua',
+          'override/M_BX44.lua','weidu.conf']
+    paths=[game/x for x in base]
+    if tlk is None:tlk=resolve_dialog_tlk(game)
+    paths.append(tlk)
+    if tlk.name.casefold()=='dialog.tlk':
+        paths.append(tlk.with_name('dialogf.tlk'))
+    return paths
+
+
+def snapshot(game:Path,tlk:Path|None=None)->dict:
+    return {str(p.relative_to(game)).lower().replace('\\','/'):
             (digest(p) if p.is_file() and not p.is_symlink() else None)
-            for p in live_paths(game)}
+            for p in live_paths(game,tlk)}
 
 def validate_baf(file:Path)->dict:
     if not file.is_file() or file.is_symlink():raise ValueError('BAF missing/link')
@@ -88,24 +149,27 @@ def prepare(game:Path, source:Path, exe:Path)->tuple[dict,dict,dict]:
     source_info=validate_baf(source)
     pre=preflight.inspect(game)
     if pre['verdict']!='BASELINE_OK_SOURCE_ONLY':raise ValueError('BASELINE_GATE_BLOCKED: '+','.join(pre['issues']))
-    before=snapshot(game)
-    if not before.get('weidu.log') or not before.get('lang/ru_ru/dialog.tlk'):
-        raise ValueError('REQUIRED_LOG_OR_TLK_MISSING')
-    return pre,source_info,before
+    tlk=resolve_dialog_tlk(game)
+    before=snapshot(game,tlk)
+    if not before.get('weidu.log'):
+        raise ValueError('WEIDU_LOG_MISSING_OR_UNREADABLE')
+    if not before.get(str(tlk.relative_to(game)).lower().replace('\\','/')):
+        raise ValueError('SELECTED_DIALOG_TLK_MISSING_OR_UNREADABLE')
+    return pre,source_info,before,tlk
 
 def compile_readonly(game:Path,source:Path,exe:Path,runner=subprocess.run)->dict:
-    pre,src,before=prepare(game,source,exe)
+    pre,src,before,tlk=prepare(game,source,exe)
     game=game.resolve(); source=source.resolve(); exe=exe.resolve()
     report={'schema':1,'tool':'BGXAI-054-ISOLATED-BAF-COMPILE',
             'status':'NOT_STARTED','preflight':pre['verdict'],'source':src,
-            'compiler':str(exe),'game_root':str(game),'live_before':before,
+            'compiler':str(exe),'game_root':str(game),'selected_tlk':str(tlk.relative_to(game)).replace('\\','/'),'live_before':before,
             'live_after':None,'live_unchanged':False,'install_performed':False}
     with tempfile.TemporaryDirectory(prefix='BGXAI_054_COMPILE_') as tmp:
         work=Path(tmp); out=work/'out';out.mkdir()
         local=work/COMPILE_NAME;local.write_bytes(source.read_bytes())
         # --tlkin avoids --use-lang which may save a setting in weidu.conf.
         cmd=[str(exe),'--noautoupdate','--game',str(game),
-             '--tlkin',str(game/'lang/ru_ru/dialog.tlk'),
+             '--tlkin',str(tlk),
              '--script-style','BG2','--out',str(out),str(local)]
         try:
             proc=runner(cmd,cwd=str(work),capture_output=True,text=True,
@@ -125,7 +189,7 @@ def compile_readonly(game:Path,source:Path,exe:Path,runner=subprocess.run)->dict
         except (OSError,subprocess.TimeoutExpired) as e:
             report['status']='COMPILER_ERROR';report['error']=str(e)[:250]
         finally:
-            report['live_after']=snapshot(game)
+            report['live_after']=snapshot(game,tlk)
             report['live_unchanged']=before==report['live_after']
             if not report['live_unchanged']:
                 report['status']='REVIEW_LIVE_HASH_CHANGED'
