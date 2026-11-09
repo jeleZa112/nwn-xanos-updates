@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.7.2
+# Roblox background monitor - release 3.7.3
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.7.2"
+VERSION = "3.7.3"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -4931,6 +4931,16 @@ def autopilot_mode():
             last_sample=now
             scene,info=lifecycle_scene_hint(frame)
             modal,feat=autopilot_menu_features(frame)
+            # Lifecycle's old, fixed ROI can misread nearby lobby pads as
+            # CREATION_MENU: this happened twice in the 21:57 V3.7.2 log.
+            # Trust only the independent modal verifier for the actual menu.
+            # Stay motionless on an unconfirmed scene unless lobby-colour
+            # evidence is independently available.
+            if scene=='CREATION_MENU' and not modal:
+                if stage in ('LOBBY','LOBBY_NAV') and info.get('purple',0)>.32:
+                    scene='LOBBY_COUNTDOWN_OR_PORTAL'
+                else:
+                    scene='UNKNOWN'
             if modal:scene='CREATION_MENU'
             # Only the four-digit + button-color visual modal guard may
             # confirm the creation dialog; lifecycle hints are not sufficient.
@@ -5101,7 +5111,7 @@ def autopilot_mode():
                 # First frame of the pad's creation dialog is not an error.
                 # Wait for three consecutive verified modal frames without
                 # movement or clicks. Reject persistent false positives.
-                if scene=='CREATION_MENU':
+                if scene=='CREATION_MENU' and modal:
                     if menu_candidate_since is None:
                         menu_candidate_since=now
                         log('MENU_CANDIDATE: modal='+str(modal)+
