@@ -50,7 +50,7 @@ def verify_old(raw:bytes):
         if b'LOCALSBGX38_GUARD' not in blocks[i] or actions(blocks[i])!=[115,87]:
             raise ValueError(f'EXISTING_GUARD_BLOCK_{i+1}_CHANGED')
     if [actions(blocks[i]) for i in (1042,1055)]!=[[105],[105]]:
-        # 042B replaces the two EPS Attack() with AttackOneRound(), ID 134.
+        # 042B uses EPS AttackOneRound() as action ID 105 in this verified BCS.
         raise ValueError('EXISTING_EPS_ONE_ROUND_ATTACK_CHANGED')
     if b'LOCALSBGX38_GUARD' not in blocks[0]:raise ValueError('ORIGINAL_F_TOGGLE_MISSING')
     return blocks
