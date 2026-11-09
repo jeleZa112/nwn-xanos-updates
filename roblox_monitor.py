@@ -4504,14 +4504,12 @@ def autopilot_mode():
             if io.stop_pressed() and io.focused():
                 halt_reason='USER_F10';break
             if not io.focused():
-                # Never attempt to re-focus the game after a user intentionally
-                # opens another app. Pause, explain once, and stop after 30 s.
+                # Alt+Tab pauses every game input without discarding the run.
+                # After the initial YES, never steal focus from another app.
                 if now-last_focus_note>=10:
-                    log('GAME_FOCUS_PAUSED: click Roblox to resume; '+
-                        'no input sent to other windows')
+                    log('GAME_FOCUS_PAUSED: Roblox not foreground; '+
+                        'all input suspended until Roblox is active again')
                     last_focus_note=now
-                if now-last_frame_at>30:
-                    halt_reason='FOREGROUND_NOT_ROBLOX_30S';break
                 time.sleep(.15)
                 continue
             try:frame=q.get(timeout=.4)
