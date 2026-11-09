@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.6.5
+# Roblox background monitor - release 3.6.6
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.6.5"
+VERSION = "3.6.6"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -3798,7 +3798,8 @@ class AutoPilotVisualReadyLock:
         self.points=points.astype(np.float32)
         self.xy=(float(x+w/2),float(y+h/2))
         self.hits=0
-        self.fallback_pulses=0
+        # Preserve the movement budget when the same READY target is reacquired.
+        # reset() begins a new budget only after target selection/reselection.
         self.last_quality=0.0
         return True
 
