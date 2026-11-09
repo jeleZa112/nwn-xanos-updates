@@ -1,0 +1,161 @@
+// BGXAI 056 - guarded BCS receiver, only for explicit opt-in release 056.
+// Inject AFTER original F toggle blocks, immediately BEFORE existing 042B guard rules.
+// BCS reevaluates LIVE F mode, modal state, queue, sight, range and TTL.
+// The bridge uses GameTime tick values to match GlobalTimerNotExpired.
+IF
+  InParty(Myself)
+  GlobalGT("BGX52_REQ_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX52_EXPIRE","LOCALS")
+THEN
+  RESPONSE #100
+    SetGlobal("BGX52_REQ_SLOT","LOCALS",0)
+    Continue()
+END
+
+IF
+  InParty(Myself)
+  GlobalGT("BGX52_REQ_SLOT","LOCALS",0)
+  Global("BGX38_GUARD","LOCALS",0)
+THEN
+  RESPONSE #100
+    SetGlobal("BGX52_REQ_SLOT","LOCALS",0)
+    Continue()
+END
+
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX52_REQ_SLOT","LOCALS",1)
+  GlobalTimerNotExpired("BGX52_EXPIRE","LOCALS")
+  !GlobalTimerNotExpired("BGX52_COOLDOWN","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  InParty(Player1)
+  InPartySlot(Player1,0)
+  !InPartySlot(Myself,0)
+  See(Player1)
+  Range(Player1,10)
+  See(NearestEnemyOf(Player1))
+  Range(NearestEnemyOf(Player1),7)
+THEN
+  RESPONSE #100
+    SetGlobal("BGX52_REQ_SLOT","LOCALS",0)
+    SetGlobalTimer("BGX52_COOLDOWN","LOCALS",8)
+    ProtectObject(Player1,6)
+END
+
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX52_REQ_SLOT","LOCALS",2)
+  GlobalTimerNotExpired("BGX52_EXPIRE","LOCALS")
+  !GlobalTimerNotExpired("BGX52_COOLDOWN","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  InParty(Player2)
+  InPartySlot(Player2,1)
+  !InPartySlot(Myself,1)
+  See(Player2)
+  Range(Player2,10)
+  See(NearestEnemyOf(Player2))
+  Range(NearestEnemyOf(Player2),7)
+THEN
+  RESPONSE #100
+    SetGlobal("BGX52_REQ_SLOT","LOCALS",0)
+    SetGlobalTimer("BGX52_COOLDOWN","LOCALS",8)
+    ProtectObject(Player2,6)
+END
+
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX52_REQ_SLOT","LOCALS",3)
+  GlobalTimerNotExpired("BGX52_EXPIRE","LOCALS")
+  !GlobalTimerNotExpired("BGX52_COOLDOWN","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  InParty(Player3)
+  InPartySlot(Player3,2)
+  !InPartySlot(Myself,2)
+  See(Player3)
+  Range(Player3,10)
+  See(NearestEnemyOf(Player3))
+  Range(NearestEnemyOf(Player3),7)
+THEN
+  RESPONSE #100
+    SetGlobal("BGX52_REQ_SLOT","LOCALS",0)
+    SetGlobalTimer("BGX52_COOLDOWN","LOCALS",8)
+    ProtectObject(Player3,6)
+END
+
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX52_REQ_SLOT","LOCALS",4)
+  GlobalTimerNotExpired("BGX52_EXPIRE","LOCALS")
+  !GlobalTimerNotExpired("BGX52_COOLDOWN","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  InParty(Player4)
+  InPartySlot(Player4,3)
+  !InPartySlot(Myself,3)
+  See(Player4)
+  Range(Player4,10)
+  See(NearestEnemyOf(Player4))
+  Range(NearestEnemyOf(Player4),7)
+THEN
+  RESPONSE #100
+    SetGlobal("BGX52_REQ_SLOT","LOCALS",0)
+    SetGlobalTimer("BGX52_COOLDOWN","LOCALS",8)
+    ProtectObject(Player4,6)
+END
+
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX52_REQ_SLOT","LOCALS",5)
+  GlobalTimerNotExpired("BGX52_EXPIRE","LOCALS")
+  !GlobalTimerNotExpired("BGX52_COOLDOWN","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  InParty(Player5)
+  InPartySlot(Player5,4)
+  !InPartySlot(Myself,4)
+  See(Player5)
+  Range(Player5,10)
+  See(NearestEnemyOf(Player5))
+  Range(NearestEnemyOf(Player5),7)
+THEN
+  RESPONSE #100
+    SetGlobal("BGX52_REQ_SLOT","LOCALS",0)
+    SetGlobalTimer("BGX52_COOLDOWN","LOCALS",8)
+    ProtectObject(Player5,6)
+END
+
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX52_REQ_SLOT","LOCALS",6)
+  GlobalTimerNotExpired("BGX52_EXPIRE","LOCALS")
+  !GlobalTimerNotExpired("BGX52_COOLDOWN","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  InParty(Player6)
+  InPartySlot(Player6,5)
+  !InPartySlot(Myself,5)
+  See(Player6)
+  Range(Player6,10)
+  See(NearestEnemyOf(Player6))
+  Range(NearestEnemyOf(Player6),7)
+THEN
+  RESPONSE #100
+    SetGlobal("BGX52_REQ_SLOT","LOCALS",0)
+    SetGlobalTimer("BGX52_COOLDOWN","LOCALS",8)
+    ProtectObject(Player6,6)
+END
