@@ -1,0 +1,4 @@
+BACKUP ~BGX49/backup~
+AUTHOR ~BGXAI 049 Passive guard advisory from confirmed EEex hits~
+BEGIN ~BGXAI 049 EEex passive guard signals, no orders~
+COPY ~BGX49/M_BX43.lua~ ~override/M_BX43.lua~
