@@ -3,14 +3,15 @@
   "version": "0.3.21-054-WEIDU-READONLY",
   "kind": "SOURCE_ONLY_READONLY_BAF_COMPILE",
   "upstream_installed": "049+042B",
-  "checks": "20 mocked compiler / baseline / locale safety tests; real WeiDU compile not claimed",
+  "checks": "23 offline tests: cwd game, temporary BAF/BCS, fatal exit-0 detection, language and hash gates",
   "unsafe_changes_to_game": false,
   "source_sha256": {
-    "compile_guard_054.py": "92318fdffb00c244c19ab52edea7dfb004eba6e4ce4d419eb9a571cf87875806",
+    "compile_guard_054.py": "5defcb711d3882dcf5c66ddbfde33bd1cd5c06c89ddaa901ee5c53b7c2a52964",
     "verify_053_baseline.py": "b57040a13401cfbc6ba694e08fad4e52c0a6eea87f776f6302840fb250481388",
     "BGX52_guard_receiver_PREVIEW.baf": "10c625ecb516e676d5ea264665f186d5f2a16a6809f88e569a7023b65d2e414c",
-    "test_compile_054.py": "efa198684e8a884d915e7379c226cc800d37f039c9548f0c94ed866cc7d52085",
-    "README_RU.md": "0aa13c1f25e69d0bfb80f236af5d23c2df7bd397e796504bc235517f1a5929b1"
+    "test_compile_054.py": "8777ce4ab79fec5befd5fcd4a4b22118980e48cda342edf133bc6a66dc697753",
+    "README_RU.md": "6a52034545b0554c350994c40ed7747cb1bc6e41d74b7c01c0e10a6a4834b8e7"
   },
-  "fix": "054-R1: resolve TLK path using weidu.conf + actual lang dirs; preserve safety gates"
+  "fix": "054-R1: resolve TLK path using weidu.conf + actual lang dirs; preserve safety gates",
+  "hotfix": "054-R2_GAME_CWD"
 }
