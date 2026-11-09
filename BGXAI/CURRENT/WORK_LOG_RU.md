@@ -982,3 +982,21 @@ BGXAI: update/status action completed.
 - Существующий onefile `BGXAI/BGXAI_SYNC.ps1`: старые пункты 1–27 сохранены, добавлены **28** read-only preflight, **29** source sync, **30** experimental opt-in install YES, **31** status, **32** rollback. Pinned script commit `cf92755b0074a3f70d5cc7be2211085ca36f9fb4`, SHA256 `96b2d4823fb0dbd7ab538547cbaefaef9eb0a31d7fb470c5ed5887e5d7f010a4`, 31936 bytes; PIN commit `7af64803557d6e7c66ef76c46e532512fb6786d4`, read back and verified.
 - Full checkpoint `BGXAI/CURRENT/BGXAI_045_RESREF_FIX_CHECKPOINT_20261109_RU.md`, Library `/BALDURS_GATE_EET_AI/CURRENT/BGXAI_045_RESREF_FIX_CHECKPOINT_20261109_RU.md`.
 - NEXT user: close Baldur/InfinityLoader, launch same existing `BGXAI_UPDATE.cmd`, choose **28 READ ONLY**; only if `BASELINE OK. NOT INSTALLED.` proceed **30 + YES**; on `BLOCKED/REVIEW` stop. After install open through InfinityLoader and press **Ctrl+Alt+F11 once**, send result, no fight. Do not reinstall 043 or 044, do not upload 45k resources again.
+
+## 2026-11-09 — LIVE Windows 045 preflight (choice 28): BASELINE OK, not installed
+
+User actually ran `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd` menu **28**. Exact relevant output:
+```text
+BGXAI 045 / EEex 8-char Lua RESREF FIX - READ ONLY PREFLIGHT
+042B/043P/044 installed: True/True/True
+044 last: True; 045 installed: False; 045 last: False
+Original 042B/043P/044 SHA256 match: True/True/True
+Short Lua files exist: False/False
+EEex boot=True; InfinityLoader=True
+BGXAI 045 PRECHECK: BASELINE OK. NOT INSTALLED.
+NO GAME FILES CHANGED.
+BGXAI: update/status action completed.
+```
+Conclusion: 045 install prerequisites confirmed on user's Windows; no file changes in preflight, active 042B/043P/044 preserved. **045 NOT INSTALLED YET.**
+
+NEXT ONLY: with game/InfinityLoader/WeiDU closed, run same onefile updater and choose **30** (automatically syncs/verifies sources), enter **YES** once after guarded checks, paste full install result. If BLOCKED/REVIEW/STOP stop without retries. Option 29 not separately required. Do not repeat Shank tests or ask for EET archives.
