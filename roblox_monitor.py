@@ -4559,7 +4559,7 @@ class AutoPilotBackgroundInput(AutoPilotInput):
         self.u.IsWindow.restype=wintypes.BOOL
         self.u.IsWindowVisible.argtypes=(wintypes.HWND,)
         self.u.IsWindowVisible.restype=wintypes.BOOL
-        self.u.PostMessageW.argtypes=(wintypes.HWND,ctypes.c_uint,
+        self.u.PostMessageW.argtypes=(wintypes.HWND,self.ctypes.c_uint,
                                       wintypes.WPARAM,wintypes.LPARAM)
         self.u.PostMessageW.restype=wintypes.BOOL
 
