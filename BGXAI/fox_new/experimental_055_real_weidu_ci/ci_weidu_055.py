@@ -116,10 +116,21 @@ def real_weidu_smoke() -> dict:
             report['generated_bcs_files'] = [str(x.relative_to(root)) for x in candidates]
             return report
         output = candidates[0]
-        report['compiler_output_sha256'] = hashlib.sha256(output.read_bytes()).hexdigest()
-        report['compiler_output_bytes'] = output.stat().st_size
-        report['compiler_output_first8'] = output.read_bytes()[:8].hex()
-        report['status'] = 'REAL_WEIDU_BAF_AND_BCS_PASS'
+        data = output.read_bytes()
+        report['compiler_output_sha256'] = hashlib.sha256(data).hexdigest()
+        report['compiler_output_bytes'] = len(data)
+        report['compiler_output_first8'] = data[:8].hex()
+        # Validate the ACTUAL compiled BCS action IDs instead of trusting
+        # compilation exit status or matching size/hash alone.
+        report['compiled_rule_blocks'] = len(re.findall(rb'(?m)^(?:[0-9]+)?CR\r?$', data))
+        action_ids = [int(x) for x in re.findall(rb'(?:^|\n)(?:[0-9]+)?AC\r?\n(-?[0-9]+)OB\r?\n', data)]
+        counts = {str(k): action_ids.count(k) for k in (30, 36, 87, 115)}
+        report['compiled_action_ids_counts'] = counts
+        if report['compiled_rule_blocks'] != 8 or len(action_ids) != 22 or counts != {'30':8,'36':2,'87':6,'115':6}:
+            report['status'] = 'COMPILED_BCS_STRUCTURE_MISMATCH'
+            report['action_ids_found'] = action_ids
+            return report
+        report['status'] = 'REAL_WEIDU_BAF_BCS_STRUCTURE_PASS'
         return report
 
 
@@ -130,4 +141,4 @@ if __name__ == '__main__':
         result = {'status': 'CI_ERROR', 'error': type(e).__name__, 'detail': str(e)[:400],
                   'game_files_accessed': False, 'installation_performed': False}
     print(json.dumps(result, ensure_ascii=False, indent=2))
-    sys.exit(0 if result['status'] == 'REAL_WEIDU_BAF_AND_BCS_PASS' else 1)
+    sys.exit(0 if result['status'] == 'REAL_WEIDU_BAF_BCS_STRUCTURE_PASS' else 1)
