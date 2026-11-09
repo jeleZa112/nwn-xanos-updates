@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.5.9
+# Roblox background monitor - release 3.6.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.5.9"
+VERSION = "3.6.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -3828,7 +3828,10 @@ class AutoPilotPolicy:
         # and 011 both have City selected and hard changes between frames.
         city=features.get('city_bottom_gold',features.get('city',0))>.18
         cave=features.get('cave_bottom_gold',features.get('cave',0))>.12
-        hard=features.get('hard_top_red',features.get('hard_red',0))>.12
+        # The active Hard button is red-filled in real OBS frames; checking
+        # only a 3-pixel top border falsely rejected that button.
+        hard=features.get('hard_center_red',
+             features.get('hard_top_red',features.get('hard_red',0)))>.045
         normal=features.get('normal_top_green',features.get('normal',0))>.12
         return {'city':city and not cave,
                 'one':active==[0],
@@ -3838,8 +3841,9 @@ class AutoPilotPolicy:
         """Return (click, x, y, reason), or no-click/wait/halt decision."""
         flags=self.menu_flags(features)
         steps=('city','one','hard')
-        targets={'city':(.400,.585),'one':(.382,.745),
-                 'hard':(.710,.707),'create':(.420,.870)}
+        # Aim at the middle of the actual buttons, away from their edges.
+        targets={'city':(.400,.585),'one':(.382,.727),
+                 'hard':(.710,.678),'create':(.420,.850)}
         if self.create_sent:
             return ('WAIT',None,None,'CREATE_ALREADY_SENT')
         if now-self.last_menu_action<1.1:
@@ -4253,78 +4257,89 @@ class AutoPilotInput:
 
 
 def autopilot_menu_features(frame):
-    """Read City/1/Hard state with image evidence; do not infer from HUD.
+    """Locate the creation menu at varying vertical UI positions.
 
-    Uses normalized 960x540 UI coordinates checked against the user's
-    original annotated menu video frames 009 and 011 (NOT a live test).
+    The old menu was calibrated on a 960x540 OBS frame, but live Roblox WGC
+    is 1920x1030 and game UI is shifted. Scan a bounded vertical range and
+    require *independent* City/card, player, Create/Cancel and difficulty
+    signals; do not infer an open menu just from four white digits.
+
+    Returns positions in the historical 960x540 coordinate system plus
+    `ui_shift`, the signed pixel correction (960x540 coordinates) for clicks.
     """
-    import cv2, numpy as np
-    if frame is None or len(frame.shape)<3:return False,{}
+    import cv2
+    import numpy as np
+    if frame is None or len(frame.shape)<3:
+        return False, {}
     h,w=frame.shape[:2]
-    if h<300 or w<500 or not .46<=h/w<=.68:return False,{}
-    if (w,h)!=(960,540):
-        frame=cv2.resize(frame[:,:,:3],(960,540),interpolation=cv2.INTER_AREA)
-        h,w=540,960
-    def patch(box):
-        x1,y1,x2,y2=box
-        return frame[int(y1*h):int(y2*h),int(x1*w):int(x2*w),:3]
-    def mask(box,color):
-        a=patch(box)
-        if not a.size:return 0.0
-        hsv=cv2.cvtColor(a,cv2.COLOR_BGR2HSV)
-        hh,ss,vv=cv2.split(hsv)
-        if color=='green':m=(hh>=35)&(hh<=90)&(ss>95)&(vv>80)
-        elif color=='red':m=((hh<12)|(hh>170))&(ss>100)&(vv>90)
-        else:m=(hh>=18)&(hh<=42)&(ss>100)&(vv>90)
-        return float(m.mean())
-    def border(r,color):
-        x1,y1,x2,y2=r;p=.009
-        return max(mask(z,color) for z in ((x1,y1,x2,y1+p),
-                    (x1,y2-p,x2,y2),(x1,y1,x1+p,y2),(x2-p,y1,x2,y2)))
-    feats={
-       'city':border((.347,.517,.496,.647),'yellow'),
-       'cave':border((.505,.517,.653,.647),'yellow'),
-       'p1':border((.346,.672,.416,.805),'green'),
-       'p2':border((.426,.672,.496,.805),'green'),
-       'p3':border((.505,.672,.575,.805),'green'),
-       'p4':border((.583,.672,.655,.805),'green'),
-       'normal':border((.666,.620,.757,.670),'green'),
-       'hard_red':border((.666,.674,.757,.720),'red'),
-       'create':border((.359,.833,.481,.914),'green'),
-       'cancel':border((.519,.833,.642,.914),'red'),
-    }
-    digits=((.369,.716,.396,.785),(.449,.716,.476,.785),
-            (.529,.716,.556,.785),(.609,.716,.636,.785))
-    d=0
-    for box in digits:
-        a=patch(box)
-        if not a.size:continue
-        pix=a.astype(np.int16)
-        white=(pix.min(2)>165)&((pix.max(2)-pix.min(2))<80)
-        d+=int(float(white.mean())>.025)
-    feats['digits']=d
-    def localized(rect,color):
-        x1,y1,x2,y2=rect
-        roi=frame[y1:y2,x1:x2,:3]
-        if not roi.size:return 0.0
-        hh,ss,vv=cv2.split(cv2.cvtColor(roi,cv2.COLOR_BGR2HSV))
-        if color=='gold':m=(hh>=18)&(hh<=42)&(ss>100)&(vv>90)
-        elif color=='red':m=((hh<12)|(hh>170))&(ss>100)&(vv>90)
-        else:m=(hh>=35)&(hh<=90)&(ss>95)&(vv>80)
-        return float(m.mean())
-    # Narrow strips follow the actual in-game button borders. The old
-    # "cave" ROI was falsely positive on both real menu frames because
-    # it included another yellow game element / visual annotations.
-    feats['city_bottom_gold']=localized((340,334,450,343),'gold')
-    feats['cave_bottom_gold']=localized((510,330,623,338),'gold')
-    feats['hard_top_red']=localized((643,352,725,355),'red')
-    feats['normal_top_green']=localized((642,326,724,330),'green')
-    feats['cancel_bottom_red']=localized((505,468,615,474),'red')
-    # The old .08 cancel perimeter threshold failed on user's actual
-    # 11-second clip (.068) despite a clearly visible creation panel.
-    modal=(feats['create']>.14 and feats['cancel_bottom_red']>.12 and
-           d==4 and any(feats['p'+str(k)]>.15 for k in (1,2,3,4)))
-    return modal,feats
+    if h<300 or w<500 or not .46<=h/w<=.68:
+        return False, {}
+    view=cv2.resize(frame[:,:,:3],(960,540),interpolation=cv2.INTER_AREA)
+    best=None
+    for shift in (0,-4,4,-8,8,-12,12,-16,16,-20,20,-24,24,-28,28,-32,32):
+        if shift:
+            src=cv2.warpAffine(view,
+                 np.float32([[1,0,0],[0,1,-shift]]),(960,540),
+                 flags=cv2.INTER_LINEAR,borderMode=cv2.BORDER_CONSTANT)
+        else:
+            src=view
+        hsv=cv2.cvtColor(src,cv2.COLOR_BGR2HSV)
+        hue,sat,val=cv2.split(hsv)
+        green=(hue>=35)&(hue<=90)&(sat>95)&(val>80)
+        gold=(hue>=18)&(hue<=42)&(sat>100)&(val>90)
+        red=((hue<12)|(hue>170))&(sat>75)&(val>60)
+        def avg(mask,x1,y1,x2,y2):
+            roi=mask[y1:y2,x1:x2]
+            return float(roi.mean()) if roi.size else 0.0
+        def borders(mask,x1,y1,x2,y2):
+            p=5
+            return max(avg(mask,x1,y1,x2,y1+p),
+                       avg(mask,x1,y2-p,x2,y2),
+                       avg(mask,x1,y1,x1+p,y2),
+                       avg(mask,x2-p,y1,x2,y2))
+        # Player tiles, independent of Create button below the tiles.
+        # These narrow strips correspond to the green selected outline.
+        players=[]
+        for x1,x2 in ((333,400),(409,477),(483,551),(559,630)):
+            players.append(max(avg(green,x1,352,x2,361),
+                               avg(green,x1,357,x1+5,414),
+                               avg(green,x2-5,357,x2,414)))
+        digit_boxes=((354,386,380,424),(431,386,457,424),
+                     (508,386,534,424),(585,386,611,424))
+        digits=0
+        for x1,y1,x2,y2 in digit_boxes:
+            pix=src[y1:y2,x1:x2].astype(np.int16)
+            white=(pix.min(2)>165)&((pix.max(2)-pix.min(2))<80)
+            digits+=int(float(white.mean())>.025)
+        city=avg(gold,340,334,450,343)
+        cave=avg(gold,510,330,623,338)
+        normal=avg(green,645,333,724,348)
+        hard=avg(red,645,358,724,375)
+        create=borders(green,344,450,462,494)
+        cancel=borders(red,498,450,617,494)
+        cancel_bottom=avg(red,505,468,615,474)
+        cancel_strength=max(cancel,cancel_bottom/.7)
+        good=(digits==4 and create>.14 and cancel_strength>.10
+              and max(players)>.15 and max(city,cave)>.08
+              and max(normal,hard)>.03)
+        score=(min(create/.15,2)+min(cancel_strength/.10,2)
+               +min(max(players)/.4,2)+min(max(city,cave)/.15,2)
+               +min(max(normal/.25,hard/.10),2)-abs(shift)*.01)
+        features={
+            'city_bottom_gold':city, 'cave_bottom_gold':cave,
+            'city':city,'cave':cave,'p1':players[0],
+            'p2':players[1],'p3':players[2],'p4':players[3],
+            'normal_top_green':normal,'hard_center_red':hard,
+            'hard_top_red':hard,'normal':normal,'hard_red':hard,
+            'create':create,'cancel':cancel,
+            'cancel_bottom_red':cancel_bottom,'digits':digits,
+            'ui_shift':shift,'menu_confidence':round(score,3),
+        }
+        # Always prefer a verified menu over an unverified candidate.
+        key=(int(good),score)
+        if best is None or key>best[0]:
+            best=(key,good,features)
+    return best[1],best[2]
 
 
 def autopilot_mode():
@@ -4640,9 +4655,14 @@ def autopilot_mode():
                 action,x,y,why=brain.menu_next(feat,now)
                 if action=='HALT':halt_reason=why;break
                 if action=='CLICK':
-                    if not io.click(x,y,frame):
+                    # The detected UI can shift up to ~32px vertically in
+                    # 960x540 coordinates relative to the old OBS footage.
+                    # Apply exactly that offset also to all menu clicks.
+                    actual_y=y+float(feat.get('ui_shift',0))/540.0
+                    if not io.click(x,actual_y,frame):
                         halt_reason='MENU_CLICK_NOT_SENT_'+why;break
-                    log('MENU_ACTION '+why+' (not proof of click effect)')
+                    log('MENU_ACTION '+why+' ui_shift='+str(feat.get('ui_shift',0))+
+                        ' (not proof of click effect)')
                     last_action=time.monotonic()
                     if why=='CREATE_ONCE':
                         transition('WAIT_MATCH','create once sent; await match HUD',now)
