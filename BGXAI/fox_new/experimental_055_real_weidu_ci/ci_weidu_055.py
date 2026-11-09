@@ -26,7 +26,8 @@ ASSETS = {
     'Windows': ('WeiDU-Windows-251.zip', 2322613, 'weidu.exe'),
 }
 REPO_ROOT = Path(__file__).resolve().parents[3]  # root of GitHub checkout
-SOURCE = REPO_ROOT/'BGXAI'/'fox_new'/'release_054'/'BGX52_guard_receiver_PREVIEW.baf'
+SOURCE_REPO_PATH = 'BGXAI/fox_new/release_054/BGX52_guard_receiver_PREVIEW.baf'
+IDS_DIR = Path(__file__).resolve().parent/'ids'
 
 
 def real_weidu_smoke() -> dict:
@@ -34,10 +35,16 @@ def real_weidu_smoke() -> dict:
     if osname not in ASSETS:
         raise RuntimeError(f'Unsupported CI platform: {osname}')
     filename, expected_size, binary_name = ASSETS[osname]
-    if hashlib.sha256(SOURCE.read_bytes()).hexdigest() != BAF_SHA256:
-        raise RuntimeError('Release 054 BAF does not match pinned SHA256')
+    # git show returns the exact repository blob; checkout may CRLF-convert BAF on Windows.
+    canonical = subprocess.run(['git','show','HEAD:'+SOURCE_REPO_PATH],
+                               cwd=REPO_ROOT, stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE, timeout=12, check=True).stdout
+    if hashlib.sha256(canonical).hexdigest() != BAF_SHA256:
+        raise RuntimeError('Canonical Git BAF blob does not match pinned SHA256')
     with tempfile.TemporaryDirectory(prefix='BGXAI_055_REAL_WEIDU_') as tmp:
         root = Path(tmp)
+        baf = root/'BX52CHK.baf'
+        baf.write_bytes(canonical)
         archive = root/filename
         with urllib.request.urlopen(RELEASE_URL + filename, timeout=45) as response:
             with archive.open('wb') as out:
@@ -71,10 +78,13 @@ def real_weidu_smoke() -> dict:
         if version.returncode != 0 or not re.search(r'251(?:00|\.00)', version.stdout, re.I):
             report['status'] = 'VERSION_FAILED'
             return report
-        parsed = subprocess.run([str(tool), *safe_flags, '--parse-check', 'BAF', str(SOURCE)],
+        parsed = subprocess.run([str(tool), *safe_flags, '--search-ids', str(IDS_DIR),
+                                 '--search', str(IDS_DIR), '--script-style', 'BG2',
+                                 '--parse-check', 'BAF', str(baf)],
                                 cwd=root, input='', text=True, stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT, timeout=25, check=False)
         report['parse_exit'] = parsed.returncode
+        report['ids_fixture'] = 'IESDP_BGEE_SIGNATURE_SUBSET_NOT_FULL_EET'
         report['parse_output'] = parsed.stdout[-3200:]
         success = 'successfully parsed as type [BAF]' in parsed.stdout
         failure = 'NOT successfully parsed as type [BAF]' in parsed.stdout
