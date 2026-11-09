@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "47aa3a3d5eff1731e017e302bc094c8696a9b028",
+  "commit": "b5a431fba535a1ce37bb6171ec550f1877be1934",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
   "script_sha256": "428ddbb8431fa052b45a15fe1fbced19875121f8182c35c95d18fe663f939872",
   "script_size": 43294,
-  "description": "BGXAI 054-R1 read-only WeiDU BAF compilation: dynamic TLK from weidu.conf, 20 offline tests; menu 53-54, installed BGXAI 049 preserved."
+  "description": "BGXAI 054-R2: read-only compiler game-root cwd, temporary BAF/BCS, fatal-error exit-0 guard; 23 offline tests. Existing menu 1-54, installed 049 unchanged."
 }
