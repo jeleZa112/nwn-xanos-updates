@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.6.2
+# Roblox background monitor - release 3.6.3
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.6.2"
+VERSION = "3.6.3"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -2142,6 +2142,107 @@ def _live_ready_v358_template():
 # === End V3.5.8 extra reference ===
 
 
+# Roblox UI-only "Создание лобби..." templates, two captured sizes.
+# The data contain no avatar, no account name, no full screenshot.
+_PAD_CREATING_TEMPLATES = (
+    (21, 161, (
+        'c-'
+        'pO&`)?Fg6vq=aQA0F}!j|26Y<FjOXLq`fncbPWgALUfP#eXFuNEXCl!s!iEoiG$g=nph2#O+6p=w*7{9wRmeNeCl43DaPtU&4R'
+        '_WPH3?#zM&SVhY>-MMEvGv|EfoOACT=do=&|ATtGUr$dD|NX0WPER|!=Qr(ZWoOALi>%Z3{}6LLSLKnp26NoQ`3-'
+        'ii>fhgfLuEW?T6lj0c&~cOD4(!1k<K+vtNFZiUWDoJl_^f=uM&xKzPwe`#lU0#RLL@$9zPY)()0_*Gfn3rsN8QA3z!O6%R9TO$'
+        '+APCJDbmGu}Vrs8{66zSF`D+@2qT{-TZcP<0MEa#<coxxb<r0g80Ji6a4OP^=Y$J?t5-'
+        'TzvW@@dyMIKPq}7$>O%OEPxGfnP^_g$SyfH(khZ3(hHIEPE;q3$RjsjU%;`D}hHg4c=Qo)d-'
+        'R2oesA;PVYA3ZsLepwYIyKZd2hm;x4nMglu4P&37z#U^ZW3b5(lZt{SSDju2Fy|3?-'
+        'PV2w?`aZZ0+lR!${lyrSJ58xL!*;&b&5P^Gqjv!?wP@_nefYG<CLwon%L+WgDH(+ALAu*(x(rTC}78HJ0?URlVVDuIGX*Bd+V~'
+        'e?60C!URSxz04Q1nDr>I=8`KUjWMyk^CqU-9UZZXeAaqkQ=C#|J7#v2Cw{Unvf8b{3DYsxxfZr-'
+        '&QiB5rTI*pLP2yIfQ^|JU<u0>fDrTdxR)1rsSv!!ro>!soEs-=Q?-'
+        '=9J;2~xBi;*qSioer%<6#kmaq@FzvAi={TjH@Yo*{Jp#NoHObPC4S=|qGr88Z??!&-'
+        '4nq!_AX#SkeA_Q0zoW;O1na2sRs*eEV?32K!4<E&0*?Vo^JMsiEcogW}42*<UdCV9Ni+`5QmekF_y4lZ>*?4|B`jd_WVGr;g@+'
+        'v6ZK$EFlKYKaQp(o$M(OHTMn7QUkv0(}&fdHpgEPwqJU?UGDOJf+GF>56da6PX8<_5+HkP`i+7=8tKh^lfZE>jMdalps@bmgeb'
+        '0b|9AfLy_0K=YOX3fGcz9t1Y%S~op45O$(JV2crO0VB8cb5G!ao?O6X$6Y{$AB!cR+Vw?UrixTtp%rM(F?!i{0&L83@+W+M;y{'
+        '3jBlI=|*!2PO{{)!aPC+cUEaYsh%?PkF6W=&WG`FUM$I<S%fcoMojCU8#0W9FNcL^{-'
+        '=M!UNV+Td<D*F^lJ`NaYqxoRFfXgV0%(dqHh9f~1{M`eb#7I{qz%<tyV81UGmFq(Eb{{F)v%spXBuh0k>*R&NN)`ups6rmYk!y'
+        'xLz^Qu|y;=suM3$OO7K`}pN>Qv5`SxY`Kf|vw2NWr9y^+KwU`4!yzKBMx`e^!jpw_zfB#!YC0}GoupfbN+V!GU{=uBBq@3pc_9'
+        'MW|Z^g#1d`GPg`4|@8MNlav7Uo<W307hqi2W)=iZ6N=^<&zk0+EOlYQDBXy0AG~15n%Eq;QjlSbhz7VbT6<~C%`GOnhtB%7H~W'
+        'j`hu2=)hAFe*!&XquAr&>W}E|lbzKVwTu?$wRvN;n!fq+yu`G8K2n788s^q9wvE@~B3$AgOf4ldeRjoKJWs5f!1+j#aA_sh)0}'
+        'hGlw+N8MesM4NN60Vrf1!?vd0LM28$F-(HFo-#Yjq`9{3X}Qr)*wglM!G8Z?GSu0qWv=tu}6QKtE~D9H02Yp+f$Xy6Z)s+B-'
+        'h_(Y&}3*?J^D{z<JuPZmc=6eJONFF&-'
+        'tad)32_YQt8G4rdzrN)B6f!lMbhX!}a%n&yW<qz&i7&P1Fe!u6AB&*)EjaIs(@$vXbe=U8(=+T`=Mt9w<Qs7X-'
+        '{_&sR;CsrzPfsM-tv?RbGB#Fhu%cVBH|CjTz&WI<nODu2arG=gl7uQrR83lbYC@6}vz#X2Hc67IHd1AoDk*6_5;1a0i28(%8r>'
+        'G5t)nKS@PcTH7*=g}a|%a^)2h+59PMLKNmAYA+fGzVs^K=59+5&dG-kr#1kHtTIKzx;f!L$|P>vZvZk_??^Ua>^s}e*>OxpID'
+        '--e5TJ896Lp$Ye&zAi74{sQlk{MG'
+    )),
+    (26, 88, (
+        'c-'
+        'm!_i&GQl8i)UYPN#DeH5alWAy*Pm<f4J%4XSh0R*Of+3e6^Av)SF;NV3;t$pr!t2n2#vsCs&tsU2tPRNGUXR)o`f#$KlN%<0tH'
+        'V})4%lJkDMFm2~N%x*5bdG_7k_wD<UP9;+;kYbY=F-'
+        'p=5HRQu_R+L0GnMfpthlk_CDsf;q9wl(x=MN}^)Z?*eB*M@sju+DzS(ej+L<fUuRSRN1El?qbA^kplhzD;np{V{$ECN@>Rc#=w'
+        'UJkqr6=8Wn0_{j9EplWqD5f^Ol9(bWh9-'
+        'SpZ%B|NPSM5`q8l3+X#Dqj<LXUBkvGnwax)`xMik;?kl;7H5JMtJ(G=V#9)ogI!?7q3iA2z*5RF8`K`(e!F}ZO+(MXt~Sym}m&'
+        'ZGq~M3N+%1Sbc7sk9I#X`1qTy*^eHg+we8256drJ-kI?_~`X|p<W;mVANz#40MFsj6o8T5Ce&{$eZFtmJHE!2x16AygZ5xj0^z'
+        'ojg2A)LF`k-G1VJI^$w#^1Ff8qqzE}g1eFxxd)xPTJbQNSZfk4Z+0xSH@pSF&?C5Amv~8e%*xlT+bLTFF-JOUIpnZ4ip1q!~?('
+        'TL%MlnFSArvpy{MpRp)MROVVq#*vSS+5OnwpvhrZ$-'
+        'T6Q$y~Lh1Y_rBTFKsdW1&k%*CA9|2w{H<k?89WJNYWHy@{jF{2kbT+wNE?1Ksuvu+3n^oN@FZKqbv7rIe>I_y>J%+)T7QIfVSG'
+        'e8$`fJBu8zfaPT{vhnY1@uj3}%zjh?&9bayNt60VwWG6tNL7?3({7tPg(tZJpI(X*3%2s`#$+<cU{L5XcKbAg@00%XeRF(bsL)'
+        ')$K4j>g($<r%8{Qw3uFtX^iz+vtDPm+e{jbw%)M4PG7%rBkb}%8a-'
+        '8~G3Yc<iPd5PmUrO;=LR4KI;nasmM45eqqTB(+VR1iutr#3rnF<9&uqWb6I!af-'
+        '7&hPtK2O*9E~?tS6yd5xp}PZ**9NzU;Xi6b=zm{#YH_z4(`vj`Z7GjBuS8pmns}Iduj*G4Kt5U|5*0lT-kEH@?};>%>UM33shE'
+        'itjSMTi$7P_{m#~(<Inn^mS=zU{(9h}Yqzc*`>k(HUc0Avg11TWrU(M2Z-`ESm@4cy+t&%L;rbUZ-'
+        '1?~N?FZW){OuoE+jk4=q1yB3;Qi_5KR<lHvPY~3{=K&reSZA-bLvU!rCaYTwAK389({aoI}EnL*kEm1?TM1;si5dYBAG;9-'
+        'PDtN56`ZD_*A%d{XeJHXTJaB%+njsLbX?OD?4iM3M>6<)%RNTUtVje9az5quRB{mz5m~V(~s|erK|m2ycd0J{b8Jb>~ya7z%xu'
+        'Buc&zUna!HRc(cY6Xy1Cu=MWzzx!PZk9zE0Kw|Bk1)$i;)S=T*u-'
+        '13(<OxprR>$$Vr^u}{X^!10{v}*kJ&XaE6*8YwrpWeB;2UQ!QXl8b5OklV-VCI@IBZe6;6U-'
+        '$4`<V9Y7MsoCw7XnRr`_qWqrGX%OE13IXt!bpn2lJY#cFAUX<)Wk;jp8r2?lSulO&XK!*i9{*=hIZdDMvzlAO!u;*qSxu-ROpP'
+        '#7I8<O_Kqm(Qo5F($J)Swbg5GuR-P%jH#Wo<5DrB`F5HbCrtU>Dj-'
+        '3AJEg&bEvns@0G)cU+L@ZL$B!FCLPcZUheHf=k42f@X#jk12`47Ue`%t2t5=~Z*_idu9BoEI^@T_-'
+        'Z#(TXg$ehvm<Gald@1qPRdB41c-'
+        'rVH)g<7(SgCifdL$r0JYb}I9Mv6VT%GUFhK;$_d>NgKVKeAQfU404h{^ZSS~%19g%sK%Zz|m7BiwsALe#-'
+        'u{;UhL7bpa=Y)Ew1dF^#%d!C?2=f=dWiDR00P1SBEJH=<OghJ<xHLqUfrg(Mfr2F|jeaBuVsE$GbtK8*10cpjA*c!(GR34)95i'
+        ')76gVz61f4gicrRVLbn)U_AYXvG(IC!F=3qIIrQ|T1k+Zq1m<B1&^TJuH+wBP^<48M5Ltg|+&{*@37&7y`SS*#GdyZuiG_$m{w'
+        '79s4<jB4NslYf+6=gn=;3YYmm64a{VMRIN@pxL<1gv?mP-M&HnN7;m6L5**cyWAM?c3AS=ku2@Uw&J4FDmZ0E-'
+        'cK?SLZ8}rHNby0#RavrU(BHMBou+Q)8-'
+        'e_WzmropSl=)hk!7fcp<}HI=!!x!K8r%%dCRU|EIn<dn7We5F#EL#X>dP(eq~4leRP4DOyn'
+    )),
+)
+
+def _pad_creating_sign_hints(raw):
+    """Recognize CREATING_SIGN only; never infer a free pad from this."""
+    import base64, zlib, cv2, numpy as np
+    if raw is None or len(raw.shape)<3: return []
+    H,W=raw.shape[:2]
+    if H<300 or W<500 or not .46<=H/max(W,1)<=.68: return []
+    view=cv2.resize(raw[:,:,:3],(960,540),interpolation=cv2.INTER_AREA)
+    region=cv2.cvtColor(view,cv2.COLOR_BGR2GRAY)[35:270,:]
+    hits=[]
+    for h,w,chunks in _PAD_CREATING_TEMPLATES:
+        tpl=np.frombuffer(zlib.decompress(base64.b85decode(''.join(chunks))),
+                          dtype=np.uint8).reshape((h,w))
+        for scale in (.82,.88,.94,1.0,1.06,1.12):
+            tile=cv2.resize(tpl,None,fx=scale,fy=scale,
+                            interpolation=cv2.INTER_AREA)
+            if tile.shape[0]>=region.shape[0] or tile.shape[1]>=region.shape[1]:continue
+            heat=cv2.matchTemplate(region,tile,cv2.TM_CCOEFF_NORMED)
+            ys,xs=np.where((heat>=.83)&
+                           (heat==cv2.dilate(heat,np.ones((9,25),np.uint8))))
+            for y,x in zip(ys,xs):
+                hits.append((float(heat[y,x]),int(x),int(y+35),
+                             int(tile.shape[1]),int(tile.shape[0])))
+    hits.sort(reverse=True)
+    result=[]
+    for score,x,y,w,h in hits:
+        cx=x+w/2;cy=y+h/2
+        if not .04<cx/960<.96:continue
+        if any(abs(cx-(d['x']+d['w']/2))<65 and
+               abs(cy-(d['y']+d['h']/2))<40 for d in result): continue
+        result.append(dict(status='CREATING_SIGN',confidence=round(score,3),
+                           x=x,y=y,w=w,h=h,center_x=round(cx/960,3),
+                           relative_side=('LEFT' if cx<345 else
+                                          'RIGHT' if cx>615 else 'CENTER'),
+                           availability='BUSY_OR_CREATING'))
+        if len(result)>=4:break
+    return result
+
+
 def pad_sign_hints(raw):
     """Read old + current READY text from the *verified* Roblox WGC frame.
 
@@ -2158,7 +2259,7 @@ def pad_sign_hints(raw):
         view=cv2.resize(raw[:,:,:3],(960,540),interpolation=cv2.INTER_AREA)
         gray=cv2.cvtColor(view,cv2.COLOR_BGR2GRAY)
         # UI signs in both the recorded OBS and live Roblox screenshots.
-        region=gray[24:184,:]
+        region=gray[24:275,:]
         source=_live_ready_v351_template()
         hits=[]
         # Small distant signs (the 2026-11-09 live lobby screenshot)
@@ -2218,6 +2319,15 @@ def pad_sign_hints(raw):
                 continue
             signs.append(item)
             if len(signs)>=7:break
+        # "Создание лобби..." is BUSY/CREATING, NOT READY. The label may
+        # replace READY as another player claims the same pad.
+        creating=_pad_creating_sign_hints(raw)
+        for busy in creating:
+            signs=[p for p in signs if not
+                   (p.get('status')=='READY_SIGN' and
+                    abs(p.get('center_x',-9)-busy['center_x'])<.075 and
+                    abs(p.get('y',-900)-busy['y'])<45)]
+            signs.append(busy)
         signs.sort(key=lambda a:a.get('center_x',0))
         return signs
     except (cv2.error,ValueError):
@@ -3751,21 +3861,25 @@ class AutoPilotPadReselect:
         if target_x is None:
             return ('RESELECT', None, 'NO_LOCKED_TARGET')
         countdown=[s for s in signs if
-                   s.get('status')=='COUNTDOWN_SIGN' and
-                   s.get('confidence',0)>=.72 and
+                   ((s.get('status')=='COUNTDOWN_SIGN' and
+                     s.get('confidence',0)>=.72) or
+                    (s.get('status')=='CREATING_SIGN' and
+                     s.get('confidence',0)>=.83)) and
                    abs(s.get('center_x',-9)-target_x)<.105]
         if countdown:
             self.busy_frames+=1
             self.lost_frames=0
             self.lost_since=None
             if self.busy_frames>=2:
-                return ('RESELECT',None,'TRACKED_PAD_COUNTDOWN')
-            return ('WAIT',None,'COUNTDOWN_NEEDS_CONFIRMATION')
+                return ('RESELECT',None,'TRACKED_PAD_BUSY_OR_COUNTDOWN')
+            return ('WAIT',None,'BUSY_SIGN_NEEDS_CONFIRMATION')
         self.busy_frames=0
         ready=[s for s in signs if s.get('status')=='READY_SIGN'
                and s.get('confidence',0)>=.65
-               and not any(b.get('status')=='COUNTDOWN_SIGN' and
-                           b.get('confidence',0)>=.64 and
+               and not any(((b.get('status')=='COUNTDOWN_SIGN' and
+                              b.get('confidence',0)>=.64) or
+                             (b.get('status')=='CREATING_SIGN' and
+                              b.get('confidence',0)>=.83)) and
                            abs(s.get('center_x',-9)-b.get('center_x',-8))<.115
                            for b in signs)]
         near=[s for s in ready if
@@ -3849,8 +3963,11 @@ class AutoPilotPolicy:
         """
         strong=[s for s in signs if s.get('status')=='READY_SIGN'
                 and s.get('confidence',0)>=.65]
-        busy=[s for s in signs if s.get('status')=='COUNTDOWN_SIGN'
-              and s.get('confidence',0)>=.64]
+        busy=[s for s in signs if
+              (s.get('status')=='COUNTDOWN_SIGN' and
+               s.get('confidence',0)>=.64) or
+              (s.get('status')=='CREATING_SIGN' and
+               s.get('confidence',0)>=.83)]
         current=[]
         for s in strong:
             x=s.get('center_x',-1)
