@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "c5bbb51ecb7c122b1b6a3580eef66f1b55378b87",
+  "commit": "5175c8b8441e2490b32ae857c3a602200c242385",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "804809fa5d0fc3f1a26f436352d2cb6d90c42a81390fe28cd12032a20b99b6e7",
-  "script_size": 34628,
-  "description": "BGXAI 046 passive EEex attack observer: source-only 34, guarded 35, read-only 33/36, rollback 37; legacy 1-32 preserved. Requires installed BGX45 last."
+  "script_sha256": "9a2601033a80d4e0806561866553debab1e8ee6b42df04fff2e95ccde6c54825",
+  "script_size": 37289,
+  "description": "BGXAI 047 EEex resolved attack target: guarded options 38-42, all legacy 1-37 retained; BGX46 must be last."
 }
