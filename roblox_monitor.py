@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.6.9
+# Roblox background monitor - release 3.7.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.6.9"
+VERSION = "3.7.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -4749,9 +4749,22 @@ def autopilot_mode():
         with logfile.open('a',encoding='utf-8') as fp:fp.write(line+'\n')
     logfile.write_text('ROBLOX AUTOPILOT V'+VERSION+'\n',encoding='utf-8')
     print('AUTOPILOT: lobby -> City / 1 / Hard -> match -> route -> turrets -> repeat.')
-    background_mode=os.environ.get('ROBLOX_BG_INPUT','1')!='0'
-    print('EXPERIMENTAL '+('BACKGROUND WM input (unverified by Roblox)' if
-          background_mode else 'FOREGROUND SendInput')+'. F10 STOP.')
+    # V3.6.9 live result: three PostMessage W events, three visual NO_MOTION.
+    # Do not silently start a proven-nonfunctional background backend.
+    requested_backend=os.environ.get('ROBLOX_BG_INPUT','0').strip()
+    if requested_backend not in ('0','1'):
+        log('INPUT_BACKEND_CONFIG_INVALID: use 0 (foreground) or 1 '+
+            '(experimental PostMessage)');return 2
+    background_mode=(requested_backend=='1')
+    print('V3.7.0 CONTROL: '+('BACKGROUND PostMessage (failed last live run)' if
+          background_mode else 'FOREGROUND verified SendInput')+'. F10 STOP.')
+    if background_mode:
+        log('BACKGROUND_UNSUPPORTED_ON_LAST_LIVE_TEST: 3 posted W keys, '+
+            '3 NO_MOTION. This mode is opt-in ONLY; no automatic retry.')
+    else:
+        log('FOREGROUND_REQUIRED: Roblox needs to own keyboard focus. '+
+            'Use a separate supported Windows gaming device/session for '+
+            'independent control; never send keys to other apps.')
     # Protect running automation from accidental conhost text-selection pause.
     if autopilot_disable_console_selection():
         log('CONSOLE_QUICKEDIT_DISABLED')
