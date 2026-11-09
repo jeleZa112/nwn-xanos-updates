@@ -1,0 +1,92 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.22-056-ACTIVE-GUARD-OPTIN",
+  "status": "EXPERIMENTAL_OPTIN_INSTALL_GATED",
+  "files": [
+    {
+      "dest": "BGX56/M_BX43.lua",
+      "source": "BGXAI/fox_new/experimental_056_active_guard/BGX56/M_BX43.lua",
+      "size": 20696,
+      "sha256": "35e450b6600f0fc65d47e535126a52e0303c360033307fa920776faec3f581ab"
+    },
+    {
+      "dest": "BGX56/BGX56_RECEIVER.baf",
+      "source": "BGXAI/fox_new/experimental_056_active_guard/BGX56/BGX56_RECEIVER.baf",
+      "size": 4133,
+      "sha256": "b8309fdfd903fb6a0c50cd14fb687b862ac06fb8bbd79a26c9324fd0908b5d88"
+    },
+    {
+      "dest": "BGX56/setup-BGX56.tp2",
+      "source": "BGXAI/fox_new/experimental_056_active_guard/BGX56/setup-BGX56.tp2",
+      "size": 265,
+      "sha256": "942393059b928ce69d3dddf8da04285cdca90ce99ce466460e99e886239d325e"
+    },
+    {
+      "dest": "BGXAI56_BUILDER.py",
+      "source": "BGXAI/fox_new/experimental_056_active_guard/BGXAI56_BUILDER.py",
+      "size": 6720,
+      "sha256": "66864ef229f693b4bf80d215ca3093344f4be3ef01d8b9dcb2ff7c92a0bca845"
+    },
+    {
+      "dest": "BGXAI56_INSTALL.py",
+      "source": "BGXAI/fox_new/experimental_056_active_guard/BGXAI56_INSTALL.py",
+      "size": 16173,
+      "sha256": "1e2a6a3749b0cca773e4d2d24c8d517174bba0dace5067aed505f20ee4ddf61a"
+    },
+    {
+      "dest": "README_RU.md",
+      "source": "BGXAI/fox_new/experimental_056_active_guard/README_RU.md",
+      "size": 4951,
+      "sha256": "06694133a89243991f28c4e2b4898e633ea37fd6fc326ede57774113ee97f9f9"
+    },
+    {
+      "dest": "tests/test_056.py",
+      "source": "BGXAI/fox_new/experimental_056_active_guard/tests/test_056.py",
+      "size": 8003,
+      "sha256": "fc3cfdbf1dd5c32a8f3a41bfa7bb00aec490bd5abef7fedd4bdd53dba723b256"
+    },
+    {
+      "dest": "ci_weidu_056.py",
+      "source": "BGXAI/fox_new/experimental_056_active_guard/ci_weidu_056.py",
+      "size": 9678,
+      "sha256": "a3618bb736df9cc23eee71f1dcea9f8ae78467e567b3892b854ea02ab02530e5"
+    },
+    {
+      "dest": "ids/trigger.ids",
+      "source": "BGXAI/fox_new/experimental_056_active_guard/ids/trigger.ids",
+      "size": 314,
+      "sha256": "f6e5edc6c03ffcc31c10a88f3712db6991ff959c474df0c4c97556422cbf12a4"
+    },
+    {
+      "dest": "ids/action.ids",
+      "source": "BGXAI/fox_new/experimental_056_active_guard/ids/action.ids",
+      "size": 149,
+      "sha256": "2e444e179c8e99706dcb683f444e61ee081c27d58848fb2b453e05da66c5ee7b"
+    },
+    {
+      "dest": "ids/object.ids",
+      "source": "BGXAI/fox_new/experimental_056_active_guard/ids/object.ids",
+      "size": 112,
+      "sha256": "35207ad507354061d80f58ad74c660c88ac4df94b6b50f90e7d763dd7afe70f9"
+    },
+    {
+      "dest": "ids/modal.ids",
+      "source": "BGXAI/fox_new/experimental_056_active_guard/ids/modal.ids",
+      "size": 53,
+      "sha256": "bf3c5fadffff2980df86c9a9c9562df8ac3bd7f0f794dccb5d89c9c2782c7157"
+    },
+    {
+      "dest": "tests/test_lua_056.py",
+      "source": "BGXAI/fox_new/experimental_056_active_guard/tests/test_lua_056.py",
+      "size": 4832,
+      "sha256": "a844e9999e6f8fcd9d54bb06e04fa7aa617550db10b40742e45a92c4b32ded11"
+    },
+    {
+      "dest": "SOURCE_MANIFEST.json",
+      "source": "BGXAI/fox_new/experimental_056_active_guard/SOURCE_MANIFEST.json",
+      "size": 2097,
+      "sha256": "2dc1ad522da609ddfcf5684cafb7aacefe6abceb7ca4fda0236a1da831bfa0f5"
+    }
+  ]
+}
