@@ -1,0 +1,4 @@
+BACKUP ~BGX48/backup~
+AUTHOR ~BGXAI 048 Passive EEex confirmed weapon hit observer~
+BEGIN ~BGXAI 048 EEex passive weapon hit confirmation~
+COPY ~BGX48/M_BX43.lua~ ~override/M_BX43.lua~
