@@ -92,13 +92,13 @@ def test_source_inside_game_blocks(tmp_path,monkeypatch):
 def test_missing_tlk_blocks(tmp_path,monkeypatch):
     game,exe=make_game(tmp_path);gate_ok(monkeypatch)
     (game/'lang/ru_ru/dialog.tlk').unlink()
-    with pytest.raises(ValueError,match='REQUIRED_LOG_OR_TLK_MISSING'):
+    with pytest.raises(ValueError,match='DIALOG_TLK_LANGUAGE_UNRESOLVED'):
         mod.compile_readonly(game,SOURCE,exe)
 
 def test_missing_weidu_log_blocks(tmp_path,monkeypatch):
     game,exe=make_game(tmp_path);gate_ok(monkeypatch)
     (game/'WeiDU.log').unlink()
-    with pytest.raises(ValueError,match='REQUIRED_LOG_OR_TLK_MISSING'):
+    with pytest.raises(ValueError,match='WEIDU_LOG_MISSING_OR_UNREADABLE'):
         mod.compile_readonly(game,SOURCE,exe)
 
 
@@ -119,3 +119,63 @@ def test_approved_dir_other_filename_denied(tmp_path,monkeypatch):
     bad=root/'other.baf';bad.write_bytes(SOURCE.read_bytes())
     with pytest.raises(ValueError,match='SOURCE_IN_LIVE_GAME_UNAPPROVED'):
         mod.compile_readonly(game,bad,exe)
+
+
+def test_weidu_config_english_selects_english_tlk_without_game_changes(tmp_path,monkeypatch):
+    game,exe=make_game(tmp_path);gate_ok(monkeypatch)
+    (game/'weidu.conf').write_text('lang_dir = en_US\n',encoding='ascii')
+    english=game/'lang'/'en_US'/'dialog.tlk';english.parent.mkdir(parents=True)
+    english.write_bytes(b'english dialog')
+    before=mod.snapshot(game)
+    def fake_compiler(cmd,**kwargs):
+        assert cmd[cmd.index('--tlkin')+1]==str(english)
+        dest=Path(cmd[cmd.index('--out')+1]);dest.joinpath('BX52CHK.bcs').write_bytes(b'SC\n')
+        return subprocess.CompletedProcess(cmd,0,'','')
+    result=mod.compile_readonly(game,SOURCE,exe,runner=fake_compiler)
+    assert result['status']=='COMPILED_TEMP_ONLY'
+    assert result['selected_tlk']=='lang/en_US/dialog.tlk'
+    assert result['live_unchanged'] and mod.snapshot(game)==before
+
+
+def test_weidu_config_lowercase_maps_mixed_case_directory(tmp_path,monkeypatch):
+    game,exe=make_game(tmp_path);gate_ok(monkeypatch)
+    (game/'weidu.conf').write_text('lang_dir = en_us\n',encoding='ascii')
+    lang=game/'lang'/'en_US';lang.mkdir(parents=True)
+    (lang/'dialog.tlk').write_bytes(b'english dialog')
+    assert mod.resolve_dialog_tlk(game)==lang/'dialog.tlk'
+
+
+def test_without_conf_russian_preferred(tmp_path,monkeypatch):
+    game,exe=make_game(tmp_path);gate_ok(monkeypatch)
+    (game/'weidu.conf').unlink()
+    other=game/'lang'/'en_US';other.mkdir(parents=True)
+    (other/'dialog.tlk').write_bytes(b'english')
+    assert mod.resolve_dialog_tlk(game)==game/'lang/ru_ru/dialog.tlk'
+
+
+def test_mismatched_config_stops_with_available_language(tmp_path,monkeypatch):
+    game,exe=make_game(tmp_path);gate_ok(monkeypatch)
+    (game/'weidu.conf').write_text('lang_dir = en_US\n',encoding='ascii')
+    with pytest.raises(ValueError,match='DIALOG_TLK_CONFIGURED_LANGUAGE_MISSING: en_us; available=ru_ru'):
+        mod.compile_readonly(game,SOURCE,exe)
+
+
+def test_ambiguous_language_without_config_stops(tmp_path,monkeypatch):
+    game,exe=make_game(tmp_path);gate_ok(monkeypatch)
+    (game/'weidu.conf').unlink()
+    (game/'lang/ru_ru/dialog.tlk').unlink()
+    for name in ('en_US','de_DE'):
+        folder=game/'lang'/name;folder.mkdir(parents=True)
+        (folder/'dialog.tlk').write_bytes(b'lang')
+    with pytest.raises(ValueError,match='DIALOG_TLK_LANGUAGE_UNRESOLVED'):
+        mod.compile_readonly(game,SOURCE,exe)
+
+
+def test_tlk_mutated_during_compile_is_review(tmp_path,monkeypatch):
+    game,exe=make_game(tmp_path);gate_ok(monkeypatch)
+    def runner(cmd,**kwargs):
+        (game/'lang/ru_ru/dialog.tlk').write_bytes(b'changed')
+        dest=Path(cmd[cmd.index('--out')+1]);dest.joinpath('BX52CHK.bcs').write_bytes(b'SC\n')
+        return subprocess.CompletedProcess(cmd,0,'','')
+    result=mod.compile_readonly(game,SOURCE,exe,runner=runner)
+    assert result['status']=='REVIEW_LIVE_HASH_CHANGED' and not result['live_unchanged']
