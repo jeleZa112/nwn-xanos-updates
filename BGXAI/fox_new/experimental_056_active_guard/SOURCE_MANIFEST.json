@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "version": "0.3.22-056-ACTIVE-GUARD-OPTIN",
+  "status": "OPT_IN_ACTIVE_056_TWO_OVERRIDE_FILES",
+  "baseline_bcs_sha256": "8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0",
+  "baseline_049_lua_sha256": "a1c09d704bf66f054a2099c6496212573d56d185a550fb874fc1a35b1c739912",
+  "files": {
+    "BGX56/M_BX43.lua": {
+      "size": 20700,
+      "sha256": "75c880cb972f1610c515ade0d3a0e8bb8362f29c0fdd231a9d89080e456cbba6"
+    },
+    "BGX56/BGX56_RECEIVER.baf": {
+      "size": 4133,
+      "sha256": "b8309fdfd903fb6a0c50cd14fb687b862ac06fb8bbd79a26c9324fd0908b5d88"
+    },
+    "BGX56/setup-BGX56.tp2": {
+      "size": 265,
+      "sha256": "942393059b928ce69d3dddf8da04285cdca90ce99ce466460e99e886239d325e"
+    },
+    "BGXAI56_BUILDER.py": {
+      "size": 5866,
+      "sha256": "e7da9a847669bf8bc09c2e430b9fcf12117562bbc964e9517a36cf9acada4309"
+    },
+    "BGXAI56_INSTALL.py": {
+      "size": 16173,
+      "sha256": "1e2a6a3749b0cca773e4d2d24c8d517174bba0dace5067aed505f20ee4ddf61a"
+    },
+    "README_RU.md": {
+      "size": 4951,
+      "sha256": "06694133a89243991f28c4e2b4898e633ea37fd6fc326ede57774113ee97f9f9"
+    },
+    "tests/test_056.py": {
+      "size": 7256,
+      "sha256": "b48ac132c51f9ea7117c9aad077f932e4e87b2dc730b0259de0e61b8ff9f0ee6"
+    },
+    "ci_weidu_056.py": {
+      "size": 8642,
+      "sha256": "f26ed9697f56b2e8a59917440fd2b88f9480a5a6e3463fe580b813b0019ea69a"
+    },
+    "ids/trigger.ids": {
+      "size": 314,
+      "sha256": "f6e5edc6c03ffcc31c10a88f3712db6991ff959c474df0c4c97556422cbf12a4"
+    },
+    "ids/action.ids": {
+      "size": 149,
+      "sha256": "2e444e179c8e99706dcb683f444e61ee081c27d58848fb2b453e05da66c5ee7b"
+    },
+    "ids/object.ids": {
+      "size": 112,
+      "sha256": "35207ad507354061d80f58ad74c660c88ac4df94b6b50f90e7d763dd7afe70f9"
+    },
+    "ids/modal.ids": {
+      "size": 53,
+      "sha256": "bf3c5fadffff2980df86c9a9c9562df8ac3bd7f0f794dccb5d89c9c2782c7157"
+    },
+    "tests/test_lua_056.py": {
+      "size": 4825,
+      "sha256": "11e47bdaaa992f17f95e29c5191ac5c28c8ec04fc35b43d4037e0cb43abcba02"
+    }
+  }
+}
