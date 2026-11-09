@@ -1,17 +1,31 @@
 {
   "schema": 1,
   "version": "0.3.21-054-WEIDU-READONLY",
-  "kind": "SOURCE_ONLY_READONLY_BAF_COMPILE",
-  "upstream_installed": "049+042B",
-  "checks": "23 offline tests: cwd game, temporary BAF/BCS, fatal exit-0 detection, language and hash gates",
+  "release": "054-R3",
+  "kind": "READ_ONLY_SOURCE_NO_INSTALL",
+  "reason": "avoid setup-*.exe auto TP2 and stdin timeout",
+  "verified_offline_tests": "27 passed (includes real fake child process, not real WeiDU)",
   "unsafe_changes_to_game": false,
-  "source_sha256": {
-    "compile_guard_054.py": "5defcb711d3882dcf5c66ddbfde33bd1cd5c06c89ddaa901ee5c53b7c2a52964",
-    "verify_053_baseline.py": "b57040a13401cfbc6ba694e08fad4e52c0a6eea87f776f6302840fb250481388",
-    "BGX52_guard_receiver_PREVIEW.baf": "10c625ecb516e676d5ea264665f186d5f2a16a6809f88e569a7023b65d2e414c",
-    "test_compile_054.py": "8777ce4ab79fec5befd5fcd4a4b22118980e48cda342edf133bc6a66dc697753",
-    "README_RU.md": "6a52034545b0554c350994c40ed7747cb1bc6e41d74b7c01c0e10a6a4834b8e7"
-  },
-  "fix": "054-R1: resolve TLK path using weidu.conf + actual lang dirs; preserve safety gates",
-  "hotfix": "054-R2_GAME_CWD"
+  "files": {
+    "compile_guard_054.py": {
+      "sha256": "14bc53ebff4c9013a54961b6ee0ba2167aba18d070fa0dbfb0d5defb57fe6aca",
+      "size": 13401
+    },
+    "verify_053_baseline.py": {
+      "sha256": "b57040a13401cfbc6ba694e08fad4e52c0a6eea87f776f6302840fb250481388",
+      "size": 3187
+    },
+    "BGX52_guard_receiver_PREVIEW.baf": {
+      "sha256": "10c625ecb516e676d5ea264665f186d5f2a16a6809f88e569a7023b65d2e414c",
+      "size": 4112
+    },
+    "test_compile_054.py": {
+      "sha256": "5895424446d5e6e768cbb6f635fa4f81e2401a4fbb11b66eec07bae5738a2b08",
+      "size": 14975
+    },
+    "README_RU.md": {
+      "sha256": "c483a653c3394e558cfa035cceeee00828ec6694c7e7657def88da09a76e6beb",
+      "size": 3560
+    }
+  }
 }
