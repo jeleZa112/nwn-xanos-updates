@@ -838,3 +838,21 @@ User reports Foxx EET repack was updated, and their current game has SCS install
 - IMPORTANT: user's local old `BGXAI_UPDATE.cmd` previously downloaded stale pinned script `9e7a...` due cached branch pointer. Public GitHub **`BGXAI_UPDATE.cmd`** received cache-busting fix at immutable commit **`d270a2814ca62aa8b8784e35374039a16687195c`**, but original Windows CMD has **NOT** yet been updated. To access 18+, must first replace ONLY CMD with that exact vetted immutable version (back up old CMD), not any game assets; direct immutable URL `https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/d270a2814ca62aa8b8784e35374039a16687195c/BGXAI_UPDATE.cmd`. If menu still 1–17, do not run 20.
 - NEXT USER ACTION ONE STEP: **update only CMD**, then run same `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`, confirm `verified pinned script 96e3e797eced`, select **18** (READ-ONLY) and share output. Do **NOT** install 043P using 20 until the live preflight confirms prerequisites.
 - 042B remains live and unchanged, first in-game protection worked, bard/magic BCS offline invariants were tested. 043P is only passive observer, not yet real interceptor/cover action dispatcher. No repeated Shank test required, no user logs needed yet. RU combat detailed logs separate pending item.
+
+## 2026-11-09 — BGXAI 043P READ-ONLY PRECHECK SUCCESS (real Windows EET)
+
+User replaced old local CMD and ran updater **option 18**. Live exact user output:
+```
+BGXAI 043P / EEex OBSERVER - PRECHECK (READ ONLY)
+BGX42 installed: True; 042 last: True
+BGX43 installed: False; 043 last: False
+EEex M___EEex.lua present: True; InfinityLoader present: True
+Probe Lua in override: False
+BGX42 BCS SHA256: 8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0
+BGXAI 043P PRECHECK: BASELINE OK. NOT INSTALLED.
+NO GAME FILES CHANGED.
+BGXAI: update/status action completed.
+```
+All live preflight conditions PASS. **043P is NOT installed**; working 042B remains installed and its compiled BCS hash is confirmed.
+
+NEXT SINGLE USER ACTION: Close game and InfinityLoader, launch same `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`, select **20**, enter exact `YES`. Updater will synchronize/verify immutable 043P source, external backup, guarded isolated WeiDU observer install; **only `override/M_BGX43Probe.lua`** is added. No BCS/AI commands/TLK/UI.MENU changes. User should paste full installer output. On BLOCKED/REVIEW/STOP do not repeat, preserve reports. After success option **21** status then one ordinary in-game observation without forced fight. 043P is passive attack observer **not** AI interceptor/cover yet.
