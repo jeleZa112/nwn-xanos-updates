@@ -1,0 +1,36 @@
+{
+  "version": "0.3.19-048-CONFIRMED-HIT",
+  "status": "OPT_IN_PASSIVE_HIT_OBSERVER",
+  "required_baseline": {
+    "override/BDDEFAI.BCS": "8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0",
+    "override/M_BGX43Probe.lua": "f1e6fcc6989512bee5e217a66ef42ea48a828c407c7009e6012a90b95d5db19f",
+    "override/M_BGX44Diag.lua": "a7bdfba10cdb3cc26351072dac0c6f375e03b4ce3a288f0eb15db945411dd33f",
+    "override/M_BX44.lua": "a7bdfba10cdb3cc26351072dac0c6f375e03b4ce3a288f0eb15db945411dd33f"
+  },
+  "files": {
+    "BGX48/M_BX43.lua": {
+      "size": 11921,
+      "sha256": "7b7b613c736df4d7d8a360e9879486bfe26ca52b7f29242c64ab6b2a27c694ea"
+    },
+    "BGX48/setup-BGX48.tp2": {
+      "size": 185,
+      "sha256": "31e83c4c0d0b7d5ace308a2a92c51e34d4ad60d057cf2bdaf3c65de3e1b70649"
+    },
+    "BGXAI48_INSTALL.py": {
+      "size": 15376,
+      "sha256": "f1271463cd7dc100ca070117be1140b0d0ac26a3618c22e628fdd7a1ece3813d"
+    },
+    "README_RU.md": {
+      "size": 3485,
+      "sha256": "1b9b7c0d4bd4df7516f54ba455a8c5df15d826c13a4a8987f8269a1c051e0f87"
+    },
+    "BGX48/tests/test_lua_048.py": {
+      "size": 1447,
+      "sha256": "832c325fb8e436a03ee13a4c60b939af5acd2d8d79a7c113594a15fcf52f2ff1"
+    },
+    "BGX48/tests/test_installer_048.py": {
+      "size": 1188,
+      "sha256": "fe1e8859e0abcd3a9a5eec508df9bcca1f6ac1ddb80e92a112d8fbca8aa65989"
+    }
+  }
+}
