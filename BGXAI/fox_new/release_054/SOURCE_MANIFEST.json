@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "version": "0.3.21-054-WEIDU-READONLY",
+  "kind": "SOURCE_ONLY_READONLY_BAF_COMPILE",
+  "upstream_installed": "049+042B",
+  "checks": "12 mocked compiler / baseline safety tests",
+  "unsafe_changes_to_game": false,
+  "source_sha256": {
+    "compile_guard_054.py": "9d35e9a06692189999a6a4b71e66beeb6752f7c5189d3259aef9cebc8652a497",
+    "verify_053_baseline.py": "b57040a13401cfbc6ba694e08fad4e52c0a6eea87f776f6302840fb250481388",
+    "BGX52_guard_receiver_PREVIEW.baf": "10c625ecb516e676d5ea264665f186d5f2a16a6809f88e569a7023b65d2e414c",
+    "test_compile_054.py": "1feda8c3ee311a61c2eba2a0f995ee2df5ddfd831d7e09aadaa8299366c921f2",
+    "README_RU.md": "20f7a29272791c2b7877fb94cccba73a0e9274987852eb4a0ccf82b52c38a143"
+  }
+}
