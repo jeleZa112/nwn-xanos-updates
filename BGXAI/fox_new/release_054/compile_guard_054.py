@@ -11,6 +11,7 @@ from pathlib import Path
 import verify_053_baseline as preflight
 
 NAME='BGX52_guard_receiver_PREVIEW.baf'
+COMPILE_NAME='BX52CHK.baf' # 8-character WeiDU/Infinity Engine resref; temporary only
 BAF_SHA='10c625ecb516e676d5ea264665f186d5f2a16a6809f88e569a7023b65d2e414c'
 DANGEROUS={'ClearActions','ActionOverride','Attack','AttackReevaluate',
            'Spell','ForceSpell','ReallyForceSpell','StartCutSceneMode',
@@ -76,7 +77,12 @@ def prepare(game:Path, source:Path, exe:Path)->tuple[dict,dict,dict]:
     source=source.expanduser().resolve(strict=True)
     exe=exe.expanduser().resolve(strict=True)
     if not game.is_dir() or not (game/'chitin.key').is_file():raise ValueError('NOT_AN_EET_GAME')
-    if game == source.parent or game in source.parents:raise ValueError('SOURCE_IN_LIVE_GAME')
+    if game == source.parent or game in source.parents:
+        # The verified one-file updater stores SOURCE ONLY under BGXAI_DEV,
+        # inside the game directory. Allow precisely that hashed source path;
+        # never compile a BAF taken from override, mods or other game folders.
+        allowed=(game/'BGXAI_DEV'/'experimental_054'/NAME).resolve()
+        if source!=allowed:raise ValueError('SOURCE_IN_LIVE_GAME_UNAPPROVED')
     if not exe.is_file():raise ValueError('WEIDU_EXECUTABLE_MISSING')
     if (exe.parent != game):raise ValueError('WEIDU_MUST_BE_IN_GAME_ROOT')
     source_info=validate_baf(source)
@@ -96,7 +102,7 @@ def compile_readonly(game:Path,source:Path,exe:Path,runner=subprocess.run)->dict
             'live_after':None,'live_unchanged':False,'install_performed':False}
     with tempfile.TemporaryDirectory(prefix='BGXAI_054_COMPILE_') as tmp:
         work=Path(tmp); out=work/'out';out.mkdir()
-        local=work/NAME;local.write_bytes(source.read_bytes())
+        local=work/COMPILE_NAME;local.write_bytes(source.read_bytes())
         # --tlkin avoids --use-lang which may save a setting in weidu.conf.
         cmd=[str(exe),'--noautoupdate','--game',str(game),
              '--tlkin',str(game/'lang/ru_ru/dialog.tlk'),
