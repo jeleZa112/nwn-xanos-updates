@@ -82,8 +82,15 @@ $release048=@{
             'BGX48/tests/test_installer_048.py','BGX48/tests/test_lua_048.py',
             'README_RU.md','SOURCE_MANIFEST.json')
 }
+$release049=@{
+    id='049';version='0.3.20-049-GUARD-ADVISORY';manifest=$remoteRoot+'release_049/manifest.json';prefix=$remoteRoot+'release_049/';
+    localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_049';installer='BGXAI49_INSTALL.py';
+    names=@('BGXAI49_INSTALL.py','BGX49/setup-BGX49.tp2','BGX49/M_BX43.lua',
+            'BGX49/tests/test_installer_049.py','BGX49/tests/test_lua_049.py',
+            'README_RU.md','SOURCE_MANIFEST.json')
+}
 function Get-PinnedBytes([string]$remotePath) {
-    if($remotePath -notmatch '^BGXAI/fox_new/release_0(39|40|41|42b|43p|44|45|45b|46|47|48)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
+    if($remotePath -notmatch '^BGXAI/fox_new/release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
         throw ('Remote source path blocked: '+$remotePath)
     }
     # All sources are publicly hosted; pin content by immutable commit and SHA256 manifest.
@@ -533,6 +540,28 @@ function Test048ReadOnly {
     } else { Write-Host 'BGXAI 048 PRECHECK: REVIEW. DO NOT INSTALL.' }
     Write-Host 'NO GAME FILES CHANGED.'
 }
+function Test049ReadOnly {
+    # Passive baseline verification only; no script execution/download/write.
+    Write-Host ''
+    Write-Host 'BGXAI 049 GUARD ADVISORY PRECHECK (READ ONLY)'
+    $p=Join-Path $GameRoot 'WeiDU.log'
+    if(!(Test-Path -LiteralPath $p -PathType Leaf)){throw 'WeiDU.log missing'}
+    $e=@(Get-Content -LiteralPath $p | Where-Object { $_.TrimStart().StartsWith('~') })
+    $last48=$e.Count -gt 0 -and $e[-1] -match 'BGX48[^~]*[.]TP2~'
+    $last49=$e.Count -gt 0 -and $e[-1] -match 'BGX49[^~]*[.]TP2~'
+    $present49=@($e | Where-Object { $_ -match 'BGX49[^~]*[.]TP2~' }).Count -gt 0
+    $old48=(HashFile (Join-Path $GameRoot 'override\M_BX43.lua')) -ceq '7b7b613c736df4d7d8a360e9879486bfe26ca52b7f29242c64ab6b2a27c694ea'
+    $bcs=(HashFile (Join-Path $GameRoot 'override\BDDEFAI.BCS')) -ceq '8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0'
+    $diag=(HashFile (Join-Path $GameRoot 'override\M_BX44.lua')) -ceq 'a7bdfba10cdb3cc26351072dac0c6f375e03b4ce3a288f0eb15db945411dd33f'
+    Write-Host ('048 last='+$last48+'; 049 present='+$present49+'; 049 last='+$last49)
+    Write-Host ('048 Lua verified='+$old48+'; 042B BCS unchanged='+$bcs+'; 044 Lua unchanged='+$diag)
+    if($last48 -and !$present49 -and $old48 -and $bcs -and $diag) {
+        Write-Host 'BGXAI 049 PRECHECK: BASELINE OK. NOT INSTALLED.'
+    } elseif($last49 -and $bcs -and $diag) {
+        Write-Host 'BGXAI 049 PRECHECK: PRESENT. Use option 51 for checksum status.'
+    } else {Write-Host 'BGXAI 049 PRECHECK: REVIEW. DO NOT INSTALL.'}
+    Write-Host 'NO GAME FILES CHANGED.'
+}
 Write-Host ''
 Write-Host ' BGXAI ONE-FILE UPDATER / EET Foxx / EPS 18.4'
 Write-Host ' Installed baseline: BGXAI 0381 + 039 (user-confirmed in-game).'
@@ -583,6 +612,11 @@ Write-Host ' 44 - Download/verify BGXAI 048 SOURCE ONLY'
 Write-Host ' 45 - EXPERIMENTAL install PASSIVE BGXAI 048 (YES + WeiDU backup)'
 Write-Host ' 46 - BGXAI 048 status (READ ONLY; after 44/45)'
 Write-Host ' 47 - Roll back BGXAI 048 (YES; only if last + verified backup)'
+Write-Host ' 48 - BGXAI 049 guard signal PRECHECK (READ ONLY)'
+Write-Host ' 49 - Download/verify BGXAI 049 SOURCE ONLY'
+Write-Host ' 50 - EXPERIMENTAL install PASSIVE BGXAI 049 (YES + WeiDU backup)'
+Write-Host ' 51 - BGXAI 049 status (READ ONLY; after 49/50)'
+Write-Host ' 52 - Roll back BGXAI 049 (YES; only if last + verified backup)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -636,6 +670,11 @@ try {
       '45' {SyncRelease $release048;RunRelease $release048 '--install';break}
       '46' {RunRelease $release048 '--status';break}
       '47' {SyncRelease $release048;RunRelease $release048 '--uninstall';break}
+      '48' {Test049ReadOnly;break}
+      '49' {SyncRelease $release049;break}
+      '50' {SyncRelease $release049;RunRelease $release049 '--install';break}
+      '51' {RunRelease $release049 '--status';break}
+      '52' {SyncRelease $release049;RunRelease $release049 '--uninstall';break}
       default {throw 'Unknown menu option, no game change.'}
     }
     exit 0
