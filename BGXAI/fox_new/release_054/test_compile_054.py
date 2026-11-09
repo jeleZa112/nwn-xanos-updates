@@ -36,7 +36,7 @@ def test_valid_compile_is_temporary_and_readonly(tmp_path,monkeypatch):
         assert kwargs['cwd']!=str(game)
         assert '--out' in cmd and '--tlkin' in cmd and '--use-lang' not in cmd
         assert '--force-install' not in cmd
-        dest=Path(cmd[cmd.index('--out')+1]);dest.joinpath(mod.NAME.replace('.baf','.bcs')).write_bytes(b'SC\n0CR\n')
+        dest=Path(cmd[cmd.index('--out')+1]);dest.joinpath(mod.COMPILE_NAME.replace('.baf','.bcs')).write_bytes(b'SC\n0CR\n')
         return subprocess.CompletedProcess(cmd,0,'compiled','')
     report=mod.compile_readonly(game,SOURCE,exe,runner=fake_runner)
     assert report['status']=='COMPILED_TEMP_ONLY'
@@ -60,7 +60,7 @@ def test_live_game_modified_during_compile_is_review(tmp_path,monkeypatch):
     game,exe=make_game(tmp_path);gate_ok(monkeypatch)
     def unwanted_write(cmd,**kwargs):
         (game/'override/BDDEFAI.BCS').write_bytes(b'CHANGED')
-        dest=Path(cmd[cmd.index('--out')+1]);dest.joinpath(mod.NAME.replace('.baf','.bcs')).write_bytes(b'SC\n')
+        dest=Path(cmd[cmd.index('--out')+1]);dest.joinpath(mod.COMPILE_NAME.replace('.baf','.bcs')).write_bytes(b'SC\n')
         return subprocess.CompletedProcess(cmd,0,'','')
     result=mod.compile_readonly(game,SOURCE,exe,runner=unwanted_write)
     assert result['status']=='REVIEW_LIVE_HASH_CHANGED' and not result['live_unchanged']
@@ -70,7 +70,7 @@ def test_compiler_failures_never_mean_success(tmp_path,monkeypatch,exit_code,emi
     game,exe=make_game(tmp_path);gate_ok(monkeypatch)
     def failing(cmd,**kwargs):
         if emit:
-            dest=Path(cmd[cmd.index('--out')+1]);dest.joinpath(mod.NAME.replace('.baf','.bcs')).write_bytes(b'SC\n')
+            dest=Path(cmd[cmd.index('--out')+1]);dest.joinpath(mod.COMPILE_NAME.replace('.baf','.bcs')).write_bytes(b'SC\n')
         return subprocess.CompletedProcess(cmd,exit_code,'bad','')
     result=mod.compile_readonly(game,SOURCE,exe,runner=failing)
     assert result['status']=='COMPILER_FAILED'
@@ -86,7 +86,7 @@ def test_source_inside_game_blocks(tmp_path,monkeypatch):
     game,exe=make_game(tmp_path);gate_ok(monkeypatch)
     bad=game/'override'/mod.NAME
     bad.write_bytes(SOURCE.read_bytes())
-    with pytest.raises(ValueError,match='SOURCE_IN_LIVE_GAME'):
+    with pytest.raises(ValueError,match='SOURCE_IN_LIVE_GAME_UNAPPROVED'):
         mod.compile_readonly(game,bad,exe)
 
 def test_missing_tlk_blocks(tmp_path,monkeypatch):
@@ -100,3 +100,22 @@ def test_missing_weidu_log_blocks(tmp_path,monkeypatch):
     (game/'WeiDU.log').unlink()
     with pytest.raises(ValueError,match='REQUIRED_LOG_OR_TLK_MISSING'):
         mod.compile_readonly(game,SOURCE,exe)
+
+
+def test_updater_approved_source_inside_game(tmp_path,monkeypatch):
+    game,exe=make_game(tmp_path);gate_ok(monkeypatch)
+    root=game/'BGXAI_DEV'/'experimental_054';root.mkdir(parents=True)
+    approved=root/mod.NAME;approved.write_bytes(SOURCE.read_bytes())
+    def fake_compiler(cmd,**kwargs):
+        assert str(approved)==cmd[-1] or str(approved) not in cmd
+        dest=Path(cmd[cmd.index('--out')+1]);dest.joinpath(mod.COMPILE_NAME.replace('.baf','.bcs')).write_bytes(b'SC\n')
+        return subprocess.CompletedProcess(cmd,0,'','')
+    result=mod.compile_readonly(game,approved,exe,runner=fake_compiler)
+    assert result['status']=='COMPILED_TEMP_ONLY' and result['live_unchanged']
+
+def test_approved_dir_other_filename_denied(tmp_path,monkeypatch):
+    game,exe=make_game(tmp_path);gate_ok(monkeypatch)
+    root=game/'BGXAI_DEV'/'experimental_054';root.mkdir(parents=True)
+    bad=root/'other.baf';bad.write_bytes(SOURCE.read_bytes())
+    with pytest.raises(ValueError,match='SOURCE_IN_LIVE_GAME_UNAPPROVED'):
+        mod.compile_readonly(game,bad,exe)
