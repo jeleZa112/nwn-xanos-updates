@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.7.0
+# Roblox background monitor - release 3.7.1
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.7.0"
+VERSION = "3.7.1"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -4809,6 +4809,7 @@ def autopilot_mode():
     last_action=0.0
     last_frame_at=begin
     last_focus_note=begin-10
+    focus_pause_started=None
     spawn_approach_steps=0
     spawn_approach_enabled=False
     last_phase=''
@@ -4883,14 +4884,36 @@ def autopilot_mode():
             if io.stop_pressed() and io.focused():
                 halt_reason='USER_F10';break
             if not io.focused():
-                # Alt+Tab pauses every game input without discarding the run.
-                # After the initial YES, never steal focus from another app.
+                # Alt+Tab suspends input AND navigation deadlines, without
+                # silently extending the independent movement action budget.
+                if focus_pause_started is None:
+                    focus_pause_started=now
                 if now-last_focus_note>=10:
                     log('GAME_FOCUS_PAUSED: Roblox not foreground; '+
                         'all input suspended until Roblox is active again')
                     last_focus_note=now
                 time.sleep(.15)
                 continue
+            if focus_pause_started is not None:
+                pause_seconds=max(0.0,now-focus_pause_started)
+                # Move every wall-clock deadline that can expire while
+                # control is paused; never reset action/seconds counters.
+                brain.stage_since+=pause_seconds
+                stage_since+=pause_seconds
+                if pad_reselect.lost_since is not None:
+                    pad_reselect.lost_since+=pause_seconds
+                if pad_reselect.excluded_until:
+                    pad_reselect.excluded_until+=pause_seconds
+                if menu_candidate_since is not None:
+                    menu_candidate_since+=pause_seconds
+                wait_until+=pause_seconds
+                last_action+=pause_seconds
+                last_sample=0.0
+                motion.reset()
+                visual_ready.reset()
+                log('GAME_FOCUS_RESUMED pause_s='+str(round(pause_seconds,1))+
+                    ' visual_lock_reset=True')
+                focus_pause_started=None
             try:frame=q.get(timeout=.4)
             except queue.Empty:
                 if now-last_frame_at>8:
@@ -5101,6 +5124,12 @@ def autopilot_mode():
                             abs(local['center_x']-brain.target_x)<.18 and
                             visual_ready.fallback_pulses<
                                 visual_ready.MAX_FALLBACK_PULSES):
+                        # Freshly tracked sign is evidence the original target
+                        # remains in view, not proof of FREE status. Keep
+                        # the lost-text grace clock alive while bounded
+                        # optical-flow pulses make verified progress.
+                        pad_reselect.lost_since=now
+                        pad_reselect.lost_frames=0
                         action,key,unused=brain.lobby_movement(
                             local['center_x'],now)
                         if action=='HALT':
