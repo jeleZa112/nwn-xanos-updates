@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.5.7
+# Roblox background monitor - release 3.5.8
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.5.7"
+VERSION = "3.5.8"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -2101,6 +2101,47 @@ def _live_ready_v351_template():
         _LIVE_READY_V351_SHAPE)
 
 
+# === V3.5.8: narrow READY template from original private gameplay screenshot ===
+# Only the cropped game UI label is embedded, no usernames or avatars.
+_LIVE_READY_V358_SHAPE=(18,120)
+_LIVE_READY_V358_DATA=(
+    'c-mc+dvH|c6~O;3CUiIZy!U?h{n*FdU9!6gVYBa7;>aI@bfz+W_!wvv9I-'
+    '9fDzpV1gea}!z(}oH+GIB&I)*?oBwz^0s8}nnP^c|7$q*G2$a9n3d;aTpcay;Q+nJqnXYO}@_dDl)=QR7D{sm@}>a^ReHXA}DX_p'
+    'Vp0l-TP>v*$(gI8%@5Cop*Ff2<`7_tIE&<tCFVHldG5wcV-u^eNt*eLt2KiiJPGJ?R-'
+    'gxzdhUY&kcE29WD>?IJQNZZF6z}V;OcxC_x;}_O*`U-'
+    'v#uEK(>j2_WC6slQJR#zKLH3Uu4EJbv~M|M#}q|IztUcKCC!tcT~?t}Ti{|7*%ZKfJgwa^^9wN%`nr5Ij#x>!7TKS^_f&0=LZtJz'
+    'FrEvhk_O(qk=SVUE@GnN`t8G^P_E|-b;e%1GuEn8N-%wRMc?qg(Iwb5Af4xA-Ks;a8$zN#uKqRX#Z`yq6w&jV1b_3`Ut<L9F^IRO'
+    '9o(Z&rbNA<vkpKRRVW!UYb-6FB?X1^1A=~JVlqc`8Sc#nKDKC;ucepKgXj}5hqjDOoH8i+1@J@Rgy%@*nVcKplDM#_Ew-bNy#u#r'
+    'Y|May`m;7NHa0Kxuj8YU-'
+    'T#7m4qVGc^ygVYTu6rl7)2<6}t?*0k*pATo*^)JxoW;;EfLGiX$c;U&JB7jyn%^xgk;{~mca$SKtXTFAyjDZ_4e+#BJSc(0xjTLZ'
+    'ZIF6}kafz}TG>f{|dJV1xemD)giCZx9R;~d1$YGc{)H(wP?AU8M220+4pO4$6&294c!f?HJ{Ve2FY2`Q^cJ3_AKI9yPZo^w})zAW'
+    'y4+k&9B@^|kwn-'
+    'E?p5^$mw)`DF0`sWsT{#Q8S=&_@AaB77B)SM^nPGUDLZ86LOdEW@WxBNFeUD)6AHZc9J*v&Grb833m!LL5VGZfO4K30Y7(4OR^j_'
+    'i|T(S^*;C6uBTiPh%m3Y5PTK0ALudVFO%)vIn{wZ8yZ^34PJOhK$Fl-gj3AiS<!JW~sdSPgVEJ-T%k^*@a`fcoknzmN=wh-'
+    'iVFqNgeU&CL7K`4%u3j5j1@S%y^4pT|tp)-vlr+e8YE&C<>4GFq8I0c7jGy-jwe?luy4nhxg4mx?_Q#eVt;ZwZlSs1ESRdogSa&G'
+    'Q83<c0{VJhtiPrxf2daN}6ge5VfJ*8ZM0skJDT>AlhAzJ?oqpT>c!%F@9F?YQs_$gQRQb%EO%fWf=DRD<}`Zv30;CIrtxtSfiCgC'
+    'MJ_Fi{94?}*BXTd8!TG0Obs~d1$b%iJ46<%;%g~1<pYhy9@Ae@Z+UYlL}^HTARXTE_RLOeC!V`dl9yr5;_s^D~Og%VOd7d0pqyA+'
+    'Q!P=b<n!N=1lia5CFCtIQL7`qdO8>5lN&^73CH#B$;PJ;$R4?An46WYs+NUj;dNx8Gl?!E$Au{75wqBrni&<4YtGzR}R<37W&_jv'
+    'mn6_4i!=T6c-'
+    'SK#&2?>|@97!B9IcKXz73DH6*drtNJF~HF4^DmO#)%ksaL?T+>()r6kEFSi4?(P560}atg@IZd8f#PhjTz~sIB=EcP`F!gW3Wca='
+    'di(wmASC9+^IPl--bF2I6<lgSb$jY#$#}iLHk?jplj(Y2ZC#wVauP#P2-gJ>W-'
+    '7GG7mUP`v9RA8h(zMi$V$~+y9y^@l}s6ptjJOplZC{6oU~i4RzmNZc8l3cv5HI(6w6iG>Y|q8%*Yjwr{c+EGLy`vQd#^<XHuDTRC'
+    'T%}S(f#NEUBtHl1wBM349y=PsHQ#SUeVuMWWGg*r(7)5?S2ZDH;zDfkpHp2q9jPMUm&eQ(l3uVcf|$eq=h?l+I?e%}vcsnRGH13i'
+    'v}FSym+7>kNe)vRh|GB9%&2+=*CyFc_?BsPnj74uxlQFN5cYK;P@7MMc71{yXKB6khS_+eoFGnwl%Da^O1!t})|Y^!nnBBC8J}F?'
+    '3g(h{=`V7l_n3W$e{!qR%aa?%6IaVXxk-aGLLymuv9VHK?^-)#Xe-uzG=v+vRjRluXv+cB@WBk(HIHu!2)AJ7Y~cI4v1WI#?d5ay'
+    'VY+am)IE<{eIlQxTTHV?<Ql_+j|{Wt?tl0eMaD;qI<{K9_6jI)429Mc!*~&*u*xJJNx{A7{S3>*%|=91h+&b}vVd<l8XqN4h#Y+H'
+    '*K+ZNm%8(OvQ#9s1Ms<@hRB;n0p1{|9#P8%q'
+)
+
+def _live_ready_v358_template():
+    import base64, zlib, numpy as np
+    from functools import lru_cache
+    return np.frombuffer(zlib.decompress(base64.b85decode(
+        ''.join(_LIVE_READY_V358_DATA))),dtype=np.uint8).reshape(
+            _LIVE_READY_V358_SHAPE)
+# === End V3.5.8 extra reference ===
+
+
 def pad_sign_hints(raw):
     """Read old + current READY text from the *verified* Roblox WGC frame.
 
@@ -2130,6 +2171,22 @@ def pad_sign_hints(raw):
                 continue
             heat=cv2.matchTemplate(region,tile,cv2.TM_CCOEFF_NORMED)
             ys,xs=np.where((heat >= (.80 if scale<.70 else .72))&
+                (heat==cv2.dilate(heat,np.ones((9,25),np.uint8))))
+            for y,x in zip(ys,xs):
+                hits.append((float(heat[y,x]),int(x),int(y+24),
+                             int(tile.shape[1]),int(tile.shape[0])))
+        # The exact 2026-11-09 failure screenshot has a READY label at
+        # ~0.64 of original text size. The old low-scale trials stop at
+        # .62, while .72+ is too large. This independent in-game-only
+        # template has been checked against menu/loading negative frames.
+        secondary=_live_ready_v358_template()
+        for scale in (.59,.60,.61,.62,.63,.64,.645,.65,.66,.67,.68):
+            tile=cv2.resize(secondary,None,fx=scale,fy=scale,
+                             interpolation=cv2.INTER_AREA)
+            if tile.shape[0]>=region.shape[0] or tile.shape[1]>=region.shape[1]:
+                continue
+            heat=cv2.matchTemplate(region,tile,cv2.TM_CCOEFF_NORMED)
+            ys,xs=np.where((heat>=.78)&
                 (heat==cv2.dilate(heat,np.ones((9,25),np.uint8))))
             for y,x in zip(ys,xs):
                 hits.append((float(heat[y,x]),int(x),int(y+24),
