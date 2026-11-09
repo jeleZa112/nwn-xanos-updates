@@ -1160,3 +1160,12 @@ BGXAI: update/status action completed.
 Conclusion: 045 install prerequisites confirmed on user's Windows; no file changes in preflight, active 042B/043P/044 preserved. **045 NOT INSTALLED YET.**
 
 NEXT ONLY: with game/InfinityLoader/WeiDU closed, run same onefile updater and choose **30** (automatically syncs/verifies sources), enter **YES** once after guarded checks, paste full install result. If BLOCKED/REVIEW/STOP stop without retries. Option 29 not separately required. Do not repeat Shank tests or ask for EET archives.
+
+## 2026-11-09 — BUG 045 install BLOCKED; fixed 045B source-only, NOT INSTALLED
+User selected option 30 in Windows and input YES. SHA source sync succeeded; Python guard aborted with `BGXAI 045 BLOCKED: Expected BGX44 as LAST WeiDU component` before backup/WeiDU. Earlier **option 28** read-only confirmed BGX44 last=True and all baseline hashes match. The user must NOT repeat unpatched option 30. Old Python regex required an exact numeric suffix in `WeiDU.log`, whereas PowerShell confirmed the TP2 filename; exact real tail not available. No game modification is indicated, BCS 042B/043P/044 preserved.
+
+**045B** published at `BGXAI/fox_new/release_045b/` with exact `BGX44/SETUP-BGX44.TP2` basename/last-line guard (ignores numeric tail), all existing strict SHA/process/no-collision/backup/rollback gates; any new mismatch prints observed WeiDU tail. Unit tests **23/23 PASS**. All **8/8** release files refetched and size+SHA256 verified. ZIP + source permanently archived in Library `/BALDURS_GATE_EET_AI/BUILD/BGXAI_045B_RESREF_FIX/`. Checkpoint `/BALDURS_GATE_EET_AI/CURRENT/BGXAI_045B_WEIDU_ORDER_FIX_20261109_RU.md`, GitHub `BGXAI/CURRENT/BGXAI_045B_WEIDU_ORDER_FIX_20261109_RU.md`.
+
+Onefile dispatcher menu options 1-32 unchanged; option 30 now uses `0.3.16b-045-RESREF-FIX`, `release_045b`. Pinned commit `0863d0b49ab015aefbb2a4dabd19446ed897b4d9`, SHA256 `b0f6fa5216ae2b8b312221edb18f4143c5cb48a8b4660b98053b70e0bbb6b644` (31943 bytes); pin commit `ee8ba92f6bd96cc78dec5bb1fe0ef2466ef06bce`. Current 045B **NOT INSTALLED in user's EET**.
+
+Next action: close game/InfinityLoader, run SAME existing `BGXAI_UPDATE.cmd` to fetch fresh pin, choose **30** once and `YES`; confirm output states 045B source and `INSTALLED_PASSIVE_045`. If BLOCKED/REVIEW, stop and send full output, no blind retry. If installed, launch via InfinityLoader, press Ctrl+Alt+F11 once. No repeated Shank fight.
