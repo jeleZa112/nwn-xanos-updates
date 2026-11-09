@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.6.0
+# Roblox background monitor - release 3.6.1
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.6.0"
+VERSION = "3.6.1"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -4139,6 +4139,43 @@ def autopilot_disable_console_selection():
         return False
 
 
+def autopilot_minimize_console():
+    """Auto-minimize CMD after YES; preserve logging in AUTOPILOT_LOG.txt."""
+    try:
+        import ctypes
+        from ctypes import wintypes
+        kernel=ctypes.WinDLL('kernel32',use_last_error=True)
+        u=ctypes.WinDLL('user32',use_last_error=True)
+        kernel.GetConsoleWindow.restype=wintypes.HWND
+        u.IsWindowVisible.argtypes=(wintypes.HWND,)
+        u.IsWindowVisible.restype=wintypes.BOOL
+        u.IsIconic.argtypes=(wintypes.HWND,)
+        u.IsIconic.restype=wintypes.BOOL
+        u.ShowWindow.argtypes=(wintypes.HWND,ctypes.c_int)
+        u.ShowWindow.restype=wintypes.BOOL
+        hwnd=kernel.GetConsoleWindow()
+        if not hwnd or not u.IsWindowVisible(hwnd) or u.IsIconic(hwnd):
+            return 0
+        u.ShowWindow(hwnd,6)  # SW_MINIMIZE
+        return int(hwnd)
+    except (OSError,AttributeError,ValueError):
+        return 0
+
+
+def autopilot_restore_console(hwnd):
+    """Show the same CMD window again when the autopilot finishes."""
+    if not hwnd:return
+    try:
+        import ctypes
+        from ctypes import wintypes
+        u=ctypes.WinDLL('user32',use_last_error=True)
+        u.ShowWindow.argtypes=(wintypes.HWND,ctypes.c_int)
+        u.ShowWindow.restype=wintypes.BOOL
+        u.ShowWindow(hwnd,9)  # SW_RESTORE
+    except (OSError,AttributeError,ValueError):
+        pass
+
+
 class AutoPilotInput:
     """Foreground-only press/click; never send input to a browser."""
     VK_F10=0x79
@@ -4373,11 +4410,6 @@ def autopilot_mode():
     try:
         hwnd=verified_roblox_hwnd()
         io=AutoPilotInput(hwnd)
-        if io.focus_game_once():
-            log('ROBLOX_FOREGROUND_AUTO_OK')
-        else:
-            log('ROBLOX_FOREGROUND_AUTO_DENIED: click game window once; '+
-                'no game commands until focus is confirmed')
     except Exception as e:
         log('GAME_WINDOW_FAILED '+repr(e));return 2
     q=queue.Queue(maxsize=1)
@@ -4427,6 +4459,7 @@ def autopilot_mode():
     last_pad_pause_at=begin-10
     last_pad_pause_reason=None
     last_live_frame=None
+    console_hwnd=0
     def reselect_pad(why,now):
         # No blind step to the next visible sign. Stop, preserve the overall
         # movement budget, and require three fresh READY samples.
@@ -4457,6 +4490,13 @@ def autopilot_mode():
             log('STATE '+stage+' -> '+next_stage+' : '+why)
             stage=next_stage;stage_since=now;last_phase=''
     try:
+        console_hwnd=autopilot_minimize_console()
+        log('CONSOLE_MINIMIZED='+str(bool(console_hwnd)))
+        if io.focus_game_once():
+            log('ROBLOX_FOREGROUND_AUTO_OK')
+        else:
+            log('ROBLOX_FOREGROUND_AUTO_DENIED: click game window once; '+
+                'no game commands until focus is confirmed')
         controller=cap.start_free_threaded()
         log('CAPTURE_GAME_HWND='+str(hwnd)+' ROUTE='+route.note)
         while not stop.is_set() and time.monotonic()-begin<7200:
@@ -4759,6 +4799,7 @@ def autopilot_mode():
         if controller is not None:
             try:controller.stop()
             except Exception:pass
+        autopilot_restore_console(console_hwnd)
 # === End ROBLOX V3.5 AUTOPILOT ===
 
 
