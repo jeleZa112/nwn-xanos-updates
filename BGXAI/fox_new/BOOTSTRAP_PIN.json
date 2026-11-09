@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "0863d0b49ab015aefbb2a4dabd19446ed897b4d9",
+  "commit": "c5bbb51ecb7c122b1b6a3580eef66f1b55378b87",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "b0f6fa5216ae2b8b312221edb18f4143c5cb48a8b4660b98053b70e0bbb6b644",
-  "script_size": 31943,
-  "description": "Onefile EET updater, old options 1–29/31–32 unchanged. Option 30 now gets hash-pinned 045B guarded WeiDU-log identifier compatibility fix, not installed automatically; 042B/043P/044 remain unchanged."
+  "script_sha256": "804809fa5d0fc3f1a26f436352d2cb6d90c42a81390fe28cd12032a20b99b6e7",
+  "script_size": 34628,
+  "description": "BGXAI 046 passive EEex attack observer: source-only 34, guarded 35, read-only 33/36, rollback 37; legacy 1-32 preserved. Requires installed BGX45 last."
 }
