@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "version": "0.3.16-044-DIAG",
+  "status": "OPT_IN_READ_ONLY",
+  "files": {
+    "BGXAI44_INSTALL.py": {
+      "size": 15106,
+      "sha256": "44f4ced55b3dfc1dfbcf78cb8ee061bb73781dfb6186ce8b1715477964fd075c"
+    },
+    "BGXAI44_DIAG.cmd": {
+      "size": 593,
+      "sha256": "e93622899f24aa4b72c91751a12561dbb1fa2840ec0cef5e6454e75d6a57853e"
+    },
+    "BGX44/M_BGX44Diag.lua": {
+      "size": 4267,
+      "sha256": "be435df1143f4c6d520f5d491aeafe62a5a0f317be74e8664574d3a4d6396597"
+    },
+    "BGX44/setup-BGX44.tp2": {
+      "size": 202,
+      "sha256": "afd3e04471c02877594fa1adc0000057dbda0efcd95ed4e347aa7b4f11152203"
+    },
+    "README_RU.md": {
+      "size": 4258,
+      "sha256": "91323b66896c1596910964df496282588e37fe0e98979bad0717bf4cd0e5ba9b"
+    }
+  }
+}
