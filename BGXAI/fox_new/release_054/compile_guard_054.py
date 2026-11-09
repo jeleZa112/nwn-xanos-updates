@@ -172,7 +172,10 @@ def compile_readonly(game:Path,source:Path,exe:Path,runner=subprocess.run)->dict
              '--tlkin',str(tlk),
              '--script-style','BG2','--out',str(out),str(local)]
         try:
-            proc=runner(cmd,cwd=str(work),capture_output=True,text=True,
+            # WeiDU 251 discovers chitin.key / KEY resources relative to its working
+            # directory even with --game and an absolute --tlkin path.
+            # Input BAF and --out both remain in the temporary directory.
+            proc=runner(cmd,cwd=str(game),capture_output=True,text=True,
                         encoding='utf-8',errors='replace',timeout=MAX_COMPILER_SECONDS,check=False)
             report['return_code']=proc.returncode
             report['stdout_tail']=(proc.stdout or '')[-1200:]
@@ -180,7 +183,14 @@ def compile_readonly(game:Path,source:Path,exe:Path,runner=subprocess.run)->dict
             generated=list(out.rglob('*.bcs'))
             if not generated:generated=list(work.rglob('*.bcs'))
             valid=[p for p in generated if p.stem.lower()==local.stem.lower()]
-            if proc.returncode==0 and len(valid)==1 and valid[0].stat().st_size>0:
+            # WeiDU 251 can print a fatal error yet return process exit code 0.
+            # Never declare compilation success on exit code alone.
+            combined=(proc.stdout or '')+'\n'+(proc.stderr or '')
+            fatal=bool(re.search(r'(?im)^(?:\s*FATAL ERROR:|\s*ERROR:)', combined))
+            report['weidu_fatal_in_output']=fatal
+            if fatal:
+                report['status']='WEIDU_FATAL_ERROR'
+            elif proc.returncode==0 and len(valid)==1 and valid[0].stat().st_size>0:
                 report['compiler_output_sha256']=digest(valid[0])
                 report['compiler_output_size']=valid[0].stat().st_size
                 report['compiler_output_first8']=valid[0].open('rb').read(8).hex()
