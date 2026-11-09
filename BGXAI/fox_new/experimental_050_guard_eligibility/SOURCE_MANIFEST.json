@@ -1,0 +1,24 @@
+{
+  "project": "BGXAI",
+  "version": "0.3.21-050-GUARD-ELIGIBILITY-PREVIEW",
+  "status": "SOURCE_ONLY_DO_NOT_INSTALL",
+  "origin": "BGXAI049",
+  "runtime_test": "PASS_106_TEXLUA",
+  "files": [
+    {
+      "path": "M_BX43_050_PREVIEW.lua",
+      "size": 16969,
+      "sha256": "e2eda6de3fd984bd0a49d643c76a16cbc3fb9b8dab635875dbb9afe25b58597b"
+    },
+    {
+      "path": "test_guard_050.lua",
+      "size": 4935,
+      "sha256": "a92ef230ae0ab61ed7d1184239c7531c30d474fd2823b6e8913a14da9dce49e9"
+    },
+    {
+      "path": "README_RU.md",
+      "size": 5999,
+      "sha256": "e9492f6087a1cb8aeebd5679bd6cc03d96803b9f36c3a6c5caf4137488eb59ea"
+    }
+  ]
+}
