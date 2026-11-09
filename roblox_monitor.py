@@ -4983,10 +4983,9 @@ def autopilot_mode():
                 # Occupied signs are retained for ready_sign's busy veto.
                 target=brain.ready_sign(pad_reselect.candidates(signs,now))
                 if target is None:
-                    # The last verified user screenshot is the distant spawn:
-                    # READY text is too small/occluded to match from here.
-                    # Only on the known grate scene, allow a tiny, bounded
-                    # forward route while WGC verifies each physical shift.
+                    # Distant READY text can be unreadable/occluded from spawn.
+                    # In independently verified LOBBY, attempt only a short
+                    # bounded approach; WGC checks actual motion after each step.
                     if not spawn_approach_enabled and spawn_approach_steps==0:
                         # The historical grate criterion passed on an older
                         # saved image but did not trigger in live V3.6.8.
