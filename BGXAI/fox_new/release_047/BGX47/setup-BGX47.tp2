@@ -1,0 +1,4 @@
+BACKUP ~BGX47/backup~
+AUTHOR ~BGXAI 047 EEex passive resolved attack target~
+BEGIN ~BGXAI 047 EEex action target resolver (read-only)~
+COPY ~BGX47/M_BX43.lua~ ~override/M_BX43.lua~
