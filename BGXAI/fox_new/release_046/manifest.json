@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.17-046-ATTACK-FILTER",
+  "status": "OPT_IN_PASSIVE_FILTER_FIX",
+  "files": [
+    {
+      "dest": "BGX46/M_BX43.lua",
+      "source": "BGXAI/fox_new/release_046/BGX46/M_BX43.lua",
+      "size": 6725,
+      "sha256": "1c1e314e1f14a693fa0b10d7450e737447a992e9d7900fb7112437f75c26a6a3"
+    },
+    {
+      "dest": "BGX46/setup-BGX46.tp2",
+      "source": "BGXAI/fox_new/release_046/BGX46/setup-BGX46.tp2",
+      "size": 189,
+      "sha256": "73d8593bfb9d07e661402290d8bf1b4fc1f798611a86dbfc5f264fa18380a23e"
+    },
+    {
+      "dest": "BGXAI46_INSTALL.py",
+      "source": "BGXAI/fox_new/release_046/BGXAI46_INSTALL.py",
+      "size": 15220,
+      "sha256": "db279aac8d8fbf576d8ffcd5aa819d4a98fb34a32c3953e5db718dd6c50f00d8"
+    },
+    {
+      "dest": "README_RU.md",
+      "source": "BGXAI/fox_new/release_046/README_RU.md",
+      "size": 3850,
+      "sha256": "24e2de994f7da24d47542598478fb1e806c50fceb0451713200f88239751500f"
+    },
+    {
+      "dest": "BGX46/tests/test_lua_046.py",
+      "source": "BGXAI/fox_new/release_046/BGX46/tests/test_lua_046.py",
+      "size": 4615,
+      "sha256": "4ca2ba037e564149e12dd5c82dfda94274900ce1857a46cd6b78f127e0a5ab2d"
+    },
+    {
+      "dest": "BGX46/tests/test_installer_046.py",
+      "source": "BGXAI/fox_new/release_046/BGX46/tests/test_installer_046.py",
+      "size": 4758,
+      "sha256": "f39912e4cab79ccb2c50ac02213ac66232ad2c37a15e1ce2021b78bad5cd9b43"
+    },
+    {
+      "dest": "SOURCE_MANIFEST.json",
+      "source": "BGXAI/fox_new/release_046/SOURCE_MANIFEST.json",
+      "size": 1370,
+      "sha256": "c7a7b38008028f4fbae0b9d38c94befb7f1ef573b436fe80c5e5d5b33c6e7480"
+    }
+  ]
+}
