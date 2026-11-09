@@ -216,3 +216,87 @@ def test_weidu_arguments_source_and_output_stay_in_temp(tmp_path,monkeypatch):
         return subprocess.CompletedProcess(cmd,0,'Compiled','')
     report=mod.compile_readonly(game,SOURCE,exe,runner=fake_weidu)
     assert report['status']=='COMPILED_TEMP_ONLY' and report['live_unchanged']
+
+# R3 regression: the prior 90-second timeout was caused by invoking
+# setup-enhanced-powergaming-scripts.exe, which defaults to auto-run a TP2.
+def test_setup_exe_is_copied_and_invoked_as_temp_weidu_no_auto_tp2(tmp_path,monkeypatch):
+    game,old_exe=make_game(tmp_path);gate_ok(monkeypatch)
+    setup=game/'setup-enhanced-powergaming-scripts.exe'
+    setup.write_bytes(old_exe.read_bytes())
+    import compile_guard_054 as m
+    def fake(cmd,**kwargs):
+        assert Path(cmd[0]).name.lower()=='weidu.exe'
+        assert Path(cmd[0]).parent!=game
+        assert '--no-auto-tp2' in cmd
+        assert '--no-exit-pause' in cmd
+        assert '--noautoupdate' in cmd
+        assert '--log' in cmd and Path(cmd[cmd.index('--log')+1]).parent!=game
+        assert kwargs['stdin']==subprocess.DEVNULL
+        assert kwargs['timeout']==25
+        assert kwargs['cwd']==str(game)
+        assert Path(cmd[0]).read_bytes()==setup.read_bytes()
+        dest=Path(cmd[cmd.index('--out')+1])
+        dest.joinpath('BX52CHK.bcs').write_bytes(b'SC\n0CR\n')
+        return subprocess.CompletedProcess(cmd,0,'compiled','')
+    before=m.snapshot(game)
+    result=m.compile_readonly(game,SOURCE,setup,runner=fake)
+    assert result['status']=='COMPILED_TEMP_ONLY'
+    assert result['compiler_staged_as']=='TEMP_WEIDU_EXE'
+    assert result['live_unchanged']
+    assert before==m.snapshot(game)
+
+
+def test_timeout_is_explicit_and_preserves_partial_output(tmp_path,monkeypatch):
+    game,exe=make_game(tmp_path);gate_ok(monkeypatch)
+    before=mod.snapshot(game)
+    def timeout(cmd,**kwargs):
+        raise subprocess.TimeoutExpired(cmd,25,output=b'prompts waiting for input',stderr=b'tp2 blocked')
+    report=mod.compile_readonly(game,SOURCE,exe,runner=timeout)
+    assert report['status']=='COMPILER_TIMEOUT'
+    assert report['timeout_seconds']==25
+    assert 'prompts waiting' in report['stdout_tail']
+    assert 'tp2 blocked' in report['stderr_tail']
+    assert report['live_unchanged'] and not report['install_performed']
+    assert mod.snapshot(game)==before
+
+
+def test_actual_subprocess_with_staged_fake_exe_exits_without_prompt(tmp_path,monkeypatch):
+    """Real OS subprocess execution, but intentionally a fake executable,
+    NOT a claim that the true Windows WeiDU was tested."""
+    import os
+    if os.name=='nt':pytest.skip('POSIX shebang fake executable test')
+    game,exe=make_game(tmp_path);gate_ok(monkeypatch)
+    # Stand-in process that refuses to compile if invoked as setup-* or
+    # without the explicit WeiDU safety flags.
+    exe.write_text('''#!/usr/bin/env python3
+import sys,pathlib
+args=sys.argv[1:]
+if pathlib.Path(sys.argv[0]).name.lower()!='weidu.exe':
+    print('AUTO_TP2_UNSAFE');sys.exit(5)
+if not {'--no-auto-tp2','--no-exit-pause','--noautoupdate'}.issubset(args):
+    print('INTERACTIVE_UNSAFE');sys.exit(6)
+if sys.stdin.read()!='':
+    print('STDIN_NOT_CLOSED');sys.exit(7)
+out=pathlib.Path(args[args.index('--out')+1]);out.mkdir(exist_ok=True)
+(out/'BX52CHK.bcs').write_bytes(b'SC\\n0CR\\n')
+print('compile complete')
+''',encoding='utf-8')
+    exe.chmod(0o755)
+    before=mod.snapshot(game)
+    report=mod.compile_readonly(game,SOURCE,exe)
+    assert report['status']=='COMPILED_TEMP_ONLY',report
+    assert report['live_unchanged']
+    assert report['compiler_output_size']==7
+    assert mod.snapshot(game)==before
+
+
+def test_process_stdin_closed_and_setup_mode_protected_even_with_output(tmp_path,monkeypatch):
+    game,exe=make_game(tmp_path);gate_ok(monkeypatch)
+    def fake(cmd,**kwargs):
+        assert cmd[1:4]==['--noautoupdate','--no-auto-tp2','--no-exit-pause']
+        assert kwargs['stdin']==subprocess.DEVNULL
+        out=Path(cmd[cmd.index('--out')+1]);out.joinpath('BX52CHK.bcs').write_bytes(b'SC\n')
+        return subprocess.CompletedProcess(cmd,0,'ERROR: unexpected', '')
+    report=mod.compile_readonly(game,SOURCE,exe,runner=fake)
+    assert report['status']=='WEIDU_FATAL_ERROR'
+    assert report['live_unchanged']
