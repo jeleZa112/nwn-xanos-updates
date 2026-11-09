@@ -165,3 +165,15 @@ def test_staged_hash_verification_fails_if_modified(tmp_path,monkeypatch):
     assert res['status']=='BLOCKED_BEFORE_WEIDU'
     assert not (g/i.MOD).exists()
     assert not (g/i.EXECUTABLE).exists()
+
+
+def test_compiled_receiver_missing_last_newline_is_normalized_before_splice(monkeypatch):
+    old=synthetic_original()
+    monkeypatch.setattr(b,'PIN_BCS',b.sha(old))
+    monkeypatch.setattr(b,'PIN_BCS_BYTES',len(old))
+    nofinal=compiled_receiver().rstrip(b'\n')
+    assert nofinal.endswith(b'CR')
+    patched,proof=b.combine(old,nofinal)
+    assert proof['compiler_final_newline_normalized']
+    assert patched.endswith(b'CR\n')
+    assert len(b.segment(patched,1065))==1065
