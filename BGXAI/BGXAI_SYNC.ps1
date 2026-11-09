@@ -89,8 +89,14 @@ $release049=@{
             'BGX49/tests/test_installer_049.py','BGX49/tests/test_lua_049.py',
             'README_RU.md','SOURCE_MANIFEST.json')
 }
+$release054=@{
+    id='054';version='0.3.21-054-WEIDU-READONLY';manifest=$remoteRoot+'release_054/manifest.json';prefix=$remoteRoot+'release_054/';
+    localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_054';installer='compile_guard_054.py';
+    names=@('compile_guard_054.py','verify_053_baseline.py','BGX52_guard_receiver_PREVIEW.baf',
+            'test_compile_054.py','README_RU.md','SOURCE_MANIFEST.json')
+}
 function Get-PinnedBytes([string]$remotePath) {
-    if($remotePath -notmatch '^BGXAI/fox_new/release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
+    if($remotePath -notmatch '^BGXAI/fox_new/release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
         throw ('Remote source path blocked: '+$remotePath)
     }
     # All sources are publicly hosted; pin content by immutable commit and SHA256 manifest.
@@ -617,6 +623,8 @@ Write-Host ' 49 - Download/verify BGXAI 049 SOURCE ONLY'
 Write-Host ' 50 - EXPERIMENTAL install PASSIVE BGXAI 049 (YES + WeiDU backup)'
 Write-Host ' 51 - BGXAI 049 status (READ ONLY; after 49/50)'
 Write-Host ' 52 - Roll back BGXAI 049 (YES; only if last + verified backup)'
+Write-Host ' 53 - BGXAI 054 download/verify read-only compiler SOURCES'
+Write-Host ' 54 - BGXAI 054 compile BAF READ ONLY (NO INSTALL / no TP2)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -675,6 +683,8 @@ try {
       '50' {SyncRelease $release049;RunRelease $release049 '--install';break}
       '51' {RunRelease $release049 '--status';break}
       '52' {SyncRelease $release049;RunRelease $release049 '--uninstall';break}
+      '53' {SyncRelease $release054;break}
+      '54' {SyncRelease $release054;RunRelease $release054 '--compile-readonly';break}
       default {throw 'Unknown menu option, no game change.'}
     }
     exit 0
