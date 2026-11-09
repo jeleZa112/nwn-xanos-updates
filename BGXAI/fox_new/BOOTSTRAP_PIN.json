@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "96e3e797ecedb1c49f67b76494ca8827ca6ec012",
+  "commit": "a51f2c42a02dfa796e34722012adf95f30aff7da",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "6e95696df1a32e8be94c5d573449a22e647772e2ae53bf6d30bb286b2f566b54",
-  "script_size": 24864,
-  "description": "One-file EET updater: 1-17 unchanged; 18 passive 043P preflight; 19 source sync; 20 opt-in passive EEex WeiDU; 21 status; 22 verified rollback. No automatic game changes."
+  "script_sha256": "57be8fa5f1df7b67334990cf895932ec9c6237c7b6fae54781ffad43ccbdd4ba",
+  "script_size": 28164,
+  "description": "One-file EET updater; 1-22 unchanged; 23 read-only 044 preflight; 24 source-only sync; 25 opt-in isolated EEex Lua diagnostic; 26 status; 27 verified WeiDU rollback. Working 042B/043P unaffected."
 }
