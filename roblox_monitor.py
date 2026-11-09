@@ -4917,6 +4917,8 @@ def autopilot_mode():
                 visual_ready.reset()
                 pad_reselect.reset()
                 brain.reset_lobby(now)
+                spawn_approach_steps=0
+                spawn_approach_enabled=False
                 return_gate.reset()
                 transition('LOBBY','four verified lobby frames after a match',now)
                 log('RETURN_COMPLETE: lobby cycle resumed without new game input')
@@ -4939,6 +4941,8 @@ def autopilot_mode():
                     visual_ready.reset()
                     pad_reselect.reset()
                     brain.reset_lobby(now)
+                    spawn_approach_steps=0
+                    spawn_approach_enabled=False
                     transition('LOBBY','lobby seen',now)
                 elif match_visible>=3:
                     brain.match_index+=1
@@ -4952,6 +4956,8 @@ def autopilot_mode():
                     visual_ready.reset()
                     pad_reselect.reset()
                     brain.reset_lobby(now)
+                    spawn_approach_steps=0
+                    spawn_approach_enabled=False
                     return_gate.reset()
                     transition('LOBBY','auto-return to lobby',now)
                 elif now-stage_since>90:
