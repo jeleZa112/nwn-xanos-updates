@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.19-048-CONFIRMED-HIT",
+  "status": "OPT_IN_PASSIVE_HIT_OBSERVER",
+  "files": [
+    {
+      "dest": "BGX48/M_BX43.lua",
+      "source": "BGXAI/fox_new/release_048/BGX48/M_BX43.lua",
+      "size": 11921,
+      "sha256": "7b7b613c736df4d7d8a360e9879486bfe26ca52b7f29242c64ab6b2a27c694ea"
+    },
+    {
+      "dest": "BGX48/setup-BGX48.tp2",
+      "source": "BGXAI/fox_new/release_048/BGX48/setup-BGX48.tp2",
+      "size": 185,
+      "sha256": "31e83c4c0d0b7d5ace308a2a92c51e34d4ad60d057cf2bdaf3c65de3e1b70649"
+    },
+    {
+      "dest": "BGXAI48_INSTALL.py",
+      "source": "BGXAI/fox_new/release_048/BGXAI48_INSTALL.py",
+      "size": 15376,
+      "sha256": "f1271463cd7dc100ca070117be1140b0d0ac26a3618c22e628fdd7a1ece3813d"
+    },
+    {
+      "dest": "README_RU.md",
+      "source": "BGXAI/fox_new/release_048/README_RU.md",
+      "size": 3485,
+      "sha256": "1b9b7c0d4bd4df7516f54ba455a8c5df15d826c13a4a8987f8269a1c051e0f87"
+    },
+    {
+      "dest": "BGX48/tests/test_lua_048.py",
+      "source": "BGXAI/fox_new/release_048/BGX48/tests/test_lua_048.py",
+      "size": 1447,
+      "sha256": "832c325fb8e436a03ee13a4c60b939af5acd2d8d79a7c113594a15fcf52f2ff1"
+    },
+    {
+      "dest": "BGX48/tests/test_installer_048.py",
+      "source": "BGXAI/fox_new/release_048/BGX48/tests/test_installer_048.py",
+      "size": 1188,
+      "sha256": "fe1e8859e0abcd3a9a5eec508df9bcca1f6ac1ddb80e92a112d8fbca8aa65989"
+    },
+    {
+      "dest": "SOURCE_MANIFEST.json",
+      "source": "BGXAI/fox_new/release_048/SOURCE_MANIFEST.json",
+      "size": 1373,
+      "sha256": "cc4060452c2311bf871780e6663c489e9e6112b9e1f83f3a00cd4fe82f1363d8"
+    }
+  ]
+}
