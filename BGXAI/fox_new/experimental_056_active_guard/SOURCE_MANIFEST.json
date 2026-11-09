@@ -6,8 +6,8 @@
   "baseline_049_lua_sha256": "a1c09d704bf66f054a2099c6496212573d56d185a550fb874fc1a35b1c739912",
   "files": {
     "BGX56/M_BX43.lua": {
-      "size": 20700,
-      "sha256": "75c880cb972f1610c515ade0d3a0e8bb8362f29c0fdd231a9d89080e456cbba6"
+      "size": 20696,
+      "sha256": "35e450b6600f0fc65d47e535126a52e0303c360033307fa920776faec3f581ab"
     },
     "BGX56/BGX56_RECEIVER.baf": {
       "size": 4133,
@@ -18,8 +18,8 @@
       "sha256": "942393059b928ce69d3dddf8da04285cdca90ce99ce466460e99e886239d325e"
     },
     "BGXAI56_BUILDER.py": {
-      "size": 6716,
-      "sha256": "7ee7fbc49c53f52ef5faba561213714a1b8a0a184b7083ccbf79c0795480d6ae"
+      "size": 6720,
+      "sha256": "66864ef229f693b4bf80d215ca3093344f4be3ef01d8b9dcb2ff7c92a0bca845"
     },
     "BGXAI56_INSTALL.py": {
       "size": 16173,
