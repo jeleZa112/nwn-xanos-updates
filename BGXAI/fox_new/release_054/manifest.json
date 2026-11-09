@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.21-054-WEIDU-READONLY",
+  "status": "READ_ONLY_COMPILE_NO_INSTALL",
+  "files": [
+    {
+      "dest": "compile_guard_054.py",
+      "source": "BGXAI/fox_new/release_054/compile_guard_054.py",
+      "size": 8088,
+      "sha256": "9d35e9a06692189999a6a4b71e66beeb6752f7c5189d3259aef9cebc8652a497"
+    },
+    {
+      "dest": "verify_053_baseline.py",
+      "source": "BGXAI/fox_new/release_054/verify_053_baseline.py",
+      "size": 3187,
+      "sha256": "b57040a13401cfbc6ba694e08fad4e52c0a6eea87f776f6302840fb250481388"
+    },
+    {
+      "dest": "BGX52_guard_receiver_PREVIEW.baf",
+      "source": "BGXAI/fox_new/release_054/BGX52_guard_receiver_PREVIEW.baf",
+      "size": 4112,
+      "sha256": "10c625ecb516e676d5ea264665f186d5f2a16a6809f88e569a7023b65d2e414c"
+    },
+    {
+      "dest": "test_compile_054.py",
+      "source": "BGXAI/fox_new/release_054/test_compile_054.py",
+      "size": 4982,
+      "sha256": "1feda8c3ee311a61c2eba2a0f995ee2df5ddfd831d7e09aadaa8299366c921f2"
+    },
+    {
+      "dest": "README_RU.md",
+      "source": "BGXAI/fox_new/release_054/README_RU.md",
+      "size": 4341,
+      "sha256": "20f7a29272791c2b7877fb94cccba73a0e9274987852eb4a0ccf82b52c38a143"
+    },
+    {
+      "dest": "SOURCE_MANIFEST.json",
+      "source": "BGXAI/fox_new/release_054/SOURCE_MANIFEST.json",
+      "size": 745,
+      "sha256": "2d58a483dcf47b64ef3e2f18ab1bf9c77fecbe6d6d4efe7f0f8879f350c22bcb"
+    }
+  ]
+}
