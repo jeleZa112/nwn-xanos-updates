@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "status": "EXPERIMENTAL_SOURCE_ONLY_NO_INSTALL",
+  "baseline_049_lua_sha256": "a1c09d704bf66f054a2099c6496212573d56d185a550fb874fc1a35b1c739912",
+  "files": {
+    "BGX52_bridge_preview.lua": {
+      "sha256": "f204712319edcd6b181d1e83bb77ac098726e419f1f716c4f124b66cda4d9d5f",
+      "size": 4840
+    },
+    "BGX52_guard_receiver_PREVIEW.baf": {
+      "sha256": "10c625ecb516e676d5ea264665f186d5f2a16a6809f88e569a7023b65d2e414c",
+      "size": 4112
+    },
+    "M_BX43_052_PREVIEW.lua": {
+      "sha256": "1cc3e29a4e42873403835324d12c9d9a9332b8760f45029f4c99b9a71528045a",
+      "size": 20177
+    },
+    "README_RU.md": {
+      "sha256": "f97618d35ef241fb41f320884061928e832c026c10f6160694b64aecdb8463cd",
+      "size": 3311
+    },
+    "test_bridge_052.lua": {
+      "sha256": "7b9746e5a59bd58da7e674267ba978a988ca73a0887167ae09ee9f8b68ad1020",
+      "size": 7048
+    },
+    "test_receiver_052.py": {
+      "sha256": "921100d7d9f1602dea7c2983a62f2f7531bcdb1d0848430081e63403bba7a651",
+      "size": 4315
+    }
+  }
+}
