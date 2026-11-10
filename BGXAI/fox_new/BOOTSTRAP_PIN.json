@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "72afead5a4e04a58dab2fed0c26498b1bb298089",
+  "commit": "8acea3f6cc4f59bb66e7fd6d33abb262ce992ffd",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
   "script_sha256": "b13decaa6e45b64445dd7ab662c4e449187f82c0c9ebf26aac5427fc7890ebb7",
   "script_size": 44617,
-  "description": "BGXAI 056 opt-in ACTIVE F guard candidate: options 55-59 for SHA-pinned source/precheck/explicit YES two-file WeiDU install/status/rollback; Windows/Linux real WeiDU 251+Lua mock+PowerShell CI PASS. Existing 049 remains live until user installs."
+  "description": "BGXAI 056-R1: corrected exact test_lua_056.py SHA source 1-byte newline drift; 14/14 immutable Git source files verified against manifests and updater on Windows/Linux CI 42835697187. Active 056 remains opt-in; installed 049 unchanged."
 }
