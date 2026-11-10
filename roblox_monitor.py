@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.7.3
+# Roblox background monitor - release 3.8.0
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.7.3"
+VERSION = "3.8.0"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -3858,6 +3858,55 @@ class AutoPilotVisualReadyLock:
         return True
 
 
+class AutoPilotNavigationGoal:
+    """One screen-relative pad identity, shared by text and LK navigation.
+
+    Does not grant pad availability, issue movement or infer world position.
+    A BUSY sign vetoes both sources. Excludes identity jumps to other signs.
+    """
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.x=None
+        self.source=None
+        self.last_seen=None
+
+    def lock(self, x, now):
+        if x is None or not .04<float(x)<.96:
+            return False
+        self.x=float(x)
+        self.last_seen=now
+        self.source='READY'
+        return True
+
+    @staticmethod
+    def busy_near(signs,x):
+        return any(
+            ((s.get('status')=='COUNTDOWN_SIGN' and
+              s.get('confidence',0)>=.64) or
+             (s.get('status')=='CREATING_SIGN' and
+              s.get('confidence',0)>=.83)) and
+            abs(s.get('center_x',-9)-x)<.12
+            for s in signs)
+
+    def track(self,x,now,signs,source,confidence=1.0):
+        if self.x is None or x is None:return None
+        x=float(x)
+        if not .04<x<.96:return None
+        if self.busy_near(signs,x) or self.busy_near(signs,self.x):
+            return None
+        if source=='FLOW' and confidence<.72:return None
+        # LK has been verified in successive WGC frames; allow only local
+        # perspective drift. A distant READY label is another pad.
+        limit=.16 if source=='FLOW' else .19
+        if abs(x-self.x)>limit:return None
+        self.x=x
+        self.last_seen=now
+        self.source=source
+        return x
+
+
 class AutoPilotPadReselect:
     """Do not chase a pad after it becomes busy or the tracked sign jumps.
 
@@ -4798,6 +4847,7 @@ def autopilot_mode():
     def on_closed():stop.set()
     brain=AutoPilotPolicy()
     visual_ready=AutoPilotVisualReadyLock()
+    navigation_goal=AutoPilotNavigationGoal()
     pad_reselect=AutoPilotPadReselect()
     motion=AutoPilotMotionGuard()
     return_gate=AutoPilotReturnGate()
@@ -4847,6 +4897,7 @@ def autopilot_mode():
             return False
         motion.reset()
         visual_ready.reset()
+        navigation_goal.reset()
         brain.target_x=None
         brain.last_x=None
         brain.no_progress=0
@@ -5089,6 +5140,7 @@ def autopilot_mode():
                         halt_reason='READY_SIGN_NOT_STABLE_12S';break
                     continue
                 brain.target_x=target
+                navigation_goal.lock(target,now)
                 pad_search_since=None
                 spawn_approach_enabled=False
                 motion.reset()
@@ -5148,28 +5200,32 @@ def autopilot_mode():
                     # Never use visual fallback when countdown is suspected.
                     local=(visual_flow
                            if why=='READY_TEMPORARILY_HIDDEN' else None)
-                    if (local is not None and
-                            local.get('confidence',0)>=.60 and
-                            abs(local['center_x']-brain.target_x)<.18 and
+                    flow_x=(navigation_goal.track(
+                        local['center_x'],now,signs,'FLOW',
+                        local.get('confidence',0))
+                        if local is not None and
+                        why=='READY_TEMPORARILY_HIDDEN' else None)
+                    if (flow_x is not None and
                             visual_ready.fallback_pulses<
                                 visual_ready.MAX_FALLBACK_PULSES):
                         # Freshly tracked sign is evidence the original target
                         # remains in view, not proof of FREE status. Keep
                         # the lost-text grace clock alive while bounded
                         # optical-flow pulses make verified progress.
-                        pad_reselect.lost_since=now
-                        pad_reselect.lost_frames=0
+                        brain.target_x=flow_x
                         action,key,unused=brain.lobby_movement(
-                            local['center_x'],now)
+                            flow_x,now)
                         if action=='HALT':
                             halt_reason=key;break
                         motion.arm(frame)
                         if not io.keys(key,.12):
                             halt_reason='VISUAL_FALLBACK_INPUT_FAILED';break
                         visual_ready.used_fallback_pulse()
+                        pad_reselect.lost_since=now
+                        pad_reselect.lost_frames=0
                         last_action=time.monotonic()
                         log('NAV_VISUAL_FALLBACK '+key+
-                            ' x='+str(local['center_x'])+
+                            ' x='+str(flow_x)+
                             ' confidence='+str(local['confidence'])+
                             ' pulse='+str(visual_ready.fallback_pulses)+'/'+
                                 str(visual_ready.MAX_FALLBACK_PULSES))
@@ -5184,20 +5240,24 @@ def autopilot_mode():
                     if not reselect_pad(why,now):
                         halt_reason='PAD_RESELECT_LIMIT_'+why;break
                     continue
-                brain.target_x=x
+                tracked_x=navigation_goal.track(x,now,signs,'READY')
+                if tracked_x is None:
+                    log('NAV_TARGET_REJECTED: conflicting or displaced READY')
+                    continue
+                brain.target_x=tracked_x
                 seen=[z for z in signs if z.get('status')=='READY_SIGN'
                       and abs(z.get('center_x',-9)-x)<.07]
                 if seen:
                     visual_ready.seed(frame,max(seen,
                         key=lambda z:z.get('confidence',0)))
-                action,key,duration=brain.lobby_movement(x,now)
+                action,key,duration=brain.lobby_movement(tracked_x,now)
                 if action=='HALT':
                     halt_reason=key;break
                 motion.arm(frame)
                 if not io.keys(key,duration):
                     halt_reason='GAME_KEY_NOT_CONFIRMED_BY_WIN32';break
                 last_action=time.monotonic()
-                log('NAV '+key+' '+str(duration)+' x='+str(round(x,3))+
+                log('NAV '+key+' '+str(duration)+' x='+str(round(tracked_x,3))+
                     ' steps='+str(brain.move_actions))
                 if brain.move_actions>=34:
                     halt_reason='PAD_MENU_NOT_OPEN_AFTER_34_STEPS';break
