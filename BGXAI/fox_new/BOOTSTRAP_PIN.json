@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "1ff10492953766224953ed4663c53e9dd6eaff64",
+  "commit": "72afead5a4e04a58dab2fed0c26498b1bb298089",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "428ddbb8431fa052b45a15fe1fbced19875121f8182c35c95d18fe663f939872",
-  "script_size": 43294,
-  "description": "BGXAI 054-R3 source-only repaired noninteractive read-only BAF compiler; no automatic TP2, temporary weidu.exe, stdin closed, 25s timeout, 27 offline tests. No user rerun requested; BGXAI 049 installed remains."
+  "script_sha256": "b13decaa6e45b64445dd7ab662c4e449187f82c0c9ebf26aac5427fc7890ebb7",
+  "script_size": 44617,
+  "description": "BGXAI 056 opt-in ACTIVE F guard candidate: options 55-59 for SHA-pinned source/precheck/explicit YES two-file WeiDU install/status/rollback; Windows/Linux real WeiDU 251+Lua mock+PowerShell CI PASS. Existing 049 remains live until user installs."
 }
