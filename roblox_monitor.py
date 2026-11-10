@@ -4884,6 +4884,7 @@ def autopilot_mode():
     last_pad_report_at=begin-10
     last_pad_pause_at=begin-10
     last_pad_pause_reason=None
+    nav_uncertain_since=None
     # Separate search deadline from the global movement/action budget.
     # A confirmed BUSY pad may turn READY without the player moving.
     pad_search_since=None
@@ -4965,6 +4966,8 @@ def autopilot_mode():
                     pad_reselect.excluded_until+=pause_seconds
                 if menu_candidate_since is not None:
                     menu_candidate_since+=pause_seconds
+                if nav_uncertain_since is not None:
+                    nav_uncertain_since+=pause_seconds
                 wait_until+=pause_seconds
                 if pad_search_since is not None:
                     pad_search_since+=pause_seconds
@@ -5186,7 +5189,17 @@ def autopilot_mode():
                     continue
                 menu_candidate_since=None
                 if scene not in ('LOBBY','LOBBY_COUNTDOWN_OR_PORTAL'):
-                    halt_reason='LOBBY_NAV_UNKNOWN_SCENE';break
+                    # A phantom creation-menu classification must not cause
+                    # a single-frame stop or unsafe motion. Hold position
+                    # briefly; a genuine modal still requires modal=True.
+                    if scene=='UNKNOWN':
+                        if nav_uncertain_since is None:
+                            nav_uncertain_since=now
+                            log('NAV_SCENE_UNCERTAIN: holding input for visual confirmation')
+                        if now-nav_uncertain_since<=2.5:
+                            continue
+                    halt_reason='LOBBY_NAV_SCENE_UNVERIFIED';break
+                nav_uncertain_since=None
                 if now-last_action<.65:continue
                 if motion.before is not None:
                     kind,shift,features=motion.verify(frame)
