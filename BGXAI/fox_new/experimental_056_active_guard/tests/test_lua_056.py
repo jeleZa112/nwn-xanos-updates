@@ -106,3 +106,4 @@ def test_locals_writer_failure_does_not_interrupt_hit():
     assert lua.eval('weapon_hit(900,101)') is False
     assert lua.eval('BGX43Probe.snapshot().bridge_prepared_count')==0
     assert lua.eval('BGX43Probe.snapshot().bridge_last.reason')=='write_failure'
+
