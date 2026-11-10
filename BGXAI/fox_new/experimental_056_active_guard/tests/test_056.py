@@ -18,7 +18,9 @@ def synthetic_original():
     for idx in range(1,1058):
         acts=[115,87] if 1032<=idx<=1042 else [105] if idx in (1043,1056) else [0]
         parts.append(block(idx,acts,guard=1032<=idx<=1042,f=idx==1))
-    return b'SC\n'+b''.join(parts)+b'SC\n'
+    # Exact structural quirk of BGXAI 042B: original final block #1057
+    # (including its SC footer) was moved to #1042; no SC at file end.
+    return b'SC\n'+b''.join(parts[:1042])+b'SC\n'+b''.join(parts[1042:])
 
 
 def compiled_receiver():
@@ -31,11 +33,13 @@ def test_insert_exactly_after_F_before_guards(monkeypatch):
     monkeypatch.setattr(b,'PIN_BCS_BYTES',len(original))
     new,proof=b.combine(original,compiled_receiver())
     assert proof['total_blocks']==1065
-    old_blocks=b.segment(original,1057);new_blocks=b.segment(new,1065)
-    assert old_blocks[:1031]==new_blocks[:1031]
+    old_blocks=b.segment(original,1057,legacy_042b=True)
+    canonical=b.canonicalize_legacy_042b(old_blocks)
+    new_blocks=b.segment(new,1065)
+    assert canonical[:1031]==new_blocks[:1031]
     inserted=b.segment(compiled_receiver(),8)
     assert new_blocks[1031:1039]==inserted[:-1]+[inserted[-1][:-3]]
-    assert new_blocks[1039:]==old_blocks[1031:]
+    assert new_blocks[1039:]==canonical[1031:]
     assert b.actions(new_blocks[1042])==[115,87]
     assert b.actions(new_blocks[1050])==[105]
 
@@ -174,6 +178,8 @@ def test_compiled_receiver_extra_SC_footer_is_stripped_before_splice(monkeypatch
     monkeypatch.setattr(b,'PIN_BCS_BYTES',len(old))
     combined,proof=b.combine(old,compiled_receiver())
     assert proof['compiled_fragment_internal_SC_removed']
+    assert proof['042b_displaced_SC_footer_relocated']
+    assert combined.count(b'\nSC\n')==1
     assert combined.endswith(b'CR\nSC\n')
     assert len(combined)==len(old)+len(compiled_receiver())-6
     assert len(b.segment(combined,1065))==1065
@@ -183,3 +189,32 @@ def test_receiver_without_SC_footer_is_rejected():
     malformed=compiled_receiver()[:-3]
     with pytest.raises(ValueError,match='BCS_MISSING_FINAL_SC_FOOTER'):
         b.verify_insert(malformed)
+
+
+def test_legacy_042b_footer_was_moved_and_normalizes_without_changing_rules(monkeypatch):
+    old=synthetic_original()
+    monkeypatch.setattr(b,'PIN_BCS',b.sha(old))
+    monkeypatch.setattr(b,'PIN_BCS_BYTES',len(old))
+    legacy=b.verify_old(old)
+    assert legacy[1041].endswith(b'CR\nSC\n')
+    assert legacy[-1].endswith(b'CR\n')
+    assert not legacy[-1].endswith(b'CR\nSC\n')
+    normalized=b.canonicalize_legacy_042b(legacy)
+    assert normalized[1041]==legacy[1041][:-3]
+    assert normalized[-1]==legacy[-1]+b'SC\n'
+    assert all(normalized[i]==legacy[i] for i in range(1057) if i not in (1041,1056))
+    canon=b'SC\n'+b''.join(normalized)
+    assert len(canon)==len(old)
+    assert canon.count(b'\nSC\n')==1
+    assert len(b.segment(canon,1057))==1057
+
+
+def test_malformed_extra_sc_or_missing_moved_footer_refused(monkeypatch):
+    original=synthetic_original()
+    monkeypatch.setattr(b,'PIN_BCS',b.sha(original))
+    monkeypatch.setattr(b,'PIN_BCS_BYTES',len(original))
+    malformed=original.replace(b'CR\nSC\nCR\nCO\n',b'CR\nCR\nCO\n',1)
+    monkeypatch.setattr(b,'PIN_BCS',b.sha(malformed))
+    monkeypatch.setattr(b,'PIN_BCS_BYTES',len(malformed))
+    with pytest.raises(ValueError,match='042B_EXPECTED_MOVED_SC_AFTER_1042_MISSING'):
+        b.verify_old(malformed)
