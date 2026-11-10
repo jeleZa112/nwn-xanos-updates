@@ -14,6 +14,9 @@ import hashlib, re, shutil, subprocess, tempfile
 PIN_BCS = '8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0'
 PIN_BCS_BYTES = 2229764
 PIN_BLOCKS = 1057
+LEGACY_FOOTER_BLOCK = 1042  # 042B moved the original FINAL block to here WITH SC footer.
+# The exact 042B BCS is SHA-pinned. Its internal SC marker is an old 042B
+# construction defect, not an alternate WeiDU syntax to accept generally.
 INSERT_INDEX = 1031 # Python zero-index (before 1-based block 1032)
 SOURCE_BAF = 'BGX56_RECEIVER.baf'
 TEMP_BAF = 'BX56CHCK.baf'
@@ -24,28 +27,62 @@ MAX_SECONDS = 25
 
 def sha(raw:bytes): return hashlib.sha256(raw).hexdigest()
 
-def segment(raw:bytes,expected:int):
+def segment(raw:bytes,expected:int,*,legacy_042b=False):
     if not raw.startswith(b'SC\n'): raise ValueError('BCS_NOT_SC_HEADER')
     starts=[m.start(1) for m in BLOCK_START.finditer(raw)]
-    if len(starts)!=expected or starts[0]!=3:raise ValueError(f'BLOCK_COUNT_EXPECTED_{expected}_GOT_{len(starts)}')
+    if len(starts)!=expected or starts[0]!=3:
+        raise ValueError(f'BLOCK_COUNT_EXPECTED_{expected}_GOT_{len(starts)}')
     blocks=[raw[a:b] for a,b in zip(starts,starts[1:]+[len(raw)])]
-    # A compiled BCS has a ONE-TIME SC\n footer. The final CR block includes
-    # this footer in a lossless segment. When inserting, remove the extra footer
-    # from the inserted BCS but preserve the original script footer unchanged.
     if not all(b.startswith(b'CR\nCO\n') and b.count(b'\nRS\n')>=2 for b in blocks):
         raise ValueError('BCS_UNEXPECTED_CR_OR_RS_BOUNDARY')
-    if not all(b.endswith(b'CR\n') for b in blocks[:-1]):
-        raise ValueError('BCS_INTERNAL_BLOCK_NO_CR_LF')
-    if not blocks[-1].endswith(b'CR\nSC\n'):
-        raise ValueError('BCS_MISSING_FINAL_SC_FOOTER')
+    if legacy_042b:
+        # The original 042A / 042B block mover relocated block #1057 to
+        # position 1042, bringing its terminal SC\n along. Other original
+        # blocks, including the now-last block, were preserved byte-for-byte.
+        # This exceptional layout is allowed ONLY for the exact SHA-pinned
+        # existing 042B script, never for newly compiled / patched output.
+        if not blocks[LEGACY_FOOTER_BLOCK-1].endswith(b'CR\nSC\n'):
+            raise ValueError('042B_EXPECTED_MOVED_SC_AFTER_1042_MISSING')
+        if not all(b.endswith(b'CR\n') for i,b in enumerate(blocks[:-1],1)
+                   if i!=LEGACY_FOOTER_BLOCK):
+            raise ValueError('042B_OTHER_INTERNAL_BLOCK_INVALID')
+        if not blocks[-1].endswith(b'CR\n') or blocks[-1].endswith(b'CR\nSC\n'):
+            raise ValueError('042B_UNEXPECTED_LAST_BLOCK_TRAILER')
+        if raw.count(b'\nSC\n')!=1:
+            raise ValueError('042B_DUPLICATE_OR_MISSING_SC_TRAILER')
+    else:
+        if not all(b.endswith(b'CR\n') for b in blocks[:-1]):
+            raise ValueError('BCS_INTERNAL_BLOCK_NO_CR_LF')
+        if not blocks[-1].endswith(b'CR\nSC\n'):
+            raise ValueError('BCS_MISSING_FINAL_SC_FOOTER')
+        if raw.count(b'\nSC\n')!=1:
+            raise ValueError('BCS_DUPLICATE_SC_FOOTER')
     if b'SC\n'+b''.join(blocks)!=raw:raise AssertionError('BCS_LOSSLESS_ROUNDTRIP')
     return blocks
+
+
+def canonicalize_legacy_042b(blocks:list[bytes])->list[bytes]:
+    # Re-home ONLY the displaced 3-byte terminal SC\n marker; every
+    # original IF/THEN block, its triggers, actions and order are unchanged.
+    if len(blocks)!=PIN_BLOCKS:raise ValueError('042B_BLOCK_COUNT_MISMATCH')
+    out=list(blocks)
+    moved=out[LEGACY_FOOTER_BLOCK-1]
+    if not moved.endswith(b'CR\nSC\n') or not out[-1].endswith(b'CR\n'):
+        raise ValueError('042B_FOOTER_RELOCATION_PRECONDITION_FAILED')
+    out[LEGACY_FOOTER_BLOCK-1]=moved[:-3]
+    out[-1]=out[-1]+b'SC\n'
+    assert out[LEGACY_FOOTER_BLOCK-1]==moved[:-3]
+    assert out[-1]==blocks[-1]+b'SC\n'
+    if any(out[i]!=blocks[i] for i in range(PIN_BLOCKS)
+           if i not in (LEGACY_FOOTER_BLOCK-1,PIN_BLOCKS-1)):
+        raise AssertionError('042B_UNRELATED_BLOCK_CHANGED')
+    return out
 
 def actions(block:bytes):return [int(v) for v in ACTIONS.findall(block)]
 
 def verify_old(raw:bytes):
     if len(raw)!=PIN_BCS_BYTES or sha(raw)!=PIN_BCS:raise ValueError('LIVE_042B_HASH_MISMATCH')
-    blocks=segment(raw,PIN_BLOCKS)
+    blocks=segment(raw,PIN_BLOCKS,legacy_042b=True)
     for i in range(1031,1042):
         if b'LOCALSBGX38_GUARD' not in blocks[i] or actions(blocks[i])!=[115,87]:
             raise ValueError(f'EXISTING_GUARD_BLOCK_{i+1}_CHANGED')
@@ -63,11 +100,13 @@ def verify_insert(raw:bytes):
     return blocks
 
 def combine(old:bytes,insert:bytes,*,strict:bool=True):
-    if strict:before=verify_old(old)
-    else:before=segment(old,PIN_BLOCKS)
+    if strict:legacy=verify_old(old)
+    else:legacy=segment(old,PIN_BLOCKS,legacy_042b=True)
+    before=canonicalize_legacy_042b(legacy)
     new=verify_insert(insert)
-    # Insert only the CR blocks, not the standalone SC trailer from the
-    # separately compiled BCS; the original live BCS retains its own footer.
+    # Insert only CR blocks, never the standalone SC footer from the
+    # separately compiled BCS. The existing 042B mislocated SC is first
+    # relocated to the genuine last block, preserving 1057 rule bodies.
     new = list(new)
     if not new[-1].endswith(b'CR\nSC\n'):
         raise ValueError('INSERTED_BCS_FINAL_SC_MISSING')
@@ -79,12 +118,19 @@ def combine(old:bytes,insert:bytes,*,strict:bool=True):
     if merged[INSERT_INDEX+8:]!=before[INSERT_INDEX:]:raise AssertionError('EXISTING_EPS_BLOCK_CHANGED')
     if Counter(merged)!=Counter(before+new):raise AssertionError('BLOCK_MULTISETS_DIFFER')
     if len(candidate)!=len(old)+len(insert)-6:raise AssertionError('SIZE_MISMATCH')
+    if candidate.count(b'\nSC\n')!=1 or not candidate.endswith(b'CR\nSC\n'):
+        raise AssertionError('PATCHED_TRAILER_INTEGRITY_FAILURE')
+    if merged[LEGACY_FOOTER_BLOCK-1+len(new)]!=legacy[LEGACY_FOOTER_BLOCK-1][:-3]:
+        raise AssertionError('LEGACY_BLOCK_1042_NOT_NORMALIZED')
     return candidate,{'old_sha':sha(old),'new_receiver_sha':sha(insert),
                       'patched_sha':sha(candidate),'old_blocks':len(before),
                       'inserted_blocks':len(new),'total_blocks':len(merged),
                       'insert_before_original_block':INSERT_INDEX+1,
                       'compiled_fragment_internal_SC_removed':True,
-                      'existing_bcs_blocks_byte_identical':True,
+                      'existing_rule_bodies_byte_identical':True,
+                      '042b_displaced_SC_footer_relocated':True,
+                      'legacy_footer_original_block':LEGACY_FOOTER_BLOCK,
+                      'legacy_sha256':sha(old),
                       'original_F_toggle_precedes_receiver':True,
                       'original_guard_follows_receiver':True}
 
