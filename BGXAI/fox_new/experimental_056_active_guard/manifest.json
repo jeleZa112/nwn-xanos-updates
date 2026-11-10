@@ -25,8 +25,8 @@
     {
       "dest": "BGXAI56_BUILDER.py",
       "source": "BGXAI/fox_new/experimental_056_active_guard/BGXAI56_BUILDER.py",
-      "size": 6720,
-      "sha256": "66864ef229f693b4bf80d215ca3093344f4be3ef01d8b9dcb2ff7c92a0bca845"
+      "size": 9308,
+      "sha256": "370885c144bc9aa6ece58f0b59b96a406ccb60523c8d6441cf9d51ed94911be7"
     },
     {
       "dest": "BGXAI56_INSTALL.py",
@@ -37,20 +37,20 @@
     {
       "dest": "README_RU.md",
       "source": "BGXAI/fox_new/experimental_056_active_guard/README_RU.md",
-      "size": 4951,
-      "sha256": "06694133a89243991f28c4e2b4898e633ea37fd6fc326ede57774113ee97f9f9"
+      "size": 5942,
+      "sha256": "69c3ca03de5d16f7fdfde8fe084cc23339b6b3560c58e5d0c3fb569c6f7032da"
     },
     {
       "dest": "tests/test_056.py",
       "source": "BGXAI/fox_new/experimental_056_active_guard/tests/test_056.py",
-      "size": 8003,
-      "sha256": "fc3cfdbf1dd5c32a8f3a41bfa7bb00aec490bd5abef7fedd4bdd53dba723b256"
+      "size": 9627,
+      "sha256": "ea675a1fdf6a0868061df72ce9e62f314898c2940e458c957718b815b2e361d9"
     },
     {
       "dest": "ci_weidu_056.py",
       "source": "BGXAI/fox_new/experimental_056_active_guard/ci_weidu_056.py",
-      "size": 9678,
-      "sha256": "a3618bb736df9cc23eee71f1dcea9f8ae78467e567b3892b854ea02ab02530e5"
+      "size": 10006,
+      "sha256": "ae6de07a1493b32f341331dd559ea5a88548896b9e8a542ff58770c8cecfea3a"
     },
     {
       "dest": "ids/trigger.ids",
@@ -85,8 +85,8 @@
     {
       "dest": "SOURCE_MANIFEST.json",
       "source": "BGXAI/fox_new/experimental_056_active_guard/SOURCE_MANIFEST.json",
-      "size": 2097,
-      "sha256": "2dc1ad522da609ddfcf5684cafb7aacefe6abceb7ca4fda0236a1da831bfa0f5"
+      "size": 2098,
+      "sha256": "e811582536a01e2458727c589990821fb5b4d527202bab54ac1c8b1992666b63"
     }
   ]
 }
