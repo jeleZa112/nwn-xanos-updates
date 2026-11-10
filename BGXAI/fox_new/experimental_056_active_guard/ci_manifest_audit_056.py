@@ -9,6 +9,7 @@ import hashlib
 import json
 import pathlib
 import re
+import subprocess
 import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -38,7 +39,16 @@ def main() -> int:
         assert source == "BGXAI/fox_new/experimental_056_active_guard/" + dest, f"Source path mismatch: {dest}"
         path = HERE / dest
         assert path.is_file() and not path.is_symlink(), f"Missing or symlink: {dest}"
-        data = path.read_bytes()
+        # Windows actions/checkout may convert LF to CRLF in working files.
+        # BGXAI updater downloads raw immutable GitHub blobs, not checkout files.
+        # Audit the exact committed bytes to avoid a false result on Windows.
+        result = subprocess.run(
+            ["git", "show", "HEAD:" + source], cwd=REPO,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            timeout=20,
+        )
+        assert result.returncode == 0, f"Cannot read raw Git object for {dest}: {result.stderr[:150]!r}"
+        data = result.stdout
         actual_size = len(data)
         actual_sha = hashlib.sha256(data).hexdigest()
         assert actual_size == entry["size"], f"SIZE ERROR {dest}: {actual_size} != {entry['size']}"
@@ -47,7 +57,7 @@ def main() -> int:
             assert inner["files"][dest] == {"size": actual_size, "sha256": actual_sha}, f"Inner manifest error: {dest}"
         print(f"VERIFIED {dest}: {actual_size} bytes {actual_sha}")
     script = UPDATER.read_text(encoding="utf-8")
-    match = re.search(r"\$release056=@\{(.*?)\n\}", script, flags=re.S)
+    match = re.search(r"\$release056=@\{(.*?)\r?\n\}", script, flags=re.S)
     assert match is not None, "Updater lacks release056"
     named = re.search(r"names=@\((.*?)\)", match.group(1), flags=re.S)
     assert named is not None, "Updater missing release names"
