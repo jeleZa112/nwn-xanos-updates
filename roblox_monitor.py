@@ -4087,8 +4087,8 @@ class AutoPilotPolicy:
         self.sign_misses=0
         return candidates[0][0]
 
-    def lobby_movement(self, x, now):
-        """Choose at most one short key pulse; stop on ambiguous progress."""
+    def lobby_movement(self, x, now, duration_override=None):
+        """Choose one short key pulse and account for actual sent duration."""
         if self.move_actions>=34 or self.move_seconds>=12 or now-self.stage_since>45:
             return ('HALT','LOBBY_LIMIT_REACHED',0.0)
         if self.last_x is not None and self.stage == 'ALIGN':
@@ -4109,6 +4109,10 @@ class AutoPilotPolicy:
             self.stage='APPROACH'
             duration=.22
             key='W'
+        if duration_override is not None:
+            duration=float(duration_override)
+            if duration<.04 or duration>.33:
+                return ('HALT','INVALID_MOVE_DURATION',0.0)
         self.move_actions+=1
         self.move_seconds+=duration
         return ('KEY',key,duration)
@@ -5018,6 +5022,7 @@ def autopilot_mode():
             if recovery=='RETURNED_LOBBY':
                 motion.reset()
                 visual_ready.reset()
+                navigation_goal.reset()
                 pad_reselect.reset()
                 brain.reset_lobby(now)
                 spawn_approach_steps=0
@@ -5042,6 +5047,7 @@ def autopilot_mode():
             if stage=='WAIT_FOR_GAME':
                 if lobby_visible>=3:
                     visual_ready.reset()
+                    navigation_goal.reset()
                     pad_reselect.reset()
                     brain.reset_lobby(now)
                     spawn_approach_steps=0
@@ -5213,12 +5219,12 @@ def autopilot_mode():
                         # the lost-text grace clock alive while bounded
                         # optical-flow pulses make verified progress.
                         brain.target_x=flow_x
-                        action,key,unused=brain.lobby_movement(
-                            flow_x,now)
+                        action,key,duration=brain.lobby_movement(
+                            flow_x,now,duration_override=.12)
                         if action=='HALT':
                             halt_reason=key;break
                         motion.arm(frame)
-                        if not io.keys(key,.12):
+                        if not io.keys(key,duration):
                             halt_reason='VISUAL_FALLBACK_INPUT_FAILED';break
                         visual_ready.used_fallback_pulse()
                         pad_reselect.lost_since=now
