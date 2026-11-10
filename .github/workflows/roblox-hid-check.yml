@@ -7,6 +7,7 @@ on:
       - roblox_monitor.py
       - tests/test_touch_abi.py
       - tests/test_battle_input_abi.py
+      - tests/test_autopilot_navigation.py
       - ROBLOX_HID_LEONARDO/**
       - .github/workflows/roblox-hid-check.yml
   workflow_dispatch:
@@ -24,6 +25,7 @@ jobs:
           python -m py_compile roblox_monitor.py
           python tests/test_touch_abi.py
           python tests/test_battle_input_abi.py
+          python -m unittest discover -s tests -p test_autopilot_navigation.py -v
 
   arduino-leonardo:
     runs-on: ubuntu-latest
