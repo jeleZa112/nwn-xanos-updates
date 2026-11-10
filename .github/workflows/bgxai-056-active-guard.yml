@@ -24,6 +24,8 @@ jobs:
           python-version: '3.13'
       - name: Install offline test tools
         run: python -m pip install --disable-pip-version-check pytest lupa
+      - name: Audit BGXAI 056 release manifest and downloader source names
+        run: python BGXAI/fox_new/experimental_056_active_guard/ci_manifest_audit_056.py
       - name: Test 056 guarded installer and live Lua interpreter (mock EEex only)
         run: python -m pytest -q BGXAI/fox_new/experimental_056_active_guard/tests
       - name: Compile 056 BAF with real WeiDU 251 and test offline 1057+8 splice
