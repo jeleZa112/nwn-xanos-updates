@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "8acea3f6cc4f59bb66e7fd6d33abb262ce992ffd",
+  "commit": "7566cfd8b01485970980aa3ea460b41125be8705",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
   "script_sha256": "b13decaa6e45b64445dd7ab662c4e449187f82c0c9ebf26aac5427fc7890ebb7",
   "script_size": 44617,
-  "description": "BGXAI 056-R1: corrected exact test_lua_056.py SHA source 1-byte newline drift; 14/14 immutable Git source files verified against manifests and updater on Windows/Linux CI 42835697187. Active 056 remains opt-in; installed 049 unchanged."
+  "description": "BGXAI 056-R2: exact private 042B BCS verified; old 042B moved SC trailer to block 1042, installer now restores single final SC while preserving all 1057 rule bodies, adds 8 guarded blocks; 14 local synthetic tests, real private 042B structural check; Windows/Linux WeiDU CI 42838849155 PASS; explicit opt-in only. Existing 049 unaffected until installation."
 }
