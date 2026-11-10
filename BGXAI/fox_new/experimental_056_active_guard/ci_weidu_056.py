@@ -155,9 +155,14 @@ def real_weidu_smoke() -> dict:
         def dummy_block(i):
             return (b'CR\nCO\n'+str(i).encode('ascii')+b'\nRS\n'
                     b'RP\n100\nAC\n0OB\nOB\nAC\nRS\nCR\n')
-        baseline=b'SC\n'+b''.join(dummy_block(i) for i in range(1057))+b'SC\n'
+        # 042B's true legacy shape: its last original block (with SC\n trailer)
+        # was moved to block 1042, so the live baseline has its SC marker there.
+        dummy=[dummy_block(i) for i in range(1057)]
+        baseline=b'SC\n'+b''.join(dummy[:1042])+b'SC\n'+b''.join(dummy[1042:])
         staged, proof=combine(baseline,data,strict=False)
-        if proof['total_blocks']!=1065 or not proof['original_F_toggle_precedes_receiver']:
+        if (proof['total_blocks']!=1065 or not proof['original_F_toggle_precedes_receiver']
+                or not proof['042b_displaced_SC_footer_relocated']
+                or staged.count(b'\nSC\n')!=1):
             report['status']='BCS_SPLICE_STRUCTURE_MISMATCH'
             return report
         report['splice']=proof
