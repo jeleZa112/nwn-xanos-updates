@@ -4,12 +4,12 @@
   "release_version": 18,
   "published_utc": "2026-11-11",
   "plan": null,
-  "note": "Visible-player-text-only policy: v24 speaker-label patch held for DLG linkage verification; exact TLK presence alone does not establish player visibility. Previously installed v22 and v23 remain. Never install credits, localization notes, marketing, debug, internal strings.",
+  "note": "PLAYER-VISIBLE-ONLY scope: v24 held and NOT offered until confirmed in installed DLG or actual UI. v9 read-only scan checks 187 English speaker prefixes against installed DLG resources, report 11_PLAYER_VISIBLE_DLG_LINKS.json in same one-folder ZIP. DLG linkage means possible visibility, not proven reachability; never auto-install unverified candidates. Existing patches v22/v23 remain.",
   "game_writes_allowed": true,
   "updater": {
-    "version": 8,
-    "path": "releases/updater_v8.py",
-    "sha256": "7ad9269acf7c452fd11cd02c604960902551343c43037d6ca41ae385f587ab37"
+    "version": 9,
+    "path": "releases/updater_v9.py",
+    "sha256": "5df08224bd17a61c3ac4d33e6485e4f213526286e425539884eaed834ba85a89"
   },
   "patches": [
     {
