@@ -9,7 +9,7 @@
   "updater": {
     "version": 2,
     "path": "releases/updater_v2.py",
-    "sha256": "2fa37d8b03e6c9da412e98d6a100c82c260301161c85356867a96f8960644bdf"
+    "sha256": "b709c75fbe2565f5c2e90c13af2a913a2a787c756689233f1a6e47b5d21391da"
   },
   "patches": [],
   "installed_user_stage": "21.2"
