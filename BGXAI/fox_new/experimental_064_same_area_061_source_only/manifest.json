@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.29-064-061-SAME-AREA-GUARD-SOURCE",
+  "status": "SOURCE_ONLY_NOT_INSTALLED",
+  "files": [
+    {
+      "source": "BGXAI/fox_new/experimental_064_same_area_061_source_only/M_BX43_064_CANDIDATE.lua",
+      "dest": "M_BX43_064_CANDIDATE.lua",
+      "size": 21145,
+      "sha256": "bfee5278b5b69b1fb4a02e3fea321082b0238407789df83ec6bd2f78d7e19f4b"
+    },
+    {
+      "source": "BGXAI/fox_new/experimental_064_same_area_061_source_only/BGX64_BRIDGE_PREPARE_NATIVE.lua",
+      "dest": "BGX64_BRIDGE_PREPARE_NATIVE.lua",
+      "size": 5060,
+      "sha256": "9da437f9ad7eefa50258104b1d17286700a0ff6ccf44e7b03fe3db98e8bab8a5"
+    },
+    {
+      "source": "BGXAI/fox_new/experimental_064_same_area_061_source_only/BGXAI64_PATCH.py",
+      "dest": "BGXAI64_PATCH.py",
+      "size": 4020,
+      "sha256": "ec699717c404a5655154af3894e2a0bc6d607280c67c2f40efc8b2c024c13858"
+    },
+    {
+      "source": "BGXAI/fox_new/experimental_064_same_area_061_source_only/BGXAI64_PREFLIGHT_READONLY.py",
+      "dest": "BGXAI64_PREFLIGHT_READONLY.py",
+      "size": 3792,
+      "sha256": "72c955c4a6fcc644e9f71675dfcdb4b19fafdd95cf458918ee9b9e9651f3888f"
+    },
+    {
+      "source": "BGXAI/fox_new/experimental_064_same_area_061_source_only/README_RU.md",
+      "dest": "README_RU.md",
+      "size": 6435,
+      "sha256": "85098eac2fca062ca92ccdeab1603ea20849bc2f998447d69d16f74ac524af50"
+    },
+    {
+      "source": "BGXAI/fox_new/experimental_064_same_area_061_source_only/lua64_harness.py",
+      "dest": "lua64_harness.py",
+      "size": 1865,
+      "sha256": "d0586d522303893ff2ae648c2b6915ed4178113e8782d98d698c5a3b03b70607"
+    },
+    {
+      "source": "BGXAI/fox_new/experimental_064_same_area_061_source_only/test_064_native.py",
+      "dest": "test_064_native.py",
+      "size": 4891,
+      "sha256": "e24fabfb446683c84ec8450af41d53ba0e3f6c4b0b9cef900f0813cd6794d84f"
+    },
+    {
+      "source": "BGXAI/fox_new/experimental_064_same_area_061_source_only/test_064_patch.py",
+      "dest": "test_064_patch.py",
+      "size": 3670,
+      "sha256": "d63fa38d4564c72b11bc65d7f654e95e26969c198b95f6c6667169366adc6c08"
+    },
+    {
+      "source": "BGXAI/fox_new/experimental_064_same_area_061_source_only/test_064_preflight.py",
+      "dest": "test_064_preflight.py",
+      "size": 4497,
+      "sha256": "ff0ef7ecb2eebdaf71ea71877277eccd23012993b00169f704268a19ea680a0f"
+    },
+    {
+      "source": "BGXAI/fox_new/experimental_064_same_area_061_source_only/SOURCE_MANIFEST.json",
+      "dest": "SOURCE_MANIFEST.json",
+      "size": 1731,
+      "sha256": "fff3ca3c72a91866e776cd269e7450a38b51ffaae530f6f0f02ad73df804becf"
+    }
+  ]
+}
