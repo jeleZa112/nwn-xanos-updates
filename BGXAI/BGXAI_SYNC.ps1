@@ -285,6 +285,53 @@ function RunRelease($spec,[string]$mode){
     }
     if($LASTEXITCODE -ne 0){throw ('BGXAI '+$spec.id+' installer returned code '+$LASTEXITCODE)}
 }
+function Run060Guarded([string]$mode) {
+    if($mode -cne 'install' -and $mode -cne 'rollback'){throw 'BGXAI060 unsafe operation blocked'}
+    # Download/verify release before any game-changing action; SyncRelease writes only BGXAI_DEV.
+    SyncRelease $release060
+    $files=VerifiedManifest $release060
+    foreach($name in $release060.names){
+        $dest=Join-Path $release060.localPath $name
+        AssertNotReparse $dest
+        if((HashFile $dest) -cne $files[$name].sha){throw ('BGXAI060 source SHA mismatch: '+$name)}
+    }
+    $token=if($mode -ceq 'install'){'INSTALL_BGXAI_060'}else{'ROLLBACK_BGXAI_060'}
+    Write-Host 'EXPERIMENTAL BGXAI 060: this step modifies the game through WeiDU.'
+    Write-Host 'Close Baldur / InfinityLoader first; installer checks 056/060 hashes and creates external verified backup.'
+    $confirmation=Read-Host ('Type '+$token+' exactly to authorize or press ENTER to cancel')
+    if($confirmation -cne $token){Write-Host 'BGXAI 060 CANCELLED; no game/WeiDU change.';return}
+    & py -3 (Join-Path $release060.localPath 'BGXAI60_INSTALL.py') $mode '--yes' '--confirm' 'BGXAI_060_EXPERIMENTAL'
+    if($LASTEXITCODE -ne 0){throw ('BGXAI060 '+$mode+' STOP code '+$LASTEXITCODE+'. No automatic retry. Save output for review.')}
+    Write-Host ('BGXAI060 '+$mode+' completed; inspect WeiDU status and game behavior.')
+}
+function Status060ReadOnly {
+    $log=Join-Path $GameRoot 'WeiDU.log'
+    $bcs=Join-Path $GameRoot 'override\BDDEFAI.BCS'
+    $lua=Join-Path $GameRoot 'override\M_BX43.lua'
+    AssertNotReparse $log
+    AssertNotReparse $bcs
+    AssertNotReparse $lua
+    if(!(Test-Path -LiteralPath $log -PathType Leaf)){throw 'WeiDU.log missing'}
+    $rows=@(Get-Content -LiteralPath $log -ErrorAction Stop | Where-Object {$_.TrimStart().StartsWith('~')})
+    if($rows.Count -lt 1){throw 'WeiDU.log has no active components'}
+    $last=[string]$rows[-1]
+    $is060=($last -match '(?i)BGX60[/\\]SETUP-BGX60[.]TP2~')
+    $is056=($last -match '(?i)BGX56[/\\]SETUP-BGX56[.]TP2~')
+    $actualBCS=HashFile $bcs
+    $actualLua=HashFile $lua
+    Write-Host ('Last WeiDU component: '+$last)
+    Write-Host ('BGXAI060 is LAST: '+$is060)
+    Write-Host ('BGXAI056 is LAST: '+$is056)
+    Write-Host ('056 Lua SHA unchanged: '+($actualLua -ceq '35e450b6600f0fc65d47e535126a52e0303c360033307fa920776faec3f581ab'))
+    if($is056){
+        Write-Host ('056 BCS SHA correct: '+($actualBCS -ceq '054c1c8e99b4d8ef8fb541287844d46cb81faa4c320f59c3f39f82f8bf0ab87c'))
+    } elseif($is060) {
+        $stage=Join-Path $GameRoot 'BGX60\staged\BDDEFAI.BCS'
+        AssertNotReparse $stage
+        Write-Host ('060 staged BCS SHA matches installed: '+((HashFile $stage) -ceq $actualBCS -and $actualBCS.Length -eq 64))
+    } else {Write-Host 'BGXAI060/056 is not last; do not install/rollback blindly.'}
+    Write-Host ('Installed BCS SHA256: '+$actualBCS)
+}
 function Test060ReadOnly {
     $spec=$release060
     $list=VerifiedManifest $spec
@@ -658,6 +705,9 @@ Write-Host ' 58 - BGXAI 056 active guard STATUS (READ ONLY)'
 Write-Host ' 59 - Roll back BGXAI 056 (YES + verified last WeiDU backup)'
 Write-Host ' 60 - Download/verify BGXAI 060 SOURCE ONLY (NO INSTALL)'
 Write-Host ' 61 - BGXAI 060 read-only compiler PRECHECK (NO INSTALL)'
+Write-Host ' 62 - EXPERIMENTAL install BGXAI 060 (explicit phrase + verified WeiDU backup)'
+Write-Host ' 63 - BGXAI 060/056 install STATUS (READ ONLY)'
+Write-Host ' 64 - Roll back BGXAI 060 to 056 (explicit phrase + verified WeiDU backup)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -725,6 +775,9 @@ try {
       '59' {SyncRelease $release056;RunRelease $release056 '--uninstall';break}
       '60' {SyncRelease $release060;break}
       '61' {SyncRelease $release060;Test060ReadOnly;break}
+      '62' {Run060Guarded 'install';break}
+      '63' {Status060ReadOnly;break}
+      '64' {Run060Guarded 'rollback';break}
       default {throw 'Unknown menu option, no game change.'}
     }
     exit 0
