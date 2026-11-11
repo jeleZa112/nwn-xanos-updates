@@ -1,0 +1,18 @@
+{
+  "version": "0.3.23-057-READONLY-DIAG-SOURCE",
+  "status": "SOURCE_ONLY_NOT_INSTALLED",
+  "files": {
+    "M_BX57.lua": {
+      "size": 5026,
+      "sha256": "7691a198e9c86dc6d7e9e11d1aec1d477d1efdce3094906063c9ca6ac58ae39a"
+    },
+    "README_RU.md": {
+      "size": 2564,
+      "sha256": "d2d9e743e0d81987617aaec3525fd1e6ad23cd539133fedc332b8fa8248c0d1f"
+    },
+    "test_057_lua.py": {
+      "size": 3594,
+      "sha256": "da00208730de9f641b000dbbaa7a4c50b08b5fa3e26ef303af0afe05e8f410f6"
+    }
+  }
+}
