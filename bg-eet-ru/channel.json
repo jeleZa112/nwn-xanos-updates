@@ -4,6 +4,13 @@
   "release_version": 18,
   "published_utc": "2026-11-11",
   "plan": null,
-  "note": "v18 is bundled locally with the one-time bootstrap; later data-only plans can be published with SHA256. No game assets or reports in this public channel.",
-  "game_writes_allowed": false
+  "note": "Public code + metadata only. No game dialogue originals, WAV files, or user reports. Future text deltas carry authored Russian text and hashes, with explicit YES on EET writes.",
+  "game_writes_allowed": false,
+  "updater": {
+    "version": 2,
+    "path": "releases/updater_v2.py",
+    "sha256": "2fa37d8b03e6c9da412e98d6a100c82c260301161c85356867a96f8960644bdf"
+  },
+  "patches": [],
+  "installed_user_stage": "21.2"
 }
