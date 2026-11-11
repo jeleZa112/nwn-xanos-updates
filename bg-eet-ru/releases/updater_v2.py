@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-"""BG EET RU persistent auto-updater / game READ ONLY. Python 3.9+ stdlib only.
+"""BG EET RU permanent updater. Python 3.9+ stdlib only.
 
-Downloads data-only translation plans; recognizes exact verified stage1/2 installed TLKs.
-NEVER executes downloaded source; NEVER writes within the installed EET game.
+Checks SHA256-pinned GitHub code updates and original Russian translation deltas.
+Game TLKs are modified ONLY after an exact preflight, backup and user-entered YES.
+Never touches voice synthesis, WAV or BGXAI.
 """
 import argparse
 import collections
@@ -871,6 +872,8 @@ def _install_remote_patches(channel,game,notes):
     manifests=channel.get('patches',[])
     if not isinstance(manifests,list): raise RuntimeError('STOP: invalid patch list')
     if len(manifests)>30: raise RuntimeError('STOP: too many patches in one metadata file')
+    if manifests and channel.get('game_writes_allowed') is not True:
+        raise RuntimeError('STOP: game text releases not enabled in the update channel')
     paths=find_tlks(game)
     _recover_if_needed(paths)
     receipts=_receipt_list()
