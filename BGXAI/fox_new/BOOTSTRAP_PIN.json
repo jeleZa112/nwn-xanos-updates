@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "c1cdaee8e98c0dd7d612f66e1af566cb804a5639",
+  "commit": "e0bd9bdd5c9b2872e0c47f28b414bef67c9ea907",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "f9cb5a29557bc1aab24b6ade1af31d5cfa865b83cd6ac1c5dc9d9ac2c7bb6831",
-  "script_size": 49212,
-  "description": "BGXAI 060 guarded opt-in release via original BGXAI_UPDATE.cmd: 60 sync, 61 real WeiDU read-only compile, 62 explicitly confirmed install, 63 status, 64 explicitly confirmed rollback; source manifest SHA updated. 056 installed until user opts in."
+  "script_sha256": "2d95c3c57af78301b680eef156b6f6230b1f95685526841b61f1ccfa91f89746",
+  "script_size": 53921,
+  "description": "BGXAI 061: original BGXAI_UPDATE.cmd auto-pins SHA-verified menu 65 source, 66 read-only WeiDU compile, 67 explicit WeiDU install, 68 read-only status, 69 explicit rollback; installed 060 remains until user opts in."
 }
