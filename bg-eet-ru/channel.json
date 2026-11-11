@@ -4,13 +4,19 @@
   "release_version": 18,
   "published_utc": "2026-11-11",
   "plan": null,
-  "note": "One-folder updater v3: read-only DLG resource context audit for 22 held text strings. Game writes remain disabled; no game dialogue or WAV in public repository.",
-  "game_writes_allowed": false,
+  "note": "Update to v4, then offer exact SHA256-guarded 12 visible DLG StrRef changes (24 TLK sides), only after typed YES. Game backup/rollback retained. Public patch contains no full game dialogue.",
+  "game_writes_allowed": true,
   "updater": {
-    "version": 3,
-    "path": "releases/updater_v3.py",
-    "sha256": "52f55a04ef999c2602b728996a9857f24b6e658128bbb14ccc086deddc22d5f4"
+    "version": 4,
+    "path": "releases/updater_v4.py",
+    "sha256": "385c1ff6ac99f41f63ce499319084e176a02364acb84398a49f2e0a6c985d898"
   },
-  "patches": [],
+  "patches": [
+    {
+      "version": 22,
+      "path": "releases/patch_v22.json",
+      "sha256": "d05a75c79688216aad555f1047ec426402c174d872b75ab38e14a114cb2083f1"
+    }
+  ],
   "installed_user_stage": "21.2"
 }
