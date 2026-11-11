@@ -4,12 +4,12 @@
   "release_version": 18,
   "published_utc": "2026-11-11",
   "plan": null,
-  "note": "Visible-player-text-only. v9 verified all 187 v24 prefixes used in installed DLG (184 NPC lines, 3 player choices). v24 removes only exact English labels, with SHA256 guards, game backups, typed YES. v10 read-only scans remaining heuristic candidates for DLG links and writes 12_REMAINING_CANDIDATES_DLG_LINKS.json to the SAME single report ZIP. DLG linkage alone does not guarantee reachability. No credits, translator notes, marketing, debug or placeholders translated.",
+  "note": "One launch, one final ZIP: v11 performs exact game TLK verification, optional already-published v24 with explicit YES+verified backups, 71 gameplay checks, full 360847x2 TLK English heuristic scan, ONE pass across installed BIF+override DLG references, all DLG-referenced Latin-bearing texts with male/female exact variants and hashes, remaining/HELD ownership; 13_ONE_RUN_AUDIT_STATUS.json captures all stage failures, 14_PLAYER_DLG_LATIN_TEXT_INVENTORY.json supplies complete DLG candidate evidence. Only player-facing text. No voice/BGXAI writes, no complete game text in public repo. User need run once, send one ZIP.",
   "game_writes_allowed": true,
   "updater": {
-    "version": 10,
-    "path": "releases/updater_v10.py",
-    "sha256": "e1fa687d6c7305986d0eb2507607580a1c7e6434cc694f69cd1c614330dbca6d"
+    "version": 11,
+    "path": "releases/updater_v11.py",
+    "sha256": "5d5c1561d0454ed6a97790ed00d4d1b7e98849bddfb94a117ac55fefd1fa1e26"
   },
   "patches": [
     {
