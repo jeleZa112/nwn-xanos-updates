@@ -4,12 +4,12 @@
   "release_version": 18,
   "published_utc": "2026-11-11",
   "plan": null,
-  "note": "v24 authorized for player-facing DLG-referenced dialogue only: live v9 audit confirms all 187 StrRefs referenced in installed override DLG (184 NPC states, 3 player responses), 0 DLG archive errors. Patch removes only exact English leading speaker labels, preserves rest of Russian dialogue, requires exact current TLK pair, backups and typed YES. DLG reference does not prove every branch can be reached. Credits/marketing/debug excluded.",
+  "note": "Visible-player-text-only. v9 verified all 187 v24 prefixes used in installed DLG (184 NPC lines, 3 player choices). v24 removes only exact English labels, with SHA256 guards, game backups, typed YES. v10 read-only scans remaining heuristic candidates for DLG links and writes 12_REMAINING_CANDIDATES_DLG_LINKS.json to the SAME single report ZIP. DLG linkage alone does not guarantee reachability. No credits, translator notes, marketing, debug or placeholders translated.",
   "game_writes_allowed": true,
   "updater": {
-    "version": 9,
-    "path": "releases/updater_v9.py",
-    "sha256": "5df08224bd17a61c3ac4d33e6485e4f213526286e425539884eaed834ba85a89"
+    "version": 10,
+    "path": "releases/updater_v10.py",
+    "sha256": "e1fa687d6c7305986d0eb2507607580a1c7e6434cc694f69cd1c614330dbca6d"
   },
   "patches": [
     {
