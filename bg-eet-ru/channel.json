@@ -4,7 +4,7 @@
   "release_version": 18,
   "published_utc": "2026-11-11",
   "plan": null,
-  "note": "Updater v6 adds read-only exact TLK evidence for 10 remaining HELD rows, separate male/female source texts and hashes, to the same SEND_TO_CHATGPT_BG_EET_RU.zip. Existing v22 installed; no new patch. Do not auto-install HELD entries.",
+  "note": "v6 updater; v22 installed; v23 is a 2-StrRef cue-only stage patch (4 TLK sides), based on exact live v6 TLK fingerprints. Explicit YES + verified TLK backup required. No game dialogues/WAV in public patch.",
   "game_writes_allowed": true,
   "updater": {
     "version": 6,
@@ -16,6 +16,11 @@
       "version": 22,
       "path": "releases/patch_v22.json",
       "sha256": "d05a75c79688216aad555f1047ec426402c174d872b75ab38e14a114cb2083f1"
+    },
+    {
+      "version": 23,
+      "path": "releases/patch_v23.json",
+      "sha256": "63646e006f7756690f5a02b0a8a5caf0fe95d76c00aa5d8c82aad85341f507da"
     }
   ],
   "installed_user_stage": "21.2"
