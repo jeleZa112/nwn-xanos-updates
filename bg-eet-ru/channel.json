@@ -9,7 +9,7 @@
   "updater": {
     "version": 4,
     "path": "releases/updater_v4.py",
-    "sha256": "385c1ff6ac99f41f63ce499319084e176a02364acb84398a49f2e0a6c985d898"
+    "sha256": "9a2656ff368bcaed59c5c9c43a4ef4a080c4c84eb1932c47d61487a6d4207534"
   },
   "patches": [
     {
