@@ -4,12 +4,12 @@
   "release_version": 18,
   "published_utc": "2026-11-11",
   "plan": null,
-  "note": "Update to v4, then offer exact SHA256-guarded 12 visible DLG StrRef changes (24 TLK sides), only after typed YES. Game backup/rollback retained. Public patch contains no full game dialogue.",
+  "note": "Updater v5 fixes v4 SAFE_STOP unknown encoding utf8-sig when loading v22 manifest. Existing v22 patch remains published, still guarded by exact source fingerprints, TLK backups and explicit YES.",
   "game_writes_allowed": true,
   "updater": {
-    "version": 4,
-    "path": "releases/updater_v4.py",
-    "sha256": "9a2656ff368bcaed59c5c9c43a4ef4a080c4c84eb1932c47d61487a6d4207534"
+    "version": 5,
+    "path": "releases/updater_v5.py",
+    "sha256": "60ea27152bb88656cd2bdd5f6a3bb34e61f06cb8e622b32fdc3247c0815b4a73"
   },
   "patches": [
     {
