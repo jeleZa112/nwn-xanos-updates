@@ -1,3 +1,10 @@
+## 2026-11-11 — BGXAI 062B BRIDGE AUDIT / SOURCE ONLY / 16 PASS
+
+- Reviewed actual `BGXAI/fox_new/experimental_059_guard_visibility_source_only/M_BX43.lua` bridge candidate and 061 `BGX61_RECEIVER.baf`. **Correction:** existing `BGX52Bridge.prepare` already chooses ONE guardian and writes one Q; don't create a second selection engine. 059 source is NOT the installed 061 Lua. Safety of reading live class/weapon/manual queue in hit hook is unproven.
+- Created pure-python `bridge_contract.py` adapter with fail-closed verified observations + 16 synthetic tests PASS; no EEex/BCS/game writes. Archive SHA256 `b948c7a5ba6af443393a12321bf60807c6efce8fcb48d73e7a72c358b9a4607f`, Library `/BALDURS_GATE_EET_AI/BUILD/BGXAI_062B_BRIDGE_AUDIT_SOURCE_ONLY/`.
+- Checkpoint `BGXAI/CURRENT/BGXAI_062B_BRIDGE_AUDIT_CHECKPOINT_20261111_RU.md` commit `1b02358d497fa7ca55d0e10f3f74c563371b013b`.
+- NEXT: exact 061 Lua mapping and proven read-only EEex state availability, retain only existing BGX52Bridge selector, source-only safe integration then native preflight, no installed changes without approval. Keep working 061 baseline.
+
 ## 2026-11-11 — 062 TEAM POLICY SOURCE ONLY, 15/15 PASS
 
 - Continued after first successful 061 live guard scene. **061 remains installed and unchanged.**
