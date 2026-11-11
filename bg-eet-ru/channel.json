@@ -1,0 +1,9 @@
+{
+  "schema": "bg-eet-ru-channel-v1",
+  "channel": "stable",
+  "release_version": 18,
+  "published_utc": "2026-11-11",
+  "plan": null,
+  "note": "v18 is bundled locally with the one-time bootstrap; later data-only plans can be published with SHA256. No game assets or reports in this public channel.",
+  "game_writes_allowed": false
+}
