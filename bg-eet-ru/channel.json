@@ -4,12 +4,12 @@
   "release_version": 18,
   "published_utc": "2026-11-11",
   "plan": null,
-  "note": "v6 updater; v22 installed; v23 is a 2-StrRef cue-only stage patch (4 TLK sides), based on exact live v6 TLK fingerprints. Explicit YES + verified TLK backup required. No game dialogues/WAV in public patch.",
+  "note": "v7 read-only audit of 71 high-priority English candidate game dialogue, quest and item StrRefs, appended to the same local report ZIP. v23 cue-only patch installs only with typed YES and exact TLK SHA guard, with backups. No full game text published.",
   "game_writes_allowed": true,
   "updater": {
-    "version": 6,
-    "path": "releases/updater_v6.py",
-    "sha256": "0ddb7c58bf4c84d9491bb37c95be7d141061f00961033ef71cd6644804133d75"
+    "version": 7,
+    "path": "releases/updater_v7.py",
+    "sha256": "97fd9961e6e877f747f7a3e5b1366f70a5af4142c44d32c803d0035f5fd1d575"
   },
   "patches": [
     {
