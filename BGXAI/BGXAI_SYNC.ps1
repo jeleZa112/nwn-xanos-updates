@@ -656,7 +656,9 @@ Write-Host ' 56 - Download/verify BGXAI 056 ACTIVE GUARD SOURCE ONLY'
 Write-Host ' 57 - EXPERIMENTAL install BGXAI 056 ACTIVE F GUARD (YES + WeiDU backups)'
 Write-Host ' 58 - BGXAI 056 active guard STATUS (READ ONLY)'
 Write-Host ' 59 - Roll back BGXAI 056 (YES + verified last WeiDU backup)'
-Write-Host ' 60 - Download/verify BGXAI 060 SOURCE ONLY (NO INSTALL)'\nWrite-Host ' 61 - BGXAI 060 read-only compiler PRECHECK (NO INSTALL)'\nWrite-Host ' 0 - Exit [default]'
+Write-Host ' 60 - Download/verify BGXAI 060 SOURCE ONLY (NO INSTALL)'
+Write-Host ' 61 - BGXAI 060 read-only compiler PRECHECK (NO INSTALL)'
+Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
 if($choice -eq '0'){Write-Host 'No changes.';exit 0}
@@ -721,7 +723,9 @@ try {
       '57' {SyncRelease $release056;RunRelease $release056 '--install';break}
       '58' {RunRelease $release056 '--status';break}
       '59' {SyncRelease $release056;RunRelease $release056 '--uninstall';break}
-      '60' {SyncRelease $release060;break}\n      '61' {SyncRelease $release060;Test060ReadOnly;break}\n      default {throw 'Unknown menu option, no game change.'}
+      '60' {SyncRelease $release060;break}
+      '61' {SyncRelease $release060;Test060ReadOnly;break}
+      default {throw 'Unknown menu option, no game change.'}
     }
     exit 0
 } catch {
