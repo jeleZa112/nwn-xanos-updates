@@ -1,5 +1,6 @@
 """Offline tests of source-only preflight, never modifying installed user game."""
 import tempfile,unittest
+import unittest.mock
 from pathlib import Path
 import BGXAI64_PATCH as p
 import BGXAI64_PREFLIGHT_READONLY as f
@@ -63,5 +64,19 @@ class TestPreflight(unittest.TestCase):
     f.check(self.root,**self.kw)
     after=sorted(str(q.relative_to(self.root)) for q in self.root.rglob('*') if q.is_file())
     self.assertEqual(before,after)
+
+class TestCommandLineGate(unittest.TestCase):
+ def test_cli_missing_directory_stops(self):
+    import BGXAI64_PREFLIGHT_READONLY as p
+    with tempfile.TemporaryDirectory() as d:
+        with unittest.mock.patch('builtins.print') as pr:
+            self.assertEqual(p.main(['--game-root',str(Path(d)/'not-exists')]),2)
+            self.assertIn('STOP',str(pr.call_args_list))
+ def test_cli_no_source_patch_in_game(self):
+    import inspect,BGXAI64_PREFLIGHT_READONLY as p
+    text=inspect.getsource(p.main)
+    self.assertNotIn('write_bytes',text)
+    self.assertNotIn('shutil',text)
+    self.assertNotIn('subprocess',text)
 
 if __name__=='__main__':unittest.main()
