@@ -1,0 +1,3939 @@
+{
+  "schema": "bg-eet-ru-translation-delta-v2",
+  "version": 24,
+  "description": "Exact removal of 187 pre-validated English speaker-label prefixes before already Russian dialogue, from current v23-installed TLK SHA256 pair. 374 sides. No full dialogue texts or user data in public manifest.",
+  "from_tlk_sha256": {
+    "dialog.tlk": "1e055d5d5230e413e38dcd8e46b9fbca9f22b6364393008a9841ab9fc916aa02",
+    "dialogf.tlk": "ee005367c11f113aa11d592d15e64e96d70f3707a9a7d69ede072e549ae33152"
+  },
+  "change_count": 374,
+  "entries": [
+    {
+      "strref": 273949,
+      "dialog.tlk": {
+        "source_sha256_utf8": "8ad7d1b28579210f38b16bfb37d239e194a91d1ac2a35a2ac36fd0816d6f47c1",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Dynaheir]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "8ad7d1b28579210f38b16bfb37d239e194a91d1ac2a35a2ac36fd0816d6f47c1",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Dynaheir]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 273950,
+      "dialog.tlk": {
+        "source_sha256_utf8": "dbcc9ac4aeccd63d70566da3669da9e831eb0122082ddd1a9b1621ae59c82120",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Minsc]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "dbcc9ac4aeccd63d70566da3669da9e831eb0122082ddd1a9b1621ae59c82120",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Minsc]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 273953,
+      "dialog.tlk": {
+        "source_sha256_utf8": "6e09b26145c8bd4fa6c5064784efdbafcc6f32754e6fccbbd5b831bac41e24ae",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Khalid]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "6e09b26145c8bd4fa6c5064784efdbafcc6f32754e6fccbbd5b831bac41e24ae",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Khalid]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 279874,
+      "dialog.tlk": {
+        "source_sha256_utf8": "85658cb5f6e3bd38d7bb20d52d9c3c037ceac90d38d358b306ff1e04aed43b24",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Wostok]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "85658cb5f6e3bd38d7bb20d52d9c3c037ceac90d38d358b306ff1e04aed43b24",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Wostok]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 279876,
+      "dialog.tlk": {
+        "source_sha256_utf8": "3b922da88b53c01824787078f75e19325573a0a4829593a62c2ccf2304b3a145",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Wostok]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "3b922da88b53c01824787078f75e19325573a0a4829593a62c2ccf2304b3a145",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Wostok]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280140,
+      "dialog.tlk": {
+        "source_sha256_utf8": "1dc12fac038d110fa360f6d624af5d4e9eb853d6f0c9c373bb77e5f1dba59306",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Thalantyr]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "1dc12fac038d110fa360f6d624af5d4e9eb853d6f0c9c373bb77e5f1dba59306",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Thalantyr]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280145,
+      "dialog.tlk": {
+        "source_sha256_utf8": "9e9e37aa2b7a3d4760dd9694a262e6977c6830c53925435e3b3c73772af2e10a",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Thalantyr]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "9e9e37aa2b7a3d4760dd9694a262e6977c6830c53925435e3b3c73772af2e10a",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Thalantyr]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280147,
+      "dialog.tlk": {
+        "source_sha256_utf8": "a5fce74ddcedba2a222b07896823484291e62574785fbb73291b18514a1c7a2a",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Thalantyr]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "a5fce74ddcedba2a222b07896823484291e62574785fbb73291b18514a1c7a2a",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Thalantyr]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280148,
+      "dialog.tlk": {
+        "source_sha256_utf8": "9266e558f746d7a60433b846875169556451c6d83bada1c1b3261ae85f0a9d52",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Thalantyr]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "9266e558f746d7a60433b846875169556451c6d83bada1c1b3261ae85f0a9d52",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Thalantyr]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280149,
+      "dialog.tlk": {
+        "source_sha256_utf8": "c2e8eed67fca8ecfbd9fd0bad54d5eca761526e9b8f9d32b72aad9673ac79e8b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Halbazzer Drin]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "c2e8eed67fca8ecfbd9fd0bad54d5eca761526e9b8f9d32b72aad9673ac79e8b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Halbazzer Drin]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280174,
+      "dialog.tlk": {
+        "source_sha256_utf8": "9c7cada401435232504c4e8b00a6d00f67beb8ec54ee0104cc8cad4302a58ead",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Baldar Goldbart]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "9c7cada401435232504c4e8b00a6d00f67beb8ec54ee0104cc8cad4302a58ead",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Baldar Goldbart]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280175,
+      "dialog.tlk": {
+        "source_sha256_utf8": "15de1f5752c38f36b508a006e4215ed6a233f9e62b5d5c6597a056d6e7cc1af4",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "15de1f5752c38f36b508a006e4215ed6a233f9e62b5d5c6597a056d6e7cc1af4",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280176,
+      "dialog.tlk": {
+        "source_sha256_utf8": "bbedcd369a5c67dbc2349ce32c0ab36330da93349a35ff4e6fb34f6836414a61",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Baldar Goldbart]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "bbedcd369a5c67dbc2349ce32c0ab36330da93349a35ff4e6fb34f6836414a61",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Baldar Goldbart]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280177,
+      "dialog.tlk": {
+        "source_sha256_utf8": "6d3771c48c10a8e47b5a36450b3e1078f0cdce5fc8da04d24604836dfb7180cb",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "6d3771c48c10a8e47b5a36450b3e1078f0cdce5fc8da04d24604836dfb7180cb",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280178,
+      "dialog.tlk": {
+        "source_sha256_utf8": "d3b0577918a374238cf441a9bb47f24201b74bdbeca8d4cccfc3419bed021bfe",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "d3b0577918a374238cf441a9bb47f24201b74bdbeca8d4cccfc3419bed021bfe",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280179,
+      "dialog.tlk": {
+        "source_sha256_utf8": "1b531f4b0d41ac50ec53cc5c63686284fbf0868099a7ae948d8d78f11d23ef69",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Baldar Goldbart]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "1b531f4b0d41ac50ec53cc5c63686284fbf0868099a7ae948d8d78f11d23ef69",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Baldar Goldbart]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280185,
+      "dialog.tlk": {
+        "source_sha256_utf8": "3cab5cc641fe1990d613b04715acb52e4371ca116b7906be3a500e0e72beb0f2",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "3cab5cc641fe1990d613b04715acb52e4371ca116b7906be3a500e0e72beb0f2",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280186,
+      "dialog.tlk": {
+        "source_sha256_utf8": "eb15065f6646d0a69f8d650309d4d4fd13a1f9e6534718bdc934f34e0688c553",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "eb15065f6646d0a69f8d650309d4d4fd13a1f9e6534718bdc934f34e0688c553",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280187,
+      "dialog.tlk": {
+        "source_sha256_utf8": "00283adbde45c91117b5a1568215fbab6adc036c15ab4127f6304f0a08076176",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "00283adbde45c91117b5a1568215fbab6adc036c15ab4127f6304f0a08076176",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280189,
+      "dialog.tlk": {
+        "source_sha256_utf8": "47c807bf66eec97627a39d09f74877dadc031d2f5db9cb39fcc4d0ad7289c69b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Baldar Goldbart]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "47c807bf66eec97627a39d09f74877dadc031d2f5db9cb39fcc4d0ad7289c69b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Baldar Goldbart]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280192,
+      "dialog.tlk": {
+        "source_sha256_utf8": "4f2c0c113f67fd0deef844747c686b6d92bd2e5f467b9280caa663ad78abc805",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "4f2c0c113f67fd0deef844747c686b6d92bd2e5f467b9280caa663ad78abc805",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280193,
+      "dialog.tlk": {
+        "source_sha256_utf8": "5f4182197a479418f18dddcdff0187a0928660779731bed5c9673fdd42328cbb",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Baldar Goldbart]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "5f4182197a479418f18dddcdff0187a0928660779731bed5c9673fdd42328cbb",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Baldar Goldbart]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280194,
+      "dialog.tlk": {
+        "source_sha256_utf8": "205c9fa3234a0e7c1df7076ae6e372995ebdc8c95240087db221929d6c4685be",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "205c9fa3234a0e7c1df7076ae6e372995ebdc8c95240087db221929d6c4685be",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280200,
+      "dialog.tlk": {
+        "source_sha256_utf8": "75f8309a85372554e9178103809ceca8f7ae4170e0b8d8ecd83f6a1e210cda9e",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "75f8309a85372554e9178103809ceca8f7ae4170e0b8d8ecd83f6a1e210cda9e",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280201,
+      "dialog.tlk": {
+        "source_sha256_utf8": "820eb5f3d751942001d07ce559324b62e6f3291ab25bcc1ab6ebc9c9c3d465d3",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Baldar Goldbart]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "820eb5f3d751942001d07ce559324b62e6f3291ab25bcc1ab6ebc9c9c3d465d3",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Baldar Goldbart]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280202,
+      "dialog.tlk": {
+        "source_sha256_utf8": "fcd3ab8e90314a0095c2ebd475b61350fd003b68cb427033b7de6956b504ccf6",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "fcd3ab8e90314a0095c2ebd475b61350fd003b68cb427033b7de6956b504ccf6",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280203,
+      "dialog.tlk": {
+        "source_sha256_utf8": "c6131d3534ab75dac9ea2ead2dfc4b168bbe0710ed15be29547f27d0196508bf",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Baldar Goldbart]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "c6131d3534ab75dac9ea2ead2dfc4b168bbe0710ed15be29547f27d0196508bf",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Baldar Goldbart]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280204,
+      "dialog.tlk": {
+        "source_sha256_utf8": "c0fca807b0b2b0cf26539c6df6b0ba2231456bab9f563d2dab4aa3b9cf1f999c",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "c0fca807b0b2b0cf26539c6df6b0ba2231456bab9f563d2dab4aa3b9cf1f999c",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280208,
+      "dialog.tlk": {
+        "source_sha256_utf8": "1111b409e3c4f914c38d2b9b227ca1da4979f46ca91319503a9aa503db1980f6",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "1111b409e3c4f914c38d2b9b227ca1da4979f46ca91319503a9aa503db1980f6",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280209,
+      "dialog.tlk": {
+        "source_sha256_utf8": "f7f10580140284264dae69c77e9a268ce4dafe513013ea2b776ddc983a6563e9",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "f7f10580140284264dae69c77e9a268ce4dafe513013ea2b776ddc983a6563e9",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280210,
+      "dialog.tlk": {
+        "source_sha256_utf8": "b58925aa366aea891cfb530d6f31c6838d8f51fede853efe068c4563d028e1fb",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "b58925aa366aea891cfb530d6f31c6838d8f51fede853efe068c4563d028e1fb",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280211,
+      "dialog.tlk": {
+        "source_sha256_utf8": "08c53c27923ac50cc84671750f2e1a622d834e5c2c4ccdcf53b1eaf770c5b901",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "08c53c27923ac50cc84671750f2e1a622d834e5c2c4ccdcf53b1eaf770c5b901",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Gorgar Blaurock]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280212,
+      "dialog.tlk": {
+        "source_sha256_utf8": "5654c9fe45d79159837d8430249a9d7fe20405609077c0fa25c4c3808325180f",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cromwell]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "5654c9fe45d79159837d8430249a9d7fe20405609077c0fa25c4c3808325180f",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cromwell]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280213,
+      "dialog.tlk": {
+        "source_sha256_utf8": "5f4d9f34285676d3abb3c690ac3ae55da40379e569bf077d07e9e7367dbcac4b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cromwell]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "5f4d9f34285676d3abb3c690ac3ae55da40379e569bf077d07e9e7367dbcac4b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cromwell]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280218,
+      "dialog.tlk": {
+        "source_sha256_utf8": "a75849b8a37f0ad2873b50075b3a3c123abce5bbacb7e2981e1823a7cfaa7dbd",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cromwell]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "a75849b8a37f0ad2873b50075b3a3c123abce5bbacb7e2981e1823a7cfaa7dbd",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cromwell]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280219,
+      "dialog.tlk": {
+        "source_sha256_utf8": "b03695aeace3486b44149605d64c98aa72d759b33fdc777e7c451d3f25592bbc",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cromwell]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "b03695aeace3486b44149605d64c98aa72d759b33fdc777e7c451d3f25592bbc",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cromwell]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280220,
+      "dialog.tlk": {
+        "source_sha256_utf8": "f71104243ecde595b79d3748251eb284632ba55e1519b65636abaa129adcb933",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cromwell]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "f71104243ecde595b79d3748251eb284632ba55e1519b65636abaa129adcb933",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cromwell]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280221,
+      "dialog.tlk": {
+        "source_sha256_utf8": "269af78003cc098d79655d73e3e55aee9198790a4526f6c79ca197b94ad68272",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cromwell]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "269af78003cc098d79655d73e3e55aee9198790a4526f6c79ca197b94ad68272",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cromwell]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280224,
+      "dialog.tlk": {
+        "source_sha256_utf8": "2e37631acdf5748ee3d8579c69914b6a2b3ef0767fb5b6ebf8f3f3a2c4ff8164",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cromwell]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "2e37631acdf5748ee3d8579c69914b6a2b3ef0767fb5b6ebf8f3f3a2c4ff8164",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cromwell]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280225,
+      "dialog.tlk": {
+        "source_sha256_utf8": "7a04367e924099b594df8e128d1a415225c6f771cdbcbb57caf542dcdb370e3d",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cespenar]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "7a04367e924099b594df8e128d1a415225c6f771cdbcbb57caf542dcdb370e3d",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cespenar]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280226,
+      "dialog.tlk": {
+        "source_sha256_utf8": "a440cef21e62c25cc25274797730d9ea4299b83a6992be06cd81788d9770cc69",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cespenar]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "a440cef21e62c25cc25274797730d9ea4299b83a6992be06cd81788d9770cc69",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cespenar]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280228,
+      "dialog.tlk": {
+        "source_sha256_utf8": "147ccc932515d8c5b773632769ec144db348f874a10221b68e396d09ba27b647",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cespenar]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "147ccc932515d8c5b773632769ec144db348f874a10221b68e396d09ba27b647",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cespenar]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280230,
+      "dialog.tlk": {
+        "source_sha256_utf8": "14a2a75c43823a82f49daf1f809cb7b06a1f4bd55a26963dc05bca3c6bd25cc5",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cespenar]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "14a2a75c43823a82f49daf1f809cb7b06a1f4bd55a26963dc05bca3c6bd25cc5",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cespenar]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280231,
+      "dialog.tlk": {
+        "source_sha256_utf8": "9b8ef2d5194b1ed3d6befd29f4b4423a15b4d9ca283a86cb687ea47ac1d0aa54",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cespenar]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "9b8ef2d5194b1ed3d6befd29f4b4423a15b4d9ca283a86cb687ea47ac1d0aa54",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cespenar]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280232,
+      "dialog.tlk": {
+        "source_sha256_utf8": "d8aab5ae24bccd4585853d8e335507c7d7f08a8a404c37c13c69b38f8e240772",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cespenar]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "d8aab5ae24bccd4585853d8e335507c7d7f08a8a404c37c13c69b38f8e240772",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cespenar]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 280236,
+      "dialog.tlk": {
+        "source_sha256_utf8": "4ac60f1461d0f4e406ae8d246c832fc5581c481a670c8c53c7036ab1ed7c417d",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cespenar]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "4ac60f1461d0f4e406ae8d246c832fc5581c481a670c8c53c7036ab1ed7c417d",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Cespenar]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300005,
+      "dialog.tlk": {
+        "source_sha256_utf8": "393ff08ceee71894f83eaac41b0af1e77bb579683d9a700ab47e4271b08cd824",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Bence Duncan]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "393ff08ceee71894f83eaac41b0af1e77bb579683d9a700ab47e4271b08cd824",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Bence Duncan]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300020,
+      "dialog.tlk": {
+        "source_sha256_utf8": "b62e37e35e8a2902d89277cac67b6b9d472a82d41569e4d01fea8e448412b438",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "b62e37e35e8a2902d89277cac67b6b9d472a82d41569e4d01fea8e448412b438",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300021,
+      "dialog.tlk": {
+        "source_sha256_utf8": "6b383ccf905a80d6e67d9a3a09f55022b20ff6ded54a102541ca3b88b73e5915",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "6b383ccf905a80d6e67d9a3a09f55022b20ff6ded54a102541ca3b88b73e5915",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300022,
+      "dialog.tlk": {
+        "source_sha256_utf8": "c2ffd252779b6f475f5872152458489b3067e0893101c9b328b73154eac0c31c",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "c2ffd252779b6f475f5872152458489b3067e0893101c9b328b73154eac0c31c",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300025,
+      "dialog.tlk": {
+        "source_sha256_utf8": "ab8cc6f2e7619d30f23dd62069319a47017a1d72366d6e361d1682a2fbf7bf03",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female FF Scout]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "ab8cc6f2e7619d30f23dd62069319a47017a1d72366d6e361d1682a2fbf7bf03",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female FF Scout]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300029,
+      "dialog.tlk": {
+        "source_sha256_utf8": "4914b0da4f4ebc5ed53f37197d6a1216ff5b2387585854a3172e5f7abe2aab78",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female FF Scout]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "4914b0da4f4ebc5ed53f37197d6a1216ff5b2387585854a3172e5f7abe2aab78",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female FF Scout]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300030,
+      "dialog.tlk": {
+        "source_sha256_utf8": "575f7c13ffa66378f88fe1d0eed50758c85dc0811bffffbccc22a219c2780ba5",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female FF Scout]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "575f7c13ffa66378f88fe1d0eed50758c85dc0811bffffbccc22a219c2780ba5",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female FF Scout]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300031,
+      "dialog.tlk": {
+        "source_sha256_utf8": "7ac04ff20f5e91a54a9ac723b1a75ccbbb267673acd0fb8bdf15010b014f321a",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female FF Scout]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "7ac04ff20f5e91a54a9ac723b1a75ccbbb267673acd0fb8bdf15010b014f321a",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female FF Scout]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300037,
+      "dialog.tlk": {
+        "source_sha256_utf8": "d3aa551170b5d9dd405fb6c04ff80b7ec02cd95d3b8c2b354e4f12e186f2cb89",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female FF Scout]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "d3aa551170b5d9dd405fb6c04ff80b7ec02cd95d3b8c2b354e4f12e186f2cb89",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female FF Scout]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300040,
+      "dialog.tlk": {
+        "source_sha256_utf8": "ff9b0ccc227209f7170be94ab084db4b4fc1489bb7c82a57c64c310421dc4770",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "ff9b0ccc227209f7170be94ab084db4b4fc1489bb7c82a57c64c310421dc4770",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300051,
+      "dialog.tlk": {
+        "source_sha256_utf8": "5eccf9395794a2c6c78695c277d6ed3ba9f9be384dd89056890af2d40d2d62df",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "5eccf9395794a2c6c78695c277d6ed3ba9f9be384dd89056890af2d40d2d62df",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300052,
+      "dialog.tlk": {
+        "source_sha256_utf8": "324d106d6cf624768ddb7a03586d9a49657ee592d250d5350d42852f8ce31fad",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "324d106d6cf624768ddb7a03586d9a49657ee592d250d5350d42852f8ce31fad",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300053,
+      "dialog.tlk": {
+        "source_sha256_utf8": "d317160a34097866d46f2465a4ad77c1a7572f2d859dad1b5742e2943bdc03bc",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "d317160a34097866d46f2465a4ad77c1a7572f2d859dad1b5742e2943bdc03bc",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300057,
+      "dialog.tlk": {
+        "source_sha256_utf8": "cc17520a4954948d083dbb1baecc9b383d79dcfb787a96ceed0a825ce2997a6a",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "cc17520a4954948d083dbb1baecc9b383d79dcfb787a96ceed0a825ce2997a6a",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300058,
+      "dialog.tlk": {
+        "source_sha256_utf8": "3faff259145cb4ce663a179381e66b0a476023644305d2f2e9a0cfbf7f11cde4",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "3faff259145cb4ce663a179381e66b0a476023644305d2f2e9a0cfbf7f11cde4",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300059,
+      "dialog.tlk": {
+        "source_sha256_utf8": "99300e7dfcc5b70777818f489ed68ff88e881dd0fcfa143a6cf39989655147c0",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "99300e7dfcc5b70777818f489ed68ff88e881dd0fcfa143a6cf39989655147c0",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300063,
+      "dialog.tlk": {
+        "source_sha256_utf8": "da56b2f30921dabb09143facc6cf1b37a8f136c795af5306d6a37f6b122eaea3",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "da56b2f30921dabb09143facc6cf1b37a8f136c795af5306d6a37f6b122eaea3",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300068,
+      "dialog.tlk": {
+        "source_sha256_utf8": "70f3a4dae9e596099ca9831be8675b1d109eb48a60a554ff118499b7c3d54a22",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "70f3a4dae9e596099ca9831be8675b1d109eb48a60a554ff118499b7c3d54a22",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300070,
+      "dialog.tlk": {
+        "source_sha256_utf8": "f4a923f2f0c08e9f1de63fea2d27b5c18d41d6724ee6c82c8c9e997d4d5a9f8e",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "f4a923f2f0c08e9f1de63fea2d27b5c18d41d6724ee6c82c8c9e997d4d5a9f8e",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300071,
+      "dialog.tlk": {
+        "source_sha256_utf8": "6149978cb7cb1dc1339456472d23bb4b1412fc80f14f1e23c9e21adfa24121a0",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "6149978cb7cb1dc1339456472d23bb4b1412fc80f14f1e23c9e21adfa24121a0",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300078,
+      "dialog.tlk": {
+        "source_sha256_utf8": "5acbb9a82700dbc309464128d22fca179c9e52249b4a408a5a00ccc367a0b369",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "5acbb9a82700dbc309464128d22fca179c9e52249b4a408a5a00ccc367a0b369",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300080,
+      "dialog.tlk": {
+        "source_sha256_utf8": "3abb0c3e22123317ad9044d3c8813d4bee244a41d53e5729985840fbace337a4",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "3abb0c3e22123317ad9044d3c8813d4bee244a41d53e5729985840fbace337a4",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300081,
+      "dialog.tlk": {
+        "source_sha256_utf8": "e84cebbe34469c4a149ec06710d04b8fa9b67acdfc80a6f1d30e8d54ca355923",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "e84cebbe34469c4a149ec06710d04b8fa9b67acdfc80a6f1d30e8d54ca355923",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300082,
+      "dialog.tlk": {
+        "source_sha256_utf8": "5c32dc3b28ec5c73bd533e17deaf79bf22a27a456b1455d8cf06533c426df88a",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "5c32dc3b28ec5c73bd533e17deaf79bf22a27a456b1455d8cf06533c426df88a",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300086,
+      "dialog.tlk": {
+        "source_sha256_utf8": "1b143dba36a1926a8a4ff4334c0391fe15ef910749a327506342d9debced0311",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "1b143dba36a1926a8a4ff4334c0391fe15ef910749a327506342d9debced0311",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300087,
+      "dialog.tlk": {
+        "source_sha256_utf8": "9d55e7f1c7c8e809a6207131a712a4089b02e37d87dd2a9845d6115b418fb5a3",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "9d55e7f1c7c8e809a6207131a712a4089b02e37d87dd2a9845d6115b418fb5a3",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300089,
+      "dialog.tlk": {
+        "source_sha256_utf8": "f6d7144d7b8a3054b152b55b3225f97c814afd08168ba78a7a5d37c328741665",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "f6d7144d7b8a3054b152b55b3225f97c814afd08168ba78a7a5d37c328741665",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300090,
+      "dialog.tlk": {
+        "source_sha256_utf8": "dbfeaed71eea69daac2c979b24c6fbd5430d8a62062e5aad5711e273e87ef169",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "dbfeaed71eea69daac2c979b24c6fbd5430d8a62062e5aad5711e273e87ef169",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300091,
+      "dialog.tlk": {
+        "source_sha256_utf8": "3ca0c73b379745949f409f45ff2593d9980966152aa5f10a10e210b4db514d23",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "3ca0c73b379745949f409f45ff2593d9980966152aa5f10a10e210b4db514d23",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300093,
+      "dialog.tlk": {
+        "source_sha256_utf8": "769dc0b8ac6c3a9be7c46edff64dd43524825fdc5c9de27ca04a5f28676a75da",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "769dc0b8ac6c3a9be7c46edff64dd43524825fdc5c9de27ca04a5f28676a75da",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300094,
+      "dialog.tlk": {
+        "source_sha256_utf8": "d0fce85b3b8b447f8806a5f60e1294b30307ee305ba392bf885a05966599d0bb",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "d0fce85b3b8b447f8806a5f60e1294b30307ee305ba392bf885a05966599d0bb",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300096,
+      "dialog.tlk": {
+        "source_sha256_utf8": "02acae621e4c425d486f2a854ba5f79c4d07aa740386417ec0890e8d806552f5",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "02acae621e4c425d486f2a854ba5f79c4d07aa740386417ec0890e8d806552f5",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300102,
+      "dialog.tlk": {
+        "source_sha256_utf8": "571873419180bd4f34e7d353850c33dd602e492bab4c4fdc541f073c28fe4afb",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "571873419180bd4f34e7d353850c33dd602e492bab4c4fdc541f073c28fe4afb",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300103,
+      "dialog.tlk": {
+        "source_sha256_utf8": "b802b6cdd23b8733c3ef31392bfb592f97cb1f4091fc5f1ad13d6685e61c76e3",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "b802b6cdd23b8733c3ef31392bfb592f97cb1f4091fc5f1ad13d6685e61c76e3",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300104,
+      "dialog.tlk": {
+        "source_sha256_utf8": "2204933f9742607b99bad0457c14909e5e0c52bfba09d4d8ab2d6b2f29d1378d",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "2204933f9742607b99bad0457c14909e5e0c52bfba09d4d8ab2d6b2f29d1378d",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300106,
+      "dialog.tlk": {
+        "source_sha256_utf8": "a869984a393efaeacd84fc9cdb5f34680f8b2f3ccfb80f9415ba107933d1fe00",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "a869984a393efaeacd84fc9cdb5f34680f8b2f3ccfb80f9415ba107933d1fe00",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300107,
+      "dialog.tlk": {
+        "source_sha256_utf8": "07a06c233b87f4033c7eca4976586acf8def883815f076bf6b07ed80e1461502",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "07a06c233b87f4033c7eca4976586acf8def883815f076bf6b07ed80e1461502",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300108,
+      "dialog.tlk": {
+        "source_sha256_utf8": "007c707dd92dbb2b55a3735d897e6dbddb1cfed8ac9ba055929852b608d9df12",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "007c707dd92dbb2b55a3735d897e6dbddb1cfed8ac9ba055929852b608d9df12",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300111,
+      "dialog.tlk": {
+        "source_sha256_utf8": "c56a129d98e41c633a01b8434de991bbffb9135cce0048f812ecd60a70e08074",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Grey]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "c56a129d98e41c633a01b8434de991bbffb9135cce0048f812ecd60a70e08074",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Grey]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300112,
+      "dialog.tlk": {
+        "source_sha256_utf8": "b6fa5c9cd79b0efac7a9913235a2b40d9e2e4701ccf5d2aa154a449ac6b97c9b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "b6fa5c9cd79b0efac7a9913235a2b40d9e2e4701ccf5d2aa154a449ac6b97c9b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300114,
+      "dialog.tlk": {
+        "source_sha256_utf8": "f261af61704acee5cc80a5996bb0443131a75a76580ff5439214f5cdd3ca8166",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "f261af61704acee5cc80a5996bb0443131a75a76580ff5439214f5cdd3ca8166",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300115,
+      "dialog.tlk": {
+        "source_sha256_utf8": "200403030c8588db25eff19d98c6094ce38801957aafa75875f7c220a0d88ea6",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "200403030c8588db25eff19d98c6094ce38801957aafa75875f7c220a0d88ea6",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300116,
+      "dialog.tlk": {
+        "source_sha256_utf8": "8fede490b0d15207f0de36619ec301854f062d78f807b0aa95a2870cd80a2168",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "8fede490b0d15207f0de36619ec301854f062d78f807b0aa95a2870cd80a2168",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300117,
+      "dialog.tlk": {
+        "source_sha256_utf8": "49152ac02f455f58f63e9e680b3adcbdfbe8ba7e4e51f28f3859f2d143c8c358",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "49152ac02f455f58f63e9e680b3adcbdfbe8ba7e4e51f28f3859f2d143c8c358",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300118,
+      "dialog.tlk": {
+        "source_sha256_utf8": "6372cba10df5ac9cce12ad3bb318c005f395527edede02b34c68dfaa29987fa5",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "6372cba10df5ac9cce12ad3bb318c005f395527edede02b34c68dfaa29987fa5",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300122,
+      "dialog.tlk": {
+        "source_sha256_utf8": "5ed56aa8fbbb880ebab59f4cc25d2664de4cee357b1104cd60c803e06a62f1f3",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "5ed56aa8fbbb880ebab59f4cc25d2664de4cee357b1104cd60c803e06a62f1f3",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300123,
+      "dialog.tlk": {
+        "source_sha256_utf8": "66eddda71f8883817b6c06706f3ec7a058006bf487cd367606a076c9a5734409",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Grey]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "66eddda71f8883817b6c06706f3ec7a058006bf487cd367606a076c9a5734409",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Grey]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300126,
+      "dialog.tlk": {
+        "source_sha256_utf8": "a896a5e053f5401b7f7e9bd27fa201f06526cb42c4a19d45493b7864c99c83bc",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "a896a5e053f5401b7f7e9bd27fa201f06526cb42c4a19d45493b7864c99c83bc",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300131,
+      "dialog.tlk": {
+        "source_sha256_utf8": "8f7fca2cb2a7a94748c1eb86b31bd77870bd2d4f80eaea309b1bb2d4c3146e62",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "8f7fca2cb2a7a94748c1eb86b31bd77870bd2d4f80eaea309b1bb2d4c3146e62",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300132,
+      "dialog.tlk": {
+        "source_sha256_utf8": "9d9f0d8d343f629d085c313aaf3e72c01b417e47e0a55858c0bcc3a4243dc8f0",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "9d9f0d8d343f629d085c313aaf3e72c01b417e47e0a55858c0bcc3a4243dc8f0",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300133,
+      "dialog.tlk": {
+        "source_sha256_utf8": "bd5b54a640c03ec2ca10909b21e1c8f2c6fc3789c04468bf82b40db0cddbf7f0",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Boy]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "bd5b54a640c03ec2ca10909b21e1c8f2c6fc3789c04468bf82b40db0cddbf7f0",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Boy]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300137,
+      "dialog.tlk": {
+        "source_sha256_utf8": "628e0b732822312c8f129a11f4e5061d17e21b3ff7a559b20b3acc3ed3ec255b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Boy]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "628e0b732822312c8f129a11f4e5061d17e21b3ff7a559b20b3acc3ed3ec255b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Boy]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300142,
+      "dialog.tlk": {
+        "source_sha256_utf8": "0d2dbfcd1b6b13102fbe5c8ec2cdab9e74c00ef819fdb98df017d1379e3cbbde",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Boy]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "0d2dbfcd1b6b13102fbe5c8ec2cdab9e74c00ef819fdb98df017d1379e3cbbde",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Boy]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300143,
+      "dialog.tlk": {
+        "source_sha256_utf8": "538264f5a13e8e2724b1e28a63d3d828005f0dc15df69c1f6083663a0c61c96b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Boy]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "538264f5a13e8e2724b1e28a63d3d828005f0dc15df69c1f6083663a0c61c96b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Boy]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300144,
+      "dialog.tlk": {
+        "source_sha256_utf8": "c8483337f3aa02d72b6d479fcc19dd17c3b93ed094d355b427f59265bca1012f",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Grey]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "c8483337f3aa02d72b6d479fcc19dd17c3b93ed094d355b427f59265bca1012f",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Grey]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300145,
+      "dialog.tlk": {
+        "source_sha256_utf8": "f2b5da028b6f0354c20b41249fb4a21553f6a3eab0f0d2b11cb787ea6fed0757",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Boy]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "f2b5da028b6f0354c20b41249fb4a21553f6a3eab0f0d2b11cb787ea6fed0757",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Boy]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300146,
+      "dialog.tlk": {
+        "source_sha256_utf8": "f4391a46e93829de40f994078a33217270724e3153f91903bc4c5c07f28f362b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Grey]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "f4391a46e93829de40f994078a33217270724e3153f91903bc4c5c07f28f362b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Grey]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300147,
+      "dialog.tlk": {
+        "source_sha256_utf8": "d1226d4b3571c14f0b38e0fe58cb71d74d23cf15fc21d16c22e78737f77f7107",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Boy]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "d1226d4b3571c14f0b38e0fe58cb71d74d23cf15fc21d16c22e78737f77f7107",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Boy]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300148,
+      "dialog.tlk": {
+        "source_sha256_utf8": "4db2d9708b7fe3e5b4c356a4556a7bd2864e03991563249fbd57fc85bf374cee",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Grey]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "4db2d9708b7fe3e5b4c356a4556a7bd2864e03991563249fbd57fc85bf374cee",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Grey]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300153,
+      "dialog.tlk": {
+        "source_sha256_utf8": "319e2eabbcdeee5c152ab23df19dd40b67c23aff2777efa230293901e59e7f06",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Grey]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "319e2eabbcdeee5c152ab23df19dd40b67c23aff2777efa230293901e59e7f06",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Grey]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300163,
+      "dialog.tlk": {
+        "source_sha256_utf8": "8ccd4b82db68f748e5aded3d164c8d6487ee9e172315524a93db96a5ed3ed063",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "8ccd4b82db68f748e5aded3d164c8d6487ee9e172315524a93db96a5ed3ed063",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300164,
+      "dialog.tlk": {
+        "source_sha256_utf8": "3617e4a5959dd5523f77a6405508437ae1926bf570fc1f64bc1ef599ae256628",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "3617e4a5959dd5523f77a6405508437ae1926bf570fc1f64bc1ef599ae256628",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300165,
+      "dialog.tlk": {
+        "source_sha256_utf8": "f3d3520d5eb8b52a53455cac0d5861b873a88974a820704efbc40c6168f7f250",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "f3d3520d5eb8b52a53455cac0d5861b873a88974a820704efbc40c6168f7f250",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300166,
+      "dialog.tlk": {
+        "source_sha256_utf8": "bdedc4d6741d66ea5c8fd1878d17fadce5f40864a34eb712bc816e7309679ecb",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "bdedc4d6741d66ea5c8fd1878d17fadce5f40864a34eb712bc816e7309679ecb",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300167,
+      "dialog.tlk": {
+        "source_sha256_utf8": "f7e4304839fe3d0a203255305f5d8b0bec1b641bc8fea3ce155d356ba61684c0",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "f7e4304839fe3d0a203255305f5d8b0bec1b641bc8fea3ce155d356ba61684c0",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300168,
+      "dialog.tlk": {
+        "source_sha256_utf8": "b549f71955ff715c3dfe376f816a49aae4ad2ef3f2c3627f5e253e13643ec9fd",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "b549f71955ff715c3dfe376f816a49aae4ad2ef3f2c3627f5e253e13643ec9fd",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300169,
+      "dialog.tlk": {
+        "source_sha256_utf8": "a637dec43a53cfc424e9f7b25ca4db398e9e0cf8271e22c01e6a24bb1f1db5ff",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female Refugee]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "a637dec43a53cfc424e9f7b25ca4db398e9e0cf8271e22c01e6a24bb1f1db5ff",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female Refugee]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300174,
+      "dialog.tlk": {
+        "source_sha256_utf8": "57aa0e6418d09f33105fc6d86cfede3bc76c600321ed485dcebe7a5f7ae361a2",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female Refugee]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "57aa0e6418d09f33105fc6d86cfede3bc76c600321ed485dcebe7a5f7ae361a2",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female Refugee]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300175,
+      "dialog.tlk": {
+        "source_sha256_utf8": "e35131c352793e92fc07dc6ff79ca837d1a6591a31768b2ae46846a01735b9c1",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female Refugee]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "e35131c352793e92fc07dc6ff79ca837d1a6591a31768b2ae46846a01735b9c1",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female Refugee]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300176,
+      "dialog.tlk": {
+        "source_sha256_utf8": "6b046a5b3d5aa2bd13591afbcdd3af551a97586faa0efc2f202d2f285160ba0a",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female Refugee]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "6b046a5b3d5aa2bd13591afbcdd3af551a97586faa0efc2f202d2f285160ba0a",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female Refugee]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300177,
+      "dialog.tlk": {
+        "source_sha256_utf8": "a19b967dcc7be51eb7e7ab8a5c094b1c7f4255467f69307247ef0ad8288c7f62",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female Refugee]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "a19b967dcc7be51eb7e7ab8a5c094b1c7f4255467f69307247ef0ad8288c7f62",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female Refugee]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300178,
+      "dialog.tlk": {
+        "source_sha256_utf8": "5baa12f23230b10d7f25f96324f38820bb71e3ca72ac7477ed1f9c43eac11328",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female Refugee]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "5baa12f23230b10d7f25f96324f38820bb71e3ca72ac7477ed1f9c43eac11328",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[female Refugee]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300183,
+      "dialog.tlk": {
+        "source_sha256_utf8": "c86077b31dd70af63a9f5f0097866b0f8fbea876d54ad1a38f77d7d2b8954706",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Waizhab]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "c86077b31dd70af63a9f5f0097866b0f8fbea876d54ad1a38f77d7d2b8954706",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Waizhab]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300187,
+      "dialog.tlk": {
+        "source_sha256_utf8": "5886c91f718d5e26ba7e01883702cb829e0c56e297f1d5acc14270d11d56f7ff",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Waizhab]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "5886c91f718d5e26ba7e01883702cb829e0c56e297f1d5acc14270d11d56f7ff",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Waizhab]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300188,
+      "dialog.tlk": {
+        "source_sha256_utf8": "06897876d452abff854c8a95d4721607b1080625da81f3f523b44a1d31c07907",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Waizhab]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "06897876d452abff854c8a95d4721607b1080625da81f3f523b44a1d31c07907",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Waizhab]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300189,
+      "dialog.tlk": {
+        "source_sha256_utf8": "8cc22b7da3e0f1b442fa0eba8af5030828065f2d79b72990fd2a5902c166a862",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Waizhab]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "8cc22b7da3e0f1b442fa0eba8af5030828065f2d79b72990fd2a5902c166a862",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Waizhab]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300190,
+      "dialog.tlk": {
+        "source_sha256_utf8": "3facb7386f1df318093c3af1893cfd00e90375730be937f5355fa8ea96d53863",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Waizhab]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "3facb7386f1df318093c3af1893cfd00e90375730be937f5355fa8ea96d53863",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Waizhab]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300194,
+      "dialog.tlk": {
+        "source_sha256_utf8": "5ec4ebd9073883a1ad1b4e6f56811dd162c9023406af308b4a4df5b0a6122088",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Waizhab]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "5ec4ebd9073883a1ad1b4e6f56811dd162c9023406af308b4a4df5b0a6122088",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Waizhab]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300197,
+      "dialog.tlk": {
+        "source_sha256_utf8": "930415437710699cbebbf0ee5061834d24da3849abc727425ba10d860afa13b8",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Scald]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "930415437710699cbebbf0ee5061834d24da3849abc727425ba10d860afa13b8",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Scald]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300201,
+      "dialog.tlk": {
+        "source_sha256_utf8": "9920ed6be8b013b4dd36f0033511c196ebb3b2c39d227603950b493368395399",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Scald]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "9920ed6be8b013b4dd36f0033511c196ebb3b2c39d227603950b493368395399",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Scald]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300202,
+      "dialog.tlk": {
+        "source_sha256_utf8": "6d87b019153cf270d5216ee05d5a40c818e2e019b063f7a56e55bbdb6ee7efde",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Scald]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "6d87b019153cf270d5216ee05d5a40c818e2e019b063f7a56e55bbdb6ee7efde",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Scald]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300206,
+      "dialog.tlk": {
+        "source_sha256_utf8": "891fbe86d38817d2f6fa9a0a77790de868cb7a837ee22578f903485d2a6fc523",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Scald]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "891fbe86d38817d2f6fa9a0a77790de868cb7a837ee22578f903485d2a6fc523",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Scald]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300210,
+      "dialog.tlk": {
+        "source_sha256_utf8": "16dbdc90947caf1ef2201230389dd7be8474d88330cb4838758989b1817354fb",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Scald]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "16dbdc90947caf1ef2201230389dd7be8474d88330cb4838758989b1817354fb",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Scald]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300213,
+      "dialog.tlk": {
+        "source_sha256_utf8": "cbe67e5aef7ed917ce2ba138a5885762647bbbad763b446b02256782a8f99de3",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Scald]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "cbe67e5aef7ed917ce2ba138a5885762647bbbad763b446b02256782a8f99de3",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Scald]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300214,
+      "dialog.tlk": {
+        "source_sha256_utf8": "10809940db14aaf01a95bd249aef35f0dcb34bc3c804407c757d3de1b58264fa",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Scald]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "10809940db14aaf01a95bd249aef35f0dcb34bc3c804407c757d3de1b58264fa",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Scald]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300219,
+      "dialog.tlk": {
+        "source_sha256_utf8": "0546842558279c7365620337ccf56211fd18f31e96618e6196d2902209a3e546",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Scald]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "0546842558279c7365620337ccf56211fd18f31e96618e6196d2902209a3e546",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Scald]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300220,
+      "dialog.tlk": {
+        "source_sha256_utf8": "87d158a8cf60a90f684f09e12016bbb47843a9b6b98c045a62b3897e0f817636",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Scald]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "87d158a8cf60a90f684f09e12016bbb47843a9b6b98c045a62b3897e0f817636",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Scald]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300221,
+      "dialog.tlk": {
+        "source_sha256_utf8": "36100843c1c5e75aef29730d73c66d349262dbde877ad9c26b769ebac302ef47",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Scald]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "36100843c1c5e75aef29730d73c66d349262dbde877ad9c26b769ebac302ef47",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Scald]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300222,
+      "dialog.tlk": {
+        "source_sha256_utf8": "828905854b6d4ad574c828cfe0662036a380e46fcd86ebb4ad668b6328f052b5",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "828905854b6d4ad574c828cfe0662036a380e46fcd86ebb4ad668b6328f052b5",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300223,
+      "dialog.tlk": {
+        "source_sha256_utf8": "89be4b1a7d20872ea4427d980f4df5dd6b83143a2bccb7938692a3f178e04e51",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "89be4b1a7d20872ea4427d980f4df5dd6b83143a2bccb7938692a3f178e04e51",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300229,
+      "dialog.tlk": {
+        "source_sha256_utf8": "29c778132ece36d1146730c99fe0b56d68766c21762d2dfa2da002532684072f",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "29c778132ece36d1146730c99fe0b56d68766c21762d2dfa2da002532684072f",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300230,
+      "dialog.tlk": {
+        "source_sha256_utf8": "74e8e5bd437ea6f74074a8ec3b0c535cbd3919995d9fea6ca9017bac612cfda8",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "74e8e5bd437ea6f74074a8ec3b0c535cbd3919995d9fea6ca9017bac612cfda8",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300233,
+      "dialog.tlk": {
+        "source_sha256_utf8": "3136fdde243d834ab3a65ac934b0d743c844ae518ddb3d48602eb1b6c1b5eabf",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "3136fdde243d834ab3a65ac934b0d743c844ae518ddb3d48602eb1b6c1b5eabf",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300234,
+      "dialog.tlk": {
+        "source_sha256_utf8": "16b335fad1fec2274eea3d3899d3507ccc06fed942d0ec4043a23f709b13701b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "16b335fad1fec2274eea3d3899d3507ccc06fed942d0ec4043a23f709b13701b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300235,
+      "dialog.tlk": {
+        "source_sha256_utf8": "71af6bd30e2202d5692e15f2a183b1152d250007a9ad8df1e7419ac3ff76d628",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "71af6bd30e2202d5692e15f2a183b1152d250007a9ad8df1e7419ac3ff76d628",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300237,
+      "dialog.tlk": {
+        "source_sha256_utf8": "64d787b55f86a77e2481fad2a68e00b7d3d1dd38b12e61a35a6e26071e72be85",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "64d787b55f86a77e2481fad2a68e00b7d3d1dd38b12e61a35a6e26071e72be85",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300238,
+      "dialog.tlk": {
+        "source_sha256_utf8": "5d744b00f310b5a8d0e9d5aebb8fc43c9cee02ad923ec1f2bd404c76ec2f2a70",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "5d744b00f310b5a8d0e9d5aebb8fc43c9cee02ad923ec1f2bd404c76ec2f2a70",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300239,
+      "dialog.tlk": {
+        "source_sha256_utf8": "7a075546df60a1be8e93371d33bcf1245149f1ebcacb2462f07eebf797b3d8e8",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "7a075546df60a1be8e93371d33bcf1245149f1ebcacb2462f07eebf797b3d8e8",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300240,
+      "dialog.tlk": {
+        "source_sha256_utf8": "c5add192ef3b53981dc4b654eca7b29f0bb8b6e99e309b106d2bc10d1e63f79b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "c5add192ef3b53981dc4b654eca7b29f0bb8b6e99e309b106d2bc10d1e63f79b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300241,
+      "dialog.tlk": {
+        "source_sha256_utf8": "5c4d4dff4e061fd738a1e3a2b7e25ae476de71cff08edb4869f1aa71c238eb91",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "5c4d4dff4e061fd738a1e3a2b7e25ae476de71cff08edb4869f1aa71c238eb91",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300247,
+      "dialog.tlk": {
+        "source_sha256_utf8": "7e25898ebba4e447d0dedd1654d49406fc6ded0573cea14b619cb76897fd462c",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "7e25898ebba4e447d0dedd1654d49406fc6ded0573cea14b619cb76897fd462c",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300250,
+      "dialog.tlk": {
+        "source_sha256_utf8": "4560a37fcd35f8968db71220d6d17ba11078dbd6f89ec52b5e8e92ef95f1af74",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "4560a37fcd35f8968db71220d6d17ba11078dbd6f89ec52b5e8e92ef95f1af74",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300251,
+      "dialog.tlk": {
+        "source_sha256_utf8": "2e32bd187a53372436b7a19043a95e40cc61aa2b8bc0862fe1a44c909d585e9b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "2e32bd187a53372436b7a19043a95e40cc61aa2b8bc0862fe1a44c909d585e9b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300252,
+      "dialog.tlk": {
+        "source_sha256_utf8": "eb36725682089387501abbf242940dd3606350b5b823c94e5c5c4dce6557cfe7",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "eb36725682089387501abbf242940dd3606350b5b823c94e5c5c4dce6557cfe7",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300258,
+      "dialog.tlk": {
+        "source_sha256_utf8": "7929d76a522cbb97a788e685130500881a9b64504c944dee931716b543f6468a",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "7929d76a522cbb97a788e685130500881a9b64504c944dee931716b543f6468a",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300259,
+      "dialog.tlk": {
+        "source_sha256_utf8": "c3e39b6aaf939facdd77b09436b27907a50998aa164f7fd006d2111af3645aa5",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "c3e39b6aaf939facdd77b09436b27907a50998aa164f7fd006d2111af3645aa5",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300260,
+      "dialog.tlk": {
+        "source_sha256_utf8": "65cd5a55524f8900bb07bc22f563e8993efbc09d563655c6dacaec8939129906",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "65cd5a55524f8900bb07bc22f563e8993efbc09d563655c6dacaec8939129906",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300269,
+      "dialog.tlk": {
+        "source_sha256_utf8": "68717bf4b14d0b4b3c63d6812d9a1ec8b30e00b27a14540420dd1fe939fd116b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "68717bf4b14d0b4b3c63d6812d9a1ec8b30e00b27a14540420dd1fe939fd116b",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300270,
+      "dialog.tlk": {
+        "source_sha256_utf8": "d66b668af34932e93999bc4c2208c4ea5e3417e10c892b9dc3ad77802f580a0e",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Corwin]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "d66b668af34932e93999bc4c2208c4ea5e3417e10c892b9dc3ad77802f580a0e",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Corwin]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300271,
+      "dialog.tlk": {
+        "source_sha256_utf8": "dfb0069837a5117d793c39426591706bd8631327d7f08f6f7e0c2db8af58e9ec",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "dfb0069837a5117d793c39426591706bd8631327d7f08f6f7e0c2db8af58e9ec",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300272,
+      "dialog.tlk": {
+        "source_sha256_utf8": "8256593113bfb70da2a710f96b03060d47339fb6c511ac8e8298cd80e3201b23",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "8256593113bfb70da2a710f96b03060d47339fb6c511ac8e8298cd80e3201b23",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300275,
+      "dialog.tlk": {
+        "source_sha256_utf8": "c726faaa0557da2956d0e9196bddbaca350f530edb9a08ce09b4a87f1c62108d",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "c726faaa0557da2956d0e9196bddbaca350f530edb9a08ce09b4a87f1c62108d",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300279,
+      "dialog.tlk": {
+        "source_sha256_utf8": "7d0a403b1f2538d9c8043d5a430b022b05a52e59f669d0b7b6baf5301b224b93",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "7d0a403b1f2538d9c8043d5a430b022b05a52e59f669d0b7b6baf5301b224b93",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300280,
+      "dialog.tlk": {
+        "source_sha256_utf8": "3d7ceae612df3a04462d3782ce5704e20cf74156e9963104750a993ec924071f",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "3d7ceae612df3a04462d3782ce5704e20cf74156e9963104750a993ec924071f",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300281,
+      "dialog.tlk": {
+        "source_sha256_utf8": "fa84b68c5f301071b60cbc1103aefec8311095e875817bb1903c01c28c1513dc",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "fa84b68c5f301071b60cbc1103aefec8311095e875817bb1903c01c28c1513dc",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300283,
+      "dialog.tlk": {
+        "source_sha256_utf8": "3dd2c011d39d8d672313415accf25ab6e31c2da1ec639f8a9e52cc2851c858c3",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "3dd2c011d39d8d672313415accf25ab6e31c2da1ec639f8a9e52cc2851c858c3",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300284,
+      "dialog.tlk": {
+        "source_sha256_utf8": "98fc8cd5ce5ec1201f2d21cb37e0ffaa82a20e497beb7d5bf025a4ac6ba186c8",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "98fc8cd5ce5ec1201f2d21cb37e0ffaa82a20e497beb7d5bf025a4ac6ba186c8",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300285,
+      "dialog.tlk": {
+        "source_sha256_utf8": "a53c3a0bad84d0c00060bb8acadbebf0cf53811d7819fd89a51c57cabecd3764",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "a53c3a0bad84d0c00060bb8acadbebf0cf53811d7819fd89a51c57cabecd3764",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300288,
+      "dialog.tlk": {
+        "source_sha256_utf8": "ad3d275d0cecb161d00eac1769087acedfc913944c8f10051f0507cb02a99c8a",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "ad3d275d0cecb161d00eac1769087acedfc913944c8f10051f0507cb02a99c8a",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300289,
+      "dialog.tlk": {
+        "source_sha256_utf8": "26c2f31b7289f6aefd18071c95ddaad99574fe5b59004207828c5e481e8fdd4e",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "26c2f31b7289f6aefd18071c95ddaad99574fe5b59004207828c5e481e8fdd4e",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300292,
+      "dialog.tlk": {
+        "source_sha256_utf8": "67761e21d73d1462e688bd773f03224da579fdf99030ed78e1214f7665ee0532",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "67761e21d73d1462e688bd773f03224da579fdf99030ed78e1214f7665ee0532",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300293,
+      "dialog.tlk": {
+        "source_sha256_utf8": "7d98d608c94f6e0f0edc0db439f486de42301d8fdfa569436a83021108de9ed9",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "7d98d608c94f6e0f0edc0db439f486de42301d8fdfa569436a83021108de9ed9",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300294,
+      "dialog.tlk": {
+        "source_sha256_utf8": "4174698feff39e9d09c38e7c991ad4cbc65a880c8130ba58b61739422643c105",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Corwin]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "4174698feff39e9d09c38e7c991ad4cbc65a880c8130ba58b61739422643c105",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Corwin]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300295,
+      "dialog.tlk": {
+        "source_sha256_utf8": "46aed0b13191c69bc73180236e339d89ecf3a741e51c2300cb585067f7d2e8a2",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "46aed0b13191c69bc73180236e339d89ecf3a741e51c2300cb585067f7d2e8a2",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300296,
+      "dialog.tlk": {
+        "source_sha256_utf8": "fbbaa773a39b465639b6cd683e6013650aaf8ab2871dc749c71e36801a5064d5",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "fbbaa773a39b465639b6cd683e6013650aaf8ab2871dc749c71e36801a5064d5",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300297,
+      "dialog.tlk": {
+        "source_sha256_utf8": "ee10368598e50e45ee009cf6b7f0c3c030d3a44feeabcaa4f02abe18ca70ba94",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Corwin]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "ee10368598e50e45ee009cf6b7f0c3c030d3a44feeabcaa4f02abe18ca70ba94",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Corwin]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300298,
+      "dialog.tlk": {
+        "source_sha256_utf8": "50b026792820dddfd500bfe385182bbdaa6590f0de28aadebbde0bdc73fd27f1",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "50b026792820dddfd500bfe385182bbdaa6590f0de28aadebbde0bdc73fd27f1",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300299,
+      "dialog.tlk": {
+        "source_sha256_utf8": "00160d6554ee2daa44566ca4527999643a99b9795d1559bad5a78a9b9d48728d",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "00160d6554ee2daa44566ca4527999643a99b9795d1559bad5a78a9b9d48728d",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300300,
+      "dialog.tlk": {
+        "source_sha256_utf8": "1fe31ff1bb1dcd334daac637bba73d1f617966ae5251a6a4b95b81caf427d9f7",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "1fe31ff1bb1dcd334daac637bba73d1f617966ae5251a6a4b95b81caf427d9f7",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300304,
+      "dialog.tlk": {
+        "source_sha256_utf8": "25a3f3bb82767d21949044f37feb5041bba17849facf2bcbfff51c8261916a98",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "25a3f3bb82767d21949044f37feb5041bba17849facf2bcbfff51c8261916a98",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300305,
+      "dialog.tlk": {
+        "source_sha256_utf8": "eb6baa3abab684a920ac65c4cc114342fe8511887d89e182a3ac0ced54320d99",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "eb6baa3abab684a920ac65c4cc114342fe8511887d89e182a3ac0ced54320d99",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Lester]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300307,
+      "dialog.tlk": {
+        "source_sha256_utf8": "fa1a87193fa500a57a579f7a0f433760c7ebe903b4a22998370722c39f0638ac",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Corwin]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "fa1a87193fa500a57a579f7a0f433760c7ebe903b4a22998370722c39f0638ac",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Corwin]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300308,
+      "dialog.tlk": {
+        "source_sha256_utf8": "36410d42a33f4bdf79605c7cf23a975e399ce87574541e9e34a98d5890d4fa39",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Corwin]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "36410d42a33f4bdf79605c7cf23a975e399ce87574541e9e34a98d5890d4fa39",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Corwin]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300309,
+      "dialog.tlk": {
+        "source_sha256_utf8": "a6062ebfab6eaaf42a9c879dfd0c30c531a0624dd47e8ac65c4b4f709f723a48",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "a6062ebfab6eaaf42a9c879dfd0c30c531a0624dd47e8ac65c4b4f709f723a48",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300310,
+      "dialog.tlk": {
+        "source_sha256_utf8": "1b545db828b8d0dd59c64dde1b13bf44780f897e024db36ebcf787f922104e35",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Corwin]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "1b545db828b8d0dd59c64dde1b13bf44780f897e024db36ebcf787f922104e35",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Corwin]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300311,
+      "dialog.tlk": {
+        "source_sha256_utf8": "f5ff68153e582e3c1b0af67f3f85b64631f4a63f68615901a0e4a7bc077328da",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "f5ff68153e582e3c1b0af67f3f85b64631f4a63f68615901a0e4a7bc077328da",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300312,
+      "dialog.tlk": {
+        "source_sha256_utf8": "28ca305a59ffe7278b6d1726e335a7dc05270db593b98a6aa3d1b58465883c10",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "28ca305a59ffe7278b6d1726e335a7dc05270db593b98a6aa3d1b58465883c10",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300313,
+      "dialog.tlk": {
+        "source_sha256_utf8": "7b0dbfdf7be35773cdb92e84e9b9211fbe551e942a75164f8684cacba234a309",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "7b0dbfdf7be35773cdb92e84e9b9211fbe551e942a75164f8684cacba234a309",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Belegarm]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300455,
+      "dialog.tlk": {
+        "source_sha256_utf8": "6437bd6057579dab716d64f564fc057844173ff6c2de4253534c62577547f4e0",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[PC Reply]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "6437bd6057579dab716d64f564fc057844173ff6c2de4253534c62577547f4e0",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[PC Reply]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300456,
+      "dialog.tlk": {
+        "source_sha256_utf8": "f51092e2e91cb87a243efd4cddce9ae13991c0cac994b8a191b4f3b54eced34c",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[PC Reply]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "f51092e2e91cb87a243efd4cddce9ae13991c0cac994b8a191b4f3b54eced34c",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[PC Reply]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 300457,
+      "dialog.tlk": {
+        "source_sha256_utf8": "8402fdfa05b062858a632b49cb674f4d1d23ebbfd0e8e5a207ba1e55d112c6a1",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[PC Reply]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "8402fdfa05b062858a632b49cb674f4d1d23ebbfd0e8e5a207ba1e55d112c6a1",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[PC Reply]"
+          }
+        ]
+      }
+    }
+  ]
+}
