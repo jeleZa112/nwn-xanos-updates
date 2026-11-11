@@ -5,8 +5,8 @@
   "sha256_live_061_lua": "fd39d23dc722b549c2af1eaf065541b2ed358a9714f2636b8cab4e45fe7dcec5",
   "sha256_candidate_064_lua": "bfee5278b5b69b1fb4a02e3fea321082b0238407789df83ec6bd2f78d7e19f4b",
   "git_source_candidate": "BGXAI/fox_new/experimental_064_same_area_061_source_only/M_BX43_064_CANDIDATE.lua",
-  "tests_passed": 141,
-  "new_tests": 38,
+  "tests_passed": 143,
+  "new_tests": 40,
   "runtime_eeex_tested": false,
   "files": [
     {
@@ -21,13 +21,13 @@
     },
     {
       "name": "BGXAI64_PREFLIGHT_READONLY.py",
-      "size": 3056,
-      "sha256": "aea26e6ef8b98c22cc388f1ad87c5406995569a9ea1ac5eb5ce7c5cf07953395"
+      "size": 3792,
+      "sha256": "72c955c4a6fcc644e9f71675dfcdb4b19fafdd95cf458918ee9b9e9651f3888f"
     },
     {
       "name": "README_RU.md",
-      "size": 5905,
-      "sha256": "435f71cd72511caa64d2935fe9f91d70a4843dd58557831aae74d1b38390df19"
+      "size": 6435,
+      "sha256": "85098eac2fca062ca92ccdeab1603ea20849bc2f998447d69d16f74ac524af50"
     },
     {
       "name": "lua64_harness.py",
@@ -46,8 +46,8 @@
     },
     {
       "name": "test_064_preflight.py",
-      "size": 3851,
-      "sha256": "c4855531bd756065c2129e2ec6605efc1416625399c4df0c044d489eb114fbdc"
+      "size": 4497,
+      "sha256": "ff0ef7ecb2eebdaf71ea71877277eccd23012993b00169f704268a19ea680a0f"
     }
   ]
 }
