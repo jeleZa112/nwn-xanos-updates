@@ -1,3 +1,9 @@
+## 2026-11-11 — BGXAI 059 byte-exact GitHub source repair VERIFIED
+
+- После 35/35 offline tests обнаружено, что GitHub text upload через Files read потерял **один завершающий LF** в 9 файлов, из-за чего строгая SHA-верификация по локальному SOURCE_MANIFEST.json не прошла бы. Исправлены завершающие LF всех 9 текстовых файлов в `BGXAI/fox_new/experimental_059_guard_visibility_source_only/` (включая script/test/README/manifest). GitHub contents metadata подтвердило expected Git blobs **10/10** вместе с полным `M_BX43.lua`.
+- Локальный ZIP SHA256 остался `ba244ad8a2ecf1e367c6b7b0d86d029333f2dad392b9efa1b8f00764893ca73c` и не изменился. Updated checkpoint (Library + GitHub): `BGXAI/CURRENT/BGXAI_059_GUARDED_RELEASE_CHECKPOINT_20261111_RU.md`, commit `8f41d59d352b7f7e243531dd2f0e13319a8440cd`.
+- Current one-file updater still pinned to 056; no 059 menu/in-game installation. Next read-only native EEex API existence check via Lua console, then controlled native smoke test and exact game preflight. No need to reupload 45k game resources. Do not give experimental install command until explicit approval.
+
 ## 2026-11-11 — BGXAI 059 GUARDED candidate, 35/35 offline checks
 
 - After source-only 059, created verified guarded **candidate** `BGXAI/fox_new/experimental_059_guard_visibility_source_only/BGXAI059_SAFE.py`: modes status, pinned fetch-only, read-only preflight, separately-confirmed install and rollback of **only** Lua `override/M_BX43.lua`; WeiDU `BGX59` installed only after exact 056 baseline, external verified backup and process guard. No changes to `BDDEFAI.BCS`.
