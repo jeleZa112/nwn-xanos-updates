@@ -1,0 +1,40 @@
+{
+  "name": "BGXAI_060_DIRECT_RESPONSE",
+  "status": "SOURCE_ONLY_CANDIDATE_NOT_INSTALLED",
+  "baseline": "056 installed in user game, not read this turn",
+  "eps": "18.4",
+  "SCS": "35.21",
+  "EEex": "1.2.0",
+  "test_total": 20,
+  "compile_with_live_game": false,
+  "files": {
+    "BGX60_RECEIVER.baf": {
+      "sha256": "518a4c3ad591ce0cd758c6397a304565c38674dbc0ef82d2db0debd8cc096968",
+      "bytes": 9743
+    },
+    "generate_baf.py": {
+      "sha256": "a07c9f17f104cf6fe192d3312056c0b86f6fbd6a1aaeabfc1396b6fb474c2648",
+      "bytes": 3054
+    },
+    "BGXAI60_BUILDER.py": {
+      "sha256": "6ab728635f4dd4d9a41eb5d7e3efa1c56e808528ef32009f9a53f8cd94ee894e",
+      "bytes": 6161
+    },
+    "BGXAI60_INSTALL.py": {
+      "sha256": "931e1234ac1ed1b9b6422759ec5592a9318b0d3692fd2c729223e031cae58c4a",
+      "bytes": 9708
+    },
+    "test_060.py": {
+      "sha256": "c510a7cb44a28daaf80ec277ae6014f76a001d8fafe549e2b11b0b0364cbcbdc",
+      "bytes": 4195
+    },
+    "test_060_install.py": {
+      "sha256": "3963209286b0840fad2f48209f4ab80fcbff07e5af99de8e6ee75a9ff0202ccc",
+      "bytes": 5917
+    },
+    "README_RU.md": {
+      "sha256": "be784569151a029e93acf550da10a1795392524d92efc8c9af65c64760b94b3b",
+      "bytes": 5908
+    }
+  }
+}
