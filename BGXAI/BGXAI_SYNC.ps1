@@ -101,8 +101,15 @@ $release056=@{
     localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_056';installer='BGXAI56_INSTALL.py';
     names=@('BGX56/M_BX43.lua','BGX56/BGX56_RECEIVER.baf','BGX56/setup-BGX56.tp2','BGXAI56_BUILDER.py','BGXAI56_INSTALL.py','README_RU.md','tests/test_056.py','tests/test_lua_056.py','ci_weidu_056.py','ids/trigger.ids','ids/action.ids','ids/object.ids','ids/modal.ids','SOURCE_MANIFEST.json')
 }
+$release060=@{
+    id='060';version='0.3.26-060-READONLY-COMPILE';
+    manifest=$remoteRoot+'experimental_060_direct_response_source_only/manifest.json';
+    prefix=$remoteRoot+'experimental_060_direct_response_source_only/';
+    localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_060';installer='BGXAI60_INSTALL.py';
+    names=@('BGX60_RECEIVER.baf','generate_baf.py','BGXAI60_BUILDER.py','BGXAI60_INSTALL.py','test_060.py','test_060_install.py','README_RU.md')
+}
 function Get-PinnedBytes([string]$remotePath) {
-    if($remotePath -notmatch '^BGXAI/fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
+    if($remotePath -notmatch '^BGXAI/fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
         throw ('Remote source path blocked: '+$remotePath)
     }
     # All sources are publicly hosted; pin content by immutable commit and SHA256 manifest.
@@ -277,6 +284,19 @@ function RunRelease($spec,[string]$mode){
         & py -3 $installerPath $mode
     }
     if($LASTEXITCODE -ne 0){throw ('BGXAI '+$spec.id+' installer returned code '+$LASTEXITCODE)}
+}
+function Test060ReadOnly {
+    $spec=$release060
+    $list=VerifiedManifest $spec
+    foreach($name in $spec.names){
+        $dest=Join-Path $spec.localPath $name
+        AssertNotReparse $dest
+        if((HashFile $dest) -cne $list[$name].sha){throw ('BGXAI060 unverified file: '+$name)}
+    }
+    Write-Host 'BGXAI 060 - READ-ONLY Windows WeiDU compile (NO INSTALL).'
+    & py -3 (Join-Path $spec.localPath 'BGXAI60_INSTALL.py') preflight
+    if($LASTEXITCODE -ne 0){throw ('BGXAI 060 preflight failed: exit '+$LASTEXITCODE)}
+    Write-Host 'BGXAI 060 - preflight PASSED; installed 056 unchanged.'
 }
 function Test041ReadOnly {
     # No Python, WeiDU, installation, file writes, or game processes are invoked.
@@ -636,7 +656,7 @@ Write-Host ' 56 - Download/verify BGXAI 056 ACTIVE GUARD SOURCE ONLY'
 Write-Host ' 57 - EXPERIMENTAL install BGXAI 056 ACTIVE F GUARD (YES + WeiDU backups)'
 Write-Host ' 58 - BGXAI 056 active guard STATUS (READ ONLY)'
 Write-Host ' 59 - Roll back BGXAI 056 (YES + verified last WeiDU backup)'
-Write-Host ' 0 - Exit [default]'
+Write-Host ' 60 - Download/verify BGXAI 060 SOURCE ONLY (NO INSTALL)'\nWrite-Host ' 61 - BGXAI 060 read-only compiler PRECHECK (NO INSTALL)'\nWrite-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
 if($choice -eq '0'){Write-Host 'No changes.';exit 0}
@@ -701,7 +721,7 @@ try {
       '57' {SyncRelease $release056;RunRelease $release056 '--install';break}
       '58' {RunRelease $release056 '--status';break}
       '59' {SyncRelease $release056;RunRelease $release056 '--uninstall';break}
-      default {throw 'Unknown menu option, no game change.'}
+      '60' {SyncRelease $release060;break}\n      '61' {SyncRelease $release060;Test060ReadOnly;break}\n      default {throw 'Unknown menu option, no game change.'}
     }
     exit 0
 } catch {
