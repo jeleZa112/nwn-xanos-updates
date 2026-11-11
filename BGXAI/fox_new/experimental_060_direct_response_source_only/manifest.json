@@ -2,7 +2,7 @@
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
   "version": "0.3.26-060-READONLY-COMPILE",
-  "status": "SOURCE_ONLY_READONLY_PRECHECK_NO_INSTALL",
+  "status": "EXPERIMENTAL_OPTIN_WEIDU_INSTALL_BACKUP_ROLLBACK",
   "files": [
     {
       "source": "BGXAI/fox_new/experimental_060_direct_response_source_only/BGX60_RECEIVER.baf",
@@ -43,8 +43,8 @@
     {
       "source": "BGXAI/fox_new/experimental_060_direct_response_source_only/README_RU.md",
       "dest": "README_RU.md",
-      "size": 6678,
-      "sha256": "7302f5900d61be58f227ac4ede4b461a3b09a47730fd034b7bc6d0ba1d5ffc0b"
+      "size": 7936,
+      "sha256": "7c1bb2cca109dd4ec30a2d01930d73d003be2e45a00b3c8eef8b6220f8b9354c"
     }
   ]
 }
