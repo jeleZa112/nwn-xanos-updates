@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.27-061-RESCUE-APPROACH",
+  "status": "SOURCE_ONLY_GUARDED_OPTIN_NOT_INSTALLED",
+  "files": [
+    {
+      "source": "BGXAI/fox_new/experimental_061_rescue_approach_source_only/BGX61_RECEIVER.baf",
+      "dest": "BGX61_RECEIVER.baf",
+      "size": 14185,
+      "sha256": "94b4beca0d9e470ed0cad566a19038566f626c19d53454d590fd409d294fcd1e"
+    },
+    {
+      "source": "BGXAI/fox_new/experimental_061_rescue_approach_source_only/generate_baf.py",
+      "dest": "generate_baf.py",
+      "size": 3582,
+      "sha256": "4fd846394a7ec1be2d051526acd7dea5e55183fd42d4b082de73e584f2d9ca0b"
+    },
+    {
+      "source": "BGXAI/fox_new/experimental_061_rescue_approach_source_only/BGXAI61_BUILDER.py",
+      "dest": "BGXAI61_BUILDER.py",
+      "size": 6222,
+      "sha256": "5fe13fa2ecf0e962d73be1e08786028b9a3de98a9afce756eb3c31a78695bed5"
+    },
+    {
+      "source": "BGXAI/fox_new/experimental_061_rescue_approach_source_only/BGXAI61_INSTALL.py",
+      "dest": "BGXAI61_INSTALL.py",
+      "size": 11330,
+      "sha256": "e920527caf6317559325645f14fbe36e70620abbce71af736e46cdbc0bffc5e9"
+    },
+    {
+      "source": "BGXAI/fox_new/experimental_061_rescue_approach_source_only/test_061.py",
+      "dest": "test_061.py",
+      "size": 4652,
+      "sha256": "09dbd567802199c9ac6e2e2ce17e136c83087552f4194e3a7339cfb9c58c6fcd"
+    },
+    {
+      "source": "BGXAI/fox_new/experimental_061_rescue_approach_source_only/test_061_install.py",
+      "dest": "test_061_install.py",
+      "size": 7583,
+      "sha256": "7fdb54ad582882e66a856302b13d4a125bb3882caefa91ce4d20409a6bc17a70"
+    },
+    {
+      "source": "BGXAI/fox_new/experimental_061_rescue_approach_source_only/README_RU.md",
+      "dest": "README_RU.md",
+      "size": 7573,
+      "sha256": "7e64a1f702832fec8d0254276318f3022a9fb2ae6ba0093677496c8676b5416a"
+    }
+  ]
+}
