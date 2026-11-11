@@ -1,3 +1,11 @@
+## 2026-11-11 — BGXAI 059 READ-ONLY source preflight 6/6 PASS
+
+- Source-only 059 build extended with `PREFLIGHT_059_READONLY.py` and `test_preflight_059.py` (GitHub: `BGXAI/fox_new/experimental_059_guard_visibility_source_only/`). No installation/backup/write code in preflight.
+- Offline **6/6 PASS** in synthetic filesystem: intact 056 baseline, detect non-last BGX56, altered BCS, altered Lua, symlink, modified 059 source. Combined **15 passing tests** with 9/9 Lua 5.4 mock candidate eligibility.
+- Current source bundle (helper+tests+README+preflight, NOT full integrated M_BX43 installer) ZIP SHA256 **8a1bb40d24729bfb2facbb117ff8b2a6caba763a2f1400511de2eb98fe48ae31**, Library `/BALDURS_GATE_EET_AI/BUILD/BGXAI_059_GUARD_VISIBILITY_SOURCE_ONLY/`.
+- 059 full integrated source exists in GitHub, blob `0ce2b256f2b0d5ab9246b61e15c8b11d194cdea9`; neither game EEex 1.2.0 runtime nor real installed 056 preflight is tested. Updated checkpoint `BGXAI/CURRENT/BGXAI_059_GUARD_VISIBILITY_CHECKPOINT_20261111_RU.md` (commit `92fc7635fef7fca83a40e5723f980027b4797ff2`). No files on user's PC changed.
+- NEXT boundary: native EEex runtime verification and opt-in installation require access to the user's live EET/permission. Do not announce fix in game before runtime, do not ask for 45k resources or repeated Shank fights.
+
 ## 2026-11-11 — BGXAI 059 SOURCE ONLY: same-area + sight filter checked offline
 
 - User objected to premature stopping; applied GLOBAL_AUTO_CONTINUE_POLICY_V6: implemented an actual next safe source-code step instead of merely describing it.
