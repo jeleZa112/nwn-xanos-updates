@@ -4,7 +4,7 @@
   "release_version": 18,
   "published_utc": "2026-11-11",
   "plan": null,
-  "note": "BG EET RU v24 removes 187 exact English speaker prefixes before Russian dialogue (374 TLK sides). Requires v23-installed exact TLK pair, per-StrRef source SHA checks, backup, typed YES. Excludes credits, debug markers and ambiguous cues. v8 updater read-only full scan available.",
+  "note": "Visible-player-text-only policy: v24 speaker-label patch held for DLG linkage verification; exact TLK presence alone does not establish player visibility. Previously installed v22 and v23 remain. Never install credits, localization notes, marketing, debug, internal strings.",
   "game_writes_allowed": true,
   "updater": {
     "version": 8,
@@ -21,11 +21,6 @@
       "version": 23,
       "path": "releases/patch_v23.json",
       "sha256": "63646e006f7756690f5a02b0a8a5caf0fe95d76c00aa5d8c82aad85341f507da"
-    },
-    {
-      "version": 24,
-      "path": "releases/patch_v24.json",
-      "sha256": "b3c6b93fdcc7b6ce4a71b6958bc22387dbd5875b87f3058b04ec70e55ed9ff68"
     }
   ],
   "installed_user_stage": "21.2"
