@@ -1,3 +1,10 @@
+## 2026-11-11 — HOTFIX: 060 updater PowerShell ParserError fixed and re-pinned
+
+- User ran existing `BGXAI_UPDATE.cmd` and received `Missing statement block in switch statement clause` line 724 after bootstrap `10373a16f527`. Root cause: 060 menu/switch edit inserted **literal `\n`** between PowerShell statements, not real line breaks. Parser rejected script before menu execution; no game/WeiDU changes.
+- Fixed exact four literal backslash-n sequences and verified 12/12 invariants + inverse edit restores entire previous file. Corrected `BGXAI/BGXAI_SYNC.ps1` commit `aed0d982d42642d4a1a3c4fb431407730b809af3`, SHA256 `1080fe861dabf3b51bdb7b6fe5bcf871ed6e9fb1e939d165925024bb0738aabc`, 45974 bytes.
+- Updated `BGXAI/fox_new/BOOTSTRAP_PIN.json`, GitHub commit `7959d5fa83a2b5a99c6d5c5a9f25adbd912d99b1`; reread branch pin commit/hash/size confirmed. Native PowerShell parse not yet tested; user to verify by rerunning old CMD.
+- Persistent checkpoint `BGXAI/CURRENT/BGXAI_060_UPDATER_PARSER_HOTFIX_20261111_RU.md` and Library mirror `/BALDURS_GATE_EET_AI/CURRENT/BGXAI_060_UPDATER_PARSER_HOTFIX_20261111_RU.md`. Mandatory existing auto-updater-only rule retained. NEXT: **same CMD**, select 61, paste output. No separate ZIP/CMD, no reinstall 056, no combat tests.
+
 ## 2026-11-11 — RULE: use existing BGXAI_UPDATE.cmd only; 060 menu options 60/61
 
 - User explicitly mandated **all BGXAI work through the existing auto-updater**; NEVER send separate ZIP/CMD/scripts or manual override copies as the regular workflow. Persistent policy saved to GitHub `BGXAI/CURRENT/BGXAI_AUTOUPDATER_ONLY_RULE_RU.md` and Library `/BALDURS_GATE_EET_AI/CURRENT/BGXAI_AUTOUPDATER_ONLY_RULE_RU.md`.
