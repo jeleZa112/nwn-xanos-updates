@@ -1,3 +1,12 @@
+## 2026-11-11 — COURSE CORRECTION: reuse EPS instead of dual combat executors
+
+- Acknowledged user escalation: a week of guard diagnostics without a reliable in-game bodyguard is not progress toward autonomous party AI. **Stop serial diagnostic release churn.**
+- Compared real EET `AI_BAF/*`, `DOCS/SCRIPTS_ARCHITECTURE_RU.md`, `DOCS/BGXAI_v066_STALL_ROOT_CAUSE_RU.md`, 042B guard reordering source, 056 BCS conditions, and published EPS/IESDP docs. Existing EPS handles much of physical attack, buffs, potions, dispels, defence, healing, item abilities with profile toggles; F guard is our BGXAI add-on, not an inherent EPS switch.
+- Root architectural risk from 056: Lua prepared Q, but BCS additionally requires `ActionListEmpty()`, `See(PlayerN)`, `Range(PlayerN,10)`, `See(NearestEnemyOf(PlayerN))`, `Range(...,7)`, cooldown/TTL. EPS automatic actions can occupy the queue; allied LOS outside combat doesn't prove enemy visibility or guard firing. **Not proven sole root cause.**
+- Future architecture: retain EPS as sole action executor, augment its team coordination in constrained BCS/EEex hooks, never duplicate entire magic/attack systems, never interrupt manual action. Prior BGXAI v0.6.6 state machine already deadlocked from over-constraints, avoid repeat.
+- Filed detailed technical correction GitHub `BGXAI/CURRENT/BGXAI_EPS_REUSE_ARCHITECTURE_CORRECTION_20261111_RU.md` commit `19683f51233fff4bc543418309c518983742a3a4`, mirrored in Library `/BALDURS_GATE_EET_AI/CURRENT/`. This is analysis, **NOT new installed version**, no game files changed.
+- NEXT: audit actual compiled BCS block priorities and ESP/042B/056 interactions; produce one **bounded** fix, not 057→060 diagnostic churn; restore one end-to-end acceptance criterion with user game only when necessary. Reuse `INDEX/SPELL_POLICY_CATALOG_469.csv`, `PRIORITY_ACTIVE_ITEMS_POLICY.csv`, existing skills instead of recreating resources.
+
 ## 2026-11-11 — REAL EET confirms AREAAPI=function SIGHTAPI=function; BGXAI 059 smoke ready
 
 - New user screenshot from live EET v2.6.6.0: `AREAAPI=function SIGHTAPI=function`. Both EEex 1.2.0 function names exist. This **does not yet prove** native sight query works or is safe from synchronous weapon-hit hook.
