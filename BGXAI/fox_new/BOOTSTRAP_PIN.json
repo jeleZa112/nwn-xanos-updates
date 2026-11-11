@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "7566cfd8b01485970980aa3ea460b41125be8705",
+  "commit": "10373a16f5272cb5ea543cfdcddb8c5547cc9be0",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "b13decaa6e45b64445dd7ab662c4e449187f82c0c9ebf26aac5427fc7890ebb7",
-  "script_size": 44617,
-  "description": "BGXAI 056-R2: exact private 042B BCS verified; old 042B moved SC trailer to block 1042, installer now restores single final SC while preserving all 1057 rule bodies, adds 8 guarded blocks; 14 local synthetic tests, real private 042B structural check; Windows/Linux WeiDU CI 42838849155 PASS; explicit opt-in only. Existing 049 unaffected until installation."
+  "script_sha256": "7804f054f0db7e2290cc61a8db247054fc94ba5b69ed000d68a7c98364d84197",
+  "script_size": 45978,
+  "description": "BGXAI 060 READ-ONLY integration: original BGXAI_UPDATE.cmd auto-updates to pinned BGXAI_SYNC.ps1, menu 60 SOURCE ONLY and 61 native WeiDU read-only preflight. No installation menu for 060; installed 056 unchanged. Safety: SHA256+immutable commit pin."
 }
