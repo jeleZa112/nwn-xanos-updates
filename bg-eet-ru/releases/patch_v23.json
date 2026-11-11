@@ -1,0 +1,62 @@
+{
+  "schema": "bg-eet-ru-translation-delta-v2",
+  "version": 23,
+  "description": "Remove 3 verified English performance cues from 2 linked 41SHERI dialogue StrRefs; only cue fragments and hashes are public, no complete game dialogue",
+  "from_tlk_sha256": {
+    "dialog.tlk": "78021b62ac1e5025c56968ad0671abd4235a02ccf4af0226fd63e7b630bcca06",
+    "dialogf.tlk": "006dc158f6bf27ff6c8dfdc2169c1db0a824f713913a62d7505c011ddef3e713"
+  },
+  "change_count": 4,
+  "entries": [
+    {
+      "strref": 317986,
+      "dialog.tlk": {
+        "source_sha256_utf8": "b596248c37fe67868a9d7ffe9dee7412ea7ae6c4fdcebb81e9277b9a25870177",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Explaining]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "b596248c37fe67868a9d7ffe9dee7412ea7ae6c4fdcebb81e9277b9a25870177",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Explaining]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 318009,
+      "dialog.tlk": {
+        "source_sha256_utf8": "4becd4139a7805c268faceee060369d627cf9ca79bd6877790553fce6215d166",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Explaining scornfully]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Regaining her composure]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "4becd4139a7805c268faceee060369d627cf9ca79bd6877790553fce6215d166",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Explaining scornfully]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Regaining her composure]"
+          }
+        ]
+      }
+    }
+  ]
+}
