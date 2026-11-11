@@ -1,3 +1,10 @@
+## 2026-11-11 — LIVE P4 selected for P3 while protector stayed outdoors
+
+- User live screenshot during Shank→Jade weapon damage: `H=1 HE=0 A=1 P=1 HIT=recorded BR=PREPARED_BCS_ONLY`; subsequent paused snapshot `G=P4 V=P3 F=1 Q=3 MOD=0 TTL=82`.
+- User confirmed guardian P4 remains outdoors and victim P3 is inside the building, guardian was never brought near. So Lua wrote the LOCALS request successfully; not evidence BCS ProtectObject executed.
+- Source B.prepare ranks F=1 MOD=0 candidates by 2D coordinate delta without verifying same ARE, LOS, path, or BCS ActionListEmpty. Receiver needs `See(Player3)`, `Range(Player3,10)`, `See(NearestEnemyOf(Player3))`, `Range(...,7)`, etc. LOS/distance is likely blocking this request but exact failed BCS trigger is not proven.
+- Work on eligibility-gated candidate selection offline. Do not re-test Shank, reinstall, change 056 or claim 057 installed. Further details and safer regression spec at `BGXAI/CURRENT/BGXAI_056_20261111_GUARD_OUTSIDE_AREA_AUDIT_RU.md` (Library mirror), commit `9e3e8c3395614dd31bd5dd6e1f6da03b21375cee`.
+
 ## 2026-11-11 — EEex HITAPI/REG подтверждены без нового боя
 
 - Пользователь заново запустил EET без нового боя и выполнил Lua-пробу: `HITAPI=true REG=true HE=0 ERR=nil`. История предыдущего сеанса обнулилась. Это подтверждает регистрацию `EEex_Sprite_AddBlockWeaponHitListener`, не получение реальных попаданий.
