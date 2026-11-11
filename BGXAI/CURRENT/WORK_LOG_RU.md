@@ -1,3 +1,10 @@
+## 2026-11-12 — 062D SAFE EEex SNAPSHOT SOURCE, 54/54 TESTS PASS
+
+- User reconfirmed GLOBAL AUTO-CONTINUE: after positive tests, **keep making progress without another routine authorization prompt**. Live game installation still requires explicit opt-in and backup safeguards.
+- Built actual source-only `BGX62_READONLY_SNAPSHOT.lua` using known historic EEex portrait/object/F/modal/position reads, no commands or LOCALS writes. Unknown class/equipment/manual state remain UNKNOWN rather than guessed. Python `snapshot_contract.py` fails closed; bool-as-int bug found and fixed. 17 contract tests + 8 Lua safety static checks + prior 29 tests = **54/54 PASS**. No Lua runtime or game install test.
+- ZIP SHA256 `f6f1fda278b4fe18b66a5047a9079df63f8557129899ad72a25db30666278209`, Library `/BALDURS_GATE_EET_AI/BUILD/BGXAI_062D_READONLY_SNAPSHOT/`. GitHub checkpoint `BGXAI/CURRENT/BGXAI_062D_READONLY_SNAPSHOT_CHECKPOINT_20261112_RU.md` commit `56536703b0a7bcfee705c1bb92bf4bb94ed157c2`.
+- NEXT: verify native EEex 1.2.0 read-only capability APIs; source-only role mapping, retain BGX52Bridge single guardian selector. Working 061 untouched. Do not ask user to re-upload EET resource archives.
+
 ## 2026-11-12 — BGXAI 062C READ-ONLY COMPAT AUDIT / 29 TESTS PASS
 
 - Created SHA-pinned static compatibility auditor for 061 BAF/BCS/Lua, source-only, no game writes. 13 new tests + 16 existing 062B regressions = 29/29 PASS. Missing live files are NOT_SUPPLIED rather than invented PASS; source BAF audit checks 20 receiver rules, queues, TTL, InMyArea, bounded approach and no ClearActions. Does not establish EEex runtime correctness.
