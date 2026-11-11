@@ -4,12 +4,12 @@
   "release_version": 18,
   "published_utc": "2026-11-11",
   "plan": null,
-  "note": "v12 fixed v11 ONE-RUN KeyError('entries') by preserving complete scan and inventory objects; nine-stage end-to-end synthetic KEY/BIF/DLG/TLK regression PASS. Existing v24 installed: 491 StrRefs verified. NO new translation patch. Player-visible-only policy. Re-run NOT requested until useful new patch; one existing updater and one ZIP remain. Future updater code size up to 500 KB; v12 below prior 150 KB update limit.",
+  "note": "BG EET RU v13 (one run, one ZIP): existing verified game TLK and DLG scans plus read-only ITM/SPL resource ownership check. 15_ITM_SPL_PLAYER_TEXT_OWNER_AUDIT.json includes 3 uncertain dialogue rows, 4 Faulty item names, all high-priority candidates from current TLKs. Invalid/incomplete resource scans flagged, not treated as absence. v24 already installed (491). v25 remains BLOCKED until resource linkage confirmed. No extra standalone diagnostic run required now. Only player-visible text; no voice or BGXAI changes.",
   "game_writes_allowed": true,
   "updater": {
-    "version": 12,
-    "path": "releases/updater_v12.py",
-    "sha256": "66eefae92b785159c8cf622e29bdd35e9f8b5c787cb2f8d42402556b57de5713"
+    "version": 13,
+    "path": "releases/updater_v13.py",
+    "sha256": "7766d009fc0fca043bd823d47917776f046622f6822f44396c1ada042cb849e0"
   },
   "patches": [
     {
