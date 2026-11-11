@@ -1,0 +1,23 @@
+{
+  "project": "BGXAI",
+  "release": "059-guard-visibility-source-only",
+  "installed": false,
+  "files": {
+    "BGX59_ELIGIBILITY.lua": {
+      "bytes": 2885,
+      "sha256": "d1a0028ad33c3e88f58bd42965ed0d4384c344f8eb85c0ac1d297112194daf40"
+    },
+    "test_059.lua": {
+      "bytes": 2998,
+      "sha256": "debaebdd8f70fb711e4d1049f0d419643540cbd1569911247477d0c1c209ddde"
+    },
+    "run_lua54.py": {
+      "bytes": 1210,
+      "sha256": "137e92091fbc7e6aa528cb8f8906e9e7c6861b8d3ae354cf50d14fe225de89f7"
+    },
+    "README_RU.md": {
+      "bytes": 4343,
+      "sha256": "c72027a7f50b494cb73081d63f6088376815c2d1532e77971c731e574276e787"
+    }
+  }
+}
