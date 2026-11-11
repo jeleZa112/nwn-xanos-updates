@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "10373a16f5272cb5ea543cfdcddb8c5547cc9be0",
+  "commit": "aed0d982d42642d4a1a3c4fb431407730b809af3",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "7804f054f0db7e2290cc61a8db247054fc94ba5b69ed000d68a7c98364d84197",
-  "script_size": 45978,
-  "description": "BGXAI 060 READ-ONLY integration: original BGXAI_UPDATE.cmd auto-updates to pinned BGXAI_SYNC.ps1, menu 60 SOURCE ONLY and 61 native WeiDU read-only preflight. No installation menu for 060; installed 056 unchanged. Safety: SHA256+immutable commit pin."
+  "script_sha256": "1080fe861dabf3b51bdb7b6fe5bcf871ed6e9fb1e939d165925024bb0738aabc",
+  "script_size": 45974,
+  "description": "BGXAI 060 READ-ONLY parser hotfix: correct real newline delimiters in options 60 and 61; existing CMD, original options 1-59, and installed 056 unchanged."
 }
