@@ -1,0 +1,19 @@
+{
+  "name": "BGXAI 059 native ARE/LOS smoke test",
+  "game_mutation": false,
+  "installed": false,
+  "files": {
+    "BGX59_NATIVE_SMOKE_READONLY.lua": {
+      "size": 635,
+      "sha256": "05091539043c1e9813dfe05e557e53be2f85d58c94624a7624831b6b4f6df8c5"
+    },
+    "test_native_smoke.py": {
+      "size": 3975,
+      "sha256": "24733b7bca6f743c800d87409d23052952384cc2bc4c617e93f9b66f296bf7ad"
+    },
+    "README_RU.md": {
+      "size": 4202,
+      "sha256": "67f41cc05746a4330c652046a9d473a208bd5134cb5b757ed2bb657890e027f0"
+    }
+  }
+}
