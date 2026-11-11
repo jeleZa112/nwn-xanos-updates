@@ -1,3 +1,10 @@
+## 2026-11-12 — BGXAI 063 NATIVE LUA SEMANTIC TESTS 103/103 PASS
+
+- Executed **real Lua 5.4** code in isolated native interpreter via ctypes and mocked EEex, not just regex/static checks. Added 11 execution tests for exact 062E probe and 8 execution tests for historical 059 single-guardian eligibility. Combined prior 062B/C/D/E tests 103/103 PASS. Initial missing 062D Lua baseline packaging error fixed before full PASS.
+- Historical 059 helper is **not** the installed 061 bridge; tests do NOT prove installed EEex runtime behavior. BGXAI 061 remains unchanged and live guard first-pass confirmed. Equipped weapon, manual action ownership remain UNKNOWN; no role-gated installation.
+- ZIP SHA256 `0dd5ae428a227132d450aa3fa4030ffd6f1ba861487396d8fd0f3268b228d4c7`, Library `/BALDURS_GATE_EET_AI/BUILD/BGXAI_063_NATIVE_LUA_READONLY/`, GitHub sources `BGXAI/fox_new/experimental_063_native_lua_readonly/` (5 files), checkpoint `BGXAI/CURRENT/BGXAI_063_NATIVE_LUA_CHECKPOINT_20261112_RU.md` commit `df439d4ad4dbd6090a706deb8a40baefaf0b90af`.
+- NEXT: exact live 061 Lua / one-file updater read-only capability proof then actual role-aware integration into single existing BGX52Bridge, no new duplicate selector. Global AUTO-CONTINUE applies; never demand '+' to continue safe code work, but do not promise background operation.
+
 ## 2026-11-12 — BGXAI 062E REAL SOURCE CODE + 84/84 OFFLINE TESTS PASS
 
 - User instructed *execute now without asking again* per existing /GLOBAL_PROJECT_RULES policy. Built actual `BGX62E_CLASS_ACTION_PROBE.lua` read-only x64 EEex source + `class_action_contract.py` strict Python schema validator (unknown equip/stealth/manual/capability remain unknown), source/static safety tests. **84/84 total unittest PASS** including 062B/C/D regressions. Unverified Lua runtime or installed EEex version; never present as live feature.
