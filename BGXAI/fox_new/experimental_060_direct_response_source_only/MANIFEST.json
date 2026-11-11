@@ -32,9 +32,13 @@
       "sha256": "3963209286b0840fad2f48209f4ab80fcbff07e5af99de8e6ee75a9ff0202ccc",
       "bytes": 5917
     },
+    "BGXAI60_PRECHECK_READONLY.cmd": {
+      "sha256": "0a2ea7119123d188fa0910452b3c34e2488a0a435ee325aeb9b7a850ab7bcd45",
+      "bytes": 823
+    },
     "README_RU.md": {
-      "sha256": "be784569151a029e93acf550da10a1795392524d92efc8c9af65c64760b94b3b",
-      "bytes": 5908
+      "sha256": "7302f5900d61be58f227ac4ede4b461a3b09a47730fd034b7bc6d0ba1d5ffc0b",
+      "bytes": 6678
     }
   }
 }
