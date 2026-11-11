@@ -40,3 +40,10 @@
 `C:DisplayText("AREAAPI="..tostring(type(EEex_UDEqual)).." SIGHTAPI="..tostring(type(EEex_Sprite_ForAllOfTypeStringInRange)))`
 
 Если обе `function`, следующая *отдельная* стадия — аккуратно проверить native LOS вызов в безопасном контексте (вне weapon-hit hook) и затем штатный read-only `preflight` кандидата. Если API отсутствует, 059 будет fail-closed и нужна корректировка. Пока не давать пользователю экспериментальные install/rollback команды.
+
+
+## Проверка byte-exact публикации GitHub (после обнаружения mismatch)
+
+Проверено содержимое GitHub-каталога `BGXAI/fox_new/experimental_059_guard_visibility_source_only/`: в исходных публикациях через текстовый интерфейс терялся завершающий символ `\n`, что делало GitHub-копии девяти текстовых файлов на **1 байт короче** проверенного локального архива. Такое расхождение сломало бы строгую SHA-верификацию при будущем скачивании через one-file updater.
+
+Без изменения игровых файлов восстановлен завершающий LF у `BGX59_ELIGIBILITY.lua`, `test_059.lua`, `run_lua54.py`, `PREFLIGHT_059_READONLY.py`, `test_preflight_059.py`, `BGXAI059_SAFE.py`, `test_BGXAI059_SAFE.py`, `README_RU.md`, `SOURCE_MANIFEST.json`. Все **9 из 9** теперь совпадают с локальными Git blob SHA. Дополнительно подтверждён существующий полный интегрированный `M_BX43.lua` с blob `0ce2b256f2b0d5ab9246b61e15c8b11d194cdea9`. Итоговые **10/10** GitHub source blob identities matched against expected pins. Локальный ZIP и его SHA256 не менялись. GitHub/Library файлы теперь совпадают по байтам, а не только по тексту без последнего LF.
