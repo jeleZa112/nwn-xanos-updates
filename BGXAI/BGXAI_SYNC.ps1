@@ -108,8 +108,15 @@ $release060=@{
     localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_060';installer='BGXAI60_INSTALL.py';
     names=@('BGX60_RECEIVER.baf','generate_baf.py','BGXAI60_BUILDER.py','BGXAI60_INSTALL.py','test_060.py','test_060_install.py','README_RU.md')
 }
+$release061=@{
+    id='061';version='0.3.27-061-RESCUE-APPROACH';
+    manifest=$remoteRoot+'experimental_061_rescue_approach_source_only/manifest.json';
+    prefix=$remoteRoot+'experimental_061_rescue_approach_source_only/';
+    localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_061';installer='BGXAI61_INSTALL.py';
+    names=@('BGX61_RECEIVER.baf','generate_baf.py','BGXAI61_BUILDER.py','BGXAI61_INSTALL.py','test_061.py','test_061_install.py','README_RU.md')
+}
 function Get-PinnedBytes([string]$remotePath) {
-    if($remotePath -notmatch '^BGXAI/fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
+    if($remotePath -notmatch '^BGXAI/fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
         throw ('Remote source path blocked: '+$remotePath)
     }
     # All sources are publicly hosted; pin content by immutable commit and SHA256 manifest.
@@ -331,6 +338,69 @@ function Status060ReadOnly {
         Write-Host ('060 staged BCS SHA matches installed: '+((HashFile $stage) -ceq $actualBCS -and $actualBCS.Length -eq 64))
     } else {Write-Host 'BGXAI060/056 is not last; do not install/rollback blindly.'}
     Write-Host ('Installed BCS SHA256: '+$actualBCS)
+}
+function Test061ReadOnly {
+    $spec=$release061
+    $list=VerifiedManifest $spec
+    foreach($name in $spec.names){
+        $dest=Join-Path $spec.localPath $name
+        AssertNotReparse $dest
+        if((HashFile $dest) -cne $list[$name].sha){throw ('BGXAI061 unverified file: '+$name)}
+    }
+    Write-Host 'BGXAI 061 - REAL WeiDU BAF + Lua-TTL read-only preflight (NO INSTALL).'
+    & py -3 (Join-Path $spec.localPath 'BGXAI61_INSTALL.py') preflight
+    if($LASTEXITCODE -ne 0){throw ('BGXAI 061 preflight FAILED: exit '+$LASTEXITCODE+'. No changes to game.')}
+    Write-Host 'BGXAI 061 - preflight PASS; installed 060 unchanged.'
+}
+function Run061Guarded([string]$mode) {
+    if($mode -cne 'install' -and $mode -cne 'rollback'){throw 'BGXAI061 unknown mode blocked'}
+    SyncRelease $release061
+    $list=VerifiedManifest $release061
+    foreach($name in $release061.names){
+        $dest=Join-Path $release061.localPath $name
+        AssertNotReparse $dest
+        if((HashFile $dest) -cne $list[$name].sha){throw ('BGXAI061 source SHA mismatch: '+$name)}
+    }
+    $token=if($mode -ceq 'install'){'INSTALL_BGXAI_061'}else{'ROLLBACK_BGXAI_061'}
+    Write-Host 'EXPERIMENTAL BGXAI 061: changes both guarded BCS receiver and Lua request TTL via WeiDU.'
+    Write-Host 'Close Baldur / InfinityLoader first. Game hash gates and external verified backup are mandatory.'
+    $confirmation=Read-Host ('Type '+$token+' exactly to authorize or ENTER to cancel')
+    if($confirmation -cne $token){Write-Host 'BGXAI 061 CANCELLED. Game unchanged.';return}
+    & py -3 (Join-Path $release061.localPath 'BGXAI61_INSTALL.py') $mode '--yes' '--confirm' 'BGXAI_061_EXPERIMENTAL'
+    if($LASTEXITCODE -ne 0){throw ('BGXAI 061 '+$mode+' STOP code '+$LASTEXITCODE+'. Do not retry blindly.')}
+    Write-Host ('BGXAI 061 '+$mode+' completed, inspect status 68.')
+}
+function Status061ReadOnly {
+    $log=Join-Path $GameRoot 'WeiDU.log'
+    $bcs=Join-Path $GameRoot 'override\BDDEFAI.BCS'
+    $lua=Join-Path $GameRoot 'override\M_BX43.lua'
+    AssertNotReparse $log
+    AssertNotReparse $bcs
+    AssertNotReparse $lua
+    if(!(Test-Path -LiteralPath $log -PathType Leaf)){throw 'WeiDU.log missing'}
+    $rows=@(Get-Content -LiteralPath $log -ErrorAction Stop | Where-Object {$_.TrimStart().StartsWith('~')})
+    if($rows.Count -lt 1){throw 'WeiDU.log has no installed components'}
+    $last=[string]$rows[-1]
+    $is061=($last -match '(?i)BGX61[/\\]SETUP-BGX61[.]TP2~')
+    $is060=($last -match '(?i)BGX60[/\\]SETUP-BGX60[.]TP2~')
+    $bhash=HashFile $bcs
+    $lhash=HashFile $lua
+    Write-Host ('Last WeiDU: '+$last)
+    Write-Host ('061 is LAST: '+$is061)
+    Write-Host ('060 is LAST: '+$is060)
+    if($is061){
+        $sourceBCS=Join-Path $GameRoot 'BGX61\staged\BDDEFAI.BCS'
+        $sourceLua=Join-Path $GameRoot 'BGX61\staged\M_BX43.lua'
+        AssertNotReparse $sourceBCS
+        AssertNotReparse $sourceLua
+        Write-Host ('061 BCS staged SHA matches live: '+((HashFile $sourceBCS) -ceq $bhash -and $bhash.Length -eq 64))
+        Write-Host ('061 Lua staged SHA matches live: '+((HashFile $sourceLua) -ceq $lhash -and $lhash.Length -eq 64))
+    } elseif($is060) {
+        Write-Host ('060 BCS SHA correct: '+($bhash -ceq '038b41c529fb45bb75528722577beef7b474e1ce55e280dc5fca4d6ed9e72841'))
+        Write-Host ('060 Lua SHA correct: '+($lhash -ceq '35e450b6600f0fc65d47e535126a52e0303c360033307fa920776faec3f581ab'))
+    } else {Write-Host 'STOP: current last WeiDU is not BGX60/BGX61; no install or rollback until reviewed.'}
+    Write-Host ('Live BCS SHA: '+$bhash)
+    Write-Host ('Live Lua SHA: '+$lhash)
 }
 function Test060ReadOnly {
     $spec=$release060
@@ -708,6 +778,11 @@ Write-Host ' 61 - BGXAI 060 read-only compiler PRECHECK (NO INSTALL)'
 Write-Host ' 62 - EXPERIMENTAL install BGXAI 060 (explicit phrase + verified WeiDU backup)'
 Write-Host ' 63 - BGXAI 060/056 install STATUS (READ ONLY)'
 Write-Host ' 64 - Roll back BGXAI 060 to 056 (explicit phrase + verified WeiDU backup)'
+Write-Host ' 65 - Download/verify BGXAI 061 SOURCE ONLY (NO INSTALL)'
+Write-Host ' 66 - BGXAI 061 REAL WeiDU preflight (READ ONLY, no game changes)'
+Write-Host ' 67 - EXPERIMENTAL install BGXAI 061 (separate approval + backup)'
+Write-Host ' 68 - BGXAI 061/060 install STATUS (READ ONLY)'
+Write-Host ' 69 - Roll back BGXAI 061 to 060 (separate approval + backup)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -778,6 +853,11 @@ try {
       '62' {Run060Guarded 'install';break}
       '63' {Status060ReadOnly;break}
       '64' {Run060Guarded 'rollback';break}
+      '65' {SyncRelease $release061;break}
+      '66' {SyncRelease $release061;Test061ReadOnly;break}
+      '67' {Run061Guarded 'install';break}
+      '68' {Status061ReadOnly;break}
+      '69' {Run061Guarded 'rollback';break}
       default {throw 'Unknown menu option, no game change.'}
     }
     exit 0
