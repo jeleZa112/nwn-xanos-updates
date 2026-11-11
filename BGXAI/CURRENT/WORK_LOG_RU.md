@@ -1,3 +1,11 @@
+## 2026-11-11 — EEex HITAPI/REG подтверждены без нового боя
+
+- Пользователь заново запустил EET без нового боя и выполнил Lua-пробу: `HITAPI=true REG=true HE=0 ERR=nil`. История предыдущего сеанса обнулилась. Это подтверждает регистрацию `EEex_Sprite_AddBlockWeaponHitListener`, не получение реальных попаданий.
+- Исходный EEex `EEex_Sprite_LuaHook_CheckBlockWeaponHit` передаёт таблицу `attackingSprite,targetSprite`; названия полей в 056 верны.
+- Кодовый риск: Lua выбирает ближайшего F=ON, modal=0, даже если очередь занята; BCS требует `ActionListEmpty()`, видимость, расстояния, TTL 90 ticks. При отказе BCS запрос истекает и не переключается другому охраннику. Это гипотеза из кода, не доказанная причина отрицательного теста Шанка.
+- Новый полный аудит: Library `/BALDURS_GATE_EET_AI/CURRENT/BGXAI_056_HITAPI_TRUE_READONLY_AUDIT_20261111_RU.md` и GitHub `BGXAI/CURRENT/BGXAI_056_HITAPI_TRUE_READONLY_AUDIT_20261111_RU.md`, commit `124ff22c996d9180db2f1488eaa24eab2d79c3b0`.
+- NEXT: без принудительного боя/переустановки, после любого обычного попадания по члену отряда в той же сессии выполнить read-only снимок `weapon_hit_calls`, `weapon_hit_errors`, `bridge_attempts`, `bridge_prepared_count`, `last_weapon_hit.reason`, `bridge_last` из аудита. 057 остаётся source-only; игровую 056 не менять.
+
 ## 2026-11-11 — подтверждён Ctrl+Alt+F11; следующий тест weapon-hit hook
 
 - Три новых пользовательских скриншота EET v2.6.6.0 подтверждают: `BGX44: 043P loaded=true listener=true enabled=true attacks=0 errors=0 notice=false API=true/true last=-`; Lua-команда `BGX43Probe.snapshot()` реально выполнена и дала `H=0 BR=0/0 LAST=none`. Портреты: P2 F=1 Q=0; P3 F=0 Q=0; P4 F=1 Q=0.
