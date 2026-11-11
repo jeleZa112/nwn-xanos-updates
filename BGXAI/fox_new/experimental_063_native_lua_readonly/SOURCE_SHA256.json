@@ -1,0 +1,20 @@
+{
+  "BGX59_ELIGIBILITY_059_HISTORICAL.lua": "d1a0028ad33c3e88f58bd42965ed0d4384c344f8eb85c0ac1d297112194daf40",
+  "BGX62D_BASELINE_SNAPSHOT.lua": "77824200dfec949171fe9e72ba4221d18e48da8ae2bc0f5d7543cb43df6f8ef7",
+  "BGX62E_CLASS_ACTION_PROBE.lua": "882774614501cc1df09c891da9586780797f1fa71dece8978e937210fa7d9ad1",
+  "README_RU.md": "80301fd7eff1083d61a074e700b8e7378e9f8b28d6718be131f4293654fd39a9",
+  "bridge_contract.py": "a6b30e8d4d77ea26ea2fddc2705c2ebb696f5a5eacd8860cc2c56f9b722d59d7",
+  "class_action_contract.py": "1407a498c5edd9b872e5676b4f54431372e20c09a67524925f752aa20760b064",
+  "compat_audit.py": "ae1715631e8e9b75cdd06ff49c1542f7e8222ae6bb09c5637dc31149dce335b0",
+  "lua_harness.py": "d0586d522303893ff2ae648c2b6915ed4178113e8782d98d698c5a3b03b70607",
+  "snapshot_contract.py": "fd08c258b7c15f2dabc6cfa2ada038d698352b68813967ce7167503a102924b3",
+  "team_policy.py": "7142329a588fbbf00ec05e7631030fda819fb2c5305020235457e641ba0fa2dc",
+  "test_bridge_contract.py": "1b1e5c9ed2f8ad169a82690827d5196845843b3cedb40fca68b1f34dc0432961",
+  "test_class_action_contract.py": "308871715f360b4261f1019a4079d4df369fc6b1c3ae7d3e23809fbd5f5c332d",
+  "test_compat_audit.py": "1057110a60276f7fc5867d4a8bfdc98ffd6f7cd007b36aedda6fc2ce50356149",
+  "test_guard_eligibility_native.py": "fb3cd7b432097d61461d8779ea135078a7fcf7b648ae7a37b22827e0affc50d1",
+  "test_lua_safety.py": "a1958dfc5c616720f4d22e8369c90e273e1101882513cdd3f10c2a96010328f7",
+  "test_native_lua.py": "78fae5a1e9b7e72b02524c14aaacbc6d39cb3db798e17b8d7328b7dec635b4d0",
+  "test_probe_lua_safety.py": "43a3b86b4d9ca9d6aac19bf5e85ae8891167b37fc460b2d363d0a0cd73e36ed1",
+  "test_snapshot_contract.py": "04cbaa18642533c95d207b9a0146e385763e82dd8cd53c7baa5af844fa7da19a"
+}
