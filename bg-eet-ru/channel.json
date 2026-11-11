@@ -4,7 +4,7 @@
   "release_version": 18,
   "published_utc": "2026-11-11",
   "plan": null,
-  "note": "v8 full read-only scan of 360847 StrRefs in BOTH current TLKs, top English/mixed candidates only in the user's LOCAL one-folder report ZIP. 71 v7 selected gameplay rows already Russian; v23 installed. Existing patches remain and require source hashes, backups, typed YES. No new game patches.",
+  "note": "BG EET RU v24 removes 187 exact English speaker prefixes before Russian dialogue (374 TLK sides). Requires v23-installed exact TLK pair, per-StrRef source SHA checks, backup, typed YES. Excludes credits, debug markers and ambiguous cues. v8 updater read-only full scan available.",
   "game_writes_allowed": true,
   "updater": {
     "version": 8,
@@ -21,6 +21,11 @@
       "version": 23,
       "path": "releases/patch_v23.json",
       "sha256": "63646e006f7756690f5a02b0a8a5caf0fe95d76c00aa5d8c82aad85341f507da"
+    },
+    {
+      "version": 24,
+      "path": "releases/patch_v24.json",
+      "sha256": "b3c6b93fdcc7b6ce4a71b6958bc22387dbd5875b87f3058b04ec70e55ed9ff68"
     }
   ],
   "installed_user_stage": "21.2"
