@@ -1,12 +1,17 @@
 {
   "project": "BGXAI",
-  "release": "059-guard-visibility-source-only",
+  "release": "059-guard-visibility-guarded-source-only",
   "installed": false,
-  "tests": {
-    "lua54_mock": 9,
-    "readonly_preflight_mock": 6
+  "verified_pinned_full_source": {
+    "repo": "jeleZa112/nwn-xanos-updates",
+    "commit": "534b7aecc5ea6a3870583beac6678a2ad3677b6f",
+    "blob_sha": "0ce2b256f2b0d5ab9246b61e15c8b11d194cdea9"
   },
-  "full_integrated_source_git_blob": "0ce2b256f2b0d5ab9246b61e15c8b11d194cdea9",
+  "tests": {
+    "lua54_helper_mock": 9,
+    "readonly_preflight_mock": 6,
+    "guarded_installer_mock": 20
+  },
   "files": {
     "BGX59_ELIGIBILITY.lua": {
       "bytes": 2885,
@@ -28,9 +33,17 @@
       "bytes": 1974,
       "sha256": "f45106b1f4464110fb0212406ae834fe7e8c59de8f75e90ae5b025d4851037d8"
     },
+    "BGXAI059_SAFE.py": {
+      "bytes": 14124,
+      "sha256": "ad6069b60348700ed458347747470b49eeaa0d14dd552676d393867334a12374"
+    },
+    "test_BGXAI059_SAFE.py": {
+      "bytes": 10194,
+      "sha256": "f2850a9095e49b3b0b269bacce01a6ffaca9e63873d75288563450cfe4918851"
+    },
     "README_RU.md": {
-      "bytes": 5676,
-      "sha256": "23f2265c3518aa0f678cd7f73fb6799fc7177a53f34768a8ceced3086b74d513"
+      "bytes": 9064,
+      "sha256": "e3c8396b5cc87502f36df4387d8656743403d6df3f9c18407f645166da5e2b00"
     }
   }
 }
