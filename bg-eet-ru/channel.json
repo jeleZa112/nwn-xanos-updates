@@ -4,12 +4,12 @@
   "release_version": 18,
   "published_utc": "2026-11-11",
   "plan": null,
-  "note": "One launch, one final ZIP: v11 performs exact game TLK verification, optional already-published v24 with explicit YES+verified backups, 71 gameplay checks, full 360847x2 TLK English heuristic scan, ONE pass across installed BIF+override DLG references, all DLG-referenced Latin-bearing texts with male/female exact variants and hashes, remaining/HELD ownership; 13_ONE_RUN_AUDIT_STATUS.json captures all stage failures, 14_PLAYER_DLG_LATIN_TEXT_INVENTORY.json supplies complete DLG candidate evidence. Only player-facing text. No voice/BGXAI writes, no complete game text in public repo. User need run once, send one ZIP.",
+  "note": "v12 fixed v11 ONE-RUN KeyError('entries') by preserving complete scan and inventory objects; nine-stage end-to-end synthetic KEY/BIF/DLG/TLK regression PASS. Existing v24 installed: 491 StrRefs verified. NO new translation patch. Player-visible-only policy. Re-run NOT requested until useful new patch; one existing updater and one ZIP remain. Future updater code size up to 500 KB; v12 below prior 150 KB update limit.",
   "game_writes_allowed": true,
   "updater": {
-    "version": 11,
-    "path": "releases/updater_v11.py",
-    "sha256": "5d5c1561d0454ed6a97790ed00d4d1b7e98849bddfb94a117ac55fefd1fa1e26"
+    "version": 12,
+    "path": "releases/updater_v12.py",
+    "sha256": "66eefae92b785159c8cf622e29bdd35e9f8b5c787cb2f8d42402556b57de5713"
   },
   "patches": [
     {
