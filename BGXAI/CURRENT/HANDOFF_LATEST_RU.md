@@ -1,3 +1,12 @@
+## 2026-11-11 — G=P4 V=P3: охрана снаружи, Jade внутри; 058 SOURCE-ONLY
+
+- Новый снимок живой диагностики после попадания Шанка в Jade: `H=1 HE=0 A=1 P=1 HIT=recorded BR=PREPARED_BCS_ONLY`; ещё на паузе `G=P4 V=P3 F=1 Q=3 MOD=0 TTL=82`.
+- Пользователь уточнил: **P4 с включённой охраной находился на улице, Jade/P3 внутри здания**. Поэтому проверка корректна для EEex→Lua→LOCALS, но **не** для оценки способности BCS выполнить ProtectObject: нужны See(Player3), See(NearestEnemyOf(Player3)), Range, ActionListEmpty и выполнение без паузы.
+- Статический дефект подтвердился: BGX52Bridge.prepare у 056 сортирует по m_pos, но не проверяет одинаковую ARE. Через другую игровую область выбирать охранника нельзя. До прямого чтения SAME_AREA нельзя утверждать, что фактически были разные ARE; возможен и блок LOS в той же ARE.
+- Создан НЕУСТАНОВЛЕННЫЙ source-only вариант `BGXAI/fox_new/experimental_058_same_area_source_only/M_BX43.lua` (Git blob `ea410a7d1c0babde9b8aa6df5a2e55164bd55f56`): fail-closed `m_pArea`/`EEex_UDEqual` до вычисления дистанций; никакой смены установленного 056 и BCS.
+- Шесть изолированных тестов Lua5.4 на выбор охранника/другую ARE/нет API/модальную занятость PASS. **Не** компиляция всей 056/058, не EEex runtime, не WeiDU и не игра. Контрольная точка `BGXAI/CURRENT/BGXAI_058_SAME_AREA_SOURCE_CHECKPOINT_20261111_RU.md`, Library `/BALDURS_GATE_EET_AI/CURRENT/BGXAI_058_SAME_AREA_SOURCE_CHECKPOINT_20261111_RU.md`; полный аудит `BGXAI/CURRENT/BGXAI_056_CROSS_AREA_GUARD_AUDIT_20261111_RU.md`.
+- NEXT: одна read-only Lua-проверка SAME_AREA для текущего b.chosen_guardian и b.victim_id, пока тот же игровой сеанс жив; если false, подтверждает разные ARE; если true, скорее LOS/очередь или другая проверка. Не требовать ещё одного боя, новой установки или архива 45k игровых ресурсов.
+
 ## 2026-11-11 — LIVE P4 selected for P3 while protector stayed outdoors
 
 - User live screenshot during Shank→Jade weapon damage: `H=1 HE=0 A=1 P=1 HIT=recorded BR=PREPARED_BCS_ONLY`; subsequent paused snapshot `G=P4 V=P3 F=1 Q=3 MOD=0 TTL=82`.
