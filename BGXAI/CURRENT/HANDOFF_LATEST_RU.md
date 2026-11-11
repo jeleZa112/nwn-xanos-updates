@@ -1,3 +1,11 @@
+## 2026-11-11 — подтверждён Ctrl+Alt+F11; следующий тест weapon-hit hook
+
+- Три новых пользовательских скриншота EET v2.6.6.0 подтверждают: `BGX44: 043P loaded=true listener=true enabled=true attacks=0 errors=0 notice=false API=true/true last=-`; Lua-команда `BGX43Probe.snapshot()` реально выполнена и дала `H=0 BR=0/0 LAST=none`. Портреты: P2 F=1 Q=0; P3 F=0 Q=0; P4 F=1 Q=0.
+- Кадры — спокойное состояние **текущего** сеанса, не бой Шанка; H=0 здесь не объясняет прежний отрицательный тест и не опровергает получение hit в другом процессе. Ошибочный прошлый тезис «Lua-консоль недоступна» **исправлен**: пользователь выполнял Lua-команды и получал вывод через C:DisplayText.
+- Сверка кода 056: `BGX44 listener=true` подтверждает action listener / `BGX43Probe.installed`, но **НЕ** `weapon_hit_registered`. P.init может вернуть installed=true при отсутствии `EEex_Sprite_AddBlockWeaponHitListener`. Эта причина не доказана, её следует проверять прежде любых изменений.
+- Следующее одно действие в живой игре, без нового боя, после той же загрузки: `local s=BGX43Probe.snapshot();C:DisplayText("HITAPI="..tostring(s.weapon_hit_listener).." REG="..tostring(s.weapon_hit_registered).." HE="..tostring(s.weapon_hit_errors).." ERR="..tostring(BGX43Probe.lastError))`. Если REG=false — исследовать API/ошибку. Если REG=true — сначала дожидаться обычного игрового события, не повторять спецбой Шанка.
+- В 056 Lua выбирает только **одного ближайшего** F=ON охранника (P2/P4 одновременно включены), поэтому без `bridge_last.chosen_guardian` нельзя утверждать, что он выбрал именно Тарану. Сборка 056 и игра в этом чате не менялись, 057 source-only остаётся неустановленной. Подробно: `BGXAI/CURRENT/BGXAI_056_044_LIVE_HOTKEY_FINDINGS_20261111_RU.md` и копия в Library.
+
 ## 2026-11-11 — BGXAI 057 SOURCE ONLY; первый runtime check через установленный 044
 
 - Пользователь показал скриншот **предыдущих инструкций ChatGPT**, а не результат команд Lua. Счётчики 056 ещё не проверялись после отрицательного боя Шанка/Тараны. Не считать screenshot доказательством события EEex.
