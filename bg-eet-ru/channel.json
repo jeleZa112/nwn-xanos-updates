@@ -4,12 +4,12 @@
   "release_version": 18,
   "published_utc": "2026-11-11",
   "plan": null,
-  "note": "Updater v5 fixes v4 SAFE_STOP unknown encoding utf8-sig when loading v22 manifest. Existing v22 patch remains published, still guarded by exact source fingerprints, TLK backups and explicit YES.",
+  "note": "Updater v6 adds read-only exact TLK evidence for 10 remaining HELD rows, separate male/female source texts and hashes, to the same SEND_TO_CHATGPT_BG_EET_RU.zip. Existing v22 installed; no new patch. Do not auto-install HELD entries.",
   "game_writes_allowed": true,
   "updater": {
-    "version": 5,
-    "path": "releases/updater_v5.py",
-    "sha256": "60ea27152bb88656cd2bdd5f6a3bb34e61f06cb8e622b32fdc3247c0815b4a73"
+    "version": 6,
+    "path": "releases/updater_v6.py",
+    "sha256": "0ddb7c58bf4c84d9491bb37c95be7d141061f00961033ef71cd6644804133d75"
   },
   "patches": [
     {
