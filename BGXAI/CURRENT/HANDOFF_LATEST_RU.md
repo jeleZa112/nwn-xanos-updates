@@ -1,3 +1,11 @@
+## 2026-11-11 — LIVE 061 REAL WeiDU preflight PASS; installed 060 unchanged
+
+- User ran existing `BGXAI_UPDATE.cmd` option **66** successfully (`BGXAI 061 - preflight PASS; installed 060 unchanged.`), real WeiDU BAF compilation and Lua TTL patch verified. Synced seven source files by SHA.
+- WeiDU last: `~BGX60\\SETUP-BGX60.TP2~ #0 #0`. 060 BCS SHA256 `038b41c529fb45bb75528722577beef7b474e1ce55e280dc5fca4d6ed9e72841`, Lua 056 SHA256 `35e450b6600f0fc65d47e535126a52e0303c360033307fa920776faec3f581ab`.
+- Candidate 061 BCS SHA256 `db0fcba4678b00defa2ed7887b57c0d4207effc064891aeb9a0d7dcc1a1a6b0b`; candidate Lua SHA256 `fd39d23dc722b549c2af1eaf065541b2ed358a9714f2636b8cab4e45fe7dcec5`. Old blocks 1071, replace 14 with 20, final 1077, EPS unchanged, old EPS guards unchanged. Lua change is intentional TTL increase.
+- Persistent checkpoint GitHub `BGXAI/CURRENT/BGXAI_061_REAL_WEIDU_PREFLIGHT_PASS_20261111_RU.md` commit `1f179267939115531483734c361a026c8b9b79bf` and Library `/BALDURS_GATE_EET_AI/CURRENT/BGXAI_061_REAL_WEIDU_PREFLIGHT_PASS_20261111_RU.md`.
+- NEXT: user close Baldur/InfinityLoader, SAME updater choose **67** only with explicit `INSTALL_BGXAI_061`; expected guarded verified backup and `INSTALLED_061_EXPERIMENTAL`. Then read-only **68** status. No game battle before status. STOP errors must be reviewed, not blindly retried. **061 NOT YET INSTALLED** as of this record.
+
 ## 2026-11-11 — LIVE 060 partial: out-of-range guard failure -> BGXAI 061 SOURCE-ONLY pinned
 
 - User supplied THREE live 060 screenshots: Shank attacked Jade with `Атаковать врагов=OFF`; guard reacted late only very close; from farther away EPS buff fired but guard never approached. This proves 060 is **PARTIALLY WORKING ONLY**. Do not claim that EPS buff is guarding. The 060 BAF has `See(PlayerN)` and `Range(PlayerN,10)` in EVERY twelve combat response blocks; no approach branch. Existing Lua 056 bridge TTL 90 ticks (~6 sec) can expire while EPS is casting. IESDP documents `InMyArea`, `Range`, `MoveToObject`.
