@@ -1,3 +1,13 @@
+## 2026-11-11 — BGXAI 059 SOURCE ONLY: same-area + sight filter checked offline
+
+- User objected to premature stopping; applied GLOBAL_AUTO_CONTINUE_POLICY_V6: implemented an actual next safe source-code step instead of merely describing it.
+- LIVE 056 evidence: Shank hit Jade P3, `H=1 HE=0 A=1 P=1 HIT=recorded BR=PREPARED_BCS_ONLY`; chosen guardian P4 outside while target P3 inside: `G=P4 V=P3 F=1 Q=3 MOD=0 TTL=82`. No proof that specific ARE differs; BCS execution not demonstrated.
+- Existing **058** source-only same-area filter already published at `BGXAI/fox_new/experimental_058_same_area_source_only/M_BX43.lua` (blob `ea410a7d...`). Did NOT overwrite or install it.
+- New **059 SOURCE-ONLY** integrated `BGXAI/fox_new/experimental_059_guard_visibility_source_only/M_BX43.lua` (commit `534b7aecc5ea6a3870583beac6678a2ad3677b6f`, blob `0ce2b256f2b0d5ab9246b61e15c8b11d194cdea9`). Adds candidate same-area confirmation and LOS/radius 128px via `EEex_Sprite_ForAllOfTypeStringInRange(guardian,"[ANYONE]",128,fn,true,false)`, otherwise fail closed, select nearest eligible.
+- Helper in same GitHub folder + tests: real liblua5.4 mock **9/9 PASS**. Integrated source re-read verified structural invariants: unchanged number of hit listener functions, LOCALS writers and BCS action calls compared to 058. Not tested in EEex/LuaJIT, not compiled/installed in EET. Never manually copy experimental M_BX43.lua into override.
+- Archives + sources in Library `/BALDURS_GATE_EET_AI/BUILD/BGXAI_059_GUARD_VISIBILITY_SOURCE_ONLY/`; checkpoint in both Library and GitHub: `BGXAI/CURRENT/BGXAI_059_GUARD_VISIBILITY_CHECKPOINT_20261111_RU.md` (commit `6627e164e77116ee07436c9ec560ba8f280c0356`). ZIP helper/test SHA256 `70a6009b215bdb2eecb95d97ae7cdbc13ed4dd5a6a57b3c3eb3eeaa0569fc8f7`.
+- NEXT SAFE: continue source preflight/CI for integrated 059, verify runtime EEex 1.2.0 assumptions and guarded WeiDU backup/rollback before proposing any opt-in installation. No repeated Shank fight or user re-upload of resources. `056` remains installed/unchanged; `057/058/059` source-only.
+
 ## 2026-11-11 — G=P4 V=P3: охрана снаружи, Jade внутри; 058 SOURCE-ONLY
 
 - Новый снимок живой диагностики после попадания Шанка в Jade: `H=1 HE=0 A=1 P=1 HIT=recorded BR=PREPARED_BCS_ONLY`; ещё на паузе `G=P4 V=P3 F=1 Q=3 MOD=0 TTL=82`.
