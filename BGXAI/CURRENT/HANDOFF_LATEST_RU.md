@@ -1,3 +1,9 @@
+## 2026-11-12 — BGXAI 062C READ-ONLY COMPAT AUDIT / 29 TESTS PASS
+
+- Created SHA-pinned static compatibility auditor for 061 BAF/BCS/Lua, source-only, no game writes. 13 new tests + 16 existing 062B regressions = 29/29 PASS. Missing live files are NOT_SUPPLIED rather than invented PASS; source BAF audit checks 20 receiver rules, queues, TTL, InMyArea, bounded approach and no ClearActions. Does not establish EEex runtime correctness.
+- Library `/BALDURS_GATE_EET_AI/BUILD/BGXAI_062C_COMPAT_READONLY/`; archive SHA256 `cb0161d2b2f2a27a96f07fbdb1b48e0d1d0c49f37350a9b667a103645316eee4`. GitHub checkpoint `BGXAI/CURRENT/BGXAI_062C_COMPAT_READONLY_CHECKPOINT_20261112_RU.md`, commit `aa00e2e553fceee15317a63c01d269e80cba3c64`.
+- NEXT: confirm safe EEex read-only capability observations, avoid duplicate guardian selector. Keep working installed 061 unchanged; 062C is not a game mod and option 68 output still missing.
+
 ## 2026-11-11 — BGXAI 062B BRIDGE AUDIT / SOURCE ONLY / 16 PASS
 
 - Reviewed actual `BGXAI/fox_new/experimental_059_guard_visibility_source_only/M_BX43.lua` bridge candidate and 061 `BGX61_RECEIVER.baf`. **Correction:** existing `BGX52Bridge.prepare` already chooses ONE guardian and writes one Q; don't create a second selection engine. 059 source is NOT the installed 061 Lua. Safety of reading live class/weapon/manual queue in hit hook is unproven.
