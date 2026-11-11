@@ -1523,11 +1523,53 @@ def _selftest_v4():
     print('SELFTEST V4 PASS: 2 TLK sides, cue-only delta v2, SHA defense, no game write')
 
 
+def _reconcile_installed_holds():
+    # Once a verified remote patch is installed, resolved lines must no longer
+    # be counted as outstanding HOLD; keep original DLG audit as historic evidence.
+    receipts=_receipt_list()
+    resolved=set()
+    for r in receipts:
+        f=PATCH_DIR/('patch_%05d.json'%r['version'])
+        p=_validate_delta(_json_file(f))
+        resolved.update(e['strref'] for e in p['entries'])
+    if not resolved:return
+    hold_file=REPORTS/'02_HOLD_CONTEXT.csv'
+    summary_file=REPORTS/'00_LAST_SUMMARY.json'
+    report_zip=REPORTS/'SEND_TO_CHATGPT_BG_EET_RU.zip'
+    if not all(x.exists() for x in (hold_file,summary_file,report_zip)):return
+    with hold_file.open('r',encoding='utf-8-sig',newline='') as f:
+        reader=csv.DictReader(f)
+        fields=reader.fieldnames
+        kept=[row for row in reader if int(row['strref']) not in resolved]
+    summary=_json_file(summary_file)
+    summary['held_strrefs']=len(kept)
+    summary['resolved_hold_strrefs']=len(resolved)
+    summary['original_hold_strrefs']=len(kept)+len(resolved)
+    tmp=hold_file.with_name('_HOLDS_AFTER_V22.csv')
+    with tmp.open('w',encoding='utf-8-sig',newline='') as f:
+        writer=csv.DictWriter(f,fieldnames=fields);writer.writeheader();writer.writerows(kept)
+    os.replace(tmp,hold_file)
+    atomic_write(summary_file,json_text(summary).encode('utf8'))
+    temp_zip=REPORTS/'_FINAL_RECONCILED_REPORT.zip'
+    with zipfile.ZipFile(report_zip,'r') as src,zipfile.ZipFile(temp_zip,'w',zipfile.ZIP_DEFLATED) as dst:
+        for member in src.infolist():
+            if member.filename in ('02_HOLD_CONTEXT.csv','00_LAST_SUMMARY.json'):
+                dst.write(REPORTS/member.filename,member.filename)
+            else:
+                dst.writestr(member,src.read(member.filename))
+    os.replace(temp_zip,report_zip)
+
+
 def _main_v4(argv=None):
     if argv is None:argv=sys.argv[1:]
     if '--selftest' in argv:
         _selftest_v2();_selftest_v3();_selftest_v4();return 0
-    return _main_v3(argv)
+    code=_main_v3(argv)
+    if code==0 and '--update-only' not in argv:
+        try:_reconcile_installed_holds()
+        except (OSError,ValueError,RuntimeError,KeyError,zipfile.BadZipFile) as exc:
+            _write_report_note('OPTIONAL HOLD REPORT RECONCILIATION FAILED: '+str(exc))
+    return code
 
 main=_main_v4
 
