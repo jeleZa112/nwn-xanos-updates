@@ -4,12 +4,12 @@
   "release_version": 18,
   "published_utc": "2026-11-11",
   "plan": null,
-  "note": "v7 read-only audit of 71 high-priority English candidate game dialogue, quest and item StrRefs, appended to the same local report ZIP. v23 cue-only patch installs only with typed YES and exact TLK SHA guard, with backups. No full game text published.",
+  "note": "v8 full read-only scan of 360847 StrRefs in BOTH current TLKs, top English/mixed candidates only in the user's LOCAL one-folder report ZIP. 71 v7 selected gameplay rows already Russian; v23 installed. Existing patches remain and require source hashes, backups, typed YES. No new game patches.",
   "game_writes_allowed": true,
   "updater": {
-    "version": 7,
-    "path": "releases/updater_v7.py",
-    "sha256": "97fd9961e6e877f747f7a3e5b1366f70a5af4142c44d32c803d0035f5fd1d575"
+    "version": 8,
+    "path": "releases/updater_v8.py",
+    "sha256": "7ad9269acf7c452fd11cd02c604960902551343c43037d6ca41ae385f587ab37"
   },
   "patches": [
     {
