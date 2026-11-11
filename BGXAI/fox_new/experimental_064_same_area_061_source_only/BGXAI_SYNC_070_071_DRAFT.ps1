@@ -378,6 +378,11 @@ function Run061Guarded([string]$mode) {
     Write-Host ('BGXAI 061 '+$mode+' completed, inspect status 68.')
 }
 function Test064ReadOnly {
+    # Native PowerShell 5.1+ syntax check; this only reads its own file.
+    $parsedTokens=$null
+    $parseErrors=$null
+    [System.Management.Automation.Language.Parser]::ParseFile($PSCommandPath,[ref]$parsedTokens,[ref]$parseErrors) | Out-Null
+    if($parseErrors.Count -gt 0){throw ('BGXAI064 PowerShell parser STOP: '+(($parseErrors | ForEach-Object {$_.Message}) -join '; '))}
     $spec=$release064
     $list=VerifiedManifest $spec
     foreach($name in $spec.names){
