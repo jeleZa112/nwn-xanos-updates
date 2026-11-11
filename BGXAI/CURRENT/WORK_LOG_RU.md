@@ -1,3 +1,10 @@
+## 2026-11-11 — RULE: use existing BGXAI_UPDATE.cmd only; 060 menu options 60/61
+
+- User explicitly mandated **all BGXAI work through the existing auto-updater**; NEVER send separate ZIP/CMD/scripts or manual override copies as the regular workflow. Persistent policy saved to GitHub `BGXAI/CURRENT/BGXAI_AUTOUPDATER_ONLY_RULE_RU.md` and Library `/BALDURS_GATE_EET_AI/CURRENT/BGXAI_AUTOUPDATER_ONLY_RULE_RU.md`.
+- Implemented *read-only 060 integration* in original pinned updater. New menu `60` sync 7 SHA-pinned source files; `61` sync + native WeiDU read-only compiler `BGXAI60_INSTALL.py preflight`, no installation. Existing 1–59 menu code preserved. New `experimental_060_direct_response_source_only/manifest.json` matches exact live GitHub bytes.
+- Pinned bootstrap now points to script commit `10373a16f5272cb5ea543cfdcddb8c5547cc9be0`, verified SHA256 `7804f054f0db7e2290cc61a8db247054fc94ba5b69ed000d68a7c98364d84197`, bytes `45978`; descriptor commit `83c1e46fc0a4cae7cf3a8c184508fc14cfda95f4`. No new CMD or download needed.
+- NEXT USER: close game and InfinityLoader, run **same** `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`, choose **61**, send preflight output. New 61 not yet tested on user's Windows. Do not choose install 060 (not yet in menu), do not reinstall 056. Source-only 060 remains NOT INSTALLED; user game untouched.
+
 ## 2026-11-11 — BGXAI 060 BCS-first direct-response candidate 20/20; one-click read-only preflight
 
 - User requested a meaningful autonomous team AI rather than another week of guard diagnostics. Existing EPS 18.4 auto spells / heals / song behavior remains authoritative and unchanged.
