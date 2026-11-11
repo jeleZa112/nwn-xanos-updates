@@ -1,0 +1,432 @@
+{
+  "schema": "bg-eet-ru-translation-delta-v2",
+  "version": 22,
+  "description": "Visible DLG fixes; only exact stage-tag stripping and a short expansion title; no full copyrighted dialogue published",
+  "from_tlk_sha256": {
+    "dialog.tlk": "5f470be4163ebcd5223855d876e470eb75cd37af01021599540f423c69c3b6b0",
+    "dialogf.tlk": "c95b2ac6504f40b1b15cfbe53d8c5b9ebe75902d4b2f8720ca6c68ed8ba5e2bd"
+  },
+  "change_count": 24,
+  "entries": [
+    {
+      "strref": 273940,
+      "dialog.tlk": {
+        "source_sha256_utf8": "b7a76d6a2120b2b183f21f1ea36dfc499dbbe51ebc1e428fbfe3647393735e0b",
+        "operations": [
+          {
+            "type": "REPLACE_EXACT",
+            "old": "Siege of Dragonspear",
+            "new": "«Осада Драконьего Копья»"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "b7a76d6a2120b2b183f21f1ea36dfc499dbbe51ebc1e428fbfe3647393735e0b",
+        "operations": [
+          {
+            "type": "REPLACE_EXACT",
+            "old": "Siege of Dragonspear",
+            "new": "«Осада Драконьего Копья»"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 317992,
+      "dialog.tlk": {
+        "source_sha256_utf8": "b4ab0272f088814f41bd13f6a804f723fb5c4cb32209c74a27aa7cc05af24d49",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Upset]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Calmer but stern]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Assuming the player also despises their human side]"
+          },
+          {
+            "type": "REPLACE_EXACT",
+            "old": "души... этот день",
+            "new": "души... Этот день"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "b4ab0272f088814f41bd13f6a804f723fb5c4cb32209c74a27aa7cc05af24d49",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Upset]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Calmer but stern]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Assuming the player also despises their human side]"
+          },
+          {
+            "type": "REPLACE_EXACT",
+            "old": "души... этот день",
+            "new": "души... Этот день"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 317995,
+      "dialog.tlk": {
+        "source_sha256_utf8": "31abdf099b3fc5f31f05292f293082602eebee72bf9b8942010b8d498e248275",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Upset]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Calmer but stern]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Still upset but assertive]"
+          },
+          {
+            "type": "REPLACE_EXACT",
+            "old": "души... этот день",
+            "new": "души... Этот день"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "31abdf099b3fc5f31f05292f293082602eebee72bf9b8942010b8d498e248275",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Upset]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Calmer but stern]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Still upset but assertive]"
+          },
+          {
+            "type": "REPLACE_EXACT",
+            "old": "души... этот день",
+            "new": "души... Этот день"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 317997,
+      "dialog.tlk": {
+        "source_sha256_utf8": "e4ab6cfcd456f079a825d43dd4021e0a48b6acb8db4990d7756a20de85dbdab7",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Explaining]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Fay-ROON]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Assuming the player feels similarly]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Disappointing sigh]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "e4ab6cfcd456f079a825d43dd4021e0a48b6acb8db4990d7756a20de85dbdab7",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Explaining]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Fay-ROON]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Assuming the player feels similarly]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Disappointing sigh]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 318001,
+      "dialog.tlk": {
+        "source_sha256_utf8": "62b7d337f91ac89b4d4787b068130a6069cdbd1ac4604ffeef2a98634fe5e875",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Half explaining, half boasting, half holding the player accountable for the evil of humanity]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Proud, making a sweeping motion with her sword]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Fay-ROON]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "62b7d337f91ac89b4d4787b068130a6069cdbd1ac4604ffeef2a98634fe5e875",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Half explaining, half boasting, half holding the player accountable for the evil of humanity]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Proud, making a sweeping motion with her sword]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Fay-ROON]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 318003,
+      "dialog.tlk": {
+        "source_sha256_utf8": "4cbf90a1c372a6a972fce147b7b9cc34f31b4649c373d4db3f00c09f25ab31f7",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Declaring proudly, as if giving a rehearsed speech]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "4cbf90a1c372a6a972fce147b7b9cc34f31b4649c373d4db3f00c09f25ab31f7",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Declaring proudly, as if giving a rehearsed speech]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 318004,
+      "dialog.tlk": {
+        "source_sha256_utf8": "a8139edb895629006067b0da2708cc97410b5ce9cc7c6cd3562a247a68c9d80a",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Pleased with the player's decision]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "a8139edb895629006067b0da2708cc97410b5ce9cc7c6cd3562a247a68c9d80a",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Pleased with the player's decision]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 318005,
+      "dialog.tlk": {
+        "source_sha256_utf8": "847be4e55cf9677263f8a04bf1c6f92a0cabff7a5dbfab8395385920d6ba9d8d",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Paying her respect to Аурил]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Explaining]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[ih-ZAIR]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[mah-DAY]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Pausing then slyly referring to the player]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "847be4e55cf9677263f8a04bf1c6f92a0cabff7a5dbfab8395385920d6ba9d8d",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Paying her respect to Аурил]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Explaining]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[ih-ZAIR]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[mah-DAY]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Pausing then slyly referring to the player]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 318007,
+      "dialog.tlk": {
+        "source_sha256_utf8": "d9203db9020bc9cd2b906c0091e21edb3b6c3dbd07007025a7301f471c8178de",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Regretful]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Explaining - her soarsmen are the виверна companions she flies with]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "d9203db9020bc9cd2b906c0091e21edb3b6c3dbd07007025a7301f471c8178de",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Regretful]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Explaining - her soarsmen are the виверна companions she flies with]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 318008,
+      "dialog.tlk": {
+        "source_sha256_utf8": "caa64a5045ebb564ee8c0c4baf4d3b37e6fd006f39c6f304347014c7f5fdb7f9",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Quietly talking to herself]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[foh-MOR-ee-an]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Thankful but regretful to the player]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "caa64a5045ebb564ee8c0c4baf4d3b37e6fd006f39c6f304347014c7f5fdb7f9",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Quietly talking to herself]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[foh-MOR-ee-an]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Thankful but regretful to the player]"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 318014,
+      "dialog.tlk": {
+        "source_sha256_utf8": "4b56da5cac138f47ccdc43feea60750533b8cb9362035dcc0e84c78a22e55494",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Impressed, but somewhat haughty while explaining]"
+          },
+          {
+            "type": "REPLACE_EXACT",
+            "old": "предлагаю тебе тебе сдаться",
+            "new": "предлагаю тебе сдаться"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "4b56da5cac138f47ccdc43feea60750533b8cb9362035dcc0e84c78a22e55494",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Impressed, but somewhat haughty while explaining]"
+          },
+          {
+            "type": "REPLACE_EXACT",
+            "old": "предлагаю тебе тебе сдаться",
+            "new": "предлагаю тебе сдаться"
+          }
+        ]
+      }
+    },
+    {
+      "strref": 318015,
+      "dialog.tlk": {
+        "source_sha256_utf8": "09a4f8e8969d9e3ee15e42b908d5d0ed284d87660fe37827a8d3dd1ce0f566ad",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Regretful sigh]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Commanding but respectful]"
+          }
+        ]
+      },
+      "dialogf.tlk": {
+        "source_sha256_utf8": "09a4f8e8969d9e3ee15e42b908d5d0ed284d87660fe37827a8d3dd1ce0f566ad",
+        "operations": [
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Regretful sigh]"
+          },
+          {
+            "type": "REMOVE_EXACT",
+            "old": "[Commanding but respectful]"
+          }
+        ]
+      }
+    }
+  ]
+}
