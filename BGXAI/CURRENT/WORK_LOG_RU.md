@@ -1,3 +1,10 @@
+## 2026-11-11 — REAL EET confirms AREAAPI=function SIGHTAPI=function; BGXAI 059 smoke ready
+
+- New user screenshot from live EET v2.6.6.0: `AREAAPI=function SIGHTAPI=function`. Both EEex 1.2.0 function names exist. This **does not yet prove** native sight query works or is safe from synchronous weapon-hit hook.
+- Automatically built an independent READ-ONLY console command checking P2 and P4 LOS and ARE vs Jade P3 with at most two bounded 128px calls (`[ANYONE]`, LOS=true); no LOCALS writes, no commands. Real liblua5.4 mocks 10/10 PASS (now 45/45 total offline mock checks including prior 059 sets).
+- Files verified in GitHub `BGXAI/fox_new/experimental_059_guard_visibility_source_only/native_smoke/` (all 4 source files exact Git blobs). ZIP SHA256 `b24dcdde629815458881280bc2b2826338b4e16ae365091ed901c9b078c49094` in Library `/BALDURS_GATE_EET_AI/BUILD/BGXAI_059_NATIVE_SMOKE_READONLY/`. Checkpoint Library + GitHub `BGXAI/CURRENT/BGXAI_059_NATIVE_SMOKE_STATUS_20261111_RU.md`, commit `2589556c6d71954c5873631dd0f3bdc181ac23af`.
+- **NEXT LIVE USER:** while game open and no combat, paste exact command from `native_smoke/BGX59_NATIVE_SMOKE_READONLY.lua` (do NOT download/install ZIP), return two `BGX59 G=P2...` and `BGX59 G=P4...` lines. Results distinguish same AREA, 128px LOS, and API invocation. No need to repeat Shank fight. 056 remains only installed; do not touch WeiDU/override without permission.
+
 ## 2026-11-11 — BGXAI 059 byte-exact GitHub source repair VERIFIED
 
 - После 35/35 offline tests обнаружено, что GitHub text upload через Files read потерял **один завершающий LF** в 9 файлов, из-за чего строгая SHA-верификация по локальному SOURCE_MANIFEST.json не прошла бы. Исправлены завершающие LF всех 9 текстовых файлов в `BGXAI/fox_new/experimental_059_guard_visibility_source_only/` (включая script/test/README/manifest). GitHub contents metadata подтвердило expected Git blobs **10/10** вместе с полным `M_BX43.lua`.
