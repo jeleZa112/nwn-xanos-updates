@@ -17,3 +17,15 @@
 **No repeats required:** do not ask user to rerun 68/71, resend logs or earlier archives. **061 remains installed, 064 NOT installed.**
 
 NEXT: Source-only EEex same-area runtime probe, full-integrated install/rollback candidate audit and explicit guarded opt-in if/when appropriate; preserve user game and original BGXAI_UPDATE.cmd. Prior 170/170 offline tests are not EEex runtime proof. Global AUTO_CONTINUE: progress further through safe steps without requiring '+', never claim background work or silently install.
+
+
+## Автоматическое продолжение после реального PASS 71
+
+- Пункт 71 пользователя подтверждает исходный код и Sha, но `eeex_runtime_area_api: NOT_CHECKED` остаётся фактическим незакрытым пунктом.
+- Создан **read-only EEex native area probe** в `BGXAI/fox_new/experimental_064_same_area_061_source_only/runtime_smoke/`:
+  `BGX64_LIVE_AREA_PROBE.lua`, `BGX64_AREA_CONSOLE_ONE_LINE.lua`, `test_064_live_area_probe.py`, `test_064_area_console.py`, `README_LIVE_AREA_RU.md`.
+- В настоящем локальном Lua 5.4: **17 новых исполняемых тестов PASS**, в том числе реальная ошибка дубля номера портрета обнаружена и исправлена. С предыдущими 67 тестами 064 тот же запуск **84/84 PASS**. Исходники опубликованы и побайтно сверены с Library.
+- Одна строка для **уже доступной пользователю игровой Lua-консоли** читает `m_pArea` у спрайтов партии и проверяет `EEex_UDEqual` с `pcall`, печатает через `C:DisplayText`: `BGX64 AREA api=... self=... same=... diff=... errors=...`. Она не меняет LOCALS/игру/файлы, не регистрирует события; НЕ запускать её в PowerShell.
+- **Next live boundary**: один спокойный тест этой однострочной диагностики в запущенной игре без боя. Требуется `api=true`, `self>=2`, `same>=1`, `errors=0` для подтверждения синхронного вызова EEex на реальных объектах; это не доказательство безопасности хука, так что новый мод останется отдельным opt-in. Не заставлять повторять 68 или 71, не просить снова Shank / WeiDU.log.
+- Рабочая 061 остаётся установленной, 064 не установлен; ни один файл override/WeiDU не менялся.
+
