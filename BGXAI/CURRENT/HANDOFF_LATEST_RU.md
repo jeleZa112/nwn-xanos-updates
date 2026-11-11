@@ -1,3 +1,10 @@
+## 2026-11-11 — LIVE: BGXAI 061 installed via original updater option 67, BCS/Lua SHA verified
+
+- User supplied actual success output for existing `BGXAI_UPDATE.cmd` option 67 after exact `INSTALL_BGXAI_061`. Status `INSTALLED_061_EXPERIMENTAL`; WeiDU last `~BGX61\SETUP-BGX61.TP2~ #0 #0`.
+- Installed `override/BDDEFAI.BCS` SHA256 `db0fcba4678b00defa2ed7887b57c0d4207effc064891aeb9a0d7dcc1a1a6b0b` (exactly matching 061 real preflight); installed Lua `override/M_BX43.lua` SHA256 `fd39d23dc722b549c2af1eaf065541b2ed358a9714f2636b8cab4e45fe7dcec5` (exactly matching 061 real preflight). Verified backup folder `C:\Users\Drevo\Documents\BGXAI61_SAFE_BACKUPS\PRE_INSTALL_20261111T164944810882Z`.
+- Actual installed status is confirmed; **real in-game movement and defense remain unverified**. Do not repeat menu 67. Next same updater **68** read-only status (confirm last 061 and staged/live BCS/Lua hashes). If PASS, one representative in-game hit scenario Jade P3 with F=ON guardian 10–40 feet away in same area, team AI on, `Атаковать врагов` off; observe movement and engagement. Avoid multi-fight diagnostics. On STOP, do not blindly retry or automatically rollback.
+- New GitHub checkpoint `BGXAI/CURRENT/BGXAI_061_LIVE_INSTALLED_20261111_RU.md`, commit `6a50b8d690fef3679aedf0ac82d07073f35ee090`, saved in Library `/BALDURS_GATE_EET_AI/CURRENT/BGXAI_061_LIVE_INSTALLED_20261111_RU.md`. Mandatory existing single updater for all user actions. Installed 060 now superseded by 061, 69 only if user consents to rollback.
+
 ## 2026-11-11 — LIVE 061 REAL WeiDU preflight PASS; installed 060 unchanged
 
 - User ran existing `BGXAI_UPDATE.cmd` option **66** successfully (`BGXAI 061 - preflight PASS; installed 060 unchanged.`), real WeiDU BAF compilation and Lua TTL patch verified. Synced seven source files by SHA.
