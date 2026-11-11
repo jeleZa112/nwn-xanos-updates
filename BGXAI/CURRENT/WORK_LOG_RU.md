@@ -1,3 +1,13 @@
+## 2026-11-11 — BGXAI 060 BCS-first direct-response candidate 20/20; one-click read-only preflight
+
+- User requested a meaningful autonomous team AI rather than another week of guard diagnostics. Existing EPS 18.4 auto spells / heals / song behavior remains authoritative and unchanged.
+- Critical correction: live 059 smoke relative Jade P3 showed `ARE=true LOS=true OK=true` for P2/P4; therefore **059 area/LOS gate does not fix observed idle guardian**. Do NOT install 059 claiming it solves this.
+- Existing 056 EEex/Lua already confirmed actual hit and Q=3 to P4. 056 BCS requires visibility of `NearestEnemyOf(Player3)`, not necessarily Shank. Actual failed BCS condition still unknown.
+- NEW **BGXAI 060 SOURCE-ONLY** (`BGXAI/fox_new/experimental_060_direct_response_source_only/`): 14 BAF blocks replace 8 BGX56 receiver blocks, preserving all other 1057 EPS/042B blocks on synthetic 1065-block BCS. Six prioritized direct `AttackReevaluate(LastAttackerOf(PlayerN),30)` with Q/TTL, F, idle, LOS, ally checks; six `ProtectObject(PlayerN,6)` fallback blocks without `See(NearestEnemyOf(PlayerN))`; two cleanup blocks. Execution markers BGX60_LAST_BRANCH / BGX60_LAST_VICTIM in LOCALS.
+- `BGXAI60_BUILDER.py`: strict exact SHA 056, game WeiDU compile in TEMP, replacement of receiver blocks only. `BGXAI60_INSTALL.py`: opt-in single-BCS WeiDU install and rollback with external SHA backups, process guard and dual confirmation. **No install performed**; direct AttackReevaluate may hold action queue longer than desired per IESDP.
+- **20/20 offline tests PASS**, Windows/real WeiDU compile & game not tested. Release ZIP 16999 bytes SHA256 `2c1e8ecdacbc5607562bd5156d4fea523dc833b9d808850fe0d6bb19cbc1f07f`, 9 files + manifest 9/9 Git blobs verified. Library `/BALDURS_GATE_EET_AI/BUILD/BGXAI_060_DIRECT_RESPONSE_SOURCE_ONLY/`; checkpoint `BGXAI/CURRENT/BGXAI_060_DIRECT_RESPONSE_CHECKPOINT_20261111_RU.md` (Library mirror), GitHub commit `415f93dfe1a0c9fcef5f82ca2ba8dc61b11a4239`.
+- One-click **read-only** native compilation step is `BGXAI60_PRECHECK_READONLY.cmd` included in ZIP: extract OUTSIDE game root, game closed, run CMD, paste report. No reinstall, no Shank battle, no 45k resource uploads, no changes to current BGXAI_UPDATE.cmd. Only after real compile PASS and explicit installation approval should BGXAI60 be installed by WeiDU.
+
 ## 2026-11-11 — COURSE CORRECTION: reuse EPS instead of dual combat executors
 
 - Acknowledged user escalation: a week of guard diagnostics without a reliable in-game bodyguard is not progress toward autonomous party AI. **Stop serial diagnostic release churn.**
