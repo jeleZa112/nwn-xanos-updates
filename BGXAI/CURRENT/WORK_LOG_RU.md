@@ -1,3 +1,11 @@
+## 2026-11-12 — BGXAI 062E REAL SOURCE CODE + 84/84 OFFLINE TESTS PASS
+
+- User instructed *execute now without asking again* per existing /GLOBAL_PROJECT_RULES policy. Built actual `BGX62E_CLASS_ACTION_PROBE.lua` read-only x64 EEex source + `class_action_contract.py` strict Python schema validator (unknown equip/stealth/manual/capability remain unknown), source/static safety tests. **84/84 total unittest PASS** including 062B/C/D regressions. Unverified Lua runtime or installed EEex version; never present as live feature.
+- GitHub source files (all FIVE verified exact vs Library content): `BGXAI/fox_new/experimental_062e_class_action_source_only/`. Library `/BALDURS_GATE_EET_AI/BUILD/BGXAI_062E_CLASS_ACTION_READONLY/`. ZIP sha256 `a69404f1b1b357cb16ac4b651dd0e9043159edd43c3e2b24c87ed1028404264d`.
+- Checkpoint GitHub `BGXAI/CURRENT/BGXAI_062E_CLASS_ACTION_SOURCE_CHECKPOINT_20261112_RU.md` commit `f56616d97225393ef0a1ffe1d39109b800e0376e`.
+- Reviewed published EEex x64 class binding `sprite.m_typeAI.m_Class` (Beamdog forums EEex 1.2.0/1.3.1). Legacy EEex x86 inventory offsets are NOT compatible with x64; ammo can be returned instead of launcher. Therefore equipped weapon remains UNKNOWN (no fabricated melee capability). `m_curAction.m_actionID` single value does NOT authorize manual-interrupt or EPS queue overwrite. Existing 061 remains unchanged, initial live guard PASS.
+- NEXT: source-only evidence-driven x64 equipped weapon/queue state API verification and ensure single BGX52Bridge guard election. Do not create more trivial checkpoints instead of real work; integrated native safe preflight before any install.
+
 ## 2026-11-12 — 062D SAFE EEex SNAPSHOT SOURCE, 54/54 TESTS PASS
 
 - User reconfirmed GLOBAL AUTO-CONTINUE: after positive tests, **keep making progress without another routine authorization prompt**. Live game installation still requires explicit opt-in and backup safeguards.
