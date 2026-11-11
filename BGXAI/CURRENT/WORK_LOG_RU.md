@@ -1,3 +1,10 @@
+## 2026-11-11 — 062 TEAM POLICY SOURCE ONLY, 15/15 PASS
+
+- Continued after first successful 061 live guard scene. **061 remains installed and unchanged.**
+- Created Python pure-intent module with bounded single-frontline intercept, ranged/support stay with EPS, preserve manual actions and active casts, fail-closed on missing capability/unsafe target. 15/15 local offline unit tests PASS. No actual BCS/EEex integration or game runtime claims.
+- Archive sha256 `14e3acc1aa4fdc5c07968891c59b1eb9429929393cd56a95fe0db494e6e64728`, Library `/BALDURS_GATE_EET_AI/BUILD/BGXAI_062_TEAM_COORD_SOURCE_ONLY/`. Checkpoint GitHub `BGXAI/CURRENT/BGXAI_062_TEAM_COORD_SOURCE_CHECKPOINT_20261111_RU.md` commit `87d6c83a3466669a619aff19ea7467396bba0669`.
+- NEXT read-only real EET slot/capability source mapping and EPS/061 interference audit; only after that source-only integration proposal. Existing updater-only rule; no new installation without permission.
+
 ## 2026-11-11 — LIVE 061 GUARD FIRST PASS (user-confirmed)
 
 - User reported and screenshotted EET v2.6.6.0 test: «сработал правда подошел потом бафнулся и убил норм мне нравится» — guardian approached, buffed, killed attacker. This is **one real successful live guard scenario**, not full AI validation. Image only shows one gameplay moment; sequence from user's direct report.
