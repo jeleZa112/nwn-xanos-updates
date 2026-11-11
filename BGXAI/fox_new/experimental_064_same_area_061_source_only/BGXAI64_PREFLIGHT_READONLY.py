@@ -55,3 +55,22 @@ def check(root:Path, *,bcs_pin=BCS_SHA,lua_pin=PIN_061,candidate_pin=PIN_064):
             'candidate_lua_sha':digest(result), 'patch_proof':proof,
             'installed_game_changed':False,'eeex_runtime_area_api':'NOT_CHECKED',
             'authorized_to_install':False}
+
+# This command entrypoint is exclusively intended for a future *existing*
+# BGXAI_UPDATE.cmd menu item. No installer or updater files are modified here.
+def main(argv=None):
+    import argparse,json
+    ap=argparse.ArgumentParser(description='BGXAI 064 source-only read-only game preflight')
+    ap.add_argument('--game-root',type=Path,required=True)
+    args=ap.parse_args(argv)
+    try:
+        report=check(args.game_root)
+    except (Stop,ValueError,OSError) as exc:
+        print('BGXAI064 STOP:',str(exc))
+        return 2
+    print(json.dumps(report,ensure_ascii=False,indent=2))
+    print('BGXAI064 SOURCE-ONLY PASS. NO GAME WRITES. INSTALL NOT AUTHORIZED.')
+    return 0
+
+if __name__=='__main__':
+    raise SystemExit(main())
