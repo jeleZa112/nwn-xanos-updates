@@ -1,3 +1,12 @@
+## 2026-11-11 — BGXAI 059 GUARDED candidate, 35/35 offline checks
+
+- After source-only 059, created verified guarded **candidate** `BGXAI/fox_new/experimental_059_guard_visibility_source_only/BGXAI059_SAFE.py`: modes status, pinned fetch-only, read-only preflight, separately-confirmed install and rollback of **only** Lua `override/M_BX43.lua`; WeiDU `BGX59` installed only after exact 056 baseline, external verified backup and process guard. No changes to `BDDEFAI.BCS`.
+- Fixed immutable raw URL to commit `534b7aecc5ea6a3870583beac6678a2ad3677b6f` (actual GitHub blob matches `0ce2b256f2b0d5ab9246b61e15c8b11d194cdea9`). Candidate script's install/rollback require both `--yes` and `--confirm BGXAI_059_EXPERIMENTAL`. **Never run these unless user explicitly authorizes risky game modification and runtime compatibility is checked.**
+- Tested synthetic full install/rollback via mocked WeiDU 20/20, real liblua5.4 helper 9/9, separate preflight 6/6 = **35/35 offline**, no native EEex 1.2.0, real WeiDU or Windows test. Full integrated 059 Lua exists in GitHub but the ZIP is source helper+script/test bundle that downloads pinned full Lua when needed.
+- Candidate package Library `/BALDURS_GATE_EET_AI/BUILD/BGXAI_059_GUARD_VISIBILITY_SOURCE_ONLY/BGXAI_059_GUARDED_SOURCE_ONLY.zip` (sha256 ba244ad8a2ecf1e367c6b7b0d86d029333f2dad392b9efa1b8f00764893ca73c). Checkpoint Library + GitHub `BGXAI/CURRENT/BGXAI_059_GUARDED_RELEASE_CHECKPOINT_20261111_RU.md` commit `41d04914c9128a0fef898aa44e2bfde73e963340`.
+- Existing pinned one-file updater `BGXAI/BGXAI_SYNC.ps1` remains unchanged with options through 59. Do NOT silently change bootstrap pin; menu for 059 not live. Last installed BGXAI = 056, prior live Shank test ended with P4 outside, Lua request Q=3 prepared, BCS ProtectObject unconfirmed.
+- NEXT REAL BOUNDARY: read-only EEex 1.2.0 existence probe in user's Lua console (no battle/no game mutation): `C:DisplayText("AREAAPI="..tostring(type(EEex_UDEqual)).." SIGHTAPI="..tostring(type(EEex_Sprite_ForAllOfTypeStringInRange)))`; then native LOS smoke test off hit-hook, then 059 read-only preflight. Do not ask for WeiDU.log/archive reuploads; do not pretend 059 is installed.
+
 ## 2026-11-11 — BGXAI 059 READ-ONLY source preflight 6/6 PASS
 
 - Source-only 059 build extended with `PREFLIGHT_059_READONLY.py` and `test_preflight_059.py` (GitHub: `BGXAI/fox_new/experimental_059_guard_visibility_source_only/`). No installation/backup/write code in preflight.
