@@ -1,3 +1,11 @@
+## 2026-11-11 — LIVE INSTALL: BGXAI 060 INSTALLED, last WeiDU, baseline Lua unchanged
+
+- User supplied full real `BGXAI_UPDATE.cmd` menu 62 output: `INSTALLED_060_EXPERIMENTAL`; `~BGX60\\SETUP-BGX60.TP2~ #0 #0` last; installed `override/BDDEFAI.BCS` SHA256 **038b41c529fb45bb75528722577beef7b474e1ce55e280dc5fca4d6ed9e72841**; `override/M_BX43.lua` SHA256 **35e450b6600f0fc65d47e535126a52e0303c360033307fa920776faec3f581ab** (unchanged 056); external verified backup `C:\Users\Drevo\Documents\BGXAI60_SAFE_BACKUPS\PRE_INSTALL_20261111T161929509208Z`.
+- Treat actual 060 installation as **CONFIRMED**. Never re-run install 62 without explicit failure-specific analysis. Real runtime combat behavior still **NOT VERIFIED**, do not claim working guard until test.
+- Saved checkpoint in Library `/BALDURS_GATE_EET_AI/CURRENT/BGXAI_060_LIVE_INSTALL_CONFIRMED_20261111_RU.md` and GitHub `BGXAI/CURRENT/BGXAI_060_LIVE_INSTALL_CONFIRMED_20261111_RU.md`, commit `4bea9c03512f0aed03f42286a6be6cb235e7cfe2`.
+- NEXT USER: use same existing updater menu **63** READ ONLY; confirm last 060, staged BCS SHA match, Lua unchanged. Then one short normal encounter with F=ON defender near Jade, party AI ON, optional `Атаковать врагов` OFF for isolation; observe actual guardian action. Only one representative test, not repeated Shank experiments. If issue, look at `BGX60_LAST_BRANCH` and `BGX60_LAST_VICTIM` as follow-up, not upfront lengthy console.
+- Menu **64** rollback remains guarded opt-in; do not rollback automatically. No separate CMD/ZIP/manual override. Full tactical AI still not implemented; this is first experimental executor.
+
 ## 2026-11-11 — BGXAI 060 installer 62, status 63, rollback 64 only via existing auto-updater
 
 - User wrote `сделал норм` after menu 61; treat as user-reported successful native preflight, full stdout unavailable. **Do not claim inspected machine log.** Installation has not occurred.
