@@ -1,3 +1,10 @@
+## 2026-11-11 — LIVE 061 GUARD FIRST PASS (user-confirmed)
+
+- User reported and screenshotted EET v2.6.6.0 test: «сработал правда подошел потом бафнулся и убил норм мне нравится» — guardian approached, buffed, killed attacker. This is **one real successful live guard scenario**, not full AI validation. Image only shows one gameplay moment; sequence from user's direct report.
+- 061 remains installed. No re-install or game mutation. Updater option 68 read-only status output **not provided**, never mark it PASS without evidence.
+- New checkpoint: `BGXAI/CURRENT/BGXAI_061_LIVE_GUARD_FIRST_PASS_20261111_RU.md`, commit `0950c9499b374df6977defcc94eae7c77b2eaf1f`.
+- NEXT: preserve functioning 061; proceed to source-only two-companion team coordination (frontline intercept vs ranged/support), reuse EPS 18.4, avoid queue conflict, needless resource expenditure and repeat Shank testing. No new install until guarded preflight + separate explicit consent.
+
 ## 2026-11-11 — LIVE: BGXAI 061 installed via original updater option 67, BCS/Lua SHA verified
 
 - User supplied actual success output for existing `BGXAI_UPDATE.cmd` option 67 after exact `INSTALL_BGXAI_061`. Status `INSTALLED_061_EXPERIMENTAL`; WeiDU last `~BGX61\SETUP-BGX61.TP2~ #0 #0`.
