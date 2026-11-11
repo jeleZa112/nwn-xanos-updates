@@ -997,7 +997,8 @@ def _selftest_v2():
                 'replacement_sha256_utf8':sha_bytes('Русский текст'.encode()),'action':'REPLACE'}
         patch={'schema':'bg-eet-ru-translation-delta-v1','version':22,
                'from_tlk_sha256':{s:sha_bytes(binary) for s in SIDES},
-               'change_count':2,'entries':[{'strref':n,**{s:change for s in SIDES}}]}        _validate_delta(patch)
+               'change_count':2,'entries':[{'strref':n,**{s:change for s in SIDES}}]}
+        _validate_delta(patch)
         out,cnt=_patch_binary(binary,patch,'dialog.tlk')
         assert cnt==1 and _tlk_rawtext(out,n,data)=='Русский текст'
         tampered=patch.copy();tampered['entries']=[{'strref':n,**{s:{**change,'source_sha256_utf8':'0'*64} for s in SIDES}}]
