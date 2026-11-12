@@ -1,0 +1,52 @@
+name: BGXAI 066S guarded two-file installer source tests
+
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/fox_new/experimental_066s_guarded_install_candidate/**'
+      - '.github/workflows/bgxai066s-guarded-installer.yml'
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Disable automatic CRLF conversion
+        shell: pwsh
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify source manifest, modeled two-file install and rollback
+        shell: pwsh
+        run: |
+          Set-Location BGXAI/fox_new/experimental_066s_guarded_install_candidate
+          python verify_release.py
+          if($LASTEXITCODE -ne 0){throw 'MANIFEST_FAILED'}
+          python -m unittest -q test_066s_installer_mock.py
+          if($LASTEXITCODE -ne 0){throw 'MODEL_INSTALL_FAILED'}
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Native Lua 5.4 + both install/rollback model tests
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq liblua5.4-0
+          cd BGXAI/fox_new/experimental_066s_guarded_install_candidate
+          python verify_release.py
+          python build_066s.py
+          python generate_receiver.py
+          python verify_release.py
+          python -m unittest -q test_066s_installer_mock.py test_066s_caster_native.py
+      - name: Official WeiDU 251 native BAF+TP2 test, SYNTHETIC IDS (no real EET)
+        shell: bash
+        run: |
+          cd BGXAI/fox_new/experimental_066s_guarded_install_candidate
+          python ci_weidu_066s.py
