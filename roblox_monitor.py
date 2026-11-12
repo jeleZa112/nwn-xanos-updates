@@ -4096,7 +4096,8 @@ class AutoPilotPolicy:
             # edge label due to camera perspective or an occupied nearer pad.
             # This is a reselect-only rule; initial spawn selection unchanged.
             anchor,radius=max_reselect_offset
-            candidates=[c for c in candidates if abs(c[0]-anchor)<=radius]
+            candidates=[c for c in candidates
+                        if .20<=c[0]<=.80 and abs(c[0]-anchor)<=radius]
             if not candidates:return None
             candidates.sort(key=lambda row:(abs(row[0]-anchor),abs(row[0]-.5)))
         else:
@@ -5126,7 +5127,7 @@ def autopilot_mode():
                 # Keep reselected targets locally reachable after substantial
                 # movement. Old x is a screen-relative anchor, not world GPS.
                 reselect_bound=(
-                    (last_abandoned_x,.26)
+                    (last_abandoned_x,.32)
                     if pad_search_since is not None and
                        brain.move_actions>=8 and
                        last_abandoned_x is not None else None)
