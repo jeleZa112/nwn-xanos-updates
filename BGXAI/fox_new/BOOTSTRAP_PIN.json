@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "75e61c00754d6c497dbf13daf7de726868b30c6b",
+  "commit": "d66ae072c4a1466521d384c15fe5c0c1ed6205cc",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "71bdd1ad0a48939b5333221d3e753c8577da99e760b20398dfa7ebca5d35e8ee",
-  "script_size": 55867,
-  "description": "BGXAI 064 source-only: original one-file updater menu 1-69 unchanged; new 70 downloads SHA-verified sources, 71 syncs then checks installed 061 read-only; no 064 install action."
+  "script_sha256": "d246e6e286f760a1824c65e73e42ff2d8d29f5aa0fb46c1fb97409e04f06c1b1",
+  "script_size": 59433,
+  "description": "BGXAI 064: existing single-file updater retains options 1-71; new 72 SHA-pinned source download, 73 guarded preflight, 74 explicit opt-in WeiDU Lua-only installation with backup, 75 status, 76 explicit rollback. No automatic game installation."
 }
