@@ -166,6 +166,15 @@ class InstallMock064(unittest.TestCase):
                                      '--yes','--confirm','ROLLBACK_BGXAI_064']),2)
             rolled.assert_not_called()
 
+    def test_read_only_status_after_verified_rollback_with_wei_du_stage_left(self):
+        self.install()
+        self.rollback()
+        self.assertTrue((self.game/'BGX64').exists())
+        self.assertEqual(m.main(['status','--game-root',str(self.game)]),0)
+        # A second install remains forbidden until staged WeiDU state is dealt with.
+        with self.assertRaisesRegex(m.Stop,'064_STAGE_COLLISION'):
+            self.install()
+
     def test_read_only_status_061_validates_all_pinned_bytes(self):
         self.assertEqual(m.main(['status','--game-root',str(self.game)]),0)
         (self.game/m.LUA).write_bytes(b'CORRUPTED')
