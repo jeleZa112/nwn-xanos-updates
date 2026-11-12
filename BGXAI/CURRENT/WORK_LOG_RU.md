@@ -1,3 +1,9 @@
+## 2026-11-12 — BGXAI 065-R3: passive existing 064 action-start diagnostics 77/77 tests
+
+- Audited existing 064 BGX43Probe fields lastAttack and lastWeaponHit; registered action-start observer already exists in installed baseline, so new R3 console only reads old state and prints BGX65PRE. Does not register another callback or make game writes.
+- Isolated native Lua 5.4 R3 6/6 PASS. Cumulative 42+10+19+6=77/77 PASS. 5/5 GitHub source blobs match local. Library BUILD/BGXAI_065_PREHIT_STATUS_R3_SOURCE_ONLY/ and GitHub BGXAI/fox_new/experimental_065_prehit_status_r3_source_only/; checkpoint CURRENT/BGXAI_065_R3_PREHIT_OBSERVER_CHECKPOINT_20261112_RU.md.
+- Status unchanged: installed live BGXAI 064; 065/R2/R3 inactive. Last action record not proof of verified prehit target/timing. Next optional live observation after ordinary combat, no reinstall and no repetitive CLASS/HP/F/AREA/Shank tests.
+
 ## 2026-11-12 — BGXAI 065-R2 SOURCE ONLY role split, native snapshot PASS
 
 - New native user screenshot from in-game Lua console: BGX65G P0 id=true xy=2930,591 F=0 modal=0 area=true; P1 id=true xy=3176,546 F=1 modal=0 area=true; P2 id=true xy=3192,582 F=0 modal=0 area=true; P3 id=true xy=3092,561 F=1 modal=0 area=true; P4/P5 absent. Previous native class/HP: P0 2:14/14, P1 1:14/14, P2 5:6/6, P3 3:8/8. No more class/HP/F/modal/position smoke needed. This confirms fields for four slots, not combat commands or pre-hit target resolver.
