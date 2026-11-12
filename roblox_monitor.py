@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.8.1
+# Roblox background monitor - release 3.8.2
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.8.1"
+VERSION = "3.8.2"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -4047,7 +4047,7 @@ class AutoPilotPolicy:
         self.turret_actions = 0
         self.last_turret_at = 0.0
 
-    def ready_sign(self, signs, allow_weak=False):
+    def ready_sign(self, signs, allow_weak=False, max_reselect_offset=None):
         """Lock on stable READY labels; weak labels only during reacquisition.
 
         Normal: 3 of 6 frames with confidence >=.65.
@@ -4091,7 +4091,16 @@ class AutoPilotPolicy:
                 # causing a misleading forward command.
                 candidates.append((x,side))
         if not candidates:return None
-        candidates.sort(key=lambda row:(abs(row[0]-.5),row[0]))
+        if max_reselect_offset is not None:
+            # After moving into the lobby, do not suddenly chase a distant
+            # edge label due to camera perspective or an occupied nearer pad.
+            # This is a reselect-only rule; initial spawn selection unchanged.
+            anchor,radius=max_reselect_offset
+            candidates=[c for c in candidates if abs(c[0]-anchor)<=radius]
+            if not candidates:return None
+            candidates.sort(key=lambda row:(abs(row[0]-anchor),abs(row[0]-.5)))
+        else:
+            candidates.sort(key=lambda row:(abs(row[0]-.5),row[0]))
         self.sign_misses=0
         return candidates[0][0]
 
@@ -4353,6 +4362,7 @@ class AutoPilotMotionGuard:
         self.no_motion=0
         self.uncertain=0
         self.last_result=None
+        self.implausible=0
 
     def describe(self,frame):
         import cv2
@@ -4394,6 +4404,14 @@ class AutoPilotMotionGuard:
             displacement=float(np.median([
                 np.hypot(ka[i].pt[0]-kb[j].pt[0],ka[i].pt[1]-kb[j].pt[1])
                 for i,j in pairs]))
+            if displacement>170.0:
+                # Feature association can jump to different players/UI or
+                # a moving camera. This is NOT proof of useful navigation.
+                self.implausible+=1
+                self.uncertain+=1
+                self.last_result=('IMPLAUSIBLE',round(displacement,2),len(pairs))
+                return self.last_result
+            self.implausible=0
             if displacement<1.7:
                 self.no_motion+=1
                 self.last_result=('NO_MOTION',round(displacement,2),len(pairs))
@@ -4408,6 +4426,7 @@ class AutoPilotMotionGuard:
             return self.last_result
 
     def stop_reason(self):
+        if self.implausible>=2:return 'IMPLAUSIBLE_CAMERA_SHIFT_AFTER_2_KEYS'
         if self.no_motion>=3:return 'NO_BACKGROUND_MOTION_AFTER_3_KEYS'
         if self.uncertain>=4:return 'CANNOT_VERIFY_MOTION_4_TIMES'
         return None
@@ -4416,6 +4435,7 @@ class AutoPilotMotionGuard:
         self.before=None
         self.no_motion=0
         self.uncertain=0
+        self.implausible=0
         self.last_result=None
 
 
@@ -4892,6 +4912,7 @@ def autopilot_mode():
     last_pad_report_at=begin-10
     last_pad_pause_at=begin-10
     last_pad_pause_reason=None
+    last_abandoned_x=None
     nav_uncertain_since=None
     # Separate search deadline from the global movement/action budget.
     # A confirmed BUSY pad may turn READY without the player moving.
@@ -4901,8 +4922,9 @@ def autopilot_mode():
     def reselect_pad(why,now):
         # No blind step to the next visible sign. Stop, preserve the overall
         # movement budget, and require three fresh READY samples.
-        nonlocal wait_until,menu_candidate_since,pad_search_since
+        nonlocal wait_until,menu_candidate_since,pad_search_since,last_abandoned_x
         old_x=brain.target_x
+        last_abandoned_x=old_x
         if not pad_reselect.begin_reselection(old_x,now,why):
             log('PAD_RESELECT_EXHAUSTED reason='+why+
                 ' busy='+str(pad_reselect.reselections)+
@@ -5101,9 +5123,17 @@ def autopilot_mode():
                     last_pad_report_at=now
                 # Exclusion applies to only READY after abandoning a pad.
                 # Occupied signs are retained for ready_sign's busy veto.
+                # Keep reselected targets locally reachable after substantial
+                # movement. Old x is a screen-relative anchor, not world GPS.
+                reselect_bound=(
+                    (last_abandoned_x,.26)
+                    if pad_search_since is not None and
+                       brain.move_actions>=8 and
+                       last_abandoned_x is not None else None)
                 target=brain.ready_sign(
                     pad_reselect.candidates(signs,now),
-                    allow_weak=(pad_search_since is not None))
+                    allow_weak=(pad_search_since is not None),
+                    max_reselect_offset=reselect_bound)
                 if target is None:
                     # After a confirmed pad occupation, wait briefly for
                     # availability instead of treating the ordinary 12s
@@ -5159,6 +5189,7 @@ def autopilot_mode():
                         halt_reason='READY_SIGN_NOT_STABLE_12S';break
                     continue
                 brain.target_x=target
+                last_abandoned_x=None
                 navigation_goal.lock(target,now)
                 pad_search_since=None
                 spawn_approach_enabled=False
