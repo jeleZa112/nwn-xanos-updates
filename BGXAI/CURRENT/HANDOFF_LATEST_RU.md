@@ -1,3 +1,11 @@
+## 2026-11-13 — BGXAI 066S INSTALLED IN USER'S GAME, POST-INSTALL VERIFIED (GAMEPLAY NOT YET TESTED)
+
+- User ran pinned onefile updater menu **84**, entered exact `INSTALL_BGXAI_066S`. Real installer output: `status=INSTALLED_066S_EXPERIMENTAL`; `after.status=INSTALLED_066S_VERIFIED`; final WeiDU `~BGX66S\\SETUP-BGX66S.TP2~ #0 #0`. Thus actual installed game is **066S**, NOT 064; no need to repeat 83/84.
+- Live BCS SHA256 `fb435d82e6c3e0ebea1d6a9532753921bd5411d70ac0677dc1fd8ec483380476`; live Lua SHA256 `50640902ec4c25a2c85e5088d7231678b54445a847b41743c476974236d1d70f`. External checked backup `C:\\Users\\Drevo\\Documents\\BGXAI66S_SAFE_BACKUPS\\PRE_INSTALL_20261112T185323009666Z`. Historical 064 BCS SHA db0fcba4... preserved for rollback.
+- Canonical verified installation checkpoint `BGXAI/CURRENT/BGXAI_066S_LIVE_INSTALLED_20261113_RU.md`, GitHub commit `d3ce16db5b1fe5eb652d0d698e689ff19b6c5f3a`. No in-game combat or casting verified yet; installation verification is NOT AI gameplay verification. Optional read-only status menu85 is redundant with embedded post-install verification unless debugging.
+- ONE next actual-game check: separate save, P3 cleric F=ON with memorized CLERIC_CURE_LIGHT_WOUNDS, stay within 10 ft and line of sight of ally whose HP is <45% **after confirmed enemy weapon hit**, guardian should be free to cast; inspect combat log and HP. Lower than 45% alone or missed attack does not initiate it. Mage Shield self-test ≤25% HP is secondary and unnecessary/high risk at Insane. Other spells not automated. User only needs to send single battle observation; auto-develop safe fixes if failure.
+- If regression, don't automatically run 84 again or 86; first identify exact fault then separately authorize rollback through 86. V6 and fast-optimal rules apply.
+
 ## 2026-11-13 — USER REAL WINDOWS MENU 83 PASS; 066S NOW READY FOR SEPARATE USER-AUTHORIZED INSTALL 84
 
 - User's latest live output: BGXAI 066S menu 83 completed successfully. All 29 immutable SHA-pinned sources VERIFIED. Real installed-EET baseline: `INSTALLED_064_VERIFIED`; last WeiDU `~BGX64\\SETUP-BGX64.TP2~ #0 #0`; BCS SHA256 `db0fcba4678b00defa2ed7887b57c0d4207effc064891aeb9a0d7dcc1a1a6b0b`; Lua SHA256 `bfee5278b5b69b1fb4a02e3fea321082b0238407789df83ec6bd2f78d7e19f4b`.
