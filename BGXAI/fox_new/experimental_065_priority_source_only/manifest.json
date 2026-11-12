@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "version": "BGXAI-065-priority-observer-source-2026-11-12",
+  "status": "SOURCE_ONLY_NOT_INSTALLED",
+  "game_override_write": false,
+  "parent_installed_sha256": "bfee5278b5b69b1fb4a02e3fea321082b0238407789df83ec6bd2f78d7e19f4b",
+  "files": [
+    {
+      "file": "BGXAI65_PRIORITY_POLICY.lua",
+      "bytes": 10387,
+      "sha256": "7d90712779a449e25cbe2b049a13b49f225c392d84bf4b85ead4b87de5d8db0c"
+    },
+    {
+      "file": "M_BX43_064_BASELINE_READONLY.lua",
+      "bytes": 21145,
+      "sha256": "bfee5278b5b69b1fb4a02e3fea321082b0238407789df83ec6bd2f78d7e19f4b"
+    },
+    {
+      "file": "M_BX43_065_OBSERVER_CANDIDATE.lua",
+      "bytes": 32133,
+      "sha256": "bde18a296b3db11fddd95496a9f72f25a20bb354f4d748ac84329b8b5080ab4a"
+    },
+    {
+      "file": "BGXAI65_CLASS_HP_CONSOLE.lua",
+      "bytes": 343,
+      "sha256": "4eacd1c2ef7377178fba576e93463cfdc8c206cefabd2e900cb715ef71659188"
+    },
+    {
+      "file": "build_065.py",
+      "bytes": 2247,
+      "sha256": "2f32fef1a94a1e88839b524966ceeb13a6056c091aed43f4307ae37c95843f40"
+    },
+    {
+      "file": "lua65_harness.py",
+      "bytes": 1865,
+      "sha256": "d0586d522303893ff2ae648c2b6915ed4178113e8782d98d698c5a3b03b70607"
+    },
+    {
+      "file": "test_065_policy.py",
+      "bytes": 11954,
+      "sha256": "de758a71f657ce104b4478f3f764e65bdd6043dde860dd38859d8691c0dab83c"
+    },
+    {
+      "file": "test_065_full_listener.py",
+      "bytes": 5884,
+      "sha256": "882e0cd771b9ea1a4388830f6add0ce1e3b26c849b883e77b56d503315800ee6"
+    },
+    {
+      "file": "test_065_console.py",
+      "bytes": 1668,
+      "sha256": "0d4e8793b4d7208fa3a7e6d1a2bf57b5bf1ef01fe0327acf8aefff94a82a7499"
+    },
+    {
+      "file": "README_RU.md",
+      "bytes": 7376,
+      "sha256": "5782b5c2700bef8e8e636186bb49e595ff9feeb3fcd1dae06913d0caeefabfbc"
+    }
+  ]
+}
