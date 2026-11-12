@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_NOT_INSTALLED",
+  "live_evidence": "class/HP four occupied portraits PASS; empty slot API_ERROR ambiguous",
+  "baseline": "BGXAI 064 installed confirmed",
+  "native_065_tests": 42,
+  "new_tests": 10,
+  "files": [
+    {
+      "file": "BGXAI65_CLASS_HP_CONSOLE_R1.lua",
+      "sha256": "18d5dd36e778eaa7af4eb4033ad3a1334560046d005d7811cdaf6a3d01c338d9",
+      "bytes": 446
+    },
+    {
+      "file": "BGXAI65_POLICY_SNAPSHOT_GATE.lua",
+      "sha256": "c80dcfee95ebb13f474de3975a346ca829b81c5cc6d27b6e9d054c61bc75dc69",
+      "bytes": 559
+    },
+    {
+      "file": "test_065_live_gate.py",
+      "sha256": "5c1242e371fce2bcc900e6190bc711fb7d88e69a32835cb88cb4585704d8692a",
+      "bytes": 3637
+    },
+    {
+      "file": "lua65_harness.py",
+      "sha256": "d0586d522303893ff2ae648c2b6915ed4178113e8782d98d698c5a3b03b70607",
+      "bytes": 1865
+    },
+    {
+      "file": "README_RU.md",
+      "sha256": "f262935be8583d2ba7d9e28a2cd7b6b57e67a4cfde78f81728c7c5c1610fe240",
+      "bytes": 3773
+    },
+    {
+      "file": "BGXAI_065_LIVE_CLASS_HP_PASS_20261112_RU.md",
+      "sha256": "7523765bbfc994fca3a4d4e04943da574ee20d05894c1092e20ece1e48ad6330",
+      "bytes": 5241
+    }
+  ]
+}
