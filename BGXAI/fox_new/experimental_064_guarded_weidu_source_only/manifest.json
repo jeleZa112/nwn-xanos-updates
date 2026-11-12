@@ -37,14 +37,14 @@
     {
       "source": "BGXAI/fox_new/experimental_064_guarded_weidu_source_only/BGXAI64_INSTALL_SOURCE_ONLY.py",
       "dest": "BGXAI64_INSTALL_SOURCE_ONLY.py",
-      "size": 10223,
-      "sha256": "f9eae8035acb6712b8a8f064c7d5f688d98dba2c294cbe93e0fcc4f0241ab01a"
+      "size": 10291,
+      "sha256": "ac0a83002dcc0714bc5d89e28870ad7585f79ba86cd84f2402831fc0d1f5a381"
     },
     {
       "source": "BGXAI/fox_new/experimental_064_guarded_weidu_source_only/test_064_install_mock.py",
       "dest": "test_064_install_mock.py",
-      "size": 11099,
-      "sha256": "1ea61640358403b7d7c9200d4c69e502671248461a347a082b71de14d97c942b"
+      "size": 11540,
+      "sha256": "1e9fc6739c9ad65134c188d1b977f6865e78a6eaecd0788b87908ea39943b321"
     },
     {
       "source": "BGXAI/fox_new/experimental_064_guarded_weidu_source_only/test_064_patch.py",
