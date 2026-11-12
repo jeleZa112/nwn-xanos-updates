@@ -136,8 +136,15 @@ $release066=@{
     localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_066_guarded';installer='BGXAI66_INSTALL.py';
     names=@('BGX66_TEAM_BRIDGE.lua','M_BX43_064_BASELINE_READONLY.lua','M_BX43_066_CANDIDATE.lua','build_066.py','BGXAI66_INSTALL.py','BGXAI64_INSTALL_SOURCE_ONLY.py','BGXAI64_PATCH.py','BGXAI64_PREFLIGHT_READONLY.py','M_BX43_061_BASELINE_READONLY.lua','M_BX43_064_CANDIDATE.lua','test_066_native.py','test_066_install_mock.py','lua65_harness.py','README_RU.md')
 }
+$release066s=@{
+    id='066S';version='0.3.34-066S-CASTER-GUARDED';
+    manifest=$remoteRoot+'experimental_066s_guarded_install_candidate/manifest_updater.json';
+    prefix=$remoteRoot+'experimental_066s_guarded_install_candidate/';
+    localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_066s_guarded';installer='BGXAI66S_INSTALL.py';
+    names=@('BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf','BGX66_CASTER_SUPPORT.lua','BGXAI64_INSTALL_SOURCE_ONLY.py','BGXAI64_PATCH.py','BGXAI64_PREFLIGHT_READONLY.py','BGXAI66S_BCS_PATCH.py','BGXAI66S_INSTALL.py','M_BX43_061_BASELINE_READONLY.lua','M_BX43_064_CANDIDATE.lua','M_BX43_066S_CASTER_CANDIDATE.lua','M_BX43_066_BASELINE_READONLY.lua','M_BX43_066_CANDIDATE.lua','README_RELEASE_RU.md','README_RU.md','build_066.py','build_066s.py','ci_weidu_066s.py','generate_receiver.py','ids/action.ids','ids/modal.ids','ids/object.ids','ids/spell.ids','ids/trigger.ids','lua65_harness.py','native_066_fixture.py','test_066s_caster_native.py','test_066s_installer_mock.py','verify_066s.py','verify_release.py')
+}
 function Get-PinnedBytes([string]$remotePath) {
-    if($remotePath -notmatch '^BGXAI/fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
+    if($remotePath -notmatch '^BGXAI/fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
         throw ('Remote source path blocked: '+$remotePath)
     }
     # All sources are publicly hosted; pin content by immutable commit and SHA256 manifest.
@@ -441,6 +448,42 @@ function Verify066Source {
         AssertNotReparse $dest
         if((HashFile $dest) -cne $checked[$name].sha){throw ('BGXAI066 source SHA mismatch: '+$name)}
     }
+}
+function Verify066SGuardedSource {
+    $spec=$release066s
+    $items=VerifiedManifest $spec
+    foreach($name in $spec.names){
+        $file=Join-Path $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
+        AssertNotReparse $file
+        if((HashFile $file) -cne $items[$name].sha){throw ('BGXAI066S source SHA mismatch: '+$name)}
+    }
+}
+function Test066SReadOnly {
+    SyncRelease $release066s
+    Verify066SGuardedSource
+    Write-Host 'BGXAI 066S real EET IDS + BCS preflight: READ ONLY, no WeiDU installation.'
+    & py -3 (Join-Path $release066s.localPath 'BGXAI66S_INSTALL.py') preflight
+    if($LASTEXITCODE -ne 0){throw ('BGXAI066S REAL EET IDS preflight STOP '+$LASTEXITCODE)}
+    Write-Host 'BGXAI066S PRECHECK PASS. Existing 064 remains installed.'
+}
+function Status066SReadOnly {
+    SyncRelease $release066s
+    Verify066SGuardedSource
+    & py -3 (Join-Path $release066s.localPath 'BGXAI66S_INSTALL.py') status
+    if($LASTEXITCODE -ne 0){throw ('BGXAI066S status STOP '+$LASTEXITCODE)}
+}
+function Run066SGuarded([string]$mode) {
+    if($mode -cne 'install' -and $mode -cne 'rollback'){throw 'BGXAI066S unsupported mode'}
+    SyncRelease $release066s
+    Verify066SGuardedSource
+    $token=if($mode -ceq 'install'){'INSTALL_BGXAI_066S'}else{'ROLLBACK_BGXAI_066S'}
+    Write-Host 'BGXAI066S EXPERIMENTAL: two exact SHA-pinned game scripts via WeiDU, external verified backup and strict 064 baseline.'
+    Write-Host 'CLOSE BALDUR + INFINITYLOADER before continuing. No automatic retry on failure.'
+    $confirmation=Read-Host ('Type '+$token+' exactly to authorize, or ENTER to cancel')
+    if($confirmation -cne $token){Write-Host 'BGXAI066S CANCELLED. Game unchanged.';return}
+    & py -3 (Join-Path $release066s.localPath 'BGXAI66S_INSTALL.py') $mode '--yes' '--confirm' $token
+    if($LASTEXITCODE -ne 0){throw ('BGXAI066S '+$mode+' STOP '+$LASTEXITCODE+'. DO NOT AUTO-RETRY')}
+    Write-Host 'BGXAI066S action completed. Verify via menu 85.'
 }
 function Test066GuardedReadOnly {
     $parsedTokens=$null
@@ -919,9 +962,14 @@ Write-Host ' 75 - BGXAI 064/061 guarded STATUS (READ ONLY)'
 Write-Host ' 76 - Roll back BGXAI 064 to 061 (explicit confirmation + backup)'
 Write-Host ' 77 - Download/verify BGXAI 066 guarded sources (NO INSTALL)'
 Write-Host ' 78 - BGXAI 066 real 064-baseline preflight (READ ONLY)'
-Write-Host ' 79 - EXPERIMENTAL install BGXAI 066 (explicit confirmation + backup)'
+Write-Host ' 79 - BLOCKED legacy 066 install (caster regression); use 066S'
 Write-Host ' 80 - BGXAI 066/064 status (READ ONLY)'
 Write-Host ' 81 - Roll back BGXAI 066 to 064 (explicit confirmation + backup)'
+Write-Host ' 82 - BGXAI 066S caster+frontline download/verify sources (NO INSTALL)'
+Write-Host ' 83 - BGXAI 066S real EET IDS / BCS preflight (READ ONLY)'
+Write-Host ' 84 - EXPERIMENTAL install BGXAI 066S (explicit opt-in + backup)'
+Write-Host ' 85 - BGXAI 066S/064 verified status (READ ONLY)'
+Write-Host ' 86 - Roll back BGXAI 066S to 064 (explicit opt-in)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -1006,9 +1054,14 @@ try {
       '76' {Run064Guarded 'rollback';break}
       '77' {SyncRelease $release066;break}
       '78' {Test066GuardedReadOnly;break}
-      '79' {Run066Guarded 'install';break}
+      '79' {throw 'BGXAI 066 deprecated: frontline-only regression; use tested BGXAI066S 83/84 instead.'}
       '80' {Status066GuardedReadOnly;break}
       '81' {Run066Guarded 'rollback';break}
+      '82' {SyncRelease $release066s;break}
+      '83' {Test066SReadOnly;break}
+      '84' {Run066SGuarded 'install';break}
+      '85' {Status066SReadOnly;break}
+      '86' {Run066SGuarded 'rollback';break}
       default {throw 'Unknown menu option, no game change.'}
     }
     exit 0
