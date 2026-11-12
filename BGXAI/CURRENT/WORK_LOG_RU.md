@@ -1,3 +1,10 @@
+## 2026-11-12 — BGXAI 064 SINGLE F-GUARD LIVE COMBAT PASS (USER CONFIRMED)
+
+- User tested after 064 verified install (menu 74) and status (75), **one F-guard ON** against Shank. User: `сработал стал атаковать после того когда прошло попадание при промахах стоял`. Screenshot combat log shows Tarana attacked for 10 crushing damage and killed Shank. This is consistent with intentional confirmed *weapon-hit* trigger (not miss). **Single-guard live combat PASS** on user observation; not a proof of every BCS branch or multi-guardian coordination.
+- Previous two-F guard observation: one guardian moved to combat, another cast EPS buff and stayed in place in pause frame. Lua `BGX52Bridge.prepare` deliberately selects ONE nearest same-area F guardian per confirmed hit, not both; an EPS buff can temporarily prevent `ActionListEmpty`. Do not mistake absence of simultaneous movement for Lua error. Avoid unnecessarily rerunning Shank or historic statuses.
+- Source checkpoint `BGXAI/CURRENT/BGXAI_064_SINGLE_GUARD_LIVE_COMBAT_PASS_20261112_RU.md`, commit `7e7e331f8c89c5f6702922e8ed2753a0ccff9805`.
+- **Current installed BGXAI 064 is verified and operational in this baseline scenario**, Lua SHA `bfee5278b5b69b1fb4a02e3fea321082b0238407789df83ec6bd2f78d7e19f4b`. No reinstallation/rollback indicated. The user can play. Future design task: coordinate multiple guardians or more intelligent cover (one leads, others support) source-only first; do not modify live game without opt-in. Note "only after hit" is by current mechanism, not necessarily preferred future proactive AI feature.
+
 ## 2026-11-12 — LIVE BGXAI 064 INSTALL AND STATUS 75 VERIFIED (USER WINDOWS)
 
 - User installed BGXAI 064 through existing pinned CMD option 74 with explicit `INSTALL_BGXAI_064`; installer reported `INSTALLED_064_EXPERIMENTAL` and post-install `INSTALLED_064_VERIFIED`, WeiDU last `~BGX64\\SETUP-BGX64.TP2~ #0 #0`. External reported SHA-verified backup `C:\Users\Drevo\Documents\BGXAI64_SAFE_BACKUPS\PRE_INSTALL_20261112T145406880539Z`.
