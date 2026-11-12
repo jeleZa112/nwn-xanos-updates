@@ -125,6 +125,45 @@ class NavigationTests(unittest.TestCase):
         self.assertEqual(p.lobby_movement(.50, 18, duration_override=.12)[0], "HALT")
         self.assertEqual(p.move_actions, 34)
 
+    def test_uploaded_2221_weak_ready_reacquisition(self):
+        # AUTOPILOT_LOG(9): x=.606, confidence=.621 repeatedly over 30s.
+        p = Policy()
+        p.reset_lobby(0)
+        weak = [sign("READY_SIGN", .606, .621)]
+        self.assertIsNone(p.ready_sign(weak, allow_weak=True))
+        self.assertIsNone(p.ready_sign(weak, allow_weak=True))
+        self.assertIsNone(p.ready_sign(weak, allow_weak=True))
+        self.assertAlmostEqual(p.ready_sign(weak, allow_weak=True), .606)
+
+    def test_weak_ready_disabled_on_initial_lobby(self):
+        p = Policy()
+        p.reset_lobby(0)
+        for _ in range(8):
+            self.assertIsNone(p.ready_sign([sign("READY_SIGN", .606, .621)]))
+
+    def test_weak_ready_single_frame_and_jump_do_not_lock(self):
+        p = Policy()
+        p.reset_lobby(0)
+        for x in (.606, .606, .707, .606):
+            self.assertIsNone(
+                p.ready_sign([sign("READY_SIGN", x, .621)], allow_weak=True))
+
+    def test_weak_ready_blocked_by_occupied_pad(self):
+        p = Policy()
+        p.reset_lobby(0)
+        for _ in range(7):
+            self.assertIsNone(p.ready_sign(
+                [sign("READY_SIGN", .606, .621),
+                 sign("COUNTDOWN_SIGN", .610, .85)],
+                allow_weak=True))
+
+    def test_low_confidence_ready_does_not_pass(self):
+        p = Policy()
+        p.reset_lobby(0)
+        for _ in range(7):
+            self.assertIsNone(p.ready_sign(
+                [sign("READY_SIGN", .606, .59)], allow_weak=True))
+
     def test_flow_pulse_budget_is_not_reset_by_new_seed(self):
         v = Visual()
         self.assertEqual(v.fallback_pulses, 0)
