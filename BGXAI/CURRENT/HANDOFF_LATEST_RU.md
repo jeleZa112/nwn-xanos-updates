@@ -1,3 +1,10 @@
+## 2026-11-12 — BGXAI 066 CHECKER DOWNLOAD FIX (ChatGPT viewer fails on .cmd)
+
+- User screenshot showed ChatGPT preview `Не удалось загрузить этот файл` for sandbox BGXAI66_NATIVE_PARSE_ONLY.cmd. This is an artifact preview issue, not a Windows parser/game result.
+- Published *byte-identical* 1709-byte CRLF CMD in GitHub `BGXAI/fox_new/experimental_066_multi_guard_guarded/BGXAI66_NATIVE_PARSE_ONLY.cmd`, immutable commit b1a984dd1cf4f55ba63f799f923787043cd182b4. Git blob a5b88ffdc9b0836421a69eaaef870474dceb1823 verified against local original (git hash-object exact match). Direct GitHub page / Download raw bypasses failed ChatGPT file viewer.
+- Checker only downloads exact pinned 066 DRAFT and verifies expected Git blob 00f6b17812a87ecde627e023e6f937818336a232, runs read-only PowerShell Parser::ParseFile, cleans temporary file, doesn't execute draft or modify game.
+- GitHub Actions 43260058198 Linux succeeded; Windows cancelled after queue, overall run failure, so native Windows parser still not proven; newest run 43263318670 queued at last check. Active BGXAI_UPDATE.cmd, pinned BGXAI_SYNC.ps1 and game 064 remain unchanged. Next user native parse result, then re-evaluate 066 enablement safely; no forced replay of old tests.
+
 ## 2026-11-12 — BGXAI 066 MULTI-FRONTLINE ACTIVE CANDIDATE SOURCE PUBLISHED; NOT INSTALLED
 
 - User instructed to implement after 065 R3; recovered exact installed and verified BGXAI 064. Existing BCS receiver has per-portrait F/ActionListEmpty/ModalState/See/Range/TTL/ProtectObject; old 064 Lua chose nearest one F guardian per confirmed hit.
