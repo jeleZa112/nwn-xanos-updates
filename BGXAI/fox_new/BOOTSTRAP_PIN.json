@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "33916f4ff3a2da792374f3d2762f3da98a6f0c75",
+  "commit": "5bde0f6397d872569b80f169257a318aa0d40e9a",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "f45676b7b163d552dbc01a69cb7c80b0bf9c0e59a8aff6aef6bee249436baa83",
-  "script_size": 63213,
-  "description": "BGXAI 066 source and guarded opt-in menu 77 sync, 78 read-only 064 preflight, 79 explicit WeiDU Lua-only install with external backup, 80 read-only status, 81 explicit rollback to 064. Choices 1–76 preserved; no automatic installation."
+  "script_sha256": "8c1f5c4030098e014ce0f3ca108b7edce153a4868d2f9d8ea8458dc1dc0b7ab1",
+  "script_size": 66909,
+  "description": "BGXAI 066S source-only updater 82–86: 82 sync 29 SHA-verified sources; 83 installed-EET IDS read-only BCS compile preflight; 84 separate opt-in WeiDU two-file Lua+BCS install with verified external backups; 85 read-only status; 86 explicit rollback to proven 064. Legacy 066 frontline-only install choice 79 now blocked. All 1–78,80–81 preserved. No game mutation during pinning."
 }
