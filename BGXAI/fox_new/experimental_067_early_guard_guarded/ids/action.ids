@@ -1,0 +1,6 @@
+IDS V1.0
+30 SetGlobal(S:Name*,S:Area*,I:Value*)
+31 Spell(O:Target*,I:Spell*Spell)
+36 Continue()
+115 SetGlobalTimer(S:Name*,S:Area*,I:Time*Gtimes)
+134 AttackReevaluate(O:Target*,I:ReevaluationPeriod*)
