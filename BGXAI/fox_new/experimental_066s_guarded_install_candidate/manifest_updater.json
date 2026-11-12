@@ -1,0 +1,181 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.34-066S-CASTER-GUARDED",
+  "files": [
+    {
+      "dest": "BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf",
+      "size": 5755,
+      "sha256": "c678a70a08dbcff7584e0f2703aa8bed5ae5945856287666016ee47c9d6f69ae"
+    },
+    {
+      "dest": "BGX66_CASTER_SUPPORT.lua",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/BGX66_CASTER_SUPPORT.lua",
+      "size": 6829,
+      "sha256": "b365ac770c508e292b87c280c58f922c20306a0b9d3ca68c99b0cd1223872020"
+    },
+    {
+      "dest": "BGXAI64_INSTALL_SOURCE_ONLY.py",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/BGXAI64_INSTALL_SOURCE_ONLY.py",
+      "size": 10223,
+      "sha256": "f9eae8035acb6712b8a8f064c7d5f688d98dba2c294cbe93e0fcc4f0241ab01a"
+    },
+    {
+      "dest": "BGXAI64_PATCH.py",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/BGXAI64_PATCH.py",
+      "size": 4020,
+      "sha256": "ec699717c404a5655154af3894e2a0bc6d607280c67c2f40efc8b2c024c13858"
+    },
+    {
+      "dest": "BGXAI64_PREFLIGHT_READONLY.py",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/BGXAI64_PREFLIGHT_READONLY.py",
+      "size": 3792,
+      "sha256": "72c955c4a6fcc644e9f71675dfcdb4b19fafdd95cf458918ee9b9e9651f3888f"
+    },
+    {
+      "dest": "BGXAI66S_BCS_PATCH.py",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/BGXAI66S_BCS_PATCH.py",
+      "size": 6530,
+      "sha256": "76f7e19c02e232569fc94502d172c1b976e816b5fbe8bf1e9fd871b7ec188723"
+    },
+    {
+      "dest": "BGXAI66S_INSTALL.py",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/BGXAI66S_INSTALL.py",
+      "size": 9520,
+      "sha256": "fc015a6249adb982d02907b51e90aae5f04ca56e9e1268dfb2606d66a81a976f"
+    },
+    {
+      "dest": "M_BX43_061_BASELINE_READONLY.lua",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/M_BX43_061_BASELINE_READONLY.lua",
+      "size": 20698,
+      "sha256": "fd39d23dc722b549c2af1eaf065541b2ed358a9714f2636b8cab4e45fe7dcec5"
+    },
+    {
+      "dest": "M_BX43_064_CANDIDATE.lua",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/M_BX43_064_CANDIDATE.lua",
+      "size": 21145,
+      "sha256": "bfee5278b5b69b1fb4a02e3fea321082b0238407789df83ec6bd2f78d7e19f4b"
+    },
+    {
+      "dest": "M_BX43_066S_CASTER_CANDIDATE.lua",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/M_BX43_066S_CASTER_CANDIDATE.lua",
+      "size": 35990,
+      "sha256": "50640902ec4c25a2c85e5088d7231678b54445a847b41743c476974236d1d70f"
+    },
+    {
+      "dest": "M_BX43_066_BASELINE_READONLY.lua",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/M_BX43_066_BASELINE_READONLY.lua",
+      "size": 29160,
+      "sha256": "c66ebb5190be8103819106a48d3100055b5791adf7c2d1df5f3e54596823540b"
+    },
+    {
+      "dest": "M_BX43_066_CANDIDATE.lua",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/M_BX43_066_CANDIDATE.lua",
+      "size": 29160,
+      "sha256": "c66ebb5190be8103819106a48d3100055b5791adf7c2d1df5f3e54596823540b"
+    },
+    {
+      "dest": "README_RELEASE_RU.md",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/README_RELEASE_RU.md",
+      "size": 6279,
+      "sha256": "799a762055cc11541fe156bf2feb8aca2838979e98909478c366b1f90d680aa4"
+    },
+    {
+      "dest": "README_RU.md",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/README_RU.md",
+      "size": 7725,
+      "sha256": "8ff4aaae1669957130810c1116977bf3b04d02987bd9467759f861770d37f68d"
+    },
+    {
+      "dest": "build_066.py",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/build_066.py",
+      "size": 1803,
+      "sha256": "c0222eedf930f5bb2600ead321d95f60f9a1ff66016b0b27151aa16f01d837a8"
+    },
+    {
+      "dest": "build_066s.py",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/build_066s.py",
+      "size": 1211,
+      "sha256": "3522ebada9d63e3f738b6d3c828648af461545b06a146c0799c9feef8ae55f58"
+    },
+    {
+      "dest": "ci_weidu_066s.py",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/ci_weidu_066s.py",
+      "size": 3510,
+      "sha256": "4aa0d864c2eac11448adf7767602a518c1653b53f95dbd7fbf48cd1d58eb5f34"
+    },
+    {
+      "dest": "generate_receiver.py",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/generate_receiver.py",
+      "size": 2923,
+      "sha256": "b59d5da4716d827506589b5676440be7b8af93c55b5c4b874e2fb299cb7ee85e"
+    },
+    {
+      "dest": "ids/action.ids",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/ids/action.ids",
+      "size": 146,
+      "sha256": "6f328d9aa23aa6efb360775bd6ff00cd95748c56a3173988cefd98ed842ba950"
+    },
+    {
+      "dest": "ids/modal.ids",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/ids/modal.ids",
+      "size": 53,
+      "sha256": "bf3c5fadffff2980df86c9a9c9562df8ac3bd7f0f794dccb5d89c9c2782c7157"
+    },
+    {
+      "dest": "ids/object.ids",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/ids/object.ids",
+      "size": 112,
+      "sha256": "35207ad507354061d80f58ad74c660c88ac4df94b6b50f90e7d763dd7afe70f9"
+    },
+    {
+      "dest": "ids/spell.ids",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/ids/spell.ids",
+      "size": 58,
+      "sha256": "cb3a7ab408b1d6066ab911ba82a1cddc984f17d478c5b86e41d88eace966919c"
+    },
+    {
+      "dest": "ids/trigger.ids",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/ids/trigger.ids",
+      "size": 389,
+      "sha256": "2f6d1537e54d32a5a0bf22cfd69cf0d1c50a1dc90880451e9406826a473df1d1"
+    },
+    {
+      "dest": "lua65_harness.py",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/lua65_harness.py",
+      "size": 1865,
+      "sha256": "d0586d522303893ff2ae648c2b6915ed4178113e8782d98d698c5a3b03b70607"
+    },
+    {
+      "dest": "native_066_fixture.py",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/native_066_fixture.py",
+      "size": 1923,
+      "sha256": "1f79e686f9c2e3d682701f0a5e7844a9304fba9f15cb8b2f6b00f51133e255eb"
+    },
+    {
+      "dest": "test_066s_caster_native.py",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/test_066s_caster_native.py",
+      "size": 6797,
+      "sha256": "5672e2f42b9a08a7b6f8cc85b5fcbe27fc505b0a2b3e8a0290239b4bc9aae507"
+    },
+    {
+      "dest": "test_066s_installer_mock.py",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/test_066s_installer_mock.py",
+      "size": 9240,
+      "sha256": "b4513e9bc390509f38444152756402e953d710805e63f7188bd490aad4e0d466"
+    },
+    {
+      "dest": "verify_066s.py",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/verify_066s.py",
+      "size": 583,
+      "sha256": "facf1d2b0add4fb9ee3d34bde118ae59af706515ceaf4aab8eadbd1d6133af26"
+    },
+    {
+      "dest": "verify_release.py",
+      "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/verify_release.py",
+      "size": 569,
+      "sha256": "1f19ac4a62990660315299e175c6b1cf89ad3d558cf637753f6d03335883c8db"
+    }
+  ]
+}
