@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "5bde0f6397d872569b80f169257a318aa0d40e9a",
+  "commit": "cdcadd5266af044e0c4d73d0b63812d55cdf45a9",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
   "script_sha256": "8c1f5c4030098e014ce0f3ca108b7edce153a4868d2f9d8ea8458dc1dc0b7ab1",
   "script_size": 66909,
-  "description": "BGXAI 066S source-only updater 82–86: 82 sync 29 SHA-verified sources; 83 installed-EET IDS read-only BCS compile preflight; 84 separate opt-in WeiDU two-file Lua+BCS install with verified external backups; 85 read-only status; 86 explicit rollback to proven 064. Legacy 066 frontline-only install choice 79 now blocked. All 1–78,80–81 preserved. No game mutation during pinning."
+  "description": "BGXAI 066S menu 82–86, corrected REAL 064/061 1077-block BCS baseline and 20-rule receiver (1077→1088). Real game compiled IDS preflight 83 remains mandatory before separate opt-in install 84. Old 079 blocked, existing 064 unchanged."
 }
