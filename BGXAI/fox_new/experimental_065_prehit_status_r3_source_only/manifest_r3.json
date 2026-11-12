@@ -1,0 +1,24 @@
+{
+  "version": "0.3.31-065-R3-PREHIT-STATUS-SOURCE-ONLY",
+  "mode": "SOURCE_ONLY",
+  "current_game": "064 installed; 065/R2/R3 inactive",
+  "source_064_sha256": "bfee5278b5b69b1fb4a02e3fea321082b0238407789df83ec6bd2f78d7e19f4b",
+  "files": {
+    "BGXAI65_PREHIT_STATUS_READONLY.lua": {
+      "size_bytes": 1175,
+      "sha256": "bf6c00acda3cccab1694d1aaedd23e15d353883deb4737e9243e7fb571c3db03"
+    },
+    "test_065_prehit_status.py": {
+      "size_bytes": 2186,
+      "sha256": "55e056f0e723feff7cb137413d56d639acb6634e8c30b9b94dc2ca6300c28ee1"
+    },
+    "lua65_harness.py": {
+      "size_bytes": 1865,
+      "sha256": "d0586d522303893ff2ae648c2b6915ed4178113e8782d98d698c5a3b03b70607"
+    },
+    "README_RU.md": {
+      "size_bytes": 3394,
+      "sha256": "3154d64ac07f3eda61846cb9245d195708c21ee465ae43579bf50d136967ed8c"
+    }
+  }
+}
