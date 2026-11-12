@@ -143,8 +143,16 @@ $release066s=@{
     localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_066s_guarded';installer='BGXAI66S_INSTALL.py';
     names=@('BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf','BGX66_CASTER_SUPPORT.lua','BGXAI64_INSTALL_SOURCE_ONLY.py','BGXAI64_PATCH.py','BGXAI64_PREFLIGHT_READONLY.py','BGXAI66S_BCS_PATCH.py','BGXAI66S_INSTALL.py','M_BX43_061_BASELINE_READONLY.lua','M_BX43_064_CANDIDATE.lua','M_BX43_066S_CASTER_CANDIDATE.lua','M_BX43_066_BASELINE_READONLY.lua','M_BX43_066_CANDIDATE.lua','README_RELEASE_RU.md','README_RU.md','build_066.py','build_066s.py','ci_weidu_066s.py','generate_receiver.py','ids/action.ids','ids/modal.ids','ids/object.ids','ids/spell.ids','ids/trigger.ids','lua65_harness.py','native_066_fixture.py','test_066s_caster_native.py','test_066s_installer_mock.py','verify_066s.py','verify_release.py')
 }
+$release067=@{
+    id='067';version='0.3.35-067-EARLY-GUARD-GUARDED';
+    manifest=$remoteRoot+'experimental_067_early_guard_guarded/manifest_updater.json';
+    prefix=$remoteRoot+'experimental_067_early_guard_guarded/';
+    localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_067_early_guard';installer='BGXAI67_INSTALL.py';
+    names=@('BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf','BGX66_CASTER_SUPPORT.lua','BGX67_EARLY_GUARD.baf','BGX67_PREHIT_GUARD.lua','BGXAI64_INSTALL_SOURCE_ONLY.py','BGXAI64_PATCH.py','BGXAI64_PREFLIGHT_READONLY.py','BGXAI66S_BCS_PATCH.py','BGXAI66S_INSTALL.py','BGXAI67_BCS_PATCH.py','BGXAI67_INSTALL.py','M_BX43_064_CANDIDATE.lua','M_BX43_066S_CASTER_CANDIDATE.lua','M_BX43_066_BASELINE_READONLY.lua','M_BX43_066_CANDIDATE.lua','M_BX43_067_EARLY_CANDIDATE.lua','README_RU.md','build_066.py','build_066s.py','build_067.py','ci_weidu_067.py','generate_067_baf.py','generate_receiver.py','ids/action.ids','ids/modal.ids','ids/object.ids','ids/spell.ids','ids/trigger.ids','lua65_harness.py','native_066_fixture.py','test_066s_installer_mock.py','test_067_bcs.py','test_067_install_mock.py','test_067_native.py')
+}
+
 function Get-PinnedBytes([string]$remotePath) {
-    if($remotePath -notmatch '^BGXAI/fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
+    if($remotePath -notmatch '^BGXAI/fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
         throw ('Remote source path blocked: '+$remotePath)
     }
     # All sources are publicly hosted; pin content by immutable commit and SHA256 manifest.
@@ -485,6 +493,44 @@ function Run066SGuarded([string]$mode) {
     if($LASTEXITCODE -ne 0){throw ('BGXAI066S '+$mode+' STOP '+$LASTEXITCODE+'. DO NOT AUTO-RETRY')}
     Write-Host 'BGXAI066S action completed. Verify via menu 85.'
 }
+
+function Verify067GuardedSource {
+    $spec=$release067
+    $items=VerifiedManifest $spec
+    foreach($name in $spec.names){
+        $file=Join-Path $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
+        AssertNotReparse $file
+        if((HashFile $file) -cne $items[$name].sha){throw ('BGXAI067 source SHA mismatch: '+$name)}
+    }
+}
+function Test067ReadOnly {
+    SyncRelease $release067
+    Verify067GuardedSource
+    Write-Host 'BGXAI 067 installed 066S baseline + real EET IDS prehit guard preflight: READ ONLY.'
+    & py -3 (Join-Path $release067.localPath 'BGXAI67_INSTALL.py') preflight
+    if($LASTEXITCODE -ne 0){throw ('BGXAI067 REAL EET preflight STOP '+$LASTEXITCODE)}
+    Write-Host 'BGXAI067 PRECHECK PASS. Existing 066S remains installed.'
+}
+function Status067ReadOnly {
+    SyncRelease $release067
+    Verify067GuardedSource
+    & py -3 (Join-Path $release067.localPath 'BGXAI67_INSTALL.py') status
+    if($LASTEXITCODE -ne 0){throw ('BGXAI067 status STOP '+$LASTEXITCODE)}
+}
+function Run067Guarded([string]$mode) {
+    if($mode -cne 'install' -and $mode -cne 'rollback'){throw 'BGXAI067 unsupported mode'}
+    SyncRelease $release067
+    Verify067GuardedSource
+    $token=if($mode -ceq 'install'){'INSTALL_BGXAI_067'}else{'ROLLBACK_BGXAI_067'}
+    Write-Host 'BGXAI067 EXPERIMENTAL: SHA-pinned Lua + BCS via WeiDU, external verified backup and exact 066S baseline.'
+    Write-Host 'CLOSE BALDUR + INFINITYLOADER. No retry after a failure.'
+    $confirmation=Read-Host ('Type '+$token+' exactly to authorize, or ENTER to cancel')
+    if($confirmation -cne $token){Write-Host 'BGXAI067 CANCELLED. Game unchanged.';return}
+    & py -3 (Join-Path $release067.localPath 'BGXAI67_INSTALL.py') $mode '--yes' '--confirm' $token
+    if($LASTEXITCODE -ne 0){throw ('BGXAI067 '+$mode+' STOP '+$LASTEXITCODE+'. DO NOT AUTO-RETRY')}
+    Write-Host 'BGXAI067 action completed. Read-only status via menu 90.'
+}
+
 function Test066GuardedReadOnly {
     $parsedTokens=$null
     $parseErrors=$null
@@ -970,6 +1016,11 @@ Write-Host ' 83 - BGXAI 066S real EET IDS / BCS preflight (READ ONLY)'
 Write-Host ' 84 - EXPERIMENTAL install BGXAI 066S (explicit opt-in + backup)'
 Write-Host ' 85 - BGXAI 066S/064 verified status (READ ONLY)'
 Write-Host ' 86 - Roll back BGXAI 066S to 064 (explicit opt-in)'
+Write-Host ' 87 - BGXAI 067 early guard download/verify (NO INSTALL)'
+Write-Host ' 88 - BGXAI 067 installed 066S and real EET IDS preflight (READ ONLY)'
+Write-Host ' 89 - EXPERIMENTAL install BGXAI 067 (explicit opt-in + backup)'
+Write-Host ' 90 - BGXAI 067/066S guarded status (READ ONLY)'
+Write-Host ' 91 - Roll back BGXAI 067 to 066S (explicit opt-in)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -1062,6 +1113,11 @@ try {
       '84' {Run066SGuarded 'install';break}
       '85' {Status066SReadOnly;break}
       '86' {Run066SGuarded 'rollback';break}
+      '87' {SyncRelease $release067;break}
+      '88' {Test067ReadOnly;break}
+      '89' {Run067Guarded 'install';break}
+      '90' {Status067ReadOnly;break}
+      '91' {Run067Guarded 'rollback';break}
       default {throw 'Unknown menu option, no game change.'}
     }
     exit 0
