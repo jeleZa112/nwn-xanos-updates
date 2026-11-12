@@ -6,7 +6,7 @@ import unittest
 SOURCE = pathlib.Path(__file__).resolve().parents[1] / "roblox_monitor.py"
 MODULE = ast.parse(SOURCE.read_text(encoding="utf-8"), filename=str(SOURCE))
 NAMES = {"AutoPilotNavigationGoal", "AutoPilotPadReselect",
-         "AutoPilotPolicy", "AutoPilotVisualReadyLock"}
+         "AutoPilotPolicy", "AutoPilotVisualReadyLock", "AutoPilotMotionGuard"}
 classes = [node for node in MODULE.body
            if isinstance(node, ast.ClassDef) and node.name in NAMES]
 assert {node.name for node in classes} == NAMES, "Missing navigation class"
@@ -18,6 +18,7 @@ Goal = scope["AutoPilotNavigationGoal"]
 Reselect = scope["AutoPilotPadReselect"]
 Policy = scope["AutoPilotPolicy"]
 Visual = scope["AutoPilotVisualReadyLock"]
+Motion = scope["AutoPilotMotionGuard"]
 
 
 def sign(kind, x, confidence=0.9):
@@ -163,6 +164,45 @@ class NavigationTests(unittest.TestCase):
         for _ in range(7):
             self.assertIsNone(p.ready_sign(
                 [sign("READY_SIGN", .606, .59)], allow_weak=True))
+
+    def test_2230_reselect_does_not_chase_screen_edge(self):
+        # Last uploaded V3.8.1: after x=.34 loss, x=.116 was chosen
+        # following 14 movement steps, forcing long off-axis movement.
+        p = Policy()
+        p.reset_lobby(0.)
+        signs = [sign("READY_SIGN", .116, .731)]
+        for _ in range(6):
+            self.assertIsNone(p.ready_sign(
+                signs, allow_weak=True, max_reselect_offset=(.34,.32)))
+
+    def test_reselect_still_allows_adjacent_clear_pad(self):
+        p = Policy()
+        p.reset_lobby(0.)
+        signs = [sign("READY_SIGN", .34, .86)]
+        for _ in range(2):
+            self.assertIsNone(p.ready_sign(
+                signs, allow_weak=True, max_reselect_offset=(.603,.32)))
+        self.assertAlmostEqual(p.ready_sign(
+            signs, allow_weak=True, max_reselect_offset=(.603,.32)), .34)
+
+    def test_far_edge_is_allowed_from_initial_lobby(self):
+        p = Policy()
+        p.reset_lobby(0.)
+        signs = [sign("READY_SIGN", .116, .90)]
+        for _ in range(2):
+            self.assertIsNone(p.ready_sign(signs))
+        self.assertAlmostEqual(p.ready_sign(signs), .116)
+
+    def test_implausible_motion_stops_after_two(self):
+        guard = object.__new__(Motion)
+        guard.no_motion=0
+        guard.uncertain=2
+        guard.implausible=2
+        self.assertEqual(
+            guard.stop_reason(), "IMPLAUSIBLE_CAMERA_SHIFT_AFTER_2_KEYS")
+        guard.implausible=0
+        guard.uncertain=0
+        self.assertIsNone(guard.stop_reason())
 
     def test_flow_pulse_budget_is_not_reset_by_new_seed(self):
         v = Visual()
