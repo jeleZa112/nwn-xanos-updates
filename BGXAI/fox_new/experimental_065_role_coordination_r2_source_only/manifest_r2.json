@@ -1,0 +1,33 @@
+{
+  "version": "0.3.31-065-R2-ROLE-SOURCE-ONLY",
+  "mode": "SOURCE_ONLY",
+  "date": "2026-11-12",
+  "installed_game": "064; R2 not installed",
+  "baseline_064_sha256": "bfee5278b5b69b1fb4a02e3fea321082b0238407789df83ec6bd2f78d7e19f4b",
+  "files": {
+    "BGXAI65_PRIORITY_POLICY.lua": {
+      "size_bytes": 10387,
+      "sha256": "7d90712779a449e25cbe2b049a13b49f225c392d84bf4b85ead4b87de5d8db0c"
+    },
+    "BGXAI65_ROLE_COORDINATION_R2.lua": {
+      "size_bytes": 6610,
+      "sha256": "c75cba937aed23c4f207f1924149756fb92fdb9741e7a5cf222d6e24782b459a"
+    },
+    "test_065_role_r2.py": {
+      "size_bytes": 6276,
+      "sha256": "b55a94eefe9fe906da842349f4c287ef114c13b16d54ad1f91eed1e46fb0ee5b"
+    },
+    "lua65_harness.py": {
+      "size_bytes": 1865,
+      "sha256": "d0586d522303893ff2ae648c2b6915ed4178113e8782d98d698c5a3b03b70607"
+    },
+    "README_RU.md": {
+      "size_bytes": 7811,
+      "sha256": "07b00f9c820e5b77bfd931496c6b2adcad4d7dbf7c8b261c9451cab7cd42bf59"
+    },
+    "verify_r2.py": {
+      "size_bytes": 636,
+      "sha256": "2c829676d763b85e559fc7a57ec8aed8f0a4b36a07a43993de4cfa5de90b7a18"
+    }
+  }
+}
