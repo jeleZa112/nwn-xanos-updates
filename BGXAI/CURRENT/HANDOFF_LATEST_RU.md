@@ -1,3 +1,11 @@
+## 2026-11-12 — BGXAI 064: USER WINDOWS SYNTAX PASS; GUARDED MENU 72–76 PINNED, 061 UNCHANGED
+
+- User executed native Windows PowerShell and obtained exactly `BGXAI 064 SYNTAX PASS` on immutable 72–76 source-only draft. Do **not** ask again.
+- Full installer audit found valid 064→061 rollback leaves `BGX64` stage directory. Corrected 061 **status** to use `read_only.check` while keeping new **install** blocked by stage collision. 47/47 offline Python/WeiDU mock tests PASS after fix.
+- Guarded 064 source-only package GitHub `BGXAI/fox_new/experimental_064_guarded_weidu_source_only/` now has corrected installer, test, manifest (10 source files). Current `BGXAI/fox_new/BOOTSTRAP_PIN.json` is SHA-pinned to immutable commit `d66ae072c4a1466521d384c15fe5c0c1ed6205cc`; script `BGXAI/BGXAI_SYNC.ps1` SHA256 `d246e6e286f760a1824c65e73e42ff2d8d29f5aa0fb46c1fb97409e04f06c1b1`, 59433 bytes, full menu 1–76. Source package manifest and fixed installer present at pinned commit. Source files and hashes verified, no 064 in game.
+- Live installed 061 continues unchanged (68 and 71 PASSED; EEex `BGX64 AREACHECK true true`). **NEXT**: user launches existing `BGXAI_UPDATE.cmd` and selects **73** once for source-sync plus strictly read-only WeiDU/live game preflight. Not 72 separately, not 74 yet. User returns output. After PASS, explicit additional approval is still required to install via 74, with backup and stop-if-game-running.
+- Permanent checkpoint `BGXAI/CURRENT/BGXAI_064_MENU_72_76_PINNED_20261112_RU.md`, commit `cf0c23e3dd8adbe8e7ad0c947e93ca7944b0fb33`; Library `/BALDURS_GATE_EET_AI/CURRENT/BGXAI_064_MENU_72_76_PINNED_20261112_RU.md`. Older guard package ZIP predates status fix, so **do not use old ZIP**, only current pinned updater source-sync.
+
 ## 2026-11-12 — BGXAI 064 GUARDED MENU 72–76 PUBLISHED; USER NATIVE SYNTAX PASS
 
 - User tested exact 72–76 PowerShell source in Windows PowerShell and returned `BGXAI 064 SYNTAX PASS`. Also earlier native EET area check `BGX64 AREACHECK true true`, installed 061 option 68 PASS and 064 source-only option 71 PASS. Do not request them again.
