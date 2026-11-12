@@ -1,0 +1,9 @@
+@echo off
+chcp 65001 >nul
+echo BGXAI 066 - SHA-verified read-only Windows PowerShell syntax check
+powershell.exe -NoLogo -NoProfile -NonInteractive -Command "$ErrorActionPreference='Stop';[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$u='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/2825de09d35bfdadd216b5bfd8b4862ce3eb7f3b/BGXAI/fox_new/experimental_066_multi_guard_guarded/BGXAI_SYNC_077_081_DRAFT.ps1';$p=Join-Path $env:TEMP 'BGXAI66_DRAFT_PARSE_ONLY.ps1';try {;Invoke-WebRequest -Uri $u -OutFile $p -UseBasicParsing -TimeoutSec 60;[byte[]]$b=[IO.File]::ReadAllBytes($p);[byte[]]$prefix=[Text.Encoding]::ASCII.GetBytes('blob '+$b.Length+[char]0);[byte[]]$v=New-Object byte[] ($prefix.Length+$b.Length);[Array]::Copy($prefix,0,$v,0,$prefix.Length);[Array]::Copy($b,0,$v,$prefix.Length,$b.Length);$h=[Security.Cryptography.SHA1]::Create();try{$actual=([BitConverter]::ToString($h.ComputeHash($v))).Replace('-','').ToLowerInvariant()}finally{$h.Dispose()};if($actual -cne '00f6b17812a87ecde627e023e6f937818336a232'){throw ('SOURCE_HASH_MISMATCH '+$actual)};$tokens=$null;$errors=$null;[System.Management.Automation.Language.Parser]::ParseFile($p,[ref]$tokens,[ref]$errors)|Out-Null;if($errors.Count -gt 0){throw ('WINDOWS_PARSE_ERROR '+(($errors|ForEach-Object {$_.Message}) -join '; '))};Write-Host 'BGXAI066 NATIVE WINDOWS SYNTAX PASS - GAME UNCHANGED' -ForegroundColor Green;}catch{Write-Host ('BGXAI066 STOP: '+$_.Exception.Message) -ForegroundColor Red; exit 2};finally{if(Test-Path -LiteralPath $p){Remove-Item -LiteralPath $p -Force}};exit 0"
+set "RC=%ERRORLEVEL%"
+echo.
+if not "%RC%"=="0" echo CHECK FAILED - GAME UNCHANGED
+pause
+exit /b %RC%
