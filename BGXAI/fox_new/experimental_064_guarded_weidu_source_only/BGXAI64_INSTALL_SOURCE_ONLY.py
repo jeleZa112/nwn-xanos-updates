@@ -181,7 +181,7 @@ def main(argv=None):
         if a.mode=='status':
             last=last_mod(a.game_root)
             if LAST064.search(last): proof=read_status_064(a.game_root)
-            elif read_only.LAST061.search(last): proof=read_status_061(a.game_root)
+            elif read_only.LAST061.search(last): proof=read_only.check(a.game_root)  # report restored 061 even if WeiDU left the BGX64 stage directory
             else: raise Stop('UNKNOWN_LAST_WEIDU_FOR_064')
             print(json.dumps({'mode':'READ_ONLY','proof':proof},ensure_ascii=False,indent=2))
             return 0
