@@ -1,3 +1,9 @@
+## 2026-11-12 — GitHub web freezes for user; ZIP checker delivered via ChatGPT Library
+
+- User reported github.com hangs after in-chat CMD preview failed. Created downloadable ZIP with launcher BGXAI66_START_CHECK.cmd, verifier BGXAI66_CHECK.ps1 and Russian README; saved /BALDURS_GATE_EET_AI/BUILD/BGXAI_066_GUARDED_UPGRADE/BGXAI66_CHECK_NO_GITHUB_SITE.zip.
+- No GitHub site/browser needed. Verifier tries jsDelivr CDN before raw.githubusercontent.com, checks exact immutable Git blob SHA1 00f6b17812a87ecde627e023e6f937818336a232, then parses draft PowerShell WITHOUT running it or touching game. Caveat: network to at least one source still necessary; package itself is NOT completely offline. On failure NO_SOURCE_AVAILABLE, never blame game.
+- Windows CI not yet passed; no updater/bootstrap pinned, BGXAI 064 remains installed and unchanged; 066 source-only and readiness pending Windows syntax gate.
+
 ## 2026-11-12 — BGXAI 066 CHECKER DOWNLOAD FIX (ChatGPT viewer fails on .cmd)
 
 - User screenshot showed ChatGPT preview `Не удалось загрузить этот файл` for sandbox BGXAI66_NATIVE_PARSE_ONLY.cmd. This is an artifact preview issue, not a Windows parser/game result.
