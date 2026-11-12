@@ -12,13 +12,17 @@ jobs:
   windows:
     runs-on: windows-latest
     steps:
+      - name: Disable CRLF conversion before checkout for exact SHA256
+        shell: pwsh
+        run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
       - name: Native PowerShell draft parsing and unchanged updater
         shell: pwsh
         run: |
           $base = 'BGXAI/BGXAI_SYNC.ps1'
           $draft = 'BGXAI/fox_new/experimental_066_multi_guard_guarded/BGXAI_SYNC_077_081_DRAFT.ps1'
-          $hash = (Get-FileHash -Algorithm SHA256 $base).Hash.ToLowerInvariant()
+          # Hash immutable Git blob rather than working copy, which Windows may CRLF-convert.
+          $hash = (python -c "import subprocess,hashlib; b=subprocess.check_output(['git','show','HEAD:BGXAI/BGXAI_SYNC.ps1']); print(hashlib.sha256(b).hexdigest())").Trim()
           if($hash -cne 'd246e6e286f760a1824c65e73e42ff2d8d29f5aa0fb46c1fb97409e04f06c1b1'){throw "Existing updater changed: $hash"}
           $tokens = $null
           $errors = $null
