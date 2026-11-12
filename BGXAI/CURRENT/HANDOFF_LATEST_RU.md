@@ -1,3 +1,10 @@
+## 2026-11-13 — BGXAI 066S: ONEFILE 82–86 READY / FAST OPTIMAL RULE LINKED
+
+- Confirmed global fast rule from translation project: Library `/GLOBAL_PROJECT_RULES/GLOBAL_FAST_OPTIMAL_EXECUTION_RULE_20261113_RU.md`. Apply alongside v6: reuse existing work, choose shortest safe path, batch automated checks, maintain restart/checkpoints, fix errors locally instead of multiple user-run cycles. Project read-first `/BALDURS_GATE_EET_AI/CURRENT/00_AUTO_CONTINUE_READ_FIRST.md` now explicitly links it.
+- Verified NEWEST BGXAI current state in Library `BGXAI_066S_READY_FOR_REAL_EET_PREFLIGHT_CHECKPOINT_RU.md`: source-only 066S two-file guarded installer, 39/39 tests, source 29/29, GitHub Windows/Linux CI SUCCESS, official WeiDU 251 synthetic BAF+TP2 PASS. Active pinned single updater commit `5bde0f6397d872569b80f169257a318aa0d40e9a`, SHA256 `8c1f5c4030098e014ce0f3ca108b7edce153a4868d2f9d8ea8458dc1dc0b7ab1`, menu 82 source, 83 READ ONLY real installed-EET IDS check, 84 separate guarded install, 85 status, 86 guarded rollback; old dangerous 79 blocked. EET user game remains 064 installed; 066S NOT installed.
+- No further synthetic code work is required to test IDS validity: real EET IDS and exact compiled installed 064 BCS are private on user's Windows. Only new meaningful boundary is **one run of option 83**, with game and InfinityLoader closed; this does NOT install. If 83 PASS, proceed to 84 only after explicit user confirmation, then 85 status and one in-game behavioral test. Do NOT repeat old 78, reload archives, request fresh console screenshots, or ask for "+" on source-work.
+- Keep one updater and one canonical checkpoint. Distinguish offline pass vs native installed EET behavior. No background work claims.
+
 ## 2026-11-13 — 066S TWO-FILE GUARDED INSTALLER AND UPDATER PINNED, NO GAME INSTALL
 
 - Engineered real BGXAI66S_BCS_PATCH.py: exact 064 BCS SHA db0fcba..., all 1065 old BCS blocks, prior 8 BGX56 receiver blocks retained; 11 new caster BCS blocks inserted before 042B/EPS; status proves old byte exact restoration after removing inserted blocks. Real game IDS read-only compiler uses temporary WeiDU and sandbox temp output.
