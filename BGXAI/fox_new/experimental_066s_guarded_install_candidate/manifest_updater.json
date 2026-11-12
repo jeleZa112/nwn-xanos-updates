@@ -36,8 +36,8 @@
     {
       "dest": "BGXAI66S_BCS_PATCH.py",
       "source": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/BGXAI66S_BCS_PATCH.py",
-      "size": 7288,
-      "sha256": "13e2ad7c321ba6c734b56af2ec9e8c53c39328303e3162baf130f760e5e9aa76"
+      "size": 7282,
+      "sha256": "aacf6a91e7d253da15ae270e8f26aab1beec867914d470e8e73aea0532c2eb76"
     },
     {
       "dest": "BGXAI66S_INSTALL.py",
