@@ -1,0 +1,91 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.32-066-MULTI-FRONTLINE-GUARDED",
+  "files": [
+    {
+      "dest": "BGX66_TEAM_BRIDGE.lua",
+      "source": "BGXAI/fox_new/experimental_066_multi_guard_guarded/BGX66_TEAM_BRIDGE.lua",
+      "size": 8017,
+      "sha256": "d104f5ec2064b603ebf53dba92778aa9d6da51842e9085c517cb093d97743300"
+    },
+    {
+      "dest": "M_BX43_064_BASELINE_READONLY.lua",
+      "source": "BGXAI/fox_new/experimental_066_multi_guard_guarded/M_BX43_064_BASELINE_READONLY.lua",
+      "size": 21145,
+      "sha256": "bfee5278b5b69b1fb4a02e3fea321082b0238407789df83ec6bd2f78d7e19f4b"
+    },
+    {
+      "dest": "M_BX43_066_CANDIDATE.lua",
+      "source": "BGXAI/fox_new/experimental_066_multi_guard_guarded/M_BX43_066_CANDIDATE.lua",
+      "size": 29160,
+      "sha256": "c66ebb5190be8103819106a48d3100055b5791adf7c2d1df5f3e54596823540b"
+    },
+    {
+      "dest": "build_066.py",
+      "source": "BGXAI/fox_new/experimental_066_multi_guard_guarded/build_066.py",
+      "size": 1803,
+      "sha256": "c0222eedf930f5bb2600ead321d95f60f9a1ff66016b0b27151aa16f01d837a8"
+    },
+    {
+      "dest": "BGXAI66_INSTALL.py",
+      "source": "BGXAI/fox_new/experimental_066_multi_guard_guarded/BGXAI66_INSTALL.py",
+      "size": 7323,
+      "sha256": "ed92e53aa875395e91cae241d1d455c30386cdb1489341ebc59eecdbf144ecf0"
+    },
+    {
+      "dest": "BGXAI64_INSTALL_SOURCE_ONLY.py",
+      "source": "BGXAI/fox_new/experimental_066_multi_guard_guarded/BGXAI64_INSTALL_SOURCE_ONLY.py",
+      "size": 10223,
+      "sha256": "f9eae8035acb6712b8a8f064c7d5f688d98dba2c294cbe93e0fcc4f0241ab01a"
+    },
+    {
+      "dest": "BGXAI64_PATCH.py",
+      "source": "BGXAI/fox_new/experimental_066_multi_guard_guarded/BGXAI64_PATCH.py",
+      "size": 4020,
+      "sha256": "ec699717c404a5655154af3894e2a0bc6d607280c67c2f40efc8b2c024c13858"
+    },
+    {
+      "dest": "BGXAI64_PREFLIGHT_READONLY.py",
+      "source": "BGXAI/fox_new/experimental_066_multi_guard_guarded/BGXAI64_PREFLIGHT_READONLY.py",
+      "size": 3792,
+      "sha256": "72c955c4a6fcc644e9f71675dfcdb4b19fafdd95cf458918ee9b9e9651f3888f"
+    },
+    {
+      "dest": "M_BX43_061_BASELINE_READONLY.lua",
+      "source": "BGXAI/fox_new/experimental_066_multi_guard_guarded/M_BX43_061_BASELINE_READONLY.lua",
+      "size": 20698,
+      "sha256": "fd39d23dc722b549c2af1eaf065541b2ed358a9714f2636b8cab4e45fe7dcec5"
+    },
+    {
+      "dest": "M_BX43_064_CANDIDATE.lua",
+      "source": "BGXAI/fox_new/experimental_066_multi_guard_guarded/M_BX43_064_CANDIDATE.lua",
+      "size": 21145,
+      "sha256": "bfee5278b5b69b1fb4a02e3fea321082b0238407789df83ec6bd2f78d7e19f4b"
+    },
+    {
+      "dest": "test_066_native.py",
+      "source": "BGXAI/fox_new/experimental_066_multi_guard_guarded/test_066_native.py",
+      "size": 7860,
+      "sha256": "0e11a8a2d4f56502baec68289b00b49825d5e3511b8de0dccb6913cce75a791b"
+    },
+    {
+      "dest": "test_066_install_mock.py",
+      "source": "BGXAI/fox_new/experimental_066_multi_guard_guarded/test_066_install_mock.py",
+      "size": 10150,
+      "sha256": "ae49e99a41abf7672e8e94af5ea0051f4c25713e39af68093fa02d5a05a29d67"
+    },
+    {
+      "dest": "lua65_harness.py",
+      "source": "BGXAI/fox_new/experimental_066_multi_guard_guarded/lua65_harness.py",
+      "size": 1865,
+      "sha256": "d0586d522303893ff2ae648c2b6915ed4178113e8782d98d698c5a3b03b70607"
+    },
+    {
+      "dest": "README_RU.md",
+      "source": "BGXAI/fox_new/experimental_066_multi_guard_guarded/README_RU.md",
+      "size": 7464,
+      "sha256": "c9bdcb65edaa7462b8944f3aae5d6fb93ae8247a4b9f4c742001bf86f57ec757"
+    }
+  ]
+}
