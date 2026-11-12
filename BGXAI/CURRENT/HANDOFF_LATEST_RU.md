@@ -1,3 +1,9 @@
+## 2026-11-13 — BGXAI 066 USER LIVE READ-ONLY MENU 78 PASS, BUT CURRENT PARTY HAS NO ELIGIBLE F FRONTLINE
+
+- User executed same pinned updater with SHA-verified script 33916f4ff3a2, chose 78. All 14 source files VERIFIED and source sync completed without game writes. Real Windows proof: INSTALLED_064_VERIFIED, last WeiDU BGX64, unchanged BCS db0fcba4678b00defa2ed7887b57c0d4207effc064891aeb9a0d7dcc1a1a6b0b and 064 Lua bfee5278b5b69b1fb4a02e3fea321082b0238407789df83ec6bd2f78d7e19f4b. Verified candidate 066 SHA c66ebb5190be8103819106a48d3100055b5791adf7c2d1df5f3e54596823540b. Output BGXAI066 preflight PASS. authorized_to_install=false. No repeat of 78.
+- IMPORTANT: Native party P0 fighter slot 0 not eligible to be F guardian in 066; P1 mage F ON and P3 cleric F ON deliberately excluded from frontline; P2 bard F OFF. With CURRENT party the 066 module dispatches NO active BCS requests, whereas 064 has already been shown to react on caster F. Installing 066 now is a possible functional regression in user's current party, despite installation readiness. Do NOT tell user 066 is a generally better working AI with this group. Keep 064 while building ability-gated caster support or bring an eligible fighter/paladin/ranger companion F ON for a meaningful 066 combat test.
+- Current checkpoint GitHub BGXAI/CURRENT/BGXAI_066_LIVE_PREFLIGHT_78_PASS_20261113_RU.md. Active installer menu 79 requires user to type INSTALL_BGXAI_066, backed-up WeiDU, then status 80 and rollback 81 if needed. No game changes or live combat 066 yet. Next development: remove class-regression via safely coordinated caster/support behavior before recommending user to advance from 064 with current composition.
+
 ## 2026-11-13 — BGXAI 066 MENU 77–81 NOW PINNED; GAME STILL 064
 
 - User completed native Windows 10 offline-source-check via jsDelivr: `Pinned file verified by Git SHA1` and `BGXAI066 NATIVE WINDOWS SYNTAX PASS - GAME UNCHANGED`. No game files changed.
