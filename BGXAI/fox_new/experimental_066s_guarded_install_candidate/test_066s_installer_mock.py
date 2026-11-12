@@ -15,10 +15,11 @@ def block(i,acts,marker=b''):
     return raw+b'RS\nCR\n'
 
 def base_bcs():
-    chunks=[block(i,[0]) for i in range(1065)]
-    acts=[[30,36],[30,36]]+[[30,115,87] for _ in range(6)]
+    chunks=[block(i,[0]) for i in range(1077)]
+    acts=b.EXISTING_061_ACTIONS
     for i,aa in enumerate(acts):
-        chunks[1031+i]=block(1031+i,aa,b'LOCALSBGX52_REQ_SLOT')
+        marker=b'LOCALSBGX52_REQ_SLOT'+(b' BGX61_LAST_BRANCH' if i>=2 else b'')
+        chunks[1031+i]=block(1031+i,aa,marker)
     chunks[-1]+=b'SC\n'
     return b'SC\n'+b''.join(chunks)
 
@@ -76,13 +77,30 @@ class Guarded066S(unittest.TestCase):
     def rollback(self,**kw):return m.rollback(self.root,process_guard=kw.get('guard',self.no),make_backup=kw.get('backup',self.backup),runner=kw.get('runner',self.mock))
     def test_01_source_pins_and_deterministic_caster(self):
         self.assertEqual(m.source_check()['lua_sha256'],m.PIN066S)
-    def test_02_1065_to_1076_lossless_bcs_splice(self):
+    def test_02_1077_to_1088_lossless_bcs_splice(self):
         new,proof=b.splice(self.oldbcs,self.frag)
-        self.assertEqual(proof['total_blocks'],1076)
-        oldchunk=b.segment(self.oldbcs,1065)
-        newchunk=b.segment(new,1076)
-        self.assertEqual(newchunk[:1039],oldchunk[:1039]);self.assertEqual(newchunk[1050:],oldchunk[1039:])
-        self.assertEqual(len(newchunk[1039:1050]),11)
+        self.assertEqual(proof['total_blocks'],1088)
+        oldchunk=b.segment(self.oldbcs,1077)
+        newchunk=b.segment(new,1088)
+        self.assertEqual(newchunk[:1051],oldchunk[:1051]);self.assertEqual(newchunk[1062:],oldchunk[1051:])
+        self.assertEqual(len(newchunk[1051:1062]),11)
+    def test_02b_must_not_accept_obsolete_056_block_layout(self):
+        old=self.oldbcs.replace(b'BGX61_LAST_BRANCH',b'BGX56_LAST_BRANCH',1)
+        with monkey.object(b,'PIN_064_BCS',sha256(old).hexdigest()):
+            with self.assertRaisesRegex(ValueError,'BRANCH_MARKER_MISSING'):
+                b.splice(old,self.frag)
+    def test_02c_installed_061_receiver_actions_are_verified(self):
+        self.assertEqual(len(b.EXISTING_061_ACTIONS),20)
+        self.assertEqual(len(b.segment(self.oldbcs,1077)),1077)
+        old=self.oldbcs.replace(b'134OB',b'87OB',1)
+        with monkey.object(b,'PIN_064_BCS',sha256(old).hexdigest()):
+            with self.assertRaisesRegex(ValueError,'064_061_RECEIVER_ACTION_LAYOUT_DRIFT'):
+                b.prove_original(old)
+    def test_02d_exact_reverse_restores_1077_blocks(self):
+        merged,_=b.splice(self.oldbcs,self.frag)
+        proof=b.verify_installed(merged)
+        self.assertEqual(proof['old_bcs_restored_sha256'],sha256(self.oldbcs).hexdigest())
+        self.assertEqual(proof['legacy_blocks_preserved'],1077)
     def test_03_patch_rejects_bcs_drift(self):
         with self.assertRaisesRegex(ValueError,'064_BCS_SHA'):b.splice(self.oldbcs+b'EVIL',self.frag)
     def test_04_patch_rejects_unexpected_receiver_actions(self):
@@ -92,7 +110,7 @@ class Guarded066S(unittest.TestCase):
         before={x.relative_to(self.root):x.read_bytes() for x in self.root.rglob('*') if x.is_file()}
         proof,data=m.prepare(self.root,process_guard=self.no,compiler=self.compiler)
         self.assertEqual(proof['authorized_to_install'],False)
-        self.assertEqual(len(b.segment(data,1076)),1076)
+        self.assertEqual(len(b.segment(data,1088)),1088)
         self.assertEqual(before,{x.relative_to(self.root):x.read_bytes() for x in self.root.rglob('*') if x.is_file()})
     def test_06_fake_install_rollback(self):
         self.instal()
