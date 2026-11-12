@@ -55,7 +55,7 @@ def prove_original(raw:bytes)->list[bytes]:
     guard=blocks[OLD_RECEIVER_START:SPLICE_AT]
     if len(guard)!=OLD_RECEIVER_BLOCKS or [actions(b) for b in guard]!=EXISTING_061_ACTIONS:
         raise ValueError('064_061_RECEIVER_ACTION_LAYOUT_DRIFT')
-    if any(b'LOCALSBGX52_REQ_SLOT' not in b for b in guard):
+    if any(b'BGX52_REQ_SLOT' not in b for b in guard):
         raise ValueError('064_061_RECEIVER_REQUEST_MARKER_MISSING')
     if any(b'BGX61_LAST_BRANCH' not in b for b in guard[2:]):
         raise ValueError('064_061_RECEIVER_BRANCH_MARKER_MISSING')
