@@ -30,8 +30,8 @@
     },
     {
       "path": "BGXAI66S_BCS_PATCH.py",
-      "size": 6530,
-      "sha256": "76f7e19c02e232569fc94502d172c1b976e816b5fbe8bf1e9fd871b7ec188723"
+      "size": 7288,
+      "sha256": "13e2ad7c321ba6c734b56af2ec9e8c53c39328303e3162baf130f760e5e9aa76"
     },
     {
       "path": "BGXAI66S_INSTALL.py",
@@ -65,8 +65,8 @@
     },
     {
       "path": "README_RELEASE_RU.md",
-      "size": 6279,
-      "sha256": "799a762055cc11541fe156bf2feb8aca2838979e98909478c366b1f90d680aa4"
+      "size": 7957,
+      "sha256": "b56a5d75f97ed4da6573b0aefe60d7920d948cf9debf8ae79496663f443a2a02"
     },
     {
       "path": "README_RU.md",
@@ -135,8 +135,8 @@
     },
     {
       "path": "test_066s_installer_mock.py",
-      "size": 9240,
-      "sha256": "b4513e9bc390509f38444152756402e953d710805e63f7188bd490aad4e0d466"
+      "size": 10349,
+      "sha256": "2cb446959665e0e2d8e99b7690aaf11567dadbb7e90472ca53394e12811eac54"
     },
     {
       "path": "verify_066s.py",
