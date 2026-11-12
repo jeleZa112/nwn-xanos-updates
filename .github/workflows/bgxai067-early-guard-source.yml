@@ -1,0 +1,58 @@
+name: BGXAI 067 early-defense source and guarded WeiDU tests (NO GAME)
+
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/fox_new/experimental_067_early_guard_guarded/**'
+      - '.github/workflows/bgxai067-early-guard-source.yml'
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Disable automatic CRLF conversion before checkout
+        shell: pwsh
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify every source hash and bounded WeiDU install/rollback mock
+        shell: pwsh
+        run: |
+          Set-Location BGXAI/fox_new/experimental_067_early_guard_guarded
+          python verify_release.py
+          if($LASTEXITCODE -ne 0){throw 'BGX067_MANIFEST_FAILED'}
+          python build_067.py
+          if($LASTEXITCODE -ne 0){throw 'BGX067_LUA_REBUILD_FAILED'}
+          python generate_067_baf.py
+          if($LASTEXITCODE -ne 0){throw 'BGX067_BAF_REBUILD_FAILED'}
+          python -m unittest -q test_067_bcs.py test_067_install_mock.py
+          if($LASTEXITCODE -ne 0){throw 'BGX067_WINDOWS_INSTALL_MODEL_FAILED'}
+          python verify_release.py
+          if($LASTEXITCODE -ne 0){throw 'BGX067_REBUILD_HASH_DRIFT'}
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Native Lua 5.4, 067 source pins, simulated 066S to 067 two-file install and rollback
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq liblua5.4-0
+          cd BGXAI/fox_new/experimental_067_early_guard_guarded
+          python verify_release.py
+          python build_067.py
+          python generate_067_baf.py
+          python -m unittest -q test_067_native.py test_067_bcs.py test_067_install_mock.py
+          python verify_release.py
+      - name: Official WeiDU 251 parse and compile 8-rule prehit BAF + 2-file TP2 with SYNTHETIC IDS
+        shell: bash
+        run: |
+          cd BGXAI/fox_new/experimental_067_early_guard_guarded
+          python ci_weidu_067.py
