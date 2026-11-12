@@ -1,3 +1,11 @@
+## 2026-11-12 — USER RAN MENU 73: REAL GUARDED 064 PREFLIGHT PASS (NO GAME WRITES)
+
+- User executed existing BGXAI_UPDATE.cmd; SHA verified pinned script `d66ae072c4a1`; menu 72–76 visible; selected **73**. All 10 sources VERIFIED/ALREADY VERIFIED. Program returned `proof.status=064_SOURCE_ONLY_PREFLIGHT_PASS`, `last_weidu=BGX61` as last, BCS `db0fcba4678b00defa2ed7887b57c0d4207effc064891aeb9a0d7dcc1a1a6b0b`, Lua `fd39d23dc722b549c2af1eaf065541b2ed358a9714f2636b8cab4e45fe7dcec5`, candidate `bfee5278b5b69b1fb4a02e3fea321082b0238407789df83ec6bd2f78d7e19f4b`, four-patch single-selector proof, `game_written=false`, `installed_game_changed=false`, `authorized_to_install=false`. `BGXAI064 guarded preflight PASS. Installed 061 remains unchanged.`
+- Previously user confirmed native EEex area `BGX64 AREACHECK true true` in EET, actual 68/71 PASS. Do **NOT** ask user to repeat any.
+- Guarded installed candidate 064 was source-validated with 46/46 mock WeiDU tests, but not executed as an actual WeiDU game installation yet; native on-hit callback performance remains unverified. Existing installer blocks wrong root, active game processes, missing SHA, and requires external verified backup. Cross-checked WeiDU CLI flags are same as previously successful real 061 installer.
+- **NEXT** requires separate explicit user authorization because menu **74** changes installed Lua and WeiDU. User may voluntarily close Baldur/InfinityLoader and choose 74, then type exact `INSTALL_BGXAI_064` when prompted. Avoid installing without opt-in and avoid blind retry on failures. After success, inspect output/backups and menu 75 status before live-game retest. Menu 76 is guarded rollback if 064 is last, manual token.
+- Canonical checkpoint `BGXAI/CURRENT/BGXAI_064_LIVE_GUARDED_PREFLIGHT_73_PASS_20261112_RU.md` GitHub commit `767d6ec28c8159ce89f56c093c584269ce3481fe`. Existing 061 unchanged.
+
 ## 2026-11-12 — BGXAI 064: USER WINDOWS SYNTAX PASS; GUARDED MENU 72–76 PINNED, 061 UNCHANGED
 
 - User executed native Windows PowerShell and obtained exactly `BGXAI 064 SYNTAX PASS` on immutable 72–76 source-only draft. Do **not** ask again.
