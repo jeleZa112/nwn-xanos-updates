@@ -122,8 +122,15 @@ $release064=@{
     localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_064';installer='BGXAI64_PREFLIGHT_READONLY.py';
     names=@('M_BX43_064_CANDIDATE.lua','BGX64_BRIDGE_PREPARE_NATIVE.lua','BGXAI64_PATCH.py','BGXAI64_PREFLIGHT_READONLY.py','README_RU.md','lua64_harness.py','test_064_native.py','test_064_patch.py','test_064_preflight.py','SOURCE_MANIFEST.json')
 }
+$release064g=@{
+    id='064G';version='0.3.30-064-GUARDED-WEIDU-CANDIDATE';
+    manifest=$remoteRoot+'experimental_064_guarded_weidu_source_only/manifest.json';
+    prefix=$remoteRoot+'experimental_064_guarded_weidu_source_only/';
+    localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_064_guarded';installer='BGXAI64_INSTALL_SOURCE_ONLY.py';
+    names=@('M_BX43_064_CANDIDATE.lua','M_BX43_061_BASELINE_READONLY.lua','BGX64_BRIDGE_PREPARE_NATIVE.lua','BGXAI64_PATCH.py','BGXAI64_PREFLIGHT_READONLY.py','BGXAI64_INSTALL_SOURCE_ONLY.py','test_064_install_mock.py','test_064_patch.py','test_064_preflight.py','README_RU.md')
+}
 function Get-PinnedBytes([string]$remotePath) {
-    if($remotePath -notmatch '^BGXAI/fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
+    if($remotePath -notmatch '^BGXAI/fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
         throw ('Remote source path blocked: '+$remotePath)
     }
     # All sources are publicly hosted; pin content by immutable commit and SHA256 manifest.
@@ -376,6 +383,48 @@ function Run061Guarded([string]$mode) {
     & py -3 (Join-Path $release061.localPath 'BGXAI61_INSTALL.py') $mode '--yes' '--confirm' 'BGXAI_061_EXPERIMENTAL'
     if($LASTEXITCODE -ne 0){throw ('BGXAI 061 '+$mode+' STOP code '+$LASTEXITCODE+'. Do not retry blindly.')}
     Write-Host ('BGXAI 061 '+$mode+' completed, inspect status 68.')
+}
+function Verify064GuardedSource {
+    $spec=$release064g
+    $list=VerifiedManifest $spec
+    foreach($name in $spec.names){
+        $dest=Join-Path $spec.localPath $name
+        AssertNotReparse $dest
+        if((HashFile $dest) -cne $list[$name].sha){throw ('BGXAI064G source SHA mismatch: '+$name)}
+    }
+}
+function Test064GuardedReadOnly {
+    SyncRelease $release064g
+    Verify064GuardedSource
+    Write-Host 'BGXAI 064 GUARDED INSTALL PRECHECK - READ ONLY (no game writes).'
+    & py -3 (Join-Path $release064g.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') preflight
+    if($LASTEXITCODE -ne 0){throw ('BGXAI064 guarded PRECHECK STOP '+$LASTEXITCODE)}
+    Write-Host 'BGXAI064 guarded preflight PASS. Installed 061 remains unchanged.'
+}
+function Status064GuardedReadOnly {
+    SyncRelease $release064g
+    Verify064GuardedSource
+    & py -3 (Join-Path $release064g.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') status
+    if($LASTEXITCODE -ne 0){throw ('BGXAI064 guarded STATUS STOP '+$LASTEXITCODE)}
+}
+function Run064Guarded([string]$mode) {
+    if($mode -cne 'install' -and $mode -cne 'rollback'){throw 'BGXAI064 illegal mode'}
+    SyncRelease $release064g
+    Verify064GuardedSource
+    if($mode -ceq 'install'){
+        & py -3 (Join-Path $release064g.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') preflight
+    }else{
+        & py -3 (Join-Path $release064g.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') status
+    }
+    if($LASTEXITCODE -ne 0){throw ('BGXAI064 pre-authorization CHECK FAILED '+$LASTEXITCODE)}
+    $token=if($mode -ceq 'install'){'INSTALL_BGXAI_064'}else{'ROLLBACK_BGXAI_064'}
+    Write-Host 'EXPERIMENTAL 064: this action modifies live Lua via WeiDU, with external SHA-verified backup.'
+    Write-Host 'Baldur and InfinityLoader MUST be closed. BCS and EPS will not be modified by candidate.'
+    $confirmation=Read-Host ('Type '+$token+' exactly to authorize or ENTER to cancel')
+    if($confirmation -cne $token){Write-Host 'BGXAI 064 CANCELLED. Live game unchanged.';return}
+    & py -3 (Join-Path $release064g.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') $mode '--yes' '--confirm' $token
+    if($LASTEXITCODE -ne 0){throw ('BGXAI064 '+$mode+' STOP code '+$LASTEXITCODE+'; do NOT retry blindly')}
+    Write-Host ('BGXAI064 '+$mode+' completed; check guarded read-only STATUS menu 75.')
 }
 function Test064ReadOnly {
     # Native PowerShell 5.1+ syntax check; this only reads its own file.
@@ -810,6 +859,11 @@ Write-Host ' 68 - BGXAI 061/060 install STATUS (READ ONLY)'
 Write-Host ' 69 - Roll back BGXAI 061 to 060 (separate approval + backup)'
 Write-Host ' 70 - Download/verify BGXAI 064 SOURCE ONLY (NO INSTALL)'
 Write-Host ' 71 - BGXAI 064 SHA-pinned PRECHECK (READ ONLY, NO INSTALL)'
+Write-Host ' 72 - Download/verify BGXAI 064 GUARDED WEIDU SOURCES (NO INSTALL)'
+Write-Host ' 73 - BGXAI 064 guarded WeiDU PRECHECK (NO INSTALL)'
+Write-Host ' 74 - EXPERIMENTAL install BGXAI 064 (explicit confirmation + backup)'
+Write-Host ' 75 - BGXAI 064/061 guarded STATUS (READ ONLY)'
+Write-Host ' 76 - Roll back BGXAI 064 to 061 (explicit confirmation + backup)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -887,6 +941,11 @@ try {
       '69' {Run061Guarded 'rollback';break}
       '70' {SyncRelease $release064;break}
       '71' {SyncRelease $release064;Test064ReadOnly;break}
+      '72' {SyncRelease $release064g;break}
+      '73' {Test064GuardedReadOnly;break}
+      '74' {Run064Guarded 'install';break}
+      '75' {Status064GuardedReadOnly;break}
+      '76' {Run064Guarded 'rollback';break}
       default {throw 'Unknown menu option, no game change.'}
     }
     exit 0
