@@ -1,0 +1,58 @@
+name: BGXAI 066 source and native Windows parser gates
+
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/fox_new/experimental_066_multi_guard_guarded/**'
+      - '.github/workflows/bgxai066-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Native PowerShell draft parsing and unchanged updater
+        shell: pwsh
+        run: |
+          $base = 'BGXAI/BGXAI_SYNC.ps1'
+          $draft = 'BGXAI/fox_new/experimental_066_multi_guard_guarded/BGXAI_SYNC_077_081_DRAFT.ps1'
+          $hash = (Get-FileHash -Algorithm SHA256 $base).Hash.ToLowerInvariant()
+          if($hash -cne 'd246e6e286f760a1824c65e73e42ff2d8d29f5aa0fb46c1fb97409e04f06c1b1'){throw "Existing updater changed: $hash"}
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $draft).Path,[ref]$tokens,[ref]$errors) | Out-Null
+          if($errors.Count -ne 0){throw ('PowerShell parser errors: '+(($errors | ForEach-Object {$_.Message}) -join '; '))}
+          $text = [IO.File]::ReadAllText((Resolve-Path $draft).Path)
+          foreach($n in 1..81) {
+            if($text -notmatch [regex]::Escape("      '$n' {")){throw ('Missing choice '+$n)}
+          }
+          Write-Host 'BGXAI 066 NATIVE WINDOWS SYNTAX PASS; old updater untouched'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Manifest pins + reversible candidate + mocked WeiDU
+        shell: pwsh
+        run: |
+          Set-Location BGXAI/fox_new/experimental_066_multi_guard_guarded
+          python -c "import pathlib,json,hashlib; p=pathlib.Path('.'); d=json.loads((p/'manifest.json').read_text(encoding='utf-8')); assert d['schema']==1; assert len(d['files'])==14; assert all((p/x['dest']).stat().st_size==x['size'] and hashlib.sha256((p/x['dest']).read_bytes()).hexdigest()==x['sha256'] for x in d['files']); print('MANIFEST_14_PASS')"
+          if($LASTEXITCODE -ne 0){throw 'Manifest invalid'}
+          python build_066.py
+          if($LASTEXITCODE -ne 0){throw 'Candidate build invalid'}
+          python -m unittest -q test_066_install_mock.py
+          if($LASTEXITCODE -ne 0){throw 'Installer tests invalid'}
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Native Lua 5.4 plus install and rollback mocks
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq liblua5.4-0
+          cd BGXAI/fox_new/experimental_066_multi_guard_guarded
+          python -m unittest -q test_066_native.py test_066_install_mock.py
