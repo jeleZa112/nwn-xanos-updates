@@ -31,4 +31,4 @@ def generate():
    'END',''])
  return '\n'.join(lines).rstrip()+'\n'
 if __name__=='__main__':
- s=generate();OUT.write_text(s,encoding='utf-8');print('BAF blocks',s.count('\nIF\n'), 'bytes',len(s.encode()))
+ s=generate();OUT.open('w',encoding='utf-8',newline='\n').write(s);print('BAF blocks',s.count('\nIF\n'), 'bytes',len(s.encode()))
