@@ -92,6 +92,39 @@ class NavigationTests(unittest.TestCase):
         self.assertAlmostEqual(duration, .12)
         self.assertAlmostEqual(p.move_seconds, .12)
 
+    def test_replay_2157_ready_flow_then_busy(self):
+        # From the uploaded V3.7.2 log: READY .372, LK .372/.386/.399,
+        # then a confirmed nearby CREATING/COUNTDOWN must veto movement.
+        goal, resel = Goal(), Reselect()
+        self.assertTrue(goal.lock(.372, 0))
+        for index, x in enumerate((.372, .386, .399), start=1):
+            self.assertEqual(resel.check([], goal.x, index)[0], "WAIT")
+            self.assertAlmostEqual(goal.track(x, index, [], "FLOW", .9), x)
+        busy = [sign("CREATING_SIGN", .400, .9)]
+        self.assertIsNone(goal.track(.398, 4, busy, "FLOW", .99))
+        self.assertEqual(resel.check(busy, goal.x, 4)[0], "WAIT")
+        self.assertEqual(resel.check(busy, goal.x, 4.5)[0], "RESELECT")
+
+    def test_replay_2148_lost_text_then_distant_ready(self):
+        # V3.7.0: locked right .647, flow .626/.615. A subsequently
+        # visible left label .228 cannot overwrite the selected goal.
+        goal = Goal()
+        goal.lock(.647, 0)
+        self.assertAlmostEqual(goal.track(.626, .5, [], "FLOW", .788), .626)
+        self.assertAlmostEqual(goal.track(.615, 1.0, [], "FLOW", .885), .615)
+        self.assertIsNone(goal.track(.228, 1.5, [sign("READY_SIGN", .228)], "READY"))
+        self.assertAlmostEqual(goal.x, .615)
+
+    def test_short_pulse_never_skips_global_action_cap(self):
+        p = Policy()
+        p.reset_lobby(0)
+        for i in range(34):
+            action, _, duration = p.lobby_movement(.50, float(i)/2, duration_override=.12)
+            self.assertEqual(action, "KEY")
+            self.assertAlmostEqual(duration, .12)
+        self.assertEqual(p.lobby_movement(.50, 18, duration_override=.12)[0], "HALT")
+        self.assertEqual(p.move_actions, 34)
+
     def test_flow_pulse_budget_is_not_reset_by_new_seed(self):
         v = Visual()
         self.assertEqual(v.fallback_pulses, 0)
