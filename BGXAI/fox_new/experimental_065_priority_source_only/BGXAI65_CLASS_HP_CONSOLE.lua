@@ -1,0 +1,1 @@
+for i=0,5 do local ok,v=pcall(function()local id=EEex_Sprite_GetInPortraitID(i);if not id then return 'absent' end;local s=EEex_GameObject_Get(id);return tostring(s.m_typeAI.m_Class)..':'..tostring(s.m_baseStats.m_hitPoints)..'/'..tostring(s.m_derivedStats.m_nMaxHitPoints) end);C:DisplayText('BGX65 P'..i..' '..(ok and v or 'API_ERROR')) end
