@@ -1,9 +1,9 @@
-# Roblox background monitor - release 3.8.0
+# Roblox background monitor - release 3.8.1
 # Uses Windows Graphics Capture, processes frames only in RAM.
 import os, sys, time, threading, traceback
 from pathlib import Path
 
-VERSION = "3.8.0"
+VERSION = "3.8.1"
 DURATION = int(os.environ.get("ROBLOX_DURATION", "120"))
 SAMPLE_INTERVAL = 0.5
 
@@ -3779,7 +3779,7 @@ class AutoPilotVisualReadyLock:
     def seed(self, frame, sign):
         import cv2,numpy as np
         if not sign or sign.get('status') != 'READY_SIGN' or \
-           float(sign.get('confidence',0)) < .65:
+           float(sign.get('confidence',0)) < .60:
             return False
         gray=self.grayscale(frame)
         if gray is None:return False
@@ -3951,7 +3951,7 @@ class AutoPilotPadReselect:
             return ('WAIT',None,'BUSY_SIGN_NEEDS_CONFIRMATION')
         self.busy_frames=0
         ready=[s for s in signs if s.get('status')=='READY_SIGN'
-               and s.get('confidence',0)>=.65
+               and s.get('confidence',0)>=.60
                and not any(((b.get('status')=='COUNTDOWN_SIGN' and
                               b.get('confidence',0)>=.64) or
                              (b.get('status')=='CREATING_SIGN' and
@@ -4047,14 +4047,17 @@ class AutoPilotPolicy:
         self.turret_actions = 0
         self.last_turret_at = 0.0
 
-    def ready_sign(self, signs):
-        """Lock onto a visible READY sign 3 of 6 frames (allow brief flicker).
+    def ready_sign(self, signs, allow_weak=False):
+        """Lock on stable READY labels; weak labels only during reacquisition.
 
-        Each movement still needs a *fresh* target detection. A countdown
-        sign within 0.115 screen-width blocks candidate movement.
+        Normal: 3 of 6 frames with confidence >=.65.
+        After losing a confirmed goal: 4 of 6 frames with confidence >=.60,
+        a tighter horizontal spread and unchanged BUSY veto. A single weak
+        reading can NEVER authorize movement.
         """
+        threshold=.60 if allow_weak else .65
         strong=[s for s in signs if s.get('status')=='READY_SIGN'
-                and s.get('confidence',0)>=.65]
+                and s.get('confidence',0)>=threshold]
         busy=[s for s in signs if
               (s.get('status')=='COUNTDOWN_SIGN' and
                s.get('confidence',0)>=.64) or
@@ -4066,17 +4069,22 @@ class AutoPilotPolicy:
             if not .04<x<.96:continue
             if any(abs(x-b.get('center_x',-2))<.115 for b in busy):
                 continue
-            current.append((x,s.get('relative_side','UNKNOWN')))
+            current.append((x,s.get('relative_side','UNKNOWN'),
+                            float(s.get('confidence',0))))
         self.ready_history.append(current)
         self.ready_history=self.ready_history[-6:]
         if len(self.ready_history)<3 or not current:return None
         candidates=[]
-        for x,side in current:
+        for x,side,confidence in current:
+            weak=confidence<.65
             matches=[]
             for old in self.ready_history:
-                near=[o for o in old if o[1]==side and abs(o[0]-x)<=.13]
+                near=[o for o in old if o[1]==side and abs(o[0]-x)<=
+                      (.045 if weak else .13)]
                 if near:matches.append(min(near,key=lambda a:abs(a[0]-x))[0])
-            if len(matches)>=3 and max(matches)-min(matches)<=.18:
+            enough=(4 if weak else 3)
+            spread=(.055 if weak else .18)
+            if len(matches)>=enough and max(matches)-min(matches)<=spread:
                 # The historical average is ONLY for stability checking.
                 # Use the current sign position for actual movement. The
                 # 06:48:45 live log had current x=.634 but locked x=.504,
@@ -5093,7 +5101,9 @@ def autopilot_mode():
                     last_pad_report_at=now
                 # Exclusion applies to only READY after abandoning a pad.
                 # Occupied signs are retained for ready_sign's busy veto.
-                target=brain.ready_sign(pad_reselect.candidates(signs,now))
+                target=brain.ready_sign(
+                    pad_reselect.candidates(signs,now),
+                    allow_weak=(pad_search_since is not None))
                 if target is None:
                     # After a confirmed pad occupation, wait briefly for
                     # availability instead of treating the ordinary 12s
