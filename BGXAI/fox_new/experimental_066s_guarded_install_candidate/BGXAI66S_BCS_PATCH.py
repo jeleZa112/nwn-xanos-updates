@@ -10,13 +10,24 @@ from collections import Counter
 import hashlib, re, shutil, subprocess, tempfile
 
 PIN_064_BCS='db0fcba4678b00defa2ed7887b57c0d4207effc064891aeb9a0d7dcc1a1a6b0b'
-PIN_064_BLOCKS=1065
+PIN_064_BLOCKS=1077
 PIN_FRAGMENT_BAF='c678a70a08dbcff7584e0f2703aa8bed5ae5945856287666016ee47c9d6f69ae'
 PIN_FRAGMENT_BLOCKS=11
-# 056 inserted eight 064 guard-receiver blocks at offset 1031 in old 1057 BCS.
-# Add 066S immediately after them, before all legacy 042B/EPS guard rules.
-SPLICE_AT=1039
+# The installed 064 retains the 061 receiver: 20 BCS blocks, NOT the earlier
+# 056 eight-block receiver. Real EET 061 preflight on user PC proved:
+# old 060 BCS 1071 - 14 receiver blocks + 20 BGX61 blocks = 1077.
+# 064 modifies Lua ONLY and leaves this SHA-pinned 1077-block BCS untouched.
+# Insert new 066S support rules after the 20 BGX61 receiver blocks, before
+# original 042B/EPS rule bodies. Every pre-existing block remains byte-identical.
 OLD_RECEIVER_START=1031
+OLD_RECEIVER_BLOCKS=20
+SPLICE_AT=OLD_RECEIVER_START+OLD_RECEIVER_BLOCKS
+# Exact real 061 receiver: 2 cleanup, 6 immediate attacks, 6 approaches,
+# 6 fallback guards. Never silently downgrade to the obsolete 056 layout.
+EXISTING_061_ACTIONS=([[30,36],[30,36]]+
+   [[30,115,30,30,134]]*6+
+   [[115,115,30,30,22]]*6+
+   [[30,115,30,30,87]]*6)
 START=re.compile(rb'(?:^|\n)(CR\nCO\n)')
 ACTIONS=re.compile(rb'(?:^|\n)(?:\d+)?AC\n(-?\d+)OB\n')
 
@@ -42,11 +53,12 @@ def prove_original(raw:bytes)->list[bytes]:
     if sha(raw)!=PIN_064_BCS:raise ValueError('064_BCS_SHA_MISMATCH')
     blocks=segment(raw,PIN_064_BLOCKS)
     guard=blocks[OLD_RECEIVER_START:SPLICE_AT]
-    want=[30,36,30,36]+[30,115,87]*6
-    if [a for b in guard for a in actions(b)]!=want:
-        raise ValueError('064_RECEIVER_ACTION_LAYOUT_DRIFT')
+    if len(guard)!=OLD_RECEIVER_BLOCKS or [actions(b) for b in guard]!=EXISTING_061_ACTIONS:
+        raise ValueError('064_061_RECEIVER_ACTION_LAYOUT_DRIFT')
     if any(b'LOCALSBGX52_REQ_SLOT' not in b for b in guard):
-        raise ValueError('064_RECEIVER_REQUEST_MARKER_MISSING')
+        raise ValueError('064_061_RECEIVER_REQUEST_MARKER_MISSING')
+    if any(b'BGX61_LAST_BRANCH' not in b for b in guard[2:]):
+        raise ValueError('064_061_RECEIVER_BRANCH_MARKER_MISSING')
     return blocks
 
 def prove_fragment(raw:bytes)->list[bytes]:
