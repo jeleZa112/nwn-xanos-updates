@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "cdcadd5266af044e0c4d73d0b63812d55cdf45a9",
+  "commit": "b238eec6c929d0c908d61c09353bf26a41c461f9",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "8c1f5c4030098e014ce0f3ca108b7edce153a4868d2f9d8ea8458dc1dc0b7ab1",
-  "script_size": 66909,
-  "description": "BGXAI 066S menu 82–86, corrected REAL 064/061 1077-block BCS baseline and 20-rule receiver (1077→1088). Real game compiled IDS preflight 83 remains mandatory before separate opt-in install 84. Old 079 blocked, existing 064 unchanged."
+  "script_sha256": "f7452cb7757e6bac074655cabd0c17dac701c07660707ce2496deda433bc5a48",
+  "script_size": 70582,
+  "description": "BGXAI 067 early resolved enemy action F defense: menu 87 34 SHA-pinned sources; 88 real EET installed-066S read-only preflight; 89 separately authorized guarded WeiDU install with external SHA-verified backup; 90 read-only status; 91 separately authorized rollback to verified 066S. Old menus 1-86 preserved exactly; 079 blocked. Game remains installed 066S until opted-in Windows install."
 }
