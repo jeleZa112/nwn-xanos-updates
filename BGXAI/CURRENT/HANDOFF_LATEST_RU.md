@@ -1,3 +1,10 @@
+## 2026-11-12 — BGXAI 065-R3 EXISTING 064 ATTACK-START OBSERVER READ-ONLY GATE
+
+- Inspected exact 064 baseline reference SHA256 bfee5278b5b69b1fb4a02e3fea321082b0238407789df83ec6bd2f78d7e19f4b. BGX43Probe.lastAttack records possible early target from EEex action-start; lastWeaponHit is separate. These may be stale/unrelated. Real prehit target reliability/timing NOT yet verified.
+- New BGXAI65_PREHIT_STATUS_READONLY.lua prints BGX65PRE counters/lastAttack/lastWeaponHit using existing Lua console. No new hook registration, no actions, BCS, WeiDU, LOCALS or game changes.
+- R3 isolated native Lua 5.4 tests 6/6 PASS, cumulative 065 42 + R1 10 + R2 19 + R3 6 = 77/77 PASS. GitHub R3 5/5 file blobs byte-identical. Library /BALDURS_GATE_EET_AI/BUILD/BGXAI_065_PREHIT_STATUS_R3_SOURCE_ONLY/ and GitHub BGXAI/fox_new/experimental_065_prehit_status_r3_source_only/. Checkpoint BGXAI/CURRENT/BGXAI_065_R3_PREHIT_OBSERVER_CHECKPOINT_20261112_RU.md.
+- Actual user game remains verified BGXAI 064, 065/R2/R3 are SOURCE ONLY / NOT INSTALLED. Live class/HP/F/position/modal/area gate DONE. Next real optional boundary: after ordinary combat, use R3 read-only console and inspect BGX65PRE. No forced Shank rerun or archived resource reupload. No proactive prehit dispatch before reliable native target resolution and separately authorized safeguarded installation.
+
 ## 2026-11-12 — BGXAI 065-R2 NATIVE SNAPSHOT VERIFIED, ROLE COORDINATION SOURCE-ONLY 71/71 PASS
 
 - Real EET v2.6.6.0 Lua console returned: P0 `id=true xy=2930,591 F=0 modal=0 area=true`; P1 `id=true xy=3176,546 F=1 modal=0 area=true`; P2 `id=true xy=3192,582 F=0 modal=0 area=true`; P3 `id=true xy=3092,561 F=1 modal=0 area=true`; P4/P5 `absent`. Combined with previous live class/HP P0 class2 14/14; P1 class1 14/14; P2 class5 6/6; P3 class3 8/8. Native snapshot EXTRA EEex fields PASS for 4 slots; P4/P5 empty-sentinel handling fixed. Area nonnil is not itself sameARE comparison. Native live class/HP/F/pos/modal verification DONE; do NOT re-run.
