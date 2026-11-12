@@ -1,0 +1,88 @@
+{
+  "schema": 1,
+  "version": "BGXAI-066S-CASTER-SUPPORT-SOURCE-ONLY",
+  "base_066_sha256": "c66ebb5190be8103819106a48d3100055b5791adf7c2d1df5f3e54596823540b",
+  "game_mutation": false,
+  "files": [
+    {
+      "path": "M_BX43_066_BASELINE_READONLY.lua",
+      "size": 29160,
+      "sha256": "c66ebb5190be8103819106a48d3100055b5791adf7c2d1df5f3e54596823540b"
+    },
+    {
+      "path": "BGX66_CASTER_SUPPORT.lua",
+      "size": 6829,
+      "sha256": "b365ac770c508e292b87c280c58f922c20306a0b9d3ca68c99b0cd1223872020"
+    },
+    {
+      "path": "M_BX43_066S_CASTER_CANDIDATE.lua",
+      "size": 35990,
+      "sha256": "50640902ec4c25a2c85e5088d7231678b54445a847b41743c476974236d1d70f"
+    },
+    {
+      "path": "BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf",
+      "size": 5755,
+      "sha256": "c678a70a08dbcff7584e0f2703aa8bed5ae5945856287666016ee47c9d6f69ae"
+    },
+    {
+      "path": "build_066s.py",
+      "size": 1211,
+      "sha256": "3522ebada9d63e3f738b6d3c828648af461545b06a146c0799c9feef8ae55f58"
+    },
+    {
+      "path": "generate_receiver.py",
+      "size": 2923,
+      "sha256": "b59d5da4716d827506589b5676440be7b8af93c55b5c4b874e2fb299cb7ee85e"
+    },
+    {
+      "path": "native_066_fixture.py",
+      "size": 1923,
+      "sha256": "1f79e686f9c2e3d682701f0a5e7844a9304fba9f15cb8b2f6b00f51133e255eb"
+    },
+    {
+      "path": "test_066s_caster_native.py",
+      "size": 6797,
+      "sha256": "5672e2f42b9a08a7b6f8cc85b5fcbe27fc505b0a2b3e8a0290239b4bc9aae507"
+    },
+    {
+      "path": "lua65_harness.py",
+      "size": 1865,
+      "sha256": "d0586d522303893ff2ae648c2b6915ed4178113e8782d98d698c5a3b03b70607"
+    },
+    {
+      "path": "ci_weidu_066s.py",
+      "size": 2837,
+      "sha256": "17f0d57003c461a6059576afc0efa7cd532026d5b2df026e9563a4ec3e10fcfb"
+    },
+    {
+      "path": "README_RU.md",
+      "size": 7725,
+      "sha256": "8ff4aaae1669957130810c1116977bf3b04d02987bd9467759f861770d37f68d"
+    },
+    {
+      "path": "ids/action.ids",
+      "size": 146,
+      "sha256": "6f328d9aa23aa6efb360775bd6ff00cd95748c56a3173988cefd98ed842ba950"
+    },
+    {
+      "path": "ids/trigger.ids",
+      "size": 389,
+      "sha256": "2f6d1537e54d32a5a0bf22cfd69cf0d1c50a1dc90880451e9406826a473df1d1"
+    },
+    {
+      "path": "ids/object.ids",
+      "size": 112,
+      "sha256": "35207ad507354061d80f58ad74c660c88ac4df94b6b50f90e7d763dd7afe70f9"
+    },
+    {
+      "path": "ids/modal.ids",
+      "size": 53,
+      "sha256": "bf3c5fadffff2980df86c9a9c9562df8ac3bd7f0f794dccb5d89c9c2782c7157"
+    },
+    {
+      "path": "ids/spell.ids",
+      "size": 58,
+      "sha256": "cb3a7ab408b1d6066ab911ba82a1cddc984f17d478c5b86e41d88eace966919c"
+    }
+  ]
+}
