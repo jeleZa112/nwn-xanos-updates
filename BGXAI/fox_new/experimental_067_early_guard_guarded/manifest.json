@@ -1,0 +1,178 @@
+{
+  "schema": 1,
+  "version": "0.3.35-067-EARLY-GUARD-SOURCE-ONLY",
+  "game_modified": false,
+  "installed_baseline": "BGXAI 066S verified",
+  "files": [
+    {
+      "path": "BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf",
+      "size": 5755,
+      "sha256": "c678a70a08dbcff7584e0f2703aa8bed5ae5945856287666016ee47c9d6f69ae"
+    },
+    {
+      "path": "BGX66_CASTER_SUPPORT.lua",
+      "size": 6829,
+      "sha256": "b365ac770c508e292b87c280c58f922c20306a0b9d3ca68c99b0cd1223872020"
+    },
+    {
+      "path": "BGX67_EARLY_GUARD.baf",
+      "size": 4710,
+      "sha256": "84f40ae45efc25af6a94d88d0c28e77fc5d2b0fdda5fd92bad8bb3af603548cf"
+    },
+    {
+      "path": "BGX67_PREHIT_GUARD.lua",
+      "size": 7032,
+      "sha256": "8dd909c3f29dbbb8e38d38716e199f69dc6e4078950d01e197fe52f3f75d7dcb"
+    },
+    {
+      "path": "BGXAI64_INSTALL_SOURCE_ONLY.py",
+      "size": 10223,
+      "sha256": "f9eae8035acb6712b8a8f064c7d5f688d98dba2c294cbe93e0fcc4f0241ab01a"
+    },
+    {
+      "path": "BGXAI64_PATCH.py",
+      "size": 4020,
+      "sha256": "ec699717c404a5655154af3894e2a0bc6d607280c67c2f40efc8b2c024c13858"
+    },
+    {
+      "path": "BGXAI64_PREFLIGHT_READONLY.py",
+      "size": 3792,
+      "sha256": "72c955c4a6fcc644e9f71675dfcdb4b19fafdd95cf458918ee9b9e9651f3888f"
+    },
+    {
+      "path": "BGXAI66S_BCS_PATCH.py",
+      "size": 7282,
+      "sha256": "aacf6a91e7d253da15ae270e8f26aab1beec867914d470e8e73aea0532c2eb76"
+    },
+    {
+      "path": "BGXAI66S_INSTALL.py",
+      "size": 9520,
+      "sha256": "fc015a6249adb982d02907b51e90aae5f04ca56e9e1268dfb2606d66a81a976f"
+    },
+    {
+      "path": "BGXAI67_BCS_PATCH.py",
+      "size": 4212,
+      "sha256": "d9c4ecc7a462969378c946de49a6bddf783271f1cfa76906eea1c94a8d961160"
+    },
+    {
+      "path": "BGXAI67_INSTALL.py",
+      "size": 9344,
+      "sha256": "2e06d6ef344dbf80deefcf6089f4f9bc43182932503568e205f1ee905ecc792a"
+    },
+    {
+      "path": "M_BX43_064_CANDIDATE.lua",
+      "size": 21145,
+      "sha256": "bfee5278b5b69b1fb4a02e3fea321082b0238407789df83ec6bd2f78d7e19f4b"
+    },
+    {
+      "path": "M_BX43_066S_CASTER_CANDIDATE.lua",
+      "size": 35990,
+      "sha256": "50640902ec4c25a2c85e5088d7231678b54445a847b41743c476974236d1d70f"
+    },
+    {
+      "path": "M_BX43_066_BASELINE_READONLY.lua",
+      "size": 29160,
+      "sha256": "c66ebb5190be8103819106a48d3100055b5791adf7c2d1df5f3e54596823540b"
+    },
+    {
+      "path": "M_BX43_066_CANDIDATE.lua",
+      "size": 29160,
+      "sha256": "c66ebb5190be8103819106a48d3100055b5791adf7c2d1df5f3e54596823540b"
+    },
+    {
+      "path": "M_BX43_067_EARLY_CANDIDATE.lua",
+      "size": 43023,
+      "sha256": "9df658011da77ee1c7c14f8aa58b2699a712171caa3d2e8ac777158a3e80b2c6"
+    },
+    {
+      "path": "README_RU.md",
+      "size": 5673,
+      "sha256": "b538da045c24a9251c552f44b499ef664a0254dd2a90d4b2ffb152d0bd84ae10"
+    },
+    {
+      "path": "build_066.py",
+      "size": 1803,
+      "sha256": "c0222eedf930f5bb2600ead321d95f60f9a1ff66016b0b27151aa16f01d837a8"
+    },
+    {
+      "path": "build_066s.py",
+      "size": 1211,
+      "sha256": "3522ebada9d63e3f738b6d3c828648af461545b06a146c0799c9feef8ae55f58"
+    },
+    {
+      "path": "build_067.py",
+      "size": 1067,
+      "sha256": "f1882ec0637bf6a0691a8b584c3c08ab48d772116017a65eada8fbae86bff5e6"
+    },
+    {
+      "path": "ci_weidu_067.py",
+      "size": 3507,
+      "sha256": "34aec44d3c8ae509bfb0e69db6b202419fa40238c996dac8d46a2b50e1500ac8"
+    },
+    {
+      "path": "generate_067_baf.py",
+      "size": 1864,
+      "sha256": "b9e57199cfc52799bbbf866952f7ca2475fee500afe136fedb667720b43de385"
+    },
+    {
+      "path": "generate_receiver.py",
+      "size": 2923,
+      "sha256": "b59d5da4716d827506589b5676440be7b8af93c55b5c4b874e2fb299cb7ee85e"
+    },
+    {
+      "path": "ids/action.ids",
+      "size": 200,
+      "sha256": "a84834aceddd56ff46222dbc515fb12ab48c955344c3a2ce0dee3f034600cd57"
+    },
+    {
+      "path": "ids/modal.ids",
+      "size": 53,
+      "sha256": "bf3c5fadffff2980df86c9a9c9562df8ac3bd7f0f794dccb5d89c9c2782c7157"
+    },
+    {
+      "path": "ids/object.ids",
+      "size": 112,
+      "sha256": "35207ad507354061d80f58ad74c660c88ac4df94b6b50f90e7d763dd7afe70f9"
+    },
+    {
+      "path": "ids/spell.ids",
+      "size": 58,
+      "sha256": "cb3a7ab408b1d6066ab911ba82a1cddc984f17d478c5b86e41d88eace966919c"
+    },
+    {
+      "path": "ids/trigger.ids",
+      "size": 416,
+      "sha256": "63983b5b134b68bbb62718fa9981de2ee582bb673972bc45a2b5b81723c51367"
+    },
+    {
+      "path": "lua65_harness.py",
+      "size": 1865,
+      "sha256": "d0586d522303893ff2ae648c2b6915ed4178113e8782d98d698c5a3b03b70607"
+    },
+    {
+      "path": "native_066_fixture.py",
+      "size": 1923,
+      "sha256": "1f79e686f9c2e3d682701f0a5e7844a9304fba9f15cb8b2f6b00f51133e255eb"
+    },
+    {
+      "path": "test_066s_installer_mock.py",
+      "size": 10349,
+      "sha256": "2cb446959665e0e2d8e99b7690aaf11567dadbb7e90472ca53394e12811eac54"
+    },
+    {
+      "path": "test_067_bcs.py",
+      "size": 2553,
+      "sha256": "7d3bbe96d487d04493be8ac6ff865dae36347917a6ea10a82a2011677134c4c5"
+    },
+    {
+      "path": "test_067_install_mock.py",
+      "size": 5647,
+      "sha256": "b190575b054917bddb74a84808c0ed044e353c9967e98911c43d76fd10a6e58c"
+    },
+    {
+      "path": "test_067_native.py",
+      "size": 5892,
+      "sha256": "9da15be0bc00a8ee145adbba450c4356653d1e12a25d1e0718db9ca91a1d957a"
+    }
+  ]
+}
