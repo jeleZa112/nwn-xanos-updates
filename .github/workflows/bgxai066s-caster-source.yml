@@ -1,0 +1,33 @@
+name: BGXAI 066S caster source-only native Lua and WeiDU tests
+
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/fox_new/experimental_066s_caster_support_source_only/**'
+      - '.github/workflows/bgxai066s-caster-source.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Native Lua 5.4 (not a live game test)
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq liblua5.4-0
+          cd BGXAI/fox_new/experimental_066s_caster_support_source_only
+          python build_066s.py
+          python generate_receiver.py
+          python verify_066s.py
+          python -m unittest -v test_066s_caster_native.py
+      - name: Official WeiDU 251 BAF grammar and synthetic BCS compile (NO EET)
+        shell: bash
+        run: |
+          cd BGXAI/fox_new/experimental_066s_caster_support_source_only
+          python ci_weidu_066s.py
