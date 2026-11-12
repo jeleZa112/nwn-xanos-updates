@@ -1,0 +1,58 @@
+name: BGXAI 066S onefile updater native Windows parser and source SHA
+
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/fox_new/experimental_066s_guarded_install_candidate/BGXAI_SYNC_082_086_DRAFT.ps1'
+      - 'BGXAI/fox_new/experimental_066s_guarded_install_candidate/manifest_updater.json'
+      - '.github/workflows/bgxai066s-updater-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Preserve exact LF bytes for pinned updater
+        shell: pwsh
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Pure source verification, Windows PowerShell parser, all menu options
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $root='BGXAI/fox_new/experimental_066s_guarded_install_candidate'
+          $draft=Join-Path $root 'BGXAI_SYNC_082_086_DRAFT.ps1'
+          $orig='BGXAI/BGXAI_SYNC.ps1'
+          $bytes=[IO.File]::ReadAllBytes((Resolve-Path $draft).Path)
+          $hash=[Security.Cryptography.SHA256]::HashData($bytes)
+          $hex=([BitConverter]::ToString($hash)).Replace('-','').ToLowerInvariant()
+          Write-Host ('BGXAI066S_UPDATER_SHA256='+$hex)
+          Write-Host ('BGXAI066S_UPDATER_SIZE='+$bytes.Length)
+          $tokens=$null; $errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $draft).Path,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count){throw ('POWERSHELL_PARSE_FAILED '+(($errors|ForEach-Object {$_.Message}) -join ';'))}
+          $text=[IO.File]::ReadAllText((Resolve-Path $draft).Path)
+          $prior=[IO.File]::ReadAllText((Resolve-Path $orig).Path)
+          foreach($n in 1..86) {
+            if(!$text.Contains("      '$n' {")){throw ('MISSING_MENU_CHOICE '+$n)}
+          }
+          foreach($n in 1..81){
+            if($n -eq 79){continue}
+            $line=($prior -split "`n" | Where-Object {$_.StartsWith("      '$n' {")}) -join ''
+            if(!$line -or !$text.Contains($line)){throw ('CHANGED_OLD_MENU '+$n)}
+          }
+          if(!$text.Contains("'79' {throw 'BGXAI 066 deprecated")){throw 'OLD_066_INSTALL_NOT_BLOCKED'}
+          if(!$text.Contains("'84' {Run066SGuarded 'install';break}")){throw '066S_INSTALL_CHOICE_MISSING'}
+          Write-Host 'BGXAI066S_WINDOWS_NATIVE_PARSE_AND_LEGACY_MENU_PASS'
+          python -c "import pathlib,json,hashlib; p=pathlib.Path('BGXAI/fox_new/experimental_066s_guarded_install_candidate'); m=json.loads((p/'manifest_updater.json').read_text()); assert len(m['files'])==29; assert m['channel']=='bgxai-fox-new-safe-source'; assert all(x['source']=='BGXAI/fox_new/experimental_066s_guarded_install_candidate/'+x['dest'] and len((p/x['dest']).read_bytes())==x['size'] and hashlib.sha256((p/x['dest']).read_bytes()).hexdigest()==x['sha256'] for x in m['files']);print('UPDATER_29_SOURCE_SHA256_PASS')"
+          if($LASTEXITCODE){throw 'UPDATER_SOURCE_MANIFEST_INVALID'}
+      - name: Python two-file install and rollback model
+        shell: pwsh
+        run: |
+          Set-Location BGXAI/fox_new/experimental_066s_guarded_install_candidate
+          python -m unittest -q test_066s_installer_mock.py
+          if($LASTEXITCODE){throw '066S_MODEL_TESTS_FAILED'}
