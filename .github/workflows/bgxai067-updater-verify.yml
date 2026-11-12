@@ -1,0 +1,50 @@
+name: BGXAI 067 single pinned updater Windows AST, SHA and 1-86 menu preservation
+
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/fox_new/experimental_067_early_guard_guarded/BGXAI_SYNC_087_091_DRAFT.ps1'
+      - 'BGXAI/fox_new/experimental_067_early_guard_guarded/manifest_updater.json'
+      - '.github/workflows/bgxai067-updater-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Preserve LF, prevent silent CRLF hash drift
+        shell: pwsh
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Exact pin source, native PowerShell AST and all old menu actions
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $root='BGXAI/fox_new/experimental_067_early_guard_guarded'
+          $draft=Join-Path $root 'BGXAI_SYNC_087_091_DRAFT.ps1'
+          $old='BGXAI/BGXAI_SYNC.ps1'
+          $bytes=[IO.File]::ReadAllBytes((Resolve-Path $draft).Path)
+          $sha=([BitConverter]::ToString([Security.Cryptography.SHA256]::HashData($bytes))).Replace('-','').ToLowerInvariant()
+          Write-Host ('BGXAI067_DRAFT_SHA256='+$sha)
+          Write-Host ('BGXAI067_DRAFT_SIZE='+$bytes.Length)
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $draft).Path,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count){throw ('NATIVE_POWERSHELL_PARSE_ERROR '+(($errors|ForEach-Object {$_.Message}) -join '; '))}
+          $text=[IO.File]::ReadAllText((Resolve-Path $draft).Path)
+          $prior=[IO.File]::ReadAllText((Resolve-Path $old).Path)
+          foreach($n in 1..86){
+            $line=($prior -split "`n" | Where-Object {$_.StartsWith("      '$n' {")}) -join ''
+            if(!$line -or !$text.Contains($line)){throw ('LEGACY_MENU_CHANGED '+$n)}
+          }
+          foreach($n in 87..91){if(!$text.Contains("      '$n' {")){throw ('NEW_MENU_MISSING '+$n)}}
+          if(!$text.Contains("'79' {throw 'BGXAI 066 deprecated")){throw 'LEGACY_066_MUST_REMAIN_BLOCKED'}
+          if(!$text.Contains("'89' {Run067Guarded 'install';break}")){throw '067_INSTALL_GATE_MISSING'}
+          if(!$text.Contains("'91' {Run067Guarded 'rollback';break}")){throw '067_ROLLBACK_GATE_MISSING'}
+          if(!$text.Contains("INSTALL_BGXAI_067") -or !$text.Contains("ROLLBACK_BGXAI_067")){throw 'EXPLICIT_TOKEN_MISSING'}
+          Write-Host 'BGXAI067_NATIVE_PS_AND_MENU_1_91_PASS'
+          python -c "import json,pathlib,hashlib; p=pathlib.Path('BGXAI/fox_new/experimental_067_early_guard_guarded');m=json.loads((p/'manifest_updater.json').read_text());assert len(m['files'])==34;assert m['channel']=='bgxai-fox-new-safe-source';assert all(r['source']=='BGXAI/fox_new/experimental_067_early_guard_guarded/'+r['dest'] and len((p/r['dest']).read_bytes())==r['size'] and hashlib.sha256((p/r['dest']).read_bytes()).hexdigest()==r['sha256'] for r in m['files']);print('BGXAI067_34_PINNED_SOURCE_HASHES_PASS')"
+          if($LASTEXITCODE){throw 'PINNED_SOURCE_HASH_MISMATCH'}
