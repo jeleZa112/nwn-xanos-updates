@@ -1,3 +1,11 @@
+## 2026-11-13 — INDEPENDENT 067 REAUDIT; NO NEW GAME INSTALL
+
+- Project resumed from confirmed 066S installed, Shank test: healing at critical HP, no F early interception. 067 is source-only pending user-run Windows installer and live evaluation; exact result in `BGXAI/CURRENT/BGXAI_067_REAUDIT_20261113_RU.md` and Library `/BALDURS_GATE_EET_AI/CURRENT/BGXAI_067_REAUDIT_20261113_RU.md`.
+- Independently checked existing Library release ZIP SHA256 `bf679bde38983662515475d5cda3587c460ea09dd15b8ed26ff91e65acd6173e`: local release verify **34/34 SHA PASS**, **64/64 Python + native Lua 5.4 model tests PASS**, 067 candidate Lua SHA `9df658011da77ee1c7c14f8aa58b2699a712171caa3d2e8ac777158a3e80b2c6`. Real EET game not touched; old source + pinned updater unchanged.
+- Confirmed active `BGXAI/BGXAI_SYNC.ps1` blob `7e76b3d16c38c4d305d72688ee1293f72d11a65e`, 70582 bytes; `BOOTSTRAP_PIN.json` points to immutable `b238eec6c929d0c908d61c09353bf26a41c461f9`. No need to repeat 87/88 before 89; real IDS preflight is built into separately approved 89.
+- Guard and healing caution: 067's early BCS request targets `NearestEnemyOf(PlayerN)`, and both heal and early-attack receivers use `ActionListEmpty`. Lua test proves heal request creation after hit, **not actual immediate pre-emption of an ongoing AttackReevaluate in live EET**. At low BG1 HP do not assert guaranteed life-saving timing. Still only one isolated low-risk combat trial after optional install.
+- Next real boundary: user explicitly opts for 067; close game and InfinityLoader; existing `BGXAI_UPDATE.cmd` -> menu 89 -> exact `INSTALL_BGXAI_067`; game SHA+WeiDU and backup guards must pass before writes. On STOP, no blind retry or rollback. If `INSTALLED_067_VERIFIED`, one in-game test with cleric F=ON, no induced 1 HP. No new archives, WeiDU.log or scripts.zip requested. Follow global v6 and fast-optimal rules without background claims.
+
 ## 2026-11-13 — 066S LIVE SHANK TEST: HEAL OBSERVED, F CLERIC NOT A FRONTLINE GUARD
 
 - User screenshot EET against Shank with Jade 2/6 HP and cleric 8/8; user reports healing at 1 HP then attacking, F ON but no interception before heal. In visible combat log: Shank weapon hit Jade for 1 piercing. There is no spell-cast line in the visible log, so do not attribute healing definitely to BGXAI vs other scripting.
