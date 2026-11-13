@@ -1,3 +1,10 @@
+## 2026-11-13 — BGXAI 069 PASSIVE LUA ROLE OBSERVER, EPS-FIRST, SOURCE-ONLY
+
+- Installed EET unchanged: 066S; 067 remains ON HOLD. 068 is offline Python role model only; 069 adds separate PASSIVE Lua role observer and native mock tests in BGXAI/fox_new/experimental_069_passive_role_observer/. Library copy is /BALDURS_GATE_EET_AI/BUILD/BGXAI_069_PASSIVE_ROLE_OBSERVER_SOURCE_ONLY/.
+- 21/21 standard CLASS.IDS; 8=FIGHTER_CLERIC; 11=DRUID; 16=FIGHTER_DRUID; 21=SHAMAN. Verified restored fighter class permits Fighter->Mage to be considered a possible defender. Shapeshifter needs verified werewolf form. Unknown KIT/form/dual/action arbitration -> no new combat request.
+- Native Lua mock suite 93 checks PASS, static no-game-actions scan PASS. Not actual EEex runtime or game installation. No hooks, engine actions, BCS edits, EPS changes or auto-updater integration.
+- Full checkpoint: BGXAI/CURRENT/BGXAI_069_CHECKPOINT_20261113_RU.md and same Library CURRENT path. Keep 067 and 069 NOT INSTALLED. Next: audit trusted EEex 1.1.7 kit/shape/dual evidence and EPS action arbitration without new live battle tests.
+
 ## 2026-11-13 — 068 CLASS/KIT/DUAL ROLE MATRIX SOURCE-ONLY; EPS FIRST
 
 - User flagged missing kits (Shapeshifter), dual and multi-class guardians: correct. Current installed **066S** FRONTLINE allowlist [2,6,12] excludes martial hybrids. Existing 067 optional candidate has incorrect comment implying 8=DRUID and 11=SHAMAN; actual BG(2)EE 8=FIGHTER_CLERIC, 11=DRUID, 21=SHAMAN. 067 support excludes 21; 066S healer allowlist also excludes 21. The 067 install recommendation remains **ON HOLD** pending EPS and role arbitration.
