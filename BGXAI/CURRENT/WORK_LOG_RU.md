@@ -1,3 +1,9 @@
+## 2026-11-13 — EPS-FIRST: DO NOT REPLACE WORKING EPS (USER PRIORITY)
+
+- User correctly pointed out that EPS script toggles already defend and heal; the project goal is **improve, not break/replace**. Installed 066S did not delete EPS byte-for-byte blocks, but shared BCS action priority/queue may conflict. A single healing screenshot cannot attribute the cure to BGXAI.
+- **HOLD general recommendation to install 067**. Existing candidate only, uninstalled; do not present it as a mandatory upgrade. Its early `AttackReevaluate(NearestEnemyOf(PlayerN),30)` need not target the actual attacking enemy, and existing `ActionListEmpty` gates do not guarantee a healing command can preempt an already running attack.
+- New canonical `BGXAI/CURRENT/BGXAI_EPS_FIRST_POLICY_20261113_RU.md` and Library counterpart. EPS toggles stay baseline; future BGXAI features optional, default passive until comparative safety evidence. Preserve healing/manual actions and bard singing; audit arbitration BEFORE more live updates. Do not ask user to repeat resources or old tests.
+
 ## 2026-11-13 — INDEPENDENT 067 REAUDIT; NO NEW GAME INSTALL
 
 - Project resumed from confirmed 066S installed, Shank test: healing at critical HP, no F early interception. 067 is source-only pending user-run Windows installer and live evaluation; exact result in `BGXAI/CURRENT/BGXAI_067_REAUDIT_20261113_RU.md` and Library `/BALDURS_GATE_EET_AI/CURRENT/BGXAI_067_REAUDIT_20261113_RU.md`.
