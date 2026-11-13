@@ -1,3 +1,8 @@
+## 2026-11-13 — CORRECTION: F-GUARD IS BGXAI, NOT EPS
+
+- User correctly corrected the previous setup advice. F key and BGX38_GUARD toggle were introduced by BGXAI (040+); NOT a built-in Enhanced Powergaming Scripts switch. Official EPS hotkey list B/N/T/E/K/V does not include F; do not tell user to enable an unverified EPS setting named «Защищать союзников». Base game's separate Guard/F5 is another mechanic, not the BGXAI F toggle.
+- Setup: party AI ON; EPS existing healing/attack controls according to in-game options; BGXAI F ON only for intended defenders. 066S installed; 067/069 NOT installed. No installation necessary. EPS-first policy updated. Source: https://www.morpheus-mart.com/enhanced-powergaming-scripts
+
 ## 2026-11-13 — BGXAI 069 PASSIVE LUA ROLE OBSERVER, EPS-FIRST, SOURCE-ONLY
 
 - Installed EET unchanged: 066S; 067 remains ON HOLD. 068 is offline Python role model only; 069 adds separate PASSIVE Lua role observer and native mock tests in BGXAI/fox_new/experimental_069_passive_role_observer/. Library copy is /BALDURS_GATE_EET_AI/BUILD/BGXAI_069_PASSIVE_ROLE_OBSERVER_SOURCE_ONLY/.
