@@ -1,3 +1,10 @@
+## 2026-11-13 — 066S LIVE SHANK TEST: HEAL OBSERVED, F CLERIC NOT A FRONTLINE GUARD
+
+- User screenshot EET against Shank with Jade 2/6 HP and cleric 8/8; user reports healing at 1 HP then attacking, F ON but no interception before heal. In visible combat log: Shank weapon hit Jade for 1 piercing. There is no spell-cast line in the visible log, so do not attribute healing definitely to BGXAI vs other scripting.
+- Inspected installed exact 066S source: `M_BX43_066S_CASTER_CANDIDATE.lua` filters guardian dispatch exclusively to fighter/paladin/ranger classes 2/6/12 in companion slots, HP>50%; `BGX66_CASTER_SUPPORT.lua` requests emergency healing after confirmed hit and HP<45%; BCS has `HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)`, `ActionListEmpty`, `Range<=10`. Cleric F=ON is NOT authorized frontline guard by 066S. With party P0 fighter, P1 mage, P2 bard, P3 cleric there is no eligible frontline companion. No proactive pre-hit interception exists. One actor cannot cast and melee simultaneously.
+- A new source-only code plan should distinguish `frontline`, `emergency priest healing`, and `safe post-heal response`; do not loosen fighter class filter blindly (would prioritize an attack over a life-saving cure). Keep exact 066S install intact; do not ask user to redo prior tests. First live observation checkpoint `BGXAI/CURRENT/BGXAI_066S_FIRST_COMBAT_20261113_RU.md`, commit `228a8407edc3da130a58ada109d754802112b67b`.
+- Immediate user recommendation: for regular Insane gameplay, restore EPS healing setting if desired after isolated test; the tested 066S is an early prototype, not a fully automated protecting-healer AI. No install or rollback without indication of game failure.
+
 ## 2026-11-13 — BGXAI 067 GUARDED EARLY DEFENSE READY IN PINNED ONEFILE; USER GAME STILL 066S
 
 - User reports with screenshot after installed 066S: Jade hit by Shank (screen 2/6 HP); reports cleric heals only when 1 HP, then attacks, F guard was ON but did NOT prevent initial hit. This is consistent with 066S dispatch restriction to fighter/paladin/ranger; party P0 fighter player, P1 mage F ON, P2 bard F OFF, P3 cleric F ON. Do not overclaim screenshot proving cast source.
