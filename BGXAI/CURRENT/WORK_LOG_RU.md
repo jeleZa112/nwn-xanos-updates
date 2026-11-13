@@ -1,3 +1,10 @@
+## 2026-11-13 — 068 CLASS/KIT/DUAL ROLE MATRIX SOURCE-ONLY; EPS FIRST
+
+- User flagged missing kits (Shapeshifter), dual and multi-class guardians: correct. Current installed **066S** FRONTLINE allowlist [2,6,12] excludes martial hybrids. Existing 067 optional candidate has incorrect comment implying 8=DRUID and 11=SHAMAN; actual BG(2)EE 8=FIGHTER_CLERIC, 11=DRUID, 21=SHAMAN. 067 support excludes 21; 066S healer allowlist also excludes 21. The 067 install recommendation remains **ON HOLD** pending EPS and role arbitration.
+- New **read-only 068 role classification model**: all 21 base CLASS.IDS, capabilities separate from current combat suitability, Shapeshifter requires verified form, dual classes require verified active former class before considering hybrid combat, unknown kit/runtime state fail closed. Bard song, heal request, manual action and other EPS state take priority.
+- Python source and **19/19 unit tests locally PASS**; no Lua/EEex real runtime implementation and NO real EET compilation or installation. GitHub source BGXAI/fox_new/experimental_068_role_registry_source_only/{role_model_068.py,test_role_model_068.py}; report BGXAI/CURRENT/BGXAI_068_ROLE_AUDIT_20261113_RU.md. Same artifacts stored in Library /BALDURS_GATE_EET_AI/BUILD/BGXAI_068_CLASS_ROLE_SOURCE_ONLY/ and /BALDURS_GATE_EET_AI/CURRENT/BGXAI_068_ROLE_AUDIT_20261113_RU.md.
+- Next safe engineering: confirm EEex kit/form/dual runtime access using existing sources/fixtures; create PASSIVE Lua capability observer, then validate EPS arbitration and only later prepare separately opt-in correction. Keep live 066S, no new uploads or redundant battle tests; old updater and game unchanged.
+
 ## 2026-11-13 — EPS-FIRST: DO NOT REPLACE WORKING EPS (USER PRIORITY)
 
 - User correctly pointed out that EPS script toggles already defend and heal; the project goal is **improve, not break/replace**. Installed 066S did not delete EPS byte-for-byte blocks, but shared BCS action priority/queue may conflict. A single healing screenshot cannot attribute the cure to BGXAI.
