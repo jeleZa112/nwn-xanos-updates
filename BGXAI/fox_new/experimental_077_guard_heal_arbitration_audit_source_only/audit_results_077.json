@@ -1,0 +1,67 @@
+{
+  "status": "SOURCE_ONLY_BGXAI_077_AUDIT_CONFIRMED",
+  "source_provenance": "SHA-locked saved EET BGXAI 061/066S BAF+Lua sources; no game runtime tested",
+  "baf": {
+    "061_blocks": 20,
+    "061_cleanup_blocks": 2,
+    "061_action_blocks": 18,
+    "061_action_list_empty": 18,
+    "attack_reevaluate": 6,
+    "move_to_ally": 6,
+    "protect_ally": 6,
+    "066s_blocks": 11,
+    "066s_cleanup_blocks": 4,
+    "066s_cast_blocks": 7,
+    "066s_action_list_empty": 7,
+    "066s_heal_blocks": 6,
+    "066s_ward_blocks": 1,
+    "healing_bcs_checks_have_spell_and_range_10": true
+  },
+  "roles": {
+    "frontline_ids": [
+      2,
+      6,
+      12
+    ],
+    "healer_ids": [
+      3,
+      8,
+      11,
+      14,
+      15,
+      16,
+      17,
+      18
+    ],
+    "arcane_ids": [
+      1,
+      5,
+      7,
+      10,
+      13,
+      14,
+      17,
+      19
+    ],
+    "frontline_healer_id_overlap": [],
+    "shaman_21_in_healer": false
+  },
+  "event_path": {
+    "weapon_hit_dispatch_first_calls_frontline_then_support": true,
+    "support_callback_runs_even_when_frontline_returns_no_candidate": true,
+    "support_uses_same_confirmed_hit_advisory": true
+  },
+  "limitation": {
+    "healer_chosen_by_nearest_distance_without_available_spell_or_10ft_eligibility": true,
+    "actual_spell_and_10ft_requirements_checked_later_in_BCS": true,
+    "no_definitive_same_actor_061_vs_066s_interception_on_066s_base_class_sets": true,
+    "no_runtime_queue_priority_or_spell_success_proven": true,
+    "not_all_class_multi_dual_kit_combinations_currently_supported": true
+  },
+  "candidate_fixes_noninstalled": [
+    "Prioritize confirmed usable/reachable healer without overriding EPS action queue; never infer spell availability from CLASS.IDS alone",
+    "Handle multi/dual/kit via verified active capabilities rather than widening raw class allowlists blindly",
+    "Add request expiry and reason diagnostics to distinguish eligible actor absent vs busy vs out of spell/range",
+    "Preserve EPS / manual action / bard song, make any active change opt-in with exact SHA backup and separately approved in-game tests"
+  ]
+}
