@@ -1,0 +1,12 @@
+{
+  "package": "BGXAI_081_EEEX_ACTION_PROVENANCE_READONLY_SOURCE_ONLY",
+  "files": {
+    "BGXAI081_ACTION_PROVENANCE_READONLY.lua": "44516919bea3c0ea43b5d45db0cc494f83f9dbdf13e44728fb262fc966840b53",
+    "audit_live_081.py": "19a368242080e2745a463570f584ce6bdcac6f2e6e6a0639df4e353459390516",
+    "test_081.lua": "35f4f22379d344a96b2f6be9c4bc838dfe64d0d9bae1c5dace45fea9886ee61a",
+    "test_081.py": "582018de06c727f461fdad9a1a63a43ad139b73ec6bf2faa0b6ad6a45a2d8e6f",
+    "action_contract_081.json": "0f2095c282060a384240ecbe2888b42393b7bc9cdcaf45507911afc309defd72",
+    "README_RU.md": "7bbaff462e1afc7a794a6c09e190236eb2732eed42dc6b77ac850624b5e54018",
+    "verify_release_081.py": "70e770d46f5010eed09c913f8a48e10f03c4aa96cc6fee021624ce80943b7846"
+  }
+}
