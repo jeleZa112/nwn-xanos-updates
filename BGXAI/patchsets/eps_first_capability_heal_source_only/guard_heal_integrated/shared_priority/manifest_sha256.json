@@ -1,0 +1,31 @@
+{
+  "status": "SOURCE_ONLY_NOT_INSTALLED",
+  "installed_lua_sha256": "50640902ec4c25a2c85e5088d7231678b54445a847b41743c476974236d1d70f",
+  "candidate_sha256": "b339407826b9c0014a4ba8b4d63021aa48897e40af40f5a249bc78f69b407372",
+  "pre_arbitration_sha256": "954bb400ccc7e39aa0040460d167b51584892d7bd58237bf78ed05781eb7da70",
+  "runtime_proof": false,
+  "manual_origin_proven": false,
+  "eps_queue_empty_proven": false,
+  "capability_verifier_enabled": false,
+  "files": {
+    "066S_capability_patch.diff": "eaf3d2fc30128d4893bd72125785417777f2877bad052be337e78812617f53a3",
+    "BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf": "c678a70a08dbcff7584e0f2703aa8bed5ae5945856287666016ee47c9d6f69ae",
+    "BGX66_CASTER_SUPPORT.lua": "b365ac770c508e292b87c280c58f922c20306a0b9d3ca68c99b0cd1223872020",
+    "M_BX43_066S_CAPABILITY_CANDIDATE.lua": "b339407826b9c0014a4ba8b4d63021aa48897e40af40f5a249bc78f69b407372",
+    "M_BX43_066S_CAPABILITY_PRE_ARBITRATION.lua": "954bb400ccc7e39aa0040460d167b51584892d7bd58237bf78ed05781eb7da70",
+    "M_BX43_066S_CASTER_CANDIDATE.lua": "50640902ec4c25a2c85e5088d7231678b54445a847b41743c476974236d1d70f",
+    "M_BX43_066S_HEAL_PATCH_PREVIOUS.lua": "c4e25bf6de7c3569b03657f3d48b5ddc9730c94ac6f63124bcc3f32cfb471e29",
+    "M_BX43_066_BASELINE_READONLY.lua": "c66ebb5190be8103819106a48d3100055b5791adf7c2d1df5f3e54596823540b",
+    "README_RU.md": "b74868cf7dee8f4ec68e590b4d26f2c0d244e48b2e72a6e68e4e92d47eda0c5a",
+    "arbiter_exact_diff.py": "0697364f201aa1030750c84db55a3b8c79d20306c6d30b3d3e457a7fd20f2467",
+    "guardian_heal_priority_only.diff": "2217d52d4fd8c82b143bb6545b492e068e25dc389c68ef0cfdada89cf6f46f19",
+    "lua65_harness.py": "d0586d522303893ff2ae648c2b6915ed4178113e8782d98d698c5a3b03b70607",
+    "native_066_fixture.py": "1f79e686f9c2e3d682701f0a5e7844a9304fba9f15cb8b2f6b00f51133e255eb",
+    "parse.lua": "8c796211fb12cc0a5dc47e6e0d812e8dd8b488a5a2cc2e46f965391f9e0f9d63",
+    "run_regression.py": "f0e4f69dfa7250563ceb1f8fcdfdc0c18b123debe38115bc32eaabd6556d6b6c",
+    "test_066s_caster_native.py": "5672e2f42b9a08a7b6f8cc85b5fcbe27fc505b0a2b3e8a0290239b4bc9aae507",
+    "test_guard_capability.py": "53be231ccfba370a80d502c3e9bde412f2fb786e0eb3aeb812dfa7638ddc58ef",
+    "test_spell_patch.py": "388cc710745d0c1e04c8bb7efa6b2e3c93e6fc849f02cfba3466d829eabdb128",
+    "verify_release.py": "a46108fd42606fb95a6ed5807ff75b1b17369cb33b8e38368cdd60fedaeae30e"
+  }
+}

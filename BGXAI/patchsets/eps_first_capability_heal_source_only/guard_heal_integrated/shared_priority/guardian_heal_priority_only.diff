@@ -1,0 +1,70 @@
+--- PRIOR_SOURCE_ONLY_V2
++++ SOURCE_ONLY_WITH_SHARED_RESERVATIONS
+@@ -551,6 +551,17 @@
+   return type(x)=='number' and x==math.floor(x) and x>=0 and x<=2147483647
+ end
+ local function finite(x) return type(x)=='number' and x==x and x>-100000000 and x<100000000 end
++-- Reserved caster responses and pending BCS slots always outrank a NEW
++-- capability-mode guard request. The old 066S class-based path is unchanged.
++local function casterOwnsActorNow(sprite,id)
++  if T.capabilitySourceVerified ~= true then return false end
++  local caster=BGX66Caster
++  if type(caster)~='table' or type(caster.reservations)~='table' then return true end
++  if caster.reservations[id] then return true end
++  local heal=safe(function()return sprite:getLocalInt('BGX66_S_HEAL_SLOT')end)
++  local ward=safe(function()return sprite:getLocalInt('BGX66_S_WARD')end)
++  return not integer(heal) or not integer(ward) or heal~=0 or ward~=0
++end
+ local function stop(reason)
+   T.rejected[reason]=(T.rejected[reason] or 0)+1
+   T.last={status='NO_WRITE',reason=reason,orders_sent=0}
+@@ -629,7 +640,8 @@
+         local same=other~=nil and safe(function()return EEex_UDEqual(area,other)end)==true
+         if g==1 and modal==0 and finite(x) and finite(y) and same then
+           local role=roleOf(obj)
+-          if verifiedGuardAbility(obj,role,attackerID,victimID,seq) and validGuardian(obj) and not T.reservations[id] then
++          if verifiedGuardAbility(obj,role,attackerID,victimID,seq) and validGuardian(obj)
++             and not T.reservations[id] and not casterOwnsActorNow(obj,id) then
+             local req=safe(function()return obj:getLocalInt('BGX52_REQ_SLOT')end)
+             local previous=safe(function()return obj:getLocalInt('BGX52_LAST_TICK')end)
+             local sent=safe(function()return obj:getLocalInt('BGX52_HAS_SENT')end)
+@@ -733,6 +745,15 @@
+  return false,why
+ end
+ local function get(o,k) return safe(function()return o:getLocalInt(k)end) end
++-- Capability-mode reservation is shared between guardian and caster requests,
++-- including still-pending BCS requests whose short Lua lease has expired.
++local function guardianOwnsActorNow(sprite,id)
++ if not BGX66Team or BGX66Team.capabilitySourceVerified ~= true then return false end
++ if type(BGX66Team.reservations)~='table' then return true end
++ if BGX66Team.reservations[id] then return true end
++ local req=get(sprite,'BGX52_REQ_SLOT')
++ return not integer(req) or req~=0
++end
+ local function apply(o, key, fields, slot)
+  local ok=pcall(function()
+   o:setLocalInt(key,0)
+@@ -786,7 +807,8 @@
+  if area==nil or not number(vx) or not number(vy) then return reason('victim_location_unknown') end
+  local healer,ward,rank=nil,nil,nil
+  for _,m in ipairs(party) do
+-  if m.slot>1 and m.id~=attackerID and not S.reservations[m.id] then
++  if m.slot>1 and m.id~=attackerID and not S.reservations[m.id]
++     and not guardianOwnsActorNow(m.obj,m.id) then
+    local o=m.obj
+    local mode=get(o,'BGX38_GUARD')
+    local modal=safe(function()return o.m_nModalState end)
+@@ -847,6 +869,13 @@
+ -- Original 066 frontline dispatch remains first; caster requests are additive.
+ local basePrepare=BGX52Bridge.prepare
+ BGX52Bridge.prepare=function(hit)
++ -- Historical 066S dispatch order is retained until an independently verified
++ -- observer enables capability mode. In capability mode emergency heals claim
++ -- their caster first; the guard gate then excludes that same actor.
++ if T.capabilitySourceVerified == true then
++  S.onHit(hit)
++  return basePrepare(hit)
++ end
+  local ok,why=basePrepare(hit)
+  S.onHit(hit)
+  return ok,why
