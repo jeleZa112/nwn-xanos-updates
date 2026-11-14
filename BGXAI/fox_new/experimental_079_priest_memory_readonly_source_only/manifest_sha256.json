@@ -1,0 +1,12 @@
+{
+  "package": "BGXAI_079_PRIEST_MEMORY_READONLY_SOURCE_ONLY",
+  "installable": false,
+  "files": {
+    "BGXAI079_PRIEST_MEMORY_READONLY.lua": "70cb9686352009d2289d4648efd7ece0ef66ed51d18b1e2d7dc627e5f3c6c920",
+    "BGXAI078_HEAL_SELECTOR.lua": "8369e1c5fd88774a3b26cbe419c09271dfaa2ce76fb4b1f92646c2b515b106f8",
+    "test_079.lua": "322b8d6d9deebe662f87dfa885dffa51aa9865ca4e6636209585649849f0f5be",
+    "test_079_contract.py": "43529e2501f55cf3721893be39328664d7c9e608896b6b72a86822652c4ea9c5",
+    "README_RU.md": "c9bb35eac78aaf2e240bcfabbfd85d3d348d4e9ab28fefb8fbf653bdb30a8773",
+    "verify_release_079.py": "7e2bfb3f24a533c9ad78f63aa23d423452dfa6eb4681b3232db6f8dadae264c0"
+  }
+}
