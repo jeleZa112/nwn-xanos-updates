@@ -1,3 +1,12 @@
+## 2026-11-14 — BGXAI 074 HISTORICAL 041 BCS STATIC EPS/F AUDIT (SOURCE ONLY)
+
+- User sent '?' after 074 continuation was interrupted; completed the offline work now, did not change installed game, updater, EPS, F-Guard, WeiDU or existing 066S.
+- Materialized authentic Library SOURCES/BDDEFAI_EPS18_4_BGXAI041_LIVE_20261108.BCS, 2,229,760 bytes, SHA256 86d80953be464a3f10da8e1dc031b907801860b7f1f15b3ea6fb9d25e485f3f5. Strict parsing + byte-identical reassembly proves **1,057 BCS blocks**, not preliminary erroneous 529.
+- 041 snapshot: custom F/indicator BGXAI in blocks 1–7; EPS attack mode marker 60 blocks beginning 8, EPS MO_HealCast in blocks 27 and 504–513; BGX guard tail 1047–1057; BGX39 team cooldown 1048–1057. No later BGX52/BGX66/BGX67 markers. Earlier EPS blocks precede at least some BGX rules; claim 'all BGX before all EPS' is incorrect.
+- GitHub 066S source builder BGXAI66S_BCS_PATCH.py: pinned 064 1077 blocks, 20 existing 061 receiver blocks at zero-based 1031..1050; 11 066S blocks inserted zero-based 1051 (before old one-based block 1052) -> 1088 blocks, relative byte-exact preservation subject to pinned installed baseline. Actual live 066S BCS NOT read this stage: do not infer 066S runtime priority or timing from old 041.
+- New read-only package BGXAI/fox_new/experimental_074_eps_bcs_static_audit_source_only/, test_074.py **15/15 Python PASS**, 5/5 source package SHA manifest PASS. Historical BCS is not published. All 7 text source/checkpoint file GitHub blob SHAs exactly match local files. Checkpoint BGXAI/CURRENT/BGXAI_074_CHECKPOINT_20261114_RU.md and Library /BALDURS_GATE_EET_AI/CURRENT/ counterpart; Library BUILD package and private original preserved.
+- Do not install 067 or any source-only 068–074. Installed baseline remains 066S, EPS-first. Next real boundary: read-only analysis of **live** 066S script with existing known SHA, safe to prepare a source-only analyzer but do not ask for old WeiDU/archive/log uploads or needlessly redo Shank tests.
+
 ## 2026-11-14 — AUTO-CONTINUE CONFIRMED THROUGH BGXAI 073 (SOURCE ONLY)
 
 - User called out premature stopping after 070. Rule: after successful safe offline checks continue within same response, no extra permission required. Revalidated 071 (240 Lua/9 Python, SHA), 072 (66 Lua, SHA), and independently built 073: 142 native Lua checks + static SHA/no-engine-write verification, all PASS.
