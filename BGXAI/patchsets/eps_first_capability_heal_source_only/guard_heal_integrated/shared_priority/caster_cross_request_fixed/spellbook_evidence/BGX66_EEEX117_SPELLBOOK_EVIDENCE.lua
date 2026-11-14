@@ -1,0 +1,51 @@
+-- BGXAI / existing 066S: READ-ONLY memorized spell evidence for EEex 1.1.7.
+-- No listener, no action queue, no spell cast, no variable/bit writes.
+-- IMPORTANT: a memorized unused spell is not proof that it can be cast NOW.
+-- Dual-class lockout, silence, armor, casting time, modded spellbook policy,
+-- manual/EPS action provenance and spontaneous casting remain independent gates.
+BGX66SpellbookEvidence = BGX66SpellbookEvidence or {}
+local E = BGX66SpellbookEvidence
+E.version = 'EEEX117-MEMORIZED-READONLY-20261114'
+-- Resrefs grounded in the user's preserved EET SPELL_POLICY_CATALOG_469.csv:
+-- CLERIC_CURE_LIGHT_WOUNDS=1103/SPPR103; WIZARD_SHIELD=2114/SPWI114.
+local SPELL = {
+ CLERIC_CURE_LIGHT_WOUNDS={resref='SPPR103',field='m_memorizedSpellsPriest',index=0},
+ WIZARD_SHIELD={resref='SPWI114',field='m_memorizedSpellsMage',index=0}
+}
+local function validInt(v)
+ return type(v)=='number' and v==math.floor(v) and v>=0 and v<=4294967295
+end
+function E.read(actor,symbol)
+ local def=SPELL[symbol]
+ if not def then return nil,'unsupported_spell' end
+ if actor==nil then return nil,'actor_missing' end
+ if type(EEex_Utility_IterateCPtrList)~='function' then return nil,'eeex_iterator_missing' end
+ local ok,count=pcall(function()
+  local book=actor[def.field]
+  if book==nil then error('spellbook_missing') end
+  local list=book:getReference(def.index)
+  if list==nil then error('spell_level_missing') end
+  local seen,ready=0,0
+  EEex_Utility_IterateCPtrList(list,function(entry)
+   seen=seen+1
+   if seen>4096 then error('spellbook_too_large') end
+   if entry==nil or entry.m_spellId==nil then error('malformed_spell_record') end
+   local id=entry.m_spellId:get()
+   local flags=entry.m_flags
+   if type(id)~='string' or #id>8 or #id==0 or not validInt(flags) then
+    error('malformed_spell_record')
+   end
+   if id:upper()==def.resref and flags%2==1 then ready=ready+1 end
+  end)
+  return ready
+ end)
+ if not ok or not validInt(count) then return nil,'spellbook_read_failed' end
+ return {
+  source='EEex_1.1.7_memorized_book_only',
+  symbol=symbol,resref=def.resref,
+  ready_count=count,book_record_read=true,
+  castable_now_proven=false,
+  queue_empty_proven=false,manual_order_origin_proven=false,
+  class_kit_dual_active_proven=false
+ },nil
+end
