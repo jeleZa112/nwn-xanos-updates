@@ -1,0 +1,9 @@
+{
+  "package": "BGXAI_076R1_PRIORITY_MAP_FIX_SOURCE_ONLY",
+  "files": {
+    "verify_066s_live_075.py": "f1f46df61a168e489746c9bab369c46bb72b9bad40c635b5d6d355c66e22677a",
+    "audit_priority_076r1.py": "23b317dd324c063afb6d69c3e7eac89b521564476760f46ab37736fd0e56ddc8",
+    "test_076r1.py": "cf2adeb39a6f7cf2197dec3936eea1cd0eed70eba3bd3026287883effcf9cfb8",
+    "README_RU.md": "b3976627702945e59210fd55df893e4e186d76a6319741bf367f02b54c4bb4c9"
+  }
+}
