@@ -1,3 +1,13 @@
+## 2026-11-14 — BGXAI 071 COMPLETED AUTOMATICALLY AFTER 070 (NO STOP / EPS-FIRST)
+
+- User pointed out incorrect project STOP after 070: **do not halt after PASS**; continue all independently safe source-only stages in same turn, checkpoint both Library and GitHub. The only boundary is changing user's actual game / irreversible operations requiring explicit approval.
+- Installed user EET remains confirmed **066S**; 067 installation HOLD. 068/069/070/071 source-only, no game/WeiDU/EPS/updater changes.
+- Audited existing Library zip BG_EET_AUDIT_02_QUESTS_AI.zip read-only, **15,159 CRE V1.0**: class IDs 1..21 **7,315**, other 7,844; original-class single-bit hints **103**, ambiguous multi flags **12**, CRE Shapeshifter raw 0x40110000 **8**. Historic templates are NOT live SCS-respec class/kit/dual state. CRE kit raw 0x40110000 != KIT.IDS code 0x4011; current combat form not inferred.
+- User's KITLIST_AVAILABLE_NAMES.txt has 58 rows incl RESERVE and modded kits; no authoritative live numeric KIT.IDS/KITLIST 2DA supplied. Existing archived BDDEFAI.BCS has **644** CR blocks, not installed 066S 1088: must not use for current EPS precedence proof. `BGXAI66S_BCS_PATCH.py` inserted 11 new blocks before original EPS block area; ordering arbitration risk remains.
+- New SOURCE ONLY: BGXAI/fox_new/experimental_071_cre_kit_dual_audit_source_only/ — safe CRE ZIP aggregate scanner, standard CRE-kit hint Lua, manifest verifier, native/Python mock tests, user index. **240/240 native Lua PASS**, **9/9 Python PASS**, **9-file SHA PASS**, source-only no active action scan PASS. No private CRE/BCS copied to GitHub. Download package SHA256 acf71dffe9fc6bdf7b18ff8581e3034a77c0b729032977f6b00cb800aefb9676.
+- Checkpoint: BGXAI/CURRENT/BGXAI_071_CHECKPOINT_20261114_RU.md and Library /BALDURS_GATE_EET_AI/CURRENT/BGXAI_071_CHECKPOINT_20261114_RU.md; Library BUILD folder has ZIP and individual sources.
+- Next safe boundary: input certainty for *actual* EEex 1.1.7 runtime kit/form/dual state and EPS action queue, not guessed from creature templates or numeric IDs. No install offers or repeat resource upload prompts. Do not conflate F-guard with EPS hotkey.
+
 ## 2026-11-14 — BGXAI 070 PASSIVE EEEX NAMED-FIELD ADAPTER: SOURCE ONLY / EPS-FIRST
 
 - Current *game* baseline remains 066S; 067 on HOLD. 068/069/070 are offline SOURCE ONLY. No game, WeiDU, update.cmd or EPS scripts changed; BGXAI F guard is our own, NOT a built-in EPS switch.
