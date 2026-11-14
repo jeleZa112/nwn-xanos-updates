@@ -1,0 +1,18 @@
+{
+  "project": "BGXAI",
+  "version": "081",
+  "mode": "SOURCE_ONLY_READ_ONLY",
+  "installed_game_untouched": true,
+  "active_baseline": "066S",
+  "pinned_installed_lua_sha256": "50640902ec4c25a2c85e5088d7231678b54445a847b41743c476974236d1d70f",
+  "pinned_installed_bcs_sha256": "fb435d82e6c3e0ebea1d6a9532753921bd5411d70ac0677dc1fd8ec483380476",
+  "evidence_source": "preserved 066S candidate M_BX43 Lua, exact SHA match",
+  "started_listener_in_066s_source": true,
+  "weapon_hit_listener_in_066s_source": true,
+  "started_action_id_read_in_066s_source": true,
+  "manual_origin_known": false,
+  "queue_empty_verified": false,
+  "local_request_writes_in_existing_066s_source": true,
+  "ready_to_enable_080_in_game": false,
+  "note": "Source-level evidence only; current EEex runtime behavior and player/EPS action origin unknown."
+}
