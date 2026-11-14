@@ -1,0 +1,43 @@
+--- LIVE_066S_SOURCE_VERIFIED.lua
++++ CAPABILITY_PATCH_SOURCE_ONLY.lua
+@@ -676,8 +676,24 @@
+ local LEASE=45
+ local MAX_TIME=2147483346
+ local HEALER={[3]=true,[8]=true,[11]=true,[14]=true,[15]=true,[16]=true,[17]=true,[18]=true}
+ local ARCANE={[1]=true,[5]=true,[7]=true,[10]=true,[13]=true,[14]=true,[17]=true,[19]=true}
++-- OPTIONAL capability-first extension for EPS-first 066S. Default OFF.
++-- A future separately verified observer must supply a trustworthy live spell check.
++-- Never infer spell availability from CLASS.IDS, kit label, or dual/multi label.
++-- No native trigger evaluation and no additional engine write in this module.
++S.capabilityVerifier = nil
++local function candidateCanUseSpell(actor, cls, spell)
++  if type(S.capabilityVerifier) == 'function' then
++    local ok, available = pcall(S.capabilityVerifier, actor, spell)
++    -- A callback error, nil, truthy integer, or unverified result is DENIED.
++    return ok and available == true
++  end
++  -- Exact legacy behavior when no independently proven observer exists.
++  if spell == 'CLERIC_CURE_LIGHT_WOUNDS' then return HEALER[cls] == true end
++  if spell == 'WIZARD_SHIELD' then return ARCANE[cls] == true end
++  return false
++end
+ local function integer(v) return type(v)=='number' and v==math.floor(v) and v>=0 and v<=2147483647 end
+ local function number(v) return type(v)=='number' and v==v and v>=0 and v<100000000 end
+ local function safe(f,...) local ok,v=pcall(f,...); if ok then return v end;return nil end
+ local function reason(why)
+@@ -748,13 +764,13 @@
+    local ox=safe(function()return o.m_pos.x end)
+    local oy=safe(function()return o.m_pos.y end)
+    local same=other~=nil and safe(function()return EEex_UDEqual(area,other)end)==true
+    if mode==1 and modal==0 and same and number(ox) and number(oy) and pct(o) then
+-    if HEALER[cls] and get(o,'BGX66_S_HEAL_SLOT')==0 then
++    if candidateCanUseSpell(o,cls,'CLERIC_CURE_LIGHT_WOUNDS') and get(o,'BGX66_S_HEAL_SLOT')==0 then
+      local dist=(ox-vx)^2+(oy-vy)^2
+      if not healer or dist<rank or (dist==rank and m.slot<healer.slot) then healer=m;rank=dist end
+     end
+-    if m.id==victimID and ARCANE[cls] and health<=25 and get(o,'BGX66_S_WARD')==0 then ward=m end
++    if m.id==victimID and candidateCanUseSpell(o,cls,'WIZARD_SHIELD') and health<=25 and get(o,'BGX66_S_WARD')==0 then ward=m end
+    end
+   end
+  end
+  local prepared={heal=false,ward=false}
