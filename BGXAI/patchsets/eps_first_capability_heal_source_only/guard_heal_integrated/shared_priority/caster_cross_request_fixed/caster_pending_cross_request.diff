@@ -1,0 +1,22 @@
+--- PRIOR_SHARED_PRIORITY_SOURCE_ONLY
++++ SOURCE_ONLY_CASTER_CROSS_REQUEST_FIXED
+@@ -818,11 +818,17 @@
+    local oy=safe(function()return o.m_pos.y end)
+    local same=other~=nil and safe(function()return EEex_UDEqual(area,other)end)==true
+    if mode==1 and modal==0 and same and number(ox) and number(oy) and pct(o) then
+-    if candidateCanUseSpell(o,cls,'CLERIC_CURE_LIGHT_WOUNDS') and get(o,'BGX66_S_HEAL_SLOT')==0 then
++    -- In optional capability mode, another still-pending BCS caster request
++    -- owns this actor even if the short Lua lease expired. Unknown locals deny.
++    if candidateCanUseSpell(o,cls,'CLERIC_CURE_LIGHT_WOUNDS')
++       and get(o,'BGX66_S_HEAL_SLOT')==0
++       and (T.capabilitySourceVerified ~= true or get(o,'BGX66_S_WARD')==0) then
+      local dist=(ox-vx)^2+(oy-vy)^2
+      if not healer or dist<rank or (dist==rank and m.slot<healer.slot) then healer=m;rank=dist end
+     end
+-    if m.id==victimID and candidateCanUseSpell(o,cls,'WIZARD_SHIELD') and health<=25 and get(o,'BGX66_S_WARD')==0 then ward=m end
++    if m.id==victimID and candidateCanUseSpell(o,cls,'WIZARD_SHIELD')
++       and health<=25 and get(o,'BGX66_S_WARD')==0
++       and (T.capabilitySourceVerified ~= true or get(o,'BGX66_S_HEAL_SLOT')==0) then ward=m end
+    end
+   end
+  end
