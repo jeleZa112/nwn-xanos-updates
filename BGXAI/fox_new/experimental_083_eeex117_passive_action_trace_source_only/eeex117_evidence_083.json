@@ -1,0 +1,41 @@
+{
+  "project": "BALDURS_GATE_EET_AI/BGXAI",
+  "revision": "083",
+  "date": "2026-11-14",
+  "status": "SOURCE_ONLY_NOT_INSTALLED",
+  "verified_eeex_tag": "v1.1.7",
+  "upstream_repository": "Bubb13/EEex",
+  "source_evidence": [
+    {
+      "path": "EEex/copy/EEex_scripts/EEex_Action.lua",
+      "git_blob_sha1": "e7543274ed066b5abe3c58262105212f208d1595",
+      "lines": "40-75, 174-188, 325-340",
+      "meaning": "An explicit function APPENDS actions via virtual_InsertAction; the started-action hook passes (sprite, action). Neither proves empty pending queue or manual provenance."
+    },
+    {
+      "path": "EEex/copy/EEex_scripts/EEex_Action_Patch.lua",
+      "git_blob_sha1": "b9d4bf7ee97d1fffd1140f248b5244089a2b52f1",
+      "lines": "69-83",
+      "meaning": "EEex native action hook transitions to Lua started-action listener; not a manual-order witness."
+    },
+    {
+      "path": "EEex/copy/EEex_scripts/EEex_Debug.lua",
+      "git_blob_sha1": "ec8f6d1735d1e2e27fc2bae6dca26fd89c22eef5",
+      "lines": "136-145",
+      "meaning": "Debug code reads action ID and script-response metadata; those observations do NOT prove input provenance."
+    }
+  ],
+  "hard_limits": {
+    "started_action_proves_empty_queue": false,
+    "action_id_zero_proves_manual_or_eps_origin": false,
+    "verified_queue_read_api_found_in_inspected_files": false,
+    "verified_manual_origin_api_found_in_inspected_files": false,
+    "full_upstream_api_absence_proven": false,
+    "runtime_live_test_performed": false,
+    "installed_game_changed": false
+  },
+  "active_game": {
+    "installed_version": "066S",
+    "bcs_sha256_last_user_verified": "fb435d82e6c3e0ebea1d6a9532753921bd5411d70ac0677dc1fd8ec483380476"
+  }
+}
