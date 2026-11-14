@@ -1,0 +1,11 @@
+{
+  "project": "BGXAI084",
+  "files": {
+    "BGXAI084_NATIVE_QUEUE_PROBE.lua": "2a729b100aad162b511d83b53845a75dc86f781e3f9818b32484efcff7d8c1d5",
+    "README_RU.md": "acdc40556cb788e7cb8559e7a0035fd3901ee4e94504e6001584c7f74fa7b590",
+    "evidence_084.json": "5799b2a6d8a76a3972c78ac39760f75ec3dfba7593144e9543de1c11cf4aa11b",
+    "test_084.lua": "19a45db1bd3f277499375a530b83c5446cb125aa1a1f3bee6fea4b8e10e2a1fa",
+    "test_084.py": "b92e54252ba485d1042b0a1b556a9a36a17a5c4c941493afeb0bb67ee240ff6d",
+    "verify_release_084.py": "eafd920ea7d28d5d7e7cc54c486f384f3b5efcf59af25c669a5c8dbfdd1ec466"
+  }
+}
