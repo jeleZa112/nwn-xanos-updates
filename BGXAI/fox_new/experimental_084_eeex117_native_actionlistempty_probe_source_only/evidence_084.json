@@ -1,0 +1,14 @@
+{
+  "project": "BGXAI 084 SOURCE ONLY",
+  "date": "2026-11-14",
+  "upstream": {
+    "EEex_Trigger.lua": {"repo": "Bubb13/EEex", "tag": "v1.1.7", "path": "EEex/copy/EEex_scripts/EEex_Trigger.lua", "git_blob_sha": "80da96ed5dc7cbcaa726631a3542ecafa533ec6f", "source_fact": "EEex_Trigger_EvalConditionalStringAsAIBase parses conditional string and invokes m_curCondition:Hold(aiBase.m_pendingTriggers, aiBase)"},
+    "EEex_Action.lua": {"repo": "Bubb13/EEex", "tag": "v1.1.7", "path": "EEex/copy/EEex_scripts/EEex_Action.lua", "git_blob_sha": "e7543274ed066b5abe3c58262105212f208d1595", "source_fact": "Started-action callback receives sprite/action after action begins; does not attest queue or origin"},
+    "IESDP": {"url": "https://gibberlings3.github.io/iesdp/scripting/triggers/bgeetriggers.htm", "trigger": "0x402B ActionListEmpty()", "object_trigger": "0x409E ObjectActionListEmpty(O:Object*)"},
+    "066S_source": {"repo": "jeleZa112/nwn-xanos-updates", "branch": "bg-eet-ai", "path": "BGXAI/fox_new/experimental_066s_guarded_install_candidate/BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf", "git_blob_sha": "f5e72c5c87d2dfefa4859bd2d7bbcd0110bdeddb", "fact": "Seven BCS spell-use rules have ActionListEmpty() guard"}
+  },
+  "confirmed": ["Source exposes a native trigger evaluation call", "BCS ActionListEmpty trigger is documented", "066S BAF uses native queue gating"],
+  "not_proven": ["Read-only side effects of Eval/Hold under live EEex", "Lua conditional string syntax on actual user runtime", "Meaning of trigger sample across frames", "Manual-vs-EPS command origin", "Any permission to dispatch 080"],
+  "installed": "066S only; 084 not installed",
+  "test_environment": "offline texlua + Python unit tests, synthetic evaluator"
+}
