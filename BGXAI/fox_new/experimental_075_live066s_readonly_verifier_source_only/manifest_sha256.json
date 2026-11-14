@@ -1,0 +1,9 @@
+{
+  "package": "BGXAI_075_LIVE066S_READONLY_VERIFIER_SOURCE_ONLY",
+  "files": {
+    "verify_066s_live_075.py": "f1f46df61a168e489746c9bab369c46bb72b9bad40c635b5d6d355c66e22677a",
+    "test_075.py": "cca9747fad1d16add0e6cb90113b7ad07ba6d131959cd7d56d59b07a72250881",
+    "README_RU.md": "d3f71b3a7b867742beb1e409929d64f393c45c07752a9beffbd777a831cae563",
+    "check_release_075.py": "ae3c6014f8371a352c41e60f8677635b184f5df77c8515ffbbe050ef4ef8e8ef"
+  }
+}
