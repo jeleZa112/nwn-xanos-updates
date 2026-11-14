@@ -1,0 +1,14 @@
+{
+  "version": "BGXAI-070",
+  "date": "2026-11-14",
+  "status": "SOURCE_ONLY_NOT_INSTALLED",
+  "installed_baseline": "066S_UNCHANGED",
+  "old_067": "HOLD",
+  "files": {
+    "BGXAI069_ROLE_OBSERVER.lua": "4e65f1bb9ddbc3501d593199442decf5fed2525fb2373b3ed7f7ad0dff068efd",
+    "BGXAI070_EEEX_FACTS_READONLY.lua": "234006c3ac5b08bf9e285e3c3dfb451ad7682e68fa98ec676c63b119d8571901",
+    "test_070.lua": "12707ca7e6e81a897189330366e36153bbfdeadb4b1dc6ff0c0e11db231208c6",
+    "verify_070.py": "5cac57e17913ebc4bfe071451d98bf8e2c0719fa764b6ca29c4b8acde6735a7e",
+    "README_RU.md": "252b3eaf325669dcbbac2c0d27d1c6a856b0a42b7ac7cfc567c9e01323954e91"
+  }
+}
