@@ -1,0 +1,28 @@
+{
+  "status": "SOURCE_ONLY_NOT_INSTALLED",
+  "installed_version": "066S",
+  "installed_lua_sha256": "50640902ec4c25a2c85e5088d7231678b54445a847b41743c476974236d1d70f",
+  "installed_bcs_sha256": "fb435d82e6c3e0ebea1d6a9532753921bd5411d70ac0677dc1fd8ec483380476",
+  "capability_default_enabled": false,
+  "historical_tests": 18,
+  "unchanged_behavior_regressions": 17,
+  "new_safety_tests": 27,
+  "files": {
+    "066S_capability_patch.diff": "83799135b5a9d646ae088bb4945e5b1e04e72176e4e335bd39626c78cfc3b5a8",
+    "BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf": "c678a70a08dbcff7584e0f2703aa8bed5ae5945856287666016ee47c9d6f69ae",
+    "BGX66_CASTER_SUPPORT.lua": "b365ac770c508e292b87c280c58f922c20306a0b9d3ca68c99b0cd1223872020",
+    "M_BX43_066_BASELINE_READONLY.lua": "c66ebb5190be8103819106a48d3100055b5791adf7c2d1df5f3e54596823540b",
+    "M_BX43_066S_CASTER_CANDIDATE.lua": "50640902ec4c25a2c85e5088d7231678b54445a847b41743c476974236d1d70f",
+    "M_BX43_066S_HEAL_PATCH_PREVIOUS.lua": "c4e25bf6de7c3569b03657f3d48b5ddc9730c94ac6f63124bcc3f32cfb471e29",
+    "M_BX43_066S_CAPABILITY_CANDIDATE.lua": "954bb400ccc7e39aa0040460d167b51584892d7bd58237bf78ed05781eb7da70",
+    "lua65_harness.py": "d0586d522303893ff2ae648c2b6915ed4178113e8782d98d698c5a3b03b70607",
+    "native_066_fixture.py": "1f79e686f9c2e3d682701f0a5e7844a9304fba9f15cb8b2f6b00f51133e255eb",
+    "test_066s_caster_native.py": "5672e2f42b9a08a7b6f8cc85b5fcbe27fc505b0a2b3e8a0290239b4bc9aae507",
+    "test_spell_patch.py": "388cc710745d0c1e04c8bb7efa6b2e3c93e6fc849f02cfba3466d829eabdb128",
+    "test_guard_capability.py": "2ecf006ce4f91e6858fcc22a4af40947ee1b81799c3f20eb7db2d6db6f07e389",
+    "run_regression.py": "f0e4f69dfa7250563ceb1f8fcdfdc0c18b123debe38115bc32eaabd6556d6b6c",
+    "build_merged_patch.py": "be0652546b579c53657a35a82b5224b78d79317072eccc2d18df5997f42a8b65",
+    "README_RU.md": "ac140688b6b0636a1fade2d56bf18080e104e33dc9154661d1cc4ce9e07c64f2",
+    "verify_release.py": "2d1ae3904cc9b5d56e0f3b51770fbd3153d623270c1954f2b3f5088c616dae89"
+  }
+}

@@ -1,0 +1,86 @@
+--- LIVE_066S_SHA_50640902
++++ SOURCE_ONLY_CAPABILITY_GUARD_HEAL
+@@ -512,6 +512,37 @@
+ T.last = nil
+ local RESERVE_TICKS, EXPIRE_TICKS, MAX_TIME = 45, 300, 2147483346
+ local FRONTLINE = {[2]=true,[6]=true,[12]=true} -- fighter/paladin/ranger CLASS.IDS
++-- Optional role-verified intercept extension; default OFF keeps 066S byte-for-byte policy.
++-- The only valid source is a separately audited live capability/command observer.
++-- CLASS.IDS, KIT label and transformed appearance alone are NOT evidence.
++T.capabilityVerifier = nil
++T.capabilitySourceVerified = false
++local function verifiedGuardAbility(sprite, legacyRole, attackerID, victimID, eventSequence)
++  if T.capabilitySourceVerified ~= true then return legacyRole=='frontline' end
++  if type(T.capabilityVerifier) ~= 'function' then return false end
++  local ok, p = pcall(T.capabilityVerifier, sprite, attackerID, victimID, eventSequence)
++  if not ok or type(p) ~= 'table' then return false end
++  -- All facts must be independently proven in the CURRENT actor state.
++  -- Critical heal, occupied casting / song / traps and manual/EPS orders win.
++  -- rawget avoids trusting metatable-generated / side-effecting evidence.
++  return rawget(p,'verified') == true
++     and rawget(p,'actor_id') == safe(function()return sprite.m_id end)
++     and rawget(p,'attacker_id') == attackerID
++     and rawget(p,'victim_id') == victimID
++     and rawget(p,'source_event_sequence') == eventSequence
++     and rawget(p,'effective_melee_now') == true
++     and rawget(p,'weapon_effective_vs_attacker') == true
++     and rawget(p,'active_class_and_kit_verified') == true
++     and rawget(p,'transformation_safe_verified') == true
++     and rawget(p,'action_idle_verified') == true
++     and rawget(p,'eps_queue_empty_verified') == true
++     and rawget(p,'manual_order_absent_verified') == true
++     and rawget(p,'heal_reservation') == false
++     and rawget(p,'spell_casting') == false
++     and rawget(p,'bard_singing') == false
++     and rawget(p,'detecting_traps') == false
++     and rawget(p,'target_attacker_identity_verified') == true
++end
+ local SUPPORT = {[1]='arcane',[3]='healer',[5]='bard',[7]='arcane',[8]='healer',
+                  [10]='arcane',[11]='healer',[13]='arcane',[14]='arcane_healer',
+                  [16]='healer',[17]='arcane_healer',[18]='healer',[19]='arcane'}
+@@ -598,7 +629,7 @@
+         local same=other~=nil and safe(function()return EEex_UDEqual(area,other)end)==true
+         if g==1 and modal==0 and finite(x) and finite(y) and same then
+           local role=roleOf(obj)
+-          if role=='frontline' and validGuardian(obj) and not T.reservations[id] then
++          if verifiedGuardAbility(obj,role,attackerID,victimID,seq) and validGuardian(obj) and not T.reservations[id] then
+             local req=safe(function()return obj:getLocalInt('BGX52_REQ_SLOT')end)
+             local previous=safe(function()return obj:getLocalInt('BGX52_LAST_TICK')end)
+             local sent=safe(function()return obj:getLocalInt('BGX52_HAS_SENT')end)
+@@ -677,6 +708,22 @@
+ local MAX_TIME=2147483346
+ local HEALER={[3]=true,[8]=true,[11]=true,[14]=true,[15]=true,[16]=true,[17]=true,[18]=true}
+ local ARCANE={[1]=true,[5]=true,[7]=true,[10]=true,[13]=true,[14]=true,[17]=true,[19]=true}
++-- OPTIONAL capability-first extension for EPS-first 066S. Default OFF.
++-- A future separately verified observer must supply a trustworthy live spell check.
++-- Never infer spell availability from CLASS.IDS, kit label, or dual/multi label.
++-- No native trigger evaluation and no additional engine write in this module.
++S.capabilityVerifier = nil
++local function candidateCanUseSpell(actor, cls, spell)
++  if type(S.capabilityVerifier) == 'function' then
++    local ok, available = pcall(S.capabilityVerifier, actor, spell)
++    -- A callback error, nil, truthy integer, or unverified result is DENIED.
++    return ok and available == true
++  end
++  -- Exact legacy behavior when no independently proven observer exists.
++  if spell == 'CLERIC_CURE_LIGHT_WOUNDS' then return HEALER[cls] == true end
++  if spell == 'WIZARD_SHIELD' then return ARCANE[cls] == true end
++  return false
++end
+ local function integer(v) return type(v)=='number' and v==math.floor(v) and v>=0 and v<=2147483647 end
+ local function number(v) return type(v)=='number' and v==v and v>=0 and v<100000000 end
+ local function safe(f,...) local ok,v=pcall(f,...); if ok then return v end;return nil end
+@@ -749,11 +796,11 @@
+    local oy=safe(function()return o.m_pos.y end)
+    local same=other~=nil and safe(function()return EEex_UDEqual(area,other)end)==true
+    if mode==1 and modal==0 and same and number(ox) and number(oy) and pct(o) then
+-    if HEALER[cls] and get(o,'BGX66_S_HEAL_SLOT')==0 then
++    if candidateCanUseSpell(o,cls,'CLERIC_CURE_LIGHT_WOUNDS') and get(o,'BGX66_S_HEAL_SLOT')==0 then
+      local dist=(ox-vx)^2+(oy-vy)^2
+      if not healer or dist<rank or (dist==rank and m.slot<healer.slot) then healer=m;rank=dist end
+     end
+-    if m.id==victimID and ARCANE[cls] and health<=25 and get(o,'BGX66_S_WARD')==0 then ward=m end
++    if m.id==victimID and candidateCanUseSpell(o,cls,'WIZARD_SHIELD') and health<=25 and get(o,'BGX66_S_WARD')==0 then ward=m end
+    end
+   end
+  end
