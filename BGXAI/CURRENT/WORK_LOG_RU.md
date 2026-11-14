@@ -1,3 +1,11 @@
+## 2026-11-14 — BGXAI 072 EPS-FIRST ARBITRATION CONTRACT; AUTO-CONTINUED AFTER 071
+
+- User challenged stopping after 070 despite global auto-continuation rule; 071 and **072 were both completed safely within same turn** without asking approval. Do not promise background work. Installed game remains 066S; 067 frozen; none of 068–072 installed.
+- 071 safely audited 15,159 historical CRE, CRE raw kit vs KIT.IDS code, 103 possible original-class flags and 12 ambiguous, 8 raw Shapeshifter; archived 644-CR BCS is NOT installed 066S 1088-block current baseline. 071: 240 Lua + 9 Python + SHA PASS; data in CURRENT/BGXAI_071_CHECKPOINT_20261114_RU.md.
+- 072 new **pure Lua arbitration contract** `BGXAI/fox_new/experimental_072_eps_arbitration_contract_source_only/BGXAI072_EPS_FIRST_ARBITER.lua` enforces explicit opt-in default OFF, verified F role, exact attacker ID, EPS idle/empty queue, no manual order/ongoing cast/song/traps/emergency heal; `NearestEnemyOf` is NOT accepted as an exact target. 067 would FAIL this policy. Output remains CANDIDATE_REVIEW_ONLY with allow_engine_action=false, engine_orders_sent=0. No game changes.
+- 072 native Lua mock tests 66/66 PASS and SHA 4/4 PASS. Package ZIP SHA256 `dc47e1543664546fd942e5878e951d98ce5de072cda30c86b2e1f3b66a1bf15f`. Checkpoint CURRENT/BGXAI_072_CHECKPOINT_20261114_RU.md; Library BUILD/BGXAI_072_EPS_ARBITRATION_CONTRACT_SOURCE_ONLY/.
+- Remaining hard blocker for active game integration: no verified current EEex 1.1.7 authority for current dual-active/shape/kit, manual command/EPS queue, and exact BCS attacker target. Continue safe static work where meaningful, do not recommend 067/071/072 installation. No old file re-uploads or Shank retests.
+
 ## 2026-11-14 — BGXAI 071 COMPLETED AUTOMATICALLY AFTER 070 (NO STOP / EPS-FIRST)
 
 - User pointed out incorrect project STOP after 070: **do not halt after PASS**; continue all independently safe source-only stages in same turn, checkpoint both Library and GitHub. The only boundary is changing user's actual game / irreversible operations requiring explicit approval.
