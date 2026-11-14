@@ -1,0 +1,10 @@
+{
+  "version": "BGXAI_074_EPS_BCS_STATIC_AUDIT_SOURCE_ONLY",
+  "files": {
+    "audit_bcs_074.py": "319a74c7ca07cbffd175ccc71a078e2725ba63d645de9eeec58b48e92bd774a8",
+    "test_074.py": "015e6b1a655e69759a4ae675b40d3c0a278f1b993184dc133c7546eaee64bdca",
+    "audit_074_snapshot_summary.json": "c12c767a2a0b7d22acb966ee8c8af08fb29b89faa4fecf7b87dc1096dca49ecf",
+    "README_RU.md": "67cea74bb0d25c606154c0d922983fac1d88789e5d2584121177108fbf256fd6",
+    "verify_074.py": "556b73023ac82fb2693d1c5966104ef2abe8209235ab6f5c9f106baac133502d"
+  }
+}
