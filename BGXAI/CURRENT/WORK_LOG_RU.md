@@ -1,3 +1,10 @@
+## 2026-11-14 — AUTO-CONTINUE CONFIRMED THROUGH BGXAI 073 (SOURCE ONLY)
+
+- User called out premature stopping after 070. Rule: after successful safe offline checks continue within same response, no extra permission required. Revalidated 071 (240 Lua/9 Python, SHA), 072 (66 Lua, SHA), and independently built 073: 142 native Lua checks + static SHA/no-engine-write verification, all PASS.
+- 071 examined the preexisting authentic user CRE archive (15,159 CRE V1.0), kit ID token vs raw CRE kit, uncertainty after SCS respec. 072 EPS-first arbitration requires exact resolved attacker ID and verified queue/idle/healing state. 073 combines 069/070/071/072 with representative families, unknown kit/dual/form, and refuses any new dispatch if EPS queue/action evidence is missing.
+- GitHub BGXAI/fox_new/experimental_073_cross_module_invariants_source_only/ and BGXAI/CURRENT/BGXAI_073_CHECKPOINT_20261114_RU.md; Library /BALDURS_GATE_EET_AI/BUILD/BGXAI_073_CROSS_MODULE_INVARIANTS_SOURCE_ONLY/ and /BALDURS_GATE_EET_AI/CURRENT/BGXAI_073_CHECKPOINT_20261114_RU.md. Package SHA256 3f51e220e25def720af29f0b0cd28a55302b04a4cbf45b3acf422a5d51220281.
+- Actual EET installed 066S unchanged. 067 HOLD; 068-073 are source-only, no EEex live action integration. Do NOT ask user for old game archives, repeat Shank fights, or suggest install as next automatic action. Continue only safely until real EEex EPS queue, dual/form and targeting truth is established.
+
 ## 2026-11-14 — BGXAI 072 EPS-FIRST ARBITRATION CONTRACT; AUTO-CONTINUED AFTER 071
 
 - User challenged stopping after 070 despite global auto-continuation rule; 071 and **072 were both completed safely within same turn** without asking approval. Do not promise background work. Installed game remains 066S; 067 frozen; none of 068–072 installed.
