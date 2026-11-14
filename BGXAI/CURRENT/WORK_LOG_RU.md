@@ -1,3 +1,9 @@
+## 2026-11-14 — BGXAI 080 VERIFIED DISTRIBUTION (REPACKED RELEASE B)
+
+- A prior in-container artifact export altered the README payload after a manifest had been generated. Avoid recommending the earlier 080 ZIP hash as the definitive package; **new independently verified archive** `BGXAI080_VERIFIED_RELEASE_20261114_B.zip` is stored in Library `/BALDURS_GATE_EET_AI/BUILD/BGXAI_080_EPS_FIRST_BUFF_PRESERVING_COORDINATOR_SOURCE_ONLY/`, 15,439 bytes, SHA256 `d55e15099baeda27026390bcb458d04ae3c108fba5f74582294512821b44ab8d`.
+- Verification inside fresh release directory: **82 Lua + 16 Python = 98 PASS**, manifest **9/9 SHA PASS**, static no-engine-write PASS. Archive contains 080 pure advisor, unchanged 072/078 source, tests, SHA-checked historical 041 EPS buff marker evidence, and README. Package does not contain private BCS or modify game. Current installed 066S remains unchanged.
+- Project source/checkpoint published GitHub branch bg-eet-ai paths `BGXAI/fox_new/experimental_080_eps_first_buff_preserving_coordinator_source_only/` and `BGXAI/CURRENT/BGXAI_080_CHECKPOINT_20261114_RU.md`. The final B ZIP contains a concise README; original GitHub full README is an expanded edition. Source Lua files in B match GitHub exact SHA. No claim of real-time queue or manual-origin support. This is a verified offline release, not an installed gameplay upgrade.
+
 ## 2026-11-14 — BGXAI 080 EPS-FIRST BUFF-PRESERVING COORDINATOR DONE (SOURCE ONLY)
 
 - Continued after user `делай`: verified **authentic saved historical 041 compiled EPS** (1057 blocks, exact SHA `86d80953be464a3f10da8e1dc031b907801860b7f1f15b3ea6fb9d25e485f3f5`). Static marker counts: `MO_BUFF`=190, `MO_LONG_BUFF`=90, `MO_SOLOBUFFING`=2, `MO_HealCast`=11, `BDAI_ATTACK_MODE`=60, BGX F=18. These are occurrences, NOT spells cast, and historical 041 cannot certify all buff markers in installed 066S.
