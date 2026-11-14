@@ -1,0 +1,88 @@
+{
+  "snapshot_041": {
+    "audit_version": "074",
+    "source": "HISTORICAL_041_FILE_2026-11-08_NOT_LIVE_066S",
+    "sha256": "86d80953be464a3f10da8e1dc031b907801860b7f1f15b3ea6fb9d25e485f3f5",
+    "size_bytes": 2229760,
+    "lossless_blocks": 1057,
+    "bcs_reassembled_byte_exact": true,
+    "f_guard_marker_blocks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      1047,
+      1048,
+      1049,
+      1050,
+      1051,
+      1052,
+      1053,
+      1054,
+      1055,
+      1056,
+      1057
+    ],
+    "f_key_cooldown_blocks": [
+      1,
+      2,
+      4,
+      5,
+      6,
+      7
+    ],
+    "eps_attack_mode_blocks_count": 60,
+    "eps_attack_mode_first_last": [
+      8,
+      231
+    ],
+    "eps_heal_cast_blocks": [
+      27,
+      504,
+      505,
+      506,
+      507,
+      508,
+      509,
+      510,
+      511,
+      512,
+      513
+    ],
+    "bgx39_team_cooldown_blocks": [
+      1048,
+      1049,
+      1050,
+      1051,
+      1052,
+      1053,
+      1054,
+      1055,
+      1056,
+      1057
+    ],
+    "later_bxs_present": {
+      "BGX52": false,
+      "BGX66": false,
+      "BGX67": false
+    },
+    "important_limit": "A 041 file cannot establish current 066S action dispatch or live EPS behavior."
+  },
+  "066s_patch_source": {
+    "evidence": "SOURCE_ONLY_FROM_GITHUB_066S_BCS_PATCH_PY",
+    "baseline_064_blocks": 1077,
+    "existing_061_receiver_zero_based_slice": [
+      1031,
+      1051
+    ],
+    "066s_insertion_zero_based_index": 1051,
+    "066s_inserts_before_existing_one_based_block": 1052,
+    "066s_inserted_cleanup_and_heal_ward_blocks": 11,
+    "candidate_066s_total_blocks": 1088,
+    "source_preservation_claim": "old blocks byte exact in relative order, checked by source builder, not independently reconstructed from this 041 file",
+    "engineering_risk": "EPS scripts have early blocks: inserted BGXAI rules are not globally above all EPS rules; scheduling / ActionListEmpty can delay interception or heal."
+  }
+}
