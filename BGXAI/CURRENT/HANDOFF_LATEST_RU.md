@@ -1,3 +1,12 @@
+## 2026-11-14 — BGXAI 070 PASSIVE EEEX NAMED-FIELD ADAPTER: SOURCE ONLY / EPS-FIRST
+
+- Current *game* baseline remains 066S; 067 on HOLD. 068/069/070 are offline SOURCE ONLY. No game, WeiDU, update.cmd or EPS scripts changed; BGXAI F guard is our own, NOT a built-in EPS switch.
+- 070 new Lua snapshot reads published EEex fields (class, current/max HP, derived kit numeric, class levels 1/2/3, polymorph flag, modal raw, F local on read only). Unknown kit name, dual activation, exact Werewolf form, EPS action queue and combat eligibility are never inferred from raw values.
+- 070 `facts_for_069` deliberately leaves action/combat/heal unverified: **no potential interceptor is granted**. A missing dual fact is nil, not a fabricated positive claim of an unverified dual; the source-only prototype does not issue combat orders.
+- Native texlua: **230/230 test assertions PASS**; SHA manifest of five payload sources + static source-only guard PASS. Actual EEex 1.1.7 runtime on user's EET NOT tested. ZIP SHA256 483a6cfe9f6a6d17893aaff5c0c4f49a977c6d8bf0b647d02f2d5fde6a43b55b (11,419 bytes).
+- Source GitHub: BGXAI/fox_new/experimental_070_readonly_eeex_facts_source_only/ ; report BGXAI/CURRENT/BGXAI_070_CHECKPOINT_20261114_RU.md. Library: /BALDURS_GATE_EET_AI/BUILD/BGXAI_070_READONLY_EEEX_FACTS_SOURCE_ONLY/ and /BALDURS_GATE_EET_AI/CURRENT/BGXAI_070_CHECKPOINT_20261114_RU.md.
+- Next safe development: compare user-preserved KIT.IDS/KITLIST and class/dual evidence, prove current-form status, audit EPS arbitration. NO 067/070 install recommendations or repeated archive/test requests.
+
 ## 2026-11-13 — CORRECTION: F-GUARD IS BGXAI, NOT EPS
 
 - User correctly corrected the previous setup advice. F key and BGX38_GUARD toggle were introduced by BGXAI (040+); NOT a built-in Enhanced Powergaming Scripts switch. Official EPS hotkey list B/N/T/E/K/V does not include F; do not tell user to enable an unverified EPS setting named «Защищать союзников». Base game's separate Guard/F5 is another mechanic, not the BGXAI F toggle.
