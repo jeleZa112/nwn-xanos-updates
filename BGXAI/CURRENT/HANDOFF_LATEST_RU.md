@@ -1,3 +1,8 @@
+
+
+### BGXAI 080 final package integrity note (2026-11-14)
+
+Final source-only ZIP rebuilt after aligning expanded README, exact SHA256 manifest, historical evidence JSON and release verifier. `texlua test_080.lua` 82/82 PASS; `python -m unittest -q test_080_source.py` 16/16 PASS on authentic private 041 input; `python verify_release_080.py` 9/9 SHA PASS and NO_ENGINE_WRITE PASS. Final ZIP SHA256 `407b54451adce25ec9505a2a19c967348a9ccba65334ee082eb5e3fbc6035348`. Source-only: not in game and no new active hook. Last known installed 066S unchanged. Canonical storage Library `/BALDURS_GATE_EET_AI/BUILD/BGXAI_080_EPS_FIRST_BUFF_PRESERVING_COORDINATOR_SOURCE_ONLY/`, GitHub `BGXAI/fox_new/experimental_080_eps_first_buff_preserving_coordinator_source_only/`. Next boundary: verified live EEex action queue/command provenance, no guessing from action IDs alone.
 ## 2026-11-14 — BGXAI 080 COMPLETE EPS-FIRST BUFF-PRESERVING COORDINATOR (OFFLINE ONLY)
 
 - User requested to proceed improving already-active EPS18.4/BGXAI066S, not to replace buffing. Built passive source-only `BGXAI080_EPS_FIRST_COORDINATOR.lua` composing 072 guard arbiter + 078 healer selector. Generic action-state rule: any non-IDLE current action or nonempty EPS queue blocks a BGXAI intervention regardless of unknown spell/buff name; no hand-coded buff spell names. Manual order unverified = block, priority life-saving heal, guard and heal distinct actors, real attacker ID checks. All outputs advisory, `orders_sent=0`, `locals_written=0`, `engine_dispatch=false`, opt-in off by default. No EEex hook / file writes or game changes.
