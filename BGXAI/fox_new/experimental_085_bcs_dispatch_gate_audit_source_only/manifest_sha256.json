@@ -1,0 +1,10 @@
+{
+  "project": "BGXAI085",
+  "files": {
+    "BGXAI085_BCS_GATE_AUDIT.py": "f5e9b1be9922df9f918be50f8e8a82d3e5144ee397efd5fbdca2840d0029eb88",
+    "README_RU.md": "818a88dbd2475de049ba35e0fc2fd8668cee35cb7fefe0c6e5a658b511fe5356",
+    "evidence_085.json": "eb577c68232ab6251468703dc011ce67e875992e23090119d1d1a68c72fa5978",
+    "test_085.py": "ab859ea3aa7dc2dc45651070db7b8a182885508af7561a28bec6f05030690924",
+    "verify_release_085.py": "3ade6249af5d4be562a94fdd8bdd6ff664763cdf6ccb82cc9e1f3fbd8eed4e19"
+  }
+}
