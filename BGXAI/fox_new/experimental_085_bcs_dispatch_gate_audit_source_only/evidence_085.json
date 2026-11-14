@@ -1,0 +1,15 @@
+{
+  "title": "BGXAI 085 - historical BAF receiver action-gate audit, read-only",
+  "date": "2026-11-14",
+  "repo": "jeleZa112/nwn-xanos-updates",
+  "branch": "bg-eet-ai",
+  "method": "Independently fetched and inspected the three exact GitHub BAF UTF-8 sources; parsed IF/THEN/END rules; counted action calls and exact ActionListEmpty(), F=ON, ModalState(NONE) gates. The Python 085 tool has synthetic tests; no live 066S compiled BCS was read in this stage.",
+  "audited_sources": [
+    {"path":"BGXAI/fox_new/experimental_061_rescue_approach_source_only/BGX61_RECEIVER.baf","git_blob_sha":"740805a324c0b5cabbaf69acb14d8e1b4af87041","blocks":20,"dispatch_rules":18,"gated_dispatch_rules":18,"categories":{"AttackReevaluate":6,"MoveToObject":6,"ProtectObject":6},"cleanup_rules":2},
+    {"path":"BGXAI/fox_new/experimental_066s_guarded_install_candidate/BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf","git_blob_sha":"f5e72c5c87d2dfefa4859bd2d7bbcd0110bdeddb","blocks":11,"dispatch_rules":7,"gated_dispatch_rules":7,"categories":{"Spell":7},"cleanup_rules":4},
+    {"path":"BGXAI/fox_new/experimental_067_early_guard_guarded/BGX67_EARLY_GUARD.baf","git_blob_sha":"8bcd6574d520f42eb1f8093b27b571dda25fe0e9","blocks":8,"dispatch_rules":6,"gated_dispatch_rules":6,"categories":{"AttackReevaluate":6},"cleanup_rules":2,"install_status":"HOLD_SOURCE_ONLY"}
+  ],
+  "verified_only_static":true,
+  "caveats":["061 and 066S code position before legacy EPS does not guarantee EPS-first buff priority when both ready","ActionListEmpty() protects current actor at BCS evaluation time, not permanently","061 ProtectObject is an engine order, not housekeeping","066S actual installed compiled BCS hash was previously verified by user through 081, not independently re-read here","No manual/EPS provenance or live behavior verified","The 085 Python parser was tested on synthetic BAF inputs only, not automatically executed on the full authentic BAF byte stream"],
+  "installed":"066S, no new installation"
+}
