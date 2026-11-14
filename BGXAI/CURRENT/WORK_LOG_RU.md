@@ -1,3 +1,7 @@
+## 2026-11-14 — USER WINDOWS READ-ONLY 081 CONFIRMED (no game change)
+
+User ran pinned GitHub `audit_live_081.py` (download SHA256 `19a368242080e2745a463570f584ce6bdcac6f2e6e6a0639df4e353459390516`) against actual `C:\Games\BG_EET_FOXX_NEW\override\M_BX43.lua` and `BDDEFAI.BCS`. Output status `READ_ONLY_066S_LUA_ACTION_CONTRACT_CONFIRMED`: Lua SHA256 `50640902ec4c25a2c85e5088d7231678b54445a847b41743c476974236d1d70f`, BCS SHA256 `fb435d82e6c3e0ebea1d6a9532753921bd5411d70ac0677dc1fd8ec483380476`, all ten static sentinel flags true. Action-start listener, weapon-hit listener, action-ID reads, BCS guard/caster local writers present in exact installed source. `manual_command_origin_proven=false`, `eps_action_queue_empty_proven=false`, `can_authorize_080_in_game=false`. **Static source / installed file identity only**: no runtime queue/origin validation, no install or write. Installed 066S stays active; 067 HOLD, 068–083 source only. Do not request rerun of 081, 075/076R1 or old archives. Continue from 083 towards safe EEex v1.1.7 queue/origin evidence, never infer availability from action ID 0.
+
 ## 2026-11-14 — BGXAI 083 EEex 1.1.7 EXACT SOURCE CONTRACT + PASSIVE TRACE (SOURCE ONLY)
 
 - **Installed game unchanged:** last user-verified 066S BCS SHA `fb435d82e6c3e0ebea1d6a9532753921bd5411d70ac0677dc1fd8ec483380476`; EPS18.4/SCS35.21/EEex1.1.7, Insane. 067 HOLD; 068–083 only offline/SOURCE ONLY. Do not recommend install/retest/old archives.
