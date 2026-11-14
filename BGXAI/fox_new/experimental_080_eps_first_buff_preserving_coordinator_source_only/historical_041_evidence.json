@@ -1,0 +1,41 @@
+{
+  "status": "HISTORICAL_041_EPS_BUFF_SOURCE_CONFIRMED",
+  "source_sha256": "86d80953be464a3f10da8e1dc031b907801860b7f1f15b3ea6fb9d25e485f3f5",
+  "blocks": 1057,
+  "markers": {
+    "EPS_BUFF": {
+      "count": 190,
+      "first": 42,
+      "last": 232
+    },
+    "EPS_LONG_BUFF": {
+      "count": 90,
+      "first": 42,
+      "last": 232
+    },
+    "EPS_SOLO_BUFFING": {
+      "count": 2,
+      "first": 25,
+      "last": 26
+    },
+    "EPS_HEAL_CAST": {
+      "count": 11,
+      "first": 27,
+      "last": 513
+    },
+    "EPS_ATTACK_MODE": {
+      "count": 60,
+      "first": 8,
+      "last": 231
+    },
+    "BGXAI_F_GUARD": {
+      "count": 18,
+      "first": 1,
+      "last": 1057
+    }
+  },
+  "integrity": "BYTE_EXACT_NON_MUTATING",
+  "runtime_proof": false,
+  "live_066s_buff_marker_counts_verified": false,
+  "important_limit": "This is older 041 BCS; 075/076R1 proved live 066S EPS attack/heal and F markers, not every historical buff marker."
+}
