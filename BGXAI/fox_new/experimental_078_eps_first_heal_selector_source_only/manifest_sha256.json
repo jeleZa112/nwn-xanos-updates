@@ -1,0 +1,12 @@
+{
+  "name": "BGXAI_078_EPS_FIRST_HEAL_SELECTOR_SOURCE_ONLY",
+  "installable": false,
+  "installed_game_unchanged": true,
+  "files": {
+    "BGXAI078_HEAL_SELECTOR.lua": "8369e1c5fd88774a3b26cbe419c09271dfaa2ce76fb4b1f92646c2b515b106f8",
+    "test_078.lua": "f051c659e824e69eeb6b44e35a552987fc1363a6a1a8a5267feb9d18db347c70",
+    "test_078_contract.py": "1e80573635e7b714d3f365256a1ede737f11959fe922173c545746979104304d",
+    "README_RU.md": "1ae13bbf42371f610b74dea787ffaa4e23b36fc4b8490570d31af7af0a7dbbdb",
+    "verify_release_078.py": "a66350939d37fe3741c7610c2207c1e3890063cd2adb1cc86e231579f8fdb9d8"
+  }
+}
