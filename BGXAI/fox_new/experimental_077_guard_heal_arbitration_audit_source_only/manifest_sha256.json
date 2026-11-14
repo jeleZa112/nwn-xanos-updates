@@ -1,0 +1,11 @@
+{
+  "package": "BGXAI_077_EPS_GUARD_HEAL_AUDIT_SOURCE_ONLY",
+  "source_only": true,
+  "input_origin": "Private Library originals NOT packaged",
+  "sha256": {
+    "audit_077.py": "59b6613b3fe71b50386f8c252d891b11ee3812a43f275c56b9807a02a48de671",
+    "test_077.py": "14d3fe30ee027b6e1bd7c1f45a1ec718bb97e0790c0ab3dcee741541b57572c4",
+    "audit_results_077.json": "4b3b955d87f792471ffd0d6e293cdae93f4373899d9e8a2c50eb8386584a55fe",
+    "README_RU.md": "f97c8df84875420fe4376770a7b600c2e177685e7fe368baf1bfe55df382f065"
+  }
+}
