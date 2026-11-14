@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-14",
+  "project": "BGXAI/EET_FOXX_NEW",
+  "installed_version": "066S",
+  "live_lua_sha256": "50640902ec4c25a2c85e5088d7231678b54445a847b41743c476974236d1d70f",
+  "live_bcs_sha256": "fb435d82e6c3e0ebea1d6a9532753921bd5411d70ac0677dc1fd8ec483380476",
+  "source_only_candidate_sha256": "c4e25bf6de7c3569b03657f3d48b5ddc9730c94ac6f63124bcc3f32cfb471e29",
+  "original_baf_sha256": "c678a70a08dbcff7584e0f2703aa8bed5ae5945856287666016ee47c9d6f69ae",
+  "baseline_native_lua_tests": {"passed": 18, "total": 18},
+  "candidate_tests": {"passed": 30, "total": 30, "previous_behavior_regressions": 17, "diff_safety": 4, "new_capability_behavior": 9},
+  "texlua_parse": "PASS",
+  "static_no_clear_actions_or_new_hooks": "PASS",
+  "game_changed": false,
+  "runtime_eeex_proven": false,
+  "native_spell_verifier_enabled": false,
+  "engine_orders_added": 0,
+  "gameplay_improvement_claimed": false,
+  "next_step": "Find a verified side-effect-safe live ability reader; validate actual EPS queue priority; only then optional guarded integration"
+}
