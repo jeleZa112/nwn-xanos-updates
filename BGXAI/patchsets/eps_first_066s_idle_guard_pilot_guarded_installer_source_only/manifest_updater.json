@@ -1,0 +1,121 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.36-066S-IDLE-GUARD-PILOT",
+  "files": [
+    {
+      "dest": "066S_idle_guard_minimal.diff",
+      "source": "BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/066S_idle_guard_minimal.diff",
+      "sha256": "a1a07648e75e8cdc3051b534ea896f9641a941b898dfb07b18582eae31c8ccc8",
+      "size": 1473
+    },
+    {
+      "dest": "BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf",
+      "source": "BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf",
+      "sha256": "c678a70a08dbcff7584e0f2703aa8bed5ae5945856287666016ee47c9d6f69ae",
+      "size": 5755
+    },
+    {
+      "dest": "BGX66_CASTER_SUPPORT.lua",
+      "source": "BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/BGX66_CASTER_SUPPORT.lua",
+      "sha256": "b365ac770c508e292b87c280c58f922c20306a0b9d3ca68c99b0cd1223872020",
+      "size": 6829
+    },
+    {
+      "dest": "BGXAI_IDLE_GUARD_INSTALL_SOURCE_ONLY.py",
+      "source": "BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/BGXAI_IDLE_GUARD_INSTALL_SOURCE_ONLY.py",
+      "sha256": "7afed60db929c49c7e0fcef0dd2da33bb8e601da1a768985731cfd7714276453",
+      "size": 13543
+    },
+    {
+      "dest": "M_BX43_066S_IDLE_GUARD_CANDIDATE.lua",
+      "source": "BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/M_BX43_066S_IDLE_GUARD_CANDIDATE.lua",
+      "sha256": "2bf43c6ce4d607c13ce1aaf5a6af34810e0d4e81e2272c7a37dce384b6413e1a",
+      "size": 36391
+    },
+    {
+      "dest": "M_BX43_066S_VERIFIED_ORIGINAL.lua",
+      "source": "BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/M_BX43_066S_VERIFIED_ORIGINAL.lua",
+      "sha256": "50640902ec4c25a2c85e5088d7231678b54445a847b41743c476974236d1d70f",
+      "size": 35990
+    },
+    {
+      "dest": "M_BX43_066_BASELINE_READONLY.lua",
+      "source": "BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/M_BX43_066_BASELINE_READONLY.lua",
+      "sha256": "c66ebb5190be8103819106a48d3100055b5791adf7c2d1df5f3e54596823540b",
+      "size": 29160
+    },
+    {
+      "dest": "README_INSTALLER_RU.md",
+      "source": "BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/README_INSTALLER_RU.md",
+      "sha256": "4d39db01e6fda13a31f4d71c04012fa85a2e5e3f176fcab4da161441b40ec942",
+      "size": 5472
+    },
+    {
+      "dest": "README_RU.md",
+      "source": "BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/README_RU.md",
+      "sha256": "d3ffbe47efc5b03caa5a770533221e4e231868bcbf2a6addf2a7c4b56cc7942c",
+      "size": 6597
+    },
+    {
+      "dest": "TEST_PROTOCOL_RU.md",
+      "source": "BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/TEST_PROTOCOL_RU.md",
+      "sha256": "92d88ee3c537723175003516f089a090edc43e0c92aecbd77f0e09e0d34cc6f8",
+      "size": 2041
+    },
+    {
+      "dest": "lua65_harness.py",
+      "source": "BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/lua65_harness.py",
+      "sha256": "d0586d522303893ff2ae648c2b6915ed4178113e8782d98d698c5a3b03b70607",
+      "size": 1865
+    },
+    {
+      "dest": "manifest_install_sha256.json",
+      "source": "BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/manifest_install_sha256.json",
+      "sha256": "17373fe630f23c53a8275f67c03df66a8f844991412a766b23835935d331b904",
+      "size": 1872
+    },
+    {
+      "dest": "native_066_fixture.py",
+      "source": "BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/native_066_fixture.py",
+      "sha256": "1f79e686f9c2e3d682701f0a5e7844a9304fba9f15cb8b2f6b00f51133e255eb",
+      "size": 1923
+    },
+    {
+      "dest": "parse.lua",
+      "source": "BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/parse.lua",
+      "sha256": "8c796211fb12cc0a5dc47e6e0d812e8dd8b488a5a2cc2e46f965391f9e0f9d63",
+      "size": 50
+    },
+    {
+      "dest": "run_tests.py",
+      "source": "BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/run_tests.py",
+      "sha256": "53c1b568571acf23d1b02c6f7b25af1417ffcdebaf2fded3838c07ad055f7313",
+      "size": 1118
+    },
+    {
+      "dest": "test_066s_caster_native.py",
+      "source": "BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/test_066s_caster_native.py",
+      "sha256": "5672e2f42b9a08a7b6f8cc85b5fcbe27fc505b0a2b3e8a0290239b4bc9aae507",
+      "size": 6797
+    },
+    {
+      "dest": "test_guarded_installer.py",
+      "source": "BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/test_guarded_installer.py",
+      "sha256": "3089e2e3bf5b497343729f8418b595304d1b0f41a4a81a5263f20846e537d6ce",
+      "size": 9068
+    },
+    {
+      "dest": "test_idle_guard.py",
+      "source": "BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/test_idle_guard.py",
+      "sha256": "1c7b29ecb2b8c4e1ce5df6022ef307037022868854919b45fdbcdb95ffdafa6d",
+      "size": 5270
+    },
+    {
+      "dest": "verify_install_release.py",
+      "source": "BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/verify_install_release.py",
+      "sha256": "5715a68838b64021d5428758f48fc1206e9b88cb962a47fbf5abc43edc3ed308",
+      "size": 1835
+    }
+  ]
+}

@@ -151,8 +151,17 @@ $release067=@{
     names=@('BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf','BGX66_CASTER_SUPPORT.lua','BGX67_EARLY_GUARD.baf','BGX67_PREHIT_GUARD.lua','BGXAI64_INSTALL_SOURCE_ONLY.py','BGXAI64_PATCH.py','BGXAI64_PREFLIGHT_READONLY.py','BGXAI66S_BCS_PATCH.py','BGXAI66S_INSTALL.py','BGXAI67_BCS_PATCH.py','BGXAI67_INSTALL.py','M_BX43_064_CANDIDATE.lua','M_BX43_066S_CASTER_CANDIDATE.lua','M_BX43_066_BASELINE_READONLY.lua','M_BX43_066_CANDIDATE.lua','M_BX43_067_EARLY_CANDIDATE.lua','README_RU.md','build_066.py','build_066s.py','build_067.py','ci_weidu_067.py','generate_067_baf.py','generate_receiver.py','ids/action.ids','ids/modal.ids','ids/object.ids','ids/spell.ids','ids/trigger.ids','lua65_harness.py','native_066_fixture.py','test_066s_installer_mock.py','test_067_bcs.py','test_067_install_mock.py','test_067_native.py')
 }
 
+$releaseIdle=@{
+ id='IDLE';version='0.3.36-066S-IDLE-GUARD-PILOT';
+ manifest='BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/manifest_updater.json';
+ prefix='BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/';
+ localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_066s_idle_guard_pilot';
+ installer='BGXAI_IDLE_GUARD_INSTALL_SOURCE_ONLY.py';
+ names=@('066S_idle_guard_minimal.diff','BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf','BGX66_CASTER_SUPPORT.lua','BGXAI_IDLE_GUARD_INSTALL_SOURCE_ONLY.py','M_BX43_066S_IDLE_GUARD_CANDIDATE.lua','M_BX43_066S_VERIFIED_ORIGINAL.lua','M_BX43_066_BASELINE_READONLY.lua','README_INSTALLER_RU.md','README_RU.md','TEST_PROTOCOL_RU.md','lua65_harness.py','manifest_install_sha256.json','native_066_fixture.py','parse.lua','run_tests.py','test_066s_caster_native.py','test_guarded_installer.py','test_idle_guard.py','verify_install_release.py')
+}
+
 function Get-PinnedBytes([string]$remotePath) {
-    if($remotePath -notmatch '^BGXAI/fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
+    if($remotePath -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
         throw ('Remote source path blocked: '+$remotePath)
     }
     # All sources are publicly hosted; pin content by immutable commit and SHA256 manifest.
@@ -529,6 +538,42 @@ function Run067Guarded([string]$mode) {
     & py -3 (Join-Path $release067.localPath 'BGXAI67_INSTALL.py') $mode '--yes' '--confirm' $token
     if($LASTEXITCODE -ne 0){throw ('BGXAI067 '+$mode+' STOP '+$LASTEXITCODE+'. DO NOT AUTO-RETRY')}
     Write-Host 'BGXAI067 action completed. Read-only status via menu 90.'
+}
+
+
+function VerifyIdleGuardSource {
+    $spec=$releaseIdle
+    $items=VerifiedManifest $spec
+    foreach($name in $spec.names){
+        $file=Join-Path $spec.localPath $name
+        AssertNotReparse $file
+        if((HashFile $file) -cne $items[$name].sha){throw ('BGXAI IDLE source SHA mismatch: '+$name)}
+    }
+}
+function CheckIdleGuardReadOnly([string]$mode) {
+    if($mode -cne 'preflight' -and $mode -cne 'status'){throw 'BGXAI IDLE read-only mode invalid'}
+    SyncRelease $releaseIdle
+    VerifyIdleGuardSource
+    Write-Host ('BGXAI 066S idle guard '+$mode+': READ ONLY, no override/WeiDU changes.')
+    & py -3 (Join-Path $releaseIdle.localPath 'BGXAI_IDLE_GUARD_INSTALL_SOURCE_ONLY.py') $mode '--game-root' $GameRoot
+    if($LASTEXITCODE -ne 0){throw ('BGXAI IDLE '+$mode+' STOP '+$LASTEXITCODE)}
+}
+function RunIdleGuardGuarded([string]$mode) {
+    if($mode -cne 'install' -and $mode -cne 'rollback'){throw 'BGXAI IDLE guarded mode invalid'}
+    SyncRelease $releaseIdle
+    VerifyIdleGuardSource
+    $installer=Join-Path $releaseIdle.localPath 'BGXAI_IDLE_GUARD_INSTALL_SOURCE_ONLY.py'
+    $check=if($mode -ceq 'install'){'preflight'}else{'status'}
+    & py -3 $installer $check '--game-root' $GameRoot
+    if($LASTEXITCODE -ne 0){throw ('BGXAI IDLE pre-authorization STOP '+$LASTEXITCODE)}
+    $token=if($mode -ceq 'install'){'INSTALL_BGXAI_IDLE_GUARD'}else{'ROLLBACK_BGXAI_IDLE_GUARD'}
+    Write-Host 'EXPERIMENTAL IDLE GUARD: changes ONLY override/M_BX43.lua via WeiDU; EPS/BCS untouched.'
+    Write-Host 'Close Baldur and InfinityLoader. Backup and SHA gates are mandatory.'
+    $approval=Read-Host ('Type '+$token+' exactly to authorize, or press ENTER to cancel')
+    if($approval -cne $token){Write-Host 'BGXAI IDLE cancelled. Installed game unchanged.';return}
+    & py -3 $installer $mode '--yes' '--confirm' $token '--game-root' $GameRoot
+    if($LASTEXITCODE -ne 0){throw ('BGXAI IDLE '+$mode+' STOP '+$LASTEXITCODE+'. NO AUTOMATIC RETRY')}
+    Write-Host ('BGXAI IDLE '+$mode+' completed. Use menu 95 for status.')
 }
 
 function Test066GuardedReadOnly {
@@ -1021,6 +1066,11 @@ Write-Host ' 88 - BGXAI 067 installed 066S and real EET IDS preflight (READ ONLY
 Write-Host ' 89 - EXPERIMENTAL install BGXAI 067 (explicit opt-in + backup)'
 Write-Host ' 90 - BGXAI 067/066S guarded status (READ ONLY)'
 Write-Host ' 91 - Roll back BGXAI 067 to 066S (explicit opt-in)'
+Write-Host ' 92 - BGXAI 066S idle-guard source sync (NO INSTALL)'
+Write-Host ' 93 - BGXAI 066S idle-guard read-only preflight'
+Write-Host ' 94 - BGXAI 066S idle-guard guarded install (separate approval)'
+Write-Host ' 95 - BGXAI 066S idle-guard read-only status'
+Write-Host ' 96 - BGXAI 066S idle-guard guarded rollback (separate approval)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -1118,6 +1168,11 @@ try {
       '89' {Run067Guarded 'install';break}
       '90' {Status067ReadOnly;break}
       '91' {Run067Guarded 'rollback';break}
+      '92' {SyncRelease $releaseIdle;break}
+      '93' {CheckIdleGuardReadOnly 'preflight';break}
+      '94' {RunIdleGuardGuarded 'install';break}
+      '95' {CheckIdleGuardReadOnly 'status';break}
+      '96' {RunIdleGuardGuarded 'rollback';break}
       default {throw 'Unknown menu option, no game change.'}
     }
     exit 0
