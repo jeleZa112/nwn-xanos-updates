@@ -1,0 +1,28 @@
+--- 066S_live_exact
++++ 066S_idle_guard_candidate
+@@ -605,7 +605,11 @@
+             if req==0 and integer(previous) and (sent==0 or sent==1)
+               and (sent==0 or now>previous) then
+               local dx,dy=x-vx,y-vy
+-              options[#options+1]={id=id,slot=i+1,sprite=obj,distance=dx*dx+dy*dy}
++              -- Advisory preference ONLY: an already-idle guard may respond sooner.
++              -- The unchanged BCS ActionListEmpty() remains the real action gate.
++              local actionID=safe(function()return obj.m_curAction.m_actionID end)
++              local idleHint=(actionID==0) and 0 or 1
++              options[#options+1]={id=id,slot=i+1,sprite=obj,distance=dx*dx+dy*dy,idleHint=idleHint}
+             end
+           elseif role~='frontline' then
+             support[#support+1]={id=id,slot=i+1,role=role}
+@@ -621,7 +625,11 @@
+     if BGX52Bridge then BGX52Bridge.last=T.last end
+     return false,'no_eligible_frontline'
+   end
+-  table.sort(options,function(a,b)if a.distance~=b.distance then return a.distance<b.distance end; return a.slot<b.slot end)
++  table.sort(options,function(a,b)
++    if a.idleHint~=b.idleHint then return a.idleHint<b.idleHint end
++    if a.distance~=b.distance then return a.distance<b.distance end
++    return a.slot<b.slot
++  end)
+   local best=options[1]
+   -- Identical verified WeiDU/BCS receiver protocol to working 064.
+   -- All keys must be written before final nonzero REQ_SLOT; failure clears it.

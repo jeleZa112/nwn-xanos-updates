@@ -1,0 +1,23 @@
+{
+  "files": {
+    "066S_idle_guard_minimal.diff": "a1a07648e75e8cdc3051b534ea896f9641a941b898dfb07b18582eae31c8ccc8",
+    "BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf": "c678a70a08dbcff7584e0f2703aa8bed5ae5945856287666016ee47c9d6f69ae",
+    "BGX66_CASTER_SUPPORT.lua": "b365ac770c508e292b87c280c58f922c20306a0b9d3ca68c99b0cd1223872020",
+    "BGXAI_IDLE_GUARD_INSTALL_SOURCE_ONLY.py": "7afed60db929c49c7e0fcef0dd2da33bb8e601da1a768985731cfd7714276453",
+    "M_BX43_066S_IDLE_GUARD_CANDIDATE.lua": "2bf43c6ce4d607c13ce1aaf5a6af34810e0d4e81e2272c7a37dce384b6413e1a",
+    "M_BX43_066S_VERIFIED_ORIGINAL.lua": "50640902ec4c25a2c85e5088d7231678b54445a847b41743c476974236d1d70f",
+    "M_BX43_066_BASELINE_READONLY.lua": "c66ebb5190be8103819106a48d3100055b5791adf7c2d1df5f3e54596823540b",
+    "README_INSTALLER_RU.md": "4d39db01e6fda13a31f4d71c04012fa85a2e5e3f176fcab4da161441b40ec942",
+    "README_RU.md": "d3ffbe47efc5b03caa5a770533221e4e231868bcbf2a6addf2a7c4b56cc7942c",
+    "TEST_PROTOCOL_RU.md": "92d88ee3c537723175003516f089a090edc43e0c92aecbd77f0e09e0d34cc6f8",
+    "lua65_harness.py": "d0586d522303893ff2ae648c2b6915ed4178113e8782d98d698c5a3b03b70607",
+    "native_066_fixture.py": "1f79e686f9c2e3d682701f0a5e7844a9304fba9f15cb8b2f6b00f51133e255eb",
+    "parse.lua": "8c796211fb12cc0a5dc47e6e0d812e8dd8b488a5a2cc2e46f965391f9e0f9d63",
+    "run_tests.py": "53c1b568571acf23d1b02c6f7b25af1417ffcdebaf2fded3838c07ad055f7313",
+    "test_066s_caster_native.py": "5672e2f42b9a08a7b6f8cc85b5fcbe27fc505b0a2b3e8a0290239b4bc9aae507",
+    "test_guarded_installer.py": "3089e2e3bf5b497343729f8418b595304d1b0f41a4a81a5263f20846e537d6ce",
+    "test_idle_guard.py": "1c7b29ecb2b8c4e1ce5df6022ef307037022868854919b45fdbcdb95ffdafa6d"
+  },
+  "baseline_lua": "50640902ec4c25a2c85e5088d7231678b54445a847b41743c476974236d1d70f",
+  "note": "Source-only source file checksums; no game modified"
+}

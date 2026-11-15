@@ -1,0 +1,202 @@
+// BGXAI 066S - SOURCE ONLY BCS caster support. NOT INSTALLED.
+// Injection point (only after proven WeiDU merge): after existing F toggle,
+// before legacy 042B/EPS blocks. Existing 064 receiver retained byte-exact.
+// Cleanup expired/F-OFF requests. Never force manual action interruption.
+IF
+  InParty(Myself)
+  GlobalGT("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_EXPIRE","LOCALS")
+THEN
+  RESPONSE #100
+    SetGlobal("BGX66_S_HEAL_SLOT","LOCALS",0)
+    Continue()
+END
+
+IF
+  InParty(Myself)
+  GlobalGT("BGX66_S_HEAL_SLOT","LOCALS",0)
+  Global("BGX38_GUARD","LOCALS",0)
+THEN
+  RESPONSE #100
+    SetGlobal("BGX66_S_HEAL_SLOT","LOCALS",0)
+    Continue()
+END
+
+IF
+  InParty(Myself)
+  Global("BGX66_S_WARD","LOCALS",1)
+  !GlobalTimerNotExpired("BGX66_S_WARD_EXPIRE","LOCALS")
+THEN
+  RESPONSE #100
+    SetGlobal("BGX66_S_WARD","LOCALS",0)
+    Continue()
+END
+
+IF
+  InParty(Myself)
+  Global("BGX66_S_WARD","LOCALS",1)
+  Global("BGX38_GUARD","LOCALS",0)
+THEN
+  RESPONSE #100
+    SetGlobal("BGX66_S_WARD","LOCALS",0)
+    Continue()
+END
+
+// Cleric/druid support. The engine checks actual memorisation and injured target.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",1)
+  GlobalTimerNotExpired("BGX66_S_HEAL_EXPIRE","LOCALS")
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player1)
+  InPartySlot(Player1,0)
+  HPPercentLT(Player1,45)
+  See(Player1)
+  Range(Player1,10)
+THEN
+  RESPONSE #100
+    SetGlobal("BGX66_S_HEAL_SLOT","LOCALS",0)
+    SetGlobalTimer("BGX66_S_HEAL_COOLDOWN","LOCALS",12)
+    Spell(Player1,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// Cleric/druid support. The engine checks actual memorisation and injured target.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",2)
+  GlobalTimerNotExpired("BGX66_S_HEAL_EXPIRE","LOCALS")
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player2)
+  InPartySlot(Player2,1)
+  HPPercentLT(Player2,45)
+  See(Player2)
+  Range(Player2,10)
+THEN
+  RESPONSE #100
+    SetGlobal("BGX66_S_HEAL_SLOT","LOCALS",0)
+    SetGlobalTimer("BGX66_S_HEAL_COOLDOWN","LOCALS",12)
+    Spell(Player2,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// Cleric/druid support. The engine checks actual memorisation and injured target.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",3)
+  GlobalTimerNotExpired("BGX66_S_HEAL_EXPIRE","LOCALS")
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player3)
+  InPartySlot(Player3,2)
+  HPPercentLT(Player3,45)
+  See(Player3)
+  Range(Player3,10)
+THEN
+  RESPONSE #100
+    SetGlobal("BGX66_S_HEAL_SLOT","LOCALS",0)
+    SetGlobalTimer("BGX66_S_HEAL_COOLDOWN","LOCALS",12)
+    Spell(Player3,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// Cleric/druid support. The engine checks actual memorisation and injured target.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",4)
+  GlobalTimerNotExpired("BGX66_S_HEAL_EXPIRE","LOCALS")
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player4)
+  InPartySlot(Player4,3)
+  HPPercentLT(Player4,45)
+  See(Player4)
+  Range(Player4,10)
+THEN
+  RESPONSE #100
+    SetGlobal("BGX66_S_HEAL_SLOT","LOCALS",0)
+    SetGlobalTimer("BGX66_S_HEAL_COOLDOWN","LOCALS",12)
+    Spell(Player4,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// Cleric/druid support. The engine checks actual memorisation and injured target.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",5)
+  GlobalTimerNotExpired("BGX66_S_HEAL_EXPIRE","LOCALS")
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player5)
+  InPartySlot(Player5,4)
+  HPPercentLT(Player5,45)
+  See(Player5)
+  Range(Player5,10)
+THEN
+  RESPONSE #100
+    SetGlobal("BGX66_S_HEAL_SLOT","LOCALS",0)
+    SetGlobalTimer("BGX66_S_HEAL_COOLDOWN","LOCALS",12)
+    Spell(Player5,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// Cleric/druid support. The engine checks actual memorisation and injured target.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",6)
+  GlobalTimerNotExpired("BGX66_S_HEAL_EXPIRE","LOCALS")
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player6)
+  InPartySlot(Player6,5)
+  HPPercentLT(Player6,45)
+  See(Player6)
+  Range(Player6,10)
+THEN
+  RESPONSE #100
+    SetGlobal("BGX66_S_HEAL_SLOT","LOCALS",0)
+    SetGlobalTimer("BGX66_S_HEAL_COOLDOWN","LOCALS",12)
+    Spell(Player6,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// Emergency mage self-defense only after confirmed hit on THIS mage.
+// Single low-level spell, one request, long cooldown; no pre-hit guessing.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_WARD","LOCALS",1)
+  GlobalTimerNotExpired("BGX66_S_WARD_EXPIRE","LOCALS")
+  !GlobalTimerNotExpired("BGX66_S_WARD_COOLDOWN","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HPPercentLT(Myself,26)
+  HaveSpell(WIZARD_SHIELD)
+  See(NearestEnemyOf(Myself))
+THEN
+  RESPONSE #100
+    SetGlobal("BGX66_S_WARD","LOCALS",0)
+    SetGlobalTimer("BGX66_S_WARD_COOLDOWN","LOCALS",9000)
+    Spell(Myself,WIZARD_SHIELD)
+END
