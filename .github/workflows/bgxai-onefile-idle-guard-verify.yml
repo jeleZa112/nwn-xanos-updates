@@ -1,0 +1,41 @@
+name: BGXAI one-file idle guard SHA and PowerShell AST
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BGXAI_SYNC.ps1'
+      - 'BGXAI/fox_new/BOOTSTRAP_PIN.json'
+      - 'BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/**'
+      - '.github/workflows/bgxai-onefile-idle-guard-verify.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows-ast-channel:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: PowerShell 5.1 syntax gate (no execution)
+        shell: powershell
+        run: |
+          $tokens = $null
+          $errors = $null
+          $p = (Resolve-Path 'BGXAI/BGXAI_SYNC.ps1').Path
+          [System.Management.Automation.Language.Parser]::ParseFile($p, [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Host $_.Message }
+            throw 'Invalid PowerShell AST'
+          }
+          Write-Host 'BGXAI PowerShell 5.1 AST PASS'
+      - name: Immutable one-file pin / sources / menu gate
+        shell: pwsh
+        run: python BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/validate_onefile_channel.py
+      - name: Installer synthetic preflight/install/rollback tests
+        shell: pwsh
+        working-directory: BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only
+        run: python -m unittest -q test_guarded_installer

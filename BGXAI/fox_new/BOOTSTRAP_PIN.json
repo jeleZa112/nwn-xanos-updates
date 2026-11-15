@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "b238eec6c929d0c908d61c09353bf26a41c461f9",
+  "commit": "9ad7249c768bc4770e5adb5b8582d8c0184e32b7",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "f7452cb7757e6bac074655cabd0c17dac701c07660707ce2496deda433bc5a48",
-  "script_size": 70582,
-  "description": "BGXAI 067 early resolved enemy action F defense: menu 87 34 SHA-pinned sources; 88 real EET installed-066S read-only preflight; 89 separately authorized guarded WeiDU install with external SHA-verified backup; 90 read-only status; 91 separately authorized rollback to verified 066S. Old menus 1-86 preserved exactly; 079 blocked. Game remains installed 066S until opted-in Windows install."
+  "script_sha256": "bc4b176aaed83852e597cef8b2cc168b9732fbfa31bbb79ca6442b854351a466",
+  "script_size": 74220,
+  "description": "BGXAI 066S idle-guard pilot via SAME BGXAI_UPDATE.cmd: menu 92 SHA-pinned 19-file sync, 93 read-only live preflight, 94 separately authorized guarded Lua-only WeiDU install, 95 read-only status, 96 separately authorized rollback. Legacy 1-91 unchanged. Existing EPS/BCS unchanged. Not installed until explicit user action."
 }
