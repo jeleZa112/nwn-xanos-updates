@@ -1,3 +1,9 @@
+# 16.11.2026 — ОБЯЗАТЕЛЬНЫЕ ПРАВИЛА ИСПРАВЛЕНИЯ ОШИБОК АССИСТЕНТА (ЧИТАТЬ ПЕРВЫМИ)
+
+**Канонические правила:** [BGXAI_ERROR_PREVENTION_RULES_20261116_RU.md](BGXAI_ERROR_PREVENTION_RULES_20261116_RU.md). Старые указания ниже хранить как историю, а не как следующий шаг. Пользователь уже дал READ_ONLY_PREFLIGHT_PASS для пункта 93 — НЕ просить повтор. Реально установлена 066S; idle guard и исправление status после rollback пока SOURCE ONLY; локальные 18/18 mock-тестов не равны игровому доказательству; CI Windows не подтверждён. **Главная метрика — новое автономное поведение спутников, а не отчёт/ZIP/установщик.** Правило №7: продолжать доступную безопасную работу без `+` в рамках активного обращения; не обещать фоновой работы; изменение установленной игры только после отдельного согласия. GitHub connector к `jeleZa112/nwn-xanos-updates` / `bg-eet-ai` работает — не выдавать отсутствие сети Python за отсутствие GitHub.
+
+---
+
 ## 2026-11-15 — ACTIVE SINGLE BGXAI_UPDATE.cmd RESTORED, PINNED TO MENU 92–96 (NOT INSTALLED)
 
 - User insisted to return to ONLY existing `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`; old manual ZIP / standalone PowerShell steps cancelled. Existing CMD and menus/dispatch **1–91 unchanged**. GitHub HEAD: `f42fa5a9538e0d778d44c1de2dfd1719bea6eb80` (checkpoint); actual script commit (immutable pin): `9ad7249c768bc4770e5adb5b8582d8c0184e32b7`. Active `BGXAI/fox_new/BOOTSTRAP_PIN.json` points script `BGXAI/BGXAI_SYNC.ps1` SHA256 `bc4b176aaed83852e597cef8b2cc168b9732fbfa31bbb79ca6442b854351a466`, length **74220** (<80000 loader limit). Pin changed in `d98be05e1b70553661c3d963c57cefb7769398bd`.
