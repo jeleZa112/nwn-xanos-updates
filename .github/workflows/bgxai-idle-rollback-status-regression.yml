@@ -1,0 +1,32 @@
+name: BGXAI source-only rollback status regression
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/BGXAI_IDLE_GUARD_INSTALL_STATUS_FIX_SOURCE_ONLY.py'
+      - 'BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/test_status_after_rollback_source_only.py'
+      - '.github/workflows/bgxai-idle-rollback-status-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-status:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify Python syntax (no game writes)
+        working-directory: BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only
+        run: python -m py_compile BGXAI_IDLE_GUARD_INSTALL_STATUS_FIX_SOURCE_ONLY.py test_status_after_rollback_source_only.py
+      - name: Run legacy guarded installer tests
+        working-directory: BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only
+        run: python -m unittest -q test_guarded_installer
+      - name: Run rollback status regression
+        working-directory: BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only
+        run: python -m unittest -q test_status_after_rollback_source_only
