@@ -2,8 +2,8 @@
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
   "version": 32,
-  "sha256": "5a25e7e1d203c1abc0ac2457a3e2dabd27370b8419f0d76c21f1213a5939f991",
+  "sha256": "b9067cf41560931a56dd880c7a5843cb221240ccf8ae8d9e3cf4d7eb99d7b55f",
   "mode": "READ_ONLY",
   "game_writes_allowed": false,
-  "note": "v32 exports up to 500 candidate source texts referenced by live installed DLG; only source data, never auto-install. Existing one-folder report retained. v28/29 cached."
+  "note": "v32 published source SHA256 corrected to match actual GitHub blob bytes (source upload omitted final LF). Safe read-only; no game changes."
 }
