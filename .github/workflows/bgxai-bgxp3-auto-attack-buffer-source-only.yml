@@ -1,0 +1,25 @@
+name: BGXAI BGXP3 AUTO attack buffer source-only regression
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/**'
+      - 'BGXAI/patchsets/priest_combat_eps_first_20261116/BGXP2_LAST_PRIORITY.baf'
+      - '.github/workflows/bgxai-bgxp3-auto-attack-buffer-source-only.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  safe-offline-candidate:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run exact BGXP2 baseline plus 7 BGXP3 candidate regression checks
+        working-directory: BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117
+        run: |
+          python -m py_compile BGXP3_AUTO_ATTACK_BUFFER_SOURCE_ONLY.py test_bgxp3_auto_attack_buffer.py
+          python -m unittest -v test_bgxp3_auto_attack_buffer
+          python BGXP3_AUTO_ATTACK_BUFFER_SOURCE_ONLY.py
