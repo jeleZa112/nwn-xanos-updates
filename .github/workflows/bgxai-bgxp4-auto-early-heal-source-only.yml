@@ -1,0 +1,26 @@
+name: BGXAI BGXP4 AUTO early heal source-only proof
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/patchsets/priest_auto_early_heal_source_20261117/**'
+      - '.github/workflows/bgxai-bgxp4-auto-early-heal-source-only.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-only-safety-regression:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check 6 AUTO Cure blocks and intact 1152 compiled BCS blocks
+        working-directory: BGXAI/patchsets/priest_auto_early_heal_source_20261117
+        shell: pwsh
+        run: |
+          python -m py_compile BGXP4_AUTO_EARLY_HEAL_SOURCE_ONLY.py BGXP4_NATIVE_PREFLIGHT_READ_ONLY.py test_bgxp4_early_heal.py
+          python -m unittest -v test_bgxp4_early_heal
+          python BGXP4_AUTO_EARLY_HEAL_SOURCE_ONLY.py
+          python BGXP4_NATIVE_PREFLIGHT_READ_ONLY.py
