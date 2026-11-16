@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "aedf3da83791c7ac6e424b98005e47301a90426f",
+  "commit": "f1b8cfd129895aa5587c8262a44f06def411a210",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "4693be88564fc6a81bba912a6ff81081db4dc27880bd81ab2abb8643b7423173",
-  "script_size": 79205,
-  "description": "BGXAI one-file updater: unchanged existing BGXAI_UPDATE.cmd dynamically verifies this pinned script; menu 97-100 BGXPR priest roles and 101-104 BGXTEAM read-only status/preflight and separately authorized install/rollback. Installed EET/EPS untouched by menu update."
+  "script_sha256": "3bad221fd699933a5eeba494e3a0754bf13acc5d03084ab0cc66aa705bb9ffc6",
+  "script_size": 79303,
+  "description": "BGXAI single unchanged CMD: SHA-pinned 1-108 menu, BGXP2 combat priest native EPS-first fallback menus 105-108. BGXPR HEALER preserved, BGXTEAM preserved; no automatic game install."
 }
