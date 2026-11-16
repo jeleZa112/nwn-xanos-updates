@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "2487bc941422c03e7596d8c79a718a013f0865ed",
+  "commit": "df0d1dcf8bd57a8694a97e32e86ff6f373ab35c5",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
   "script_sha256": "d68fb668560a027fa2af8ca00ea6239846d8a13cf1eef8ec61212fc1a5e0ee81",
   "script_size": 77932,
-  "description": "BGXAI single unchanged CMD: SHA-pinned 1-116 with guarded BGXP5 priority healing and party-safe combat 113-116. New install only by typed user confirmation."
+  "description": "BGXAI one-file SHA-verified 1-116, BGXP5 12 urgent AUTO heal blocks and 4 friendly-fire target filters; protected installation with separate typed approval."
 }
