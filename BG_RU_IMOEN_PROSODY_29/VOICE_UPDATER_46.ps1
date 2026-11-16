@@ -112,18 +112,23 @@ raise SystemExit(module.main())
     } catch { Write-Host ('Rollback failure: '+$rec.Path) -ForegroundColor Red }
   }
   try {
-    Add-Type -AssemblyName System.IO.Compression
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
-    $failedReport = $report+'.pending'
-    if (Test-Path -LiteralPath $failedReport) { Remove-Item -LiteralPath $failedReport -Force }
-    $archive = [IO.Compression.ZipFile]::Open($failedReport,[IO.Compression.ZipArchiveMode]::Create)
+    $errorText = [IO.Path]::GetTempFileName()
+    [void]$tempFiles.Add($errorText)
+    [IO.File]::WriteAllText($errorText, ("BG Voice RU audit error" + [Environment]::NewLine + $msg), [Text.Encoding]::UTF8)
+    $errorDir = Join-Path ([IO.Path]::GetTempPath()) ('BG_VOICE_RU_ERROR_' + [guid]::NewGuid().ToString('N'))
+    [void](New-Item -ItemType Directory -Path $errorDir -Force)
     try {
-      $entry = $archive.CreateEntry('ERROR.txt')
-      $writer = [IO.StreamWriter]::new($entry.Open(),[Text.Encoding]::UTF8)
-      try { $writer.WriteLine('BG Voice RU audit error');$writer.WriteLine($msg) }
-      finally { $writer.Dispose() }
-    } finally { $archive.Dispose() }
-    Move-Item -LiteralPath $failedReport -Destination $report -Force
+      Copy-Item -LiteralPath $errorText -Destination (Join-Path $errorDir 'ERROR.txt')
+      $failedZip = Join-Path ([IO.Path]::GetTempPath()) ('BG_VOICE_RU_FAILURE_' + [guid]::NewGuid().ToString('N') + '.zip')
+      [void]$tempFiles.Add($failedZip)
+      Compress-Archive -LiteralPath (Join-Path $errorDir 'ERROR.txt') -DestinationPath $failedZip -CompressionLevel Optimal -Force
+      if (!(Test-Path -LiteralPath $failedZip)) { throw 'ZIP was not created' }
+      $pendingReport = $report+'.pending'
+      Copy-Item -LiteralPath $failedZip -Destination $pendingReport -Force
+      Move-Item -LiteralPath $pendingReport -Destination $report -Force
+    } finally {
+      Remove-Item -LiteralPath $errorDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
   } catch { Write-Host ('Could not create failure ZIP: '+$_.Exception.Message) }
   exit 1
 } finally {
