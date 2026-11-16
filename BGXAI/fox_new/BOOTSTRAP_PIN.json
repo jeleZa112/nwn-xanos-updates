@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "f1b8cfd129895aa5587c8262a44f06def411a210",
+  "commit": "77ac0440f56950851797a24e598079de477f7d08",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "3bad221fd699933a5eeba494e3a0754bf13acc5d03084ab0cc66aa705bb9ffc6",
-  "script_size": 79303,
-  "description": "BGXAI single unchanged CMD: SHA-pinned 1-108 menu, BGXP2 combat priest native EPS-first fallback menus 105-108. BGXPR HEALER preserved, BGXTEAM preserved; no automatic game install."
+  "script_sha256": "3b89aeab51c9df071a9ce017c4a2fa658749e90ccde5beb7b7349ca63e093574",
+  "script_size": 76126,
+  "description": "BGXAI single unchanged CMD: SHA-pinned 1-112 menu, BGXP3 AUTO attack safety buffer 109-112; BGXP2/HEALER/EPS and rollback preserved; no automatic game installation."
 }
