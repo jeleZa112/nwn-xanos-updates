@@ -1,99 +1,15 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "4.5.0",
-  "note": "One existing BG_VOICE_UPDATE.cmd now installs SHA-verified read-only Stable/Per_line audit and single ZIP report. No new launcher; no audio/game modification; GPU repair not yet enabled.",
+  "version": "4.6.0",
+  "note": "Single existing launcher, no new persistent report folders, one ZIP next to launcher, read-only source WAV audit.",
   "files": [
     {
-      "path": "BG_RU_IMOEN_PROSODY_29/GENERATE_PROSODY_29.py",
-      "sha256": "d869515ba6ac95ac88849af9fa3da0bf51453e966166a6b18c4e081eec9c9656"
-    },
-    {
-      "path": "BG_RU_IMOEN_PROSODY_29/RUN_PROSODY_29.cmd",
-      "sha256": "5a0bc42ebc73a2cc6e664962672593d50f6fe57c21719e8dc0c5265689a54636"
-    },
-    {
-      "path": "BG_RU_IMOEN_PROSODY_29/README_RU.txt",
-      "sha256": "06c073b22cc88ed6724044cb21095bdb2e4e8bae54af469a18579b80143162e9"
-    },
-    {
       "path": "BG_VOICE_UPDATE.cmd",
-      "sha256": "147d039c774a5cf8488414277c1a5b2f76c2af89ebee6a818633c095b25cbdde"
+      "sha256": "cbb177632b09125e9e67a18a6f4372c9976e4313501911e47c17625d391633e8"
     },
     {
-      "path": "BG_RU_IMOEN_PROSODY_29/EMOTION_ANALYSIS_32.py",
-      "sha256": "a5e95c8dfd49f3f1c1d5222416cd0c5049c98a0f3e022a5d32369e23483e0009"
-    },
-    {
-      "path": "BG_RU_IMOEN_PROSODY_29/RUN_EMOTION_32.cmd",
-      "sha256": "b0170df32a286e9a78b6dceba01508bdcc43cc6ddfb3ea6a78d458c343125a9d"
-    },
-    {
-      "path": "BG_RU_IMOEN_PROSODY_29/RUN_ALL_102_32.cmd",
-      "sha256": "fe484b698967c16072739a73c873182891a2a45bc10896c79f28a3f2e871f310"
-    },
-    {
-      "path": "BG_RU_IMOEN_PROSODY_29/README_32_RU.txt",
-      "sha256": "478094b042962bfbf70650e2dfd1e89d1d404caaea2e94a11190d5941f8595f3"
-    },
-    {
-      "path": "BG_RU_IMOEN_PROSODY_29/COMPARE_EN_RU_34.py",
-      "sha256": "d7de24e4d6a3d1acb157f6181e3609e3346994f9c61ed17fa74adabb7ce0a100"
-    },
-    {
-      "path": "BG_RU_IMOEN_PROSODY_29/RUN_COMPARE_EN_RU_34.cmd",
-      "sha256": "9340eaf69bcbec5c996498c606db7fe930daf693bea6a07a952ce773bd9ee307"
-    },
-    {
-      "path": "BG_RU_IMOEN_PROSODY_29/README_EN_RU_34_RU.txt",
-      "sha256": "bbb67842cb93bc0bb701cbf19093fcdeee93f807c06cdd24f3b63bce0c25f647"
-    },
-    {
-      "path": "BG_RU_IMOEN_PROSODY_29/REBUILD_EMOTION_REPORT_33.cmd",
-      "sha256": "461c9e39b95bb1a0f9a5e85d54624ae8937f757877c97c7f6d56381605c4e7d0"
-    },
-    {
-      "path": "BG_RU_IMOEN_PROSODY_29/MAKE_LAUGH_35.py",
-      "sha256": "bb856d7fb50f075b3ac3f0cde5cef23e65484b125ed97c57603442051d4232e0"
-    },
-    {
-      "path": "BG_RU_IMOEN_PROSODY_29/RUN_LAUGH_35.cmd",
-      "sha256": "52c195f9323396f31c372642b36861af10be6096e91cb927a6702711e619f3f9"
-    },
-    {
-      "path": "BG_RU_IMOEN_PROSODY_29/README_LAUGH_35_RU.txt",
-      "sha256": "d2bf1a0d83580fc8d461c8e7e3b7311c32907133c3d842feeee4500cc3245a0f"
-    },
-    {
-      "path": "BG_RU_IMOEN_PROSODY_29/REFERENCE_PILOT_36.py",
-      "sha256": "08d00ed9fabce8ff4a4e8ee19bb506e1bdf5c3ba21b36943fda15dad2f7705cf"
-    },
-    {
-      "path": "BG_RU_IMOEN_PROSODY_29/RUN_REFERENCE_36.cmd",
-      "sha256": "08b132f31ccba69153d29b95ed05a4a91f09a68f5a160e0a469d9912b98e4889"
-    },
-    {
-      "path": "BG_RU_IMOEN_PROSODY_29/README_REFERENCE_36_RU.txt",
-      "sha256": "571e55a21bf59c8b095e432227fcd1cd33dc9ee5a738d713a6d7220f7c37dcaa"
-    },
-    {
-      "path": "BG_RU_IMOEN_PROSODY_29/VOXCPM2_PILOT_01.py",
-      "sha256": "501bb1bfe98042235d1b606bebb88bf6478459429099ee97fa35527cfdeaf8f1"
-    },
-    {
-      "path": "BG_RU_IMOEN_PROSODY_29/RUN_VOXCPM2_01.cmd",
-      "sha256": "40fbc998fcf1eedc61d8f6eea8184c92f269263ac819bf3f23d1fbd8004ebb10"
-    },
-    {
-      "path": "BG_RU_IMOEN_PROSODY_29/README_VOXCPM2_01_RU.txt",
-      "sha256": "7ac09e8c8380b86132d033e94431ff573af1123ee349b11d275951dd35c49b52"
-    },
-    {
-      "path": "BG_RU_IMOEN_PROSODY_29/EXPORT_RUTUBE_SOURCES_45.py",
-      "sha256": "b9c35383edf6e966cd395cc34bbe91be9c790313b25beecef7e26d520947f962"
-    },
-    {
-      "path": "BG_RU_IMOEN_PROSODY_29/RUN_EXPORT_RUTUBE_SOURCES_45.cmd",
-      "sha256": "7fa1d8727178dbfda9b7af563df92dd56e0a389906300c5b8c0778b46a67037c"
+      "path": "BG_RU_IMOEN_PROSODY_29/VOICE_UPDATER_46.ps1",
+      "sha256": "55daf6964c0bc9a94069b2c34d13dd84f234ce3f425992dea52a36f94225ef46"
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/VOICE_REVIEW_46.py.gz.b64",
