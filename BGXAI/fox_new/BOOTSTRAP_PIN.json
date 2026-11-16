@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "9ad7249c768bc4770e5adb5b8582d8c0184e32b7",
+  "commit": "aedf3da83791c7ac6e424b98005e47301a90426f",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "bc4b176aaed83852e597cef8b2cc168b9732fbfa31bbb79ca6442b854351a466",
-  "script_size": 74220,
-  "description": "BGXAI 066S idle-guard pilot via SAME BGXAI_UPDATE.cmd: menu 92 SHA-pinned 19-file sync, 93 read-only live preflight, 94 separately authorized guarded Lua-only WeiDU install, 95 read-only status, 96 separately authorized rollback. Legacy 1-91 unchanged. Existing EPS/BCS unchanged. Not installed until explicit user action."
+  "script_sha256": "4693be88564fc6a81bba912a6ff81081db4dc27880bd81ab2abb8643b7423173",
+  "script_size": 79205,
+  "description": "BGXAI one-file updater: unchanged existing BGXAI_UPDATE.cmd dynamically verifies this pinned script; menu 97-100 BGXPR priest roles and 101-104 BGXTEAM read-only status/preflight and separately authorized install/rollback. Installed EET/EPS untouched by menu update."
 }
