@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline BGXAI one-file updater: immutable base, current pin, two exact releases.
+"""Offline BGXAI one-file updater: immutable base, current pin, three new exact releases.
 CI only: reads Git objects; NEVER executes game installers or alters EET.
 """
 from __future__ import annotations
@@ -19,6 +19,7 @@ RELEASES = (
     ('BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/', '0.3.36-066S-IDLE-GUARD-PILOT', 19),
     ('BGXAI/patchsets/priest_modes_eps_first_installable_20261116/', '0.3.37-BGXPR-ONEFILE', 9),
     ('BGXAI/patchsets/team_f_guard_066s_installable_pilot_20261116/', '0.3.38-BGXTEAM-ONEFILE', 3),
+    ('BGXAI/patchsets/priest_combat_eps_first_20261116/', '0.3.39-BGXP2-COMBAT-PRIEST', 7),
 )
 
 def git_bytes(rev: str, path: str) -> bytes:
@@ -50,16 +51,17 @@ def main():
     assert git_bytes('HEAD', CMD) == git_bytes(OLD_COMMIT, CMD), 'one CMD was replaced'
     oldmenu, oldcase = menus(old)
     menu, case = menus(live)
-    assert len(oldmenu) == 97 and len(menu) == 105, 'menu length mismatch'
-    assert len(oldcase) == 96 and len(case) == 104, 'dispatch length mismatch'
+    assert len(oldmenu) == 97 and len(menu) == 109, 'menu length mismatch'
+    assert len(oldcase) == 96 and len(case) == 108, 'dispatch length mismatch'
     assert menu[:96] == oldmenu[:96] and menu[-1] == oldmenu[-1], 'old menu 1..96 changed'
     assert case[:96] == oldcase, 'old dispatch 1..96 changed'
     code = live.decode('utf-8-sig')
-    for n in range(97,105):
+    for n in range(97,109):
         assert any(re.match(rf"Write-Host '\s*{n} - ", x) for x in menu), f'menu {n} missing'
         assert case[n-1].startswith(f"'{n}' {{BGXOneFileManaged"), f'dispatch {n} wrong'
     for key in ('INSTALL_BGXPRIEST_MODES','ROLLBACK_BGXPRIEST_MODES',
                 'INSTALL_BGXAI_TEAM_GUARD','ROLLBACK_BGXAI_TEAM_GUARD',
+                'INSTALL_BGXP2_COMBAT_PRIEST','ROLLBACK_BGXP2_COMBAT_PRIEST',
                 'function BGXOneFileManaged', 'SyncRelease $spec',
                 "'--yes' '--confirm' $token", 'AssertNotReparse $file'):
         assert key in code, f'guard missing: {key}'
@@ -84,7 +86,7 @@ def main():
             original = git_bytes(pin['commit'], f['source'])
             assert len(original) == f['size'] and sha(original) == f['sha256'], f'bad source: {name}'
             assert f"'{name}'" in code, f'updater source absent: {name}'
-    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-104; 31/31 source hashes; pin matched; game untouched')
+    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-108; 38/38 source hashes; pin matched; game untouched')
 
 if __name__ == '__main__':
     main()
