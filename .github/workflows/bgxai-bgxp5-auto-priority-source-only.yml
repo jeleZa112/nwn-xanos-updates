@@ -19,7 +19,20 @@ jobs:
       - name: Assert exact original BAF, AUTO healing and no attack on own party
         working-directory: BGXAI/patchsets/priest_auto_priority_guard_source_20261117
         run: |
-          python -m py_compile BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py BGXP5_BCS_PREFLIGHT_READ_ONLY.py test_bgxp5_source.py test_bgxp5_bcs_preflight.py
-          python -m unittest -v test_bgxp5_source test_bgxp5_bcs_preflight
+          @'
+          import hashlib, json, pathlib
+          p=pathlib.Path('.')
+          manifest=json.loads((p/'manifest_updater.json').read_text('utf-8'))
+          inner=json.loads((p/'SHA256_FILES.json').read_text('utf-8'))
+          assert len(manifest['files'])==11 and len(inner['files'])==10
+          for row in manifest['files']:
+              data=(p/row['dest']).read_bytes()
+              assert len(data)==row['size'] and hashlib.sha256(data).hexdigest()==row['sha256'], row['dest']
+              if row['dest']!='SHA256_FILES.json':
+                  assert hashlib.sha256(data).hexdigest()==inner['sha256'][row['dest']]
+          print('BGXP5 SOURCE SHA256: 11/11 VERIFIED')
+          '@ | python -
+          python -m py_compile BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py BGXP5_BCS_PREFLIGHT_READ_ONLY.py BGXP5_INSTALL.py test_bgxp5_source.py test_bgxp5_bcs_preflight.py test_bgxp5_installer_mock.py
+          python -m unittest -v test_bgxp5_source test_bgxp5_bcs_preflight test_bgxp5_installer_mock
           python BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py
           python BGXP5_BCS_PREFLIGHT_READ_ONLY.py
