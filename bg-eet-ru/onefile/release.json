@@ -1,0 +1,9 @@
+{
+  "schema": "bg-eet-ru-onefile-release-v1",
+  "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
+  "version": 30,
+  "sha256": "84d2b29120b64d87033e890dc16632d20077901a61eff35847eebc5bea4f04c1",
+  "mode": "READ_ONLY",
+  "game_writes_allowed": false,
+  "note": "v30 combines v28/v29 and one-folder handoff. No new translation installation."
+}
