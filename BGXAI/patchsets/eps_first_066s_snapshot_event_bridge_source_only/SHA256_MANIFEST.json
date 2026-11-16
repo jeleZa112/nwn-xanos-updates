@@ -1,0 +1,43 @@
+{
+  "status": "SOURCE_ONLY",
+  "installed": false,
+  "source": "BGX43Probe.snapshot() from exact installed 066S",
+  "files": [
+    {
+      "file": "BGXAI066S_080_CONFIRMED_HIT_BRIDGE_SOURCE_ONLY.lua",
+      "bytes": 6482,
+      "sha256": "3a6ddc5c2fa5f90a53e9b5a0321e1d99cdc62e6e566344ea28a1831f86927078",
+      "git_blob_sha": "f0d4902a558ba2c5fc5183a887253d4e41a37c3d"
+    },
+    {
+      "file": "test_066s_snapshot_bridge.lua",
+      "bytes": 5097,
+      "sha256": "6ad9b3f47609c79ed4212acc16882168944156579dcfff49fd80bc03a6fc1d5f",
+      "git_blob_sha": "bb848ce562d90455ae59308c7bf91a835d37b522"
+    },
+    {
+      "file": "test_real_066s_snapshot.lua",
+      "bytes": 3640,
+      "sha256": "21ec77bd8c31278100eddc202bc5436404994ac831ddacadc993d943063dbc39",
+      "git_blob_sha": "7a3b0a7f43b49f5749f1303b59c47f170896412e"
+    },
+    {
+      "file": "run_bridge_tests.py",
+      "bytes": 3290,
+      "sha256": "10ea18190dcd1103bf384c47f83cd2c57c3b517c76321c51960e2772c7155e38",
+      "git_blob_sha": "67aa3c1d83af775079ec65e290f5a8e6e22af6d0"
+    },
+    {
+      "file": "README_RU.md",
+      "bytes": 5798,
+      "sha256": "e957946b3a1fc5875591e2bff792e88f15c2dccd1f4281e3e4121afe7942d895",
+      "git_blob_sha": "f3008b7da8cf5e0bf29c1f1eae7870e5fa474865"
+    }
+  ],
+  "tests": {
+    "synthetic_lua_assertions": 261,
+    "real_066s_lua_test": "PASS",
+    "original_080_lua": "82 PASS",
+    "multi_threat_lua": "143 PASS"
+  }
+}
