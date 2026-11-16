@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "cabcd5c053c12a71ae848a9b3ca50967d434380c",
+  "commit": "2487bc941422c03e7596d8c79a718a013f0865ed",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
   "script_sha256": "d68fb668560a027fa2af8ca00ea6239846d8a13cf1eef8ec61212fc1a5e0ee81",
   "script_size": 77932,
-  "description": "BGXAI single unchanged CMD: SHA-pinned 1-116, BGXP5 early AUTO heal and party-safe combat 113-116, BGXP3 rollback and EPS preserved; install is separate typed opt-in."
+  "description": "BGXAI single unchanged CMD: SHA-pinned 1-116 with guarded BGXP5 priority healing and party-safe combat 113-116. New install only by typed user confirmation."
 }
