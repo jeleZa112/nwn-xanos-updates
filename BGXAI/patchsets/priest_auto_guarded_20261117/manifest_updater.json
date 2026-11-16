@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.40-BGXP3-AUTO-GUARDED",
+  "files": [
+    {
+      "source": "BGXAI/patchsets/priest_auto_guarded_20261117/BGXP2_BCS_PATCH.py",
+      "dest": "BGXP2_BCS_PATCH.py",
+      "size": 4154,
+      "sha256": "67362d58bb4bec2fb08bc4e5338d606358b70a3529edb987896cdbc8af48a6d3"
+    },
+    {
+      "source": "BGXAI/patchsets/priest_auto_guarded_20261117/BGXP2_LAST_PRIORITY.baf",
+      "dest": "BGXP2_LAST_PRIORITY.baf",
+      "size": 18713,
+      "sha256": "a93dd1d46bf55ff7a5d53f15b0b55c1fc2ad10e39a4a23ae90ece62bfd76df2d"
+    },
+    {
+      "source": "BGXAI/patchsets/priest_auto_guarded_20261117/BGXP3_AUTO_ATTACK_BUFFER_SOURCE_ONLY.py",
+      "dest": "BGXP3_AUTO_ATTACK_BUFFER_SOURCE_ONLY.py",
+      "size": 3357,
+      "sha256": "5c65e02f3a87dad62131dbf4d3a8a4a32bca8c55d744401163d14c987b9f87e5"
+    },
+    {
+      "source": "BGXAI/patchsets/priest_auto_guarded_20261117/BGXP3_BCS_PREFLIGHT_SOURCE_ONLY.py",
+      "dest": "BGXP3_BCS_PREFLIGHT_SOURCE_ONLY.py",
+      "size": 4865,
+      "sha256": "0bc619d37b96f80d91f03bcc3b95caa8e76928bef5ad369c67c26501f03cc310"
+    },
+    {
+      "source": "BGXAI/patchsets/priest_auto_guarded_20261117/BGXP3_INSTALL.py",
+      "dest": "BGXP3_INSTALL.py",
+      "size": 14150,
+      "sha256": "125c1d564da57173d777a81ba77f5da2d45761018c57f31deda7e3eaf8f3bf9c"
+    },
+    {
+      "source": "BGXAI/patchsets/priest_auto_guarded_20261117/test_bgxp3_auto_attack_buffer.py",
+      "dest": "test_bgxp3_auto_attack_buffer.py",
+      "size": 2749,
+      "sha256": "54b4d100ef9de2090b1741f47e47425d7c7fd0d5cf1e09f5141db5f4353bde7c"
+    },
+    {
+      "source": "BGXAI/patchsets/priest_auto_guarded_20261117/test_bgxp3_bcs_preflight.py",
+      "dest": "test_bgxp3_bcs_preflight.py",
+      "size": 2290,
+      "sha256": "263a5203e5f18db29e30d76ba82d7edeb9baa05e4b483d46c65ec2b984a363c5"
+    },
+    {
+      "source": "BGXAI/patchsets/priest_auto_guarded_20261117/test_bgxp3_installer_mock.py",
+      "dest": "test_bgxp3_installer_mock.py",
+      "size": 4280,
+      "sha256": "3bd4fb1bfbb8899ad7cc4f39a171d6a3e73103911a836ac305e35df0d8339c64"
+    },
+    {
+      "source": "BGXAI/patchsets/priest_auto_guarded_20261117/README_RU.md",
+      "dest": "README_RU.md",
+      "size": 4721,
+      "sha256": "fc13dfcbb1f3c7f459af5e574a13efebf185011f1ea2977f886f04a6eaee7cfb"
+    },
+    {
+      "source": "BGXAI/patchsets/priest_auto_guarded_20261117/SHA256_FILES.json",
+      "dest": "SHA256_FILES.json",
+      "size": 1267,
+      "sha256": "9281ecbd8e353e7b6a0e32912e356e197f360183b0f9843dfc5abb92e628cea1"
+    }
+  ]
+}
