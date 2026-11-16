@@ -1,0 +1,23 @@
+# BGXAI — BGXP5 лечебный приоритет AUTO / защита своих (17.11.2026)
+
+## Обязательное состояние
+- Последнее **лично подтверждённое пользователем установленное**: BGXP3 `BGXP3_INSTALLED_VERIFIED`, last WeiDU `~BGXP3\SETUP-BGXP3.TP2~ #0 #0`, `BDDEFAI.BCS` SHA256 `c63173381aa93de799b02ab203337c2444c0b50a7268a95130a768e5d0ca28e3`, 1158 блоков; `M_BX43.lua` SHA256 `74ddc016e15fae3451bafe3039b299740c9d2efae8ecfb3e86badea257fa650c`, проверенный внешний backup `C:\Users\Drevo\Documents\BGXAI_PRIEST3_SAFE_BACKUPS\PRE_INSTALL_20261116T184323094947Z`.
+- Бой с Шанком при AUTO F ON, EPS усиление себя ON, автоатака/атакующая магия EPS OFF: Жаган подбегает на близкую дистанцию, применяет `Command`, атакует. **Лечения нет** у Джейд при 2/6 HP, затем у второго союзника при 3/14 HP (21%), несмотря на подготовленное `CLERIC_CURE_LIGHT_WOUNDS`. Переход 45% → 60% в BGXP3 запретил *новую* атаку, но не исправил лечение.
+- На скриншоте 17.11.2026 второго союзника видно 3/14 HP, Жаган 8/8 HP. Пользователь сообщает о помощи ИИ в нанесении ударов по своему персонажу; журнал screenshot это достоверно не подтверждает, но безопасность фильтрации собственных членов партии нужна.
+- Ранее Жаган успешно автоматически лечил Джейд в HEALER и применял Command в BATTLE / AUTO. Не просить повторять эти тесты. **BGXP3 пока остаётся установленной версией**, не заявлять, что BGXP5 уже установлен.
+
+## Новый BGXP5 (опубликованные исходники и guarded install)
+- Репозиторий `jeleZa112/nwn-xanos-updates`, ветка `bg-eet-ai`; директория `BGXAI/patchsets/priest_auto_priority_guard_source_20261117/`.
+- Сценарий `BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py` на SHA-закреплённых BGXPR/BGXP2 BAF генерирует **12 новых самых первых блоков AUTO**: для каждого слота сначала спасение HP<35%, затем обычное лечение HP<70%. Условия `BGXR_ROLE=4`, F ON, `ActionListEmpty`, `HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)`, видимость, `Range(PlayerN,18)`, valid party/slot, отложенный таймер и BGX66_S_HEAL_SLOT=0; `Spell` без Force/override.
+- Во всех **4 боевых блоках BGXP3** добавлен явный `!InParty(NearestEnemyOf(Myself))`, предотвращающий выбор своими боевыми блоками собственного союзника; сохраняется 60% защитный буфер атак.
+- `BGXP5_BCS_PREFLIGHT_READ_ONLY.py`: реальное WeiDU native IDS compile 3 BAF, строгая сборка BCS 1170 блоков: 12 новых верхних, прежние 1154 из 1158 сохранены побайтно, изменены только последние четыре боевые. Не меняет Lua/EPS/HEALER/тексты/озвучку.
+- `BGXP5_INSTALL.py`: строгий last WeiDU BGXP3, SHA BCS/Lua, proof, source manifest SHA, двойной компилятор, резервная копия `Documents\BGXAI_PRIEST5_SAFE_BACKUPS`, typed authorization WeiDU, no automatic retry, отдельный rollback.
+- Windows CI на синтетических тестовых BCS (исходники, preflight сборка, mock installer+rollback) — https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/43936390376 (PASS). Это не проверка на реальной игре.
+- В прежний `BGXAI_UPDATE.cmd` через pinned `BGXAI_SYNC.ps1` добавлены 113 статус; **114 read-only native preflight**, **115 guarded install**, 116 guarded rollback. Exact install phrase `INSTALL_BGXP5_EARLY_HEAL_SAFE`, rollback `ROLLBACK_BGXP5_EARLY_HEAL_SAFE`. Старые пункты 1–112 сохранены. One-file SHA pinned commit `2487bc941422c03e7596d8c79a718a013f0865ed`, script SHA `d68fb668560a027fa2af8ca00ea6239846d8a13cf1eef8ec61212fc1a5e0ee81`, 77932 байт. Onefile CI run 43936478099 проверяет pinned manifest/AST.
+- Не давать install instructions до подтверждения CI и отдельного реального EET пункта 114. При 114 PASS можно отдельно предложить 115; закрыть игру и InfinityLoader перед установкой. При любой ошибке stop без retries.
+
+## Ограничения
+- `ActionListEmpty` защищает ручные приказы, но не позволяет автоматом лечить до конца текущей manual/EPS атаки. BGXP5 не гарантирует мгновенную помощь при стойком AttackReevaluate/manual атакующем действии.
+- `Spell(Cure Light Wounds)` touch range; Range(Player,18) может потребовать реального подхода, проверять в игре.
+- При friendly-fire мануальной командой/старыми EPS блоками BGXP5 фильтрует только **свои 4 боевые BCS блока**, не все существующие.
+- Если после корректной установки лечение при 3/14 и рядом с жрецом не срабатывает, следующий этап — read-only EEex observer для `ActionListEmpty`, `BGXR_ROLE`, `BGX38_GUARD`, `BGX66_S_HEAL_SLOT`, LOS/Range и active action provenance. Не менять наугад остальные 1154 блока, не использовать `ClearActions`/безопасность ручных приказов.
