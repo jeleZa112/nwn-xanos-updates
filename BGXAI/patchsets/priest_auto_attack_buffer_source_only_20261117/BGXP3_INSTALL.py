@@ -57,7 +57,11 @@ def sources():
     if set(m['files'])!=needed: raise Stop('SOURCE_LIST_CHANGED')
     for name in m['files']:
         if not re.fullmatch(r'[A-Za-z0-9_.-]+',name): raise Stop('SOURCE_NAME_INVALID')
-        if sha(file(BASE,name).read_bytes())!=m['sha256'][name]:
+        data=file(BASE,name).read_bytes()
+        # On Windows git checkout may convert LF to CRLF; verify canonical
+        # released LF bytes exactly, but reject any stray bare CR.
+        normalized=data.replace(b'\r\n',b'\n')
+        if b'\r' in normalized or sha(normalized)!=m['sha256'][name]:
             raise Stop('SOURCE_HASH_CHANGED:'+name)
     original=file(BASE,'BGXP2_LAST_PRIORITY.baf').read_bytes()
     proposed=BUFFER.candidate(original)
