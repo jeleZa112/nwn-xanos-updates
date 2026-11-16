@@ -1,0 +1,704 @@
+// BGXP2: 28 new post-EPS battle-priest fallback blocks, installed only with guarded WeiDU.
+// BGXP2 SUPPORT FEAR slot 1; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",2)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_REMOVE_FEAR)
+  InParty(Player1)
+  InPartySlot(Player1,0)
+  InMyArea(Player1)
+  See(Player1)
+  Range(Player1,10)
+  StateCheck(Player1,STATE_PANIC)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player1,CLERIC_REMOVE_FEAR)
+END
+
+// BGXP2 SUPPORT FEAR slot 2; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",2)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_REMOVE_FEAR)
+  InParty(Player2)
+  InPartySlot(Player2,1)
+  InMyArea(Player2)
+  See(Player2)
+  Range(Player2,10)
+  StateCheck(Player2,STATE_PANIC)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player2,CLERIC_REMOVE_FEAR)
+END
+
+// BGXP2 SUPPORT FEAR slot 3; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",2)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_REMOVE_FEAR)
+  InParty(Player3)
+  InPartySlot(Player3,2)
+  InMyArea(Player3)
+  See(Player3)
+  Range(Player3,10)
+  StateCheck(Player3,STATE_PANIC)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player3,CLERIC_REMOVE_FEAR)
+END
+
+// BGXP2 SUPPORT FEAR slot 4; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",2)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_REMOVE_FEAR)
+  InParty(Player4)
+  InPartySlot(Player4,3)
+  InMyArea(Player4)
+  See(Player4)
+  Range(Player4,10)
+  StateCheck(Player4,STATE_PANIC)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player4,CLERIC_REMOVE_FEAR)
+END
+
+// BGXP2 SUPPORT FEAR slot 5; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",2)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_REMOVE_FEAR)
+  InParty(Player5)
+  InPartySlot(Player5,4)
+  InMyArea(Player5)
+  See(Player5)
+  Range(Player5,10)
+  StateCheck(Player5,STATE_PANIC)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player5,CLERIC_REMOVE_FEAR)
+END
+
+// BGXP2 SUPPORT FEAR slot 6; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",2)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_REMOVE_FEAR)
+  InParty(Player6)
+  InPartySlot(Player6,5)
+  InMyArea(Player6)
+  See(Player6)
+  Range(Player6,10)
+  StateCheck(Player6,STATE_PANIC)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player6,CLERIC_REMOVE_FEAR)
+END
+
+// BGXP2 SUPPORT POISON slot 1; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",2)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_SLOW_POISON)
+  InParty(Player1)
+  InPartySlot(Player1,0)
+  InMyArea(Player1)
+  See(Player1)
+  Range(Player1,10)
+  StateCheck(Player1,STATE_POISONED)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player1,CLERIC_SLOW_POISON)
+END
+
+// BGXP2 SUPPORT POISON slot 2; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",2)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_SLOW_POISON)
+  InParty(Player2)
+  InPartySlot(Player2,1)
+  InMyArea(Player2)
+  See(Player2)
+  Range(Player2,10)
+  StateCheck(Player2,STATE_POISONED)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player2,CLERIC_SLOW_POISON)
+END
+
+// BGXP2 SUPPORT POISON slot 3; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",2)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_SLOW_POISON)
+  InParty(Player3)
+  InPartySlot(Player3,2)
+  InMyArea(Player3)
+  See(Player3)
+  Range(Player3,10)
+  StateCheck(Player3,STATE_POISONED)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player3,CLERIC_SLOW_POISON)
+END
+
+// BGXP2 SUPPORT POISON slot 4; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",2)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_SLOW_POISON)
+  InParty(Player4)
+  InPartySlot(Player4,3)
+  InMyArea(Player4)
+  See(Player4)
+  Range(Player4,10)
+  StateCheck(Player4,STATE_POISONED)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player4,CLERIC_SLOW_POISON)
+END
+
+// BGXP2 SUPPORT POISON slot 5; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",2)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_SLOW_POISON)
+  InParty(Player5)
+  InPartySlot(Player5,4)
+  InMyArea(Player5)
+  See(Player5)
+  Range(Player5,10)
+  StateCheck(Player5,STATE_POISONED)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player5,CLERIC_SLOW_POISON)
+END
+
+// BGXP2 SUPPORT POISON slot 6; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",2)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_SLOW_POISON)
+  InParty(Player6)
+  InPartySlot(Player6,5)
+  InMyArea(Player6)
+  See(Player6)
+  Range(Player6,10)
+  StateCheck(Player6,STATE_POISONED)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player6,CLERIC_SLOW_POISON)
+END
+
+// BGXP2 AUTO FEAR slot 1; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",4)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_REMOVE_FEAR)
+  InParty(Player1)
+  InPartySlot(Player1,0)
+  InMyArea(Player1)
+  See(Player1)
+  Range(Player1,10)
+  StateCheck(Player1,STATE_PANIC)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player1,CLERIC_REMOVE_FEAR)
+END
+
+// BGXP2 AUTO FEAR slot 2; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",4)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_REMOVE_FEAR)
+  InParty(Player2)
+  InPartySlot(Player2,1)
+  InMyArea(Player2)
+  See(Player2)
+  Range(Player2,10)
+  StateCheck(Player2,STATE_PANIC)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player2,CLERIC_REMOVE_FEAR)
+END
+
+// BGXP2 AUTO FEAR slot 3; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",4)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_REMOVE_FEAR)
+  InParty(Player3)
+  InPartySlot(Player3,2)
+  InMyArea(Player3)
+  See(Player3)
+  Range(Player3,10)
+  StateCheck(Player3,STATE_PANIC)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player3,CLERIC_REMOVE_FEAR)
+END
+
+// BGXP2 AUTO FEAR slot 4; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",4)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_REMOVE_FEAR)
+  InParty(Player4)
+  InPartySlot(Player4,3)
+  InMyArea(Player4)
+  See(Player4)
+  Range(Player4,10)
+  StateCheck(Player4,STATE_PANIC)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player4,CLERIC_REMOVE_FEAR)
+END
+
+// BGXP2 AUTO FEAR slot 5; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",4)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_REMOVE_FEAR)
+  InParty(Player5)
+  InPartySlot(Player5,4)
+  InMyArea(Player5)
+  See(Player5)
+  Range(Player5,10)
+  StateCheck(Player5,STATE_PANIC)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player5,CLERIC_REMOVE_FEAR)
+END
+
+// BGXP2 AUTO FEAR slot 6; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",4)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_REMOVE_FEAR)
+  InParty(Player6)
+  InPartySlot(Player6,5)
+  InMyArea(Player6)
+  See(Player6)
+  Range(Player6,10)
+  StateCheck(Player6,STATE_PANIC)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player6,CLERIC_REMOVE_FEAR)
+END
+
+// BGXP2 AUTO POISON slot 1; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",4)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_SLOW_POISON)
+  InParty(Player1)
+  InPartySlot(Player1,0)
+  InMyArea(Player1)
+  See(Player1)
+  Range(Player1,10)
+  StateCheck(Player1,STATE_POISONED)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player1,CLERIC_SLOW_POISON)
+END
+
+// BGXP2 AUTO POISON slot 2; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",4)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_SLOW_POISON)
+  InParty(Player2)
+  InPartySlot(Player2,1)
+  InMyArea(Player2)
+  See(Player2)
+  Range(Player2,10)
+  StateCheck(Player2,STATE_POISONED)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player2,CLERIC_SLOW_POISON)
+END
+
+// BGXP2 AUTO POISON slot 3; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",4)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_SLOW_POISON)
+  InParty(Player3)
+  InPartySlot(Player3,2)
+  InMyArea(Player3)
+  See(Player3)
+  Range(Player3,10)
+  StateCheck(Player3,STATE_POISONED)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player3,CLERIC_SLOW_POISON)
+END
+
+// BGXP2 AUTO POISON slot 4; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",4)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_SLOW_POISON)
+  InParty(Player4)
+  InPartySlot(Player4,3)
+  InMyArea(Player4)
+  See(Player4)
+  Range(Player4,10)
+  StateCheck(Player4,STATE_POISONED)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player4,CLERIC_SLOW_POISON)
+END
+
+// BGXP2 AUTO POISON slot 5; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",4)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_SLOW_POISON)
+  InParty(Player5)
+  InPartySlot(Player5,4)
+  InMyArea(Player5)
+  See(Player5)
+  Range(Player5,10)
+  StateCheck(Player5,STATE_POISONED)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player5,CLERIC_SLOW_POISON)
+END
+
+// BGXP2 AUTO POISON slot 6; EPS-first idle fallback
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",4)
+  !GlobalTimerNotExpired("BGXP2_CURE_CD","LOCALS")
+  HaveSpell(CLERIC_SLOW_POISON)
+  InParty(Player6)
+  InPartySlot(Player6,5)
+  InMyArea(Player6)
+  See(Player6)
+  Range(Player6,10)
+  StateCheck(Player6,STATE_POISONED)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_CURE_CD","LOCALS",60)
+    Spell(Player6,CLERIC_SLOW_POISON)
+END
+
+// BGXP2 BATTLE first-level COMMAND vs confirmed nearby enemy
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",3)
+  !GlobalTimerNotExpired("BGXP2_COMMAND_CD","LOCALS")
+  HaveSpell(CLERIC_COMMAND)
+  HPPercentGT(Myself,50)
+  See(NearestEnemyOf(Myself))
+  Range(NearestEnemyOf(Myself),12)
+  !StateCheck(NearestEnemyOf(Myself),STATE_SLEEPING)
+  !StateCheck(NearestEnemyOf(Myself),STATE_HELPLESS)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_COMMAND_CD","LOCALS",90)
+    Spell(NearestEnemyOf(Myself),CLERIC_COMMAND)
+END
+
+// BGXP2 BATTLE guarded one-round fallback ATTACK when EPS idle
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",3)
+  !GlobalTimerNotExpired("BGXP2_ATTACK_CD","LOCALS")
+  HPPercentGT(Myself,60)
+  See(NearestEnemyOf(Myself))
+  Range(NearestEnemyOf(Myself),12)
+  !StateCheck(NearestEnemyOf(Myself),STATE_SLEEPING)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_ATTACK_CD","LOCALS",15)
+    AttackOneRound(NearestEnemyOf(Myself))
+END
+
+// BGXP2 AUTO first-level COMMAND vs confirmed nearby enemy
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",4)
+  !GlobalTimerNotExpired("BGXP2_COMMAND_CD","LOCALS")
+  HaveSpell(CLERIC_COMMAND)
+  HPPercentGT(Myself,50)
+  See(NearestEnemyOf(Myself))
+  Range(NearestEnemyOf(Myself),12)
+  !StateCheck(NearestEnemyOf(Myself),STATE_SLEEPING)
+  !StateCheck(NearestEnemyOf(Myself),STATE_HELPLESS)
+  !HPPercentLT(Player1,45)
+  !HPPercentLT(Player2,45)
+  !HPPercentLT(Player3,45)
+  !HPPercentLT(Player4,45)
+  !HPPercentLT(Player5,45)
+  !HPPercentLT(Player6,45)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_COMMAND_CD","LOCALS",90)
+    Spell(NearestEnemyOf(Myself),CLERIC_COMMAND)
+END
+
+// BGXP2 AUTO guarded one-round fallback ATTACK when EPS idle
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_SILENCED)
+  Global("BGXR_ROLE","LOCALS",4)
+  !GlobalTimerNotExpired("BGXP2_ATTACK_CD","LOCALS")
+  HPPercentGT(Myself,60)
+  See(NearestEnemyOf(Myself))
+  Range(NearestEnemyOf(Myself),12)
+  !StateCheck(NearestEnemyOf(Myself),STATE_SLEEPING)
+  !HPPercentLT(Player1,45)
+  !HPPercentLT(Player2,45)
+  !HPPercentLT(Player3,45)
+  !HPPercentLT(Player4,45)
+  !HPPercentLT(Player5,45)
+  !HPPercentLT(Player6,45)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXP2_ATTACK_CD","LOCALS",15)
+    AttackOneRound(NearestEnemyOf(Myself))
+END
