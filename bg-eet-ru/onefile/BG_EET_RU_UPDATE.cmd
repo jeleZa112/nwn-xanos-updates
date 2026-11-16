@@ -27,10 +27,11 @@ import zipfile
 import zlib
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 30
+SELF_VERSION = 31
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
+REVIEW_SEEDS = json.loads('{"317979":{"excerpt_ru":"[Уверенно и спокойно]Моё имя - [Share-in-kull]Шеринкаль, и я возглавляю силы Легиона Химеры в этом регионе. [Threat","triage":"DIALOGUE_POSSIBLY_VISIBLE_NEEDS_DLG_LINK"},"319734":{"excerpt_ru":"Нет. Порталы в цитадель [zah-HIN-dah]З\'хинда открываются только изнутри. Невольники откроют порталы только если оди","triage":"DIALOGUE_POSSIBLY_VISIBLE_NEEDS_DLG_LINK"},"100436":{"excerpt_ru":"[Faulty]Жезл лабиринтов","triage":"ITEM_SPELL_POSSIBLY_VISIBLE_NEEDS_RESOURCE_LINK"},"100438":{"excerpt_ru":"[Faulty]Проклятие Бездны +4","triage":"ITEM_SPELL_POSSIBLY_VISIBLE_NEEDS_RESOURCE_LINK"},"100440":{"excerpt_ru":"[Faulty]Кольцо защиты от зла","triage":"ITEM_SPELL_POSSIBLY_VISIBLE_NEEDS_RESOURCE_LINK"},"100446":{"excerpt_ru":"[Faulty]Водоворот","triage":"ITEM_SPELL_POSSIBLY_VISIBLE_NEEDS_RESOURCE_LINK"},"101807":{"excerpt_ru":"[else] Молчи, женщина! Прекрати это бесстыдство…","triage":"DIALOGUE_POSSIBLY_VISIBLE_NEEDS_DLG_LINK"},"267454":{"excerpt_ru":"[Movie]Мост Боарескир","triage":"MOVIE_LABEL_NEEDS_UI_LINK"},"267455":{"excerpt_ru":"[Movie]Убийство","triage":"MOVIE_LABEL_NEEDS_UI_LINK"},"267456":{"excerpt_ru":"[movie]Засада","triage":"MOVIE_LABEL_NEEDS_UI_LINK"},"270251":{"excerpt_ru":"[Movie]Чёрные Копи. Вступление.","triage":"MOVIE_LABEL_NEEDS_UI_LINK"},"300993":{"excerpt_ru":"[Movie]Вступление","triage":"MOVIE_LABEL_NEEDS_UI_LINK"},"300994":{"excerpt_ru":"[Movie]Лавина на Кулдахарском перевале","triage":"MOVIE_LABEL_NEEDS_UI_LINK"},"300995":{"excerpt_ru":"[Movie]Прорицание Камня-Сердце","triage":"MOVIE_LABEL_NEEDS_UI_LINK"},"300996":{"excerpt_ru":"[Movie]Возвращение в Восточную Гавань","triage":"MOVIE_LABEL_NEEDS_UI_LINK"},"300997":{"excerpt_ru":"[Movie]Разрушение кристаллической башни","triage":"MOVIE_LABEL_NEEDS_UI_LINK"},"300998":{"excerpt_ru":"[Movie]Эпилог Сердца Зимы","triage":"MOVIE_LABEL_NEEDS_UI_LINK"},"300999":{"excerpt_ru":"[Movie]Пролог Сердца Зимы","triage":"MOVIE_LABEL_NEEDS_UI_LINK"}}')
 LEGACY_REPORTS = Path.home() / 'Documents' / 'BG_EET_RU_REPORTS'
 URL_BASE = ('https://raw.githubusercontent.com/jeleZa112/'
             'nwn-xanos-updates/bg-eet-ai/bg-eet-ru/onefile/')
@@ -163,7 +164,54 @@ def summary(v28report,v29report,used,fp,notes):
         'blocked_text_strrefs':[317979,319734,101807,100436,100438,100440,100446],
         'movie_labels_hold':11,
         'approved_new_text_changes':0,
-        'next_safe_goal':'Prove actual on-screen visibility; do not patch on static references alone.'
+        'next_safe_goal':'Prove actual on-screen visibility; do not patch on static references alone.',
+        'review_queue_included':True
+    }
+
+
+def make_review_queue(v28report):
+    """Editorial evidence inventory, not a proposed patch and never an approval gate."""
+    verified = v28report.get('targets', []) if isinstance(v28report,dict) else []
+    expected = {int(k) for k in REVIEW_SEEDS}
+    actual = {int(row['strref']) for row in verified}
+    if len(verified) != 18 or expected != actual:
+        raise RuntimeError('STOP: expected 18 known targets; ambiguous or missing evidence')
+    queue=[]
+    for row in verified:
+        ref=int(row['strref'])
+        seed=REVIEW_SEEDS[str(ref)]
+        is_movie = row.get('group')=='UI_MOVIE_VISIBILITY_HOLD'
+        if ref==317979:
+            reason='Русская реплика с актёрскими и фонетическими ремарками; не удалять русскую ремарку автоматически'
+        elif ref==319734:
+            reason='Русская реплика с фонетическими ремарками; показ конкретной ветви не подтверждён'
+        elif ref==101807:
+            reason='[else] в NPC_STATE; триггеры/видимость в игре не подтверждены'
+        elif ref in (100436,100438,100440,100446):
+            reason='[Faulty] имя ITM из BlackPits.bif; получение/показ игроку не доказаны'
+        elif is_movie:
+            reason='[Movie] метка ролика, UI.MENU не подтвердил вывод пользователю'
+        else:
+            raise RuntimeError('STOP: unknown candidate family')
+        queue.append({
+            'strref':ref,'excerpt':seed['excerpt_ru'],
+            'triage_original':seed['triage'],
+            'resource':row.get('expected_owner'),
+            'resource_link_found':row.get('owner_link_in_current_resource') is True,
+            'visibility':row.get('visibility','NOT_PROVEN'),
+            'status':'HOLD_REQUIRES_DISPLAY_EVIDENCE',
+            'reason':reason,
+            'translation_approved':False,
+            'user_requested_real_player_visible_only':True
+        })
+    return {
+        'schema':'bg-eet-ru-v31-player-visible-only-review-v1',
+        'status':'SOURCE_ONLY_EDITORIAL_HOLD',
+        'candidates':queue,
+        'new_translation_approvals':0,
+        'scope':'From historical v26 queue and verified v28 report; static references cannot prove a real UI display.',
+        'next_evidence':'Direct observed on-screen text with game context is required before a change can be proposed.',
+        'game_files_written':False
     }
 
 
@@ -183,6 +231,7 @@ def write_bundle(path, status, v28report, v29report, fp, existing_log=''):
             z.writestr('02_V29_BP_PLACEMENT.json',b(v29report))
             z.writestr('03_ALL_RUNS.log',text)
             z.writestr('04_FINGERPRINT.json',b(fp))
+            z.writestr('06_VISIBLE_ONLY_REVIEW.json',b(make_review_queue(v28report)))
             z.writestr('05_README_RU.txt',
                 'BG_EET_RU: ЕДИНЫЙ ОТЧЁТ. Только чтение данных игры.\n'
                 'ПЕРЕДАТЬ В ЧАТ ОДИН ФАЙЛ: SEND_TO_CHATGPT_BG_EET_RU.zip\n'
@@ -190,7 +239,8 @@ def write_bundle(path, status, v28report, v29report, fp, existing_log=''):
         with zipfile.ZipFile(tmp) as z:
             assert z.testzip() is None and set(z.namelist())=={
                 '00_STATUS.json','01_V28_DLG_CONTEXT.json','02_V29_BP_PLACEMENT.json',
-                '03_ALL_RUNS.log','04_FINGERPRINT.json','05_README_RU.txt'}
+                '03_ALL_RUNS.log','04_FINGERPRINT.json','05_README_RU.txt',
+                '06_VISIBLE_ONLY_REVIEW.json'}
         os.replace(tmp,path)
     finally:
         if tmp.exists():tmp.unlink()
@@ -359,7 +409,11 @@ def selftest():
         else:raise AssertionError('game write must be rejected')
         stub28={'schema':'bg-eet-ru-v28-dlg-incoming-corrected-readonly',
                 'game_root':str(game),'game_files_written':False,
-                'targets':[],'approved_for_translation':[],
+                'targets':[{'strref':int(ref),
+                     'group':'UI_MOVIE_VISIBILITY_HOLD' if int(ref) in (267454,267455,267456,270251,300993,300994,300995,300996,300997,300998,300999) else 'DLG_OR_ITEM_REACHABILITY_HOLD',
+                     'expected_owner':None,'visibility':'NOT_PROVEN',
+                     'owner_link_in_current_resource':False} for ref in REVIEW_SEEDS],
+                'approved_for_translation':[],
                 'baseline_matches_2026_11_11':True}
         stub29={'schema':'bg-eet-ru-v29-blackpits-static-placement-readonly',
                 'game_root':str(game),'game_files_written':False,
@@ -369,11 +423,13 @@ def selftest():
         info['game_root']=str(game)
         write_bundle(outside,info,stub28,stub29,{'test':True})
         assert read_archive(outside)['00_STATUS.json']['game_files_written'] is False
-        assert len(zipfile.ZipFile(outside).namelist())==6
+        assert len(zipfile.ZipFile(outside).namelist())==7
+        with zipfile.ZipFile(outside) as z:
+            assert len(json.loads(z.read('06_VISIBLE_ONLY_REVIEW.json'))['candidates'])==18
         assert can_reuse(stub29,stub29['schema'],game,{'x':1},{'x':1})
         assert not can_reuse(stub29,stub29['schema'],game,{'x':2},{'x':1})
         write_bundle(outside,info,stub28,stub29,{'test':True},get_log(outside))
-    print('SELFTEST: 10/10 PASS. Встроенные модули, SHA, папка, ZIP, защита, кэш.')
+    print('SELFTEST: PASS. Один архив, очередь 18 HOLD, SHA, защита от записи, кэш.')
     return 0
 
 
