@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 33,
-  "sha256": "5cdc67c018ccbbacd7fd2b1df20c39adb2a5914aa0e0e20e30d2240f0e3aa686",
-  "mode": "READ_ONLY",
-  "game_writes_allowed": false,
-  "note": "v33 single updater now exports English source candidates from current ITM/SPL names/descriptions, ENGINEST/EFFTEXT references and UI.MENU literal fields; preserves v32 DLG cache; no game writes or translation patches."
+  "version": 34,
+  "sha256": "2b9963e50ab7af1fa586fefaae214403dd1ccdbe4d5418d5837d5112e7181e3a",
+  "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
+  "game_writes_allowed": true,
+  "note": "v34 optional 15 edited dialogue StrRefs; no automatic game writes. Requires full source TLK SHA match, current DLG link, per-string hash, backup+rollback, terminal phrase INSTALL_BG_EET_RU_15. Existing one-folder update and report retained."
 }
