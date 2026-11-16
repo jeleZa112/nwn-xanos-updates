@@ -1,3 +1,13 @@
+# 2026-11-16 — BGXAI EPS-FIRST MULTI-THREAT GUARD ADVISORY: SOURCE ONLY
+
+**NEW GAMEPLAY LOGIC:** [BGXAI080_EPS_FIRST_COORDINATOR_MULTI_THREAT_SOURCE_ONLY.lua](../patchsets/eps_first_multi_threat_guard_source_only/BGXAI080_EPS_FIRST_COORDINATOR_MULTI_THREAT_SOURCE_ONLY.lua) adds `reviewMultipleThreats()` to byte-exact prior 080, preserves the old `review()` and uses prior 072 for exact attacker target and EPS/manual safety. **Two distinct active verified threats** can be matched to two distinct available F protectors, optimizing coverage and protecting confirmed rear-support allies. Never steals manual/EPS commands, buffs, cures, songs, traps, potion/scroll use. All new code is **advisory only** with zero engine dispatch and zero BCS LOCALS writes. No new healing implementation. Prior recent multi-healer SOURCE ONLY drafts remain **HOLD** as EPS duplications. `m_actionID==0` doesn't prove manual provenance / empty queue; real 083 observation yields HOLD, not a green light for orders.
+
+**Verified** 143 new Lua assertions + 82 old 080 on candidate +82 old 080 baseline +16 Python historical EPS +15 062 model; syntax PASS; clean archive 18 files, 17/17 SHA, 080 original 9/9 SHA. ZIP SHA256 `bd265b0fda817ccf0187abc573429a80e6da219b899f06001d3766efe28bb920`, Library `/BALDURS_GATE_EET_AI/BUILD/BGXAI_EPS_FIRST_MULTI_THREAT_SOURCE_ONLY/`; 5/5 GitHub source blobs exact. [Detailed checkpoint](BGXAI_20261116_MULTI_THREAT_CHECKPOINT_RU.md).
+
+**LIVE** remains BGXAI **066S + EPS18.4**. 093 read-only preflight already PASS; do not repeat. Old menu 094 is not multi-threat installer. Active pinned updater unchanged, no approval to edit game. Next engineering boundary is verified queue/provenance evidence, not duplicating EPS or writing another installer. Follow rule #7 for safe operations in active turn. No after-turn background claims.
+
+---
+
 # 2026-11-16 — PRIORITY HOLD: EPS 18.4 ALREADY HANDLES HEALING/ITEMS; DO NOT REDO (READ FIRST)
 
 **Canonical audit:** [BGXAI_20261116_EPS_OVERLAP_AUDIT_RU.md](BGXAI_20261116_EPS_OVERLAP_AUDIT_RU.md). User corrected repeated implementation of EPS functionality. This finding **supersedes** 16.11 entries promoting new idle-healer/triage/two-healer candidate as a deployable improvement. They are SOURCE ONLY and now explicitly **HOLD FOR INTEGRATION**: they write new `BGX66_S_HEAL_SLOT` requests without 078/080's verified EPS-heal/manual/queue guard, so 105 mocked Lua passes do not imply gameplay superiority or safety. Do not install, activate or continue this duplicate healing branch. No effect on installed EET.
