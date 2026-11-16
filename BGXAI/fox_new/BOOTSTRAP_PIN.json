@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "77ac0440f56950851797a24e598079de477f7d08",
+  "commit": "a48b8928749af7ac820cb6ac81304351bb0021ec",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
   "script_sha256": "3b89aeab51c9df071a9ce017c4a2fa658749e90ccde5beb7b7349ca63e093574",
   "script_size": 76126,
-  "description": "BGXAI single unchanged CMD: SHA-pinned 1-112 menu, BGXP3 AUTO attack safety buffer 109-112; BGXP2/HEALER/EPS and rollback preserved; no automatic game installation."
+  "description": "BGXAI single CMD: SHA-pinned 1-112, BGXP3 auto attack buffer status/preflight/install/rollback 109-112, exact SHA and external backup; no automatic game install."
 }
