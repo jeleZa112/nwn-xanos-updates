@@ -32,9 +32,9 @@ def digest(data: bytes) -> str:
 
 
 def assemble(live: bytes, compiled_old: bytes, compiled_new: bytes,
-             expected_live_sha: str = LIVE_BCS_SHA) -> tuple[bytes, dict]:
+             expected_live_sha: str | None = None) -> tuple[bytes, dict]:
     """Strict byte-preserving splice; never executes game actions or writes files."""
-    if digest(live) != expected_live_sha:
+    if digest(live) != (expected_live_sha or LIVE_BCS_SHA):
         raise ValueError("LIVE_BGXP2_BCS_SHA_DRIFT")
     prior = BCS.chunks(live, BASE_BLOCK_COUNT)
     old = BCS.verify_fragment(compiled_old)
