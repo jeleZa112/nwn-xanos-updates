@@ -34,5 +34,8 @@ jobs:
           '@ | python -
           python -m py_compile BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py BGXP5_BCS_PREFLIGHT_READ_ONLY.py BGXP5_INSTALL.py test_bgxp5_source.py test_bgxp5_bcs_preflight.py test_bgxp5_installer_mock.py
           python -m unittest -v test_bgxp5_source test_bgxp5_bcs_preflight test_bgxp5_installer_mock
+          if ($LASTEXITCODE -ne 0) { throw 'BGXP5_TESTS_FAILED' }
           python BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py
+          if ($LASTEXITCODE -ne 0) { throw 'BGXP5_BUILDER_FAILED' }
           python BGXP5_BCS_PREFLIGHT_READ_ONLY.py
+          if ($LASTEXITCODE -ne 0) { throw 'BGXP5_PREFLIGHT_FAILED' }
