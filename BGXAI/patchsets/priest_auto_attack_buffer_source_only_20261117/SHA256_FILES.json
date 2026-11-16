@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "files": [
+    "BGXP2_LAST_PRIORITY.baf",
+    "BGXP2_BCS_PATCH.py",
+    "BGXP3_AUTO_ATTACK_BUFFER_SOURCE_ONLY.py",
+    "BGXP3_BCS_PREFLIGHT_SOURCE_ONLY.py",
+    "BGXP3_INSTALL.py",
+    "README_RU.md",
+    "test_bgxp3_auto_attack_buffer.py",
+    "test_bgxp3_bcs_preflight.py"
+  ],
+  "sha256": {
+    "BGXP2_LAST_PRIORITY.baf": "a93dd1d46bf55ff7a5d53f15b0b55c1fc2ad10e39a4a23ae90ece62bfd76df2d",
+    "BGXP2_BCS_PATCH.py": "67362d58bb4bec2fb08bc4e5338d606358b70a3529edb987896cdbc8af48a6d3",
+    "BGXP3_AUTO_ATTACK_BUFFER_SOURCE_ONLY.py": "5c65e02f3a87dad62131dbf4d3a8a4a32bca8c55d744401163d14c987b9f87e5",
+    "BGXP3_BCS_PREFLIGHT_SOURCE_ONLY.py": "0bc619d37b96f80d91f03bcc3b95caa8e76928bef5ad369c67c26501f03cc310",
+    "BGXP3_INSTALL.py": "75c8d9f51225631d7b41c7dc68859b7857143060c111d3b59c471841e364fa6c",
+    "README_RU.md": "bc6064bc26819278528385f1a7d4eab12db091840ec270861f8529aea555f5fe",
+    "test_bgxp3_auto_attack_buffer.py": "54b4d100ef9de2090b1741f47e47425d7c7fd0d5cf1e09f5141db5f4353bde7c",
+    "test_bgxp3_bcs_preflight.py": "263a5203e5f18db29e30d76ba82d7edeb9baa05e4b483d46c65ec2b984a363c5"
+  }
+}
