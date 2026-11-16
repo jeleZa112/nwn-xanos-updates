@@ -36,8 +36,8 @@
     {
       "source": "BGXAI/patchsets/priest_auto_priority_guard_source_20261117/BGXP5_INSTALL.py",
       "dest": "BGXP5_INSTALL.py",
-      "size": 12969,
-      "sha256": "6a001e4ca7cbf537f483b97a80bb31d5e05db9d7c2df514d203904bec88a8c19"
+      "size": 13000,
+      "sha256": "67314aa66e670493ac65bc9b6d4183e7373bd33625a4fa80e1994417202ce321"
     },
     {
       "source": "BGXAI/patchsets/priest_auto_priority_guard_source_20261117/test_bgxp5_source.py",
@@ -67,7 +67,7 @@
       "source": "BGXAI/patchsets/priest_auto_priority_guard_source_20261117/SHA256_FILES.json",
       "dest": "SHA256_FILES.json",
       "size": 1379,
-      "sha256": "2996601f4c95641e24ea20ea7fe93dbcf7035052d9fb5677268f7a9fec3e3101"
+      "sha256": "b1cc0b7ce3a819053a38b9f4dc7cba6ea9a39cc456b1057529d654d7df9f0c07"
     }
   ]
 }
