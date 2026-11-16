@@ -1,0 +1,10 @@
+{
+  "candidate": "066S idle guard + idle healer source-only",
+  "installed": false,
+  "tests_native_lua5_4_mock": 63,
+  "files": {
+    "M_BX43_066S_IDLE_GUARD_IDLE_HEAL_SOURCE_ONLY.lua": "f55fc522ea161d36e1db6ee86424da6d168f40a312ce1211707dc544158a7449",
+    "README_IDLE_HEALER_SOURCE_ONLY_RU.md": "70e44430e6471541b30c973cbf2952c956cfb08651ef5d3087e1974d1ea88bbd",
+    "test_idle_healer_source_only.py": "6aea999ce299c9d8629ab448e71a039cad7578d57933ee16d35cbee76b984f87"
+  }
+}
