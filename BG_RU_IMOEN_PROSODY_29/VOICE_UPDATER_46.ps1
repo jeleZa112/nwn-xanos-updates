@@ -74,16 +74,22 @@ try {
     if ($choiceFile) { Copy-Item -LiteralPath $choiceFile.FullName -Destination (Join-Path $runTemp 'USER_CHOICES.csv') }
   }
   $runner = @'
-import importlib.util, pathlib, sys
+import importlib.util, sys
 engine, source, out = sys.argv[1:4]
 spec = importlib.util.spec_from_file_location("voice_review_46", engine)
+if spec is None or spec.loader is None:
+    raise RuntimeError("Cannot import verified voice audit engine")
 module = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = module
 spec.loader.exec_module(module)
 module.OUT = out
 sys.argv = [engine, "--root", source]
 raise SystemExit(module.main())
 '@
-  & $python @prefix -c $runner $engine $source $runTemp
+  $runnerTmp = Join-Path ([IO.Path]::GetTempPath()) ('BG_VOICE_RU_RUN_'+[guid]::NewGuid().ToString('N')+'.py')
+  [IO.File]::WriteAllText($runnerTmp, $runner, (New-Object Text.UTF8Encoding($false)))
+  [void]$tempFiles.Add($runnerTmp)
+  & $python @prefix $runnerTmp $engine $source $runTemp
   if ($LASTEXITCODE -ne 0) { throw 'WAV audit failed' }
   $generated = Join-Path $runTemp 'SEND_TO_CHATGPT_BG_VOICE_RU_ONECLICK.zip'
   if (!(Test-Path -LiteralPath $generated -PathType Leaf)) { throw 'Audit ZIP missing' }
@@ -106,6 +112,7 @@ raise SystemExit(module.main())
     } catch { Write-Host ('Rollback failure: '+$rec.Path) -ForegroundColor Red }
   }
   try {
+    Add-Type -AssemblyName System.IO.Compression
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $failedReport = $report+'.pending'
     if (Test-Path -LiteralPath $failedReport) { Remove-Item -LiteralPath $failedReport -Force }
