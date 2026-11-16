@@ -1,7 +1,7 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "4.4.0",
-  "note": "Offline export of English original WAVs for all three BG Voice RU characters, no FFmpeg or PyPI, no network downloads, no model/game changes.",
+  "version": "4.5.0",
+  "note": "One existing BG_VOICE_UPDATE.cmd now installs SHA-verified read-only Stable/Per_line audit and single ZIP report. No new launcher; no audio/game modification; GPU repair not yet enabled.",
   "files": [
     {
       "path": "BG_RU_IMOEN_PROSODY_29/GENERATE_PROSODY_29.py",
@@ -17,7 +17,7 @@
     },
     {
       "path": "BG_VOICE_UPDATE.cmd",
-      "sha256": "38fcfe70a5c310796ceb6605e186b45ad4458d63ba87448c7e52e5e55f57feb1"
+      "sha256": "147d039c774a5cf8488414277c1a5b2f76c2af89ebee6a818633c095b25cbdde"
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/EMOTION_ANALYSIS_32.py",
@@ -94,6 +94,10 @@
     {
       "path": "BG_RU_IMOEN_PROSODY_29/RUN_EXPORT_RUTUBE_SOURCES_45.cmd",
       "sha256": "7fa1d8727178dbfda9b7af563df92dd56e0a389906300c5b8c0778b46a67037c"
+    },
+    {
+      "path": "BG_RU_IMOEN_PROSODY_29/VOICE_REVIEW_46.py.gz.b64",
+      "sha256": "3edbb695412b1098a2217425b4d9386a8d2f5ed57b9128459b995e5374326e8b"
     }
   ]
 }
