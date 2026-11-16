@@ -23,9 +23,12 @@ def candidate(original: bytes) -> bytes:
     manual command or EPS queue is left untouched. Critical healing still
     depends on existing BGXPR preconditions (ActionListEmpty etc.).
     """
-    if hashlib.sha256(original).hexdigest() != BASE_SHA256:
+    # Windows checkout may store CRLF; verify the *canonical LF release* byte hash.
+    # Reject any bare CR or other mutations instead of weakening the SHA gate.
+    canonical = original.replace(b"\r\n", b"\n")
+    if b"\r" in canonical or hashlib.sha256(canonical).hexdigest() != BASE_SHA256:
         raise ValueError("BGXP2_BASELINE_SHA_MISMATCH")
-    raw = original.decode("utf-8")
+    raw = canonical.decode("utf-8")
     if raw.count(AUTO_ATTACK_MARKER) != 1:
         raise ValueError("AUTO_ATTACK_BLOCK_NOT_UNIQUE")
     prefix, tail = raw.split(AUTO_ATTACK_MARKER, 1)
@@ -45,7 +48,7 @@ def candidate(original: bytes) -> bytes:
             raise ValueError(f"ALLY_HP_GATE_DRIFT:{slot}")
         patched = patched.replace(old, new, 1)
     result = (prefix + AUTO_ATTACK_MARKER + patched).encode("utf-8")
-    if result == original or len(result) != len(original):
+    if result == canonical or len(result) != len(canonical):
         raise ValueError("UNEXPECTED_BYTE_LENGTH")
     return result
 
