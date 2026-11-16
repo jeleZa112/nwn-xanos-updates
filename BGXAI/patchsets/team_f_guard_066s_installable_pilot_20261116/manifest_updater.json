@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.38-BGXTEAM-ONEFILE",
+  "files": [
+    {
+      "source": "BGXAI/patchsets/team_f_guard_066s_installable_pilot_20261116/BGXAI_TEAM_GUARD_INSTALL.py",
+      "dest": "BGXAI_TEAM_GUARD_INSTALL.py",
+      "size": 13844,
+      "sha256": "b0d23f80a07ad3182d0105a74579891c69a65a69dc0268e6db9a3f8355021f77"
+    },
+    {
+      "source": "BGXAI/patchsets/team_f_guard_066s_installable_pilot_20261116/M_BX43_066S_VERIFIED_ORIGINAL.lua",
+      "dest": "M_BX43_066S_VERIFIED_ORIGINAL.lua",
+      "size": 35990,
+      "sha256": "50640902ec4c25a2c85e5088d7231678b54445a847b41743c476974236d1d70f"
+    },
+    {
+      "source": "BGXAI/patchsets/team_f_guard_066s_installable_pilot_20261116/M_BX43_066S_GUARD_TEAM_CANDIDATE.lua",
+      "dest": "M_BX43_066S_GUARD_TEAM_CANDIDATE.lua",
+      "size": 37083,
+      "sha256": "778987e0fc0fccadab68a01fcbd6ba9b393aefbe409d7496a940209faf35f006"
+    }
+  ]
+}
