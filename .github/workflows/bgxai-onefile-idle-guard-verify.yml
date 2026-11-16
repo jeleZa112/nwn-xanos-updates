@@ -8,6 +8,7 @@ on:
       - 'BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/**'
       - 'BGXAI/patchsets/priest_modes_eps_first_installable_20261116/**'
       - 'BGXAI/patchsets/team_f_guard_066s_installable_pilot_20261116/**'
+      - 'BGXAI/patchsets/priest_combat_eps_first_20261116/**'
       - '.github/workflows/bgxai-onefile-idle-guard-verify.yml'
   workflow_dispatch:
 permissions:
