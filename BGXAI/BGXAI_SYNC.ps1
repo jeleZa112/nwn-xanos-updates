@@ -186,8 +186,15 @@ prefix='BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\priest_auto_buffer_verified';installer='BGXP3_INSTALL.py';
 names=@('BGXP2_LAST_PRIORITY.baf','BGXP2_BCS_PATCH.py','BGXP3_AUTO_ATTACK_BUFFER_SOURCE_ONLY.py','BGXP3_BCS_PREFLIGHT_SOURCE_ONLY.py','BGXP3_INSTALL.py','README_RU.md','test_bgxp3_auto_attack_buffer.py','test_bgxp3_bcs_preflight.py','SHA256_FILES.json')
 }
+$releaseBGXP5=@{
+id='BGXP5';version='0.3.41-BGXP5-AUTO-PRIORITY-GUARD';
+manifest='BGXAI/patchsets/priest_auto_priority_guard_source_20261117/manifest_updater.json';
+prefix='BGXAI/patchsets/priest_auto_priority_guard_source_20261117/';
+localPath=Join-Path $GameRoot 'BGXAI_DEV\priest_auto_priority_verified';installer='BGXP5_INSTALL.py';
+names=@('BGXPR_LAST_PRIORITY.baf','BGXP2_LAST_PRIORITY.baf','BGXP2_BCS_PATCH.py','BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py','BGXP5_BCS_PREFLIGHT_READ_ONLY.py','BGXP5_INSTALL.py','test_bgxp5_source.py','test_bgxp5_bcs_preflight.py','test_bgxp5_installer_mock.py','README_RU.md','SHA256_FILES.json')
+}
 function Get-PinnedBytes([string]$remotePath) {
-if($remotePath -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116|patchsets/priest_combat_eps_first_20261116|patchsets/priest_auto_attack_buffer_source_only_20261117)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
+if($remotePath -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116|patchsets/priest_combat_eps_first_20261116|patchsets/priest_auto_attack_buffer_source_only_20261117|patchsets/priest_auto_priority_guard_source_20261117)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
 throw ('Remote source path blocked: '+$remotePath)
 }
 $urls=@(
@@ -612,17 +619,21 @@ if((HashFile $file) -cne $expected[$name].sha){throw ('BGX source SHA invalid: '
 }
 $installer=Join-Path $spec.localPath $spec.installer
 $last=BGXOneFileLastWeiDU
-$rx=if($spec.id -ceq 'BGXPR'){'BGXPRIEST[/\\]SETUP-BGXPRIEST[.]TP2~'}elseif($spec.id -ceq 'BGXP2'){'BGXP2[/\\]SETUP-BGXP2[.]TP2~'}elseif($spec.id -ceq 'BGXP3'){'BGXP3[/\\]SETUP-BGXP3[.]TP2~'}else{'BGXTEAM[/\\]SETUP-BGXTEAM[.]TP2~'}
+$rx=if($spec.id -ceq 'BGXPR'){'BGXPRIEST[/\\]SETUP-BGXPRIEST[.]TP2~'}elseif($spec.id -ceq 'BGXP2'){'BGXP2[/\\]SETUP-BGXP2[.]TP2~'}elseif($spec.id -ceq 'BGXP3'){'BGXP3[/\\]SETUP-BGXP3[.]TP2~'}elseif($spec.id -ceq 'BGXP5'){'BGXP5[/\\]SETUP-BGXP5[.]TP2~'}else{'BGXTEAM[/\\]SETUP-BGXTEAM[.]TP2~'}
 $installed=($last -match $rx)
-if($spec.id -ceq 'BGXP2' -and $last -match 'BGXP3[/\\]SETUP-BGXP3[.]TP2~'){
+if($spec.id -ceq 'BGXP3' -and $last -match 'BGXP5[/\\]SETUP-BGXP5[.]TP2~'){
+if($mode -ceq 'status'){Write-Host 'BGXP3 below BGXP5; use 113.';return}
+throw 'BGXP5 installed; rollback via 116 before BGXP3 change.'
+}
+if($spec.id -ceq 'BGXP2' -and $last -match 'BGXP3[/\\]SETUP-BGXP3[.]TP2~|BGXP5[/\\]SETUP-BGXP5[.]TP2~'){
 if($mode -ceq 'status'){Write-Host 'BGXP2 below BGXP3; select 109.';return}
 throw 'BGXP3 installed; rollback via 112 before changing BGXP2.'
 }
-if($spec.id -ceq 'BGXPR' -and $last -match 'BGXP2[/\\]SETUP-BGXP2[.]TP2~|BGXP3[/\\]SETUP-BGXP3[.]TP2~'){
+if($spec.id -ceq 'BGXPR' -and $last -match 'BGXP2[/\\]SETUP-BGXP2[.]TP2~|BGXP3[/\\]SETUP-BGXP3[.]TP2~|BGXP5[/\\]SETUP-BGXP5[.]TP2~'){
 if($mode -ceq 'status'){Write-Host 'BGXPR below BGXP2; select 105.';return}
 throw 'BGXP2 installed; rollback via 108 before BGXPR change.'
 }
-if($spec.id -ceq 'BGXTEAM' -and ($last -match 'BGXPRIEST[/\\]SETUP-BGXPRIEST[.]TP2~' -or $last -match 'BGXP2[/\\]SETUP-BGXP2[.]TP2~' -or $last -match 'BGXP3[/\\]SETUP-BGXP3[.]TP2~')){
+if($spec.id -ceq 'BGXTEAM' -and ($last -match 'BGXPRIEST[/\\]SETUP-BGXPRIEST[.]TP2~' -or $last -match 'BGXP2[/\\]SETUP-BGXP2[.]TP2~' -or $last -match 'BGXP3[/\\]SETUP-BGXP3[.]TP2~' -or $last -match 'BGXP5[/\\]SETUP-BGXP5[.]TP2~')){
 if($mode -ceq 'status'){Write-Host 'BGXTEAM is beneath BGXPR; see menu 97. No change.';return}
 throw 'BGXPR is last in WeiDU. Use menu 100 rollback first to change BGXTEAM.'
 }
@@ -1145,6 +1156,10 @@ Write-Host '109 - BGXP3 AUTO buffer status (READ ONLY)'
 Write-Host '110 - BGXP3 real EET preflight (READ ONLY)'
 Write-Host '111 - BGXP3 guarded install (typed approval)'
 Write-Host '112 - BGXP3 guarded rollback (typed approval)'
+Write-Host '113 - BGXP5 AUTO heal priority status (READ ONLY)'
+Write-Host '114 - BGXP5 real EET compiler preflight (READ ONLY)'
+Write-Host '115 - BGXP5 guarded install (typed approval)'
+Write-Host '116 - BGXP5 guarded rollback (typed approval)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -1263,6 +1278,10 @@ switch($choice){
 '110' {BGXOneFileManaged $releaseBGXP3 'preflight' 'INSTALL_BGXP3_AUTO_BUFFER' 'ROLLBACK_BGXP3_AUTO_BUFFER';break}
 '111' {BGXOneFileManaged $releaseBGXP3 'install' 'INSTALL_BGXP3_AUTO_BUFFER' 'ROLLBACK_BGXP3_AUTO_BUFFER';break}
 '112' {BGXOneFileManaged $releaseBGXP3 'rollback' 'INSTALL_BGXP3_AUTO_BUFFER' 'ROLLBACK_BGXP3_AUTO_BUFFER';break}
+'113' {BGXOneFileManaged $releaseBGXP5 'status' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
+'114' {BGXOneFileManaged $releaseBGXP5 'preflight' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
+'115' {BGXOneFileManaged $releaseBGXP5 'install' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
+'116' {BGXOneFileManaged $releaseBGXP5 'rollback' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0
