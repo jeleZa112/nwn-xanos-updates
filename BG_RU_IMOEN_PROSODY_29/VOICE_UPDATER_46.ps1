@@ -112,7 +112,7 @@ raise SystemExit(module.main())
     $archive = [IO.Compression.ZipFile]::Open($failedReport,[IO.Compression.ZipArchiveMode]::Create)
     try {
       $entry = $archive.CreateEntry('ERROR.txt')
-      $writer = New-Object IO.StreamWriter($entry.Open(),[Text.Encoding]::UTF8)
+      $writer = [IO.StreamWriter]::new($entry.Open(),[Text.Encoding]::UTF8)
       try { $writer.WriteLine('BG Voice RU audit error');$writer.WriteLine($msg) }
       finally { $writer.Dispose() }
     } finally { $archive.Dispose() }
