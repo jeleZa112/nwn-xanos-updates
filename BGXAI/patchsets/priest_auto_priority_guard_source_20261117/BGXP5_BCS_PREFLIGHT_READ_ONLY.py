@@ -136,9 +136,9 @@ def preflight(game:Path=GAME)->dict:
     src=SRC.COMBAT_SOURCE.read_bytes()
     if sha(SRC.canonical(SRC.PR_SOURCE.read_bytes()))!=SRC.PR_SHA:
         raise ValueError("BGXPR_SOURCE_SHA_MISMATCH")
-    original=compile_native(game,weidu,tlk,SRC.expected_bgxp3_baf(src),"BGXP5_ORIGINAL")
-    guarded=compile_native(game,weidu,tlk,SRC.guarded_combat_baf(src),"BGXP5_GUARDED")
-    heal=compile_native(game,weidu,tlk,SRC.priority_auto_cure_baf(),"BGXP5_HEAL")
+    original=compile_native(game,weidu,tlk,SRC.expected_bgxp3_baf(src),"BXP5OLD")
+    guarded=compile_native(game,weidu,tlk,SRC.guarded_combat_baf(src),"BXP5NEW")
+    heal=compile_native(game,weidu,tlk,SRC.priority_auto_cure_baf(),"BXP5HEAL")
     merged,proof=assemble(raw,original,guarded,heal)
     proof["candidate_heal_baf_sha256"]=sha(SRC.priority_auto_cure_baf())
     proof["candidate_guarded_combat_baf_sha256"]=sha(SRC.guarded_combat_baf(src))
