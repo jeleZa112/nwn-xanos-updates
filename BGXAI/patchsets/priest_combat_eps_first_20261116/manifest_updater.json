@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.39-BGXP2-COMBAT-PRIEST",
+  "files": [
+    {
+      "source": "BGXAI/patchsets/priest_combat_eps_first_20261116/BGXP2_LAST_PRIORITY.baf",
+      "dest": "BGXP2_LAST_PRIORITY.baf",
+      "size": 18713,
+      "sha256": "a93dd1d46bf55ff7a5d53f15b0b55c1fc2ad10e39a4a23ae90ece62bfd76df2d"
+    },
+    {
+      "source": "BGXAI/patchsets/priest_combat_eps_first_20261116/BGXP2_BCS_PATCH.py",
+      "dest": "BGXP2_BCS_PATCH.py",
+      "size": 4154,
+      "sha256": "67362d58bb4bec2fb08bc4e5338d606358b70a3529edb987896cdbc8af48a6d3"
+    },
+    {
+      "source": "BGXAI/patchsets/priest_combat_eps_first_20261116/BGXP2_INSTALL.py",
+      "dest": "BGXP2_INSTALL.py",
+      "size": 10729,
+      "sha256": "67fe0b4ca9bdd0fd102a108a91513eae23a9b9dcae62909882bfd44587c2b587"
+    },
+    {
+      "source": "BGXAI/patchsets/priest_combat_eps_first_20261116/README_RU.md",
+      "dest": "README_RU.md",
+      "size": 6439,
+      "sha256": "737428be70cc9361f6970f9cb78edbace03552bd2a34a3c732f1170cb9e7e247"
+    },
+    {
+      "source": "BGXAI/patchsets/priest_combat_eps_first_20261116/PLAYTEST_RU.md",
+      "dest": "PLAYTEST_RU.md",
+      "size": 1258,
+      "sha256": "f2f828028f5ec6b87ceed79ce50b2325a1148179f8f7080a99ea348beebb42ea"
+    },
+    {
+      "source": "BGXAI/patchsets/priest_combat_eps_first_20261116/test_bgxp2.py",
+      "dest": "test_bgxp2.py",
+      "size": 4152,
+      "sha256": "fba44af02e0dd9051022d59bc5a31c413fe68832cf6d3a9912bf160e4c50555a"
+    },
+    {
+      "source": "BGXAI/patchsets/priest_combat_eps_first_20261116/SHA256_FILES.json",
+      "dest": "SHA256_FILES.json",
+      "size": 804,
+      "sha256": "d8c9267d832bf4db1bcd5067adda3e5bb0b735c7c18e9faf74bea637d70cc25c"
+    }
+  ]
+}
