@@ -1,0 +1,24 @@
+{
+  "name": "BGXAI team F-guard 066S guarded playable pilot",
+  "status": "LOCAL_INSTALL_READY_NOT_INSTALLED",
+  "files": {
+    "066S_guard_team_exact.patch": "6dc7232977897e23dfd9c0bad69a7cd39170f36ede6648293ad8e0ad746bf3fc",
+    "BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf": "c678a70a08dbcff7584e0f2703aa8bed5ae5945856287666016ee47c9d6f69ae",
+    "BGX66_CASTER_SUPPORT.lua": "b365ac770c508e292b87c280c58f922c20306a0b9d3ca68c99b0cd1223872020",
+    "BGXAI_TEAM_GUARD_INSTALL.py": "b0d23f80a07ad3182d0105a74579891c69a65a69dc0268e6db9a3f8355021f77",
+    "BGXAI_TEAM_GUARD_PLAYTEST.cmd": "0b45e230fbebe0a30bdacf50ef1f75b65cf10d9d6f9c46b6e6b3f32844ffcf75",
+    "M_BX43_066S_CASTER_CANDIDATE.lua": "50640902ec4c25a2c85e5088d7231678b54445a847b41743c476974236d1d70f",
+    "M_BX43_066S_GUARD_TEAM_CANDIDATE.lua": "778987e0fc0fccadab68a01fcbd6ba9b393aefbe409d7496a940209faf35f006",
+    "M_BX43_066S_VERIFIED_ORIGINAL.lua": "50640902ec4c25a2c85e5088d7231678b54445a847b41743c476974236d1d70f",
+    "M_BX43_066_BASELINE_READONLY.lua": "c66ebb5190be8103819106a48d3100055b5791adf7c2d1df5f3e54596823540b",
+    "README_УСТАНОВКА_И_ОТКАТ.md": "e64f713e5940a649639c29392ed2843ce504c893a4877131dfbcaffc26e618b1",
+    "lua65_harness.py": "d0586d522303893ff2ae648c2b6915ed4178113e8782d98d698c5a3b03b70607",
+    "lua_syntax_check.lua": "35c46fe402cbd67f46c4779e307242d42d324ce4aca0aab80b45dd7aea8f36a7",
+    "native_066_fixture.py": "1f79e686f9c2e3d682701f0a5e7844a9304fba9f15cb8b2f6b00f51133e255eb",
+    "test_066s_caster_native.py": "5672e2f42b9a08a7b6f8cc85b5fcbe27fc505b0a2b3e8a0290239b4bc9aae507",
+    "test_guard_team.py": "e9430420d0acfb29f121933cec225176cba57aa26cf309dffed1dc06e6742000",
+    "test_guarded_installer.py": "b9ff09855a41818d1d0d6ad1dd2bf52456552bbb94681bf3d96ce00070327e82",
+    "test_status_after_rollback_source_only.py": "75f4b2cf0e7c43073e863c5142cede0f0bd9333de3406e38d77b5140e5f97768",
+    "verify_release.py": "81466f897763fae7df5078be3c94dadda6ea5a3621eb1969cc8122b6c017bac7"
+  }
+}
