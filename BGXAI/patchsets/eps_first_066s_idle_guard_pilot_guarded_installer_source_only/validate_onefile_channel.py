@@ -21,6 +21,7 @@ RELEASES = (
     ('BGXAI/patchsets/team_f_guard_066s_installable_pilot_20261116/', '0.3.38-BGXTEAM-ONEFILE', 3),
     ('BGXAI/patchsets/priest_combat_eps_first_20261116/', '0.3.39-BGXP2-COMBAT-PRIEST', 7),
     ('BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/', '0.3.40-BGXP3-AUTO-BUFFER', 9),
+    ('BGXAI/patchsets/priest_auto_priority_guard_source_20261117/', '0.3.41-BGXP5-AUTO-PRIORITY-GUARD', 11),
 )
 
 def git_bytes(rev: str, path: str) -> bytes:
@@ -52,18 +53,19 @@ def main():
     assert git_bytes('HEAD', CMD) == git_bytes(OLD_COMMIT, CMD), 'one CMD was replaced'
     oldmenu, oldcase = menus(old)
     menu, case = menus(live)
-    assert len(oldmenu) == 97 and len(menu) == 113, 'menu length mismatch'
-    assert len(oldcase) == 96 and len(case) == 112, 'dispatch length mismatch'
+    assert len(oldmenu) == 97 and len(menu) == 117, 'menu length mismatch'
+    assert len(oldcase) == 96 and len(case) == 116, 'dispatch length mismatch'
     assert menu[:96] == oldmenu[:96] and menu[-1] == oldmenu[-1], 'old menu 1..96 changed'
     assert case[:96] == oldcase, 'old dispatch 1..96 changed'
     code = live.decode('utf-8-sig')
-    for n in range(97,113):
+    for n in range(97,117):
         assert any(re.match(rf"Write-Host '\s*{n} - ", x) for x in menu), f'menu {n} missing'
         assert case[n-1].startswith(f"'{n}' {{BGXOneFileManaged"), f'dispatch {n} wrong'
     for key in ('INSTALL_BGXPRIEST_MODES','ROLLBACK_BGXPRIEST_MODES',
                 'INSTALL_BGXAI_TEAM_GUARD','ROLLBACK_BGXAI_TEAM_GUARD',
                 'INSTALL_BGXP2_COMBAT_PRIEST','ROLLBACK_BGXP2_COMBAT_PRIEST',
                 'INSTALL_BGXP3_AUTO_BUFFER','ROLLBACK_BGXP3_AUTO_BUFFER',
+                'INSTALL_BGXP5_EARLY_HEAL_SAFE','ROLLBACK_BGXP5_EARLY_HEAL_SAFE',
                 'function BGXOneFileManaged', 'SyncRelease $spec',
                 "'--yes' '--confirm' $token", 'AssertNotReparse $file'):
         assert key in code, f'guard missing: {key}'
@@ -88,7 +90,7 @@ def main():
             original = git_bytes(pin['commit'], f['source'])
             assert len(original) == f['size'] and sha(original) == f['sha256'], f'bad source: {name}'
             assert f"'{name}'" in code, f'updater source absent: {name}'
-    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-112; 47/47 source hashes; pin matched; game untouched')
+    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-116; 58/58 source hashes; pin matched; game untouched')
 
 if __name__ == '__main__':
     main()
