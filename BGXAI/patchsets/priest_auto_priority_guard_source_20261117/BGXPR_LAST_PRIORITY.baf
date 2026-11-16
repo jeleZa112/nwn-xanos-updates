@@ -1,0 +1,1088 @@
+// BGXAI priest modes; additive lowest-priority EPS fallback; explicit opt-in only.
+// Real-world compilation must use target game IDS. NEVER install without SHA + backup.
+
+// BGXPR HEALER: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player1)
+  InPartySlot(Player1,0)
+  InMyArea(Player1)
+  See(Player1)
+  Range(Player1,10)
+  HPPercentLT(Player1,70)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player1,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR HEALER: bounded approach while idle; never toward off-map or unseen ally.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGXR_MOVE_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  HPPercentGT(Myself,60)
+  InParty(Player1)
+  InPartySlot(Player1,0)
+  InMyArea(Player1)
+  See(Player1)
+  HPPercentLT(Player1,55)
+  !Range(Player1,10)
+  Range(Player1,30)
+  !Range(NearestEnemyOf(Myself),8)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_MOVE_CD","LOCALS",4)
+    MoveToObject(Player1)
+END
+
+// BGXPR HEALER: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,1)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player2)
+  InPartySlot(Player2,1)
+  InMyArea(Player2)
+  See(Player2)
+  Range(Player2,10)
+  HPPercentLT(Player2,70)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player2,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR HEALER: bounded approach while idle; never toward off-map or unseen ally.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,1)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGXR_MOVE_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  HPPercentGT(Myself,60)
+  InParty(Player2)
+  InPartySlot(Player2,1)
+  InMyArea(Player2)
+  See(Player2)
+  HPPercentLT(Player2,55)
+  !Range(Player2,10)
+  Range(Player2,30)
+  !Range(NearestEnemyOf(Myself),8)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_MOVE_CD","LOCALS",4)
+    MoveToObject(Player2)
+END
+
+// BGXPR HEALER: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,2)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player3)
+  InPartySlot(Player3,2)
+  InMyArea(Player3)
+  See(Player3)
+  Range(Player3,10)
+  HPPercentLT(Player3,70)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player3,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR HEALER: bounded approach while idle; never toward off-map or unseen ally.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,2)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGXR_MOVE_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  HPPercentGT(Myself,60)
+  InParty(Player3)
+  InPartySlot(Player3,2)
+  InMyArea(Player3)
+  See(Player3)
+  HPPercentLT(Player3,55)
+  !Range(Player3,10)
+  Range(Player3,30)
+  !Range(NearestEnemyOf(Myself),8)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_MOVE_CD","LOCALS",4)
+    MoveToObject(Player3)
+END
+
+// BGXPR HEALER: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,3)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player4)
+  InPartySlot(Player4,3)
+  InMyArea(Player4)
+  See(Player4)
+  Range(Player4,10)
+  HPPercentLT(Player4,70)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player4,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR HEALER: bounded approach while idle; never toward off-map or unseen ally.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,3)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGXR_MOVE_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  HPPercentGT(Myself,60)
+  InParty(Player4)
+  InPartySlot(Player4,3)
+  InMyArea(Player4)
+  See(Player4)
+  HPPercentLT(Player4,55)
+  !Range(Player4,10)
+  Range(Player4,30)
+  !Range(NearestEnemyOf(Myself),8)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_MOVE_CD","LOCALS",4)
+    MoveToObject(Player4)
+END
+
+// BGXPR HEALER: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,4)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player5)
+  InPartySlot(Player5,4)
+  InMyArea(Player5)
+  See(Player5)
+  Range(Player5,10)
+  HPPercentLT(Player5,70)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player5,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR HEALER: bounded approach while idle; never toward off-map or unseen ally.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,4)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGXR_MOVE_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  HPPercentGT(Myself,60)
+  InParty(Player5)
+  InPartySlot(Player5,4)
+  InMyArea(Player5)
+  See(Player5)
+  HPPercentLT(Player5,55)
+  !Range(Player5,10)
+  Range(Player5,30)
+  !Range(NearestEnemyOf(Myself),8)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_MOVE_CD","LOCALS",4)
+    MoveToObject(Player5)
+END
+
+// BGXPR HEALER: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,5)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player6)
+  InPartySlot(Player6,5)
+  InMyArea(Player6)
+  See(Player6)
+  Range(Player6,10)
+  HPPercentLT(Player6,70)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player6,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR HEALER: bounded approach while idle; never toward off-map or unseen ally.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,5)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGXR_MOVE_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  HPPercentGT(Myself,60)
+  InParty(Player6)
+  InPartySlot(Player6,5)
+  InMyArea(Player6)
+  See(Player6)
+  HPPercentLT(Player6,55)
+  !Range(Player6,10)
+  Range(Player6,30)
+  !Range(NearestEnemyOf(Myself),8)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_MOVE_CD","LOCALS",4)
+    MoveToObject(Player6)
+END
+
+// BGXPR SUPPORT: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",2)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player1)
+  InPartySlot(Player1,0)
+  InMyArea(Player1)
+  See(Player1)
+  Range(Player1,10)
+  HPPercentLT(Player1,45)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player1,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR SUPPORT: bounded approach while idle; never toward off-map or unseen ally.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",2)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGXR_MOVE_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  HPPercentGT(Myself,65)
+  InParty(Player1)
+  InPartySlot(Player1,0)
+  InMyArea(Player1)
+  See(Player1)
+  HPPercentLT(Player1,35)
+  !Range(Player1,10)
+  Range(Player1,25)
+  !Range(NearestEnemyOf(Myself),8)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_MOVE_CD","LOCALS",4)
+    MoveToObject(Player1)
+END
+
+// BGXPR SUPPORT: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,1)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",2)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player2)
+  InPartySlot(Player2,1)
+  InMyArea(Player2)
+  See(Player2)
+  Range(Player2,10)
+  HPPercentLT(Player2,45)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player2,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR SUPPORT: bounded approach while idle; never toward off-map or unseen ally.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,1)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",2)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGXR_MOVE_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  HPPercentGT(Myself,65)
+  InParty(Player2)
+  InPartySlot(Player2,1)
+  InMyArea(Player2)
+  See(Player2)
+  HPPercentLT(Player2,35)
+  !Range(Player2,10)
+  Range(Player2,25)
+  !Range(NearestEnemyOf(Myself),8)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_MOVE_CD","LOCALS",4)
+    MoveToObject(Player2)
+END
+
+// BGXPR SUPPORT: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,2)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",2)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player3)
+  InPartySlot(Player3,2)
+  InMyArea(Player3)
+  See(Player3)
+  Range(Player3,10)
+  HPPercentLT(Player3,45)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player3,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR SUPPORT: bounded approach while idle; never toward off-map or unseen ally.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,2)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",2)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGXR_MOVE_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  HPPercentGT(Myself,65)
+  InParty(Player3)
+  InPartySlot(Player3,2)
+  InMyArea(Player3)
+  See(Player3)
+  HPPercentLT(Player3,35)
+  !Range(Player3,10)
+  Range(Player3,25)
+  !Range(NearestEnemyOf(Myself),8)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_MOVE_CD","LOCALS",4)
+    MoveToObject(Player3)
+END
+
+// BGXPR SUPPORT: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,3)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",2)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player4)
+  InPartySlot(Player4,3)
+  InMyArea(Player4)
+  See(Player4)
+  Range(Player4,10)
+  HPPercentLT(Player4,45)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player4,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR SUPPORT: bounded approach while idle; never toward off-map or unseen ally.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,3)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",2)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGXR_MOVE_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  HPPercentGT(Myself,65)
+  InParty(Player4)
+  InPartySlot(Player4,3)
+  InMyArea(Player4)
+  See(Player4)
+  HPPercentLT(Player4,35)
+  !Range(Player4,10)
+  Range(Player4,25)
+  !Range(NearestEnemyOf(Myself),8)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_MOVE_CD","LOCALS",4)
+    MoveToObject(Player4)
+END
+
+// BGXPR SUPPORT: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,4)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",2)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player5)
+  InPartySlot(Player5,4)
+  InMyArea(Player5)
+  See(Player5)
+  Range(Player5,10)
+  HPPercentLT(Player5,45)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player5,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR SUPPORT: bounded approach while idle; never toward off-map or unseen ally.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,4)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",2)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGXR_MOVE_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  HPPercentGT(Myself,65)
+  InParty(Player5)
+  InPartySlot(Player5,4)
+  InMyArea(Player5)
+  See(Player5)
+  HPPercentLT(Player5,35)
+  !Range(Player5,10)
+  Range(Player5,25)
+  !Range(NearestEnemyOf(Myself),8)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_MOVE_CD","LOCALS",4)
+    MoveToObject(Player5)
+END
+
+// BGXPR SUPPORT: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,5)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",2)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player6)
+  InPartySlot(Player6,5)
+  InMyArea(Player6)
+  See(Player6)
+  Range(Player6,10)
+  HPPercentLT(Player6,45)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player6,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR SUPPORT: bounded approach while idle; never toward off-map or unseen ally.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,5)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",2)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGXR_MOVE_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  HPPercentGT(Myself,65)
+  InParty(Player6)
+  InPartySlot(Player6,5)
+  InMyArea(Player6)
+  See(Player6)
+  HPPercentLT(Player6,35)
+  !Range(Player6,10)
+  Range(Player6,25)
+  !Range(NearestEnemyOf(Myself),8)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_MOVE_CD","LOCALS",4)
+    MoveToObject(Player6)
+END
+
+// BGXPR BATTLE: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",3)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player1)
+  InPartySlot(Player1,0)
+  InMyArea(Player1)
+  See(Player1)
+  Range(Player1,10)
+  HPPercentLT(Player1,25)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player1,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR BATTLE: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,1)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",3)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player2)
+  InPartySlot(Player2,1)
+  InMyArea(Player2)
+  See(Player2)
+  Range(Player2,10)
+  HPPercentLT(Player2,25)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player2,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR BATTLE: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,2)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",3)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player3)
+  InPartySlot(Player3,2)
+  InMyArea(Player3)
+  See(Player3)
+  Range(Player3,10)
+  HPPercentLT(Player3,25)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player3,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR BATTLE: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,3)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",3)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player4)
+  InPartySlot(Player4,3)
+  InMyArea(Player4)
+  See(Player4)
+  Range(Player4,10)
+  HPPercentLT(Player4,25)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player4,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR BATTLE: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,4)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",3)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player5)
+  InPartySlot(Player5,4)
+  InMyArea(Player5)
+  See(Player5)
+  Range(Player5,10)
+  HPPercentLT(Player5,25)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player5,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR BATTLE: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,5)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",3)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player6)
+  InPartySlot(Player6,5)
+  InMyArea(Player6)
+  See(Player6)
+  Range(Player6,10)
+  HPPercentLT(Player6,25)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player6,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR AUTO: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",4)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player1)
+  InPartySlot(Player1,0)
+  InMyArea(Player1)
+  See(Player1)
+  Range(Player1,10)
+  HPPercentLT(Player1,45)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player1,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR AUTO: bounded approach while idle; never toward off-map or unseen ally.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",4)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGXR_MOVE_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  HPPercentGT(Myself,75)
+  InParty(Player1)
+  InPartySlot(Player1,0)
+  InMyArea(Player1)
+  See(Player1)
+  HPPercentLT(Player1,35)
+  !Range(Player1,10)
+  Range(Player1,20)
+  !Range(NearestEnemyOf(Myself),8)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_MOVE_CD","LOCALS",4)
+    MoveToObject(Player1)
+END
+
+// BGXPR AUTO: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,1)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",4)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player2)
+  InPartySlot(Player2,1)
+  InMyArea(Player2)
+  See(Player2)
+  Range(Player2,10)
+  HPPercentLT(Player2,45)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player2,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR AUTO: bounded approach while idle; never toward off-map or unseen ally.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,1)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",4)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGXR_MOVE_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  HPPercentGT(Myself,75)
+  InParty(Player2)
+  InPartySlot(Player2,1)
+  InMyArea(Player2)
+  See(Player2)
+  HPPercentLT(Player2,35)
+  !Range(Player2,10)
+  Range(Player2,20)
+  !Range(NearestEnemyOf(Myself),8)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_MOVE_CD","LOCALS",4)
+    MoveToObject(Player2)
+END
+
+// BGXPR AUTO: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,2)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",4)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player3)
+  InPartySlot(Player3,2)
+  InMyArea(Player3)
+  See(Player3)
+  Range(Player3,10)
+  HPPercentLT(Player3,45)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player3,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR AUTO: bounded approach while idle; never toward off-map or unseen ally.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,2)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",4)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGXR_MOVE_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  HPPercentGT(Myself,75)
+  InParty(Player3)
+  InPartySlot(Player3,2)
+  InMyArea(Player3)
+  See(Player3)
+  HPPercentLT(Player3,35)
+  !Range(Player3,10)
+  Range(Player3,20)
+  !Range(NearestEnemyOf(Myself),8)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_MOVE_CD","LOCALS",4)
+    MoveToObject(Player3)
+END
+
+// BGXPR AUTO: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,3)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",4)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player4)
+  InPartySlot(Player4,3)
+  InMyArea(Player4)
+  See(Player4)
+  Range(Player4,10)
+  HPPercentLT(Player4,45)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player4,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR AUTO: bounded approach while idle; never toward off-map or unseen ally.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,3)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",4)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGXR_MOVE_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  HPPercentGT(Myself,75)
+  InParty(Player4)
+  InPartySlot(Player4,3)
+  InMyArea(Player4)
+  See(Player4)
+  HPPercentLT(Player4,35)
+  !Range(Player4,10)
+  Range(Player4,20)
+  !Range(NearestEnemyOf(Myself),8)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_MOVE_CD","LOCALS",4)
+    MoveToObject(Player4)
+END
+
+// BGXPR AUTO: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,4)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",4)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player5)
+  InPartySlot(Player5,4)
+  InMyArea(Player5)
+  See(Player5)
+  Range(Player5,10)
+  HPPercentLT(Player5,45)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player5,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR AUTO: bounded approach while idle; never toward off-map or unseen ally.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,4)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",4)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGXR_MOVE_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  HPPercentGT(Myself,75)
+  InParty(Player5)
+  InPartySlot(Player5,4)
+  InMyArea(Player5)
+  See(Player5)
+  HPPercentLT(Player5,35)
+  !Range(Player5,10)
+  Range(Player5,20)
+  !Range(NearestEnemyOf(Myself),8)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_MOVE_CD","LOCALS",4)
+    MoveToObject(Player5)
+END
+
+// BGXPR AUTO: last-priority Cure Light Wounds; no hit event needed.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,5)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",4)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGX66_S_HEAL_COOLDOWN","LOCALS")
+  !GlobalTimerNotExpired("BGXR_HEAL_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  InParty(Player6)
+  InPartySlot(Player6,5)
+  InMyArea(Player6)
+  See(Player6)
+  Range(Player6,10)
+  HPPercentLT(Player6,45)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_HEAL_CD","LOCALS",12)
+    Spell(Player6,CLERIC_CURE_LIGHT_WOUNDS)
+END
+
+// BGXPR AUTO: bounded approach while idle; never toward off-map or unseen ally.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  !InPartySlot(Myself,5)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGXR_ROLE","LOCALS",4)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  !GlobalTimerNotExpired("BGXR_MOVE_CD","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  HaveSpell(CLERIC_CURE_LIGHT_WOUNDS)
+  HPPercentGT(Myself,75)
+  InParty(Player6)
+  InPartySlot(Player6,5)
+  InMyArea(Player6)
+  See(Player6)
+  HPPercentLT(Player6,35)
+  !Range(Player6,10)
+  Range(Player6,20)
+  !Range(NearestEnemyOf(Myself),8)
+THEN
+  RESPONSE #100
+    SetGlobalTimer("BGXR_MOVE_CD","LOCALS",4)
+    MoveToObject(Player6)
+END
