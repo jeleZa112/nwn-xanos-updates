@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "files": [
+    "BGXPR_LAST_PRIORITY.baf",
+    "BGXP2_LAST_PRIORITY.baf",
+    "BGXP2_BCS_PATCH.py",
+    "BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py",
+    "BGXP5_BCS_PREFLIGHT_READ_ONLY.py",
+    "BGXP5_INSTALL.py",
+    "test_bgxp5_source.py",
+    "test_bgxp5_bcs_preflight.py",
+    "test_bgxp5_installer_mock.py",
+    "README_RU.md"
+  ],
+  "sha256": {
+    "BGXPR_LAST_PRIORITY.baf": "4e28be67e9d76af91aca0011da736bbbbae787a4c6b5a86e08c02050601b2993",
+    "BGXP2_LAST_PRIORITY.baf": "a93dd1d46bf55ff7a5d53f15b0b55c1fc2ad10e39a4a23ae90ece62bfd76df2d",
+    "BGXP2_BCS_PATCH.py": "67362d58bb4bec2fb08bc4e5338d606358b70a3529edb987896cdbc8af48a6d3",
+    "BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py": "d38d791de228a834ba67526ceeeb88b4b5985e425fc78cffba55fd4ec0cad8c1",
+    "BGXP5_BCS_PREFLIGHT_READ_ONLY.py": "eb7f8b9e45de7abef532b52967ff2b891c74201309b08ebb6c263d954f5cb861",
+    "BGXP5_INSTALL.py": "e7a2b3f94e6fa4b0b21510676dfc88774ddae78113c9995455c7105d4cd74bc5",
+    "test_bgxp5_source.py": "450b1d2c80866aef471b4dae2e64069af843f28a5b0e2fe54a2df663c627a953",
+    "test_bgxp5_bcs_preflight.py": "a9498d9d36ecdf7157d6cd327a3672b857cafecfd5969ba173e6dafab8b12ce0",
+    "test_bgxp5_installer_mock.py": "1e9dd77e9182ea704b4700b346f0a1a7ea2b410418e3dcbf9cab6271a88db80e",
+    "README_RU.md": "19557c6edae6fd7e1117d867869f90098b62f5d46607fd43367b9472576fa131"
+  }
+}
