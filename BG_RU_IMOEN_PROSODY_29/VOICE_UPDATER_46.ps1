@@ -47,10 +47,13 @@ try {
   }
   $payload = Join-Path $work 'BG_RU_IMOEN_PROSODY_29\VOICE_REVIEW_46.py.gz.b64'
   $engine = Join-Path $work 'BG_RU_IMOEN_PROSODY_29\VOICE_REVIEW_46.py'
-  $probe = & py -3.11 -c 'import sys; print(sys.version_info.major)' 2>$null
-  if ($LASTEXITCODE -eq 0) { $python = 'py'; $prefix = @('-3.11') }
-  else {
-    $probe = & python -c 'import sys; assert sys.version_info >= (3,9)' 2>$null
+  if (Get-Command py -ErrorAction SilentlyContinue) {
+    & py -3.11 -c "import sys; assert sys.version_info >= (3,9)" 2>$null
+    if ($LASTEXITCODE -eq 0) { $python = 'py'; $prefix = @('-3.11') }
+  }
+  if (!$python) {
+    if (!(Get-Command python -ErrorAction SilentlyContinue)) { throw 'Python 3.9+ not found' }
+    & python -c "import sys; assert sys.version_info >= (3,9)" 2>$null
     if ($LASTEXITCODE -ne 0) { throw 'Python 3.9+ not found' }
     $python = 'python'; $prefix = @()
   }
@@ -94,21 +97,26 @@ raise SystemExit(module.main())
   $msg = $_.Exception.Message
   Write-Host ('BG VOICE RU ERROR: '+$msg) -ForegroundColor Red
   # Failed installs are restored; originals and approved recordings are never touched.
-  foreach ($rec in @($installed) | Select-Object -Reverse) {
+  $restore = @($installed)
+  [array]::Reverse($restore)
+  foreach ($rec in $restore) {
     try {
       if ($rec.Had) { [IO.File]::WriteAllBytes($rec.Path,$rec.Previous) }
       elseif (Test-Path -LiteralPath $rec.Path) { Remove-Item -LiteralPath $rec.Path -Force }
     } catch { Write-Host ('Rollback failure: '+$rec.Path) -ForegroundColor Red }
   }
   try {
-    Add-Type -AssemblyName System.IO.Compression
-    $archive = [IO.Compression.ZipFile]::Open($report,[IO.Compression.ZipArchiveMode]::Create)
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $failedReport = $report+'.pending'
+    if (Test-Path -LiteralPath $failedReport) { Remove-Item -LiteralPath $failedReport -Force }
+    $archive = [IO.Compression.ZipFile]::Open($failedReport,[IO.Compression.ZipArchiveMode]::Create)
     try {
       $entry = $archive.CreateEntry('ERROR.txt')
       $writer = New-Object IO.StreamWriter($entry.Open(),[Text.Encoding]::UTF8)
       try { $writer.WriteLine('BG Voice RU audit error');$writer.WriteLine($msg) }
       finally { $writer.Dispose() }
     } finally { $archive.Dispose() }
+    Move-Item -LiteralPath $failedReport -Destination $report -Force
   } catch { Write-Host ('Could not create failure ZIP: '+$_.Exception.Message) }
   exit 1
 } finally {
