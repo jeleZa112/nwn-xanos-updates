@@ -1,15 +1,15 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "4.6.0",
-  "note": "Single existing launcher, no new persistent report folders, one ZIP next to launcher, read-only source WAV audit.",
+  "version": "4.6.1",
+  "note": "Fix Python runner NameError and Windows PowerShell ZIP-on-error; one existing launcher and one report beside it. No WAV modifications.",
   "files": [
     {
       "path": "BG_VOICE_UPDATE.cmd",
-      "sha256": "b4143346faf3757964be13446e5e87bea817dbc5ee2587a747334f40c97d2cd2"
+      "sha256": "ee1d58326542d3f1d4903c9288cf698dcda62dd1aecf419bc318bfbb36b538d9"
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/VOICE_UPDATER_46.ps1",
-      "sha256": "55daf6964c0bc9a94069b2c34d13dd84f234ce3f425992dea52a36f94225ef46"
+      "sha256": "cc329669d4d3649ecc4a92e23cb124d3656e9c9b594d7b9745408ba5c3e1bbc6"
     },
     {
       "path": "BG_RU_IMOEN_PROSODY_29/VOICE_REVIEW_46.py.gz.b64",
