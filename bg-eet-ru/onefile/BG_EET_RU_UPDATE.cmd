@@ -27,7 +27,7 @@ import zipfile
 import zlib
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 33
+SELF_VERSION = 34
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -378,6 +378,30 @@ def published_update(path, offline=False):
         return 'новая версия не установлена ('+type(exc).__name__+'); офлайн-версия работает'
 
 
+
+# v34: player dialogue text changes are opt-in only, requiring exact current TLK
+# baseline, current DLG linkage, explicit terminal authorization and verified backup.
+# The published data is only SHA256 hashes + byte-independent tiny indexed edits,
+# not a copy of copyrighted full game text.
+V34_PATCH_SOURCE_B64 = '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'
+V34_PATCH_SHA256 = '8320b331690820a54892dfdedb652a6ebba8a2c459ca34f8998e9f7eefca4dea'
+V34_EDIT_DATA_B64 = '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'
+V34_EDIT_DATA_SHA256 = '86c82466865ef3fba1b93f389149f37628fca29775e9ea035efd8c1cb25f99ef'
+
+def load_v34_patch():
+    raw=zlib.decompress(base64.b64decode(V34_PATCH_SOURCE_B64))
+    if digest(raw)!=V34_PATCH_SHA256:raise RuntimeError('STOP: v34 patch code checksum mismatch')
+    module=types.ModuleType('bg_eet_ru_v34_optin_translation_patch')
+    module.__file__=str(Path(__file__).resolve())
+    exec(compile(raw.decode('utf8'),module.__file__,'exec'),module.__dict__)
+    blob=zlib.decompress(base64.b64decode(V34_EDIT_DATA_B64))
+    if digest(blob)!=V34_EDIT_DATA_SHA256:raise RuntimeError('STOP: v34 editorial data checksum mismatch')
+    d=json.loads(blob)
+    if d.get('schema')!='bg-eet-ru-v34-surgical-15-russian-edits' or len(d.get('entries',[]))!=15:
+        raise RuntimeError('STOP: v34 invalid candidate manifest')
+    return module,d['entries']
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description='BG_EET_RU one-file visible-only read-only auto-updater')
     p.add_argument('--game',default=DEFAULT_GAME)
@@ -385,6 +409,7 @@ def main(argv=None):
     p.add_argument('--force',action='store_true',help='ignore result cache, repeat audit')
     p.add_argument('--selftest',action='store_true')
     p.add_argument('--no-open',action='store_true',help='do not open output folder')
+    p.add_argument('--no-install-prompt',action='store_true',help='never offer optional v34 reviewed text patch')
     args=p.parse_args(argv)
     if args.selftest: return selftest()
     game=Path(args.game).expanduser().resolve()
@@ -413,7 +438,22 @@ def main(argv=None):
                 if sha_path(temp)!=sha_path(original):raise ValueError('staged updater checksum mismatch')
                 os.replace(temp,canonical)
         except OSError as e:print('Не удалось сохранить обновлятор в одну папку:',e)
-    print('BG_EET_RU v'+str(SELF_VERSION)+' — только чтение игры; один отчёт.')
+    reviewed_report=None
+    if not args.no_install_prompt:
+        try:
+            patch_mod, patch_entries=load_v34_patch()
+            v28mod,_,_=load_scanners()
+            # Never writes unless the user enters the full exact phrase in this terminal.
+            reviewed_report=patch_mod.run(game,WORKDIR,patch_entries,v28mod)
+            if reviewed_report.get('status')=='INSTALLED_VERIFIED':
+                print('РУССКИЙ ТЕКСТ УСТАНОВЛЕН: проверенные изменения обеих TLK =',
+                      reviewed_report['installed_text_changes'])
+            elif reviewed_report.get('status')=='STOP_TLK_BASELINE_MISMATCH':
+                print('РУССКИЙ ПАТЧ v34: исходные TLK изменились; ничего не устанавливаю')
+        except Exception as ex:
+            reviewed_report={'status':'SAFE_STOP_INSTALL','error':str(ex)[:350],'writes':False}
+            print('РУССКИЙ ПАТЧ v34 НЕ установлен:',str(ex)[:200])
+    print('BG_EET_RU v'+str(SELF_VERSION)+' — один отчёт; изменение игры только при отдельном подтверждении.')
     print('Папка:',WORKDIR)
     print('Проверяю существующие отчёты (без повторных запусков)...')
     v28,v29,targets=load_scanners()
@@ -507,6 +547,14 @@ def main(argv=None):
             used['v33']='UNAVAILABLE'
             notes.append('v33 optional scanner unavailable: '+type(e).__name__)
     status=summary(v28report,v29report,used,fp,notes)
+    if reviewed_report:
+        status['v34_reviewed_patch']=reviewed_report
+        if reviewed_report.get('status')=='INSTALLED_VERIFIED':
+            status['game_files_written']=True
+            status['patch_applied']=True
+            status['approved_new_text_changes']=reviewed_report.get('installed_text_changes',0)
+            status['translation_approved']=True
+
     status['v32_sources_ready']=source_report.get('selected_count',0)
     status['v33_nondialogue_candidates']=nondialogue_report.get('all_candidate_count',0)
     status['v33_ui_literals']=len(nondialogue_report.get('ui_source_candidates',[]))
@@ -518,7 +566,7 @@ def main(argv=None):
     print('Найдено исходных диалоговых строк для перевода:',status.get('v32_sources_ready',0))
     print('Найдено вне диалогов:',status['v33_nondialogue_candidates'],'кандидатов; UI:',status['v33_ui_literals'])
     print('ГОТОВО. Один файл для ChatGPT:',report_path)
-    print('Патчей/изменений в игре: 0')
+    print('Патчей/изменений в игре:',status.get('approved_new_text_changes',0))
     try:
         update_status=published_update(canonical,args.offline)
         print('Автообновление:',update_status)
