@@ -74,7 +74,8 @@ try {
     if ($choiceFile) { Copy-Item -LiteralPath $choiceFile.FullName -Destination (Join-Path $runTemp 'USER_CHOICES.csv') }
   }
   $runner = @'
-import importlib.util, sys
+import importlib.util, pathlib, sys
+sys.dont_write_bytecode = True
 engine, source, out = sys.argv[1:4]
 spec = importlib.util.spec_from_file_location("voice_review_46", engine)
 if spec is None or spec.loader is None:
@@ -82,12 +83,12 @@ if spec is None or spec.loader is None:
 module = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = module
 spec.loader.exec_module(module)
-module.OUT = out
+module.OUT = pathlib.Path(out)
 sys.argv = [engine, "--root", source]
 raise SystemExit(module.main())
 '@
   $runnerTmp = Join-Path ([IO.Path]::GetTempPath()) ('BG_VOICE_RU_RUN_'+[guid]::NewGuid().ToString('N')+'.py')
-  [IO.File]::WriteAllText($runnerTmp, $runner, (New-Object Text.UTF8Encoding($false)))
+  [IO.File]::WriteAllText($runnerTmp, $runner, [Text.UTF8Encoding]::new($false))
   [void]$tempFiles.Add($runnerTmp)
   & $python @prefix $runnerTmp $engine $source $runTemp
   if ($LASTEXITCODE -ne 0) { throw 'WAV audit failed' }
