@@ -236,7 +236,6 @@ def install(root: Path) -> dict:
     directory = root / "BGXP3"
     directory.mkdir(exist_ok=False)
     (directory / "staged").mkdir(exist_ok=False)
-    proposed = bytes.fromhex("") if False else None  # no unverified stale BCS bytes
     # Assemble again with the exact native compiler, keeping the compiled BCS in memory.
     old_fragment = BCS.compile_fragment(root, guarded_file(root, WEIDU_PATH),
                                        guarded_file(root, "lang/ru_RU/dialog.tlk"), SOURCE)
