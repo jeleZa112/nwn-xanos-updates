@@ -1,5 +1,3 @@
-# BGXAI single-entry updater, Foxx + EPS + safe opt-in 038/039/040/041 addons.
-# F mode feedback (040) ships as source with verified SHA256, no new CMD.
 param([string]$GameRoot='.')
 $ErrorActionPreference='Stop'
 $ProgressPreference='SilentlyContinue'
@@ -174,12 +172,17 @@ $releaseBGXTEAM=@{
  localPath=Join-Path $GameRoot 'BGXAI_DEV\team_guard_verified';installer='BGXAI_TEAM_GUARD_INSTALL.py';
  names=@('BGXAI_TEAM_GUARD_INSTALL.py','M_BX43_066S_VERIFIED_ORIGINAL.lua','M_BX43_066S_GUARD_TEAM_CANDIDATE.lua')
 }
+$releaseBGXP2=@{
+ id='BGXP2';version='0.3.39-BGXP2-COMBAT-PRIEST';
+ manifest='BGXAI/patchsets/priest_combat_eps_first_20261116/manifest_updater.json';
+ prefix='BGXAI/patchsets/priest_combat_eps_first_20261116/';
+ localPath=Join-Path $GameRoot 'BGXAI_DEV\priest_combat_verified';installer='BGXP2_INSTALL.py';
+ names=@('BGXP2_LAST_PRIORITY.baf','BGXP2_BCS_PATCH.py','BGXP2_INSTALL.py','README_RU.md','PLAYTEST_RU.md','test_bgxp2.py','SHA256_FILES.json')
+}
 function Get-PinnedBytes([string]$remotePath) {
-    if($remotePath -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
+    if($remotePath -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116|patchsets/priest_combat_eps_first_20261116)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
         throw ('Remote source path blocked: '+$remotePath)
     }
-    # All sources are publicly hosted; pin content by immutable commit and SHA256 manifest.
-    # No requests to api.github.com: avoid unauthenticated per-IP rate limiting.
     $urls=@(
         ('https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/'+$commitId+'/'+$remotePath),
         ('https://cdn.jsdelivr.net/gh/jeleZa112/nwn-xanos-updates@'+$commitId+'/'+$remotePath)
@@ -329,7 +332,6 @@ function SyncRelease($spec){
     Write-Host ('BGXAI '+$spec.id+' SOURCE SYNC DONE. Live scripts and WeiDU unchanged.')
 }
 function RunRelease($spec,[string]$mode){
-    # Before executing local Python, verify every local byte against pinned GitHub manifest.
     $list=VerifiedManifest $spec
     foreach($name in $spec.names){
         $dest=Join-Path $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
@@ -342,8 +344,6 @@ function RunRelease($spec,[string]$mode){
         Write-Host 'WARNING: experimental WeiDU change; requires explicit YES.'
         Write-Host 'Game/InfinityLoader/WeiDU must be closed. Preflight, backup and rollback gates active.'
     }
-    # BGXAI42_INSTALL.py uses NO CLI flag for read-only status.
-    # Keep legacy 039/040/041 --status semantics unchanged.
     if($spec.id -eq '042B' -and $mode -eq '--status'){
         & py -3 $installerPath
     } else {
@@ -353,7 +353,6 @@ function RunRelease($spec,[string]$mode){
 }
 function Run060Guarded([string]$mode) {
     if($mode -cne 'install' -and $mode -cne 'rollback'){throw 'BGXAI060 unsafe operation blocked'}
-    # Download/verify release before any game-changing action; SyncRelease writes only BGXAI_DEV.
     SyncRelease $release060
     $files=VerifiedManifest $release060
     foreach($name in $release060.names){
@@ -606,9 +605,13 @@ function BGXOneFileManaged($spec,[string]$mode,[string]$yesInstall,[string]$yesR
  }
  $installer=Join-Path $spec.localPath $spec.installer
  $last=BGXOneFileLastWeiDU
- $rx=if($spec.id -ceq 'BGXPR'){'BGXPRIEST[/\\]SETUP-BGXPRIEST[.]TP2~'}else{'BGXTEAM[/\\]SETUP-BGXTEAM[.]TP2~'}
+ $rx=if($spec.id -ceq 'BGXPR'){'BGXPRIEST[/\\]SETUP-BGXPRIEST[.]TP2~'}elseif($spec.id -ceq 'BGXP2'){'BGXP2[/\\]SETUP-BGXP2[.]TP2~'}else{'BGXTEAM[/\\]SETUP-BGXTEAM[.]TP2~'}
  $installed=($last -match $rx)
- if($spec.id -ceq 'BGXTEAM' -and $last -match 'BGXPRIEST[/\\]SETUP-BGXPRIEST[.]TP2~'){
+ if($spec.id -ceq 'BGXPR' -and $last -match 'BGXP2[/\\]SETUP-BGXP2[.]TP2~'){
+   if($mode -ceq 'status'){Write-Host 'BGXPR below BGXP2; select 105.';return}
+   throw 'BGXP2 installed; rollback via 108 before BGXPR change.'
+ }
+ if($spec.id -ceq 'BGXTEAM' -and ($last -match 'BGXPRIEST[/\\]SETUP-BGXPRIEST[.]TP2~' -or $last -match 'BGXP2[/\\]SETUP-BGXP2[.]TP2~')){
    if($mode -ceq 'status'){Write-Host 'BGXTEAM is beneath BGXPR; see menu 97. No change.';return}
    throw 'BGXPR is last in WeiDU. Use menu 100 rollback first to change BGXTEAM.'
  }
@@ -669,7 +672,6 @@ function Run066Guarded([string]$mode) {
     Write-Host 'BGXAI066 action complete. Check status with option 80.'
 }
 function Test064ReadOnly {
-    # Native PowerShell 5.1+ syntax check; this only reads its own file.
     $parsedTokens=$null
     $parseErrors=$null
     [System.Management.Automation.Language.Parser]::ParseFile($PSCommandPath,[ref]$parsedTokens,[ref]$parseErrors) | Out-Null
@@ -732,7 +734,6 @@ function Test060ReadOnly {
     Write-Host 'BGXAI 060 - preflight PASSED; installed 056 unchanged.'
 }
 function Test041ReadOnly {
-    # No Python, WeiDU, installation, file writes, or game processes are invoked.
     Write-Host ''
     Write-Host 'BGXAI 041 - GAME PRECHECK (READ ONLY; NO INSTALL)'
     $logPath=Join-Path $GameRoot 'WeiDU.log'
@@ -764,7 +765,6 @@ function Test041ReadOnly {
     Write-Host 'NO GAME FILES CHANGED.'
 }
 function Test042EPSReadOnly {
-    # BGXAI 042 read-only BCS inspection: no WeiDU, Python, process calls, or game writes.
     Write-Host ''
     Write-Host 'BGXAI 042 - EPS GUARD / AUTOATTACK AUDIT (READ ONLY)'
     $fileName=Join-Path $GameRoot 'override\BDDEFAI.BCS'
@@ -806,7 +806,6 @@ function Test042EPSReadOnly {
     Write-Host '042 audit only; no game files changed by this option.'
 }
 function Test042BReadOnly {
-    # Current game state only: no Python, WeiDU, download or write.
     Write-Host ''
     Write-Host 'BGXAI 042B - LIVE EET READ-ONLY PREFLIGHT'
     $log=Join-Path $GameRoot 'WeiDU.log'
@@ -837,7 +836,6 @@ function Test042BReadOnly {
     Write-Host 'NO GAME FILES CHANGED.'
 }
 function Test043PReadOnly {
-    # Completely read-only live game and EEex preflight; no package download or writes.
     Write-Host ''
     Write-Host 'BGXAI 043P / EEex OBSERVER - PRECHECK (READ ONLY)'
     $logPath=Join-Path $GameRoot 'WeiDU.log'
@@ -869,7 +867,6 @@ function Test043PReadOnly {
     Write-Host 'NO GAME FILES CHANGED.'
 }
 function Test044ReadOnly {
-    # Live EET preflight ONLY. No network, Python, WeiDU, writes or installs.
     Write-Host ''
     Write-Host 'BGXAI 044 / EEex hotkey diagnosis - READ-ONLY PREFLIGHT'
     $log=Join-Path $GameRoot 'WeiDU.log'
@@ -902,7 +899,6 @@ function Test044ReadOnly {
     Write-Host 'NO GAME FILES CHANGED.'
 }
 function Test045ReadOnly {
-    # 045 only observes files and WeiDU order: no download / Python / writes / install.
     Write-Host ''
     Write-Host 'BGXAI 045 / EEex 8-char Lua RESREF FIX - READ ONLY PREFLIGHT'
     $log=Join-Path $GameRoot 'WeiDU.log'
@@ -937,7 +933,6 @@ function Test045ReadOnly {
     Write-Host 'NO GAME FILES CHANGED.'
 }
 function Test046ReadOnly {
-    # Pure read-only precheck. No network, Python, WeiDU, or file writes.
     Write-Host ''
     Write-Host 'BGXAI 046 ATTACK FILTER - PRECHECK (READ ONLY)'
     $p=Join-Path $GameRoot 'WeiDU.log'
@@ -962,7 +957,6 @@ function Test046ReadOnly {
     Write-Host 'NO GAME FILES CHANGED.'
 }
 function Test047ReadOnly {
-    # Pure read-only precheck, no Python/WeiDU/network/changes.
     Write-Host ''
     Write-Host 'BGXAI 047 EEex TARGET RESOLUTION - PRECHECK (READ ONLY)'
     $p=Join-Path $GameRoot 'WeiDU.log'
@@ -984,7 +978,6 @@ function Test047ReadOnly {
     Write-Host 'NO GAME FILES CHANGED.'
 }
 function Test048ReadOnly {
-    # No download/Python/WeiDU/game writes.
     Write-Host ''
     Write-Host 'BGXAI 048 CONFIRMED HIT OBSERVER - PRECHECK (READ ONLY)'
     $p=Join-Path $GameRoot 'WeiDU.log'
@@ -1006,7 +999,6 @@ function Test048ReadOnly {
     Write-Host 'NO GAME FILES CHANGED.'
 }
 function Test049ReadOnly {
-    # Passive baseline verification only; no script execution/download/write.
     Write-Host ''
     Write-Host 'BGXAI 049 GUARD ADVISORY PRECHECK (READ ONLY)'
     $p=Join-Path $GameRoot 'WeiDU.log'
@@ -1134,6 +1126,10 @@ Write-Host '101 - BGXTEAM status (READ ONLY)'
 Write-Host '102 - BGXTEAM preflight (READ ONLY)'
 Write-Host '103 - BGXTEAM install (typed authorization)'
 Write-Host '104 - BGXTEAM rollback (typed authorization)'
+Write-Host '105 - BGXP2 combat priest status (READ ONLY)'
+Write-Host '106 - BGXP2 combat priest EET preflight (READ ONLY)'
+Write-Host '107 - BGXP2 guarded install (typed approval)'
+Write-Host '108 - BGXP2 guarded rollback (typed approval)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -1244,6 +1240,10 @@ try {
       '102' {BGXOneFileManaged $releaseBGXTEAM 'preflight' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
       '103' {BGXOneFileManaged $releaseBGXTEAM 'install' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
       '104' {BGXOneFileManaged $releaseBGXTEAM 'rollback' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
+      '105' {BGXOneFileManaged $releaseBGXP2 'status' 'INSTALL_BGXP2_COMBAT_PRIEST' 'ROLLBACK_BGXP2_COMBAT_PRIEST';break}
+      '106' {BGXOneFileManaged $releaseBGXP2 'preflight' 'INSTALL_BGXP2_COMBAT_PRIEST' 'ROLLBACK_BGXP2_COMBAT_PRIEST';break}
+      '107' {BGXOneFileManaged $releaseBGXP2 'install' 'INSTALL_BGXP2_COMBAT_PRIEST' 'ROLLBACK_BGXP2_COMBAT_PRIEST';break}
+      '108' {BGXOneFileManaged $releaseBGXP2 'rollback' 'INSTALL_BGXP2_COMBAT_PRIEST' 'ROLLBACK_BGXP2_COMBAT_PRIEST';break}
       default {throw 'Unknown menu option, no game change.'}
     }
     exit 0
