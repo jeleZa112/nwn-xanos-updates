@@ -1029,7 +1029,7 @@ function Test049ReadOnly {
 }
 Write-Host ''
 Write-Host ' BGXAI ONE-FILE UPDATER / EET Foxx / EPS 18.4'
-Write-Host ' Installed baseline: BGXAI 0381 + 039 (user-confirmed in-game).'
+Write-Host ' Game: EPS 18.4 / EET. Use menu 97 for installed BGXPR status.'
 Write-Host ' 1 - Download/verify NEW BGXAI 040 (F key shows Guard ON/OFF; source only)'
 Write-Host ' 2 - Status of BGXAI 040 (read-only)'
 Write-Host ' 3 - EXPERIMENTAL install BGXAI 040 (YES + WeiDU backup)'
