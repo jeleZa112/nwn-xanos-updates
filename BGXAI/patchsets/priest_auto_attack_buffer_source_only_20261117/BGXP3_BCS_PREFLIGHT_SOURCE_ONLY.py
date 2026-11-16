@@ -13,7 +13,7 @@ import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-BGXP2_DIR = HERE.parent / "priest_combat_eps_first_20261116"
+BGXP2_DIR = HERE if (HERE / "BGXP2_BCS_PATCH.py").is_file() else HERE.parent / "priest_combat_eps_first_20261116"
 sys.path.insert(0, str(BGXP2_DIR))
 import BGXP2_BCS_PATCH as BCS
 from BGXP3_AUTO_ATTACK_BUFFER_SOURCE_ONLY import SOURCE, candidate
