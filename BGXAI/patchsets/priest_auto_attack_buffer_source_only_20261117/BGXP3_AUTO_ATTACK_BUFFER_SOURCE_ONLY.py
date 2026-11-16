@@ -8,8 +8,9 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "priest_combat_eps_first_20261116" / "BGXP2_LAST_PRIORITY.baf"
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parent
+SOURCE = (HERE / "BGXP2_LAST_PRIORITY.baf") if (HERE / "BGXP2_LAST_PRIORITY.baf").is_file() else (ROOT / "priest_combat_eps_first_20261116" / "BGXP2_LAST_PRIORITY.baf")
 BASE_SHA256 = "a93dd1d46bf55ff7a5d53f15b0b55c1fc2ad10e39a4a23ae90ece62bfd76df2d"
 AUTO_ATTACK_MARKER = "// BGXP2 AUTO guarded one-round fallback ATTACK when EPS idle"
 THRESHOLD_BEFORE = 45
