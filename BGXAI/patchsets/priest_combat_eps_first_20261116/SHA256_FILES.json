@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "release": "BGXP2_COMBAT_PRIEST_EPS_FIRST_20261116",
+  "files": [
+    "BGXP2_LAST_PRIORITY.baf",
+    "BGXP2_BCS_PATCH.py",
+    "BGXP2_INSTALL.py",
+    "README_RU.md",
+    "PLAYTEST_RU.md",
+    "test_bgxp2.py"
+  ],
+  "sha256": {
+    "BGXP2_LAST_PRIORITY.baf": "a93dd1d46bf55ff7a5d53f15b0b55c1fc2ad10e39a4a23ae90ece62bfd76df2d",
+    "BGXP2_BCS_PATCH.py": "67362d58bb4bec2fb08bc4e5338d606358b70a3529edb987896cdbc8af48a6d3",
+    "BGXP2_INSTALL.py": "67fe0b4ca9bdd0fd102a108a91513eae23a9b9dcae62909882bfd44587c2b587",
+    "README_RU.md": "737428be70cc9361f6970f9cb78edbace03552bd2a34a3c732f1170cb9e7e247",
+    "PLAYTEST_RU.md": "f2f828028f5ec6b87ceed79ce50b2325a1148179f8f7080a99ea348beebb42ea",
+    "test_bgxp2.py": "fba44af02e0dd9051022d59bc5a31c413fe68832cf6d3a9912bf160e4c50555a"
+  }
+}
