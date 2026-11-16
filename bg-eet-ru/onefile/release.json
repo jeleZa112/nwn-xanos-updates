@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 32,
-  "sha256": "b9067cf41560931a56dd880c7a5843cb221240ccf8ae8d9e3cf4d7eb99d7b55f",
+  "version": 33,
+  "sha256": "5cdc67c018ccbbacd7fd2b1df20c39adb2a5914aa0e0e20e30d2240f0e3aa686",
   "mode": "READ_ONLY",
   "game_writes_allowed": false,
-  "note": "v32 published source SHA256 corrected to match actual GitHub blob bytes (source upload omitted final LF). Safe read-only; no game changes."
+  "note": "v33 single updater now exports English source candidates from current ITM/SPL names/descriptions, ENGINEST/EFFTEXT references and UI.MENU literal fields; preserves v32 DLG cache; no game writes or translation patches."
 }
