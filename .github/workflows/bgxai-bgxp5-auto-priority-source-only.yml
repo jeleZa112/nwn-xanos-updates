@@ -19,6 +19,7 @@ jobs:
       - name: Assert exact original BAF, AUTO healing and no attack on own party
         working-directory: BGXAI/patchsets/priest_auto_priority_guard_source_20261117
         run: |
-          python -m py_compile BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py test_bgxp5_source.py
-          python -m unittest -v test_bgxp5_source
+          python -m py_compile BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py BGXP5_BCS_PREFLIGHT_READ_ONLY.py test_bgxp5_source.py test_bgxp5_bcs_preflight.py
+          python -m unittest -v test_bgxp5_source test_bgxp5_bcs_preflight
           python BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py
+          python BGXP5_BCS_PREFLIGHT_READ_ONLY.py
