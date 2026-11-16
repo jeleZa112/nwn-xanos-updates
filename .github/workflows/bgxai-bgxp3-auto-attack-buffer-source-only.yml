@@ -18,8 +18,10 @@ jobs:
         with:
           python-version: '3.11'
       - name: Run exact BGXP2 baseline plus 7 BGXP3 candidate regression checks
+        shell: bash
         working-directory: BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117
         run: |
+          set -euo pipefail
           python -m py_compile BGXP3_AUTO_ATTACK_BUFFER_SOURCE_ONLY.py BGXP3_BCS_PREFLIGHT_SOURCE_ONLY.py BGXP3_INSTALL.py test_bgxp3_auto_attack_buffer.py test_bgxp3_bcs_preflight.py test_bgxp3_installer.py
           python -m unittest -v test_bgxp3_auto_attack_buffer test_bgxp3_bcs_preflight test_bgxp3_installer
           python BGXP3_AUTO_ATTACK_BUFFER_SOURCE_ONLY.py
