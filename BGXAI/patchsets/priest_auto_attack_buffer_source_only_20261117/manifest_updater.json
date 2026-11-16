@@ -24,8 +24,8 @@
     {
       "source": "BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/BGXP3_BCS_PREFLIGHT_SOURCE_ONLY.py",
       "dest": "BGXP3_BCS_PREFLIGHT_SOURCE_ONLY.py",
-      "size": 4865,
-      "sha256": "0bc619d37b96f80d91f03bcc3b95caa8e76928bef5ad369c67c26501f03cc310"
+      "size": 4882,
+      "sha256": "2ac41e90ba93c8bd0e4205102e321fc8c46b30df939a2a369a58839f8804e168"
     },
     {
       "source": "BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/BGXP3_INSTALL.py",
@@ -55,7 +55,7 @@
       "source": "BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/SHA256_FILES.json",
       "dest": "SHA256_FILES.json",
       "size": 1127,
-      "sha256": "c97e5ac14d3dc1df9ce37638499b479f38a6e1dca83bc29246248418d7dde57b"
+      "sha256": "f67320a881ab42b87ab562b6344720e854810b30a06d0705dc41166844c5c829"
     }
   ]
 }
