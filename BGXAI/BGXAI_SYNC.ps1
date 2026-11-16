@@ -160,8 +160,22 @@ $releaseIdle=@{
  names=@('066S_idle_guard_minimal.diff','BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf','BGX66_CASTER_SUPPORT.lua','BGXAI_IDLE_GUARD_INSTALL_SOURCE_ONLY.py','M_BX43_066S_IDLE_GUARD_CANDIDATE.lua','M_BX43_066S_VERIFIED_ORIGINAL.lua','M_BX43_066_BASELINE_READONLY.lua','README_INSTALLER_RU.md','README_RU.md','TEST_PROTOCOL_RU.md','lua65_harness.py','manifest_install_sha256.json','native_066_fixture.py','parse.lua','run_tests.py','test_066s_caster_native.py','test_guarded_installer.py','test_idle_guard.py','verify_install_release.py')
 }
 
+$releaseBGXPR=@{
+ id='BGXPR';version='0.3.37-BGXPR-ONEFILE';
+ manifest='BGXAI/patchsets/priest_modes_eps_first_installable_20261116/manifest_updater.json';
+ prefix='BGXAI/patchsets/priest_modes_eps_first_installable_20261116/';
+ localPath=Join-Path $GameRoot 'BGXAI_DEV\priest_modes_verified';installer='BGXPR_INSTALL.py';
+ names=@('M_BX43_066S_CASTER_CANDIDATE.lua','M_BX43_066S_GUARD_TEAM_CANDIDATE.lua','M_BX43_066S_PRIEST_MODES.lua','M_BX43_BGXTEAM_PRIEST_MODES.lua','BGXPR_LAST_PRIORITY.baf','BGXPR_BCS_PATCH.py','BGXPR_INSTALL.py','parse.lua','SHA256_FILES.json')
+}
+$releaseBGXTEAM=@{
+ id='BGXTEAM';version='0.3.38-BGXTEAM-ONEFILE';
+ manifest='BGXAI/patchsets/team_f_guard_066s_installable_pilot_20261116/manifest_updater.json';
+ prefix='BGXAI/patchsets/team_f_guard_066s_installable_pilot_20261116/';
+ localPath=Join-Path $GameRoot 'BGXAI_DEV\team_guard_verified';installer='BGXAI_TEAM_GUARD_INSTALL.py';
+ names=@('BGXAI_TEAM_GUARD_INSTALL.py','M_BX43_066S_VERIFIED_ORIGINAL.lua','M_BX43_066S_GUARD_TEAM_CANDIDATE.lua')
+}
 function Get-PinnedBytes([string]$remotePath) {
-    if($remotePath -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
+    if($remotePath -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
         throw ('Remote source path blocked: '+$remotePath)
     }
     # All sources are publicly hosted; pin content by immutable commit and SHA256 manifest.
@@ -576,6 +590,47 @@ function RunIdleGuardGuarded([string]$mode) {
     Write-Host ('BGXAI IDLE '+$mode+' completed. Use menu 95 for status.')
 }
 
+function BGXOneFileLastWeiDU {
+ $rows=@(Get-Content -LiteralPath (Join-Path $GameRoot 'WeiDU.log') -ErrorAction Stop | Where-Object {$_.TrimStart().StartsWith('~')})
+ if($rows.Count -lt 1){throw 'No WeiDU components'}
+ return [string]$rows[-1]
+}
+function BGXOneFileManaged($spec,[string]$mode,[string]$yesInstall,[string]$yesRollback){
+ if(@('status','preflight','install','rollback') -cnotcontains $mode){throw 'Invalid managed mode'}
+ SyncRelease $spec
+ $expected=VerifiedManifest $spec
+ foreach($name in $spec.names){
+   $file=Join-Path $spec.localPath $name
+   AssertNotReparse $file
+   if((HashFile $file) -cne $expected[$name].sha){throw ('BGX source SHA invalid: '+$name)}
+ }
+ $installer=Join-Path $spec.localPath $spec.installer
+ $last=BGXOneFileLastWeiDU
+ $rx=if($spec.id -ceq 'BGXPR'){'BGXPRIEST[/\\]SETUP-BGXPRIEST[.]TP2~'}else{'BGXTEAM[/\\]SETUP-BGXTEAM[.]TP2~'}
+ $installed=($last -match $rx)
+ if($spec.id -ceq 'BGXTEAM' -and $last -match 'BGXPRIEST[/\\]SETUP-BGXPRIEST[.]TP2~'){
+   if($mode -ceq 'status'){Write-Host 'BGXTEAM is beneath BGXPR; see menu 97. No change.';return}
+   throw 'BGXPR is last in WeiDU. Use menu 100 rollback first to change BGXTEAM.'
+ }
+ if($mode -ceq 'status' -or ($installed -and ($mode -ceq 'install' -or $mode -ceq 'preflight'))){
+   & py -3 $installer status '--game-root' $GameRoot
+   if($LASTEXITCODE -ne 0){throw ('BGX status STOP '+$LASTEXITCODE)}
+   if($installed -and $mode -cne 'status'){Write-Host 'Already installed; no reinstall.'}
+   return
+ }
+ if($mode -ceq 'rollback' -and !$installed){throw ('BGX '+$spec.id+' not last in WeiDU; rollback blocked')}
+ $pre=if($mode -ceq 'rollback'){'status'}else{'preflight'}
+ & py -3 $installer $pre '--game-root' $GameRoot
+ if($LASTEXITCODE -ne 0){throw ('BGX '+$spec.id+' '+$pre+' STOP '+$LASTEXITCODE)}
+ if($mode -ceq 'preflight'){Write-Host 'Read-only preflight PASS, game unchanged.';return}
+ $token=if($mode -ceq 'install'){$yesInstall}else{$yesRollback}
+ Write-Host 'Close Baldur, InfinityLoader and WeiDU; SHA checks and external verified backup are required.'
+ $reply=Read-Host ('Type '+$token+' exactly to authorize, or ENTER to cancel')
+ if($reply -cne $token){Write-Host 'Cancelled; game unchanged.';return}
+ & py -3 $installer $mode '--yes' '--confirm' $token '--game-root' $GameRoot
+ if($LASTEXITCODE -ne 0){throw ('BGX '+$spec.id+' '+$mode+' STOP '+$LASTEXITCODE+'. NO AUTOMATIC RETRY')}
+ Write-Host ('BGX '+$spec.id+' '+$mode+' finished, verified.')
+}
 function Test066GuardedReadOnly {
     $parsedTokens=$null
     $parseErrors=$null
@@ -1071,6 +1126,14 @@ Write-Host ' 93 - BGXAI 066S idle-guard read-only preflight'
 Write-Host ' 94 - BGXAI 066S idle-guard guarded install (separate approval)'
 Write-Host ' 95 - BGXAI 066S idle-guard read-only status'
 Write-Host ' 96 - BGXAI 066S idle-guard guarded rollback (separate approval)'
+Write-Host ' 97 - BGXPR priest status (READ ONLY, automatic SHA sync)'
+Write-Host ' 98 - BGXPR EET compiler preflight (READ ONLY)'
+Write-Host ' 99 - BGXPR install (typed authorization)'
+Write-Host '100 - BGXPR rollback (typed authorization)'
+Write-Host '101 - BGXTEAM status (READ ONLY)'
+Write-Host '102 - BGXTEAM preflight (READ ONLY)'
+Write-Host '103 - BGXTEAM install (typed authorization)'
+Write-Host '104 - BGXTEAM rollback (typed authorization)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -1173,6 +1236,14 @@ try {
       '94' {RunIdleGuardGuarded 'install';break}
       '95' {CheckIdleGuardReadOnly 'status';break}
       '96' {RunIdleGuardGuarded 'rollback';break}
+      '97' {BGXOneFileManaged $releaseBGXPR 'status' 'INSTALL_BGXPRIEST_MODES' 'ROLLBACK_BGXPRIEST_MODES';break}
+      '98' {BGXOneFileManaged $releaseBGXPR 'preflight' 'INSTALL_BGXPRIEST_MODES' 'ROLLBACK_BGXPRIEST_MODES';break}
+      '99' {BGXOneFileManaged $releaseBGXPR 'install' 'INSTALL_BGXPRIEST_MODES' 'ROLLBACK_BGXPRIEST_MODES';break}
+      '100' {BGXOneFileManaged $releaseBGXPR 'rollback' 'INSTALL_BGXPRIEST_MODES' 'ROLLBACK_BGXPRIEST_MODES';break}
+      '101' {BGXOneFileManaged $releaseBGXTEAM 'status' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
+      '102' {BGXOneFileManaged $releaseBGXTEAM 'preflight' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
+      '103' {BGXOneFileManaged $releaseBGXTEAM 'install' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
+      '104' {BGXOneFileManaged $releaseBGXTEAM 'rollback' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
       default {throw 'Unknown menu option, no game change.'}
     }
     exit 0
