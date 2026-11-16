@@ -83,7 +83,7 @@ class TestGuardedInstaller(unittest.TestCase):
 
     def test_installed_requires_exact_prior_1157(self):
         # Simulate last-installed mod but a BCS whose first 1157 blocks are different.
-        raw = b"SC\n" + b"CR\nCO\nTR\nRS\nRE\nRS\nCR\n" * 1157 + b"CR\nCO\nTR\nRS\nRE\nRS\nX\nCR\nSC\n"
+        raw = b"SC\n" + b"CR\nCO\nTR\nRS\nRE\nRS\nUNEXPECTED\nCR\n" + b"CR\nCO\nTR\nRS\nRE\nRS\nCR\n" * 1156 + b"CR\nCO\nTR\nRS\nRE\nRS\nX\nCR\nSC\n"
         write(self.root, "WeiDU.log", b"~BGXP3\\SETUP-BGXP3.TP2~ #0 #0 // mock\n")
         write(self.root, I.TP2, I.TP2_TEXT.encode("utf-8"))
         write(self.root, I.PROOF, json.dumps({"old_bcs_sha256": self.live_sha,
