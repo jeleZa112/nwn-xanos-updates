@@ -27,7 +27,7 @@ import zipfile
 import zlib
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 31
+SELF_VERSION = 32
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -85,6 +85,51 @@ def load_scanners():
     return v28, v29, targets
 
 
+
+# Only AST-extracted read-only parser functions; no installation code is carried here.
+V32_PARTS = {"parser": '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', "ranker": 'eNqVV+tuI7cV/u+nYN0flHZHgtbbTVNt5EBYax0Djhz4skmrVQbUDKUhRHEEkiNZaxhoniDtzz5F+yibV+iT9DscjW5eB+hAQ/FyzuG5nzPHx8dX47FWRjZyo1fMy3vPvFViIlk+ZlotJDu7PGdWjqWVJpGuyfpyIS1bWuWlY8r4nPV6t83j4+MjNZvn1gP46N1dj3UwaSb5bK60rFn+cTD4+ePwoxk+vIr+0nr8OOT1o9vu+SHYN4OfTwnk1Unr8RQgP15dn90cAB0Puo2/ican4cvat+0B/+/f/zXc7NS/Pa4fXd8dovDB5380Pv/7838av/36+Zff/km39/pxRd1JX+OKzVZsJtkSsheWrfKC3jCxjmWSObyZmuGlpWU+kysaZjQoWuPAZ8LT2kmMeRglE0wY/FI2KjxTY7YEuqTRYFjhBc4yy/GqJGNZviQsQIRB4AVhMWNL4cAdliP6AXkklZmwTMBMGc4ykbI0Z6miP1hnqbRmy7zQKUvKEWy4LExnAsIWzjOT4+fZCvCwJaw+zi0b2xzXKZ+FIQfXuYGxGfgcrZgY5QviQINRMfZQxUgCi7YSUTiSDFpnTsFjWGG80qSLYpKV/uIzGxY5ORLYVtCJd0xLzyb0ghsH7pyAHF5CBJ8HCWCbRGCYQFHSAEhKeg2bGjAyNZLUpsx0fZkH7Sm9MmUT8uQJ6WkpgEkDdo1cD/jLpJ5vNQkrGrKBYTOSS0vnWE42YY7YEAZKAGO5gX2XQSLwMtdSBIOLwANGB20TnAkxI/RSrBxpOyOzEaXtDKR408218rU6fPOnd5d3Z73KNRMrU2ip/HNQhUGQwpdyOKa3wjgtvIKFqjnt6zwRWn0qD7ScCA28+coq0oxWiTTg1UqRkkZ17pywq+1EFFCiXf85tsiheueJ2VRZmQSixAztQDZXrYHjirm0CxW25sVIK0d6W8qRQ8qg05AlUqhE54DEbFRAB4lVc/LGlBQpEpnB6BRkEj7qIK6Z7OjnKJVjBmGnNWUW8IXcriL2IoJcM+U7b1qtevuI4UFaupZJblMXwgiEV9I2UiV0Pikke4GAQLQIXAJkCoO5hVcaRuyP4MIVZMhvRBDBu7mxOSHbuAQZQPD6Hzp8NGlI6Ru2aFQX6UmDTGMaG6TG4hUveaPHCgUrfBC6kD1rc1vjdwbqzSdGfYJTUu51SD8Iow0BZK6AmS9dZzAMc4pYCghlDpmT5CjS8WgwrG9vhRAkK2Q0zgsEaQ1wa2m8RbLn9QiRWm+ToylTyA2mgy4l3fsW0Z1i9vC4OSMuaJPYqPFSc02vpzxaL8ZhtcMHPQuhOzvXE1FeZyD18FgPe7QVYbGH5e99B5hrIe9F4uOkAOfGx1TD+D70U3mBH0HUcBEdYf1UWHoSxLTpoFA1XTGqccYj1LbNHGj1/auW5GudwX0TuVHaWj1o5Z5UEmpNc6xMioxQC3Trwz1cEyPHzXLTccWstiScTYkiKmEn0K8foKmJgVl20NbZ4/ewkpXtaGlqqJUHTO3D/ZGdSa1G0iJI0CE4qRH9DAovkFBmhfaqQdRZz0wo0jdRRJFtkK1dRMBgJClovk5hzUP7EDudVqiRxFXJ8GnnTdipFHPaOdlAlLxi5+s1SKmEb0723YueuVU52pVVh/f655cXN9/F593ve/HZRffy6vyuF1/3Plz0fuRvS+/uvGq1Xs6Uqf2pFVUXv/iqHra2rEWvW/t6gpKCFKetA5ZfPxHqz/8Hx99f/NQ7iy+7/fO77vmW1ZLTN62XGw5fH3Dj5JcdOkTYgMZh54GHYGlTNHBUqpM3X8WFH3/N25vYKrNPvHtYj57wu3mQcIIbxOPChCIRB6F5u+Iz4rZwTgkTo9yjc8ARlPa4z2JIMk0xn0uT1mphGVUq2XHPdViX4M/kqmgK3+7MxH1JZicIKIFWdzxUea+NDDKoFsOIV7fyNtGBkogIb5ekv6wGjqQf46agOBcolqrc36eM/BwFm+s9zHL9exiZQgLM0WrtYG33otaziGXCbYe/iIeyp3QQmPevbuMfrq8+9Pr8WWwvfAF0fnvd7d9cdm8vrvrxzdXd9btefNW//GtMNLo/BCpn8fur6/iif3Pbvbzkj9sq1nToB2pTuepoMRulgt23a437wVrXw4jmW1mG0f3WQGtnsNIX1rCHqha3dyrx4vVJg75jNkW/UVqgMRI+yaga7wvHd/qpeGNE4nPQDt0FvKJMgjKtVF6lBoKqRwGqfkg190LHGZqv2CHuhebtLcY+KDJxTL4SGod4JAX1PtVVB/V9H4awStU4/hzVjQfGDs2PkekTml+GOqRXJQYcx3NhvSKRDiit9wPQUwKEKanpcU8QhU0y2Kw6PkSdoK7EY3xiuJi+Q700vP1eIOVFe9ZDcFM3l1aH+0T2fB1OeXvxLka/hRT7vnfd6+968BejgFMzYYuQ5UIIrG+WbFyg5Q9NSdW8LWAffHLgc0BCJ6GSvmVTKee7ra57Sx9voVGhNgU0yk+nLaOhbkAmv27AJ9S4hsbWQWI3VjJt8sej/wEq7hy8'}
+V32_SHA256 = {"parser": 'af58aca8783c660a1ac65831bd2ee8d507ab26346863c7f61d7e43ce81178b38', "ranker": 'f441924fb3bfac8a0b89b5ab2ec74660c54c2d3d436f7058d5fdd33300f576bb'}
+
+
+def load_v32_components():
+    modules={}
+    for key in ('parser','ranker'):
+        raw=zlib.decompress(base64.b64decode(V32_PARTS[key]))
+        if digest(raw)!=V32_SHA256[key]:raise RuntimeError('STOP: v32 embedded source checksum')
+        m=types.ModuleType('bg_eet_ru_v32_'+key)
+        m.__file__=str(Path(__file__).resolve())
+        exec(compile(raw.decode('utf-8'),m.__file__,'exec'),m.__dict__)
+        modules[key]=m
+    return modules['parser'],modules['ranker']
+
+
+def v32_resource_signature(game):
+    # Fast stat signature only for cache reuse; never treated as evidence of visibility.
+    h=hashlib.sha256()
+    roots=[game/'override',game/'data']
+    for folder in roots:
+        if not folder.is_dir():continue
+        suffixes={'.dlg'} if folder.name=='override' else {'.bif','.bifc'}
+        for p in sorted(folder.iterdir(),key=lambda p:p.name.lower()):
+            if p.is_file() and p.suffix.lower() in suffixes:
+                st=p.stat()
+                h.update((p.name.lower()+'|'+str(st.st_size)+'|'+str(st.st_mtime_ns)+'\n').encode('utf8'))
+    return h.hexdigest()
+
+
+def v32_extract(game, fp):
+    parser,ranker=load_v32_components()
+    current={'dialog.tlk':fp['dialog.tlk']['sha256'],
+             'dialogf.tlk':fp['dialogf.tlk']['sha256']}
+    inv=parser._v11_record_dlg_refs(game,current)
+    out=ranker.rank(inv,limit=500)
+    out['game_root']=str(game)
+    out['game_tlk_sha256']=current
+    out['source_signature']=v32_resource_signature(game)
+    out['created_utc']=now()
+    return out
+
+
 def read_archive(path: Path):
     """Only read a small fixed set of known archive entries; never extract any ZIP."""
     if not path.is_file(): return {}
@@ -92,7 +137,7 @@ def read_archive(path: Path):
     try:
         with zipfile.ZipFile(path,'r') as z:
             for name in ('00_STATUS.json','01_V28_DLG_CONTEXT.json','02_V29_BP_PLACEMENT.json',
-                         '04_FINGERPRINT.json'):
+                         '04_FINGERPRINT.json','07_TRANSLATION_SOURCE_BATCH.json'):
                 try:
                     inf=z.getinfo(name)
                     if inf.file_size > 3_000_000: continue
@@ -215,7 +260,7 @@ def make_review_queue(v28report):
     }
 
 
-def write_bundle(path, status, v28report, v29report, fp, existing_log=''):
+def write_bundle(path, status, v28report, v29report, fp, existing_log='', source_report=None):
     safe_external(Path(status['game_root']), path)
     path.parent.mkdir(parents=True,exist_ok=True)
     tmp=path.with_suffix('.zip.tmp')
@@ -232,6 +277,7 @@ def write_bundle(path, status, v28report, v29report, fp, existing_log=''):
             z.writestr('03_ALL_RUNS.log',text)
             z.writestr('04_FINGERPRINT.json',b(fp))
             z.writestr('06_VISIBLE_ONLY_REVIEW.json',b(make_review_queue(v28report)))
+            z.writestr('07_TRANSLATION_SOURCE_BATCH.json',b(source_report or {'schema':'bg-eet-ru-v32-live-dialogue-source-batch-v1','status':'NOT_COLLECTED','game_files_written':False}))
             z.writestr('05_README_RU.txt',
                 'BG_EET_RU: ЕДИНЫЙ ОТЧЁТ. Только чтение данных игры.\n'
                 'ПЕРЕДАТЬ В ЧАТ ОДИН ФАЙЛ: SEND_TO_CHATGPT_BG_EET_RU.zip\n'
@@ -240,7 +286,7 @@ def write_bundle(path, status, v28report, v29report, fp, existing_log=''):
             assert z.testzip() is None and set(z.namelist())=={
                 '00_STATUS.json','01_V28_DLG_CONTEXT.json','02_V29_BP_PLACEMENT.json',
                 '03_ALL_RUNS.log','04_FINGERPRINT.json','05_README_RU.txt',
-                '06_VISIBLE_ONLY_REVIEW.json'}
+                '06_VISIBLE_ONLY_REVIEW.json','07_TRANSLATION_SOURCE_BATCH.json'}
         os.replace(tmp,path)
     finally:
         if tmp.exists():tmp.unlink()
@@ -376,10 +422,37 @@ def main(argv=None):
     # Files can change while scanning; reject if game fingerprint changed.
     after=fingerprints(game,v28)
     if after!=fp:raise RuntimeError('STOP: игровые ресурсы изменились во время проверки; ZIP не обновлён')
+    previous_source=old.get('07_TRANSLATION_SOURCE_BATCH.json')
+    signature=v32_resource_signature(game)
+    tlk_sha={side:fp[side]['sha256'] for side in ('dialog.tlk','dialogf.tlk')}
+    if (not args.force and isinstance(previous_source,dict) and
+        previous_source.get('schema')=='bg-eet-ru-v32-live-dialogue-source-batch-v1' and
+        previous_source.get('source_signature')==signature and
+        previous_source.get('game_tlk_sha256')==tlk_sha and
+        previous_source.get('game_files_written') is False):
+        source_report=previous_source
+        used['v32']='CACHE'
+    else:
+        print('Собираю исходные тексты игровых DLG для быстрого перевода (только чтение)...')
+        try:
+            source_report=v32_extract(game,fp)
+            if v32_resource_signature(game)!=signature:
+                raise RuntimeError('DLG/BIF resource changes during scan')
+            used['v32']='LIVE_READ_ONLY'
+        except Exception as e:
+            source_report={'schema':'bg-eet-ru-v32-live-dialogue-source-batch-v1',
+                           'status':'READ_ONLY_SCAN_UNAVAILABLE',
+                           'error_type':type(e).__name__, 'error':str(e)[:350],
+                           'game_files_written':False,'translation_approved':False}
+            notes.append('v32 optional scanner unavailable: '+type(e).__name__)
+            used['v32']='UNAVAILABLE'
     status=summary(v28report,v29report,used,fp,notes)
+    status['v32_sources_ready']=source_report.get('selected_count',0)
+    status['v32_source_status']=used['v32']
     status['v29_historical'] = used['v29'] in ('IMPORTED_HISTORICAL','CACHE_HISTORICAL')
     status['game_root']=str(game)
-    write_bundle(report_path,status,v28report,v29report,fp,get_log(report_path))
+    write_bundle(report_path,status,v28report,v29report,fp,get_log(report_path),source_report)
+    print('Найдено исходных диалоговых строк для перевода:',status.get('v32_sources_ready',0))
     print('ГОТОВО. Один файл для ChatGPT:',report_path)
     print('Патчей/изменений в игре: 0')
     try:
@@ -423,7 +496,7 @@ def selftest():
         info['game_root']=str(game)
         write_bundle(outside,info,stub28,stub29,{'test':True})
         assert read_archive(outside)['00_STATUS.json']['game_files_written'] is False
-        assert len(zipfile.ZipFile(outside).namelist())==7
+        assert len(zipfile.ZipFile(outside).namelist())==8
         with zipfile.ZipFile(outside) as z:
             assert len(json.loads(z.read('06_VISIBLE_ONLY_REVIEW.json'))['candidates'])==18
         assert can_reuse(stub29,stub29['schema'],game,{'x':1},{'x':1})
