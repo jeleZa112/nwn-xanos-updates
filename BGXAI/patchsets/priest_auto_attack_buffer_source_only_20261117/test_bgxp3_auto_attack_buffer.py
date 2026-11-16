@@ -8,7 +8,7 @@ import BGXP3_AUTO_ATTACK_BUFFER_SOURCE_ONLY as P
 class TestBGXP3AutoAttackBuffer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.original = P.SOURCE.read_bytes()
+        cls.original = P.SOURCE.read_bytes().replace(b"\r\n", b"\n")
         cls.patched = P.candidate(cls.original)
         cls.before = cls.original.decode("utf-8")
         cls.after = cls.patched.decode("utf-8")
