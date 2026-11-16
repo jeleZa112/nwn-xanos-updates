@@ -27,7 +27,7 @@ import zipfile
 import zlib
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 32
+SELF_VERSION = 33
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -130,6 +130,39 @@ def v32_extract(game, fp):
     return out
 
 
+
+# Single embedded source-only extractor for ITM, SPL, 2DA and UI.MENU.
+V33_SOURCE = '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'
+V33_SOURCE_SHA256 = 'ae0dc9954ee95e2e970cdf3f39422cee172f0d91bcb8ce2b4fde997924a05927'
+
+def load_v33():
+    raw=zlib.decompress(base64.b64decode(V33_SOURCE))
+    if digest(raw)!=V33_SOURCE_SHA256:raise RuntimeError('STOP: v33 embedded source checksum')
+    mod=types.ModuleType('bg_eet_ru_v33_nondialogue')
+    mod.__file__=str(Path(__file__).resolve())
+    exec(compile(raw.decode('utf8'),mod.__file__,'exec'),mod.__dict__)
+    return mod
+
+def v33_resource_signature(game):
+    sig=hashlib.sha256()
+    for folder,suffixes in ((game/'data',{'.bif','.bifc'}),
+                            (game/'override',{'.itm','.spl','.menu','.2da'})):
+        if not folder.is_dir():continue
+        for path in sorted(folder.iterdir(),key=lambda p:p.name.lower()):
+            if not path.is_file() or path.suffix.lower() not in suffixes:continue
+            info=path.stat()
+            sig.update((path.name.lower()+'|'+str(info.st_size)+'|'+str(info.st_mtime_ns)+'\n').encode('utf8'))
+    return sig.hexdigest()
+
+def v33_extract(game,fp):
+    parser,_=load_v32_components()
+    collector=load_v33()
+    expected={side:fp[side]['sha256'] for side in ('dialog.tlk','dialogf.tlk')}
+    data=collector.gather(game,expected,parser,limit=500)
+    data['source_signature']=v33_resource_signature(game)
+    data['created_utc']=now()
+    return data
+
 def read_archive(path: Path):
     """Only read a small fixed set of known archive entries; never extract any ZIP."""
     if not path.is_file(): return {}
@@ -137,10 +170,11 @@ def read_archive(path: Path):
     try:
         with zipfile.ZipFile(path,'r') as z:
             for name in ('00_STATUS.json','01_V28_DLG_CONTEXT.json','02_V29_BP_PLACEMENT.json',
-                         '04_FINGERPRINT.json','07_TRANSLATION_SOURCE_BATCH.json'):
+                         '04_FINGERPRINT.json','07_TRANSLATION_SOURCE_BATCH.json',
+                         '08_NON_DIALOGUE_SOURCE_BATCH.json'):
                 try:
                     inf=z.getinfo(name)
-                    if inf.file_size > 3_000_000: continue
+                    if inf.file_size > (12_000_000 if name=='08_NON_DIALOGUE_SOURCE_BATCH.json' else 3_000_000): continue
                     results[name]=json.loads(z.read(name))
                 except (KeyError, json.JSONDecodeError, ValueError): pass
     except (OSError,zipfile.BadZipFile):pass
@@ -260,7 +294,7 @@ def make_review_queue(v28report):
     }
 
 
-def write_bundle(path, status, v28report, v29report, fp, existing_log='', source_report=None):
+def write_bundle(path, status, v28report, v29report, fp, existing_log='', source_report=None, nondialogue_report=None):
     safe_external(Path(status['game_root']), path)
     path.parent.mkdir(parents=True,exist_ok=True)
     tmp=path.with_suffix('.zip.tmp')
@@ -278,6 +312,7 @@ def write_bundle(path, status, v28report, v29report, fp, existing_log='', source
             z.writestr('04_FINGERPRINT.json',b(fp))
             z.writestr('06_VISIBLE_ONLY_REVIEW.json',b(make_review_queue(v28report)))
             z.writestr('07_TRANSLATION_SOURCE_BATCH.json',b(source_report or {'schema':'bg-eet-ru-v32-live-dialogue-source-batch-v1','status':'NOT_COLLECTED','game_files_written':False}))
+            z.writestr('08_NON_DIALOGUE_SOURCE_BATCH.json',b(nondialogue_report or {'schema':'bg-eet-ru-v33-actual-nondialogue-sources-v1','status':'NOT_COLLECTED','game_files_written':False}))
             z.writestr('05_README_RU.txt',
                 'BG_EET_RU: ЕДИНЫЙ ОТЧЁТ. Только чтение данных игры.\n'
                 'ПЕРЕДАТЬ В ЧАТ ОДИН ФАЙЛ: SEND_TO_CHATGPT_BG_EET_RU.zip\n'
@@ -286,7 +321,8 @@ def write_bundle(path, status, v28report, v29report, fp, existing_log='', source
             assert z.testzip() is None and set(z.namelist())=={
                 '00_STATUS.json','01_V28_DLG_CONTEXT.json','02_V29_BP_PLACEMENT.json',
                 '03_ALL_RUNS.log','04_FINGERPRINT.json','05_README_RU.txt',
-                '06_VISIBLE_ONLY_REVIEW.json','07_TRANSLATION_SOURCE_BATCH.json'}
+                '06_VISIBLE_ONLY_REVIEW.json','07_TRANSLATION_SOURCE_BATCH.json',
+                '08_NON_DIALOGUE_SOURCE_BATCH.json'}
         os.replace(tmp,path)
     finally:
         if tmp.exists():tmp.unlink()
@@ -446,13 +482,41 @@ def main(argv=None):
                            'game_files_written':False,'translation_approved':False}
             notes.append('v32 optional scanner unavailable: '+type(e).__name__)
             used['v32']='UNAVAILABLE'
+    old_nd=old.get('08_NON_DIALOGUE_SOURCE_BATCH.json')
+    sig33=v33_resource_signature(game)
+    tlk_sha33={side:fp[side]['sha256'] for side in ('dialog.tlk','dialogf.tlk')}
+    if (not args.force and isinstance(old_nd,dict) and
+        old_nd.get('schema')=='bg-eet-ru-v33-actual-nondialogue-sources-v1' and
+        old_nd.get('source_signature')==sig33 and
+        old_nd.get('game_tlk_sha256')==tlk_sha33 and
+        old_nd.get('game_files_written') is False and
+        old_nd.get('partial') is False):
+        nondialogue_report=old_nd
+        used['v33']='CACHE'
+    else:
+        print('Собираю английские названия/описания из ITM/SPL, боевых таблиц и UI (только чтение)...')
+        try:
+            nondialogue_report=v33_extract(game,fp)
+            if v33_resource_signature(game)!=sig33:
+                raise RuntimeError('ITM/SPL/UI data changed while collecting')
+            used['v33']='LIVE_READ_ONLY'
+        except Exception as e:
+            nondialogue_report={'schema':'bg-eet-ru-v33-actual-nondialogue-sources-v1',
+                'status':'READ_ONLY_SCAN_UNAVAILABLE','error_type':type(e).__name__,
+                'error':str(e)[:350],'game_files_written':False,'translation_approved':False}
+            used['v33']='UNAVAILABLE'
+            notes.append('v33 optional scanner unavailable: '+type(e).__name__)
     status=summary(v28report,v29report,used,fp,notes)
     status['v32_sources_ready']=source_report.get('selected_count',0)
+    status['v33_nondialogue_candidates']=nondialogue_report.get('all_candidate_count',0)
+    status['v33_ui_literals']=len(nondialogue_report.get('ui_source_candidates',[]))
+    status['v33_source_status']=used['v33']
     status['v32_source_status']=used['v32']
     status['v29_historical'] = used['v29'] in ('IMPORTED_HISTORICAL','CACHE_HISTORICAL')
     status['game_root']=str(game)
-    write_bundle(report_path,status,v28report,v29report,fp,get_log(report_path),source_report)
+    write_bundle(report_path,status,v28report,v29report,fp,get_log(report_path),source_report,nondialogue_report)
     print('Найдено исходных диалоговых строк для перевода:',status.get('v32_sources_ready',0))
+    print('Найдено вне диалогов:',status['v33_nondialogue_candidates'],'кандидатов; UI:',status['v33_ui_literals'])
     print('ГОТОВО. Один файл для ChatGPT:',report_path)
     print('Патчей/изменений в игре: 0')
     try:
@@ -496,7 +560,7 @@ def selftest():
         info['game_root']=str(game)
         write_bundle(outside,info,stub28,stub29,{'test':True})
         assert read_archive(outside)['00_STATUS.json']['game_files_written'] is False
-        assert len(zipfile.ZipFile(outside).namelist())==8
+        assert len(zipfile.ZipFile(outside).namelist())==9
         with zipfile.ZipFile(outside) as z:
             assert len(json.loads(z.read('06_VISIBLE_ONLY_REVIEW.json'))['candidates'])==18
         assert can_reuse(stub29,stub29['schema'],game,{'x':1},{'x':1})
