@@ -1,0 +1,24 @@
+name: BGXAI BGXP5 AUTO priority and party safety source-only tests
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/patchsets/priest_auto_priority_guard_source_20261117/**'
+      - '.github/workflows/bgxai-bgxp5-auto-priority-source-only.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  no-game-windows-tests:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Assert exact original BAF, AUTO healing and no attack on own party
+        working-directory: BGXAI/patchsets/priest_auto_priority_guard_source_20261117
+        run: |
+          python -m py_compile BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py test_bgxp5_source.py
+          python -m unittest -v test_bgxp5_source
+          python BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py
