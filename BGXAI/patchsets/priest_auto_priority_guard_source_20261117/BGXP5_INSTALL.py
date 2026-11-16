@@ -208,9 +208,9 @@ def native_candidate(root:Path)->tuple[bytes,dict]:
     tlk=f(game,"lang/ru_RU/dialog.tlk")
     if exe.read_bytes()[:2]!=b"MZ":raise Stop("NOT_A_WEIDU_EXE")
     src=SRC.COMBAT_SOURCE.read_bytes()
-    orig=PREF.compile_native(game,exe,tlk,SRC.expected_bgxp3_baf(src),"BGXP5_ORIG")
-    guarded=PREF.compile_native(game,exe,tlk,SRC.guarded_combat_baf(src),"BGXP5_GUARDED")
-    heal=PREF.compile_native(game,exe,tlk,SRC.priority_auto_cure_baf(),"BGXP5_HEAL")
+    orig=PREF.compile_native(game,exe,tlk,SRC.expected_bgxp3_baf(src),"BXP5OLD")
+    guarded=PREF.compile_native(game,exe,tlk,SRC.guarded_combat_baf(src),"BXP5NEW")
+    heal=PREF.compile_native(game,exe,tlk,SRC.priority_auto_cure_baf(),"BXP5HEAL")
     return PREF.assemble(f(game,BCS_PATH).read_bytes(),orig,guarded,heal)
 
 
