@@ -79,7 +79,7 @@ def sources()->dict:
     expected={'BGXPR_LAST_PRIORITY.baf','BGXP2_LAST_PRIORITY.baf','BGXP2_BCS_PATCH.py',
               'BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py','BGXP5_BCS_PREFLIGHT_READ_ONLY.py',
               'BGXP5_INSTALL.py','test_bgxp5_source.py','test_bgxp5_bcs_preflight.py',
-              'README_RU.md'}
+              'test_bgxp5_installer_mock.py','README_RU.md'}
     checks=manifest.get("sha256",{})
     if manifest.get("schema")!=1 or set(manifest.get("files",[]))!=expected or set(checks)!=expected:
         raise Stop("SOURCE_MANIFEST_INVALID")
