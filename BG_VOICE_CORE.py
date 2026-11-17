@@ -1,4 +1,4 @@
-# BG Voice RU 4.9.4: integrity-pinned local runtime with improved source discovery.
+# BG Voice RU 4.9.5: integrity-pinned local runtime with improved source discovery.
 # The launcher, all original audio, existing decisions and voice models are immutable.
 from __future__ import annotations
 from pathlib import Path
@@ -11,7 +11,7 @@ import subprocess
 import sys
 import zipfile
 
-VERSION = '4.9.4-offline'
+VERSION = '4.9.5-offline'
 
 
 def _en_proof(path: Path) -> bool:
@@ -100,6 +100,13 @@ def _patch_runtime(scope: dict, launcher: Path, diagnostics: dict):
         return (found, result) if analyzer_has_diagnostics else found
 
     def get_ref(sid, entry, en, master):
+        # An English sample belonging to the same CHARACTER is not necessarily
+        # the English original of this LINE.  Never silently substitute it.
+        # Historical stable_source_sound_id is a voice seed, not a line ID.
+        sid = str(sid).strip().upper()
+        exact = en.get(sid)
+        if exact is not None:
+            return exact
         for key in ('english_wav','en_wav','english_wav_path','original_wav',
                     'reference_wav_path','stable_reference_wav','reference_wav',
                     'stable_reference_path','source_wav'):
@@ -109,12 +116,16 @@ def _patch_runtime(scope: dict, launcher: Path, diagnostics: dict):
             p = Path(value)
             if not p.is_absolute():
                 p = Path(master) / p
-            if p.is_file() and _en_proof(p):
+            stem = p.stem.upper()
+            if stem.endswith('_EN'):
+                stem = stem[:-3]
+            if stem == sid and p.is_file() and _en_proof(p):
                 return p
-        alias = str(entry.get('stable_source_sound_id') or entry.get('english_sound_id') or sid).strip().upper()
-        if alias.endswith('_EN'):
-            alias = alias[:-3]
-        return en.get(alias) or en.get(sid)
+        # No exact original: leave HOLD without a synthetic voice score.
+        return None
+
+    diagnostics['reference_matching_policy'] = 'STRICT_SAME_SOUND_ID_OR_HOLD'
+    print('EN REFERENCE POLICY: strict same-sound-id; no voice-seed substitution',flush=True)
 
     def find_model_python(work, root):
         if os.name != 'nt' or os.environ.get('BG_VOICE_RU_ENV_SELECTED') == '1':
@@ -290,7 +301,8 @@ def _powershell_check_update(launcher: Path):
         db.execute("create table if not exists bgvoice_cached_engines "
                    "(version text primary key, sha256 text not null, source blob not null, at_utc text not null)")
         row = db.execute('select last_checked from bgvoice_update_status where slot=2').fetchone()
-        if row:
+        force = os.environ.get('BG_VOICE_FORCE_UPDATE','').lower() in ('1','true','yes')
+        if row and not force:
             try:
                 if (now-datetime.datetime.fromisoformat(row[0])).total_seconds() < 6*3600:
                     return None
