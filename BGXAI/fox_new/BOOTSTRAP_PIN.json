@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "df0d1dcf8bd57a8694a97e32e86ff6f373ab35c5",
+  "commit": "7aab402254914b23e674ba12e19edb9f3a6c7b48",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "d68fb668560a027fa2af8ca00ea6239846d8a13cf1eef8ec61212fc1a5e0ee81",
-  "script_size": 77932,
-  "description": "BGXAI one-file SHA-verified 1-116, BGXP5 12 urgent AUTO heal blocks and 4 friendly-fire target filters; protected installation with separate typed approval."
+  "script_sha256": "0026c5ddb0d60069920083d09a8df47b51ea996ff62d72c30bc8d9fca0d7236e",
+  "script_size": 79070,
+  "description": "BGXAI single CMD menu 1-117. New 117 read-only AOE/Entangle diagnostic. BGXP5 stable; no game modifications, pinned SHA256."
 }
