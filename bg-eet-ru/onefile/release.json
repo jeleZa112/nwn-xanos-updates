@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 43,
-  "sha256": "2060767512fb7afd03d59d261241052e36b7b72ae73409435debe7ee502b7ae7",
+  "version": 44,
+  "sha256": "236329a625ca533b96588687c932ccf65cd2c6cc8c78acad81bddc960e6198db",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v43: exact 300 RU unchanged, isolated WeiDU preflight may use 6-variable pinned official EET CPMVARS subset only when full EET setup source is absent. Subset results explicitly limited to syntax, never live-game compatibility. One persistent BG_EET_RU_UPDATE.cmd, SHA256+backup self-update and one ZIP report."
+  "note": "v44: fixes WeiDU 25100 failing to locate dialog.tlk in disposable preflight: copies verified Russian TLKs to both temp game root and temp lang/ru_RU, audits exact 300 entries in selected output location, detects FATAL ERROR even when process exit code is 0. One auto-updating CMD, one ZIP. Does not install to game."
 }
