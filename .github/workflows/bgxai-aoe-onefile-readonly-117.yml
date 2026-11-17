@@ -27,7 +27,7 @@ jobs:
           import hashlib,json,pathlib
           p=pathlib.Path(".")
           manifest=json.loads((p/"manifest_updater.json").read_text("utf-8"))
-          assert manifest["version"]=="0.3.49-BGX122-PRO-EFF-READONLY"
+          assert manifest["version"]=="0.3.50-BGX122-IDS-HYPHEN"
           assert len(manifest["files"])==13
           for f in manifest["files"]:
               data=(p/f["dest"]).read_bytes()
