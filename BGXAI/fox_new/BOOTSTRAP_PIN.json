@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "da524462ed67588af1713b288e078058c4a1f567",
+  "commit": "4f4b6ad2d559a78dda84b1e4ac6deb317666ac91",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "19bded329678c46424c51647ef252f0f6506b3d7ed08e6b5d0a66f5c247d047b",
-  "script_size": 79922,
-  "description": "BGXAI permanent CMD 1-121; 121 read-only native EET AoE SPL metadata and source-only spatial immunity/ranged tactics; 120 installed Entangle guard and BGXP5 heal unchanged."
+  "script_sha256": "493b81d56921b8a0a64fa93b32b2411094621b7f871f5cb675cf8afcf47a3ebc",
+  "script_size": 79860,
+  "description": "BGXAI one permanent CMD 1-122; 122 read-only actual EET PROJECTL.IDS, PRO area/flags and opcode177 external EFF audit, SHA-pinned source; live BGXP5 heal + BGX120 unchanged"
 }
