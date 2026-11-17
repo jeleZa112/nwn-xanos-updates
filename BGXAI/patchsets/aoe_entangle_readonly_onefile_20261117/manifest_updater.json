@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.43-BGXAOE-READONLY",
+  "files": [
+    {
+      "source": "BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/BGXAI_AOE_AUDIT.py",
+      "dest": "BGXAI_AOE_AUDIT.py",
+      "size": 6438,
+      "sha256": "5c137f33bbe445ee12801a08aba223dde733ea26e53d3e61ac9b299de8ba3494"
+    },
+    {
+      "source": "BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/test_aoe_audit.py",
+      "dest": "test_aoe_audit.py",
+      "size": 4275,
+      "sha256": "8ff45aa73af4da8095267532779b12d3c557b2a91865a8ebb397bf386a7f7654"
+    },
+    {
+      "source": "BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/README_RU.md",
+      "dest": "README_RU.md",
+      "size": 2854,
+      "sha256": "d1d8e509417e805692366db1d7a0299bbb5d02cc28fbce335870638f651d78ad"
+    }
+  ]
+}
