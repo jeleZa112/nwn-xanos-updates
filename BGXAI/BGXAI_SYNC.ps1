@@ -194,7 +194,7 @@ localPath=Join-Path $GameRoot 'BGXAI_DEV\priest_auto_priority_verified';installe
 names=@('BGXPR_LAST_PRIORITY.baf','BGXP2_LAST_PRIORITY.baf','BGXP2_BCS_PATCH.py','BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py','BGXP5_BCS_PREFLIGHT_READ_ONLY.py','BGXP5_INSTALL.py','test_bgxp5_source.py','test_bgxp5_bcs_preflight.py','test_bgxp5_installer_mock.py','README_RU.md','SHA256_FILES.json')
 }
 $releaseAOE=@{
-id='AOE117';version='0.3.43-BGXAOE-READONLY';
+id='AOE117';version='0.3.44-BGXAOE-SAFE-SAVECOPY';
 manifest='BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/manifest_updater.json';
 prefix='BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\aoe_readonly_verified';installer='BGXAI_AOE_AUDIT.py';
