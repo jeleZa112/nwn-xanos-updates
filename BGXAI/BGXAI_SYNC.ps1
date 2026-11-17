@@ -194,11 +194,11 @@ localPath=Join-Path $GameRoot 'BGXAI_DEV\priest_auto_priority_verified';installe
 names=@('BGXPR_LAST_PRIORITY.baf','BGXP2_LAST_PRIORITY.baf','BGXP2_BCS_PATCH.py','BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py','BGXP5_BCS_PREFLIGHT_READ_ONLY.py','BGXP5_INSTALL.py','test_bgxp5_source.py','test_bgxp5_bcs_preflight.py','test_bgxp5_installer_mock.py','README_RU.md','SHA256_FILES.json')
 }
 $releaseAOE=@{
-id='AOE117';version='0.3.47-BGX120-PARTY-AOE';
+id='AOE117';version='0.3.48-BGX121-SPATIAL-READONLY';
 manifest='BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/manifest_updater.json';
 prefix='BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\aoe_readonly_verified';installer='BGXAI_AOE_AUDIT.py';
-names=@('BGXAI_AOE_AUDIT.py','test_aoe_audit.py','BGXAI_TEST6_SAFE_COPY.py','test_safe_copy.py','BGX119_TRACE.py','BGX120_ENTANGLE_GUARD.py','test_guard120.py','README_RU.md')
+names=@('BGXAI_AOE_AUDIT.py','test_aoe_audit.py','BGXAI_TEST6_SAFE_COPY.py','test_safe_copy.py','BGX119_TRACE.py','BGX120_ENTANGLE_GUARD.py','test_guard120.py','BGX121_POLICY.py','BGX121_READONLY.py','test_121.py','README_RU.md')
 }
 function Get-PinnedBytes([string]$remotePath) {
 if($remotePath -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116|patchsets/priest_combat_eps_first_20261116|patchsets/priest_auto_attack_buffer_source_only_20261117|patchsets/priest_auto_priority_guard_source_20261117|patchsets/aoe_entangle_readonly_onefile_20261117)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
@@ -483,8 +483,8 @@ if($mode -ceq 'install'){
 }
 if($LASTEXITCODE -ne 0){throw ('BGXAI064 pre-authorization CHECK FAILED '+$LASTEXITCODE)}
 $token=if($mode -ceq 'install'){'INSTALL_BGXAI_064'}else{'ROLLBACK_BGXAI_064'}
-Write-Host 'EXPERIMENTAL 064: this action modifies live Lua via WeiDU, with external SHA-verified backup.'
-Write-Host 'Baldur and InfinityLoader MUST be closed. BCS and EPS will not be modified by candidate.'
+Write-Host '064: verified backup; Lua changes via WeiDU.'
+Write-Host 'Close game/loader; BCS and EPS unchanged.'
 $confirmation=Read-Host ('Type '+$token+' exactly to authorize or ENTER to cancel')
 if($confirmation -cne $token){Write-Host 'BGXAI 064 CANCELLED. Live game unchanged.';return}
 & py -3 (Join-Path $release064g.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') $mode '--yes' '--confirm' $token
@@ -512,7 +512,7 @@ if((HashFile $file) -cne $items[$name].sha){throw ('BGXAI066S source SHA mismatc
 function Test066SReadOnly {
 SyncRelease $release066s
 Verify066SGuardedSource
-Write-Host 'BGXAI 066S real EET IDS + BCS preflight: READ ONLY, no WeiDU installation.'
+Write-Host '066S native preflight READ ONLY.'
 & py -3 (Join-Path $release066s.localPath 'BGXAI66S_INSTALL.py') preflight
 if($LASTEXITCODE -ne 0){throw ('BGXAI066S REAL EET IDS preflight STOP '+$LASTEXITCODE)}
 Write-Host 'BGXAI066S PRECHECK PASS. Existing 064 remains installed.'
@@ -528,7 +528,7 @@ if($mode -cne 'install' -and $mode -cne 'rollback'){throw 'BGXAI066S unsupported
 SyncRelease $release066s
 Verify066SGuardedSource
 $token=if($mode -ceq 'install'){'INSTALL_BGXAI_066S'}else{'ROLLBACK_BGXAI_066S'}
-Write-Host 'BGXAI066S EXPERIMENTAL: two exact SHA-pinned game scripts via WeiDU, external verified backup and strict 064 baseline.'
+Write-Host '066S: pinned scripts, verified backup.'
 Write-Host 'CLOSE BALDUR + INFINITYLOADER before continuing. No automatic retry on failure.'
 $confirmation=Read-Host ('Type '+$token+' exactly to authorize, or ENTER to cancel')
 if($confirmation -cne $token){Write-Host 'BGXAI066S CANCELLED. Game unchanged.';return}
@@ -601,7 +601,7 @@ $check=if($mode -ceq 'install'){'preflight'}else{'status'}
 & py -3 $installer $check '--game-root' $GameRoot
 if($LASTEXITCODE -ne 0){throw ('BGXAI IDLE pre-authorization STOP '+$LASTEXITCODE)}
 $token=if($mode -ceq 'install'){'INSTALL_BGXAI_IDLE_GUARD'}else{'ROLLBACK_BGXAI_IDLE_GUARD'}
-Write-Host 'EXPERIMENTAL IDLE GUARD: changes ONLY override/M_BX43.lua via WeiDU; EPS/BCS untouched.'
+Write-Host 'IDLE guard changes Lua only via WeiDU.'
 Write-Host 'Close Baldur and InfinityLoader. Backup and SHA gates are mandatory.'
 $approval=Read-Host ('Type '+$token+' exactly to authorize, or press ENTER to cancel')
 if($approval -cne $token){Write-Host 'BGXAI IDLE cancelled. Installed game unchanged.';return}
@@ -1192,6 +1192,7 @@ Write-Host '117 - AOE Entangle audit (READ ONLY; BGXP5 no changes)'
 Write-Host '118 - Copy BGXAI_TEST_6 without Jaheira PRIEST1 (typed approval; no override changes)'
 Write-Host '119 - Trace Jaheira scripts (READ ONLY)'
 Write-Host '120 - Party Entangle safeguard (status/preflight/install/rollback)'
+Write-Host '121 - AOE spatial/ranged safety audit (READ ONLY)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -1318,11 +1319,12 @@ switch($choice){
 '118' {BGXTest6Safe;break}
 '119' {SyncRelease $releaseAOE;& py -3 (Join-Path $releaseAOE.localPath 'BGX119_TRACE.py');if($LASTEXITCODE){throw '119 STOP'};break}
 '120' {SyncRelease $releaseAOE;& py -3 (Join-Path $releaseAOE.localPath 'BGX120_ENTANGLE_GUARD.py');if($LASTEXITCODE){throw '120 STOP'};break}
+'121' {SyncRelease $releaseAOE;& py -3 (Join-Path $releaseAOE.localPath 'BGX121_READONLY.py');if($LASTEXITCODE){throw '121 STOP'};break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0
 } catch {
 Write-Host ('BGXAI STOP: '+$_.Exception.Message) -ForegroundColor Red
-Write-Host 'Do not repeat failed installs automatically. Existing working AI left for review.'
+Write-Host 'Failed install: no auto retry; review game status.'
 exit 1
 }
