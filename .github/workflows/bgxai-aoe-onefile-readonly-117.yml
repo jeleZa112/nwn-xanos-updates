@@ -27,15 +27,15 @@ jobs:
           import hashlib,json,pathlib
           p=pathlib.Path(".")
           manifest=json.loads((p/"manifest_updater.json").read_text("utf-8"))
-          assert manifest["version"]=="0.3.48-BGX121-SPATIAL-READONLY"
-          assert len(manifest["files"])==11
+          assert manifest["version"]=="0.3.49-BGX122-PRO-EFF-READONLY"
+          assert len(manifest["files"])==13
           for f in manifest["files"]:
               data=(p/f["dest"]).read_bytes()
               assert len(data)==f["size"] and hashlib.sha256(data).hexdigest()==f["sha256"],f["dest"]
-          print("BGXAI AOE 117+TESTSAVE 118 SOURCE HASHES 11/11 PASS")
+          print("BGXAI AOE 117+TESTSAVE 118 SOURCE HASHES 13/13 PASS")
           '@ | python -
           if($LASTEXITCODE -ne 0){throw 'BGXAI_AOE_SHA_STOP'}
-          python -m py_compile BGXAI_AOE_AUDIT.py test_aoe_audit.py BGXAI_TEST6_SAFE_COPY.py test_safe_copy.py BGX119_TRACE.py test_trace119.py BGX120_ENTANGLE_GUARD.py test_guard120.py BGX121_POLICY.py BGX121_READONLY.py test_121.py
+          python -m py_compile BGXAI_AOE_AUDIT.py test_aoe_audit.py BGXAI_TEST6_SAFE_COPY.py test_safe_copy.py BGX119_TRACE.py test_trace119.py BGX120_ENTANGLE_GUARD.py test_guard120.py BGX121_POLICY.py BGX121_READONLY.py test_121.py BGX122_PROJECTILES_READONLY.py test_122.py
           if($LASTEXITCODE -ne 0){throw 'BGXAI_AOE_PYTHON_PARSE_STOP'}
-          python -m unittest -v test_aoe_audit test_safe_copy test_trace119 test_guard120 test_121
+          python -m unittest -v test_aoe_audit test_safe_copy test_trace119 test_guard120 test_121 test_122
           if($LASTEXITCODE -ne 0){throw 'BGXAI_AOE_MOCK_STOP'}
