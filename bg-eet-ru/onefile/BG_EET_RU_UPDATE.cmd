@@ -27,7 +27,7 @@ import zipfile
 import zlib
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 34
+SELF_VERSION = 35
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -171,7 +171,7 @@ def read_archive(path: Path):
         with zipfile.ZipFile(path,'r') as z:
             for name in ('00_STATUS.json','01_V28_DLG_CONTEXT.json','02_V29_BP_PLACEMENT.json',
                          '04_FINGERPRINT.json','07_TRANSLATION_SOURCE_BATCH.json',
-                         '08_NON_DIALOGUE_SOURCE_BATCH.json'):
+                         '08_NON_DIALOGUE_SOURCE_BATCH.json','09_IWD_BANTER_DLG_STATUS.json'):
                 try:
                     inf=z.getinfo(name)
                     if inf.file_size > (12_000_000 if name=='08_NON_DIALOGUE_SOURCE_BATCH.json' else 3_000_000): continue
@@ -294,7 +294,7 @@ def make_review_queue(v28report):
     }
 
 
-def write_bundle(path, status, v28report, v29report, fp, existing_log='', source_report=None, nondialogue_report=None):
+def write_bundle(path, status, v28report, v29report, fp, existing_log='', source_report=None, nondialogue_report=None, dlg_status=None, dlg_contents=None, dlg_cache=None):
     safe_external(Path(status['game_root']), path)
     path.parent.mkdir(parents=True,exist_ok=True)
     tmp=path.with_suffix('.zip.tmp')
@@ -313,6 +313,29 @@ def write_bundle(path, status, v28report, v29report, fp, existing_log='', source
             z.writestr('06_VISIBLE_ONLY_REVIEW.json',b(make_review_queue(v28report)))
             z.writestr('07_TRANSLATION_SOURCE_BATCH.json',b(source_report or {'schema':'bg-eet-ru-v32-live-dialogue-source-batch-v1','status':'NOT_COLLECTED','game_files_written':False}))
             z.writestr('08_NON_DIALOGUE_SOURCE_BATCH.json',b(nondialogue_report or {'schema':'bg-eet-ru-v33-actual-nondialogue-sources-v1','status':'NOT_COLLECTED','game_files_written':False}))
+            if dlg_status is not None:
+                z.writestr('09_IWD_BANTER_DLG_STATUS.json',b(dlg_status))
+                if dlg_contents is not None:
+                    for dlgname,blob in sorted(dlg_contents.items()):
+                        if not re.fullmatch(r'[A-Z0-9_]{1,8}',dlgname) or len(blob)>15_000_000 or blob[:4]!=b'DLG ':
+                            raise RuntimeError('STOP: invalid captured DLG '+str(dlgname))
+                        z.writestr('09_IWD_BANTER_DLG/'+dlgname+'.DLG',blob)
+                elif dlg_cache is not None:
+                    # Copy only the 61 specifically captured dialogue files, never arbitrary ZIP entries.
+                    with zipfile.ZipFile(dlg_cache,'r') as old:
+                        approved=dlg_status.get('stored_dialogues',[])
+                        if len(approved)>100 or len(set(approved))!=len(approved):
+                            raise RuntimeError('STOP: invalid dialogue cache index')
+                        for dlgname in approved:
+                            if not isinstance(dlgname,str) or not re.fullmatch(r'[A-Z0-9_]{1,8}',dlgname):
+                                raise RuntimeError('STOP: invalid cached DLG name')
+                            member='09_IWD_BANTER_DLG/'+dlgname+'.DLG'
+                            info=old.getinfo(member)
+                            if info.file_size>15_000_000:raise RuntimeError('STOP: cached DLG too large')
+                            blob=old.read(member)
+                            if blob[:4]!=b'DLG ' or digest(blob)!=dlg_status['file_hashes'][dlgname]['sha256']:
+                                raise RuntimeError('STOP: cached DLG checksum invalid '+dlgname)
+                            z.writestr(member,blob)
             z.writestr('05_README_RU.txt',
                 'BG_EET_RU: ЕДИНЫЙ ОТЧЁТ. Только чтение данных игры.\n'
                 'ПЕРЕДАТЬ В ЧАТ ОДИН ФАЙЛ: SEND_TO_CHATGPT_BG_EET_RU.zip\n'
@@ -322,7 +345,10 @@ def write_bundle(path, status, v28report, v29report, fp, existing_log='', source
                 '00_STATUS.json','01_V28_DLG_CONTEXT.json','02_V29_BP_PLACEMENT.json',
                 '03_ALL_RUNS.log','04_FINGERPRINT.json','05_README_RU.txt',
                 '06_VISIBLE_ONLY_REVIEW.json','07_TRANSLATION_SOURCE_BATCH.json',
-                '08_NON_DIALOGUE_SOURCE_BATCH.json'}
+                '08_NON_DIALOGUE_SOURCE_BATCH.json'} | (
+                {'09_IWD_BANTER_DLG_STATUS.json'} | {
+                  '09_IWD_BANTER_DLG/'+name+'.DLG' for name in dlg_status.get('stored_dialogues',[])
+                 } if dlg_status is not None else set())
         os.replace(tmp,path)
     finally:
         if tmp.exists():tmp.unlink()
@@ -402,6 +428,21 @@ def load_v34_patch():
     return module,d['entries']
 
 
+
+# v35: embedded READ-ONLY IWD EET party-banter DLG collector.
+# No separate executable, no modifications under game root.
+V35_DLG_COLLECTOR_SHA256 = '4dae4f40935687a965c3615d677b6d35b26e9505082563bae9051fb97c7036ac'
+V35_DLG_COLLECTOR_B64 = 'eNq1GmlT28jyu3/FZLfqSQqKMCTZogxKlcACmxiblR0SwlIq2RpjBVnS6uDIVv776+7R6YPsvq3nqiBppq/pa7pn8uur3SyJd6desMuDBxY9p4sweNv65ZdfTkLf57OUJRwf3GVekKQOjLnMNCesOzhjMU/CLJ7xBN4c900Y+M8qi2CUxw9ecMfCgDP+5CUpfsQ8CuOUfe1faq3WcDRhTpaGSyf1ZkD0Gag/hPfc1dgwZHfOkrO55wNhJwYSDzxmy9D15h4CWPzPzAMmLAM+LIzSN16gocSteRwuWeSkC9+bMm9J/C7hU0zMxIK8MEiKSZfPncxPXW+WtvKhhZMgusq8UGXfkjBQWZioLEnjbJbC8xk+Ur6MUDyVffeKF8JJFlnq+a0WKMeeXF+aevup/Xb+tnVhfLGP+6f6vt1ut4t/NAqQ+t77cmhiWGfmZKxLXePkxBj0DdY1LsfmgHVPep+s/pB1u8ZF34SnOeiPcdq0zCsDJ8wr0zKsLuuemtYZ656Z1qQHj9HxoD88gRerD3SAUM+0Lvpgv15/0CWQnjXCxzmMj6/h2RsNkcFF3zI/su7QmJisOzqz8O8AoIDDyDo56fVxwLL6JwB0Obowjln390/9i2Mg8dk0h6MzSUsi30tlpTW+NI2PpgXLMkyrb54z49wYTuAxGFkGPIajC3N4zo4NcwCiwItlDD+fsxPTGnbhAUAwC8zw7/XQAAhz0B0BgVMDnufszAA5zlkPqHeBXs/88sWA2XNE+2icGTD3ETEsePZAq/DoX9HkyDrD54Xx9es1PEbDCeAPUfHwME2U7vdPxvXgnFnG2DBAmrFxihhjA/S+/x5eeoYFvMYfcV2TvvHlnF0Zg2sQ6Zx9QcgvX/H12hwj3+vRuHdeKeZXZvhJCL4/8zOXQ4jMecyDGYTY1Ek4xVgSceeexwkjH557cZKyt+02m/rh7D7RWp9Bk2ZXT3gq586zU6hbabXAwZFqAAElx86j0ol5msUBg/dciKn0R1tS95Sb9q3m8lnocllykpnnSaoEIes7My4pGri/F8mKlkURj+WccOTECbfv+bOMMad0Wgx+INdUx28Nc4I9fU55Agg45c2ZzwMZIZSj/XcsjAn6pnNw+0qfSh/Na3a1x5gkCOEvdjxQw5XjZ9yM4zCWpX7w4Piey2YLD7KKBszZAvjwWBI8pt7cnoVZkKqQIfI3HAvncxqBpy5iWcuCyJnd26hXWTrqw09SUR71oBS3pPYBVA5KB4lLsmJIDOYcdvb2X1co5VoLNIJ497qiUEL8wxWnztTnDMiB1ZN84WjiRL+5pY85cPTArYBccMflUqYaI1tFlSTed67a2zTS6+UaKdbnvd7bV0oSoCDE/7DXFsZECBqo1kVSaQ54TeDKkqQczsIAVpHxkkgDgtwByHQKUrcveOks2tt/v99w0/xNlv74A8Z3JUUICxGQ6H/92KSa0hg11aCP1OzlNWTVi3BqyHpwqxzee4GrQlRu1mav8C4CbygREXW92DOYE7jECYUU0d3BBdzg2K0uA4cPH/bbyOk/7ae38/m8WCRFNulTRQQRpHMgbmcBRIgchyGGhQ977gMvwtVLEx33SLmY2KZECoc00bzEdqZJ6Gcpl8m1JU2TUFaahZyQJkWWGUIBIJwTDKYj+9IECLeCVFdJEKaEhNxcDzLOGkn88SdnluoIt4skVgnQtEYFCKSgij7+oPCYLTBgnkicJ5RFMEx5TByRypOG6tT88BGznq4jl+LrtkEvZ5mT3ShtJXEOBc5cuRZqiGYbxoRRQVqoAmsNkIw8BIewAPMfYAgnCwPaaUimrmYVxn3IKiQNOQV/ioCGDWFNqVsNs8L/f2XjFBL3kqUhc6jQCWMnfqZq7JC5Ia3SDx2XLaFw8t6cHbP+5y6D4uYUajXIUQ9QmHkBYFvGhUYkH710QVWZFkKQy1I8lWAJsKFVFqEImNOOIb9TDqHeq77WI2UqITupadC5lnB+L7eVQ1GEabMwekapw+k3eU4rPIQ/JZTQ8BbibIV40IxpTI6SWkqo1A1ZOAOE6LuDzno6/xQkzpyjwpobV7UOoho0RyEivUCdhctoXZJKlANFWZWDED/k9efL4mC+XREGdKdjZUs5d4mVfYLqxDQOKVNvN4AfF6BthnBN5eFvtsiC+8KmSy+Q946OIIch8IrMtWAipFxmc3SaSzyJs2DmYEMCQkvryCAkeKYOctaklonWOjB6xGMMMS8LtHxlOzpuYdXQMnpDI1uogLxiQydtb9AyqjcEr55D7lgRGZgIYed+lixk4aSlSGsCpWsWpvlX+kus0bJs6SWUd1ZN/Hdj4mQlJkCgu3TxjwNDoP0tjzzZ5JIveR7MHAn66x64cMuccrDRgqhgAFJe6Qcv+9yJqL03uN5PohSpb+IsYnSvbAxxU0UitaGf6GmbQI2wo2DbtnLh2a90Ct+fLJ9gN0We87iaLV6IGHJoaEm2u25R+b7ItBYuQKwRLfC9JVhyJ9kYLSf/S7hsNA80S2Gcaw2I3gUOwKM/0x6MNbXr39kQYfxJxp0q34LxNeeh7iuHeZzRaMp9H1JEDUJIJ3YSAUO23m83Wi4xD6reJ+cSnzedd9R3ic100wqgTBBHP7S9Q50EGinajWw55bFqq9SLbG2pwOmJV62nEpgf3pfNE1HY2fvtdT6z1TiVx58y0louC72X9X2pG6KrbCr6BaN61+W5UJcnoh2iOt7eEMHUD1U63vtN+VkZj/SO9Pych0aAy44Y3ZSoaCU3IE1e2UO5X4jVKPIJTrhRfqol45lZWdPPRQegVx06Tu9KVQ+Zqy580MUM7k7Al0uH4YOdKzSCtp8vi56/E4nCHdUYPjTr5GilOAXMbD73nqrKWdLA16UfCAzIRU0u6tKyM4M2Bcx4CKGXeMEdNLOHHC1ftrV3cZhF3NVrx3ay7xV7IkpX9E0JBZ4s2iel2VrkIMU6O6s5opgQDRfowEllPAGxqbfNjbm+wQhRi04WcXekDiv0Smc5/GnGuZswdOP0mfne0ks39cTlOcqKKGsnKjWpxUnKu1vcrZGX1CF9Fl0jtZ6VlZvoaIXOZvm9PAfX11HD5n5No+hyTb1MIa4AW6/618PchjcwdVswI24IqNQpg0y5J9SFqmyNxMELl9hvFK6h0YDctDgAfqAdAQNjpQ9srlo6hsYGz6EwY5PmmbQDiQAwQbZ1Q0V6rb3GQMKTkoTW1kgNEDQJtV8vMwem+YqBbUVpnW8aPzcpUY9VHEtrk6JtO81DMqG0uMFna30gZbYNOzXlgg2b1RpkEX9oSDQJmWKd50b5V2sDz6UOwMtT3YbNAH1cgMA8dzdUBtVxjsiguggloH27FbbaPQBLOaQgrDJ+lYe3yV0cfL3SqYgoTzjFTivicmuhs5uWdVYzytY1vRbZWEtLO5FWhci6rWc8Smt80S22hL1wel4PR4Etj8aEq1KdR7hqvlGKj6JoVCs+imD0gucLsdf45psdrVbNA0MVmGLvo7rPFhdLIvzEe1FIbUDUG/slgWGCzxL9L0m8gBSD/pWJSd62TKM7Gg6uJVVCeJsYAsSpA9kJDx7/zKAlA+/roOXz3UZtrFQiKQQAvSqqlIskFflNlYRwUm6NVQrggDbeSyHrv1BVHRCWbt6kThLPVClZOPvvf5M6+eWVJr7lqaIt+JPr3YGQMvCldookmSo/qniVpypQUTDaSMIiif74kZsBdYqHdDxIteU97vriI9GhM+Aq7eZ2eE9fQqeYivQcEXOTLeoBWdIC/vjdi3LnprSV36FpX72I8hXiqtKjpJYT/Uu7a54ODNCuWnQWPn/gvn5AzvW9ke5ztmVFsiFTrrLM3QZphb7b2ZraqG7wXXJXLDxWia+UGVg7xGmCLGWpfWD3P3ftY3QSC71rV6LjUzpU1ten7fHEmHwaa3gHKXU21gjF77vogDB2yKAoojhFQievgrgG9xN+Kv7V3GwZJbIIC5VDQxNzm+6GdBEAmFChGd+vsfipU3VeFGJX2hGpQMMMqE7zKjUpD6XJOXJz1ZOEELKV18ROhJ2WXfZc9eoYr7YX2AYwl6eQCUBgFBovr1cutbMEL+KeWbrgQDJwPRdyMx5u8vhbfpGstYimVVx/HwIgHu3SvXVeO1FCf1zwACsLtbpPb5SG2ActuBeL7mZGAiZaIfC/L+vz4f9/aV8c2DdLe7zL129kvOOT1HWhb/9VAU/Uy1pSGl2ZltXvmh3hS2qziFb+UfFq10rXtYrbc4+2VJV/uzas1x21JYjdvCg81dUzUqqNV1GMrsCiNWOtuVpMryBc9Mfj/vBsAwbUP0H9usx3ptxX8QSfohnJNAxC82Q0QFzPVOhEhJuXwAh1Qzi3Og6sl7dJKm6QRetVDdcQb5K0aMlU8bpMPdihg+Q2v8eIw2mWpIwHYXa3ECEOXh3gZcYyA8Ie/tcO9Gi6daGqf9wz6OANgpcCny7hswgjOK4nm5Vttp4rQUQVfRejU2yPisYDcWGZpfMDSWnsya3/ArxsvKU='
+
+def load_v35_collector():
+    blob=zlib.decompress(base64.b64decode(V35_DLG_COLLECTOR_B64))
+    if digest(blob)!=V35_DLG_COLLECTOR_SHA256:
+        raise RuntimeError('STOP: v35 embedded DLG collector SHA mismatch')
+    module=types.ModuleType('bg_eet_ru_v35_readonly_dlg_collector')
+    module.__file__=str(Path(__file__).resolve())
+    exec(compile(blob.decode('utf8'),module.__file__,'exec'),module.__dict__)
+    return module
+
 def main(argv=None):
     p=argparse.ArgumentParser(description='BG_EET_RU one-file visible-only read-only auto-updater')
     p.add_argument('--game',default=DEFAULT_GAME)
@@ -409,7 +450,9 @@ def main(argv=None):
     p.add_argument('--force',action='store_true',help='ignore result cache, repeat audit')
     p.add_argument('--selftest',action='store_true')
     p.add_argument('--no-open',action='store_true',help='do not open output folder')
-    p.add_argument('--no-install-prompt',action='store_true',help='never offer optional v34 reviewed text patch')
+    p.add_argument('--no-install-prompt',action='store_true',help='compatibility: skip v34 prompt')
+    p.add_argument('--offer-v34-edits',action='store_true',help='explicitly ask about old optional v34 edits')
+    p.add_argument('--skip-iwd-dlg',action='store_true',help='skip v35 DLG read-only capture; keep earlier capture if valid')
     args=p.parse_args(argv)
     if args.selftest: return selftest()
     game=Path(args.game).expanduser().resolve()
@@ -439,7 +482,7 @@ def main(argv=None):
                 os.replace(temp,canonical)
         except OSError as e:print('Не удалось сохранить обновлятор в одну папку:',e)
     reviewed_report=None
-    if not args.no_install_prompt:
+    if args.offer_v34_edits and not args.no_install_prompt:
         try:
             patch_mod, patch_entries=load_v34_patch()
             v28mod,_,_=load_scanners()
@@ -546,6 +589,68 @@ def main(argv=None):
                 'error':str(e)[:350],'game_files_written':False,'translation_approved':False}
             used['v33']='UNAVAILABLE'
             notes.append('v33 optional scanner unavailable: '+type(e).__name__)
+    # v35: get actual DLG bytes from this installed EET (KEY / override / BIFF),
+    # not inferred StrRefs. Preserve the result in the same single ZIP.
+    dlgmod=load_v35_collector()
+    previous_dlg=old.get('09_IWD_BANTER_DLG_STATUS.json')
+    dlg_status=None;dlg_contents=None;dlg_cache=None
+    if not args.skip_iwd_dlg:
+        print('Сбор необходимых DLG IWD Party Banter (только чтение; один ZIP)...')
+        try:
+            signature=dlgmod.capture_signature(game)
+            reuse=(not args.force and isinstance(previous_dlg,dict) and
+                previous_dlg.get('schema')=='bg-eet-ru-v35-iwd-banter-dlg-capture-v1' and
+                previous_dlg.get('game_root')==str(game) and
+                previous_dlg.get('source_signature')==signature and
+                previous_dlg.get('chitin_key_sha256')==fp['chitin.key']['sha256'] and
+                previous_dlg.get('game_files_written') is False and
+                isinstance(previous_dlg.get('stored_dialogues'),list) and
+                isinstance(previous_dlg.get('file_hashes'),dict))
+            if reuse:
+                dlg_status=previous_dlg
+                dlg_cache=report_path
+                used['v35']='CACHE'
+            else:
+                found,missing,errors=dlgmod.collect(game)
+                if dlgmod.capture_signature(game)!=signature:
+                    raise RuntimeError('DLG sources changed during capture')
+                dlg_contents={name:binary for name,(binary,source) in found.items()}
+                dlg_status={
+                    'schema':'bg-eet-ru-v35-iwd-banter-dlg-capture-v1',
+                    'status':'LIVE_DLG_READONLY', 'created_utc':now(),
+                    'game_root':str(game), 'game_files_written':False,
+                    'translation_approved':False,
+                    'visibility_proven':False,
+                    'requested':len(dlgmod.WANTED),'found':len(found),
+                    'stored_dialogues':sorted(found),
+                    'target_dialogues':sorted(dlgmod.TARGETS),
+                    'missing':missing,'errors':errors,
+                    'source_signature':signature,
+                    'chitin_key_sha256':fp['chitin.key']['sha256'],
+                    'file_hashes':{name:{'source':source,'sha256':digest(binary),'size':len(binary)}
+                                   for name,(binary,source) in found.items()},
+                    'note':'DLG existence alone does not prove a playable branch. No game modifications.',
+                }
+                used['v35']='LIVE_READ_ONLY'
+        except Exception as exc:
+            dlg_status={'schema':'bg-eet-ru-v35-iwd-banter-dlg-capture-v1',
+                        'status':'READ_ONLY_SCAN_UNAVAILABLE','game_root':str(game),
+                        'game_files_written':False,'translation_approved':False,
+                        'error_type':type(exc).__name__,'error':str(exc)[:300],
+                        'stored_dialogues':[]}
+            dlg_contents={}
+            used['v35']='UNAVAILABLE'
+            notes.append('v35 DLG collector: '+type(exc).__name__)
+    elif isinstance(previous_dlg,dict) and previous_dlg.get('stored_dialogues'):
+        # Preserve an earlier v35 capture if the user explicitly skips the scan.
+        dlg_status=previous_dlg
+        dlg_cache=report_path
+        used['v35']='PRESERVED_EXISTING'
+    else:
+        used['v35']='SKIPPED'
+    # No game file should be modified by read-only collectors.
+    if fingerprints(game,v28)!=fp:
+        raise RuntimeError('STOP: game files changed during v35 audit')
     status=summary(v28report,v29report,used,fp,notes)
     if reviewed_report:
         status['v34_reviewed_patch']=reviewed_report
@@ -555,6 +660,7 @@ def main(argv=None):
             status['approved_new_text_changes']=reviewed_report.get('installed_text_changes',0)
             status['translation_approved']=True
 
+    status['v35_dlg_capture']=({'status':dlg_status.get('status'),'found':dlg_status.get('found',0),'missing_count':len(dlg_status.get('missing',[])),'errors_count':len(dlg_status.get('errors',[]))} if dlg_status else {'status':'SKIPPED'})
     status['v32_sources_ready']=source_report.get('selected_count',0)
     status['v33_nondialogue_candidates']=nondialogue_report.get('all_candidate_count',0)
     status['v33_ui_literals']=len(nondialogue_report.get('ui_source_candidates',[]))
@@ -562,7 +668,8 @@ def main(argv=None):
     status['v32_source_status']=used['v32']
     status['v29_historical'] = used['v29'] in ('IMPORTED_HISTORICAL','CACHE_HISTORICAL')
     status['game_root']=str(game)
-    write_bundle(report_path,status,v28report,v29report,fp,get_log(report_path),source_report,nondialogue_report)
+    write_bundle(report_path,status,v28report,v29report,fp,get_log(report_path),source_report,nondialogue_report,dlg_status,dlg_contents,dlg_cache)
+    print('Собрано DLG (v35):',dlg_status.get('found',0) if dlg_status else 0,'; статус:',used.get('v35'))
     print('Найдено исходных диалоговых строк для перевода:',status.get('v32_sources_ready',0))
     print('Найдено вне диалогов:',status['v33_nondialogue_candidates'],'кандидатов; UI:',status['v33_ui_literals'])
     print('ГОТОВО. Один файл для ChatGPT:',report_path)
@@ -581,6 +688,8 @@ def main(argv=None):
 
 def selftest():
     # Self-contained checks only; never read or change a real EET installation.
+    dlg_mod=load_v35_collector()
+    assert len(dlg_mod.TARGETS)==25 and len(dlg_mod.WANTED)>=50
     v28,v29,targets=load_scanners()
     assert len(targets.get('priority',[]))==7 and len(targets.get('movies',[]))==11
     assert targets['automatic_patch_allowed'] is False
@@ -614,6 +723,18 @@ def selftest():
         assert can_reuse(stub29,stub29['schema'],game,{'x':1},{'x':1})
         assert not can_reuse(stub29,stub29['schema'],game,{'x':2},{'x':1})
         write_bundle(outside,info,stub28,stub29,{'test':True},get_log(outside))
+        sample=b'DLG V1.0'+bytes(200)
+        status={'schema':'bg-eet-ru-v35-iwd-banter-dlg-capture-v1',
+                'status':'LIVE_DLG_READONLY', 'game_root':str(game),
+                'game_files_written':False,'stored_dialogues':['DDAMIEN'],
+                'file_hashes':{'DDAMIEN':{'sha256':digest(sample),'size':len(sample)}}}
+        write_bundle(outside,info,stub28,stub29,{'test':True},get_log(outside),
+                     dlg_status=status,dlg_contents={'DDAMIEN':sample})
+        assert read_archive(outside)['09_IWD_BANTER_DLG_STATUS.json']['stored_dialogues']==['DDAMIEN']
+        write_bundle(outside,info,stub28,stub29,{'test':True},get_log(outside),
+                     dlg_status=status,dlg_cache=outside)
+        with zipfile.ZipFile(outside) as zz:
+            assert zz.read('09_IWD_BANTER_DLG/DDAMIEN.DLG')==sample
     print('SELFTEST: PASS. Один архив, очередь 18 HOLD, SHA, защита от записи, кэш.')
     return 0
 
