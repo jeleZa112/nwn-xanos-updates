@@ -1,8 +1,8 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "4.9.1",
+  "version": "4.9.2",
   "path": "BG_VOICE_CORE.py",
-  "commit": "21cf9b29bbc9ffd96ab785b7dd14cc1e1a9c3c71",
-  "sha256": "04e856175d9d7df2cdbafdbe722eb84def21d4d579cfd557f9bedcfa5bc2d895",
-  "notes": "Read-only offline core update: discovers English _EN.wav reference files in existing project folders and installed Python model environments, preserves prior decisions and original WAV. Cached in existing SQLite and launched by same CMD."
+  "commit": "1fbd8fb997e23b1425ca2aee539ac5f5b68ba0ea",
+  "sha256": "5a160606a2d587929d434da2af75718a295e6842ac7ce6b4c37beb51b8da890f",
+  "notes": "Offline core: find existing EN *_EN.wav and Python model environments; preserve patched engine across Python subprocess switch; no WAV/game writes; cache in existing SQLite."
 }
