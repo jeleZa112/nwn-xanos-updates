@@ -97,7 +97,7 @@ def decompile(game: Path, bcs: bytes, executable: bytes) -> tuple[str, str]:
         return matches[0].read_text("utf-8",errors="replace"),log[-1500:]
 
 def audit(game: Path, output: Path) -> dict:
-    if game != GAME.resolve(strict=True):
+    if game.resolve(strict=True) != GAME.resolve(strict=True):
         raise ValueError("UNEXPECTED_GAME_ROOT")
     bcs,exe,lua,weidu=checked(game)
     baf,log=decompile(game,bcs,exe)
