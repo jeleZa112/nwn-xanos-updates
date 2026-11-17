@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "7aab402254914b23e674ba12e19edb9f3a6c7b48",
+  "commit": "2f12121f32d4ace70b8d72723d22c79447e1b62f",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
   "script_sha256": "0026c5ddb0d60069920083d09a8df47b51ea996ff62d72c30bc8d9fca0d7236e",
   "script_size": 79070,
-  "description": "BGXAI single CMD menu 1-117. New 117 read-only AOE/Entangle diagnostic. BGXP5 stable; no game modifications, pinned SHA256."
+  "description": "BGXAI single CMD 1-117: verified AOE Entangle READ ONLY report; stable installed BGXP5 unaffected; 3 SHA pinned release files."
 }
