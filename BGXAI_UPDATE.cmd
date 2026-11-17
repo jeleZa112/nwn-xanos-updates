@@ -80,6 +80,18 @@ try {
         if($commitId -cnotmatch '^[0-9a-f]{40}$' -or $expectedHash -cnotmatch '^[0-9a-f]{64}$' -or $expectedSize -lt 3000 -or $expectedSize -gt 80000) {
             throw 'Invalid pinned commit, SHA256 or size'
         }
+        # Recovery for the one known immutable AOE117/118 mismatch (0.3.43 vs 0.3.44).
+        # The remote branch pin may be stale behind a proxy even with a nonce.
+        # Only a byte-exact known stale pin is eligible. Newer/unknown pins are untouched.
+        if($commitId -ceq '711840d55df51c86da9b9464aa2bc22b882cfa1e') {
+            if($expectedHash -cne 'b5c8f6af7d2168f51556d955ae2238a0ad1226906deef4311319185b0b319511' -or $expectedSize -ne 79725) {
+                throw 'Stale channel descriptor has unexpected SHA/size; recovery blocked'
+            }
+            $commitId='0c01f9f5c56087b1ff39471c3a06a1409cfe2a14'
+            $expectedHash='6897f43009d32008fe499db871fb17c9c09ad494a7e69e142474a646b8c072bd'
+            $expectedSize=79730
+            Write-Host 'BGXAI: stale 0.3.43 branch pin detected; SHA-verified 0.3.44 recovery enabled.'
+        }
         $scriptSources=@(
           ('https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/'+$commitId+'/BGXAI/BGXAI_SYNC.ps1'),
           ('https://cdn.jsdelivr.net/gh/jeleZa112/nwn-xanos-updates@'+$commitId+'/BGXAI/BGXAI_SYNC.ps1')
