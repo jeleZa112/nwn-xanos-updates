@@ -101,6 +101,7 @@ class SafeGuard(unittest.TestCase):
 
     def test_no_automatic_install_without_token(self):
         with mock.patch.object(G,"exact_game",return_value=G.GAME),\
+             mock.patch("sys.argv",["BGX120_ENTANGLE_GUARD.py"]),\
              mock.patch("builtins.input",side_effect=["3",""] ),\
              mock.patch.object(G,"install",side_effect=AssertionError("INSTALL CALLED")):
             self.assertEqual(G.main(),0)
