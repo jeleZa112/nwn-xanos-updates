@@ -67,7 +67,7 @@ def classify(text: str) -> dict:
     hits = []
     for i, block in enumerate(blocks):
         terms = [token for token in AOE if re.search(
-            r"(?<![A-Z0-9_])" + re.escape(token) + r"(?![A-Z0-9_])", block, flags=re.I)]
+            r"(?<![A-Z0-9])" + re.escape(token) + r"(?![A-Z0-9])", block, flags=re.I)]
         if terms:
             hits.append({"index_zero_based":i, "terms":terms, "block":block})
     return {"baf_block_count":len(blocks), "entangle_block_count":sum(
