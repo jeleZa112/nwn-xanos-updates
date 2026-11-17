@@ -27,15 +27,15 @@ jobs:
           import hashlib,json,pathlib
           p=pathlib.Path(".")
           manifest=json.loads((p/"manifest_updater.json").read_text("utf-8"))
-          assert manifest["version"]=="0.3.45-BGXAOE-SCRIPT-TRACE"
-          assert len(manifest["files"])==6
+          assert manifest["version"]=="0.3.46-BGX120-PARTY-AOE"
+          assert len(manifest["files"])==8
           for f in manifest["files"]:
               data=(p/f["dest"]).read_bytes()
               assert len(data)==f["size"] and hashlib.sha256(data).hexdigest()==f["sha256"],f["dest"]
-          print("BGXAI AOE 117+TESTSAVE 118 SOURCE HASHES 6/6 PASS")
+          print("BGXAI AOE 117+TESTSAVE 118 SOURCE HASHES 8/8 PASS")
           '@ | python -
           if($LASTEXITCODE -ne 0){throw 'BGXAI_AOE_SHA_STOP'}
-          python -m py_compile BGXAI_AOE_AUDIT.py test_aoe_audit.py BGXAI_TEST6_SAFE_COPY.py test_safe_copy.py BGX119_TRACE.py test_trace119.py
+          python -m py_compile BGXAI_AOE_AUDIT.py test_aoe_audit.py BGXAI_TEST6_SAFE_COPY.py test_safe_copy.py BGX119_TRACE.py test_trace119.py BGX120_ENTANGLE_GUARD.py test_guard120.py
           if($LASTEXITCODE -ne 0){throw 'BGXAI_AOE_PYTHON_PARSE_STOP'}
-          python -m unittest -v test_aoe_audit test_safe_copy test_trace119
+          python -m unittest -v test_aoe_audit test_safe_copy test_trace119 test_guard120
           if($LASTEXITCODE -ne 0){throw 'BGXAI_AOE_MOCK_STOP'}
