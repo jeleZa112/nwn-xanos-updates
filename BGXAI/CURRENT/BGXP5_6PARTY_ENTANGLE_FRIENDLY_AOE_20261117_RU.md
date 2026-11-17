@@ -31,3 +31,20 @@
 - Никаких новых установок, WeiDU, BCS, Lua, настроек EPS или сохранений.
 
 **Единственное действие пользователя:** запустить прежний `BGXAI_UPDATE.cmd`, выбрать **117**, прислать полученный ZIP; не использовать отдельный `RUN_AOE_AUDIT.cmd`. Реальная декомпиляция на Windows пользователя пока **не подтверждена**, допускается безопасный STOP (без повторных установок). Лечение BGXP5 по прежнему стабильно.
+
+## После реального ZIP аудита 117 — диагностирован дополнительный PRIEST1 (17.11.2026)
+
+Пользователь прислал `BGXAI_AOE_SEND_TO_CHATGPT_20261117T141514369696Z.zip` (оригинальный архив SHA256 `fd76396d6681300ca6b2c098c58054dfa3ecd296df7828c5256ad2b0505f72b9`). Реальный отчёт: `BGXAI_AOE_READONLY_PASS`, 1170 блоков, 406 слов-срабатываний AOE, **0 ENTANGLE**. Полный BAF (1.53 MB) проверен: **нет** `CLERIC_ENTANGLE`, `SPPR105`, `SPPR101`, следовательно **BDDEFAI.BCS не содержит явного кастования Entangle**. 406 keyword hits включают проверки и отрицательные условия, не являются 406 кастами.
+
+Сравнение с исходным **пользовательским тестовым** `BGXAI_TEST_6_EXPERIMENTAL.zip` показало для Джахейры в `GAMEV2.0\BALDUR.gam`: override script `JAHEIRA_` (CRE +0x248), class `BDDEFAI` (+0x250), **race `PRIEST1` (+0x258)**, general `WTASIGHT` (+0x260), default `DPLAYER` (+0x268). Для всех шести class `BDDEFAI`. Сам старый скрипт `PRIEST1.BCS` известен по публичному описанию BG1 как Entangle / Command / Hold Person, но его содержимое именно из текущей модовой EET ещё не извлечено. **Причина пока гипотеза**, не окончательная атрибуция.
+
+## Готовый безопасный A/B тест через всё тот же один CMD
+
+В pinned `BGXAI/BGXAI_SYNC.ps1` добавлен пункт **118**:
+`118 - Copy BGXAI_TEST_6 without Jaheira PRIEST1 (typed approval; no override changes)`
+
+Создаёт **только новый** игровой тестовый слот `000000901-BGXAI_TEST_6_NO_PRIEST1` из существующего `000000900-BGXAI_TEST_6`, при закрытой игре/InfinityLoader/WeiDU и точном вводе `CREATE_BGXAI_TEST6_NO_PRIEST1`. Проверяет live SHA BCS/Lua и last WeiDU BGXP5, шесть известных NPC, Jaheira override `JAHEIRA_`, race `PRIEST1` и class `BDDEFAI`. Меняет только 8 байт в новом `BALDUR.gam`: `PRIEST1\0` → `None\0\0\0\0`. Запрещает перезаписывать, сохраняя исходное тестовое и основное прохождения, все остальные CRE/скрипты/HP/предметы/магия/area SAV и всю игру байт-в-байт.
+
+Исходники `BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/` с manifest version `0.3.44-BGXAOE-SAFE-SAVECOPY`; Windows **13/13 unit/mock tests + 5/5 exact source SHA** https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/44103669486 PASS. **Единый CMD (1–118) + AST Windows PowerShell 5.1 + 63/63 SHA** https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/44103856011 PASS. Sync `79725` байт SHA256 `b5c8f6af7d2168f51556d955ae2238a0ad1226906deef4311319185b0b319511`, pin immutable commit `711840d55df51c86da9b9464aa2bc22b882cfa1e`.
+
+**Следующее действие пользователя:** только старый `BGXAI_UPDATE.cmd`, пункт 118, подтверждение, затем загрузить новый A/B test-save и повторить бой. Если Entangle исчез — локализован нежелательный дополнительный скрипт; если остаётся — искать далее в JAHEIRA_/WTASIGHT/DPLAYER. **Это не доказанная универсальная AOE-защита**. Не менять BGXP5, живые BCS и другие файлы игры.
