@@ -1,8 +1,8 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "4.9.2",
+  "version": "4.9.3",
   "path": "BG_VOICE_CORE.py",
-  "commit": "1fbd8fb997e23b1425ca2aee539ac5f5b68ba0ea",
-  "sha256": "5a160606a2d587929d434da2af75718a295e6842ac7ce6b4c37beb51b8da890f",
-  "notes": "Offline core: find existing EN *_EN.wav and Python model environments; preserve patched engine across Python subprocess switch; no WAV/game writes; cache in existing SQLite."
+  "commit": "635c4aaf4d03765a22b019ff4a86ea0b681fb48a",
+  "sha256": "fc9b82af2f5fee2406846ec626dfe6564baf4b6a895e173e0473fcc661619137",
+  "notes": "Read-only voice matching core cached in existing SQLite; English _EN.wav search supports embedded 4.7.1 and 4.8; PowerShell verified fallback for future GitHub updates when Python HTTP fetch returns 404."
 }
