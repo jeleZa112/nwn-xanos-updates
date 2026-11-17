@@ -6,14 +6,14 @@
     {
       "source": "BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/BGXAI_AOE_AUDIT.py",
       "dest": "BGXAI_AOE_AUDIT.py",
-      "size": 6438,
-      "sha256": "5c137f33bbe445ee12801a08aba223dde733ea26e53d3e61ac9b299de8ba3494"
+      "size": 6459,
+      "sha256": "cb0d2338d87fd708f6df165a41b059d7b0c44f5446638aaf83113dc15f478334"
     },
     {
       "source": "BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/test_aoe_audit.py",
       "dest": "test_aoe_audit.py",
-      "size": 4275,
-      "sha256": "8ff45aa73af4da8095267532779b12d3c557b2a91865a8ebb397bf386a7f7654"
+      "size": 4254,
+      "sha256": "8a6e6e8858a62f183b033596694d5fde5c3a66ad48abb678f4655324f016b419"
     },
     {
       "source": "BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/README_RU.md",
