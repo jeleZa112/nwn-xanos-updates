@@ -1,6 +1,6 @@
 # BGXAI — один BGXAI_UPDATE.cmd, массовый контроль Джахейры и безопасный тест
 
-Версия `0.3.44-BGXAOE-SAFE-SAVECOPY` (17.11.2026). **Запускается только прежний `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`.** Отдельные CMD и ZIP больше не нужны.
+Версия `0.3.45-BGXAOE-SCRIPT-TRACE` (17.11.2026). **Запускается только прежний `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`.** Отдельные CMD и ZIP больше не нужны.
 
 ## 117 — аудит AOE (только чтение)
 
