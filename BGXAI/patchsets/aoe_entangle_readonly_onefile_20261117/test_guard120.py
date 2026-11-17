@@ -75,12 +75,28 @@ class SafeGuard(unittest.TestCase):
                 G.modify_baf(s)
 
     def test_original_binary_bcs_roundtrip_blocks(self):
-        # Mock the integer-coded BCS envelope, preserve 5 blocks and mutate only index 2.
-        orig=b"SC\n"+b"".join(b"CR\n"+bytes([65+i])+b"\n" for i in range(5))+b"CR\nSC\n"
-        diff=b"SC\n"+b"".join(b"CR\n"+bytes([65+i])+ (b"_G\n" if i==2 else b"\n") for i in range(5))+b"CR\nSC\n"
+        # Real WeiDU encoding contains CR-CR between blocks, not one CR.
+        def sample(guard=False):
+            out=b"SC\n"
+            for i in range(5):
+                out+=b"CR\nCO\nTR\n"+bytes([65+i])+b" 1 0\nTR\nCO\nRS\nRE\n"
+                if i==2 and guard:
+                    out+=b"100AC\n31OB\n0 0 0 0\nAC\nRE\nRS\nCR\n"
+                else:
+                    out+=b"100AC\n31OB\n0 0 0\nAC\nRE\nRS\nCR\n"
+            return out+b"SC\n"
+        orig=sample()
+        diff=sample(True)
         a=G.blocks(orig); b=G.blocks(diff)
         self.assertEqual(len(a),5)
         self.assertEqual([i for i in range(5) if a[i]!=b[i]],[2])
+        self.assertEqual(b"SC\n"+b"".join(a),orig)
+        self.assertEqual([x.count(b"\nRS\n") for x in a],[2]*5)
+
+    def test_reject_bad_bcs_count_even_with_multiple_CR_end_tokens(self):
+        b=b"SC\n"+(b"CR\nCO\nTR\nA\nTR\nCO\nRS\nRE\n100AC\nX\nAC\nRE\nRS\nCR\n"*4)+b"SC\n"
+        with self.assertRaisesRegex(G.Stop,"NOT_5_BLOCKS"):
+            G.blocks(b)
 
     def test_no_unsafe_game_path(self):
         with self.assertRaises(G.Stop):
