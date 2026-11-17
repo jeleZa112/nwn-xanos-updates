@@ -1,4 +1,4 @@
-# BG Voice RU 4.9.6: integrity-pinned local runtime with improved source discovery.
+# BG Voice RU 4.9.7: integrity-pinned local runtime with improved source discovery.
 # The launcher, all original audio, existing decisions and voice models are immutable.
 from __future__ import annotations
 from pathlib import Path
@@ -11,7 +11,7 @@ import subprocess
 import sys
 import zipfile
 
-VERSION = '4.9.6-offline'
+VERSION = '4.9.7-offline'
 
 
 def _en_proof(path: Path) -> bool:
@@ -369,10 +369,63 @@ def _init_bgvoice_asr_496():
     encoded = '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'
     source = zlib.decompress(base64.b64decode(encoded))
     if hashlib.sha256(source).hexdigest() != 'be98a22eb1942cbffc6de7abf6086ba3fdd7e4701f5bea1b87a7e544aaf556a4':
-        raise RuntimeError('ASR 4.9.6 source SHA256 mismatch')
-    exec(compile(source.decode('utf-8'),'<BG_VOICE_ASR_496>','exec'), globals())
+        raise RuntimeError('ASR 4.9.7 source SHA256 mismatch')
+    source_code = source.decode('utf-8')
+    if source_code.count('4.9.6') != 3:
+        raise RuntimeError('ASR pinned-source version patch failed')
+    source_code = source_code.replace('4.9.6', '4.9.7')
+    exec(compile(source_code,'<BG_VOICE_ASR_497>','exec'), globals())
 
 _init_bgvoice_asr_496()
+
+
+def _asr_cuda_bootstrap():
+    # Process-local DLL discovery; no installs, copies, or permanent PATH edits.
+    if os.name != 'nt':
+        return
+    root = Path(os.environ.get('BG_VOICE_RU_ROOT',
+                               r'C:\BG_VOICE_RU_MASTER\08_VOXCPM2_ALL_CHARACTERS'))
+    bases = [
+        Path(sys.prefix) / 'Lib' / 'site-packages',
+        root / 'BG_VOICE_RU_AUTO_ASR_V1' / '.venv_asr' / 'Lib' / 'site-packages',
+        root / 'BG_VOICE_RU_AUTO_ASR_V1' / 'BG_VOICE_RU_AUTO_ASR_V1' / '.venv_asr' / 'Lib' / 'site-packages',
+        Path.home() / 'Downloads' / 'BG_VOICE_RU_AUTO_ASR_V1' / '.venv_asr' / 'Lib' / 'site-packages',
+    ]
+    override = os.environ.get('BG_VOICE_ASR_SITE_PACKAGES', '').strip()
+    if override:
+        bases.insert(0, Path(override))
+    suffixes = (
+        Path('nvidia/cublas/bin'), Path('ctranslate2'),
+        Path('nvidia/cudnn/bin'), Path('nvidia/cuda_runtime/bin'),
+        Path('torch/lib'),
+    )
+    required = ('cublas64_12.dll', 'cublasLt64_12.dll',
+                'cudnn64_9.dll', 'cudart64_12.dll')
+    folders = []
+    found = set()
+    visited = set()
+    for base in bases:
+        for suffix in suffixes:
+            folder = base / suffix
+            key = str(folder).casefold()
+            if key in visited or not folder.is_dir():
+                continue
+            visited.add(key)
+            present = [dll for dll in required if (folder / dll).is_file()]
+            if present:
+                folders.append(folder)
+                found.update(present)
+    if len(found) != len(required):
+        print('ASR CUDA DLLS: {}/4 found; CPU fallback remains available'.format(len(found)),
+              flush=True)
+        return
+    existing = os.environ.get('PATH', '')
+    existing_parts = set(part.strip().casefold() for part in existing.split(os.pathsep))
+    new = [str(folder) for folder in folders
+           if str(folder).casefold() not in existing_parts]
+    if new:
+        os.environ['PATH'] = os.pathsep.join(new) + os.pathsep + existing
+    print('ASR CUDA DLLS: 4/4 found; process-local search paths configured', flush=True)
 
 
 def main():
@@ -384,6 +437,7 @@ def main():
         return 0
     asr_limit = _asr_options()
     if asr_limit is not None:
+        _asr_cuda_bootstrap()
         return _asr_only(launcher,asr_limit)
     content = launcher.read_text(encoding='utf-8-sig')
     body = content.split('\n#BGVOICE_PYTHON_START\n', 1)[1]
