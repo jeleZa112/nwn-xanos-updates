@@ -26,10 +26,18 @@ local function dense(t,maximum)
  end
  return count==n
 end
-local function copy(source)
- local t={}
- for k,v in pairs(source) do t[k]=v end
- return t
+local function deepCopy(source,seen,depth)
+ if type(source)~='table' then return source end
+ if depth>12 or getmetatable(source)~=nil or seen[source] then return nil end
+ seen[source]=true
+ local out={}
+ for k,v in pairs(source) do
+  local value=deepCopy(v,seen,depth+1)
+  if type(v)=='table' and value==nil then seen[source]=nil;return nil end
+  out[k]=value
+ end
+ seen[source]=nil
+ return out
 end
 local function hold(reason,extras)
  return {status='HOLD_NO_ENGINE_DISPATCH',reason=reason,heal_assignments={},
@@ -199,7 +207,8 @@ function M.plan(snapshot,events,members,config,dependencies)
  -- but lock any healer candidate from a simultaneous guard assignment.
  local forGuard={}
  for i,m in ipairs(members) do
-  local c=copy(m)
+  local c=deepCopy(m,{},0)
+  if not c then return hold('ACTOR_SNAPSHOT_NOT_SAFE_TO_CLONE') end
   if reserved[m.id] then
    c.action_state={verified=false,origin_verified=false,queue_empty=nil,
       idle=false,current_action='HEAL_RESERVED',manual_command=nil}
@@ -215,7 +224,9 @@ function M.plan(snapshot,events,members,config,dependencies)
     return hold('CROSS_MODULE_SNAPSHOT_MISMATCH')
    end
   end
-  local ok,r=pcall(dependencies.coordinator.reviewMultipleThreats,events,
+  local evidence=deepCopy(events,{},0)
+  if not evidence then return hold('THREAT_SNAPSHOT_NOT_SAFE_TO_CLONE') end
+  local ok,r=pcall(dependencies.coordinator.reviewMultipleThreats,evidence,
         forGuard,{opt_in=true,smart_guard=true},{guard=dependencies.guard})
   if not ok or type(r)~='table' or r.engine_dispatch~=false
      or r.orders_sent~=0 or r.locals_written~=0 or
@@ -224,10 +235,33 @@ function M.plan(snapshot,events,members,config,dependencies)
   end
   guardReason=r.reason
   if r.status=='ADVISORY_MULTI_THREAT_ONLY' then
-   for _,g in ipairs(r.assignments or {}) do
-    if reserved[g.guardian_id] or not byId[g.guardian_id] then
-     return hold('HEAL_GUARD_COLLISION_REJECTED')
+   local eventsByAttacker,usedGuard,usedThreat={},{},{}
+   for _,e in ipairs(events) do
+    if e.verified~=true or e.active_now~=true or
+       e.freshness_verified~=true or
+       not validId(e.attacker_id) or not validId(e.victim_id)
+       or byId[e.attacker_id] or not byId[e.victim_id] then
+      return hold('THREAT_IDENTITY_UNVERIFIED')
     end
+    if eventsByAttacker[e.attacker_id] then
+      return hold('DUPLICATE_THREAT_IDENTITY')
+    end
+    eventsByAttacker[e.attacker_id]=e
+   end
+   if not dense(r.assignments,6) then return hold('GUARD_ASSIGNMENTS_INVALID') end
+   for _,g in ipairs(r.assignments) do
+    local a=type(g)=='table' and byId[g.guardian_id] or nil
+    local e=type(g)=='table' and eventsByAttacker[g.attacker_id] or nil
+    if not a or not e or reserved[g.guardian_id]
+       or usedGuard[g.guardian_id] or usedThreat[g.attacker_id]
+       or g.victim_id~=e.victim_id or g.guardian_slot~=a.slot
+       or not free(a) or a.can_act~=true or a.in_party~=true
+       or a.alive~=true or type(a.guard_role)~='table'
+       or a.guard_role.guard_toggle~=1
+       or a.guard_role.possible_interceptor~=true then
+     return hold('UNTRUSTED_GUARD_ASSIGNMENT')
+    end
+    usedGuard[g.guardian_id]=true;usedThreat[g.attacker_id]=true
     guards[#guards+1]={
       guardian_id=g.guardian_id,guardian_slot=g.guardian_slot,
       victim_id=g.victim_id,attacker_id=g.attacker_id}
