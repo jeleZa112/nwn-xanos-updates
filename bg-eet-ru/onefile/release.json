@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 50,
-  "sha256": "f3214e4e1a4eeb3327fbad3243dbeef0e6c9fc5d4a76fca37a0ce112ae23c34f",
+  "version": 51,
+  "sha256": "49635edc7617626c0c815ae275fd76da2064edaf0dd92040b505271f2f716162",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v50: 82 source I_C_T3 anchors require 68 DLG, including 26 anchor DLGs, 37 expected speaker DLGs among captured 63, and 5 EET variable-resolved supplemental speaker DLGs (EDWINJ_, IMOEN2_, JAHEIJ, MINSCJ_, VICONJ). All 68 are audited pre/post WeiDU in disposable staging for preservation of original states, transitions, trigger texts, and action texts. Violations remain HOLD; passes still review-required because runtime visibility and full EET configuration are unverified. Single persistent SHA-verified updating CMD and ZIP; no game writes."
+  "note": "v51: separate raw 32-byte DLG transition mismatches from semantic transition conservation; dereference actual transition trigger and action text with DLG V1 flags, preserve reply/journal/next state semantics. Check all 68 staged DLGs and 300 unchanged Russian strings. Real 63-DLG input parsing, simulated index renumbering, corruption and missing resources, onefile v50->v51 selfupdate/backups tests PASS. Any true loss still HOLD; runtime visibility and installed full EET CPMVARS not verified. Game writes prohibited."
 }
