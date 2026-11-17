@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "a23948786d93fa8b832eb47ebbf8118b4a8e595e",
+  "commit": "42ea7048a46adbc2385c4c1ce0f4996e3cd5dde9",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "a77fbae9579d3c192cca3269dae25e0a1b3b2610995e3a97acf5197b65554f39",
-  "script_size": 79934,
-  "description": "BGXAI one CMD 1-119: JAHEIRA_ / WTASIGHT / DPLAYER native EET script provenance READ ONLY; BGXP5 healing untouched."
+  "script_sha256": "2dee122e9f7ddf26c885e57ff6a871322e4a37c72f23b3ac62f396354f6a9ed5",
+  "script_size": 79959,
+  "description": "BGXAI single permanent CMD, menu 1-120; SHA-pinned BGX120 conservative party-auto Entangle block guard with native EET preflight and WeiDU opt-in; BGXP5 preserved."
 }
