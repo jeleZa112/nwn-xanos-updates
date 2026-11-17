@@ -73,3 +73,19 @@
 **Для пользователя нужна одна ручная замена физически старого CMD:** распаковать новый `BGXAI_UPDATE.cmd` в прежнюю папку `C:\Games\BG_EET_FOXX_NEW` с заменой одноимённого файла. Это не добавление второго updater, не изменение живых BCS/Lua/WeiDU и не переустановка игры. Далее запуск старого имени, ожидаем `BGXAI: stale 0.3.43 branch pin detected; SHA-verified 0.3.44 recovery enabled.` и `BGXAI: verified pinned script 0c01f9f5c560 (SHA256 OK)`; только затем пункт 118 typed `CREATE_BGXAI_TEST6_NO_PRIEST1` для создания новой тестовой копии. Если первые строки иные или SHA STOP, не пробовать 118 снова, прислать полный bootstrap output.
 
 Из отдельно сохранённого оригинального тестового архива `BGXAI_TEST_6_EXPERIMENTAL.zip` повторно проверена совместимость: save slot `000000900-BGXAI_TEST_6`, `BALDUR.gam` GAMEV2.0, 6 членов, имена по слоту Tarana/Tarana/Jade/Jagan Battleforge/Khalid/Jaheira; class `BDDEFAI` у всех; Jaheira override `JAHEIRA_`, race `PRIEST1`, general `WTASIGHT`, default `DPLAYER`. Сохранение на ПК пользователя всё же может различаться, установщик 118 остановится при отличии, не перезаписывая исходное. BGXP5 не затрагивался.
+
+## Реальный запуск 118 — ПОДТВЕРЖДЁН ПОЛЬЗОВАТЕЛЕМ, PASS
+
+Пользователь прислал фактический полный вывод пункта 118, новая упаковка успешно синхронизировала SHA-проверенные 5 файлов `AOE117`. После ввода `CREATE_BGXAI_TEST6_NO_PRIEST1` скрипт завершился `BGXAI_TEST6_NO_PRIEST1_COPY_VERIFIED`, общее меню написало `BGXAI: update/status action completed`. Физическая копия нового слота:
+`C:\Users\Drevo\Documents\Baldur's Gate - Enhanced Edition Trilogy\save\000000901-BGXAI_TEST_6_NO_PRIEST1`.
+
+Контрольные суммы:
+- оригинальный `BALDUR.gam`: `7e782968bfa7b6795765ee406cf51916a6c1f5ced6e67a18ad8723c6f21eb881`
+- изменённый `BALDUR.gam`: `8cc1e8a6f0865784175ac781bee19d33350e8f2c4724b61389b58e85f96ccc00`
+- `modified_offset=103744`; 8 байт race-слота Джахейры: `PRIEST1` → `None`
+- остальные члены партии ровно шесть: Tarana, Tarana, Jade, Jagan Battleforge, Khalid, Jaheira; у всех `class_script=BDDEFAI`
+- скопировано 7 файлов с verified hashes; `original_preserved=true`, `game_bcs_lua_preserved=true`, `game_modified=false`.
+
+**Следующий необходимый этап:** пользователь загружает `BGXAI_TEST_6_NO_PRIEST1` через InfinityLoader и проводит одинаковый бой, чтобы сравнить автоматическое «Запутывание» Джахейры и лечение Жагана. Никакая игровая функциональность / новый патч не установлены; только изолированный A/B test-save. **Источник Entangle пока не подтверждён экспериментально**, т.к. in-game результат нового слота ещё не получен.
+
+Повторять пункт 118 **не нужно**, так как target slot уже существует, защищён от перезаписи. Продолжать разработку боевой координации, не меняя проверенный BGXP5.
