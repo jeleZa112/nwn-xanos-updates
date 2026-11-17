@@ -35,13 +35,13 @@ class Audit(unittest.TestCase):
         self.base=Path(self.tmp.name)
         self.game=self.base/"game"
         self.game.mkdir()
-        self.bcs=b"SC\\n"+b"x"*5000
+        self.bcs=b"SC\n"+b"x"*5000
         self.lua=b"local x = 1"+b" "*200
         self.weidu=b"MZ"+b"x"*100000
         for rel,raw in (
             ("override/BDDEFAI.BCS",self.bcs),
             ("override/M_BX43.lua",self.lua),
-            ("WeiDU.log",b"~BGXP5\\\\SETUP-BGXP5.TP2~ #0 #0 // ok\\n"),
+            ("WeiDU.log",b"~BGXP5\SETUP-BGXP5.TP2~ #0 #0 // ok\n"),
             ("setup-enhanced-powergaming-scripts.exe",self.weidu),
             ("lang/ru_RU/dialog.tlk",b"TLK"+b"x"*200)
         ):
@@ -70,13 +70,13 @@ class Audit(unittest.TestCase):
             A.checked(self.game)
 
     def test_invalid_weidu_order_aborts(self):
-        (self.game/"WeiDU.log").write_text("~BGXP6\\\\SETUP-BGXP6.TP2~ #0 #0 // other\\n")
+        (self.game/"WeiDU.log").write_text("~BGXP6\SETUP-BGXP6.TP2~ #0 #0 // other\n")
         with self.assertRaisesRegex(ValueError,"BGXP5_NOT_LAST_WEIDU"):
             A.checked(self.game)
 
     def test_full_report_writes_only_outside_game(self):
         before={str(f.relative_to(self.game)): A.digest(f.read_bytes()) for f in self.game.rglob("*") if f.is_file()}
-        extra= "IF\\n  True()\\nTHEN\\n  RESPONSE #100\\n    NoAction()\\nEND\\n"
+        extra= "IF\n  True()\nTHEN\n  RESPONSE #100\n    NoAction()\nEND\n"
         text=SAMPLE+extra*(A.COUNT-3)
         with mock.patch.object(A,"decompile",return_value=(text,"WEIDU_LOG")):
             report=A.audit(self.game,self.base/"reports")
@@ -92,7 +92,7 @@ class Audit(unittest.TestCase):
         self.assertEqual(before,{str(f.relative_to(self.game)):A.digest(f.read_bytes()) for f in self.game.rglob("*") if f.is_file()})
 
     def test_reject_report_inside_game(self):
-        with mock.patch.object(A,"decompile",return_value=(SAMPLE+"IF\\n True()\\nTHEN\\n RESPONSE #100\\n NoAction()\\nEND\\n"*(A.COUNT-3),"LOG")):
+        with mock.patch.object(A,"decompile",return_value=(SAMPLE+"IF\n True()\nTHEN\n RESPONSE #100\n NoAction()\nEND\n"*(A.COUNT-3),"LOG")):
             with self.assertRaisesRegex(ValueError,"OUTPUT_MUST_BE_OUTSIDE_GAME"):
                 A.audit(self.game,self.game/"override"/"REPORTS")
 
