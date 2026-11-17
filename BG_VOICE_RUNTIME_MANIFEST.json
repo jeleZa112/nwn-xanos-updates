@@ -1,0 +1,8 @@
+{
+  "project": "BG_VOICE_RU",
+  "version": "4.9.0",
+  "path": "BG_VOICE_CORE.py",
+  "commit": "30dbe33587222ecaaaec6f18c65e65b9e7a50443",
+  "sha256": "70269573a4e39973430ec98011f4af45d3b3d0882e0c4fc619d28b54c78d3d91",
+  "notes": "Verified local engine cached inside existing BG_VOICE_RU_PROGRESS.sqlite3; one BG_VOICE_UPDATE.cmd launcher; offline after download; no WAV changes"
+}
