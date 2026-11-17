@@ -1,0 +1,54 @@
+name: BGXAI single CMD stale immutable pin recovery verification
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI_UPDATE.cmd'
+      - 'BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/validate_onefile_channel.py'
+      - '.github/workflows/bgxai-onefile-stale-pin-recovery.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  powershell-51-recovery-offline:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse embedded PowerShell 5.1 and simulate pinned recovery without network
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $raw=[IO.File]::ReadAllText('BGXAI_UPDATE.cmd')
+          $tag='# BEGIN_BGXAI_RAW_BOOTSTRAP_PS'
+          $at=$raw.LastIndexOf($tag)
+          if($at -lt 0){throw 'CMD_EMBEDDED_BOOTSTRAP_MISSING'}
+          $script=$raw.Substring($at)
+          $tokens=$null
+          $parseErrors=$null
+          [Management.Automation.Language.Parser]::ParseInput($script,[ref]$tokens,[ref]$parseErrors)|Out-Null
+          if($parseErrors.Count -ne 0){throw ('CMD_POWERSHELL_51_SYNTAX_STOP: '+($parseErrors | Out-String))}
+          $begin='        if($commitId -ceq ''711840d55df51c86da9b9464aa2bc22b882cfa1e'') {'
+          $end='        $scriptSources=@('
+          $start=$script.IndexOf($begin,[StringComparison]::Ordinal)
+          $stop=$script.IndexOf($end,$start,[StringComparison]::Ordinal)
+          if($start -lt 0 -or $stop -le $start){throw 'PINNED_RECOVERY_BLOCK_MISSING'}
+          $recovery=[ScriptBlock]::Create($script.Substring($start,$stop-$start))
+          $commitId='711840d55df51c86da9b9464aa2bc22b882cfa1e'
+          $expectedHash='b5c8f6af7d2168f51556d955ae2238a0ad1226906deef4311319185b0b319511'
+          $expectedSize=79725
+          & $recovery
+          if($commitId -cne '0c01f9f5c56087b1ff39471c3a06a1409cfe2a14' -or
+             $expectedHash -cne '6897f43009d32008fe499db871fb17c9c09ad494a7e69e142474a646b8c072bd' -or
+             $expectedSize -ne 79730){throw 'STALE_RECOVERY_WRONG_COMMIT_OR_SHA'}
+          $commitId='0c01f9f5c56087b1ff39471c3a06a1409cfe2a14'
+          $expectedHash='6897f43009d32008fe499db871fb17c9c09ad494a7e69e142474a646b8c072bd'
+          $expectedSize=79730
+          & $recovery
+          if($commitId -cne '0c01f9f5c56087b1ff39471c3a06a1409cfe2a14' -or $expectedSize -ne 79730){throw 'NEW_PIN_UNEXPECTEDLY_OVERRIDDEN'}
+          $commitId='711840d55df51c86da9b9464aa2bc22b882cfa1e'
+          $expectedHash='0000000000000000000000000000000000000000000000000000000000000000'
+          $expectedSize=79725
+          $blocked=$false
+          try { & $recovery } catch { $blocked=$true }
+          if(!$blocked){throw 'MALFORMED_OLD_PIN_NOT_REJECTED'}
+          Write-Host 'BGXAI_ONEFILE_PIN_RECOVERY_PASS: stale exact SHA rescued; good pins unchanged; forged old hash rejected.'
