@@ -22,6 +22,7 @@ RELEASES = (
     ('BGXAI/patchsets/priest_combat_eps_first_20261116/', '0.3.39-BGXP2-COMBAT-PRIEST', 7),
     ('BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/', '0.3.40-BGXP3-AUTO-BUFFER', 9),
     ('BGXAI/patchsets/priest_auto_priority_guard_source_20261117/', '0.3.41-BGXP5-AUTO-PRIORITY-GUARD', 11),
+    ('BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/', '0.3.43-BGXAOE-READONLY', 3),
 )
 
 def git_bytes(rev: str, path: str) -> bytes:
@@ -53,14 +54,17 @@ def main():
     assert git_bytes('HEAD', CMD) == git_bytes(OLD_COMMIT, CMD), 'one CMD was replaced'
     oldmenu, oldcase = menus(old)
     menu, case = menus(live)
-    assert len(oldmenu) == 97 and len(menu) == 117, 'menu length mismatch'
-    assert len(oldcase) == 96 and len(case) == 116, 'dispatch length mismatch'
+    assert len(oldmenu) == 97 and len(menu) == 118, 'menu length mismatch'
+    assert len(oldcase) == 96 and len(case) == 117, 'dispatch length mismatch'
     assert menu[:96] == oldmenu[:96] and menu[-1] == oldmenu[-1], 'old menu 1..96 changed'
     assert case[:96] == oldcase, 'old dispatch 1..96 changed'
     code = live.decode('utf-8-sig')
     for n in range(97,117):
         assert any(re.match(rf"Write-Host '\s*{n} - ", x) for x in menu), f'menu {n} missing'
         assert case[n-1].startswith(f"'{n}' {{BGXOneFileManaged"), f'dispatch {n} wrong'
+    assert case[116].startswith("'117' {BGXAOEReadOnly;break}"), '117 must run AOE READ ONLY'
+    assert "function BGXAOEReadOnly" in code and "SyncRelease $releaseAOE" in code
+    assert "'--game' $GameRoot" in code and "AOE117 READ-ONLY STOP" in code
     for key in ('INSTALL_BGXPRIEST_MODES','ROLLBACK_BGXPRIEST_MODES',
                 'INSTALL_BGXAI_TEAM_GUARD','ROLLBACK_BGXAI_TEAM_GUARD',
                 'INSTALL_BGXP2_COMBAT_PRIEST','ROLLBACK_BGXP2_COMBAT_PRIEST',
@@ -90,7 +94,7 @@ def main():
             original = git_bytes(pin['commit'], f['source'])
             assert len(original) == f['size'] and sha(original) == f['sha256'], f'bad source: {name}'
             assert f"'{name}'" in code, f'updater source absent: {name}'
-    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-116; 58/58 source hashes; pin matched; game untouched')
+    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-117; 61/61 source hashes; pin matched; game untouched')
 
 if __name__ == '__main__':
     main()
