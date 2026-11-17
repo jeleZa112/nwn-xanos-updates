@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 36,
-  "sha256": "82d3ccd36195230852e61e5e0a9b91624cddbcea17560ceaef590c3915d41b34",
-  "mode": "READ_ONLY_COMPILER_PREFLIGHT",
+  "version": 37,
+  "sha256": "d8ea90670be8aee51dacabe8dfca70239b141f0cdbb2dace6acabad0f9dc7c33",
+  "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v36 one-file BG_EET_RU updater: embedded 300 RU strings and 81 original dialogue blocks. Verified 62 live DLGs and translation SHA. Runs a copied WeiDU binary ONLY on a disposable, isolated copy of game resources; verifies 300 exact Russian strings in each staged TLK and changed target DLGs. Original game is never written. Same single ZIP report includes 10_BANTER_COMPILER_PREFLIGHT.json; no installation prompt."
+  "note": "v37: fix v36 SAFE_STOP IWD_PARTY_BANTER_INTERJECT_D_MISSING by pinned direct fetch of author original at commit 53532c25; verified Git blob before isolated WeiDU. Also check 300 translated texts across full TLKs, not only newly appended entries. Existing one CMD and one ZIP, no installation mode; game unchanged."
 }
