@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "4f4b6ad2d559a78dda84b1e4ac6deb317666ac91",
+  "commit": "2a0aa8179e0c602e16bc3895b46a0ea5b880a100",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "493b81d56921b8a0a64fa93b32b2411094621b7f871f5cb675cf8afcf47a3ebc",
-  "script_size": 79860,
-  "description": "BGXAI one permanent CMD 1-122; 122 read-only actual EET PROJECTL.IDS, PRO area/flags and opcode177 external EFF audit, SHA-pinned source; live BGXP5 heal + BGX120 unchanged"
+  "script_sha256": "c72e3492b611a53c9e97108c5f8cd48565b70cec0e84f4cc3d6fc1eece770aa6",
+  "script_size": 79854,
+  "description": "BGXAI one permanent CMD 1-122, hotfix 0.3.50 allow safe hyphens in PROJECTL.IDS (real mod 528 dw-ltblt), read-only local PRO/EFF audit; BGXP5 and BGX120 unchanged."
 }
