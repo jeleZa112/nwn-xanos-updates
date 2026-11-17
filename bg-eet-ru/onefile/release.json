@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 34,
-  "sha256": "2b9963e50ab7af1fa586fefaae214403dd1ccdbe4d5418d5837d5112e7181e3a",
+  "version": 35,
+  "sha256": "115f31a95f8914db7591c1bcc40b2e409ac431cd593c1abda72df36bee0dea71",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": true,
-  "note": "v34 optional 15 edited dialogue StrRefs; no automatic game writes. Requires full source TLK SHA match, current DLG link, per-string hash, backup+rollback, terminal phrase INSTALL_BG_EET_RU_15. Existing one-folder update and report retained."
+  "note": "v35 one-file updater: read-only IWD party-banter DLG collector, captures 25 target dialogues plus speaker DLG from current game into the same SEND_TO_CHATGPT_BG_EET_RU.zip; verified SHA + embedded code, cache and error reporting. No gameplay changes by default; legacy v34 edit prompt is opt-in only."
 }
