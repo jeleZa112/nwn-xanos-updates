@@ -1,8 +1,8 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "4.9.4",
+  "version": "4.9.5",
   "path": "BG_VOICE_CORE.py",
-  "commit": "defd0efa875cd68e924cee97c800a3bbcbdc0fbe",
-  "sha256": "d892be5fc5137f2c5429e15914b7470b16f60956be53cd0f0dd2222cf5203ccd",
-  "notes": "Offline ECAPA loading without admin: direct existing model snapshot, force SpeechBrain LocalStrategy.COPY instead of Windows symlinks. One existing CMD; no changes to WAV, user choices or game; engine cached in current SQLite."
+  "commit": "d32b25443b8e9ae8f9e2af5c1449385557b5f346",
+  "sha256": "b5b92cbe7ce1aae823133754a71fc3bf877cd18ecfebe8bac913c2635d54ad79",
+  "notes": "Critical provenance fix: only exact same-sound-id English WAV is used for each Russian line; no speaker seed substitution. Missing exact English yields HOLD; cached Russian embeddings and manual decisions preserved. Existing launcher and SQLite are unchanged."
 }
