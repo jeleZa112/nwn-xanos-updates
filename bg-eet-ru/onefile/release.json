@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 46,
-  "sha256": "4546b24573cd09462979c0cc385d130a66f530fae952f9246cc4a90d5c402530",
+  "version": 47,
+  "sha256": "11cc33afde0abde6c06aa77f92d958ed853127ee51947ca7c66e0640d66ef723",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v46: WeiDU 251 src/load.ml needs lang/en_US/dialog.tlk to detect EE layout; create a temporary verified TLK marker only in disposable compilation staging while continuing to use lang/ru_ru for actual Russian translation. Reject root-only modifications, FATAL and non-300 coverage as failure. Automatic SHA-verified one-file update and one ZIP. Game unchanged; no live WeiDU success claimed."
+  "note": "v47: fixes v46 missing BIFF resources without copying the entire game. Selected installed IDS resources and referenced auxiliary DLG (e.g. VICONJ) are read-only extracted from KEY/BIFF or override into disposable TEMP/override; no symlinks/hardlinks, size limits and SHA staging. Keeps all 300 translation strings and v46 EE language fix. Local selftests passed; live WeiDU compilation not yet confirmed."
 }
