@@ -1,8 +1,8 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "4.9.7",
+  "version": "4.9.8",
   "path": "BG_VOICE_CORE.py",
-  "commit": "52b270fc5012083b8c1a0306ab8b16dde6b321a8",
-  "sha256": "a1ceb6fcfb2b51fbc1ea9d4ab0b42139f0c2e654e5a61fb2785560920d310a72",
-  "notes": "ASR runtime auto-detects existing CUDA 12 cuBLAS and cuDNN 9 DLL directories from local venvs and adjusts process-local PATH, inherited by the ASR child. Fixes child cached runtime version pin; retains model, WAV, SQLite and prior voice/ASR decisions. --asr-only --limit 25 for verification, --asr-only for resumable full queue."
+  "commit": "e1a488ae0a980b411b85fb9b39905f8d91b1942e",
+  "sha256": "e48338c1cadd97794d4f54cb89c408e15e6b2eeece748d8305425e1b5b3ee305",
+  "notes": "Offline --qa-only: reconcile 13176 ASR variants from current report with historical metadata ASR (up to 1236), preserve all 50 manual decisions and Imoen, write unified 7206-pair QA/priority queues and one up-to-date ZIP + a separate QA SQLite table. No AI inference, WAV rewrites or game changes. Old reports retained with HISTORY prefixes."
 }
