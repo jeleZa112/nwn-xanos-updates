@@ -43,13 +43,13 @@
       "source": "BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/BGX120_ENTANGLE_GUARD.py",
       "dest": "BGX120_ENTANGLE_GUARD.py",
       "size": 14037,
-      "sha256": "d7aa0d06c60a407d71c498e6d300d278f5527d2a2405cecb2540cd75f492f8e1"
+      "sha256": "855dfdd4b0bd7dd3f3d8cb50f4fc81987758f14ee4659d76f3e6cec5a2806033"
     },
     {
       "source": "BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/test_guard120.py",
       "dest": "test_guard120.py",
-      "size": 3989,
-      "sha256": "9093e6faef43cc8af5ac8cacf199a50aec64f5007a86872c05368b7e8ec5389a"
+      "size": 4056,
+      "sha256": "f1d4562ebb87d2fbc2fb01e7f50fc1ceb887ffa42bb2c2e4318ce2f3b9715b62"
     }
   ]
 }
