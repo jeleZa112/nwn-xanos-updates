@@ -13,3 +13,21 @@
 В рамках текущего обращения подготовлен **отдельный read-only диагностический архив** `BGXAI_AOE_AUDIT_READONLY.zip`: `RUN_AOE_AUDIT.cmd` → `BGXAI_AOE_AUDIT.py`, сверяет точные SHA и last WeiDU BGXP5; копирует текущие BCS и WeiDU во временную системную папку, декомпилирует и упаковывает полный BAF и сводку AOE вне каталога игры в `Documents\BGXAI_LIVE_REPORTS\BGXAI_AOE_SEND_TO_CHATGPT_....zip`. Синтетический тест текстового извлечения 2 блоков, 1 Entangle — PASS, **живой WeiDU decompile ещё не выполнялся**, возможен STOP без изменения файлов.
 
 До анализа реального BAF никакого патча, отключения EPS и изменения сохранений. Если будет разработан исправляющий модуль, только source-only → native EET test → отдельная typed-approval install с резервной копией, старое лечение сохранять строго побайтно.
+
+
+## 17.11.2026 — ВОССТАНОВЛЕНО СТРОГОЕ ПРАВИЛО «ОДИН ФАЙЛ» (menu 117)
+
+Пользователь напомнил о правиле: использовать **только старый `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`**. Ранее предложенный отдельный `RUN_AOE_AUDIT.cmd` был ошибкой интерфейса; **НЕ запускать старый отдельный ZIP**. В pinned `BGXAI/BGXAI_SYNC.ps1` добавлена новая только-читающая команда:
+
+`117 - AOE Entangle audit (READ ONLY; BGXP5 no changes)`
+
+Все пункты 1–116 и прежний CMD оставлены. Внутри пункта 117: `SyncRelease` загружает 3 SHA256-проверенных файла из `BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/` в папку разработчика `BGXAI_DEV` (не в override), после повторной SHA-проверки запускается Python декомпиляция **копии** нынешнего `BDDEFAI.BCS` в TEMP и создание ZIP в `Documents\BGXAI_LIVE_REPORTS\BGXAI_AOE_SEND_TO_CHATGPT_...zip`.
+
+**Подтверждённые проверки**:
+- Windows 6/6 mock tests read-only/Entangle/source hashes 3/3: https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/44100072108 — SUCCESS
+- Windows PowerShell 5.1 AST, старое меню, новый пункт 117, pinned commit и 61/61 SHA-источников: https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/44100202154 — SUCCESS
+- Новый `BGXAI_SYNC.ps1`: 79070 байт, SHA256 `0026c5ddb0d60069920083d09a8df47b51ea996ff62d72c30bc8d9fca0d7236e`.
+- `BOOTSTRAP_PIN.json` закрепляет commit `2f12121f32d4ace70b8d72723d22c79447e1b62f`; PIN обновлён commit `379dfd03a6f7989c97252b62452dd9c46f55dd23`.
+- Никаких новых установок, WeiDU, BCS, Lua, настроек EPS или сохранений.
+
+**Единственное действие пользователя:** запустить прежний `BGXAI_UPDATE.cmd`, выбрать **117**, прислать полученный ZIP; не использовать отдельный `RUN_AOE_AUDIT.cmd`. Реальная декомпиляция на Windows пользователя пока **не подтверждена**, допускается безопасный STOP (без повторных установок). Лечение BGXP5 по прежнему стабильно.
