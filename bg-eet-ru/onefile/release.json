@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 45,
-  "sha256": "bfd893d108eff748eb54b4570717522819b44adf38badd5d236bacaaf591d27f",
+  "version": 46,
+  "sha256": "4546b24573cd09462979c0cc385d130a66f530fae952f9246cc4a90d5c402530",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v45: correct WeiDU 251 game-language selection for isolated testing. The staged language folder, weidu.conf and --use-lang are all lowercase ru_ru; the original game lang/ru_RU is only read and hashed. Same verified 300 RU translations. The mock integration test passed, live WeiDU compilation not yet confirmed. Same single self-updating CMD and one ZIP; no live game writes."
+  "note": "v46: WeiDU 251 src/load.ml needs lang/en_US/dialog.tlk to detect EE layout; create a temporary verified TLK marker only in disposable compilation staging while continuing to use lang/ru_ru for actual Russian translation. Reject root-only modifications, FATAL and non-300 coverage as failure. Automatic SHA-verified one-file update and one ZIP. Game unchanged; no live WeiDU success claimed."
 }
