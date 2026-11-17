@@ -56,12 +56,16 @@ def main():
     old_cmd = git_bytes(OLD_COMMIT, CMD)
     new_cmd = git_bytes('HEAD', CMD)
     marker = bytes([32]*8) + b"$scriptSources=@(" + bytes([13,10])
-    assert old_cmd.count(marker) == 1, 'bootstrap marker changed'
-    recovery = "        # Recovery for the one known immutable AOE117/118 mismatch (0.3.43 vs 0.3.44).\r\n        # The remote branch pin may be stale behind a proxy even with a nonce.\r\n        # Only a byte-exact known stale pin is eligible. Newer/unknown pins are untouched.\r\n        if($commitId -ceq '711840d55df51c86da9b9464aa2bc22b882cfa1e') {\r\n            if($expectedHash -cne 'b5c8f6af7d2168f51556d955ae2238a0ad1226906deef4311319185b0b319511' -or $expectedSize -ne 79725) {\r\n                throw 'Stale channel descriptor has unexpected SHA/size; recovery blocked'\r\n            }\r\n            $commitId='0c01f9f5c56087b1ff39471c3a06a1409cfe2a14'\r\n            $expectedHash='6897f43009d32008fe499db871fb17c9c09ad494a7e69e142474a646b8c072bd'\r\n            $expectedSize=79730\r\n            Write-Host 'BGXAI: stale 0.3.43 branch pin detected; SHA-verified 0.3.44 recovery enabled.'\r\n        }\r\n".encode('utf-8')
-    assert new_cmd == old_cmd.replace(marker, recovery + marker), 'one-file CMD drift outside the approved stale-pin recovery'
-    assert b'0c01f9f5c56087b1ff39471c3a06a1409cfe2a14' in recovery
-    assert b'6897f43009d32008fe499db871fb17c9c09ad494a7e69e142474a646b8c072bd' in recovery
-    assert b'711840d55df51c86da9b9464aa2bc22b882cfa1e' in recovery
+    assert old_cmd.count(marker) == 1 and new_cmd.count(marker) == 1, 'CMD bootstrap marker drift'
+    old_prefix, old_suffix = old_cmd.split(marker)
+    assert new_cmd.startswith(old_prefix) and new_cmd.endswith(marker + old_suffix), 'one CMD changed outside pin recovery block'
+    recovery = new_cmd[len(old_prefix):-len(marker + old_suffix)]
+    assert sha(new_cmd) == '6a94650e2f9e5eda242f4d8a0dd5d84545fbee63906cc3a3e19b2b068bd3b585', 'one CMD full SHA drift'
+    for token in (b'711840d55df51c86da9b9464aa2bc22b882cfa1e',
+                  b'0c01f9f5c56087b1ff39471c3a06a1409cfe2a14',
+                  b'96dcda9cf91d921e9a37d67f7c382b6ba2abe394',
+                  b'a77fbae9579d3c192cca3269dae25e0a1b3b2610995e3a97acf5197b65554f39'):
+        assert token in recovery, 'one CMD recovery expected SHA or commit absent'
     oldmenu, oldcase = menus(old)
     menu, case = menus(live)
     assert len(oldmenu) == 97 and len(menu) == 120, 'menu length mismatch'
