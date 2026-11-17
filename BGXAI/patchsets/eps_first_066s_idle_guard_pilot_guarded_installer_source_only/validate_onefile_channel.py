@@ -22,7 +22,7 @@ RELEASES = (
     ('BGXAI/patchsets/priest_combat_eps_first_20261116/', '0.3.39-BGXP2-COMBAT-PRIEST', 7),
     ('BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/', '0.3.40-BGXP3-AUTO-BUFFER', 9),
     ('BGXAI/patchsets/priest_auto_priority_guard_source_20261117/', '0.3.41-BGXP5-AUTO-PRIORITY-GUARD', 11),
-    ('BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/', '0.3.45-BGXAOE-SCRIPT-TRACE', 6),
+    ('BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/', '0.3.46-BGX120-PARTY-AOE', 8),
 )
 
 def git_bytes(rev: str, path: str) -> bytes:
@@ -68,8 +68,8 @@ def main():
         assert token in recovery, 'one CMD recovery expected SHA or commit absent'
     oldmenu, oldcase = menus(old)
     menu, case = menus(live)
-    assert len(oldmenu) == 97 and len(menu) == 120, 'menu length mismatch'
-    assert len(oldcase) == 96 and len(case) == 119, 'dispatch length mismatch'
+    assert len(oldmenu) == 97 and len(menu) == 121, 'menu length mismatch'
+    assert len(oldcase) == 96 and len(case) == 120, 'dispatch length mismatch'
     assert menu[:96] == oldmenu[:96] and menu[-1] == oldmenu[-1], 'old menu 1..96 changed'
     assert case[:96] == oldcase, 'old dispatch 1..96 changed'
     code = live.decode('utf-8-sig')
@@ -79,6 +79,7 @@ def main():
     assert case[116].startswith("'117' {BGXAOEReadOnly;break}"), '117 must run AOE READ ONLY'
     assert case[117].startswith("'118' {BGXTest6Safe;break}"), '118 gated clone only'
     assert case[118].startswith("'119' {SyncRelease $releaseAOE;& py -3"), '119 must use verified READ ONLY script trace'
+    assert case[119].startswith("'120' {SyncRelease $releaseAOE;& py -3"), '120 guarded native Entangle installer missing'
     assert "function BGXAOEReadOnly" in code and "SyncRelease $releaseAOE" in code
     assert "function BGXTest6Safe" in code and "CREATE_BGXAI_TEST6_NO_PRIEST1" in code
     aoe_chunks = code.split("$releaseAOE=@{")
@@ -117,7 +118,7 @@ def main():
             original = git_bytes(pin['commit'], f['source'])
             assert len(original) == f['size'] and sha(original) == f['sha256'], f'bad source: {name}'
             assert f"'{name}'" in code, f'updater source absent: {name}'
-    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-119; 64/64 source hashes; pin matched; game untouched')
+    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-120; 66/66 source hashes; pin matched; game untouched')
 
 if __name__ == '__main__':
     main()
