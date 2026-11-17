@@ -36,19 +36,19 @@ jobs:
           $commitId='711840d55df51c86da9b9464aa2bc22b882cfa1e'
           $expectedHash='b5c8f6af7d2168f51556d955ae2238a0ad1226906deef4311319185b0b319511'
           $expectedSize=79725
-          & $recovery
+          . $recovery
           if($commitId -cne '0c01f9f5c56087b1ff39471c3a06a1409cfe2a14' -or
              $expectedHash -cne '6897f43009d32008fe499db871fb17c9c09ad494a7e69e142474a646b8c072bd' -or
              $expectedSize -ne 79730){throw 'STALE_RECOVERY_WRONG_COMMIT_OR_SHA'}
           $commitId='0c01f9f5c56087b1ff39471c3a06a1409cfe2a14'
           $expectedHash='6897f43009d32008fe499db871fb17c9c09ad494a7e69e142474a646b8c072bd'
           $expectedSize=79730
-          & $recovery
+          . $recovery
           if($commitId -cne '0c01f9f5c56087b1ff39471c3a06a1409cfe2a14' -or $expectedSize -ne 79730){throw 'NEW_PIN_UNEXPECTEDLY_OVERRIDDEN'}
           $commitId='711840d55df51c86da9b9464aa2bc22b882cfa1e'
           $expectedHash='0000000000000000000000000000000000000000000000000000000000000000'
           $expectedSize=79725
           $blocked=$false
-          try { & $recovery } catch { $blocked=$true }
+          try { . $recovery } catch { $blocked=$true }
           if(!$blocked){throw 'MALFORMED_OLD_PIN_NOT_REJECTED'}
           Write-Host 'BGXAI_ONEFILE_PIN_RECOVERY_PASS: stale exact SHA rescued; good pins unchanged; forged old hash rejected.'
