@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 48,
-  "sha256": "b97007d939041d7b2ffd3aa19d9250fe35c5a8d5d241b5c13b029229db01ab82",
+  "version": 49,
+  "sha256": "43ba3531af78e60d479c12935ff59eaee7552958f5ece3ba671cb0d0012a7447",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v48 corrects false negative from v47 actual successful isolated WeiDU compilation. Verify SHA256 pre/post per staged TLK rather than pre-existing translated-string overlap. Require root/EE marker unchanged, both ru_ru TLKs modified with all exact 300 RU lines, 26 target DLGs changed, WeiDU success message, no fatal. Local tests 5 scenarios PASS. Still only syntax preflight with 6-variable EET fallback; not live-install permission. One permanent self-updating CMD and one ZIP report."
+  "note": "v49 read-only safety audit: 82 source dialogue anchors / 300 unique RU strings / 324 references; guard context & trigger evidence, never equated to on-screen visibility. On isolated WeiDU compile canonical compare state, transition, trigger and action records of all 63 DLGs; distinctly flag semantic changes in 37 non-target DLGs vs byte-level resaving. No real game changes, no install authorization. Keeps v48 proven preflight and one-file self-update / single ZIP."
 }
