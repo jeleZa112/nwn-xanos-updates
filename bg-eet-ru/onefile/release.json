@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 42,
-  "sha256": "871b1b670629bbccdf47dbe614f62ff93f74dc1d317a815a1a5dd0ee44171bd8",
+  "version": 43,
+  "sha256": "2060767512fb7afd03d59d261241052e36b7b72ae73409435debe7ee502b7ae7",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v42 one permanent BG_EET_RU_UPDATE.cmd. Automatic staged GitHub source updates verified by SHA256 and selftest, external backup before atomic replacement, immediate re-execution. Read-only EET audit, WeiDU only in temporary copy, one ZIP report; no game installation."
+  "note": "v43: exact 300 RU unchanged, isolated WeiDU preflight may use 6-variable pinned official EET CPMVARS subset only when full EET setup source is absent. Subset results explicitly limited to syntax, never live-game compatibility. One persistent BG_EET_RU_UPDATE.cmd, SHA256+backup self-update and one ZIP report."
 }
