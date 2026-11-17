@@ -179,3 +179,28 @@ END
 Релиз `0.3.47-BGX120-PARTY-AOE` выложен в GitHub через старый штатный канал `bg-eet-ai` и закреплён в `BOOTSTRAP_PIN.json`: source ref `1317995803b2b344d2c3ffff915b462c428523d3`, exact `BGXAI_SYNC.ps1` SHA256 `f0a8b82a90e07892b6eec8c53a3d7d616c63213cb925cccc54a224a051cce7a5`, size 79959, меню 1–120. 8/8 file manifest SHA; Windows synthetic/unit test PASS https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/44134762577; Windows PS 5.1 onefile pin menu, 66/66 source SHA PASS https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/44135005604. **Физический `BGXAI_UPDATE.cmd` не менялся**, не требовать его ручной замены.
 
 **Рекомендованное следующее безопасное действие пользователя:** не повторять install сразу. Запустить тот же `BGXAI_UPDATE.cmd`, пункт 120 → **2 = preflight READ ONLY**; в начале убедиться `BGXAI: verified pinned script 1317995803b2 (SHA256 OK)`. Если `BGX120_NATIVE_PREFLIGHT_PASS`, можно затем отдельно сознательно разрешить mode=3 install с точным токеном, при закрытой игре/InfinityLoader/WeiDU; если снова STOP — прислать вывод и не повторять. **На пользовательской EET исправленный native compiler ещё не проверен; runtime install 120 по-прежнему отсутствует.**
+
+
+## BGX120 РЕАЛЬНО УСТАНОВЛЕН: INSTALLED_VERIFIED
+
+Пользователь успешно выполнил из единого `BGXAI_UPDATE.cmd` пункт **120**, затем внутренний пункт **3=install** и точное подтверждение `INSTALL_BGX120_PARTY_ENTANGLE_GUARD`. Пользователь предоставил фактический JSON-отчёт реальной установки:
+
+```json
+{
+  "status": "BGX120_INSTALLED_VERIFIED",
+  "backup": "C:\\Users\\Drevo\\Documents\\BGXAI120_SAFE_BACKUPS\\PRE_INSTALL_20261117T172236501946Z",
+  "after": {
+    "bcs_sha256": "cfc61cfdf7e6ff074a3c26b1e11996a29e6f58fa32d2ddc568866f458b7ac22a",
+    "lua_sha256": "74ddc016e15fae3451bafe3039b299740c9d2efae8ecfb3e86badea257fa650c",
+    "status": "BGX120_INSTALLED_VERIFIED",
+    "priest1_sha256": "e241bf986f4dfce72a9a5784d21111b10d0ee979ef5e065f6f6e145012434b3a",
+    "BGXP5_untouched": true
+  }
+}
+```
+
+Финальный однострочный результат `BGXAI: update/status action completed.` **После предшествовавшего STOP** попытка с релизом `0.3.47` прошла native compilation/WeiDU install/checks с правильными хэшами. BGXP5 **не изменился**: class BCS `BDDEFAI.BCS` и Lua `M_BX43.lua` соответствуют baseline. `PRIEST1.BCS` теперь `e241bf986f4dfce72a9a5784d21111b10d0ee979ef5e065f6f6e145012434b3a`. Резервная копия сохранена с SHA во внешней папке. **BGX120 установлен как последний WeiDU-компонент**, статус verified; игровой бой после успешной установки пока пользователь не тестировал.
+
+Важное ограничение политики: `!InParty(Myself)` в Entangle-блоке PRIEST1 консервативно **запрещает всё автоматическое применение Entangle у членов партии через PRIEST1**, а не выбирает безопасную точку. Ручное применение и враги не затрагиваются этим условием. Не считать поддержку всех массовых заклинаний готовой — это следующий этап после боевого теста.
+
+**Следующее действие:** загрузить его новое quicksave после перехода из города (в нём у Джахейры назначен race PRIEST1), выполнить один бой с общим ИИ и наблюдать: Джахейра не применяет Entangle автоматически; Жаган всё ещё лечит. Не использовать старую копию `NO_PRIEST1` для теста. Обязательно сохранить исходный быстрый сейв и не менять `BGXAI_UPDATE.cmd`. Не повторять инсталляцию BGX120: она уже verified, повторная установка не нужна. Если пользователь сообщает нарушение, запрашивать боевой журнал/скриншот и вести адресную диагностику. Пользователь пожелал дальнейшее расширение **общего AOE safety rule** на аналогичные массовые заклинания только после успешного боевого теста Entangle; не ставить без отдельного согласия.
