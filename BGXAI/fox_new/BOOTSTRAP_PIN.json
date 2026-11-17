@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "2f12121f32d4ace70b8d72723d22c79447e1b62f",
+  "commit": "711840d55df51c86da9b9464aa2bc22b882cfa1e",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "0026c5ddb0d60069920083d09a8df47b51ea996ff62d72c30bc8d9fca0d7236e",
-  "script_size": 79070,
-  "description": "BGXAI single CMD 1-117: verified AOE Entangle READ ONLY report; stable installed BGXP5 unaffected; 3 SHA pinned release files."
+  "script_sha256": "b5c8f6af7d2168f51556d955ae2238a0ad1226906deef4311319185b0b319511",
+  "script_size": 79725,
+  "description": "BGXAI one-file pinned 1-118; 117 AOE read-only, 118 typed safe six-NPC test save clone to isolate Jaheira PRIEST1; BGXP5 unchanged."
 }
