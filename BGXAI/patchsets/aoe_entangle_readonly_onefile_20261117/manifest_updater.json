@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
-  "version": "0.3.46-BGX120-PARTY-AOE",
+  "version": "0.3.47-BGX120-PARTY-AOE",
   "files": [
     {
       "source": "BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/BGXAI_AOE_AUDIT.py",
@@ -18,8 +18,8 @@
     {
       "source": "BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/README_RU.md",
       "dest": "README_RU.md",
-      "size": 10129,
-      "sha256": "ab8922853feb7fd4b8b2cb2b568a4046b8d4f133d19662c74c27ab35f9d84278"
+      "size": 13205,
+      "sha256": "9c6d84fdcb62d786c32627526d68360092c35af0cbff39f384222399deb02b58"
     },
     {
       "source": "BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/BGXAI_TEST6_SAFE_COPY.py",
@@ -42,14 +42,14 @@
     {
       "source": "BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/BGX120_ENTANGLE_GUARD.py",
       "dest": "BGX120_ENTANGLE_GUARD.py",
-      "size": 14037,
-      "sha256": "855dfdd4b0bd7dd3f3d8cb50f4fc81987758f14ee4659d76f3e6cec5a2806033"
+      "size": 15166,
+      "sha256": "e7b308515f02617339d929eb76b49ab40b4e8f03631dadc1a1a3a71f10125f9b"
     },
     {
       "source": "BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/test_guard120.py",
       "dest": "test_guard120.py",
-      "size": 4056,
-      "sha256": "f1d4562ebb87d2fbc2fb01e7f50fc1ceb887ffa42bb2c2e4318ce2f3b9715b62"
+      "size": 4635,
+      "sha256": "e7872ab608359c6d88a7ba423170bc442e5a0f2a95f94e412322c8af299e8279"
     }
   ]
 }
