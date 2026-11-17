@@ -1,4 +1,4 @@
-# BG Voice RU 4.9.2: integrity-pinned local runtime with improved source discovery.
+# BG Voice RU 4.9.3: integrity-pinned local runtime with improved source discovery.
 # The launcher, all original audio, existing decisions and voice models are immutable.
 from __future__ import annotations
 from pathlib import Path
@@ -11,7 +11,7 @@ import subprocess
 import sys
 import zipfile
 
-VERSION = '4.9.2-offline'
+VERSION = '4.9.3-offline'
 
 
 def _en_proof(path: Path) -> bool:
@@ -54,8 +54,9 @@ def _project_roots(master: Path, work: Path):
 def _patch_runtime(scope: dict, launcher: Path, diagnostics: dict):
     old_walk = scope['bounded_walk']
     sid_pattern = scope['SID_RE']
+    analyzer_has_diagnostics = str(scope.get('VERSION','')).startswith('4.8')
 
-    def find_english(master, plan, errors):
+    def find_english(master, plan, errors, work=None):
         ids = set(plan)
         for row in plan.values():
             for key in ('stable_source_sound_id', 'english_sound_id', 'sound_id'):
@@ -91,11 +92,12 @@ def _patch_runtime(scope: dict, launcher: Path, diagnostics: dict):
                 elif 'en_reference_wav' in [a.lower() for a in path.parts] and \
                         'en_reference_wav' not in [a.lower() for a in current.parts]:
                     found[sid] = path
-        diagnostics['english_search'] = {'roots': [str(p) for p in roots],
-                  'matched_ids': len(found), 'candidates': checked,
-                  'sample': [str(found[s]) for s in sorted(found)[:8]]}
+        result = {'roots': [str(p) for p in roots],
+                  'indexed': len(found), 'wav_candidates_scanned': checked, 'duplicate_candidates': 0,
+                  'sample': [{'sound_id': s, 'path': str(found[s])} for s in sorted(found)[:8]]}
+        diagnostics['english_search'] = result
         print('EN REFERENCE SEARCH:', len(found), 'of', len(plan), '| roots:', len(roots), flush=True)
-        return found
+        return (found, result) if analyzer_has_diagnostics else found
 
     def get_ref(sid, entry, en, master):
         for key in ('english_wav','en_wav','english_wav_path','original_wav',
@@ -201,8 +203,109 @@ def _patch_runtime(scope: dict, launcher: Path, diagnostics: dict):
     scope['maybe_switch_to_installed_model_env'] = find_model_python
 
 
+def _powershell_get(url: str, limit: int) -> bytes:
+    """Use Windows PowerShell downloader when Python cannot reach GitHub."""
+    import base64
+    if not re.fullmatch(r'https://raw[.]githubusercontent[.]com/jeleZa112/nwn-xanos-updates/[A-Za-z0-9._/-]+', url):
+        raise ValueError('Unapproved update address')
+    script = ("$ErrorActionPreference='Stop';$t=[IO.Path]::GetTempFileName();"
+              "try {Invoke-WebRequest -Uri '" + url + "' -OutFile $t -UseBasicParsing -TimeoutSec 12 -ErrorAction Stop;"
+              "$a=[IO.File]::ReadAllBytes($t);"
+              "if ($a.Length -gt " + str(limit) + ") {throw 'Oversize core'};"
+              "[Console]::Write([Convert]::ToBase64String($a))}"
+              "finally {Remove-Item -LiteralPath $t -Force -ErrorAction SilentlyContinue}")
+    result = subprocess.run(['powershell.exe', '-NoProfile', '-NonInteractive', '-Command', script],
+                            text=True, capture_output=True, timeout=25, check=False)
+    if result.returncode != 0:
+        raise OSError('PowerShell download failed: ' + result.stderr.strip()[-220:])
+    payload = base64.b64decode(result.stdout.strip(), validate=True)
+    if len(payload) > limit:
+        raise ValueError('Update download exceeds limit')
+    return payload
+
+
+def _powershell_check_update(launcher: Path):
+    """Cache future verified releases in SQLite; never change CMD or source WAVs."""
+    import datetime as datetime
+    import hashlib
+    import sqlite3
+    if os.name != 'nt' or os.environ.get('BG_VOICE_RU_OFFLINE','').lower() in ('1','true','yes'):
+        return None
+    dbfile = launcher.parent / 'BG_VOICE_RU_PROGRESS.sqlite3'
+    now = datetime.datetime.now(datetime.timezone.utc)
+    with sqlite3.connect(str(dbfile), timeout=20) as db:
+        db.execute('pragma busy_timeout=20000')
+        db.execute("create table if not exists bgvoice_update_status "
+                   "(slot integer primary key, last_checked text not null, last_result text not null)")
+        db.execute("create table if not exists bgvoice_cached_engines "
+                   "(version text primary key, sha256 text not null, source blob not null, at_utc text not null)")
+        row = db.execute('select last_checked from bgvoice_update_status where slot=2').fetchone()
+        if row:
+            try:
+                if (now-datetime.datetime.fromisoformat(row[0])).total_seconds() < 6*3600:
+                    return None
+            except (ValueError,TypeError):
+                pass
+    status = 'not_checked'
+    new_source = None
+    try:
+        prefix = 'https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/'
+        manifest_raw = _powershell_get(prefix + 'bg-voice-ru/BG_VOICE_RUNTIME_MANIFEST.json', 8192)
+        manifest = json.loads(manifest_raw.decode('utf-8'))
+        version = str(manifest.get('version',''))
+        commit = str(manifest.get('commit',''))
+        digest = str(manifest.get('sha256','')).lower()
+        if (manifest.get('project') != 'BG_VOICE_RU' or
+            manifest.get('path') != 'BG_VOICE_CORE.py' or
+            not re.fullmatch(r'[0-9a-f]{40}',commit) or
+            not re.fullmatch(r'[0-9a-f]{64}',digest) or
+            not re.fullmatch(r'4\.(?:9|[1-9][0-9]+)\.[0-9]+',version)):
+            raise ValueError('Invalid update manifest')
+        def ver(t):
+            return tuple(int(n) for n in t.split('.'))
+        if ver(version) <= ver(VERSION.split('-')[0]):
+            status = 'up_to_date_'+VERSION
+        else:
+            raw = _powershell_get(prefix+commit+'/BG_VOICE_CORE.py',300000)
+            if hashlib.sha256(raw).hexdigest() != digest:
+                raise ValueError('Update SHA256 mismatch')
+            source = raw.decode('utf-8-sig')
+            compile(source, '<bg_voice_next_core>', 'exec')
+            child = ("import sys; p=sys.argv.pop(1); b=sys.stdin.buffer.read();"
+                     "exec(compile(b,'<bg_voice_next_core>','exec'),"
+                     "{'__name__':'__main__','__file__':p})")
+            env = os.environ.copy()
+            env['BG_VOICE_RU_OFFLINE'] = '1'
+            result = subprocess.run([sys.executable, '-c', child, str(launcher), '--self-test'],
+                                    input=raw, capture_output=True, timeout=30, env=env)
+            if result.returncode or b'SELF_TEST_OK' not in result.stdout:
+                raise ValueError('Update self-test failed')
+            with sqlite3.connect(str(dbfile),timeout=20) as db:
+                db.execute('insert or replace into bgvoice_cached_engines values(?,?,?,?)',
+                           (version,digest,raw,now.isoformat()))
+                db.commit()
+            status = 'updated_to_'+version
+            new_source = source
+    except Exception as exc:
+        status = 'offline_fallback_'+type(exc).__name__+': '+str(exc)[:200]
+    try:
+        with sqlite3.connect(str(dbfile),timeout=20) as db:
+            db.execute('insert or replace into bgvoice_update_status values(2,?,?)',
+                       (now.isoformat(),status))
+            db.commit()
+    except (OSError,sqlite3.Error):
+        pass
+    print('AUTO UPDATE POWERSHELL:',status,flush=True)
+    return new_source
+
+
 def main():
     launcher = Path(__file__).resolve()
+    next_version = _powershell_check_update(launcher)
+    if next_version:
+        scope_next = {'__name__':'__main__','__file__':str(launcher)}
+        exec(compile(next_version, '<bg_voice_next_core>', 'exec'), scope_next)
+        return 0
     content = launcher.read_text(encoding='utf-8-sig')
     body = content.split('\n#BGVOICE_PYTHON_START\n', 1)[1]
     scope = {'__name__': 'bgvoice_embedded_runtime', '__file__': str(launcher)}
