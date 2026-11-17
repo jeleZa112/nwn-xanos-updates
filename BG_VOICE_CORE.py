@@ -1,4 +1,4 @@
-# BG Voice RU 4.9.3: integrity-pinned local runtime with improved source discovery.
+# BG Voice RU 4.9.4: integrity-pinned local runtime with improved source discovery.
 # The launcher, all original audio, existing decisions and voice models are immutable.
 from __future__ import annotations
 from pathlib import Path
@@ -11,7 +11,7 @@ import subprocess
 import sys
 import zipfile
 
-VERSION = '4.9.3-offline'
+VERSION = '4.9.4-offline'
 
 
 def _en_proof(path: Path) -> bool:
@@ -198,6 +198,56 @@ def _patch_runtime(scope: dict, launcher: Path, diagnostics: dict):
         current_version = VERSION.split('-')[0]
         return subprocess.call([best, '-c', loader, str(launcher), current_version, *sys.argv[1:]], env=env)
 
+    # ECAPA on Windows: avoid SpeechBrain's default symlink collection without
+    # requesting admin privileges, modifying SpeechBrain or changing WAV files.
+    original_speaker = scope['Speaker']
+
+    class WindowsCopySpeaker(original_speaker):
+        def __init__(self, master):
+            try:
+                from speechbrain.utils.parameter_transfer import Pretrainer
+                from speechbrain.utils.fetching import LocalStrategy
+                from speechbrain.inference.classifiers import EncoderClassifier
+            except (ImportError, AttributeError):
+                super().__init__(master)
+                return
+            import inspect
+            original_collect = Pretrainer.collect_files
+            original_hparams = EncoderClassifier.from_hparams
+            own_method = 'from_hparams' in EncoderClassifier.__dict__
+            original_hparams_descriptor = inspect.getattr_static(EncoderClassifier, 'from_hparams')
+
+            def load_direct_from_cache(*args, **kwargs):
+                # Existing snapshot is the source.  Avoid making a collection
+                # directory and never create links into the model cache.
+                kwargs['savedir'] = None
+                kwargs['local_strategy'] = LocalStrategy.COPY
+                return original_hparams(*args, **kwargs)
+
+            def collect_without_symlinks(pretrainer, *args, **kwargs):
+                # SpeechBrain 1.0/1.1 collect_files positional args:
+                # (default_source, local_strategy, fetch_config).
+                args = list(args)
+                if len(args) >= 2:
+                    args[1] = LocalStrategy.COPY
+                    kwargs.pop('local_strategy', None)
+                else:
+                    kwargs['local_strategy'] = LocalStrategy.COPY
+                return original_collect(pretrainer, *args, **kwargs)
+
+            Pretrainer.collect_files = collect_without_symlinks
+            EncoderClassifier.from_hparams = staticmethod(load_direct_from_cache)
+            try:
+                super().__init__(master)
+            finally:
+                Pretrainer.collect_files = original_collect
+                if own_method:
+                    EncoderClassifier.from_hparams = original_hparams_descriptor
+                else:
+                    del EncoderClassifier.from_hparams
+
+    scope['Speaker'] = WindowsCopySpeaker
+    diagnostics['speaker_loader'] = 'speechbrain-ecapa-windows-local-copy-no-symlinks'
     scope['find_english'] = find_english
     scope['get_ref'] = get_ref
     scope['maybe_switch_to_installed_model_env'] = find_model_python
