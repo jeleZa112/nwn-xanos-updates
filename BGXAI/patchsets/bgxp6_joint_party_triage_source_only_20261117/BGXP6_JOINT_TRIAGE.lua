@@ -250,6 +250,9 @@ function M.plan(snapshot,events,members,config,dependencies)
    end
    if not dense(r.assignments,6) then return hold('GUARD_ASSIGNMENTS_INVALID') end
    for _,g in ipairs(r.assignments) do
+    if type(g)=='table' and reserved[g.guardian_id] then
+     return hold('HEAL_GUARD_COLLISION_REJECTED')
+    end
     local a=type(g)=='table' and byId[g.guardian_id] or nil
     local e=type(g)=='table' and eventsByAttacker[g.attacker_id] or nil
     if not a or not e or reserved[g.guardian_id]
