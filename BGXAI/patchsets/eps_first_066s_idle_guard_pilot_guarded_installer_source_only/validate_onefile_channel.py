@@ -55,7 +55,7 @@ def main():
     # embedded-bootstrap recovery for one already proven stale immutable pin.
     old_cmd = git_bytes(OLD_COMMIT, CMD)
     new_cmd = git_bytes('HEAD', CMD)
-    marker = b"        $scriptSources=@(\\r\\n"
+    marker = bytes([32]*8) + b"$scriptSources=@(" + bytes([13,10])
     assert old_cmd.count(marker) == 1, 'bootstrap marker changed'
     recovery = "        # Recovery for the one known immutable AOE117/118 mismatch (0.3.43 vs 0.3.44).\r\n        # The remote branch pin may be stale behind a proxy even with a nonce.\r\n        # Only a byte-exact known stale pin is eligible. Newer/unknown pins are untouched.\r\n        if($commitId -ceq '711840d55df51c86da9b9464aa2bc22b882cfa1e') {\r\n            if($expectedHash -cne 'b5c8f6af7d2168f51556d955ae2238a0ad1226906deef4311319185b0b319511' -or $expectedSize -ne 79725) {\r\n                throw 'Stale channel descriptor has unexpected SHA/size; recovery blocked'\r\n            }\r\n            $commitId='0c01f9f5c56087b1ff39471c3a06a1409cfe2a14'\r\n            $expectedHash='6897f43009d32008fe499db871fb17c9c09ad494a7e69e142474a646b8c072bd'\r\n            $expectedSize=79730\r\n            Write-Host 'BGXAI: stale 0.3.43 branch pin detected; SHA-verified 0.3.44 recovery enabled.'\r\n        }\r\n".encode('utf-8')
     assert new_cmd == old_cmd.replace(marker, recovery + marker), 'one-file CMD drift outside the approved stale-pin recovery'
