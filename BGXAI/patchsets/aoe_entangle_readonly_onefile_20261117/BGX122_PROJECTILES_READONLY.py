@@ -29,7 +29,7 @@ EXACT_SPELLS={
     "SPWI502":"17f627732b0ede9f22574f5e5654881009147e5811b889ffcc0c6f0072eb0ce4",
 }
 EXPECTED_PROJECTL_INDEX={"SPPR105":242,"SPWI215":63,"SPWI213":94,"SPWI502":186}
-RE_RESOURCE=re.compile(r"[A-Za-z0-9_#]{1,8}\Z")
+RE_RESOURCE=re.compile(r"[A-Za-z0-9_#-]{1,8}\Z")
 
 def parse_projectl(raw:bytes)->dict[int,str]:
     if len(raw)>2_000_000:raise ValueError("PROJECTL_OVERSIZED")
