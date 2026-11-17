@@ -1,4 +1,4 @@
-# BG Voice RU 4.9.1: integrity-pinned local runtime with improved source discovery.
+# BG Voice RU 4.9.2: integrity-pinned local runtime with improved source discovery.
 # The launcher, all original audio, existing decisions and voice models are immutable.
 from __future__ import annotations
 from pathlib import Path
@@ -11,7 +11,7 @@ import subprocess
 import sys
 import zipfile
 
-VERSION = '4.9.1-offline'
+VERSION = '4.9.2-offline'
 
 
 def _en_proof(path: Path) -> bool:
@@ -180,10 +180,21 @@ def _patch_runtime(scope: dict, launcher: Path, diagnostics: dict):
             return None
         env = os.environ.copy()
         env['BG_VOICE_RU_ENV_SELECTED'] = '1'
-        loader = ("import sys; p=sys.argv.pop(1); t=open(p,encoding='utf-8-sig').read(); "
-                  "exec(compile(t.split(chr(10)+'#BGVOICE_PYTHON_START'+chr(10),1)[1],p,'exec'),"
-                  "{'__name__':'__main__','__file__':p})")
-        return subprocess.call([best, '-c', loader, str(launcher), *sys.argv[1:]], env=env)
+        # Re-run the VERIFIED CACHED CORE in the selected interpreter, NOT the old
+        # embedded 4.7.1 core. Otherwise all English discovery fixes are lost.
+        loader = (
+            "import sys,sqlite3,hashlib,pathlib; "
+            "p=pathlib.Path(sys.argv.pop(1));v=sys.argv.pop(1); "
+            "db=sqlite3.connect(str(p.parent/'BG_VOICE_RU_PROGRESS.sqlite3')); "
+            "row=db.execute('select sha256,source from bgvoice_cached_engines where version=?',(v,)).fetchone(); "
+            "db.close(); "
+            "assert row is not None,'cached core not found'; "
+            "assert hashlib.sha256(row[1]).hexdigest()==row[0],'cached core hash mismatch'; "
+            "exec(compile(row[1].decode('utf-8-sig'),str(p),'exec'),"
+            "{'__name__':'__main__','__file__':str(p)})"
+        )
+        current_version = VERSION.split('-')[0]
+        return subprocess.call([best, '-c', loader, str(launcher), current_version, *sys.argv[1:]], env=env)
 
     scope['find_english'] = find_english
     scope['get_ref'] = get_ref
