@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 47,
-  "sha256": "11cc33afde0abde6c06aa77f92d958ed853127ee51947ca7c66e0640d66ef723",
+  "version": 48,
+  "sha256": "b97007d939041d7b2ffd3aa19d9250fe35c5a8d5d241b5c13b029229db01ab82",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v47: fixes v46 missing BIFF resources without copying the entire game. Selected installed IDS resources and referenced auxiliary DLG (e.g. VICONJ) are read-only extracted from KEY/BIFF or override into disposable TEMP/override; no symlinks/hardlinks, size limits and SHA staging. Keeps all 300 translation strings and v46 EE language fix. Local selftests passed; live WeiDU compilation not yet confirmed."
+  "note": "v48 corrects false negative from v47 actual successful isolated WeiDU compilation. Verify SHA256 pre/post per staged TLK rather than pre-existing translated-string overlap. Require root/EE marker unchanged, both ru_ru TLKs modified with all exact 300 RU lines, 26 target DLGs changed, WeiDU success message, no fatal. Local tests 5 scenarios PASS. Still only syntax preflight with 6-variable EET fallback; not live-install permission. One permanent self-updating CMD and one ZIP report."
 }
