@@ -1,0 +1,28 @@
+name: BGXAI BGXP6 joint heal-guard triage native Lua source-only
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/patchsets/bgxp6_joint_party_triage_source_only_20261117/**'
+      - '.github/workflows/bgxai-bgxp6-joint-party-triage-source-only.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-lua-source-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Native Lua 5.4 and exact prior BGXAI 072 080 baseline (no EET)
+        shell: bash
+        working-directory: BGXAI/patchsets/bgxp6_joint_party_triage_source_only_20261117
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.4
+          python3 verify_bgxp6.py
+          lua5.4 -e 'assert(loadfile("BGXP6_JOINT_TRIAGE.lua")); assert(loadfile("test_bgxp6.lua"))'
+          lua5.4 test_bgxp6.lua
