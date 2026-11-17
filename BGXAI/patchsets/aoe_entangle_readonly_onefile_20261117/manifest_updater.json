@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
-  "version": "0.3.49-BGX122-PRO-EFF-READONLY",
+  "version": "0.3.50-BGX122-IDS-HYPHEN",
   "files": [
     {
       "source": "BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/BGXAI_AOE_AUDIT.py",
@@ -18,8 +18,8 @@
     {
       "source": "BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/README_RU.md",
       "dest": "README_RU.md",
-      "size": 21366,
-      "sha256": "5222059617742d15a6550a7a201ac3296ae51493181049f92a9651611b031e8c"
+      "size": 23098,
+      "sha256": "058cdd11f12078a20b60262901b122fff8e65d6288bbde4dcb697beb938f4802"
     },
     {
       "source": "BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/BGXAI_TEST6_SAFE_COPY.py",
@@ -72,14 +72,14 @@
     {
       "source": "BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/BGX122_PROJECTILES_READONLY.py",
       "dest": "BGX122_PROJECTILES_READONLY.py",
-      "size": 10576,
-      "sha256": "e1304815ec446f5dfa5d7dc6cc5e896d37292d3f26365c12ff4621743afe811a"
+      "size": 10577,
+      "sha256": "d3a77988bc829b1f0379990228461aab5f2ee56c7c11488cee5a029e271580b2"
     },
     {
       "source": "BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/test_122.py",
       "dest": "test_122.py",
-      "size": 5029,
-      "sha256": "8a317504fd2c88d63fcf53da8f59a78f2f0029d6acf41a4bb7777743c1c6016c"
+      "size": 5647,
+      "sha256": "174d76f58f0578f3005857e06c1f341d5b3c6fd78ca321c6e76a34b07fa29a8a"
     }
   ]
 }
