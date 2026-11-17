@@ -119,12 +119,22 @@ def modify_baf(text:str)->str:
     return after
 
 def blocks(b:bytes)->list[bytes]:
-    if not b.startswith(b"SC\nCR\n") or not b.endswith(b"CR\nSC\n"):
+    # A real WeiDU BCS uses CR\n both as a BLOCK END and a BLOCK START.
+    # Splitting on CR\n alone falsely doubles the number of blocks.
+    # Only CR\nCO\n may start a response block (proven against real EET BCS).
+    if not b.startswith(b"SC\nCR\nCO\n") or not b.endswith(b"CR\nSC\n"):
         raise Stop("COMPILED_BCS_HEADER_TRAILER_UNEXPECTED")
-    bs=[b"CR\n"+x for x in b[3:-6].split(b"CR\n")[1:]]
-    if len(bs)!=5:
-        raise Stop("COMPILED_PRIEST1_NOT_5_BLOCKS")
-    return bs
+    starts=[m.start(1) for m in re.finditer(rb"(?:^|\n)(CR\nCO\n)",b)]
+    if len(starts)!=5 or starts[0]!=3:
+        raise Stop("COMPILED_PRIEST1_NOT_5_BLOCKS:"+str(len(starts)))
+    result=[b[a:z] for a,z in zip(starts,starts[1:]+[len(b)])]
+    if any(not x.startswith(b"CR\nCO\n") or x.count(b"\nRS\n")!=2 for x in result):
+        raise Stop("COMPILED_PRIEST1_BLOCK_INVALID")
+    if any(not x.endswith(b"CR\n") for x in result[:-1]):
+        raise Stop("COMPILED_PRIEST1_SEPARATOR_INVALID")
+    if b"SC\n"+b"".join(result)!=b:
+        raise Stop("COMPILED_PRIEST1_LOSSLESS_ROUNDTRIP_FAILED")
+    return result
 
 def native_compile(root:Path,compiler:Path,td:Path,name:str,text:str)->bytes:
     path=td/(name+".BAF")
@@ -151,8 +161,15 @@ def candidate(root:Path)->tuple[bytes,dict]:
         patched=modify_baf(baf)
         old_compiled=native_compile(root,exe,td,"BGX120OLD",baf)
         new_compiled=native_compile(root,exe,td,"BGX120NEW",patched)
+        original_blocks=blocks(original)
         old_blocks=blocks(old_compiled)
         new_blocks=blocks(new_compiled)
+        # Guard against decompile/recompile silently changing ANY other script
+        # block, including rules for Command, Hold Person and attack.
+        if old_blocks!=original_blocks:
+            raise Stop("PRIEST1_NATIVE_ROUNDTRIP_CHANGED_EXISTING_BLOCKS")
+        if any(new_blocks[i]!=original_blocks[i] for i in (0,1,3,4)):
+            raise Stop("PRIEST1_UNRELATED_BLOCK_CHANGED")
         changed=[i for i,(a,b) in enumerate(zip(old_blocks,new_blocks)) if a!=b]
         if changed!=[2]:
             raise Stop("BCS_CHANGED_BLOCKS_NOT_ENTANGLE_ONLY:"+str(changed))
