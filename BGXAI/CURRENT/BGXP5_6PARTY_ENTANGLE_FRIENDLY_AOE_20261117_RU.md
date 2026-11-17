@@ -48,3 +48,16 @@
 Исходники `BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/` с manifest version `0.3.44-BGXAOE-SAFE-SAVECOPY`; Windows **13/13 unit/mock tests + 5/5 exact source SHA** https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/44103669486 PASS. **Единый CMD (1–118) + AST Windows PowerShell 5.1 + 63/63 SHA** https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/44103856011 PASS. Sync `79725` байт SHA256 `b5c8f6af7d2168f51556d955ae2238a0ad1226906deef4311319185b0b319511`, pin immutable commit `711840d55df51c86da9b9464aa2bc22b882cfa1e`.
 
 **Следующее действие пользователя:** только старый `BGXAI_UPDATE.cmd`, пункт 118, подтверждение, затем загрузить новый A/B test-save и повторить бой. Если Entangle исчез — локализован нежелательный дополнительный скрипт; если остаётся — искать далее в JAHEIRA_/WTASIGHT/DPLAYER. **Это не доказанная универсальная AOE-защита**. Не менять BGXP5, живые BCS и другие файлы игры.
+
+## Инцидент: пункт 118 повторно останавливается с Unexpected release manifest
+
+Пользователь **два раза** запускал один и тот же `BGXAI_UPDATE.cmd` пункт 118; второй раз — после опубликованного обновления. Оба раза:
+`Downloading and verifying BGXAI AOE117 from pinned GitHub commit ...`
+`BGXAI STOP: Unexpected release manifest`.
+При этом из пользовательского вывода **неизвестно**, какой `BGXAI: verified pinned script <12-char hash>` был показан в начале запуска, потому что приведён только конец журнала.
+
+Установлена детерминированная причина старого релиза: immutable ref `711840d55df51c86da9b9464aa2bc22b882cfa1e` содержит `BGXAI_SYNC.ps1` с `releaseAOE.version=0.3.43-BGXAOE-READONLY`, но в **том же коммите** `manifest_updater.json` содержит `version=0.3.44-BGXAOE-SAFE-SAVECOPY`. Текущая иммутабельная ссылка `0c01f9f5c56087b1ff39471c3a06a1409cfe2a14` содержит **обе версии 0.3.44**; текущий `BOOTSTRAP_PIN.json` закрепляет именно `0c01...`, SHA256 скрипта `6897f43009d32008fe499db871fb17c9c09ad494a7e69e142474a646b8c072bd`, размер 79730 байт. Windows CI https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/44105584057 PASS. Инцидент **очень похож на старый bootstrap pin / CDN proxy cache**, однако без локального `head.txt` нельзя доказать, что ошибка второй попытки именно от старого immutable ref.
+
+**Не рекомендовать третий слепой запуск 118.** Сначала строго **только чтение** в PowerShell, без дополнительных программ/файлов:
+`Get-Content "$env:LOCALAPPDATA\BGXAI_UPDATER\head.txt"; Select-String -Path "$env:LOCALAPPDATA\BGXAI_UPDATER\BGXAI_SYNC.current.ps1" -Pattern "id='AOE117';version="`.
+Если head показывает `711840d55df5`, а spec `0.3.43`, это подтверждает stale pin. Если head показывает `0c01f9f5c560` и spec `0.3.44`, нужна дополнительная диагностика фактически загруженного immutable manifest/HTTP cache; не предполагать новый повтор исправит проблему. **Не изменять BGXP5 / сохранять контрольные суммы и один CMD**.
