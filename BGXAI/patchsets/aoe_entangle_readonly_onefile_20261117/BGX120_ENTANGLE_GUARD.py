@@ -121,7 +121,7 @@ def modify_baf(text:str)->str:
 def blocks(b:bytes)->list[bytes]:
     if not b.startswith(b"SC\nCR\n") or not b.endswith(b"CR\nSC\n"):
         raise Stop("COMPILED_BCS_HEADER_TRAILER_UNEXPECTED")
-    bs=[b"CR\n"+x for x in b[3:-3].split(b"CR\n")[1:]]
+    bs=[b"CR\n"+x for x in b[3:-6].split(b"CR\n")[1:]]
     if len(bs)!=5:
         raise Stop("COMPILED_PRIEST1_NOT_5_BLOCKS")
     return bs
