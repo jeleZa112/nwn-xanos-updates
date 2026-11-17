@@ -1,8 +1,8 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "4.9.0",
+  "version": "4.9.1",
   "path": "BG_VOICE_CORE.py",
-  "commit": "30dbe33587222ecaaaec6f18c65e65b9e7a50443",
-  "sha256": "70269573a4e39973430ec98011f4af45d3b3d0882e0c4fc619d28b54c78d3d91",
-  "notes": "Verified local engine cached inside existing BG_VOICE_RU_PROGRESS.sqlite3; one BG_VOICE_UPDATE.cmd launcher; offline after download; no WAV changes"
+  "commit": "21cf9b29bbc9ffd96ab785b7dd14cc1e1a9c3c71",
+  "sha256": "04e856175d9d7df2cdbafdbe722eb84def21d4d579cfd557f9bedcfa5bc2d895",
+  "notes": "Read-only offline core update: discovers English _EN.wav reference files in existing project folders and installed Python model environments, preserves prior decisions and original WAV. Cached in existing SQLite and launched by same CMD."
 }
