@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "0c01f9f5c56087b1ff39471c3a06a1409cfe2a14",
+  "commit": "a23948786d93fa8b832eb47ebbf8118b4a8e595e",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "6897f43009d32008fe499db871fb17c9c09ad494a7e69e142474a646b8c072bd",
-  "script_size": 79730,
-  "description": "BGXAI one-file menu 1-118 fixed AOE117/TESTSAVE118 manifest 0.3.44 strict SHA pin, BGXP5 unchanged."
+  "script_sha256": "a77fbae9579d3c192cca3269dae25e0a1b3b2610995e3a97acf5197b65554f39",
+  "script_size": 79934,
+  "description": "BGXAI one CMD 1-119: JAHEIRA_ / WTASIGHT / DPLAYER native EET script provenance READ ONLY; BGXP5 healing untouched."
 }
