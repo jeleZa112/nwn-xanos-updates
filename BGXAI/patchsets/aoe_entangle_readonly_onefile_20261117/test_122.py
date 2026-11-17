@@ -18,6 +18,19 @@ class TestProjectileReadOnly(unittest.TestCase):
         self.assertEqual({x:got[x] for x in (63,94,186,242)},
                          {63:"WEB",94:"CLOUD",186:"CLOUDKIL",242:"ENTANG2"})
 
+    def test_ids_accepts_real_eet_mod_projectile_hyphen(self):
+        # Actual user PROJECTL.IDS entry that triggered BGX122_STOP.
+        real=self.ids()+b"528 dw-ltblt\n"
+        rows=M.parse_projectl(real)
+        self.assertEqual(rows[528],"DW-LTBLT")
+        self.assertTrue(M.RE_RESOURCE.fullmatch(rows[528]))
+        self.assertEqual(rows[242],"ENTANG2")
+
+    def test_ids_rejects_unsafe_resource_paths(self):
+        for bad in (b"528 ../evil\n",b"528 x/y\n",b"528 x\\y\n",b"528 xxxxxxxxx\n"):
+            with self.assertRaisesRegex(ValueError,"BAD_ENTRY"):
+                M.parse_projectl(self.ids()+bad)
+
     def test_ids_fail_closed_on_ambiguity(self):
         with self.assertRaisesRegex(ValueError,"AMBIGUOUS"):
             M.parse_projectl(self.ids()+b"0x003F WRONG\n")
