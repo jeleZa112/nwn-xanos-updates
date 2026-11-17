@@ -27,28 +27,37 @@ jobs:
           $parseErrors=$null
           [Management.Automation.Language.Parser]::ParseInput($script,[ref]$tokens,[ref]$parseErrors)|Out-Null
           if($parseErrors.Count -ne 0){throw ('CMD_POWERSHELL_51_SYNTAX_STOP: '+($parseErrors | Out-String))}
-          $begin='        if($commitId -ceq ''711840d55df51c86da9b9464aa2bc22b882cfa1e'') {'
+          $begin='        $staleKnown=$false'
           $end='        $scriptSources=@('
           $start=$script.IndexOf($begin,[StringComparison]::Ordinal)
           $stop=$script.IndexOf($end,$start,[StringComparison]::Ordinal)
           if($start -lt 0 -or $stop -le $start){throw 'PINNED_RECOVERY_BLOCK_MISSING'}
           $recovery=[ScriptBlock]::Create($script.Substring($start,$stop-$start))
-          $commitId='711840d55df51c86da9b9464aa2bc22b882cfa1e'
-          $expectedHash='b5c8f6af7d2168f51556d955ae2238a0ad1226906deef4311319185b0b319511'
-          $expectedSize=79725
+          $newCommit='96dcda9cf91d921e9a37d67f7c382b6ba2abe394'
+          $newHash='a77fbae9579d3c192cca3269dae25e0a1b3b2610995e3a97acf5197b65554f39'
+          foreach($test in @(
+              @{c='711840d55df51c86da9b9464aa2bc22b882cfa1e';h='b5c8f6af7d2168f51556d955ae2238a0ad1226906deef4311319185b0b319511';s=79725},
+              @{c='0c01f9f5c56087b1ff39471c3a06a1409cfe2a14';h='6897f43009d32008fe499db871fb17c9c09ad494a7e69e142474a646b8c072bd';s=79730}
+          )){
+              $commitId=$test.c
+              $expectedHash=$test.h
+              $expectedSize=$test.s
+              . $recovery
+              if($commitId -cne $newCommit -or $expectedHash -cne $newHash -or $expectedSize -ne 79934){
+                  throw 'STALE_RECOVERY_WRONG_COMMIT_OR_SHA'
+              }
+          }
+          $commitId=$newCommit
+          $expectedHash=$newHash
+          $expectedSize=79934
           . $recovery
-          if($commitId -cne '0c01f9f5c56087b1ff39471c3a06a1409cfe2a14' -or
-             $expectedHash -cne '6897f43009d32008fe499db871fb17c9c09ad494a7e69e142474a646b8c072bd' -or
-             $expectedSize -ne 79730){throw 'STALE_RECOVERY_WRONG_COMMIT_OR_SHA'}
-          $commitId='0c01f9f5c56087b1ff39471c3a06a1409cfe2a14'
-          $expectedHash='6897f43009d32008fe499db871fb17c9c09ad494a7e69e142474a646b8c072bd'
-          $expectedSize=79730
-          . $recovery
-          if($commitId -cne '0c01f9f5c56087b1ff39471c3a06a1409cfe2a14' -or $expectedSize -ne 79730){throw 'NEW_PIN_UNEXPECTEDLY_OVERRIDDEN'}
+          if($commitId -cne $newCommit -or $expectedHash -cne $newHash -or $expectedSize -ne 79934){
+              throw 'NEW_PIN_UNEXPECTEDLY_OVERRIDDEN'
+          }
           $commitId='711840d55df51c86da9b9464aa2bc22b882cfa1e'
           $expectedHash='0000000000000000000000000000000000000000000000000000000000000000'
           $expectedSize=79725
           $blocked=$false
-          try { . $recovery } catch { $blocked=$true }
+          try {. $recovery} catch {$blocked=$true}
           if(!$blocked){throw 'MALFORMED_OLD_PIN_NOT_REJECTED'}
           Write-Host 'BGXAI_ONEFILE_PIN_RECOVERY_PASS: stale exact SHA rescued; good pins unchanged; forged old hash rejected.'
