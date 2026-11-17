@@ -22,7 +22,7 @@ RELEASES = (
     ('BGXAI/patchsets/priest_combat_eps_first_20261116/', '0.3.39-BGXP2-COMBAT-PRIEST', 7),
     ('BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/', '0.3.40-BGXP3-AUTO-BUFFER', 9),
     ('BGXAI/patchsets/priest_auto_priority_guard_source_20261117/', '0.3.41-BGXP5-AUTO-PRIORITY-GUARD', 11),
-    ('BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/', '0.3.48-BGX121-SPATIAL-READONLY', 11),
+    ('BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/', '0.3.49-BGX122-PRO-EFF-READONLY', 13),
 )
 
 def git_bytes(rev: str, path: str) -> bytes:
@@ -68,8 +68,8 @@ def main():
         assert token in recovery, 'one CMD recovery expected SHA or commit absent'
     oldmenu, oldcase = menus(old)
     menu, case = menus(live)
-    assert len(oldmenu) == 97 and len(menu) == 122, 'menu length mismatch'
-    assert len(oldcase) == 96 and len(case) == 121, 'dispatch length mismatch'
+    assert len(oldmenu) == 97 and len(menu) == 123, 'menu length mismatch'
+    assert len(oldcase) == 96 and len(case) == 122, 'dispatch length mismatch'
     assert menu[:96] == oldmenu[:96] and menu[-1] == oldmenu[-1], 'old menu 1..96 changed'
     assert case[:96] == oldcase, 'old dispatch 1..96 changed'
     code = live.decode('utf-8-sig')
@@ -81,6 +81,7 @@ def main():
     assert case[118].startswith("'119' {SyncRelease $releaseAOE;& py -3"), '119 must use verified READ ONLY script trace'
     assert case[119].startswith("'120' {SyncRelease $releaseAOE;& py -3"), '120 guarded native Entangle installer missing'
     assert case[120].startswith("'121' {SyncRelease $releaseAOE;& py -3"), '121 read-only AOE spatial audit missing'
+    assert case[121].startswith("'122' {SyncRelease $releaseAOE;& py -3"), '122 read-only modded projectile EFF audit missing'
     assert "function BGXAOEReadOnly" in code and "SyncRelease $releaseAOE" in code
     assert "function BGXTest6Safe" in code and "CREATE_BGXAI_TEST6_NO_PRIEST1" in code
     aoe_chunks = code.split("$releaseAOE=@{")
@@ -119,7 +120,7 @@ def main():
             original = git_bytes(pin['commit'], f['source'])
             assert len(original) == f['size'] and sha(original) == f['sha256'], f'bad source: {name}'
             assert f"'{name}'" in code, f'updater source absent: {name}'
-    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-121; 69/69 source hashes; pin matched; game untouched')
+    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-122; 71/71 source hashes; pin matched; game untouched')
 
 if __name__ == '__main__':
     main()
