@@ -1,0 +1,41 @@
+name: BGXAI 117 one-file AOE Entangle read-only audit
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/**'
+      - '.github/workflows/bgxai-aoe-onefile-readonly-117.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows-audit-no-game:
+    runs-on: windows-latest
+    steps:
+      - name: No CRLF mutation
+        shell: pwsh
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify source hashes, script syntax, and read-only 1170 BAF mock
+        working-directory: BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117
+        shell: pwsh
+        run: |
+          @'
+          import hashlib,json,pathlib
+          p=pathlib.Path(".")
+          manifest=json.loads((p/"manifest_updater.json").read_text("utf-8"))
+          assert manifest["version"]=="0.3.43-BGXAOE-READONLY"
+          assert len(manifest["files"])==3
+          for f in manifest["files"]:
+              data=(p/f["dest"]).read_bytes()
+              assert len(data)==f["size"] and hashlib.sha256(data).hexdigest()==f["sha256"],f["dest"]
+          print("BGXAI 117 AOE SOURCE HASHES 3/3 PASS")
+          '@ | python -
+          if($LASTEXITCODE -ne 0){throw 'BGXAI_AOE_SHA_STOP'}
+          python -m py_compile BGXAI_AOE_AUDIT.py test_aoe_audit.py
+          if($LASTEXITCODE -ne 0){throw 'BGXAI_AOE_PYTHON_PARSE_STOP'}
+          python -m unittest -v test_aoe_audit
+          if($LASTEXITCODE -ne 0){throw 'BGXAI_AOE_MOCK_STOP'}
