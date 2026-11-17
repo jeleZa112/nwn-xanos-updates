@@ -66,6 +66,10 @@ def main():
     assert case[117].startswith("'118' {BGXTest6Safe;break}"), '118 gated clone only'
     assert "function BGXAOEReadOnly" in code and "SyncRelease $releaseAOE" in code
     assert "function BGXTest6Safe" in code and "CREATE_BGXAI_TEST6_NO_PRIEST1" in code
+    aoe_spec = re.search(r"\\$releaseAOE=@\\{\\s*id='AOE117';version='([^']+)';", code)
+    assert aoe_spec is not None, 'AOE117/118 release spec absent'
+    expected_aoe_version = next(v for d,v,n in RELEASES if d.endswith('/aoe_entangle_readonly_onefile_20261117/'))
+    assert aoe_spec.group(1) == expected_aoe_version, 'AOE117/118 SCRIPT VERSION DOES NOT MATCH MANIFEST'
     assert "'--game' $GameRoot" in code and "AOE117 READ-ONLY STOP" in code
     for key in ('INSTALL_BGXPRIEST_MODES','ROLLBACK_BGXPRIEST_MODES',
                 'INSTALL_BGXAI_TEAM_GUARD','ROLLBACK_BGXAI_TEAM_GUARD',
