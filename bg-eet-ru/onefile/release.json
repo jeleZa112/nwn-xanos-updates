@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 51,
-  "sha256": "49635edc7617626c0c815ae275fd76da2064edaf0dd92040b505271f2f716162",
+  "version": 52,
+  "sha256": "4a01e19302c671f27ee2a614f6ea16684521f146c94533dd09ed531076187ebd",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v51: separate raw 32-byte DLG transition mismatches from semantic transition conservation; dereference actual transition trigger and action text with DLG V1 flags, preserve reply/journal/next state semantics. Check all 68 staged DLGs and 300 unchanged Russian strings. Real 63-DLG input parsing, simulated index renumbering, corruption and missing resources, onefile v50->v51 selfupdate/backups tests PASS. Any true loss still HOLD; runtime visibility and installed full EET CPMVARS not verified. Game writes prohibited."
+  "note": "v52: v51 validated 68 DLG logical preservation and isolated WeiDU PASS. New nonfatal read-only audit fetches SHA1-blob-verified original English 300 IWD EET banter lines from pinned upstream and checks exact occurrences in installed ru_RU dialog.tlk/dialogf.tlk and original references in 63 captured live DLG. Never equates static occurrence with runtime visibility. All 300 Russian translations unchanged, game writes prohibited. Selftest, local 63-DLG parsing and v51->v52 guarded update tests passed."
 }
