@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 37,
-  "sha256": "d8ea90670be8aee51dacabe8dfca70239b141f0cdbb2dace6acabad0f9dc7c33",
+  "version": 38,
+  "sha256": "60ee5d59c83bd5e3c8225eccb6b3b86a92d9fd469970df58ae3b06318646b652",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v37: fix v36 SAFE_STOP IWD_PARTY_BANTER_INTERJECT_D_MISSING by pinned direct fetch of author original at commit 53532c25; verified Git blob before isolated WeiDU. Also check 300 translated texts across full TLKs, not only newly appended entries. Existing one CMD and one ZIP, no installation mode; game unchanged."
+  "note": "v38: fix real v37 SAFE_STOP_UNICODEDECODEERROR when reading pinned IWD party-banter Interject.d. Validate exact upstream Git blob first, strict UTF-8 then strict Windows-1252 fallback without lossy replacement. One CMD, one ZIP. WeiDU only on disposable copy; no live game changes."
 }
