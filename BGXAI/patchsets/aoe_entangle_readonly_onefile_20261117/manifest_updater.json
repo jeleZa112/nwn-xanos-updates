@@ -18,8 +18,8 @@
     {
       "source": "BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/README_RU.md",
       "dest": "README_RU.md",
-      "size": 2854,
-      "sha256": "d1d8e509417e805692366db1d7a0299bbb5d02cc28fbce335870638f651d78ad"
+      "size": 4113,
+      "sha256": "826fe0eddd234ef4081991b1d3477a83b24c907ebd13e835785e1b7b27966e71"
     },
     {
       "source": "BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/BGXAI_TEST6_SAFE_COPY.py",
