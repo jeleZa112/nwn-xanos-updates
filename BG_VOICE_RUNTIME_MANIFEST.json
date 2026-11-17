@@ -1,8 +1,8 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "4.9.5",
+  "version": "4.9.6",
   "path": "BG_VOICE_CORE.py",
-  "commit": "d32b25443b8e9ae8f9e2af5c1449385557b5f346",
-  "sha256": "b5b92cbe7ce1aae823133754a71fc3bf877cd18ecfebe8bac913c2635d54ad79",
-  "notes": "Critical provenance fix: only exact same-sound-id English WAV is used for each Russian line; no speaker seed substitution. Missing exact English yields HOLD; cached Russian embeddings and manual decisions preserved. Existing launcher and SQLite are unchanged."
+  "commit": "66d877d1c9b97f80fc91aebf9bbafd4b8c8a3bc6",
+  "sha256": "02314e1f14449623c8d2640e031c16e8f0142c93b7427910f9853469e96f3e50",
+  "notes": "Offline ASR-only from existing Faster-Whisper Small venv/weights. Single permanent CMD, existing SQLite and one ZIP; checkpoints, errors/retry queue, offline, no source WAV or approved choice edits. ASR pilot --asr-only --limit 25."
 }
