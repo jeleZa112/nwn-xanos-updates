@@ -65,7 +65,7 @@ class Audit(unittest.TestCase):
 
     def test_untrusted_missing_or_drift_aborts(self):
         self.assertEqual(A.checked(self.game)[-1].count("BGXP5"),2)
-        (self.game/"override/BDDEFAI.BCS").write_bytes(b"modified")
+        (self.game/"override/BDDEFAI.BCS").write_bytes(b"modified"*800)
         with self.assertRaisesRegex(ValueError,"BGXP5_LIVE_SHA_MISMATCH"):
             A.checked(self.game)
 
