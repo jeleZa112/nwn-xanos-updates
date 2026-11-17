@@ -1,8 +1,8 @@
 {
   "project": "BG_VOICE_RU",
-  "version": "4.9.6",
+  "version": "4.9.7",
   "path": "BG_VOICE_CORE.py",
-  "commit": "66d877d1c9b97f80fc91aebf9bbafd4b8c8a3bc6",
-  "sha256": "02314e1f14449623c8d2640e031c16e8f0142c93b7427910f9853469e96f3e50",
-  "notes": "Offline ASR-only from existing Faster-Whisper Small venv/weights. Single permanent CMD, existing SQLite and one ZIP; checkpoints, errors/retry queue, offline, no source WAV or approved choice edits. ASR pilot --asr-only --limit 25."
+  "commit": "52b270fc5012083b8c1a0306ab8b16dde6b321a8",
+  "sha256": "a1ceb6fcfb2b51fbc1ea9d4ab0b42139f0c2e654e5a61fb2785560920d310a72",
+  "notes": "ASR runtime auto-detects existing CUDA 12 cuBLAS and cuDNN 9 DLL directories from local venvs and adjusts process-local PATH, inherited by the ASR child. Fixes child cached runtime version pin; retains model, WAV, SQLite and prior voice/ASR decisions. --asr-only --limit 25 for verification, --asr-only for resumable full queue."
 }
