@@ -106,3 +106,33 @@
 Windows CI: 6 источников SHA + mock audit tests SUCCESS https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/44114410159; единый updater menu/AST/pin Windows SUCCESS https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/44115256735; Windows bootstrap stale pins (обе версии), forged hash reject SUCCESS https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/44115206187. **Реальный 119 на пользовательском EET ещё не запускался.**
 
 Пользователю доступен ZIP `BGXAI_UPDATE_ONE_FILE_119.zip`, внутри **только `BGXAI_UPDATE.cmd`** с точной SHA проверкой. Чтобы получить пункт 119, один раз заменить *именно существующий* CMD в `C:\Games\BG_EET_FOXX_NEW`, затем выбрать 119 и прислать отчёт ZIP. Не повторять 118 и не повторять бои. Дальнейшая точечная AOE защита только после прочтения реальных BAF.
+
+## Реальный полный ZIP 119 — фактический источник Entangle в PRIEST1.BCS
+
+Пользователь прислал `BGXAI_SEND_SCRIPT_TRACE_20261117T155803815758Z.zip`, SHA256 `a270e4e9aa218174aac73bd7ccc697b94e5843ee3f884c92a5225ff2ed5e23fd`. Архив реально открыт и проанализирован. `REPORT.json`:
+- `status=BGX119_READONLY_PASS`, `game_modified=false`.
+- BGXP5 override `BDDEFAI.BCS` SHA256 `cfc61cfdf7e6ff074a3c26b1e11996a29e6f58fa32d2ddc568866f458b7ac22a`, Lua `74ddc016e15fae3451bafe3039b299740c9d2efae8ecfb3e86badea257fa650c`, last WeiDU BGXP5.
+- В сохранении `000000901-BGXAI_TEST_6_NO_PRIEST1` BALDUR.gam SHA256 `8cc1e8a6f0865784175ac781bee19d33350e8f2c4724b61389b58e85f96ccc00`, шесть NPC. У Джахейры script slots: override `JAHEIRA_`; class `BDDEFAI`; race `None`; general `WTASIGHT`; default `DPLAYER`. Таким образом **PRIEST1 действительно отсутствует в сохранённом CRE**.
+- **Единственный прямой `CLERIC_ENTANGLE` среди пяти реально декомпилированных скриптов находится в `PRIEST1.BCS`** (override SHA256 `867ff7fd9efa8a182bf3475bfef6b6f1de851067147ea15bd962431d329f6a9b`). Блок 3 из 5:
+```baf
+IF
+  See(NearestEnemyOf(Myself))
+  HaveSpell(CLERIC_ENTANGLE)
+  !StateCheck(NearestEnemyOf(Myself),STATE_SLEEPING)
+  !StateCheck(NearestEnemyOf(Myself),STATE_HELPLESS)
+THEN
+  RESPONSE #100
+    Spell(NearestEnemyOf(Myself),CLERIC_ENTANGLE)
+END
+```
+**Проверки союзников внутри области в нём нет**, поэтому данный скрипт создаёт риск friendly AoE в обычных случаях. Но **он не назначен Джахейре в сохранённом новом GAM**, а в двух фактических боях Entangle продолжает применяться. Это противоречие требует runtime attribution; нельзя утверждать, что именно этот блок исполнился в обоих боях.
+- `JAHEIRA_.BCS` override SHA256 `140a13fe558db817960b4ff8e176f206c00a0d212612ffbb5964f7c4f05c990b`: 44 блока, нет `Entangle`, 20 spell action lines, единственный `ChangeAIScript` относится к Khalid/DEFAULT, не Джахейре.
+- `BDDEFAI.BCS`: 1170 блоков, нет Entangle, 345 spell actions.
+- `WTASIGHT.BCS` override SHA256 `d3055bb06a50e2a6152e4ace8d2753e5450df28e066148eae2a0c01651e24605`: 6 блоков, 0 spell actions, Entangle нет.
+- `DPLAYER.BCS` chitin_biff SHA256 `bc34b9b9f2ec79149bad5abd793b82ab7c79d036fc0f3032a21ea3e7eef03d92`: 2 блока, 0 spell actions, Entangle нет.
+
+В исходном тестовом `BALDUR.SAV` (тот же побайтно, что в A/B копии) распакованы 5 записей `BG2600.are`, `BG2616.are`, `INN2616.sto`, `WORLDMAP.wmp`, `DEFAULT.toh`. В декомпрессированных файлах нет прямых байтовых `PRIEST1`, `JAHEIRA_`, `BDDEFAI`. Это **не доказывает отсутствие скрытых/индексных назначений скриптов**.
+
+**Следующее безопасное действие:** исследовать *реальное исполнение в памяти* (EEex runtime provenance), а не менять другой слот вслепую и не повторять бой из старого сохранения. Возможно автопереназначение скриптов при загрузке или другой живой экземпляр NPC/очередь действия; пока причины этих факторов не доказаны. Не отключать весь PRIEST1 глобально, не удалять JAHEIRA_ (сюжетные блоки!), не переписывать BDDEFAI и не подвергать успешное лечение BGXP5 риску.
+
+Пользователь требует **один постоянный `BGXAI_UPDATE.cmd`**, без очередных ручных замен, поэтому дальнейшую диагностику или исправление надо проводить штатным каналом, желательно без изменений CMD и без отдельного установщика. Пункт 119 успешно выполнен, заново не нужен.
