@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 35,
-  "sha256": "115f31a95f8914db7591c1bcc40b2e409ac431cd593c1abda72df36bee0dea71",
-  "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
-  "game_writes_allowed": true,
-  "note": "v35 one-file updater: read-only IWD party-banter DLG collector, captures 25 target dialogues plus speaker DLG from current game into the same SEND_TO_CHATGPT_BG_EET_RU.zip; verified SHA + embedded code, cache and error reporting. No gameplay changes by default; legacy v34 edit prompt is opt-in only."
+  "version": 36,
+  "sha256": "82d3ccd36195230852e61e5e0a9b91624cddbcea17560ceaef590c3915d41b34",
+  "mode": "READ_ONLY_COMPILER_PREFLIGHT",
+  "game_writes_allowed": false,
+  "note": "v36 one-file BG_EET_RU updater: embedded 300 RU strings and 81 original dialogue blocks. Verified 62 live DLGs and translation SHA. Runs a copied WeiDU binary ONLY on a disposable, isolated copy of game resources; verifies 300 exact Russian strings in each staged TLK and changed target DLGs. Original game is never written. Same single ZIP report includes 10_BANTER_COMPILER_PREFLIGHT.json; no installation prompt."
 }
