@@ -194,11 +194,11 @@ localPath=Join-Path $GameRoot 'BGXAI_DEV\priest_auto_priority_verified';installe
 names=@('BGXPR_LAST_PRIORITY.baf','BGXP2_LAST_PRIORITY.baf','BGXP2_BCS_PATCH.py','BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py','BGXP5_BCS_PREFLIGHT_READ_ONLY.py','BGXP5_INSTALL.py','test_bgxp5_source.py','test_bgxp5_bcs_preflight.py','test_bgxp5_installer_mock.py','README_RU.md','SHA256_FILES.json')
 }
 $releaseAOE=@{
-id='AOE117';version='0.3.48-BGX121-SPATIAL-READONLY';
+id='AOE117';version='0.3.49-BGX122-PRO-EFF-READONLY';
 manifest='BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/manifest_updater.json';
 prefix='BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\aoe_readonly_verified';installer='BGXAI_AOE_AUDIT.py';
-names=@('BGXAI_AOE_AUDIT.py','test_aoe_audit.py','BGXAI_TEST6_SAFE_COPY.py','test_safe_copy.py','BGX119_TRACE.py','BGX120_ENTANGLE_GUARD.py','test_guard120.py','BGX121_POLICY.py','BGX121_READONLY.py','test_121.py','README_RU.md')
+names=@('BGXAI_AOE_AUDIT.py','test_aoe_audit.py','BGXAI_TEST6_SAFE_COPY.py','test_safe_copy.py','BGX119_TRACE.py','BGX120_ENTANGLE_GUARD.py','test_guard120.py','BGX121_POLICY.py','BGX121_READONLY.py','test_121.py','BGX122_PROJECTILES_READONLY.py','test_122.py','README_RU.md')
 }
 function Get-PinnedBytes([string]$remotePath) {
 if($remotePath -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116|patchsets/priest_combat_eps_first_20261116|patchsets/priest_auto_attack_buffer_source_only_20261117|patchsets/priest_auto_priority_guard_source_20261117|patchsets/aoe_entangle_readonly_onefile_20261117)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
@@ -293,7 +293,7 @@ AssertNotReparse $dest
 if((HashFile $dest) -cne [string]$seen[$name].sha256) {$isCurrent=$false}
 }
 if(!$isCurrent) {
-Write-Host 'BGX41: building OWN icon assets from SHA256-verified source (no game changes).'
+Write-Host 'BGX41: build icons from verified source.'
 $builder=Join-Path $spec.localPath 'build_assets.py'
 & py -3 $builder
 if($LASTEXITCODE -ne 0){throw ('BGX41: asset generator exited '+$LASTEXITCODE)}
@@ -311,7 +311,7 @@ function SyncRelease($spec){
 AssertNotReparse $GameRoot
 AssertNotReparse (Join-Path $GameRoot 'BGXAI_DEV')
 AssertNotReparse $spec.localPath
-Write-Host ('Downloading and verifying BGXAI '+$spec.id+' from pinned GitHub commit ...')
+Write-Host ('Verifying BGXAI '+$spec.id+' from pinned commit ...')
 $list=VerifiedManifest $spec
 $payload=@{}
 foreach($name in $spec.names){
@@ -363,7 +363,7 @@ Generate041Assets $spec
 $installerPath=Join-Path $spec.localPath $spec.installer
 if($mode -eq '--install' -or $mode -eq '--uninstall'){
 Write-Host 'WARNING: experimental WeiDU change; requires explicit YES.'
-Write-Host 'Game/InfinityLoader/WeiDU must be closed. Preflight, backup and rollback gates active.'
+Write-Host 'Close game/loader/WeiDU; backup required.'
 }
 if($spec.id -eq '042B' -and $mode -eq '--status'){
 & py -3 $installerPath
@@ -383,7 +383,7 @@ if((HashFile $dest) -cne $files[$name].sha){throw ('BGXAI060 source SHA mismatch
 }
 $token=if($mode -ceq 'install'){'INSTALL_BGXAI_060'}else{'ROLLBACK_BGXAI_060'}
 Write-Host 'EXPERIMENTAL BGXAI 060: this step modifies the game through WeiDU.'
-Write-Host 'Close Baldur / InfinityLoader first; installer checks 056/060 hashes and creates external verified backup.'
+Write-Host 'Close game/loader; SHA backup required.'
 $confirmation=Read-Host ('Type '+$token+' exactly to authorize or press ENTER to cancel')
 if($confirmation -cne $token){Write-Host 'BGXAI 060 CANCELLED; no game/WeiDU change.';return}
 & py -3 (Join-Path $release060.localPath 'BGXAI60_INSTALL.py') $mode '--yes' '--confirm' 'BGXAI_060_EXPERIMENTAL'
@@ -441,8 +441,8 @@ AssertNotReparse $dest
 if((HashFile $dest) -cne $list[$name].sha){throw ('BGXAI061 source SHA mismatch: '+$name)}
 }
 $token=if($mode -ceq 'install'){'INSTALL_BGXAI_061'}else{'ROLLBACK_BGXAI_061'}
-Write-Host 'EXPERIMENTAL BGXAI 061: changes both guarded BCS receiver and Lua request TTL via WeiDU.'
-Write-Host 'Close Baldur / InfinityLoader first. Game hash gates and external verified backup are mandatory.'
+Write-Host 'BGXAI061: guarded BCS+Lua via WeiDU.'
+Write-Host 'Close game/loader; SHA backup required.'
 $confirmation=Read-Host ('Type '+$token+' exactly to authorize or ENTER to cancel')
 if($confirmation -cne $token){Write-Host 'BGXAI 061 CANCELLED. Game unchanged.';return}
 & py -3 (Join-Path $release061.localPath 'BGXAI61_INSTALL.py') $mode '--yes' '--confirm' 'BGXAI_061_EXPERIMENTAL'
@@ -529,7 +529,7 @@ SyncRelease $release066s
 Verify066SGuardedSource
 $token=if($mode -ceq 'install'){'INSTALL_BGXAI_066S'}else{'ROLLBACK_BGXAI_066S'}
 Write-Host '066S: pinned scripts, verified backup.'
-Write-Host 'CLOSE BALDUR + INFINITYLOADER before continuing. No automatic retry on failure.'
+Write-Host 'Close game/loader. No auto-retry.'
 $confirmation=Read-Host ('Type '+$token+' exactly to authorize, or ENTER to cancel')
 if($confirmation -cne $token){Write-Host 'BGXAI066S CANCELLED. Game unchanged.';return}
 & py -3 (Join-Path $release066s.localPath 'BGXAI66S_INSTALL.py') $mode '--yes' '--confirm' $token
@@ -1193,6 +1193,7 @@ Write-Host '118 - Copy BGXAI_TEST_6 without Jaheira PRIEST1 (typed approval; no 
 Write-Host '119 - Trace Jaheira scripts (READ ONLY)'
 Write-Host '120 - Party Entangle safeguard (status/preflight/install/rollback)'
 Write-Host '121 - AOE spatial/ranged safety audit (READ ONLY)'
+Write-Host '122 - Read real EET projectile areas and EFF (READ ONLY)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -1320,6 +1321,7 @@ switch($choice){
 '119' {SyncRelease $releaseAOE;& py -3 (Join-Path $releaseAOE.localPath 'BGX119_TRACE.py');if($LASTEXITCODE){throw '119 STOP'};break}
 '120' {SyncRelease $releaseAOE;& py -3 (Join-Path $releaseAOE.localPath 'BGX120_ENTANGLE_GUARD.py');if($LASTEXITCODE){throw '120 STOP'};break}
 '121' {SyncRelease $releaseAOE;& py -3 (Join-Path $releaseAOE.localPath 'BGX121_READONLY.py');if($LASTEXITCODE){throw '121 STOP'};break}
+'122' {SyncRelease $releaseAOE;& py -3 (Join-Path $releaseAOE.localPath 'BGX122_PROJECTILES_READONLY.py');if($LASTEXITCODE){throw '122 STOP'};break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0
