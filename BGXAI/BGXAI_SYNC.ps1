@@ -194,11 +194,11 @@ localPath=Join-Path $GameRoot 'BGXAI_DEV\priest_auto_priority_verified';installe
 names=@('BGXPR_LAST_PRIORITY.baf','BGXP2_LAST_PRIORITY.baf','BGXP2_BCS_PATCH.py','BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py','BGXP5_BCS_PREFLIGHT_READ_ONLY.py','BGXP5_INSTALL.py','test_bgxp5_source.py','test_bgxp5_bcs_preflight.py','test_bgxp5_installer_mock.py','README_RU.md','SHA256_FILES.json')
 }
 $releaseAOE=@{
-id='AOE117';version='0.3.44-BGXAOE-SAFE-SAVECOPY';
+id='AOE117';version='0.3.45-BGXAOE-SCRIPT-TRACE';
 manifest='BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/manifest_updater.json';
 prefix='BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\aoe_readonly_verified';installer='BGXAI_AOE_AUDIT.py';
-names=@('BGXAI_AOE_AUDIT.py','test_aoe_audit.py','BGXAI_TEST6_SAFE_COPY.py','test_safe_copy.py','README_RU.md')
+names=@('BGXAI_AOE_AUDIT.py','test_aoe_audit.py','BGXAI_TEST6_SAFE_COPY.py','test_safe_copy.py','BGX119_TRACE.py','README_RU.md')
 }
 function Get-PinnedBytes([string]$remotePath) {
 if($remotePath -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116|patchsets/priest_combat_eps_first_20261116|patchsets/priest_auto_attack_buffer_source_only_20261117|patchsets/priest_auto_priority_guard_source_20261117|patchsets/aoe_entangle_readonly_onefile_20261117)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
@@ -1190,6 +1190,7 @@ Write-Host '115 - BGXP5 guarded install (typed approval)'
 Write-Host '116 - BGXP5 guarded rollback (typed approval)'
 Write-Host '117 - AOE Entangle audit (READ ONLY; BGXP5 no changes)'
 Write-Host '118 - Copy BGXAI_TEST_6 without Jaheira PRIEST1 (typed approval; no override changes)'
+Write-Host '119 - Trace Jaheira scripts (READ ONLY)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -1314,6 +1315,7 @@ switch($choice){
 '116' {BGXOneFileManaged $releaseBGXP5 'rollback' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
 '117' {BGXAOEReadOnly;break}
 '118' {BGXTest6Safe;break}
+'119' {SyncRelease $releaseAOE;& py -3 (Join-Path $releaseAOE.localPath 'BGX119_TRACE.py');if($LASTEXITCODE){throw '119 STOP'};break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0
