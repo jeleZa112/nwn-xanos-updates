@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 49,
-  "sha256": "43ba3531af78e60d479c12935ff59eaee7552958f5ece3ba671cb0d0012a7447",
+  "version": 50,
+  "sha256": "f3214e4e1a4eeb3327fbad3243dbeef0e6c9fc5d4a76fca37a0ce112ae23c34f",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v49 read-only safety audit: 82 source dialogue anchors / 300 unique RU strings / 324 references; guard context & trigger evidence, never equated to on-screen visibility. On isolated WeiDU compile canonical compare state, transition, trigger and action records of all 63 DLGs; distinctly flag semantic changes in 37 non-target DLGs vs byte-level resaving. No real game changes, no install authorization. Keeps v48 proven preflight and one-file self-update / single ZIP."
+  "note": "v50: 82 source I_C_T3 anchors require 68 DLG, including 26 anchor DLGs, 37 expected speaker DLGs among captured 63, and 5 EET variable-resolved supplemental speaker DLGs (EDWINJ_, IMOEN2_, JAHEIJ, MINSCJ_, VICONJ). All 68 are audited pre/post WeiDU in disposable staging for preservation of original states, transitions, trigger texts, and action texts. Violations remain HOLD; passes still review-required because runtime visibility and full EET configuration are unverified. Single persistent SHA-verified updating CMD and ZIP; no game writes."
 }
