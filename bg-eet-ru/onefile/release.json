@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 52,
-  "sha256": "4a01e19302c671f27ee2a614f6ea16684521f146c94533dd09ed531076187ebd",
+  "version": 56,
+  "sha256": "7d27b00448d79885abecae981582492ff64fb9c9cba5378467c9c8cdded39cb3",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v52: v51 validated 68 DLG logical preservation and isolated WeiDU PASS. New nonfatal read-only audit fetches SHA1-blob-verified original English 300 IWD EET banter lines from pinned upstream and checks exact occurrences in installed ru_RU dialog.tlk/dialogf.tlk and original references in 63 captured live DLG. Never equates static occurrence with runtime visibility. All 300 Russian translations unchanged, game writes prohibited. Selftest, local 63-DLG parsing and v51->v52 guarded update tests passed."
+  "note": "v56: single existing CMD, read-only CRE/ARE override and KEY directory audit; preserve v55 report inside same ZIP. No game writes. Static links never imply runtime visibility."
 }
