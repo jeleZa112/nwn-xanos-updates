@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 52
+SELF_VERSION = 56
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -834,7 +834,12 @@ def main(argv=None):
     status['v29_historical'] = used['v29'] in ('IMPORTED_HISTORICAL','CACHE_HISTORICAL')
     status['game_root']=str(game)
     status['updater_update_check']=update_note
+    v56_before=v56_preserve_prior(report_path)
     write_bundle(report_path,status,v28report,v29report,fp,get_log(report_path),source_report,nondialogue_report,dlg_status,dlg_contents,dlg_cache,v36_preflight)
+    if fingerprints(game,v28)!=fp:
+        raise RuntimeError('STOP: resource fingerprints changed during v56')
+    v56_status=v56_static_audit(game,v56_before,report_path)
+    print('v56 CRE/ARE/KEY:',v56_status['status'],v56_status['summary'])
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
     print('Собрано DLG (v35):',dlg_status.get('found',0) if dlg_status else 0,'; статус:',used.get('v35'))
     print('Найдено исходных диалоговых строк для перевода:',status.get('v32_sources_ready',0))
@@ -849,6 +854,138 @@ def main(argv=None):
     return 0
 
 
+
+
+
+def v56_static_audit(game, previous_zip, output_zip):
+    """CRE/ARE/KEY directory only; read-only game resources, no BIF payloads."""
+    import csv as _csv
+    game=Path(game)
+    override=game/'override'
+    anchors=[]
+    keep={}
+    if previous_zip:
+        keep=dict(previous_zip)
+        try:
+            v55=json.loads(keep['11_V55_LIVE_OVERRIDE_AUDIT.json'].decode('utf-8'))
+            anchors=v55.get('anchors') or []
+        except (KeyError,ValueError,UnicodeError,TypeError):
+            anchors=[]
+    targets={str(a.get('target_dlg','')).upper() for a in anchors if isinstance(a,dict)}
+    targets.discard('')
+    errors=[]
+    counts={'cre_scanned':0,'are_scanned':0,'are_actors':0}
+    def u32(b,o):
+        if o<0 or o+4>len(b):raise ValueError('offset outside file')
+        return struct.unpack_from('<I',b,o)[0]
+    def rr(b,o):
+        if o<0 or o+8>len(b):return ''
+        s=b[o:o+8].split(b'\0',1)[0]
+        if not s or any(c<32 or c>126 for c in s):return ''
+        return s.decode('ascii').upper().strip()
+    def cd(b):
+        if len(b)<8 or b[:4]!=b'CRE ':return ''
+        version=b[4:8].decode('ascii','replace').strip()
+        off={'V1.0':0x2cc,'V1.2':0x2cc,'V9.0':0x334}.get(version)
+        if off is None:return ''
+        return rr(b,off)
+    def records(suffix):
+        if not override.is_dir():return []
+        return sorted((p for p in override.iterdir() if p.is_file() and p.suffix.upper()==suffix),key=lambda p:p.name.upper())
+    crec={}
+    direct=[]
+    for p in records('.CRE'):
+        try:
+            d=cd(p.read_bytes());counts['cre_scanned']+=1
+            if d:
+                crec[p.stem.upper()]=d
+                if d in targets:direct.append((p.stem.upper(),d))
+        except (OSError,ValueError,struct.error) as exc:
+            errors.append({'file':p.name,'problem':str(exc)[:150]})
+    areas=[]
+    for p in records('.ARE'):
+        try:
+            b=p.read_bytes()
+            if len(b)<0x5c or b[:8]!=b'AREAV1.0':raise ValueError('unsupported ARE format')
+            off=u32(b,0x54);count=u32(b,0x58)
+            if count>50000 or off+count*0x110>len(b):raise ValueError('invalid actor bounds')
+            counts['are_scanned']+=1;counts['are_actors']+=count
+            for i in range(count):
+                x=off+i*0x110
+                cr=rr(b,x+0x80)
+                dl=rr(b,x+0x48)
+                embedded=u32(b,x+0x88);size=u32(b,x+0x8c)
+                ed=''
+                if size:
+                    if embedded+size>len(b):raise ValueError('invalid embedded CRE bounds')
+                    ed=cd(b[embedded:embedded+size])
+                match=sorted({v for v in (dl,ed,crec.get(cr,'')) if v in targets})
+                if match:areas.append({'area':p.stem.upper(),'actor':i,'cre':cr,'dlg':match})
+        except (OSError,ValueError,struct.error) as exc:
+            errors.append({'file':p.name,'problem':str(exc)[:150]})
+    present=set()
+    key_stats={}
+    try:
+        b=(game/'chitin.key').read_bytes()
+        if len(b)<24 or b[:4]!=b'KEY ':raise ValueError('not KEY')
+        nb=u32(b,8);nr=u32(b,12);bo=u32(b,16);ro=u32(b,20)
+        if nb>500000 or nr>2000000 or bo+nb*12>len(b) or ro+nr*14>len(b):
+            raise ValueError('invalid KEY directory')
+        for i in range(nr):
+            x=ro+14*i
+            if struct.unpack_from('<H',b,x+8)[0]==0x3f3:
+                present.add(rr(b,x))
+        key_stats={'bif_directory_entries':nb,'resource_directory_entries':nr}
+    except (OSError,ValueError,struct.error) as exc:
+        errors.append({'file':'chitin.key','problem':str(exc)[:150]})
+    rows=[]
+    overridden={p.stem.upper() for p in records('.DLG')}
+    for target in sorted(targets):
+        rows.append({'dialogue':target,'override_dlg':target in overridden,
+                     'key_directory_dlg':target in present,
+                     'override_cre_links':sorted(c for c,d in direct if d==target),
+                     'override_are_links':sorted(set(a['area'] for a in areas if target in a['dlg']))})
+    summary={**counts,'target_dialogues':len(targets),'anchors_from_v55':len(anchors),
+             'targets_with_override_cre_link':sum(bool(x['override_cre_links']) for x in rows),
+             'targets_with_override_are_link':sum(bool(x['override_are_links']) for x in rows),
+             'targets_in_key_directory':sum(x['key_directory_dlg'] for x in rows),
+             'errors':len(errors),**key_stats}
+    status='LIVE_STATIC_AUDIT' if len(anchors)==82 and len(targets)==26 else 'BLOCKED_MISSING_V55_ANCHORS'
+    output={'schema':'bg-eet-ru-v56-static-cre-are-key-v1','status':status,
+            'game_root':str(game),'summary':summary,'target_presence':rows,
+            'errors':errors[:200],'game_files_written':False,'installation_allowed':False,
+            'runtime_visibility_proven':False,
+            'coverage':'CRE/ARE override and KEY directory only; no BIF content or BCS evaluation',
+            'v55_previous_report_preserved':bool(keep)}
+    data={'12_V56_CRE_ARE_KEY_AUDIT.json':json.dumps(output,ensure_ascii=False,indent=2).encode('utf-8')}
+    csv_out=io.StringIO()
+    writer=_csv.DictWriter(csv_out,fieldnames=['dialogue','override_dlg','key_directory_dlg','override_cre_links','override_are_links'])
+    writer.writeheader()
+    for r in rows:
+        writer.writerow({**r,'override_cre_links':';'.join(r['override_cre_links']),
+                           'override_are_links':';'.join(r['override_are_links'])})
+    data['12_V56_TARGET_LINKS.csv']=csv_out.getvalue().encode('utf-8-sig')
+    with zipfile.ZipFile(output_zip,'a',compression=zipfile.ZIP_DEFLATED) as z:
+        for name in ('11_V55_LIVE_OVERRIDE_AUDIT.json','11_V55_82_ANCHORS.csv'):
+            if name in keep and name not in z.namelist():z.writestr(name,keep[name])
+        for name,payload in data.items():
+            if name in z.namelist():raise RuntimeError('duplicate v56 ZIP entry')
+            z.writestr(name,payload)
+    with zipfile.ZipFile(output_zip) as z:
+        if z.testzip() is not None:raise RuntimeError('v56 archive CRC failure')
+    return output
+
+
+def v56_preserve_prior(path):
+    result={}
+    if not Path(path).is_file():return result
+    with zipfile.ZipFile(path) as z:
+        for name in ('11_V55_LIVE_OVERRIDE_AUDIT.json','11_V55_82_ANCHORS.csv'):
+            try:
+                i=z.getinfo(name)
+                if i.file_size<2000000:result[name]=z.read(name)
+            except KeyError:pass
+    return result
 
 
 def selftest():
@@ -904,6 +1041,7 @@ def selftest():
             assert zz.read('09_IWD_BANTER_DLG/DDAMIEN.DLG')==sample
     assert 'BG_EET_RU_UPDATE.cmd' not in str(DEFAULT_GAME).split('\\')[:1]
     assert published_update(Path('/tmp/not_installed'),offline=True)[1] is False
+    assert callable(v56_static_audit) and callable(v56_preserve_prior)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
