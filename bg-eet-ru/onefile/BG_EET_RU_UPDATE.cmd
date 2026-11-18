@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 56
+SELF_VERSION = 57
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -907,7 +907,7 @@ def v56_static_audit(game, previous_zip, output_zip):
         try:
             b=p.read_bytes()
             if len(b)<0x5c or b[:8]!=b'AREAV1.0':raise ValueError('unsupported ARE format')
-            off=u32(b,0x54);count=u32(b,0x58)
+            off=u32(b,0x54);count=struct.unpack_from('<H',b,0x58)[0]
             if count>50000 or off+count*0x110>len(b):raise ValueError('invalid actor bounds')
             counts['are_scanned']+=1;counts['are_actors']+=count
             for i in range(count):
@@ -1042,6 +1042,11 @@ def selftest():
     assert 'BG_EET_RU_UPDATE.cmd' not in str(DEFAULT_GAME).split('\\')[:1]
     assert published_update(Path('/tmp/not_installed'),offline=True)[1] is False
     assert callable(v56_static_audit) and callable(v56_preserve_prior)
+    # ARE V1.0 actor count is WORD; adjacent WORD at 0x5a is regions count.
+    _are_test=bytearray(0x100)
+    struct.pack_into('<IHH',_are_test,0x54,0xe0,2,320)
+    assert struct.unpack_from('<H',_are_test,0x58)[0]==2
+    assert struct.unpack_from('<I',_are_test,0x58)[0]!=2
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
