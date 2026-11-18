@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 56,
-  "sha256": "7d27b00448d79885abecae981582492ff64fb9c9cba5378467c9c8cdded39cb3",
+  "version": 57,
+  "sha256": "90049c88f3acc188dcdfd563b5b220a2c5af695d7fcf61616cfd9c1e25b1c98a",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v56: single existing CMD, read-only CRE/ARE override and KEY directory audit; preserve v55 report inside same ZIP. No game writes. Static links never imply runtime visibility."
+  "note": "v57: fix ARE actor count parsing (WORD at 0x58, not DWORD); preserve v55 and one ZIP. Safe read-only diagnostic, no game writes."
 }
