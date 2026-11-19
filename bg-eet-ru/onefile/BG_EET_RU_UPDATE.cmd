@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 65
+SELF_VERSION = 66
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -852,6 +852,9 @@ def main(argv=None):
           '; IWD2 #1 not confirmed; no installation')
     v65_status=v65_autonomous_stages(report_path)
     print('v65 automatic safe stages completed:',len(v65_status['stages']))
+    v66_status=v66_cached_original_matches(report_path)
+    print('v66 exact English originals in live TLK:',v66_status['originals_with_exact_live_tlk_text'],
+          'with cached DLG references:',v66_status['originals_with_refs_in_captured_dlgs'])
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
     print('Собрано DLG (v35):',dlg_status.get('found',0) if dlg_status else 0,'; статус:',used.get('v35'))
     print('Найдено исходных диалоговых строк для перевода:',status.get('v32_sources_ready',0))
@@ -1259,6 +1262,55 @@ def v65_autonomous_stages(report_path):
     return report
 
 
+
+def v66_cached_original_matches(report_path):
+    """Compare original English lines with current TLK evidence and cached live DLG."""
+    import collections
+    with zipfile.ZipFile(report_path) as z:
+        pre=json.loads(z.read('10_BANTER_COMPILER_PREFLIGHT.json'))
+        original=pre['live_english_original_audit']
+        matches=[]
+        for row in original.get('rows',[]):
+            refs=sorted({int(ref) for side in row['exact_installed_tlk_strrefs'].values()
+                         for ref in side})
+            if refs:
+                matches.append({'tra_id':row['id'],'tlk_refs':refs,'dlgs':[]})
+        lookup=collections.defaultdict(list)
+        for item in matches:
+            for ref in item['tlk_refs']:lookup[ref].append(item)
+        for path in z.namelist():
+            if not path.startswith('09_IWD_BANTER_DLG/') or not path.endswith('.DLG'):
+                continue
+            data=z.read(path)
+            if len(data)<52 or data[:8]!=b'DLG V1.0':continue
+            states,so,trans,to=struct.unpack_from('<4I',data,8)
+            if (states>300000 or trans>3000000 or
+                so+states*16>len(data) or to+trans*32>len(data)):continue
+            dlg=path.split('/')[-1][:-4]
+            for kind,count,offset,strref_delta,stride in (
+                ('STATE',states,so,0,16),('REPLY',trans,to,4,32)):
+                for index in range(count):
+                    ref=struct.unpack_from('<I',data,offset+index*stride+strref_delta)[0]
+                    if ref in lookup:
+                        for item in lookup[ref]:
+                            item['dlgs'].append({'dlg':dlg,'kind':kind,'index':index,
+                                                 'strref':ref})
+    result={'schema':'bg-eet-ru-v66-cached-original-matches-v1',
+            'english_source_total':len(original.get('rows',[])),
+            'originals_with_exact_live_tlk_text':len(matches),
+            'originals_with_refs_in_captured_dlgs':sum(bool(m['dlgs']) for m in matches),
+            'matches':matches,
+            'scope':'63 captured DLG and the exact-English source matches from v52 preflight',
+            'translation_ready':False,'runtime_visibility_proven':False,
+            'game_files_written':False,'installation_allowed':False,
+            'note':'Exact textual match does not prove same line ownership or a playable path.'}
+    with zipfile.ZipFile(report_path,'a',compression=zipfile.ZIP_DEFLATED) as z:
+        name='17_V66_TARGETED_LIVE_ORIGINAL_MATCHES.json'
+        if name in z.namelist():raise RuntimeError('duplicate v66 report')
+        z.writestr(name,json.dumps(result,ensure_ascii=False,indent=2).encode('utf-8'))
+    return result
+
+
 def selftest():
     # Self-contained checks only; never read or change a real EET installation.
     p36,tra36=load_v36_preflight()
@@ -1317,6 +1369,7 @@ def selftest():
     assert callable(v60_weidu_installed_components)
     assert callable(v64_two_segment_evidence)
     assert callable(v65_autonomous_stages)
+    assert callable(v66_cached_original_matches)
     assert V64_EARLY_COMPONENTS['IWD2_EET']==[0]
     assert len(V64_EARLY_WEIDU_SHA)==64
     # ARE V1.0 actor count is WORD; adjacent WORD at 0x5a is regions count.
