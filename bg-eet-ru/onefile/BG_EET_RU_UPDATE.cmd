@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 60
+SELF_VERSION = 61
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -1081,20 +1081,42 @@ def v60_weidu_installed_components(game, report_path):
         if src.count('\ufffd')>max(4,len(src)//2000):
             src=data.decode('cp1251','replace')
         entries=[]
+        all_components=0
+        raw_mod_references=[]
+        sample_tp2_paths=[]
+        terms=('iwd1_eet','iwd2_eet','iwd_eet-party-banter','how_eet','totlm',
+               'iwd1-eet','iwd2-eet','iwd_eet_party_banter','iwd-eet-party-banter')
         for line_no,line in enumerate(src.splitlines(),1):
-            line=line.strip()
+            line=line.strip().lstrip('\ufeff')
             if not line or line.startswith('//'):continue
-            m=re.match(r'^~([^~]+\.tp2)~\s*#\s*(\d+)\s*#\s*(\d+)\b',line,re.I)
-            if not m:continue
-            modpath=m.group(1).replace('\\','/').lower()
-            if any(term in modpath for term in ('iwd1_eet','iwd2_eet','iwd_eet-party-banter','how_eet','totlm')):
-                entries.append({'line':line_no,'tp2_path':m.group(1),
-                                'language':int(m.group(2)),'component':int(m.group(3)),
-                                'comment':line.split('//',1)[-1].strip()[:180] if '//' in line else ''})
+            # Accept optional leading paths and whitespace, but preserve actual component IDs.
+            m=re.search(r'~([^~\r\n]*?\.tp2)~\s*#\s*(\d+)\s*#\s*(\d+)(?!\d)',line,re.I)
+            if m:
+                all_components+=1
+                modpath=m.group(1).replace('\\','/').lower()
+                if len(sample_tp2_paths)<12:sample_tp2_paths.append(m.group(1)[-180:])
+                if any(term in modpath for term in terms):
+                    entries.append({'line':line_no,'tp2_path':m.group(1),
+                                    'language':int(m.group(2)),'component':int(m.group(3)),
+                                    'comment':line.split('//',1)[-1].strip()[:180] if '//' in line else ''})
+            elif any(term in line.lower() for term in terms) and len(raw_mod_references)<15:
+                raw_mod_references.append({'line':line_no,'text':line[:240]})
+        report['diagnostics']={'log_bytes':len(data),'lines':len(src.splitlines()),
+                               'all_parsed_tp2_component_lines':all_components,
+                               'sample_other_mod_tp2_paths':sample_tp2_paths,
+                               'unparsed_relevant_lines':raw_mod_references,
+                               'utf16_bom':data.startswith((b'\xff\xfe',b'\xfe\xff')),
+                               'nul_byte_count_first_1024':data[:1024].count(b'\x00')}
+        if data.startswith((b'\xff\xfe',b'\xfe\xff')) or data[:1024].count(b'\x00')>64:
+            report['diagnostics']['warning']='POSSIBLE_UTF16_LOG_PARSER_UNSUPPORTED'
         for mod,key in [('iwd1_eet','IWD1_EET'),('iwd2_eet','IWD2_EET'),
                         ('iwd_eet-party-banter','IWD_PARTY_BANTER'),
                         ('how_eet','HOW_EET'),('totlm','TOTLM')]:
-            values=sorted({e['component'] for e in entries if mod in e['tp2_path'].lower()})
+            aliases={'iwd1_eet':('iwd1_eet','iwd1-eet'),
+                     'iwd2_eet':('iwd2_eet','iwd2-eet'),
+                     'iwd_eet-party-banter':('iwd_eet-party-banter','iwd_eet_party_banter','iwd-eet-party-banter')}
+            accepted=aliases.get(mod,(mod,))
+            values=sorted({e['component'] for e in entries if any(x in e['tp2_path'].lower() for x in accepted)})
             report['groups'][key]={'installed_components':values,'found':bool(values)}
         iwd2=report['groups']['IWD2_EET']['installed_components']
         banter=report['groups']['IWD_PARTY_BANTER']['installed_components']
@@ -1169,6 +1191,7 @@ def selftest():
     assert callable(v56_static_audit) and callable(v56_preserve_prior)
     assert callable(v58_local_tp2_bcs_gate)
     assert callable(v60_weidu_installed_components)
+    assert re.search(r'~mods\\setup-iwd2_eet.tp2~ #0 #1',r'~mods\\setup-iwd2_eet.tp2~ #0 #1',re.I)
     # ARE V1.0 actor count is WORD; adjacent WORD at 0x5a is regions count.
     _are_test=bytearray(0x100)
     struct.pack_into('<IHH',_are_test,0x54,0xe0,2,320)
