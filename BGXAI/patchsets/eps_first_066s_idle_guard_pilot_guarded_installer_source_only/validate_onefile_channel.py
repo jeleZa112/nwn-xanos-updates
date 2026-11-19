@@ -4,6 +4,7 @@ CI only: reads Git objects; NEVER executes game installers or alters EET.
 """
 from __future__ import annotations
 import hashlib
+import ast
 import json
 import re
 import subprocess
@@ -125,6 +126,19 @@ def main():
             original = git_bytes(pin['commit'], f['source'])
             assert len(original) == f['size'] and sha(original) == f['sha256'], f'bad source: {name}'
             assert f"'{name}'" in code, f'updater source absent: {name}'
+    ranged_dir = 'BGXAI/patchsets/ranged_fighter_guarded_20261119/'
+    ranged_install = git_bytes(pin['commit'], ranged_dir+'BGXRANGED_GUARDED_INSTALL.py')
+    ranged_preflight = git_bytes(pin['commit'], ranged_dir+'BGXRANGED_PREFLIGHT.py')
+    for name, code_bytes in (('guarded installer',ranged_install),('native preflight',ranged_preflight)):
+        ast.parse(code_bytes.decode('utf-8'), filename=name)
+    assert b'INSTALL_BGXRANGED_FIGHTER_PILOT' in ranged_install
+    assert b'ROLLBACK_BGXRANGED_FIGHTER_PILOT' in ranged_install
+    assert b'BGXRANGED_NATIVE_PREFLIGHT_PASS' in ranged_install
+    assert b'candidate_sha256' in ranged_preflight
+    assert b'49b553908e7b66ab85714e91dd27800cad2ec4a9c51d8860d24aeb67b3c461b3' in ranged_install
+    assert "'124' {SyncRelease $releaseRanged" in code
+    assert "'125' {SyncRelease $releaseRanged" in code
+    assert "'126' {SyncRelease $releaseRanged" in code
     print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-126; 74/74 source hashes; pin matched; game untouched')
 
 if __name__ == '__main__':
