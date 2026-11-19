@@ -201,11 +201,11 @@ localPath=Join-Path $GameRoot 'BGXAI_DEV\aoe_readonly_verified';installer='BGXAI
 names=@('BGXAI_AOE_AUDIT.py','test_aoe_audit.py','BGXAI_TEST6_SAFE_COPY.py','test_safe_copy.py','BGX119_TRACE.py','BGX120_ENTANGLE_GUARD.py','test_guard120.py','BGX121_POLICY.py','BGX121_READONLY.py','test_121.py','BGX122_PROJECTILES_READONLY.py','test_122.py','README_RU.md')
 }
 $releaseRanged=@{
-id='BGXRANGED';version='0.3.54-BGXRANGED-V2-GUARDED';
+id='BGXRANGED';version='0.3.55-BGXRANGED-V3-NATIVE-READONLY';
 manifest='BGXAI/patchsets/ranged_fighter_guarded_20261119/manifest_updater.json';
 prefix='BGXAI/patchsets/ranged_fighter_guarded_20261119/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\ranged_fighter_verified';installer='BGXRANGED_PREFLIGHT.py';
-names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INSTALL.py','BGXRANGED_V2_MELEE_HANDOFF.baf','BGXRANGED_V2_PREFLIGHT.py','BGXRANGED_V2_GUARDED_INSTALL.py')
+names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INSTALL.py','BGXRANGED_V2_MELEE_HANDOFF.baf','BGXRANGED_V2_PREFLIGHT.py','BGXRANGED_V2_GUARDED_INSTALL.py','BGXRANGED_V3_MELEE_HANDOFF.baf','BGXRANGED_V3_PREFLIGHT.py')
 }
 $v2install=Join-Path $releaseRanged.localPath 'BGXRANGED_V2_GUARDED_INSTALL.py'
 function Get-PinnedBytes([string]$remotePath) {
@@ -1176,26 +1176,26 @@ Write-Host ' 93 - BGXAI 066S idle-guard read-only preflight'
 Write-Host ' 94 - BGXAI 066S idle-guard guarded install (separate approval)'
 Write-Host ' 95 - BGXAI 066S idle-guard read-only status'
 Write-Host ' 96 - BGXAI 066S idle-guard guarded rollback (separate approval)'
-Write-Host ' 97 - BGXPR priest status (READ ONLY, automatic SHA sync)'
-Write-Host ' 98 - BGXPR EET compiler preflight (READ ONLY)'
-Write-Host ' 99 - BGXPR install (typed authorization)'
-Write-Host '100 - BGXPR rollback (typed authorization)'
-Write-Host '101 - BGXTEAM status (READ ONLY)'
-Write-Host '102 - BGXTEAM preflight (READ ONLY)'
-Write-Host '103 - BGXTEAM install (typed authorization)'
-Write-Host '104 - BGXTEAM rollback (typed authorization)'
-Write-Host '105 - BGXP2 combat priest status (READ ONLY)'
-Write-Host '106 - BGXP2 combat priest EET preflight (READ ONLY)'
-Write-Host '107 - BGXP2 guarded install (typed approval)'
-Write-Host '108 - BGXP2 guarded rollback (typed approval)'
-Write-Host '109 - BGXP3 AUTO buffer status (READ ONLY)'
-Write-Host '110 - BGXP3 real EET preflight (READ ONLY)'
-Write-Host '111 - BGXP3 guarded install (typed approval)'
-Write-Host '112 - BGXP3 guarded rollback (typed approval)'
-Write-Host '113 - BGXP5 AUTO heal priority status (READ ONLY)'
-Write-Host '114 - BGXP5 real EET compiler preflight (READ ONLY)'
-Write-Host '115 - BGXP5 guarded install (typed approval)'
-Write-Host '116 - BGXP5 guarded rollback (typed approval)'
+Write-Host ' 97 - BGXAI 97'
+Write-Host ' 98 - BGXAI 98'
+Write-Host ' 99 - BGXAI 99'
+Write-Host '100 - BGXAI 100'
+Write-Host '101 - BGXAI 101'
+Write-Host '102 - BGXAI 102'
+Write-Host '103 - BGXAI 103'
+Write-Host '104 - BGXAI 104'
+Write-Host '105 - BGXAI 105'
+Write-Host '106 - BGXAI 106'
+Write-Host '107 - BGXAI 107'
+Write-Host '108 - BGXAI 108'
+Write-Host '109 - BGXAI 109'
+Write-Host '110 - BGXAI 110'
+Write-Host '111 - BGXAI 111'
+Write-Host '112 - BGXAI 112'
+Write-Host '113 - BGXAI 113'
+Write-Host '114 - BGXAI 114'
+Write-Host '115 - BGXAI 115'
+Write-Host '116 - BGXAI 116'
 Write-Host '117 - AOE Entangle audit (READ ONLY; BGXP5 no changes)'
 Write-Host '118 - Copy BGXAI_TEST_6 without Jaheira PRIEST1 (typed approval; no override changes)'
 Write-Host '119 - Trace Jaheira scripts (READ ONLY)'
@@ -1210,6 +1210,7 @@ Write-Host '127 - Fighter weapon handoff V2 native check (READ ONLY)'
 Write-Host '128 - V2 install + auto verify'
 Write-Host '129 - V2 status'
 Write-Host '130 - V2 rollback (explicit consent)'
+Write-Host '131 - V3 native check (READ ONLY)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -1346,6 +1347,7 @@ switch($choice){
 '128' {SyncRelease $releaseRanged;& py -3 $v2install install --game $GameRoot;if($LASTEXITCODE){throw '128 STOP'};& py -3 $v2install status --game $GameRoot;if($LASTEXITCODE){throw '128 VERIFY STOP'};break}
 '129' {SyncRelease $releaseRanged;& py -3 $v2install status --game $GameRoot;if($LASTEXITCODE){throw '129 STOP'};break}
 '130' {SyncRelease $releaseRanged;& py -3 $v2install rollback --game $GameRoot;if($LASTEXITCODE){throw '130 STOP'};break}
+'131' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGXRANGED_V3_PREFLIGHT.py') --game $GameRoot;if($LASTEXITCODE){throw '131 STOP'};break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0
