@@ -14,6 +14,8 @@ on:
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V3_PREFLIGHT.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V3_GUARDED_INSTALL.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_ranged_v3_guarded_installer.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_friendly_aggro_readonly.py'
   workflow_dispatch:
 jobs:
   source-only:
@@ -35,3 +37,5 @@ jobs:
         run: python -m py_compile BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V3_PREFLIGHT.py
       - name: V3 independent guarded installer mock tests
         run: python -m unittest -v BGXAI/patchsets/ranged_fighter_guarded_20261119/test_ranged_v3_guarded_installer.py
+      - name: Read-only friendly aggression audit mocked regression
+        run: python -m unittest -v BGXAI/patchsets/ranged_fighter_guarded_20261119/test_friendly_aggro_readonly.py
