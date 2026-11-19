@@ -7,6 +7,8 @@ on:
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_ranged_v2_policy.py'
       - '.github/workflows/bgxai-ranged-v2-melee-source.yml'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V2_PREFLIGHT.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V2_GUARDED_INSTALL.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_ranged_v2_installer.py'
   workflow_dispatch:
 jobs:
   source-only:
@@ -18,5 +20,7 @@ jobs:
           python-version: '3.11'
       - name: Read-only fighter handoff policy regression
         run: python -m unittest -v BGXAI/patchsets/ranged_fighter_guarded_20261119/test_ranged_v2_policy.py
+      - name: Guarded V2 WeiDU installer mock regression without EET
+        run: python -m unittest -v BGXAI/patchsets/ranged_fighter_guarded_20261119/test_ranged_v2_installer.py
       - name: Parse native V2 preflight Python without EET
         run: python -m py_compile BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V2_PREFLIGHT.py
