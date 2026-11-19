@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 60,
-  "sha256": "e4d88ec5d9ceae6303b78f31bfefd16fc35632a7e1601621a7dc4c48ef7a3d1b",
+  "version": 61,
+  "sha256": "3d726353b74be30740de0f46025d410a299d8287004b45649a86a2fd745b855f",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v60: inspect installed IWD1/IWD2/EET party-banter components in existing WeiDU.log even when local TP2 is missing; preserve v55/v56 diagnostics in one ZIP. No game changes."
+  "note": "v61: broaden and diagnose real WeiDU.log TP2 parsing; report parsed entries and unparsed relevant lines so zero does not imply absent mod. Same CMD and ZIP; read only."
 }
