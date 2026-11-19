@@ -1,0 +1,66 @@
+// BGXAI V2 — melee handoff for a resilient PURE FIGHTER only.
+// NOT INSTALLED. No movement. Preserves F guard/EPS healing gate.
+// Deliberately no enemy chase or AoE crossing; no universal class claims.
+// First priority: close enemy + ranged selected -> pick an available melee quickslot.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Class(Myself,FIGHTER)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_HELPLESS)
+  HPPercentGT(Myself,75)
+  IsWeaponRanged(Myself)
+  See(NearestEnemyOf(Myself))
+  Range(NearestEnemyOf(Myself),4)
+THEN
+  RESPONSE #100
+    EquipMostDamagingMelee()
+END
+
+// Second priority: no nearby enemy, current weapon is melee, ranged is ready.
+// Hysteresis: switch BACK at >= 10 ft, not at the close-range 4 ft threshold.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Class(Myself,FIGHTER)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_HELPLESS)
+  HPPercentGT(Myself,75)
+  !IsWeaponRanged(Myself)
+  CanEquipRanged()
+  See(NearestEnemyOf(Myself))
+  !Range(NearestEnemyOf(Myself),10)
+THEN
+  RESPONSE #100
+    EquipRanged()
+END
+
+// Third priority: stand still and shoot only if already in weapon range.
+// Never issues a MoveTo command. AttackOneRound can be re-evaluated by engine.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Class(Myself,FIGHTER)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_HELPLESS)
+  HPPercentGT(Myself,75)
+  IsWeaponRanged(Myself)
+  See(NearestEnemyOf(Myself))
+  InWeaponRange(NearestEnemyOf(Myself))
+  !Range(NearestEnemyOf(Myself),4)
+THEN
+  RESPONSE #100
+    AttackOneRound(NearestEnemyOf(Myself))
+END
