@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "8b83db0bbb7801a7a07668672f6cd8aeed6b3356",
+  "commit": "6cbe90ac9c22d8f32a569400ebc537a5db98ace6",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "4a2a2aba469ab7c6ebc3ccf307dee772d582a0d59d254400cd88f3743f9ab2e0",
-  "script_size": 79990,
-  "description": "BGXAI single CMD 1-130; 128 guarded V2 install then automatic installed-status verification on success; fail-closed, no separate 129 needed; 130 guarded rollback."
+  "script_sha256": "73b88cc1aed9682ee3097d805c6258743e4f1b7625622d15fb1946b3c555ec8c",
+  "script_size": 79684,
+  "description": "BGXAI single CMD 1-131; menu 131 V3 HP-independent melee/ranged selection read-only native compile on exact installed V2; 128 remains V2 installer. No V3 game install."
 }
