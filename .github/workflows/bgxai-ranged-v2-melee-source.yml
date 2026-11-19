@@ -12,6 +12,8 @@ on:
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V3_MELEE_HANDOFF.baf'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_ranged_v3_weapon_selection.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V3_PREFLIGHT.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V3_GUARDED_INSTALL.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_ranged_v3_guarded_installer.py'
   workflow_dispatch:
 jobs:
   source-only:
@@ -31,3 +33,5 @@ jobs:
         run: python -m py_compile BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V2_PREFLIGHT.py
       - name: Parse V3 read-only native preflight
         run: python -m py_compile BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V3_PREFLIGHT.py
+      - name: V3 independent guarded installer mock tests
+        run: python -m unittest -v BGXAI/patchsets/ranged_fighter_guarded_20261119/test_ranged_v3_guarded_installer.py
