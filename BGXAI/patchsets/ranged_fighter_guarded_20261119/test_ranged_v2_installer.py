@@ -4,9 +4,10 @@ import ast
 from pathlib import Path
 import unittest
 from unittest import mock
-import BGXRANGED_V2_GUARDED_INSTALL as U
-
+import sys
 ROOT=Path(__file__).resolve().parent
+sys.path.insert(0,str(ROOT))
+import BGXRANGED_V2_GUARDED_INSTALL as U
 
 class V2InstallerTests(unittest.TestCase):
     def test_python_syntax(self):
