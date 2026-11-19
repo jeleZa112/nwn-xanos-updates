@@ -16,8 +16,8 @@ TP2="BGXRANGED/setup-BGXRANGED.tp2"
 STAGED="BGXRANGED/staged/BDDEFAI.BCS"
 PROOF="BGXRANGED/STAGED_PROOF.json"
 EXE="setup-BGXRANGED.exe"
-OLD_LAST=re.compile(r"^~(?:[^~]*[/\\])?BGX120[/\\]SETUP-BGX120[.]TP2~\\s+#0\\s+#0(?:\\s|$)",re.I)
-NEW_LAST=re.compile(r"^~(?:[^~]*[/\\])?BGXRANGED[/\\]SETUP-BGXRANGED[.]TP2~\\s+#0\\s+#0(?:\\s|$)",re.I)
+OLD_LAST=re.compile(r"^~(?:[^~]*[/\\])?BGX120[/\\]SETUP-BGX120[.]TP2~\s+#0\s+#0(?:\s|$)",re.I)
+NEW_LAST=re.compile(r"^~(?:[^~]*[/\\])?BGXRANGED[/\\]SETUP-BGXRANGED[.]TP2~\s+#0\s+#0(?:\s|$)",re.I)
 TP2_DATA="BACKUP ~BGXRANGED/backup~\nAUTHOR ~BGXAI guarded ranged fighter~\nBEGIN ~BGXAI ranged fighter pilot~\nCOPY ~BGXRANGED/staged/BDDEFAI.BCS~ ~override/BDDEFAI.BCS~\n"
 INSTALL_TOKEN="INSTALL_BGXRANGED_FIGHTER_PILOT"
 ROLLBACK_TOKEN="ROLLBACK_BGXRANGED_FIGHTER_PILOT"
@@ -78,7 +78,7 @@ def weidu(root,rollback=False):
     p=subprocess.run(cmd,cwd=root,stdin=subprocess.DEVNULL,capture_output=True,text=True,
         errors="replace",timeout=240)
     log=(p.stdout or "")+"\n"+(p.stderr or "")
-    if p.returncode or re.search(r"(?im)^\\s*(?:ERROR:|FATAL ERROR:)",log):
+    if p.returncode or re.search(r"(?im)^\s*(?:ERROR:|FATAL ERROR:)",log):
         raise ValueError("WEIDU_STOP_NO_AUTO_RETRY:"+log[-750:])
 def install(root):
     processes()
@@ -100,7 +100,7 @@ def install(root):
         cmd=[str(exe),"--game",str(root),"--out",str(out),str(inp)]
         p=subprocess.run(cmd,cwd=td,stdin=subprocess.DEVNULL,capture_output=True,text=True,
             errors="replace",timeout=180)
-        if p.returncode or re.search(r"(?im)^\\s*(?:ERROR:|FATAL ERROR:)",(p.stdout or "")+"\n"+(p.stderr or "")):
+        if p.returncode or re.search(r"(?im)^\s*(?:ERROR:|FATAL ERROR:)",(p.stdout or "")+"\n"+(p.stderr or "")):
             raise ValueError("STAGE_COMPILER_FAILED")
         generated=list(out.rglob("BGXRANGED.BCS"))
         if len(generated)!=1:raise ValueError("STAGE_BCS_MISSING")
