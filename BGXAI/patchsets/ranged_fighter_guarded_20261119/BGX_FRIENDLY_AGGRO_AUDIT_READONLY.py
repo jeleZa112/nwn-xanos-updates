@@ -91,6 +91,19 @@ def main(root):
           "suspect_blocks":len(suspects),"last_weidu":component[-1],
           "suspects":suspects
         }
+        # Inspect the last saved party CRE script slots and decompile its
+        # actual referenced scripts. This is historical save evidence, NEVER
+        # runtime command provenance. No read-only scan may change the game.
+        try:
+            from BGXAI_SAVE_SCRIPT_AUDIT_READONLY import audit as audit_script_slots
+            result["saved_party_script_audit"]=audit_script_slots(root,weidu,temp,parse_baf)
+        except (OSError,ValueError,RuntimeError,UnicodeError) as e:
+            result["saved_party_script_audit"]={
+                "status":"SCRIPT_ASSIGNMENT_SCAN_STOP",
+                "reason":str(e)[:500],
+                "runtime_action_origin":"UNKNOWN",
+                "game_modified":False
+            }
         if sha(p)!=before:raise ValueError("GAME_CHANGED_DURING_AUDIT")
         dest=pathlib.Path(os.environ.get("USERPROFILE",str(pathlib.Path.home())))/"Documents"/"BGXAI_LIVE_REPORTS"
         if not dest.is_dir():
@@ -100,6 +113,20 @@ def main(root):
         report.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding="utf-8")
         print(json.dumps({k:v for k,v in result.items() if k!="suspects"},ensure_ascii=False,indent=2))
         print("REPORT_FILE="+str(report))
+        evidence=result.get("saved_party_script_audit",{})
+        saved=evidence.get("saved_party",{})
+        print("SAVED_GAME_STATUS="+str(saved.get("status","UNAVAILABLE")))
+        print("SAVED_GAME="+str(saved.get("save_file","NONE")))
+        print("PARTY_AI_AT_SAVE="+str(saved.get("gui_party_ai_flag_at_save","UNKNOWN")))
+        for actor in saved.get("party",[]):
+            print("SAVED_ACTOR="+str(actor.get("position"))+" "+
+                str(actor.get("name_from_saved_record","UNKNOWN"))+
+                " SCRIPTS="+str(actor.get("scripts",{})))
+        for script in evidence.get("scripts",[]):
+            print("ASSIGNED_SCRIPT="+str(script.get("script"))+
+                  " STATUS="+str(script.get("status"))+
+                  " ATTACK_BLOCKS="+str(script.get("attack_or_protect_blocks","UNKNOWN")))
+        print("RUNTIME_ACTION_ORIGIN=UNKNOWN (static audit only)")
         print("TOP_SUSPECT_BLOCKS:")
         for x in sorted(suspects,key=lambda x:(-len(x["risk"]),x["block"]))[:15]:
             print("BLOCK="+str(x["block"])+" FLAGS="+",".join(x["risk"]))
