@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 62,
-  "sha256": "cc1d34463a8119d2bf154b51a95db2aa86678c0ae3d721fcba93b361fe77954d",
+  "version": 63,
+  "sha256": "8ef16f6c44e6e6d265c034b09e9609c0b09861dc9c64b45418d8359961845719",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v62: fix v61 invalid selftest regex, preserve read-only fail-closed self-updater; expanded WeiDU.log diagnostics, one CMD one ZIP."
+  "note": "v63: remove isolated redundant WeiDU assertion and show stderr/status from failed selftest; preserve single CMD, one ZIP, read-only game."
 }
