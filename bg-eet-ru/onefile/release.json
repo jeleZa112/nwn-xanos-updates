@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 66,
-  "sha256": "8a3541b9d63005a13f36f2ce28ba3f3e87e9e7ceb2c94b196079e38ddf848e2b",
+  "version": 67,
+  "sha256": "2a61b2b175d23c7dadc841543b311d01bcd32d26d0f20116f281ee4a78ee3a2c",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v66: targeted audit of exact original English strings from 300 source lines, six active TLK refs and cached DLG state/reply references, using only existing 63 DLG in single ZIP. Auto-chained, no game writes."
+  "note": "v67: automatic read-only DLG graph audit of five cached NEERAJ/SAFANJ references (63 captured DLG). Static ownership only, not proven runtime visibility. One CMD/ZIP; no game changes."
 }
