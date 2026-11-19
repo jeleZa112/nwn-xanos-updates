@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
-  "version": "0.3.56-BGXRANGED-V3-GUARDED",
+  "version": "0.3.57-BGXAGGRO-READONLY",
   "files": [
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_PREFLIGHT.py",
@@ -56,6 +56,12 @@
       "dest": "BGXRANGED_V3_GUARDED_INSTALL.py",
       "size": 9163,
       "sha256": "6a66793496fe894f98c3a662d256fec4ae8b9c7110d78a4e38becad8b4c0fee8"
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py",
+      "dest": "BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py",
+      "size": 6614,
+      "sha256": "926bc0fafb15617cc11e63587589e92e62fbd75e81d5afb65820799c757a3b85"
     }
   ]
 }
