@@ -201,11 +201,11 @@ localPath=Join-Path $GameRoot 'BGXAI_DEV\aoe_readonly_verified';installer='BGXAI
 names=@('BGXAI_AOE_AUDIT.py','test_aoe_audit.py','BGXAI_TEST6_SAFE_COPY.py','test_safe_copy.py','BGX119_TRACE.py','BGX120_ENTANGLE_GUARD.py','test_guard120.py','BGX121_POLICY.py','BGX121_READONLY.py','test_121.py','BGX122_PROJECTILES_READONLY.py','test_122.py','README_RU.md')
 }
 $releaseRanged=@{
-id='BGXRANGED';version='0.3.55-BGXRANGED-V3-NATIVE-READONLY';
+id='BGXRANGED';version='0.3.56-BGXRANGED-V3-GUARDED';
 manifest='BGXAI/patchsets/ranged_fighter_guarded_20261119/manifest_updater.json';
 prefix='BGXAI/patchsets/ranged_fighter_guarded_20261119/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\ranged_fighter_verified';installer='BGXRANGED_PREFLIGHT.py';
-names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INSTALL.py','BGXRANGED_V2_MELEE_HANDOFF.baf','BGXRANGED_V2_PREFLIGHT.py','BGXRANGED_V2_GUARDED_INSTALL.py','BGXRANGED_V3_MELEE_HANDOFF.baf','BGXRANGED_V3_PREFLIGHT.py')
+names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INSTALL.py','BGXRANGED_V2_MELEE_HANDOFF.baf','BGXRANGED_V2_PREFLIGHT.py','BGXRANGED_V2_GUARDED_INSTALL.py','BGXRANGED_V3_MELEE_HANDOFF.baf','BGXRANGED_V3_PREFLIGHT.py','BGXRANGED_V3_GUARDED_INSTALL.py')
 }
 $v2install=Join-Path $releaseRanged.localPath 'BGXRANGED_V2_GUARDED_INSTALL.py'
 function Get-PinnedBytes([string]$remotePath) {
@@ -1196,21 +1196,24 @@ Write-Host '113 - BGXAI 113'
 Write-Host '114 - BGXAI 114'
 Write-Host '115 - BGXAI 115'
 Write-Host '116 - BGXAI 116'
-Write-Host '117 - AOE Entangle audit (READ ONLY; BGXP5 no changes)'
-Write-Host '118 - Copy BGXAI_TEST_6 without Jaheira PRIEST1 (typed approval; no override changes)'
-Write-Host '119 - Trace Jaheira scripts (READ ONLY)'
-Write-Host '120 - Party Entangle safeguard (status/preflight/install/rollback)'
-Write-Host '121 - AOE spatial/ranged safety audit (READ ONLY)'
-Write-Host '122 - Read real EET projectile areas and EFF (READ ONLY)'
-Write-Host '123 - V1 native preflight (READ ONLY)'
-Write-Host '124 - V1 install (typed approval)'
-Write-Host '125 - V1 status (READ ONLY)'
-Write-Host '126 - V1 rollback (typed approval)'
-Write-Host '127 - Fighter weapon handoff V2 native check (READ ONLY)'
-Write-Host '128 - V2 install + auto verify'
-Write-Host '129 - V2 status'
-Write-Host '130 - V2 rollback (explicit consent)'
+Write-Host '117 - BGXAI 117'
+Write-Host '118 - BGXAI 118'
+Write-Host '119 - BGXAI 119'
+Write-Host '120 - BGXAI 120'
+Write-Host '121 - BGXAI 121'
+Write-Host '122 - BGXAI 122'
+Write-Host '123 - BGXAI 123'
+Write-Host '124 - BGXAI 124'
+Write-Host '125 - BGXAI 125'
+Write-Host '126 - BGXAI 126'
+Write-Host '127 - BGXAI 127'
+Write-Host '128 - BGXAI 128'
+Write-Host '129 - BGXAI 129'
+Write-Host '130 - BGXAI 130'
 Write-Host '131 - V3 native check (READ ONLY)'
+Write-Host '132 - V3 install and auto-check'
+Write-Host '133 - V3 read-only status'
+Write-Host '134 - V3 rollback (consent)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -1348,6 +1351,9 @@ switch($choice){
 '129' {SyncRelease $releaseRanged;& py -3 $v2install status --game $GameRoot;if($LASTEXITCODE){throw '129 STOP'};break}
 '130' {SyncRelease $releaseRanged;& py -3 $v2install rollback --game $GameRoot;if($LASTEXITCODE){throw '130 STOP'};break}
 '131' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGXRANGED_V3_PREFLIGHT.py') --game $GameRoot;if($LASTEXITCODE){throw '131 STOP'};break}
+'132' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGXRANGED_V3_GUARDED_INSTALL.py') install --game $GameRoot;if($LASTEXITCODE){throw '132 STOP'};break}
+'133' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGXRANGED_V3_GUARDED_INSTALL.py') status --game $GameRoot;if($LASTEXITCODE){throw '133 STOP'};break}
+'134' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGXRANGED_V3_GUARDED_INSTALL.py') rollback --game $GameRoot;if($LASTEXITCODE){throw '134 STOP'};break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0
