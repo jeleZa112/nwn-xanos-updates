@@ -81,10 +81,14 @@ def guard_baf(baf,name):
  if len(text_blocks(patched))!=spec["count"]:raise ValueError("BAF_PATCH_COUNT:"+name)
  return patched
 def native_compile(exe,root,temp,name,baf):
- inp=temp/(name+".BAF");inp.write_text(baf,encoding="utf-8")
- out=temp/(name+".BCS")
+ # WeiDU v251 behavior is verified for same-stem BAF -> BCS paths.
+ # Never write compiler output to a game path or overwrite source BCS.
+ compiled_dir=temp/"compiled";compiled_dir.mkdir(exist_ok=True)
+ inp=compiled_dir/(name+".BAF");inp.write_text(baf,encoding="utf-8")
+ out=compiled_dir/(name+".BCS")
+ if out.exists():raise ValueError("COMPILED_OUTPUT_COLLISION:"+name)
  p=subprocess.run([str(exe),"--game",str(root),"--out",str(out),str(inp)],
-                  cwd=temp,stdin=subprocess.DEVNULL,capture_output=True,
+                  cwd=compiled_dir,stdin=subprocess.DEVNULL,capture_output=True,
                   text=True,errors="replace",timeout=180)
  err=(p.stdout or "")+"\n"+(p.stderr or "")
  if p.returncode or re.search(r"(?im)^\s*(?:ERROR:|FATAL ERROR:)",err) or not out.is_file():
@@ -93,14 +97,32 @@ def native_compile(exe,root,temp,name,baf):
  if len(P.parts(compiled))!=SCRIPTS[name]["count"]:raise ValueError("COMPILED_BLOCK_COUNT:"+name)
  return compiled
 def source_baf(exe,root,temp,name):
- origin=(root/"override"/(name+".BCS")) if name!="DPLAYER" else pathlib.Path("DPLAYER.BCS")
- out=temp/(name+"_original.BAF")
+ # Match the *live-tested* menu 135 decompilation: WeiDU receives a
+ # local TEMP copy of override/WTASIGHT.BCS or override/PRIEST1.BCS,
+ # not an absolute path into game/override. DPLAYER is loaded from BIFF.
+ source_dir=temp/"source";source_dir.mkdir(exist_ok=True)
+ out=source_dir/(name+".BAF")
+ if out.exists():raise ValueError("DECOMPILE_OUTPUT_COLLISION:"+name)
+ if name!="DPLAYER":
+  original=root/"override"/(name+".BCS")
+  V3.V2.guard(original)
+  if not original.is_file() or digest(original)!=SCRIPTS[name]["sha"]:
+   raise ValueError("DECOMPILE_SOURCE_SHA_DRIFT:"+name)
+  local=source_dir/(name+".BCS")
+  shutil.copy2(original,local)
+  if digest(local)!=SCRIPTS[name]["sha"]:
+   raise ValueError("TEMP_SOURCE_COPY_SHA_DRIFT:"+name)
+  origin=local
+ else:
+  origin=pathlib.Path("DPLAYER.BCS")
  p=subprocess.run([str(exe),"--game",str(root),"--out",str(out),str(origin)],
-                  cwd=temp,stdin=subprocess.DEVNULL,capture_output=True,
+                  cwd=source_dir,stdin=subprocess.DEVNULL,capture_output=True,
                   text=True,errors="replace",timeout=180)
  err=(p.stdout or "")+"\n"+(p.stderr or "")
- if p.returncode or not out.is_file():
-  raise ValueError("WEIDU_DECOMPILE_STOP:"+name+":"+err[-500:])
+ if p.returncode or re.search(r"(?im)^\s*(?:ERROR:|FATAL ERROR:)",err) or not out.is_file():
+  raise ValueError("WEIDU_DECOMPILE_STOP:"+name+
+                   ":expected="+str(out)+
+                   ":exit="+str(p.returncode)+":"+err[-480:])
  text=out.read_text("utf-8-sig",errors="replace")
  if len(text_blocks(text))!=SCRIPTS[name]["count"]:
   raise ValueError("SOURCE_BLOCK_COUNT:"+name)
