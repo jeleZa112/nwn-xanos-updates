@@ -2,7 +2,7 @@
 """Fail-closed offline tests: source-safe retaliation patch, no game writes."""
 from pathlib import Path
 from unittest import mock
-import sys,unittest
+import sys,unittest,tempfile
 HERE=Path(__file__).resolve().parent
 sys.path.insert(0,str(HERE))
 import BGX_FRIENDLY_RETALIATION_GUARDED as A
@@ -88,4 +88,55 @@ class FriendlyFix(unittest.TestCase):
   self.assertIn("if (root/\"override/DPLAYER.BCS\").exists()",source)
   self.assertIn("DPLAYER_OVERRIDE_NOT_REMOVED",source)
   self.assertNotIn("ClearActions(",source)
+ def test_native_decompile_uses_a_temp_override_copy(self):
+  # The user's WeiDU 251 printed only header and no BAF when passed an
+  # absolute original game path. Reproduce the successful menu-135 contract.
+  with tempfile.TemporaryDirectory() as d:
+   from pathlib import Path
+   root=Path(d)/"game";(root/"override").mkdir(parents=True)
+   (root/"override/WTASIGHT.BCS").write_bytes(b"test original")
+   tmp=Path(d)/"temp";tmp.mkdir()
+   def fake_weidu(args,**kwargs):
+    output=Path(args[args.index("--out")+1]);inp=Path(args[-1])
+    self.assertEqual(inp.name,"WTASIGHT.BCS")
+    self.assertEqual(output.name,"WTASIGHT.BAF")
+    self.assertEqual(inp.parent,output.parent)
+    self.assertNotEqual(inp.parent,root/"override")
+    self.assertEqual(kwargs["cwd"],inp.parent)
+    self.assertEqual(inp.read_bytes(),b"test original")
+    output.write_text(fixture("WTASIGHT"),encoding="utf-8")
+    return mock.Mock(returncode=0,stdout="ok",stderr="")
+   with mock.patch.object(A,"digest",return_value=A.SCRIPTS["WTASIGHT"]["sha"]):
+    with mock.patch.object(A.subprocess,"run",side_effect=fake_weidu) as runner:
+     res=A.source_baf(Path(d)/"weidu.exe",root,tmp,"WTASIGHT")
+     self.assertEqual(len(A.text_blocks(res)),6)
+     self.assertEqual(runner.call_count,1)
+ def test_game_resource_decompile_uses_relative_name(self):
+  with tempfile.TemporaryDirectory() as d:
+   from pathlib import Path
+   root=Path(d)/"game";tmp=Path(d)/"temp";tmp.mkdir()
+   def fake_weidu(args,**kwargs):
+    inp=Path(args[-1]);out=Path(args[args.index("--out")+1])
+    self.assertEqual(str(inp),"DPLAYER.BCS")
+    self.assertEqual(out.name,"DPLAYER.BAF")
+    self.assertEqual(out.parent,kwargs["cwd"])
+    out.write_text(fixture("DPLAYER"),encoding="utf-8")
+    return mock.Mock(returncode=0,stdout="",stderr="")
+   with mock.patch.object(A.subprocess,"run",side_effect=fake_weidu):
+    self.assertEqual(len(A.text_blocks(A.source_baf(Path(d)/"weidu.exe",root,tmp,"DPLAYER"))),2)
+ def test_compile_separate_temp_output(self):
+  with tempfile.TemporaryDirectory() as d:
+   from pathlib import Path
+   tmp=Path(d);root=tmp/"game"
+   data=b"SC\n"+b"CR\nCO\nx\nCR\n"+b"CR\nCO\ny\nCR\nSC\n"
+   def fake_weidu(args,**kwargs):
+    inp=Path(args[-1]);out=Path(args[args.index("--out")+1])
+    self.assertEqual(inp.parent,out.parent)
+    self.assertEqual(inp.name,"DPLAYER.BAF")
+    self.assertEqual(out.name,"DPLAYER.BCS")
+    self.assertNotEqual(inp.parent,tmp/"source")
+    out.write_bytes(data)
+    return mock.Mock(returncode=0,stdout="",stderr="")
+   with mock.patch.object(A.subprocess,"run",side_effect=fake_weidu):
+    self.assertEqual(A.native_compile(tmp/"weidu.exe",root,tmp,"DPLAYER",fixture("DPLAYER")),data)
 if __name__=="__main__":unittest.main()
