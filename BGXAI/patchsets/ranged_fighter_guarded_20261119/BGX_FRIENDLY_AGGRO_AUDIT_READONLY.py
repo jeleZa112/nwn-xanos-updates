@@ -104,6 +104,15 @@ def main(root):
                 "runtime_action_origin":"UNKNOWN",
                 "game_modified":False
             }
+        # Existing combat log only. Does not enable/modify any EEex listener.
+        # When no target-bearing BGX71 records exist, runtime attack proof=UNKNOWN.
+        try:
+            from BGX_COMBAT_LOG_READONLY_AUDIT import report as combat_log_report
+            result["combat_action_log_audit"]=combat_log_report(root)
+        except (OSError,ValueError,RuntimeError) as e:
+            result["combat_action_log_audit"]={"status":"COMBAT_LOG_SCAN_STOP",
+                "reason":str(e)[:400], "runtime_action_origin":"UNKNOWN",
+                "game_modified":False}
         if sha(p)!=before:raise ValueError("GAME_CHANGED_DURING_AUDIT")
         dest=pathlib.Path(os.environ.get("USERPROFILE",str(pathlib.Path.home())))/"Documents"/"BGXAI_LIVE_REPORTS"
         if not dest.is_dir():
@@ -127,6 +136,16 @@ def main(root):
                   " STATUS="+str(script.get("status"))+
                   " ATTACK_BLOCKS="+str(script.get("attack_or_protect_blocks","UNKNOWN")))
         print("RUNTIME_ACTION_ORIGIN=UNKNOWN (static audit only)")
+        action_log=result.get("combat_action_log_audit",{})
+        print("COMBAT_LOG_STATUS="+str(action_log.get("status","UNKNOWN")))
+        print("COMBAT_BGX71_ACTIONS="+str(action_log.get("bgx71_actions_in_tail",0)))
+        print("COMBAT_PARTY_ATTACK_STARTS_OBSERVED="+str(len(action_log.get("observed_party_attack_starts",[]))))
+        for evt in action_log.get("observed_party_attack_starts",[])[:15]:
+            print("PARTY_ACTION_STARTED: actor_slot="+str(evt.get("actor_slot"))+
+                " target_slot="+str(evt.get("target_slot"))+
+                " action_id="+str(evt.get("action_id"))+
+                " origin=UNKNOWN")
+
         print("TOP_SUSPECT_BLOCKS:")
         for x in sorted(suspects,key=lambda x:(-len(x["risk"]),x["block"]))[:15]:
             print("BLOCK="+str(x["block"])+" FLAGS="+",".join(x["risk"]))
