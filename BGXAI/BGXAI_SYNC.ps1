@@ -201,11 +201,11 @@ localPath=Join-Path $GameRoot 'BGXAI_DEV\aoe_readonly_verified';installer='BGXAI
 names=@('BGXAI_AOE_AUDIT.py','test_aoe_audit.py','BGXAI_TEST6_SAFE_COPY.py','test_safe_copy.py','BGX119_TRACE.py','BGX120_ENTANGLE_GUARD.py','test_guard120.py','BGX121_POLICY.py','BGX121_READONLY.py','test_121.py','BGX122_PROJECTILES_READONLY.py','test_122.py','README_RU.md')
 }
 $releaseRanged=@{
-id='BGXRANGED';version='0.3.56-BGXRANGED-V3-GUARDED';
+id='BGXRANGED';version='0.3.57-BGXAGGRO-READONLY';
 manifest='BGXAI/patchsets/ranged_fighter_guarded_20261119/manifest_updater.json';
 prefix='BGXAI/patchsets/ranged_fighter_guarded_20261119/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\ranged_fighter_verified';installer='BGXRANGED_PREFLIGHT.py';
-names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INSTALL.py','BGXRANGED_V2_MELEE_HANDOFF.baf','BGXRANGED_V2_PREFLIGHT.py','BGXRANGED_V2_GUARDED_INSTALL.py','BGXRANGED_V3_MELEE_HANDOFF.baf','BGXRANGED_V3_PREFLIGHT.py','BGXRANGED_V3_GUARDED_INSTALL.py')
+names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INSTALL.py','BGXRANGED_V2_MELEE_HANDOFF.baf','BGXRANGED_V2_PREFLIGHT.py','BGXRANGED_V2_GUARDED_INSTALL.py','BGXRANGED_V3_MELEE_HANDOFF.baf','BGXRANGED_V3_PREFLIGHT.py','BGXRANGED_V3_GUARDED_INSTALL.py','BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py')
 }
 $v2install=Join-Path $releaseRanged.localPath 'BGXRANGED_V2_GUARDED_INSTALL.py'
 function Get-PinnedBytes([string]$remotePath) {
@@ -1080,23 +1080,23 @@ Write-Host 'NO GAME FILES CHANGED.'
 Write-Host ''
 Write-Host ' BGXAI ONE-FILE UPDATER / EET Foxx / EPS 18.4'
 Write-Host ' Game: EPS 18.4 / EET. Use menu 97 for installed BGXPR status.'
-Write-Host ' 1 - Download/verify NEW BGXAI 040 (F key shows Guard ON/OFF; source only)'
-Write-Host ' 2 - Status of BGXAI 040 (read-only)'
-Write-Host ' 3 - EXPERIMENTAL install BGXAI 040 (YES + WeiDU backup)'
-Write-Host ' 4 - Roll back ONLY BGXAI 040 (YES + WeiDU)'
-Write-Host ' 5 - Status of BGXAI 039 (read-only)'
-Write-Host ' 6 - Roll back BGXAI 039 ONLY (must first uninstall 040)'
-Write-Host ' 7 - BGXAI 041 game precheck (READ-ONLY; NO INSTALL)' 
-Write-Host ' 8 - Download/verify BGXAI 041 (own icon sources; no installation)'
-Write-Host ' 9 - Status of BGXAI 041 (game read-only)'
-Write-Host ' 10 - EXPERIMENTAL install BGXAI 041 (YES + WeiDU backup; only if 040 last)'
-Write-Host ' 11 - Roll back BGXAI 041 (YES; only if 041 last)'
-Write-Host ' 12 - BGXAI 042 EPS guard/autoattack audit (READ-ONLY)'
-Write-Host ' 13 - BGXAI 042B LIVE preflight (READ-ONLY; NO INSTALL)'
-Write-Host ' 14 - Download/verify BGXAI 042B SOURCE ONLY'
-Write-Host ' 15 - EXPERIMENTAL install BGXAI 042B (YES + WeiDU backups)'
-Write-Host ' 16 - BGXAI 042B status (READ-ONLY; first download via 14)'
-Write-Host ' 17 - Roll back BGXAI 042B (YES; only if last + verified backups)'
+Write-Host ' 1 - Download/verify NEW BGXAI 040 '
+Write-Host ' 2 - Status of BGXAI 040 (read-only'
+Write-Host ' 3 - install BGXAI 040 (YES + WeiDU'
+Write-Host ' 4 - Roll back ONLY BGXAI 040 (YES '
+Write-Host ' 5 - Status of BGXAI 039 (read-only'
+Write-Host ' 6 - Roll back BGXAI 039 ONLY (must'
+Write-Host ' 7 - BGXAI 041 game precheck (READ-' 
+Write-Host ' 8 - Download/verify BGXAI 041 (own'
+Write-Host ' 9 - Status of BGXAI 041 (game read'
+Write-Host ' 10 - install BGXAI 041 (YES + WeiDU'
+Write-Host ' 11 - Roll back BGXAI 041 (YES; only'
+Write-Host ' 12 - BGXAI 042 EPS guard/autoattack'
+Write-Host ' 13 - BGXAI 042B LIVE preflight (REA'
+Write-Host ' 14 - Download/verify BGXAI 042B SOU'
+Write-Host ' 15 - install BGXAI 042B (YES + WeiD'
+Write-Host ' 16 - BGXAI 042B status (READ-ONLY; '
+Write-Host ' 17 - Roll back BGXAI 042B (YES; onl'
 Write-Host ' 18 - BGXAI 043P EEex passive observer'
 Write-Host ' 19 - Download/verify BGXAI 043P sourc'
 Write-Host ' 20 - EXPERIMENTAL install PASSIVE BGX'
@@ -1172,10 +1172,10 @@ Write-Host ' 89 - BGXAI 89'
 Write-Host ' 90 - BGXAI 90'
 Write-Host ' 91 - BGXAI 91'
 Write-Host ' 92 - BGXAI 92'
-Write-Host ' 93 - BGXAI 066S idle-guard read-only preflight'
-Write-Host ' 94 - BGXAI 066S idle-guard guarded install (separate approval)'
-Write-Host ' 95 - BGXAI 066S idle-guard read-only status'
-Write-Host ' 96 - BGXAI 066S idle-guard guarded rollback (separate approval)'
+Write-Host ' 93 - BGXAI 066S idle-guard read-onl'
+Write-Host ' 94 - BGXAI 066S idle-guard guarded '
+Write-Host ' 95 - BGXAI 066S idle-guard read-onl'
+Write-Host ' 96 - BGXAI 066S idle-guard guarded '
 Write-Host ' 97 - BGXAI 97'
 Write-Host ' 98 - BGXAI 98'
 Write-Host ' 99 - BGXAI 99'
@@ -1214,6 +1214,7 @@ Write-Host '131 - V3 native check (READ ONLY)'
 Write-Host '132 - V3 install and auto-check'
 Write-Host '133 - V3 read-only status'
 Write-Host '134 - V3 rollback (consent)'
+Write-Host '135 - Friendly aggro audit (READ ONLY)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -1354,6 +1355,7 @@ switch($choice){
 '132' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGXRANGED_V3_GUARDED_INSTALL.py') install --game $GameRoot;if($LASTEXITCODE){throw '132 STOP'};break}
 '133' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGXRANGED_V3_GUARDED_INSTALL.py') status --game $GameRoot;if($LASTEXITCODE){throw '133 STOP'};break}
 '134' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGXRANGED_V3_GUARDED_INSTALL.py') rollback --game $GameRoot;if($LASTEXITCODE){throw '134 STOP'};break}
+'135' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py') --game $GameRoot;if($LASTEXITCODE){throw '135 STOP'};break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0
