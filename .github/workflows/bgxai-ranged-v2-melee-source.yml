@@ -20,6 +20,9 @@ on:
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_ranged_v4_party_guard.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_PROTECT_ISOLATION.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_friendly_protect_isolation.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_SAVE_SCRIPT_AUDIT_READONLY.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_saved_party_script_audit.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py'
   workflow_dispatch:
 jobs:
   source-only:
@@ -47,3 +50,5 @@ jobs:
         run: python -m unittest -v BGXAI/patchsets/ranged_fighter_guarded_20261119/test_ranged_v4_party_guard.py
       - name: BGX38/39 exact-block protect isolation tests
         run: python -m unittest -v BGXAI/patchsets/ranged_fighter_guarded_20261119/test_friendly_protect_isolation.py
+      - name: Saved CRE script slots and assigned BCS action audit
+        run: python -m unittest -v BGXAI/patchsets/ranged_fighter_guarded_20261119/test_saved_party_script_audit.py
