@@ -152,3 +152,24 @@ Release `0.3.61-BGXFRIEND-GUARDED`: exact SHA-pinned hotfix installer `fd5ec89bd
 **Next user action:** close game and InfinityLoader; use **existing** BGXAI_UPDATE.cmd → menu **139**; approve `INSTALL_BGXFRIEND_RETALIATION_GUARD` once. 139 automatically runs native WeiDU preflight, exact baseline, external backup, installation and post-install verification if native compilation succeeds. If any new `BGXFRIEND_STOP` occurs, do NOT loop or try other install menus: copy full output. No need to run read-only 140 on success. Menu 141 is separate protected rollback if the new WeiDU component was actually installed and last.
 
 **Honesty:** the root-cause candidate from full JSON remains WTASIGHT/DPLAYER generic retaliation, but runtime command provenance and true behavior fix are NOT yet confirmed until safe gameplay. This hotfix fixes the *installer's decompilation attempt*, not independently the game retaliation.
+
+
+## 19.11.2026 — LIVE INSTALL PASS: BGXFRIEND v0.3.61
+
+User executed existing one-file `BGXAI_UPDATE.cmd` menu **139** and explicitly approved `INSTALL_BGXFRIEND_RETALIATION_GUARD`. Source sync validated 14 pinned source files. Native WeiDU v251 compile and WeiDU guarded install/post-install status succeeded. Terminal attestation:
+```json
+{
+  "status": "BGXFRIEND_INSTALLED_VERIFIED",
+  "patched_script_sha256": {
+    "WTASIGHT": "7d69e5408ad84912afec848cba221614a625caee7f8469db067108c70041bde1",
+    "DPLAYER": "1786f4dc050be5c4bef65d9b0c39100975a03fdf74057b21fe1b1c2b926d661f",
+    "PRIEST1": "86a3c63799f09e7b9d51f6a61a893eff36f50ee3d6a3fe7eaa2dae97d2861589"
+  },
+  "blocks": {"WTASIGHT":6,"DPLAYER":2,"PRIEST1":5},
+  "game_modified": true,
+  "backup": "C:\\Users\\Drevo\\Documents\\BGXFRIEND_SAFE_BACKUPS\\PRE_20261119T141539806725Z"
+}
+```
+Expected file and block signatures verified by installer. The existing BGXSAFE/BDDEFAI, BGXAI healing, switching, EPS/SCS and game saves were not modified by the BGXFRIEND component. Last WeiDU component is now BGXFRIEND. DO NOT run BGXSAFE menu 138 while BGXFRIEND remains last; its guarded rollback requires BGXSAFE last. To revert this new component, use only **141** with `ROLLBACK_BGXFRIEND_RETALIATION_GUARD` (explicit authorization). No need to run 140 after successful menu 139.
+
+**Outstanding verification:** No real playtest after this successful installation yet. Use new disposable save loaded AFTER mod install; party Khalid/Jaheira/Grey, ensure Party AI ON and F Guard desired; inspect idle first (no ally attacks). On safe copy only, reproduce single friendly hit with AI OFF then ON and immediately pause: Khalid should not target ally. Then reload clean saved state and test real external enemy targeting, bow→sword, sword→bow, BGXP5 healer Jagan, and BGX120 spell safety. If friendly retaliation continues, stop and report actor/target and screenshot; investigate other assigned actor script slots and engine-retained queued actions; do not assume this patch proves origin or total resolution. This is a confirmed **installation success**, NOT yet a confirmed gameplay fix.
