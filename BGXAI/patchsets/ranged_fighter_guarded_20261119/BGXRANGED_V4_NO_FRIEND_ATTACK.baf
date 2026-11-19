@@ -1,0 +1,74 @@
+// BGXAI V4 - hard friendly-target exclusion for pure fighter pilot.
+// SOURCE CANDIDATE ONLY. No movement. Keeps F guard/EPS heal gate.
+// Deliberately no enemy chase or AoE crossing; no universal class claims.
+// First priority: close enemy + ranged selected -> pick melee quickslot even while wounded.
+// Choosing a weapon is separate from choosing to engage: no melee Attack here.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Class(Myself,FIGHTER)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_HELPLESS)
+  IsWeaponRanged(Myself)
+  HasWeaponEquiped(Myself)
+  !InParty(NearestEnemyOf(Myself))
+  !Allegiance(NearestEnemyOf(Myself),GOODCUTOFF)
+  See(NearestEnemyOf(Myself))
+  Range(NearestEnemyOf(Myself),4)
+THEN
+  RESPONSE #100
+    EquipMostDamagingMelee()
+END
+
+// Second priority: no nearby enemy, current weapon is melee, ranged is ready.
+// This defensive weapon selection also works when wounded.
+// Hysteresis: switch BACK at >= 10 ft, not at the close-range 4 ft threshold.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Class(Myself,FIGHTER)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_HELPLESS)
+  !IsWeaponRanged(Myself)
+  CanEquipRanged()
+  !InParty(NearestEnemyOf(Myself))
+  !Allegiance(NearestEnemyOf(Myself),GOODCUTOFF)
+  See(NearestEnemyOf(Myself))
+  !Range(NearestEnemyOf(Myself),10)
+THEN
+  RESPONSE #100
+    EquipRanged()
+END
+
+// Third priority: optional offensive fire only on confirmed non-party, non-friendly target.
+// This script gate does NOT cancel a previously issued ProtectObject/Attack action.
+// Never issues a MoveTo command. AttackOneRound can be re-evaluated by engine.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Class(Myself,FIGHTER)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_HELPLESS)
+  HPPercentGT(Myself,75)
+  IsWeaponRanged(Myself)
+  !InParty(NearestEnemyOf(Myself))
+  !Allegiance(NearestEnemyOf(Myself),GOODCUTOFF)
+  See(NearestEnemyOf(Myself))
+  InWeaponRange(NearestEnemyOf(Myself))
+  !Range(NearestEnemyOf(Myself),4)
+THEN
+  RESPONSE #100
+    AttackOneRound(NearestEnemyOf(Myself))
+END
