@@ -24,7 +24,7 @@ RELEASES = (
     ('BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/', '0.3.40-BGXP3-AUTO-BUFFER', 9),
     ('BGXAI/patchsets/priest_auto_priority_guard_source_20261117/', '0.3.41-BGXP5-AUTO-PRIORITY-GUARD', 11),
     ('BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/', '0.3.50-BGX122-IDS-HYPHEN', 13),
-    ('BGXAI/patchsets/ranged_fighter_guarded_20261119/', '0.3.60-BGXFRIEND-GUARDED', 14),
+    ('BGXAI/patchsets/ranged_fighter_guarded_20261119/', '0.3.61-BGXFRIEND-GUARDED', 14),
 )
 
 def git_bytes(rev: str, path: str) -> bytes:
