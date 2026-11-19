@@ -201,11 +201,11 @@ localPath=Join-Path $GameRoot 'BGXAI_DEV\aoe_readonly_verified';installer='BGXAI
 names=@('BGXAI_AOE_AUDIT.py','test_aoe_audit.py','BGXAI_TEST6_SAFE_COPY.py','test_safe_copy.py','BGX119_TRACE.py','BGX120_ENTANGLE_GUARD.py','test_guard120.py','BGX121_POLICY.py','BGX121_READONLY.py','test_121.py','BGX122_PROJECTILES_READONLY.py','test_122.py','README_RU.md')
 }
 $releaseRanged=@{
-id='BGXRANGED';version='0.3.58-BGXSAFE-PROTECT-ISOLATION';
+id='BGXRANGED';version='0.3.59-BGX-SCRIPT-SLOTS-AUDIT';
 manifest='BGXAI/patchsets/ranged_fighter_guarded_20261119/manifest_updater.json';
 prefix='BGXAI/patchsets/ranged_fighter_guarded_20261119/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\ranged_fighter_verified';installer='BGXRANGED_PREFLIGHT.py';
-names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INSTALL.py','BGXRANGED_V2_MELEE_HANDOFF.baf','BGXRANGED_V2_PREFLIGHT.py','BGXRANGED_V2_GUARDED_INSTALL.py','BGXRANGED_V3_MELEE_HANDOFF.baf','BGXRANGED_V3_PREFLIGHT.py','BGXRANGED_V3_GUARDED_INSTALL.py','BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py','BGXRANGED_V4_NO_FRIEND_ATTACK.baf','BGX_FRIENDLY_PROTECT_ISOLATION.py')
+names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INSTALL.py','BGXRANGED_V2_MELEE_HANDOFF.baf','BGXRANGED_V2_PREFLIGHT.py','BGXRANGED_V2_GUARDED_INSTALL.py','BGXRANGED_V3_MELEE_HANDOFF.baf','BGXRANGED_V3_PREFLIGHT.py','BGXRANGED_V3_GUARDED_INSTALL.py','BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py','BGXRANGED_V4_NO_FRIEND_ATTACK.baf','BGX_FRIENDLY_PROTECT_ISOLATION.py','BGXAI_SAVE_SCRIPT_AUDIT_READONLY.py')
 }
 $v2install=Join-Path $releaseRanged.localPath 'BGXRANGED_V2_GUARDED_INSTALL.py'
 function Get-PinnedBytes([string]$remotePath) {
@@ -1210,11 +1210,11 @@ Write-Host '127 - BGXAI 127'
 Write-Host '128 - BGXAI 128'
 Write-Host '129 - BGXAI 129'
 Write-Host '130 - BGXAI 130'
-Write-Host '131 - V3 native check (READ ONLY)'
-Write-Host '132 - V3 install and auto-check'
-Write-Host '133 - V3 read-only status'
+Write-Host '131 - V3 native READ ONLY'
+Write-Host '132 - V3 install+verify'
+Write-Host '133 - V3 status READ ONLY'
 Write-Host '134 - V3 rollback (consent)'
-Write-Host '135 - Friendly aggro audit (READ ONLY)'
+Write-Host '135 - Full aggro audit READ ONLY'
 Write-Host '136 - BGXSAFE install+verify'
 Write-Host '137 - BGXSAFE status READ ONLY'
 Write-Host '138 - BGXSAFE rollback V3'
