@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "3f09232fb33ae3014fa6e2a757cb51363eabd916",
+  "commit": "9f6a7a68a178ec084b2f4a3eaf86a54b2179fcd7",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "dcb048d838d41fd59b1b56fae275737eb2001a44bed63a100840a646d69ac9b3",
-  "script_size": 79325,
-  "description": "BGXAI one permanent CMD 1-123, 123 SHA-pinned native ranged preflight READ ONLY; no game install. BGXP5/BGX120 untouched."
+  "script_sha256": "e421d6bb4a3d07ea08fe783ab4aee8fd68ea3a10c02a93f0a2b346caa07310b1",
+  "script_size": 79073,
+  "description": "BGXAI single CMD 1-126; ranged pilot 123 native preflight PASS in user's EET; 124 guarded WeiDU install, 125 status, 126 rollback. No automatic install."
 }
