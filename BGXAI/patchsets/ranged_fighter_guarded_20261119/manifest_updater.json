@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.51-BGXRANGED-NATIVE-PREFLIGHT",
+  "files": [
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_PREFLIGHT.py",
+      "dest": "BGXRANGED_PREFLIGHT.py",
+      "size": 3926,
+      "sha256": "97ac27a410828b412091a67fbb6a2cd79ece406e329ff7ba17fafa05b96019c6"
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_RANGED_FIGHTER.baf",
+      "dest": "BGX_RANGED_FIGHTER.baf",
+      "size": 746,
+      "sha256": "af7ef6e4287a346fd9ad66ac8458e39eb5d2a0e45bb7f52cabc7b5d266ee1546"
+    }
+  ]
+}
