@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 57,
-  "sha256": "90049c88f3acc188dcdfd563b5b220a2c5af695d7fcf61616cfd9c1e25b1c98a",
+  "version": 58,
+  "sha256": "62343e91791bcf1ddd43354cbfb027a39b1de87911dc9e091690a59f4eda6b28",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v57: fix ARE actor count parsing (WORD at 0x58, not DWORD); preserve v55 and one ZIP. Safe read-only diagnostic, no game writes."
+  "note": "v58 one CMD: local TP2 and WeiDU IWD2 component gate, read-only BCS override presence, retain v55/v56 evidence, one ZIP, no game changes and no installation permission."
 }
