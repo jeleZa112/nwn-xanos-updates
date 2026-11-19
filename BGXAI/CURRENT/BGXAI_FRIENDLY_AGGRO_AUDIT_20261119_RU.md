@@ -58,3 +58,21 @@ READ ONLY аудит актуального override/BDDEFAI.BCS с нативн
 1. Зафиксировать и изолировать 11 BGX38/39 ProtectObject, НЕ ломая BGX60/61 защищённые AttackReevaluate, ручной бой и BGXP5 лечение; подготовить экспериментальное контролируемое отключение только этих 11 операций с проверкой исходного SHA, отдельным WeiDU component и гарантированным откатом, либо пассивный EEex started-action observer с реальным target-ID и source-классом UNKNOWN.
 2. Готовить install проверку в одной цепочке: external backup → verified WeiDU → status verification; никаких отдельных «+» или повторных меню после SUCCESS.
 3. Не вызывать повторные опасные атаки союзников в живой партии до безопасного способа тестирования и записи provenance.
+
+
+## Experimental diagnostic fix BGXSAFE V4 — uploaded 135 JSON verified (19.11.2026)
+
+Real report: active BCS SHA256 89f59795c0382ab204731d898dc075504e2654085d0c7c247a53d3da439c2ffa, 1173 blocks, BGXRANGED3 last. 11 Attack blocks: six BGX LastAttacker guarded by !InParty and !Allegiance; two EPS attacks require ENEMY and !InParty; two BGXP attacks require !InParty and HP>60; V3 block #3 lacks friend guard but requires HP>75 and cannot explain 4/13 HP aggression. Eleven ProtectObject(PN,6) actions in #1078–1088 (BGX38/39) are strongest testable source of internal/retained guard retaliation, NOT proven cause.
+
+Created surgical guarded installer BGX_FRIENDLY_PROTECT_ISOLATION.py. Preconditions exact V3 SHA and last WeiDU; native WeiDU BCS decompile in TEMP; validates each of the 11 protection blocks contains only ProtectObject and allowed cooldown with guard and queue checks. Stops on any unexpected content. Reconstructs BCS with ONLY those 11 blocks absent (1173 -> 1162). In same update compiles BGXRANGED_V4_NO_FRIEND_ATTACK.baf using native WeiDU and replaces first 3 pilot blocks to require !InParty and !Allegiance(GOODCUTOFF). All 1159 other original blocks remain byte-exact.
+
+External SHA256 backup BEFORE install, new BGXSAFE WeiDU component, automatic installed-state self-check, last-only guarded rollback restores exact V3 hash. No edits to BGXP5, BGX120 or EPS. While installed, eleven BGX38/39 ProtectObject bodyguard behaviors are intentionally disabled — other BGX60/61 direct guard routines remain but overall guard behavior may be weaker. This is a reversible diagnosis, not proven permanent fix.
+
+Existing one-file BGXAI_UPDATE.cmd now offers:
+- 136 BGXSAFE install+automatic native compile and post-install verification, explicit token INSTALL_BGXSAFE_PROTECT_ISOLATION
+- 137 BGXSAFE status READ ONLY (optional)
+- 138 guarded rollback restoring V3, explicit token ROLLBACK_BGXSAFE_PROTECT_ISOLATION
+
+Pinned manifest 0.3.58-BGXSAFE-PROTECT-ISOLATION (12 source files); script commit ee9a884b120fab4ce3a958b70d906c1ff6d7895b, 79966 bytes, SHA256 eff7dc0abba5649b7fbcaa01a8f3dfc458e9f7355a0f93b6603162ddc3955214, PIN commit eb29a5b5785615e0f992ed42283699169f83985f. Unit tests run 44528213178 SUCCESS; Windows PowerShell AST/one-file source SHA/menu 1–138 run 44528809096 SUCCESS. NATIVE COMPILATION OF V4 ON USER'S EET AND GAMEPLAY NOT YET VERIFIED. No game changed by these source commits.
+
+Next action if user consents: close game, InfinityLoader and WeiDU; use same CMD 136 and exact token. 136 auto-checks all stages and stops if error; no separate 135 or 137 on success. If STOP share output, do not retry blindly. Test safe saved game only after install PASS; do not risk live party via repeated friendly attacks. 138 guarded rollback available after inspecting status. This test differentiates ProtectObject contribution but does not prove all potential engine/other-script causes.
