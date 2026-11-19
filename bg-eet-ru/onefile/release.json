@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 64,
-  "sha256": "4f22fd410197e670bd65fc01462b5602d9afbc3a37bdb50c902e26afdc966de6",
+  "version": 65,
+  "sha256": "ba87d803723b7513a081d1018fe2092e3880cf7ee8a659fbcd41d5d47f845ebe",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v64 reconciles user-provided earlier WeiDU(2).txt component evidence (IWD1 #0/#1/#3, IWD2 #0, Party Banter #0) with current WeiDU segment without claiming archival data as live; only read-only, no 300-line installation."
+  "note": "v65: automatic dependent read-only checkpoints in one CMD run; IWD branch evidence gate and independent player-visible text triage; one ZIP, no game modifications, no per-stage user prompts."
 }
