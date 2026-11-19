@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "42a54c0d69d7555dc0451deca8acc99bf1fdd0b6",
+  "commit": "5bbfbeda9267508a5144607e4f71928ad864f1a7",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "b498c1453f738ec872cddd9428aafc9c923f9d821ccc87ba108c1e03157dfb36",
-  "script_size": 79382,
-  "description": "BGXAI single permanent CMD 1-127; 127 ranged V2 native READ ONLY preflight, 124 V1 guarded install, 125 status, 126 V1 rollback. No automatic install."
+  "script_sha256": "15a73997bd4038f650a9f3e4cd8b7cca4fa07431ed97117af7ebfeb77e65100c",
+  "script_size": 79929,
+  "description": "BGXAI single CMD 1-130; V1 installed, V2 native preflight PASS; 128 V2 guarded upgrade, 129 read-only status, 130 last-component rollback restoring V1. No automatic install."
 }
