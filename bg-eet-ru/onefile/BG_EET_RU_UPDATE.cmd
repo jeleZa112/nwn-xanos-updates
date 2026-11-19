@@ -982,8 +982,7 @@ def v56_static_audit(game, previous_zip, output_zip):
                            'override_are_links':';'.join(r['override_are_links'])})
     data['12_V56_TARGET_LINKS.csv']=csv_out.getvalue().encode('utf-8-sig')
     with zipfile.ZipFile(output_zip,'a',compression=zipfile.ZIP_DEFLATED) as z:
-        for name in ('11_V55_LIVE_OVERRIDE_AUDIT.json','11_V55_82_ANCHORS.csv',
-                     '13_V58_LOCAL_TP2_BCS_GATE.json'):
+        for name in ('11_V55_LIVE_OVERRIDE_AUDIT.json','11_V55_82_ANCHORS.csv'):
             if name in keep and name not in z.namelist():z.writestr(name,keep[name])
         for name,payload in data.items():
             if name in z.namelist():raise RuntimeError('duplicate v56 ZIP entry')
