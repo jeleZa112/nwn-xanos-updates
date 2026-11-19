@@ -9,6 +9,8 @@ on:
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V2_PREFLIGHT.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V2_GUARDED_INSTALL.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_ranged_v2_installer.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V3_MELEE_HANDOFF.baf'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_ranged_v3_weapon_selection.py'
   workflow_dispatch:
 jobs:
   source-only:
@@ -22,5 +24,7 @@ jobs:
         run: python -m unittest -v BGXAI/patchsets/ranged_fighter_guarded_20261119/test_ranged_v2_policy.py
       - name: Guarded V2 WeiDU installer mock regression without EET
         run: python -m unittest -v BGXAI/patchsets/ranged_fighter_guarded_20261119/test_ranged_v2_installer.py
+      - name: V3 low HP weapon switch and inventory safety regression
+        run: python -m unittest -v BGXAI/patchsets/ranged_fighter_guarded_20261119/test_ranged_v3_weapon_selection.py
       - name: Parse native V2 preflight Python without EET
         run: python -m py_compile BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V2_PREFLIGHT.py
