@@ -76,3 +76,21 @@ Existing one-file BGXAI_UPDATE.cmd now offers:
 Pinned manifest 0.3.58-BGXSAFE-PROTECT-ISOLATION (12 source files); script commit ee9a884b120fab4ce3a958b70d906c1ff6d7895b, 79966 bytes, SHA256 eff7dc0abba5649b7fbcaa01a8f3dfc458e9f7355a0f93b6603162ddc3955214, PIN commit eb29a5b5785615e0f992ed42283699169f83985f. Unit tests run 44528213178 SUCCESS; Windows PowerShell AST/one-file source SHA/menu 1–138 run 44528809096 SUCCESS. NATIVE COMPILATION OF V4 ON USER'S EET AND GAMEPLAY NOT YET VERIFIED. No game changed by these source commits.
 
 Next action if user consents: close game, InfinityLoader and WeiDU; use same CMD 136 and exact token. 136 auto-checks all stages and stops if error; no separate 135 or 137 on success. If STOP share output, do not retry blindly. Test safe saved game only after install PASS; do not risk live party via repeated friendly attacks. 138 guarded rollback available after inspecting status. This test differentiates ProtectObject contribution but does not prove all potential engine/other-script causes.
+
+
+## Live PC install checkpoint — BGXSAFE PASS, 19.11.2026
+
+User executed existing one-file BGXAI_UPDATE.cmd -> menu 136, explicitly authorized INSTALL_BGXSAFE_PROTECT_ISOLATION. Installer itself reported:
+- status = BGXSAFE_PROTECT_ISOLATION_INSTALLED_VERIFIED
+- candidate SHA256 = 9bd4e5b413f60ba383fcb78859f9bfe0aab762ee8b0ec2b3f164b6c03377055e
+- active BDDEFAI BCS blocks = 1162
+- only_protect_blocks_removed = true
+- v4_friend_filters_compiled = true
+- game_modified = true
+- external backup = C:\Users\Drevo\Documents\BGXAI_SAFE_BACKUPS\BGXSAFE_PRE_20261119T130205718850Z
+
+**Interpretation:** Exact verified installed-state/WeiDU status is PASS. Still NO gameplay proof that friendly-fire retaliation has stopped. NO additional game install or status menu is required; menu 136 already completed automatic postinstall verification as requested. Keep fallback menu 138 guarded rollback.
+
+**Next safe isolated gameplay check:** On expendable/quicksave copy, F guard ON, EPS Autoattack OFF, keep Jaheira and Khalid in party, no actual external enemies, avoid 4/13 HP risk. 1) Observe without any friendly damage: no inappropriate attacks. 2) Only if a disposable save is available, perform one controlled low-damage friendly attack with Party AI OFF then Party AI ON, pause immediately to observe, do not continue if any ally retaliation. 3) If friendly retaliation still occurs, stop; possible engine retaliation/other script/retained action source, no claims that BGXSAFE is permanent fix. 4) After return to clean save, conduct a separate safe real-enemy test to ensure guard (some ProtectObject removed), healing and bow/sword selection remain functional. Do not test at low HP with no protection.
+
+Do not request automatic repeat status 137; results of these combat tests are the remaining factual gate.
