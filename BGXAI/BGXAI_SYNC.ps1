@@ -1207,8 +1207,8 @@ Write-Host '124 - V1 install (typed approval)'
 Write-Host '125 - V1 status (READ ONLY)'
 Write-Host '126 - V1 rollback (typed approval)'
 Write-Host '127 - Fighter weapon handoff V2 native check (READ ONLY)'
-Write-Host '128 - V2 guarded install (explicit consent)'
-Write-Host '129 - V2 status (READ ONLY)'
+Write-Host '128 - V2 install + auto verify'
+Write-Host '129 - V2 status'
 Write-Host '130 - V2 rollback (explicit consent)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
@@ -1343,7 +1343,7 @@ switch($choice){
 '125' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGXRANGED_GUARDED_INSTALL.py') status --game $GameRoot;if($LASTEXITCODE){throw '125 STOP'};break}
 '126' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGXRANGED_GUARDED_INSTALL.py') rollback --game $GameRoot;if($LASTEXITCODE){throw '126 STOP'};break}
 '127' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGXRANGED_V2_PREFLIGHT.py') --game $GameRoot;if($LASTEXITCODE){throw '127 STOP'};break}
-'128' {SyncRelease $releaseRanged;& py -3 $v2install install --game $GameRoot;if($LASTEXITCODE){throw '128 STOP'};break}
+'128' {SyncRelease $releaseRanged;& py -3 $v2install install --game $GameRoot;if($LASTEXITCODE){throw '128 STOP'};& py -3 $v2install status --game $GameRoot;if($LASTEXITCODE){throw '128 VERIFY STOP'};break}
 '129' {SyncRelease $releaseRanged;& py -3 $v2install status --game $GameRoot;if($LASTEXITCODE){throw '129 STOP'};break}
 '130' {SyncRelease $releaseRanged;& py -3 $v2install rollback --game $GameRoot;if($LASTEXITCODE){throw '130 STOP'};break}
 default {throw 'Unknown menu option, no game change.'}
