@@ -24,7 +24,7 @@ RELEASES = (
     ('BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/', '0.3.40-BGXP3-AUTO-BUFFER', 9),
     ('BGXAI/patchsets/priest_auto_priority_guard_source_20261117/', '0.3.41-BGXP5-AUTO-PRIORITY-GUARD', 11),
     ('BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/', '0.3.50-BGX122-IDS-HYPHEN', 13),
-    ('BGXAI/patchsets/ranged_fighter_guarded_20261119/', '0.3.54-BGXRANGED-V2-GUARDED', 6),
+    ('BGXAI/patchsets/ranged_fighter_guarded_20261119/', '0.3.55-BGXRANGED-V3-NATIVE-READONLY', 8),
 )
 
 def git_bytes(rev: str, path: str) -> bytes:
@@ -70,9 +70,9 @@ def main():
         assert token in recovery, 'one CMD recovery expected SHA or commit absent'
     oldmenu, oldcase = menus(old)
     menu, case = menus(live)
-    assert len(oldmenu) == 97 and len(menu) == 131, 'menu length mismatch'
-    assert len(oldcase) == 96 and len(case) == 130, 'dispatch length mismatch'
-    assert [int(re.search(r"'(\s*\d+) -", item).group(1)) for item in menu[:-1]] == list(range(1,131)) and menu[-1] == oldmenu[-1], 'menu numbering changed'
+    assert len(oldmenu) == 97 and len(menu) == 132, 'menu length mismatch'
+    assert len(oldcase) == 96 and len(case) == 131, 'dispatch length mismatch'
+    assert [int(re.search(r"'(\s*\d+) -", item).group(1)) for item in menu[:-1]] == list(range(1,132)) and menu[-1] == oldmenu[-1], 'menu numbering changed'
     assert case[:96] == oldcase, 'old dispatch 1..96 changed'
     code = live.decode('utf-8-sig')
     for n in range(97,117):
@@ -89,6 +89,10 @@ def main():
     assert case[124].startswith("'125' {SyncRelease $releaseRanged;& py -3"), '125 ranged status missing'
     assert case[125].startswith("'126' {SyncRelease $releaseRanged;& py -3"), '126 guarded rollback missing'
     assert case[126].startswith("'127' {SyncRelease $releaseRanged;& py -3"), '127 V2 read-only preflight missing'
+    assert case[130].startswith("'131' {SyncRelease $releaseRanged;& py -3"), '131 V3 preflight missing'
+    v3 = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V3_PREFLIGHT.py')
+    ast.parse(v3.decode('utf-8'), filename='V3 native read-only preflight')
+    assert b'BGXRANGED_V3_NATIVE_PREFLIGHT_PASS' in v3
     for i,verb in ((127,'install'),(128,'status'),(129,'rollback')):
         assert case[i].startswith(f"'{i+1}' {{SyncRelease $releaseRanged;& py -3 $v2install {verb}"), f'V2 menu {i+1} missing or incorrect'
     assert "function BGXAOEReadOnly" in code and "SyncRelease $releaseAOE" in code
@@ -150,7 +154,7 @@ def main():
     assert "'124' {SyncRelease $releaseRanged" in code
     assert "'125' {SyncRelease $releaseRanged" in code
     assert "'126' {SyncRelease $releaseRanged" in code
-    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-130; 77/77 source hashes; pin matched; game untouched')
+    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-131; 79/79 source hashes; pin matched; game untouched')
 
 if __name__ == '__main__':
     main()
