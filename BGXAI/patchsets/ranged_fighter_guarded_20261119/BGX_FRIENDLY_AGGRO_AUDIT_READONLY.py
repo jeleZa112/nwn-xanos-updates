@@ -11,7 +11,7 @@ BCS="override/BDDEFAI.BCS"
 SUSPECT=re.compile(r"\b(?:Attack|AttackReevaluate|AttackOneRound|AttackNoSound|AttackReevaluate|ForceAttack|ProtectObject|RunAwayFrom|MoveToObject|MoveToPoint|ChangeEnemyAlly)\s*\(",re.I)
 ATTACK=re.compile(r"\b(?:Attack|AttackReevaluate|AttackOneRound|AttackNoSound|ForceAttack)\s*\((.*)",re.I)
 LAST=re.compile(r"\b(?:LastAttackerOf|LastHitter|LastTargetedBy|AttackedBy|HitBy|Help|Hurt|NearestEnemyOf|LastSeenBy|Enemy)\s*\(",re.I)
-GUARD=re.compile(r"(?i)!\s*InParty\s*\(|!\s*Allegiance\s*\(|!\s*InPartySlot\s*\(")
+GUARD=re.compile(r"(?i)!\s*InParty\s*\(|!\s*Allegiance\s*\(")
 PLAYER=re.compile(r"\b(?:Player[1-6]|LastAttackerOf|LastHitter|NearestEnemyOf|LastSeenBy)\s*\(",re.I)
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 def safe(path,root):
