@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 61,
-  "sha256": "3d726353b74be30740de0f46025d410a299d8287004b45649a86a2fd745b855f",
+  "version": 62,
+  "sha256": "cc1d34463a8119d2bf154b51a95db2aa86678c0ae3d721fcba93b361fe77954d",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v61: broaden and diagnose real WeiDU.log TP2 parsing; report parsed entries and unparsed relevant lines so zero does not imply absent mod. Same CMD and ZIP; read only."
+  "note": "v62: fix v61 invalid selftest regex, preserve read-only fail-closed self-updater; expanded WeiDU.log diagnostics, one CMD one ZIP."
 }
