@@ -24,6 +24,9 @@ on:
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_saved_party_script_audit.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_RETALIATION_GUARDED.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_friendly_retaliation_guarded.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_COMBAT_LOG_READONLY_AUDIT.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_combat_log_readonly_audit.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py'
   workflow_dispatch:
 jobs:
@@ -56,3 +59,5 @@ jobs:
         run: python -m unittest -v BGXAI/patchsets/ranged_fighter_guarded_20261119/test_saved_party_script_audit.py
       - name: BGXFRIEND five-branch ally retaliation source regression
         run: python -m unittest -v BGXAI/patchsets/ranged_fighter_guarded_20261119/test_friendly_retaliation_guarded.py
+      - name: Existing combat log party-target read-only audit regression
+        run: python -m unittest -v BGXAI/patchsets/ranged_fighter_guarded_20261119/test_combat_log_readonly_audit.py
