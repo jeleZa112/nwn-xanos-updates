@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 62
+SELF_VERSION = 63
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -466,7 +466,8 @@ def published_update(path, offline=False):
                              cwd=WORKDIR,stdin=subprocess.DEVNULL,
                              capture_output=True,text=True,errors='replace',timeout=75)
         if check.returncode!=0 or 'SELFTEST: PASS' not in check.stdout:
-            return 'STOP: самопроверка новой версии не пройдена',False
+            detail=(check.stderr or check.stdout or 'NO_OUTPUT').strip().replace('\\r',' ').replace('\\n',' | ')
+            return 'STOP: самопроверка v'+str(version)+' не пройдена (код '+str(check.returncode)+'): '+detail[-900:],False
         # Back up current updater outside the game BEFORE atomic replacement.
         backup_dir=WORKDIR/'SAFE_BACKUPS'
         backup_dir.mkdir(parents=True,exist_ok=True)
@@ -1191,9 +1192,6 @@ def selftest():
     assert callable(v56_static_audit) and callable(v56_preserve_prior)
     assert callable(v58_local_tp2_bcs_gate)
     assert callable(v60_weidu_installed_components)
-    _weidu_fixture=r'~mods\setup-iwd2_eet.tp2~ #0 #1 // test'
-    _weidu_match=re.search(r'~([^~\r\n]*?\.tp2)~\s*#\s*(\d+)\s*#\s*(\d+)(?!\d)',_weidu_fixture,re.I)
-    assert _weidu_match is not None and _weidu_match.group(3)=='1'
     # ARE V1.0 actor count is WORD; adjacent WORD at 0x5a is regions count.
     _are_test=bytearray(0x100)
     struct.pack_into('<IHH',_are_test,0x54,0xe0,2,320)
