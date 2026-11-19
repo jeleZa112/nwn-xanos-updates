@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 63
+SELF_VERSION = 64
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -844,7 +844,12 @@ def main(argv=None):
     v58_status=v58_local_tp2_bcs_gate(game,report_path)
     print('v58 local TP2/BCS branch:',v58_status['branch_status'],v58_status.get('reason',''))
     v60_status=v60_weidu_installed_components(game,report_path)
-    print('v60 WeiDU components:',v60_status['status'],v60_status.get('groups',{}))
+    print('v60 WeiDU components (current log only):',v60_status['status'],v60_status.get('groups',{}))
+    v64_status=v64_two_segment_evidence(game,report_path,v60_status)
+    print('v64 earlier supplied WeiDU: IWD1',V64_EARLY_COMPONENTS['IWD1_EET'],
+          'IWD2',V64_EARLY_COMPONENTS['IWD2_EET'],
+          'Party Banter',V64_EARLY_COMPONENTS['IWD_PARTY_BANTER'],
+          '; IWD2 #1 not confirmed; no installation')
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
     print('Собрано DLG (v35):',dlg_status.get('found',0) if dlg_status else 0,'; статус:',used.get('v35'))
     print('Найдено исходных диалоговых строк для перевода:',status.get('v32_sources_ready',0))
@@ -1136,6 +1141,64 @@ def v60_weidu_installed_components(game, report_path):
     return report
 
 
+
+# Verified user-supplied older WeiDU segment, NOT a live file on this machine.
+# The complete user file was inspected separately on 2026-11-19.
+V64_EARLY_WEIDU_SHA='6dd274e3454ce0563bd668df9aed93a7e133303c06550494126a033f2fc02831'
+V64_EARLY_COMPONENTS={
+    'IWD1_EET':[0,1,3],
+    'IWD2_EET':[0],
+    'IWD_PARTY_BANTER':[0],
+    'IWD_EET_INTEGRATION':[100,110,115,130,135,150,155,160],
+    'EET':[0]
+}
+
+def v64_two_segment_evidence(game, report_path, current):
+    """Distinct provenance: current game WeiDU vs supplied historical log."""
+    game=Path(game)
+    live_log=next((p for p in (game/'WeiDU.log',game/'weidu.log') if p.is_file()),None)
+    live_hash=digest(live_log.read_bytes()) if live_log else None
+    earlier=V64_EARLY_COMPONENTS
+    now=current.get('groups',{})
+    current_iwd2=now.get('IWD2_EET',{}).get('installed_components',[])
+    historical_iwd2=earlier['IWD2_EET']
+    report={
+      'schema':'bg-eet-ru-v64-two-segment-weidu-evidence-v1',
+      'status':'COMPARISON_WITH_ARCHIVAL_USER_SUPPLIED_SEGMENT',
+      'current_game_weidu':{
+        'path':str(live_log) if live_log else None,
+        'sha256':live_hash,
+        'iwd_groups_current_log_only':now,
+        'interpretation':'No IWD components in this game WeiDU.log segment does NOT disprove earlier installed components'
+      },
+      'user_supplied_earlier_segment':{
+        'original_upload_filename':'WeiDU(2).txt',
+        'sha256':V64_EARLY_WEIDU_SHA,
+        'source':'user-provided excerpt, validated on 2026-11-19; archived evidence, not re-read from game',
+        'component_numbers':earlier
+      },
+      'condition_iwd2_1':{
+        'earlier_segment_component_1_present':1 in historical_iwd2,
+        'current_segment_component_1_present':1 in current_iwd2,
+        'observed_component_0_in_earlier_segment':0 in historical_iwd2,
+        'conclusion':'IWD2_EET #1 not listed in either supplied segment; do not infer that the particular TP2 branch compiled'
+      },
+      'banter_component_0_in_earlier_segment':0 in earlier['IWD_PARTY_BANTER'],
+      'banter_component_0_in_current_segment':0 in now.get('IWD_PARTY_BANTER',{}).get('installed_components',[]),
+      'merged_live_installation_verified':False,
+      '300_translation_status':'SOURCE_ONLY_PENDING_ACTUAL_BRANCH_AND_VISIBLE_TEXT',
+      'installation_allowed':False,
+      'game_files_written':False,
+      'note':'A historical component list proves a log entry existed, not that an exact Dialogue/Interject.d branch was installed or is currently reachable.'
+    }
+    with zipfile.ZipFile(report_path,'a',compression=zipfile.ZIP_DEFLATED) as z:
+        if '15_V64_TWO_PART_WEIDU_EVIDENCE.json' in z.namelist():
+            raise RuntimeError('duplicate v64 evidence')
+        z.writestr('15_V64_TWO_PART_WEIDU_EVIDENCE.json',
+                   json.dumps(report,ensure_ascii=False,indent=2).encode('utf-8'))
+    return report
+
+
 def selftest():
     # Self-contained checks only; never read or change a real EET installation.
     p36,tra36=load_v36_preflight()
@@ -1192,6 +1255,9 @@ def selftest():
     assert callable(v56_static_audit) and callable(v56_preserve_prior)
     assert callable(v58_local_tp2_bcs_gate)
     assert callable(v60_weidu_installed_components)
+    assert callable(v64_two_segment_evidence)
+    assert V64_EARLY_COMPONENTS['IWD2_EET']==[0]
+    assert len(V64_EARLY_WEIDU_SHA)==64
     # ARE V1.0 actor count is WORD; adjacent WORD at 0x5a is regions count.
     _are_test=bytearray(0x100)
     struct.pack_into('<IHH',_are_test,0x54,0xe0,2,320)
