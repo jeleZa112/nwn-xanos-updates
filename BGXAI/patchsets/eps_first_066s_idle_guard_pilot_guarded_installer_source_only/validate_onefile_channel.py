@@ -71,7 +71,7 @@ def main():
     menu, case = menus(live)
     assert len(oldmenu) == 97 and len(menu) == 127, 'menu length mismatch'
     assert len(oldcase) == 96 and len(case) == 126, 'dispatch length mismatch'
-    assert [int(re.search(r"'(\\s*\\d+) -", item).group(1)) for item in menu[:-1]] == list(range(1,127)) and menu[-1] == oldmenu[-1], 'menu numbering changed'
+    assert [int(re.search(r"'(\s*\d+) -", item).group(1)) for item in menu[:-1]] == list(range(1,127)) and menu[-1] == oldmenu[-1], 'menu numbering changed'
     assert case[:96] == oldcase, 'old dispatch 1..96 changed'
     code = live.decode('utf-8-sig')
     for n in range(97,117):
