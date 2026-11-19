@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
-  "version": "0.3.61-BGXFRIEND-GUARDED",
+  "version": "0.3.62-BGX-ACTION-LOG-READONLY",
   "files": [
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_PREFLIGHT.py",
@@ -60,8 +60,8 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py",
       "dest": "BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py",
-      "size": 8243,
-      "sha256": "2d7224b44afcce4a11ab12328e8450958625b34e3a8c6da1df6675e848db7edb"
+      "size": 9465,
+      "sha256": "d7b99998da25c0c0ce8ad4cd3f027794415017e2a2b1df8c94d37031fae8bcb3"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V4_NO_FRIEND_ATTACK.baf",
@@ -86,6 +86,12 @@
       "dest": "BGX_FRIENDLY_RETALIATION_GUARDED.py",
       "size": 15021,
       "sha256": "fd5ec89bd65b9c1e45acca58cc679970dd595bbc52b5cb43234d1a7ff13ef7fa"
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_COMBAT_LOG_READONLY_AUDIT.py",
+      "dest": "BGX_COMBAT_LOG_READONLY_AUDIT.py",
+      "size": 4420,
+      "sha256": "3d9f1d5d7a1cefa89853860d72a8008ab8c29707f4e574dd739cee089bd98eb8"
     }
   ]
 }
