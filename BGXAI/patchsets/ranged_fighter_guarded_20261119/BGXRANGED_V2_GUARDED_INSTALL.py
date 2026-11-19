@@ -50,7 +50,7 @@ def last(root):
     comps=[s.strip() for s in lines if s.lstrip().startswith("~")]
     if not comps:raise ValueError("NO_WEIDU_COMPONENTS")
     return comps[-1]
-def v1_state(root):
+def v1_state(root,allow_v2_staging=False):
     require_root(root);check_protected(root)
     if sha(root/BCS)!=V1_SHA or len(P.parts((root/BCS).read_bytes()))!=1171:
         raise ValueError("V1_BCS_NOT_EXACT")
@@ -60,7 +60,8 @@ def v1_state(root):
     if proof.get("bcs_sha256")!=V1_SHA or proof.get("original_sha256")!=BASE_SHA:
         raise ValueError("V1_PROOF_SHA_MISMATCH")
     if sha(root/V1.STAGED)!=V1_SHA:raise ValueError("V1_STAGE_DRIFT")
-    if (root/EXE).exists() or (root/DIR).exists():raise ValueError("V2_STAGING_COLLISION")
+    if not allow_v2_staging and ((root/EXE).exists() or (root/DIR).exists()):
+        raise ValueError("V2_STAGING_COLLISION")
     return (root/BCS).read_bytes()
 def status(root):
     require_root(root);check_protected(root)
@@ -78,7 +79,7 @@ def status(root):
         return {"status":"BGXRANGED_V2_INSTALLED_VERIFIED","bcs_sha256":V2_SHA,
                 "blocks":1173,"preserved_old_blocks":1170,"game_modified":False}
     if V1_LAST.match(last(root)):
-        v1_state(root)
+        v1_state(root,allow_v2_staging=True)
         return {"status":"BGXRANGED_V1_INSTALLED_V2_NOT_INSTALLED",
                 "bcs_sha256":V1_SHA,"blocks":1171,"game_modified":False}
     raise ValueError("UNEXPECTED_LAST_WEIDU")
