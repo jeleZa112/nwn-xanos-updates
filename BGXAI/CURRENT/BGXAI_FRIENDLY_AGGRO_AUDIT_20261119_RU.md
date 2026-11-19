@@ -133,3 +133,22 @@ User supplied the **full** `BGXAI_FRIENDLY_AGGRO_READONLY_20261119T133038Z.json`
 - Next user action only if authorizing game changes: close game/InfinityLoader; existing CMD -> **139** -> type exact token once; it auto-preflights and verifies, or safely STOPs. DO NOT reinstall BGXSAFE or use 140 if 139 completes PASS. After verified install, on expendable save assess party AI ON behavior without repeated friendly attack abuse, and test normal enemy response. If unexpected result, leave game unchanged further and use protected rollback 141 after inspecting status.
 
 **Constraints:** This is a targeted fix for unguarded player scripts, not runtime provenance. A physical party member being attacked may be remembered by the engine independently of any script. Avoid promising 100% friendly-fire immunity without isolated gameplay evidence.
+
+
+## 19.11.2026 — BGXFRIEND menu 139 WeiDU v251 TEMP BCS decompile STOP + corrected source
+
+User ran previously pinned menu 139 and approved INSTALL_BGXFRIEND_RETALIATION_GUARD. It stopped at:
+`BGXFRIEND_STOP:WEIDU_DECOMPILE_STOP:WTASIGHT`, with WeiDU 251 loading chitin.key and dialog.tlk normally but without creating expected WTASIGHT BAF. The command sent the original **absolute** `C:\Games\BG_EET_FOXX_NEW\override\WTASIGHT.BCS` as input and expected `WTASIGHT_original.BAF`. The earlier successful menu 135 used **a temporary copy** of each override BCS and a same-stem `WTASIGHT.BAF` output. No WeiDU installation/staging or game-backup had started when the error occurred, so BGXSAFE remains installed and unchanged. User does not need to revert it.
+
+Hotfix source `BGX_FRIENDLY_RETALIATION_GUARDED.py` now:
+- copies WTASIGHT.BCS and PRIEST1.BCS from live override into a TEMP/source folder, verifying baseline SHA256 **both before and after copying**, and calls WeiDU 251 using the temporary file with **same-stem** TEMP/source/WTASIGHT.BAF and TEMP/source/PRIEST1.BAF output, mimicking successful menu 135; DPLAYER is still read from the game's BIFF via a relative `DPLAYER.BCS` argument with TEMP/source/DPLAYER.BAF output
+- compiles patched BAF into separate TEMP/compiled/NAME.BCS, avoiding source/output overwrite
+- fail-closes on unexpected WeiDU exit/output, source SHA drift, block count/shape mismatch and full baseline check
+- keeps external backup→guarded WeiDU install→automatic installed-status check in one menu action, and does **not** modify BGXSAFE BCS, game saves or existing other scripts
+- synthetic unit tests exercise the precise TEMP-copy and same-stem source contract, game-resource DPLAYER and independent output folder (GitHub Actions run **44540814210 SUCCESS**); user-game real native compile of 0.3.61 has NOT YET RUN.
+
+Release `0.3.61-BGXFRIEND-GUARDED`: exact SHA-pinned hotfix installer `fd5ec89bd65b9c1e45acca58cc679970dd595bbc52b5cb43234d1a7ff13ef7fa` (15021 bytes). Single-CMD BGXAI_SYNC.ps1 immutable commit `cecb349183983f7d6130f0cd70a1a27b108a9785`, size 79978, SHA256 `e9af6926544802b71851c5cea33eb2156d824b817e518fe403ee3019cc36a3d4`; PIN commit `b4406d705b0045021e7079d3e67c065160f0921b`. Windows CI verified PowerShell 5.1 AST/menu 1–141 and source SHA: run **44541308591 SUCCESS**.
+
+**Next user action:** close game and InfinityLoader; use **existing** BGXAI_UPDATE.cmd → menu **139**; approve `INSTALL_BGXFRIEND_RETALIATION_GUARD` once. 139 automatically runs native WeiDU preflight, exact baseline, external backup, installation and post-install verification if native compilation succeeds. If any new `BGXFRIEND_STOP` occurs, do NOT loop or try other install menus: copy full output. No need to run read-only 140 on success. Menu 141 is separate protected rollback if the new WeiDU component was actually installed and last.
+
+**Honesty:** the root-cause candidate from full JSON remains WTASIGHT/DPLAYER generic retaliation, but runtime command provenance and true behavior fix are NOT yet confirmed until safe gameplay. This hotfix fixes the *installer's decompilation attempt*, not independently the game retaliation.
