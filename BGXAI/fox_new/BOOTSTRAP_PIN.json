@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "87affe2d57fc65ffb61aa098cfdf8767e3f56c3c",
+  "commit": "39faabe04d74f8bb21c728e5db9435f0d7bca19c",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "6b946655e6c1dd502e4bc1586c1c2c5f18c17b43a9006d7f78d5f1ede8cb5483",
-  "script_size": 79971,
-  "description": "BGXAI one permanent CMD 1-134. 132 guarded V3 native preflight+auto install verification (single consent), 133 read-only V3 status, 134 V3 rollback to V2. V2 retained. No game changed."
+  "script_sha256": "2b7e9b574ed0071668f3a026acbb9531ae51fcbd28b0026151ad29c9d47855c5",
+  "script_size": 79847,
+  "description": "BGXAI one permanent CMD 1-135; menu 135 native read-only decompile audit of live BDDEFAI BCS friendly-fire reaction. All earlier menus retained, game unchanged."
 }
