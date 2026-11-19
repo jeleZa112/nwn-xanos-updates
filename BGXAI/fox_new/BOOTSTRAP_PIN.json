@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "cecb349183983f7d6130f0cd70a1a27b108a9785",
+  "commit": "c5d44b90f80dad2b385746e1d182674f6a5d0a37",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "e9af6926544802b71851c5cea33eb2156d824b817e518fe403ee3019cc36a3d4",
-  "script_size": 79978,
-  "description": "BGXAI onefile menus 1-141, guarded friend script 139 installer auto-verifies; WeiDU v251 TEMP same-stem decompile fix 0.3.61. 140 status, 141 rollback."
+  "script_sha256": "8eac27d01aaaad35776e6809754c9d072962e966a0818d05567e2e7a6f4fd14d",
+  "script_size": 79997,
+  "description": "BGXAI onefile 1-141: existing menu 135 now also inspects existing BGXAI_COMBAT.log for started attack target and party IDs read-only. Menus 139-141 unchanged."
 }
