@@ -1,5 +1,6 @@
-// BGXAI ranged fighter pilot; F guard required; only already-selected ranged weapon.
-// No weapon swaps, movement commands, spell casting or healing overrides.
+// BGXAI ranged fighter pilot; opt-in by existing F guard; only already selected ranged weapon.
+// Only fighter class: does not compete with priest and druid healing.
+// No auto weapon switches, no movement command, no AoE casting.
 IF
   InParty(Myself)
   !InPartySlot(Myself,0)
