@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "ee9a884b120fab4ce3a958b70d906c1ff6d7895b",
+  "commit": "23eddc3635e4da554d9e7c80b87c599fae416412",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "eff7dc0abba5649b7fbcaa01a8f3dfc458e9f7355a0f93b6603162ddc3955214",
-  "script_size": 79966,
-  "description": "BGXAI single CMD menus 1-138: BGXSAFE 136 guarded native V4 friendly-fire filter and exact BGX38/39 ProtectObject isolation, automatic postinstall validation; 137 status; 138 last-component rollback. No automatic install."
+  "script_sha256": "54b7642360584d82660f0ec23e102d336582738d06cf10128cd821cd42bdce43",
+  "script_size": 79979,
+  "description": "BGXAI single CMD 1-138; existing menu 135 now does read-only live BCS and saved-party CRE script slots, other assigned BCS and static EEex action contract. No game changes."
 }
