@@ -54,7 +54,7 @@ class V2InstallerTests(unittest.TestCase):
                 U.rollback(U.ROOT)
     def test_backup_before_game_stage(self):
         s=(ROOT/"BGXRANGED_V2_GUARDED_INSTALL.py").read_text()
-        self.assertLess(s.index("backup=snapshot(root)",s.index("(folder/\"staged\").mkdir"))
+        self.assertLess(s.index("backup=snapshot(root)"),s.index("(folder/\"staged\").mkdir"))
         self.assertLess(s.index("(root/STAGED).write_bytes(data)"),s.index("call_weidu(root)"))
         self.assertLess(s.index("result=status(root)"),s.index("return dict(result,game_modified=True",s.index("def install(")))
     def test_old_bcs_protected_in_rollback(self):
