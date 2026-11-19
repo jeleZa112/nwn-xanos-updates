@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 66
+SELF_VERSION = 67
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -855,6 +855,9 @@ def main(argv=None):
     v66_status=v66_cached_original_matches(report_path)
     print('v66 exact English originals in live TLK:',v66_status['originals_with_exact_live_tlk_text'],
           'with cached DLG references:',v66_status['originals_with_refs_in_captured_dlgs'])
+    v67_status=v67_cached_dlg_graph(report_path)
+    print('v67 cached DLG structure:',v67_status['status'],
+          len(v67_status['target_references']),'target references')
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
     print('Собрано DLG (v35):',dlg_status.get('found',0) if dlg_status else 0,'; статус:',used.get('v35'))
     print('Найдено исходных диалоговых строк для перевода:',status.get('v32_sources_ready',0))
@@ -1311,6 +1314,75 @@ def v66_cached_original_matches(report_path):
     return result
 
 
+
+def v67_cached_dlg_graph(report_path):
+    """No game reads; analyze only five already matched strrefs in 63 cached DLGs."""
+    from collections import defaultdict
+    with zipfile.ZipFile(report_path) as z:
+        prev=json.loads(z.read('17_V66_TARGETED_LIVE_ORIGINAL_MATCHES.json'))
+        candidates={(r['dlg'],r['kind'],int(r['index']))
+                    for item in prev.get('matches',[]) for r in item.get('dlgs',[])}
+        expected={('NEERAJ','REPLY',2533),('NEERAJ','REPLY',2658),
+                  ('SAFANJ','STATE',204),('SAFANJ','STATE',205),('SAFANJ','STATE',206)}
+        if candidates!=expected:raise RuntimeError('STOP: v67 five cached references changed')
+        models={}
+        for name in z.namelist():
+            if not name.startswith('09_IWD_BANTER_DLG/') or not name.endswith('.DLG'):continue
+            data=z.read(name)
+            if len(data)<52 or data[:8]!=b'DLG V1.0':continue
+            sc,so,tc,to=struct.unpack_from('<4I',data,8)
+            if sc>200000 or tc>2000000 or so+sc*16>len(data) or to+tc*32>len(data):continue
+            states=[struct.unpack_from('<4I',data,so+j*16) for j in range(sc)]
+            transitions=[struct.unpack_from('<5I8sI',data,to+j*32) for j in range(tc)]
+            models[name.split('/')[-1][:-4]]={'states':states,'transitions':transitions}
+    if len(models)!=63:raise RuntimeError('STOP: v67 expected 63 captured DLGs')
+    incoming=defaultdict(list)
+    for name,model in models.items():
+        for i,t in enumerate(model['transitions']):
+            dest=t[5].split(b'\0',1)[0].decode('ascii','replace').upper()
+            if dest:incoming[(dest,t[6])].append({'dlg':name,'transition_index':i})
+    targets=[]
+    for name,kind,index in sorted(candidates):
+        model=models[name]
+        if kind=='REPLY':
+            states=[i for i,row in enumerate(model['states']) if row[1]<=index<row[1]+row[2]]
+            trans=model['transitions'][index]
+            targets.append({
+                'dlg':name,'type':'REPLY','index':index,'strref':trans[1],
+                'owner_states':[{'index':i,'strref':model['states'][i][0],
+                    'state_trigger_index':model['states'][i][3],
+                    'inbound_count':len(incoming[(name,i)])} for i in states],
+                'transition_flags':trans[0],'transition_trigger_index':trans[3],
+                'transition_action_index':trans[4], 'owner_found':bool(states)})
+        else:
+            state=model['states'][index];first=state[1];count=state[2]
+            next_states=[]
+            for j in range(first,first+count):
+                t=model['transitions'][j]
+                dest=t[5].split(b'\0',1)[0].decode('ascii','replace').upper()
+                next_states.append({'dlg':dest,'state_index':t[6]})
+            targets.append({
+                'dlg':name,'type':'STATE','index':index,'strref':state[0],
+                'state_trigger_index':state[3], 'outgoing_count':count,
+                'next_states':next_states,'inbound_count':len(incoming[(name,index)]),
+                'inbound_sample':incoming[(name,index)][:12]})
+    if any(x.get('owner_found') is False for x in targets):
+        raise RuntimeError('STOP: v67 reply without owning state')
+    report={'schema':'bg-eet-ru-v67-cached-dlg-structural-graph-v1',
+            'status':'PASS_STRUCTURAL_ONLY','captured_dlgs_parsed':len(models),
+            'target_references':targets,
+            'verified_scope':'transition ownership, incoming/outgoing static links from cached DLGs',
+            'branch_proven':False,'runtime_visibility_proven':False,
+            'installation_allowed':False,'game_files_written':False,
+            'translations_installed':0,
+            'next_goal':'Compare original Party Banter TP2 branch and exact trigger/action payloads.'}
+    with zipfile.ZipFile(report_path,'a',compression=zipfile.ZIP_DEFLATED) as z:
+        name='18_V67_CACHED_DLG_GRAPH.json'
+        if name in z.namelist():raise RuntimeError('STOP: duplicate v67 report')
+        z.writestr(name,json.dumps(report,ensure_ascii=False,indent=2).encode('utf-8'))
+    return report
+
+
 def selftest():
     # Self-contained checks only; never read or change a real EET installation.
     p36,tra36=load_v36_preflight()
@@ -1370,6 +1442,7 @@ def selftest():
     assert callable(v64_two_segment_evidence)
     assert callable(v65_autonomous_stages)
     assert callable(v66_cached_original_matches)
+    assert callable(v67_cached_dlg_graph)
     assert V64_EARLY_COMPONENTS['IWD2_EET']==[0]
     assert len(V64_EARLY_WEIDU_SHA)==64
     # ARE V1.0 actor count is WORD; adjacent WORD at 0x5a is regions count.
