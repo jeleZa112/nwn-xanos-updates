@@ -16,6 +16,7 @@ IF
   !InParty(NearestEnemyOf(Myself))
   See(NearestEnemyOf(Myself))
   InWeaponRange(NearestEnemyOf(Myself))
+  !Range(NearestEnemyOf(Myself),4)
 THEN
   RESPONSE #100
     AttackOneRound(NearestEnemyOf(Myself))
