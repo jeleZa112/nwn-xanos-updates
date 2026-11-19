@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "2a0aa8179e0c602e16bc3895b46a0ea5b880a100",
+  "commit": "3f09232fb33ae3014fa6e2a757cb51363eabd916",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "c72e3492b611a53c9e97108c5f8cd48565b70cec0e84f4cc3d6fc1eece770aa6",
-  "script_size": 79854,
-  "description": "BGXAI one permanent CMD 1-122, hotfix 0.3.50 allow safe hyphens in PROJECTL.IDS (real mod 528 dw-ltblt), read-only local PRO/EFF audit; BGXP5 and BGX120 unchanged."
+  "script_sha256": "dcb048d838d41fd59b1b56fae275737eb2001a44bed63a100840a646d69ac9b3",
+  "script_size": 79325,
+  "description": "BGXAI one permanent CMD 1-123, 123 SHA-pinned native ranged preflight READ ONLY; no game install. BGXP5/BGX120 untouched."
 }
