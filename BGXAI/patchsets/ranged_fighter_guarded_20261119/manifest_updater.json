@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
-  "version": "0.3.59-BGX-SCRIPT-SLOTS-AUDIT",
+  "version": "0.3.60-BGXFRIEND-GUARDED",
   "files": [
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_PREFLIGHT.py",
@@ -80,6 +80,12 @@
       "dest": "BGXAI_SAVE_SCRIPT_AUDIT_READONLY.py",
       "size": 8101,
       "sha256": "5241871951f7d9d12971d4c0e6119b4db0a5c4dca8a2156c24a12828cbe16b7e"
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_RETALIATION_GUARDED.py",
+      "dest": "BGX_FRIENDLY_RETALIATION_GUARDED.py",
+      "size": 13900,
+      "sha256": "ec67abd16df7e437655458f855b0c079776af1c4eceafb5c1ed5985f2f5ee525"
     }
   ]
 }
