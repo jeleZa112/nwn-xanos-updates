@@ -76,7 +76,7 @@ class FriendlyFix(unittest.TestCase):
  def test_failure_does_not_run_weidu(self):
   with mock.patch.object(A.V3.V2.V1,"processes"),mock.patch.object(
    A,"stage_data",side_effect=ValueError("WEIDU_COMPILE_STOP")),mock.patch.object(
-   A,"run_weidu") as rw:
+   A,"digest",return_value="synthetic"),mock.patch.object(A,"run_weidu") as rw:
    with self.assertRaisesRegex(ValueError,"WEIDU_COMPILE_STOP"):
     A.install(A.ROOT)
    rw.assert_not_called()
