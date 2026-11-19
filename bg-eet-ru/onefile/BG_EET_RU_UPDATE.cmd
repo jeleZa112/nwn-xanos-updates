@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 64
+SELF_VERSION = 65
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -850,6 +850,8 @@ def main(argv=None):
           'IWD2',V64_EARLY_COMPONENTS['IWD2_EET'],
           'Party Banter',V64_EARLY_COMPONENTS['IWD_PARTY_BANTER'],
           '; IWD2 #1 not confirmed; no installation')
+    v65_status=v65_autonomous_stages(report_path)
+    print('v65 automatic safe stages completed:',len(v65_status['stages']))
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
     print('Собрано DLG (v35):',dlg_status.get('found',0) if dlg_status else 0,'; статус:',used.get('v35'))
     print('Найдено исходных диалоговых строк для перевода:',status.get('v32_sources_ready',0))
@@ -1199,6 +1201,64 @@ def v64_two_segment_evidence(game, report_path, current):
     return report
 
 
+
+def v65_autonomous_stages(report_path):
+    """Automatically run safe dependent gates, then independent text triage."""
+    with zipfile.ZipFile(report_path) as z:
+        def read(name):
+            try:
+                obj=json.loads(z.read(name))
+                return obj if isinstance(obj,dict) else {}
+            except (KeyError,ValueError,UnicodeError):
+                return {}
+        historical=read('15_V64_TWO_PART_WEIDU_EVIDENCE.json')
+        v55=read('11_V55_LIVE_OVERRIDE_AUDIT.json')
+        v56=read('12_V56_CRE_ARE_KEY_AUDIT.json')
+        source=read('07_TRANSLATION_SOURCE_BATCH.json')
+        nondialogue=read('08_NON_DIALOGUE_SOURCE_BATCH.json')
+    early=historical.get('user_supplied_earlier_segment',{}).get('component_numbers',{})
+    banter=early.get('IWD_PARTY_BANTER',[])
+    iwd2=early.get('IWD2_EET',[])
+    anchors=v55.get('anchors',[])
+    anchor_count=len(anchors) if isinstance(anchors,list) else 0
+    summary=v56.get('summary',{})
+    stages=[]
+    def check(label,state,reason):
+        stages.append({'stage':label,'status':state,'reason':reason})
+        print('AUTO_STAGE:',label,state)
+    check('IWD_HISTORICAL_COMPONENTS','PASS_HISTORICAL' if 0 in banter else 'INSUFFICIENT_EVIDENCE',
+          'Earlier WeiDU segment indicates Party Banter #0; not a live runtime proof.')
+    static=(anchor_count==82 and summary.get('target_dialogues')==26 and summary.get('errors')==0)
+    check('IWD_LINKED_DLG','PASS_STATIC_ONLY' if static else 'INSUFFICIENT_EVIDENCE',
+          'Static ARE/CRE/DLG links do not prove target banter branch or actual visibility.')
+    check('IWD_TP2_COMPONENT_GATE',
+          'REQUIRES_BRANCH_AND_TRIGGER_VERIFICATION' if 1 in iwd2 else 'NOT_PROVEN_COMPONENT_1_MISSING',
+          'Observed IWD2 #0, but no #1 in supplied historical components; target branch is unverified.')
+    check('IWD_TRANSLATION_INSTALL','BLOCKED_GAME_WRITES',
+          '300 prepared translations preserved; never install from static evidence alone.')
+    check('PLAYER_VISIBLE_DIALOGUE','SOURCE_BATCH_READY' if source else 'SOURCE_BATCH_MISSING',
+          'Continue from existing live DLG batch without repeating game scans.')
+    check('PLAYER_VISIBLE_OTHER','SOURCE_BATCH_READY' if nondialogue else 'SOURCE_BATCH_MISSING',
+          'Continue from existing item/spell/UI batch; skip service and technical tokens.')
+    report={'schema':'bg-eet-ru-v65-autonomous-safe-pipeline-v1',
+            'status':'ALL_READ_ONLY_STAGES_EXECUTED',
+            'stages':stages,'v55_anchors':anchor_count,
+            'iwd2_historical_components':iwd2,
+            'banter_component_0_historical':0 in banter,
+            'dialogue_batch_ready':bool(source),
+            'other_batch_ready':bool(nondialogue),
+            'next_goal':'Identify real displayed English text; preserve uninstalled 300 banter translations.',
+            'game_files_written':False,'installation_allowed':False,
+            'translations_installed':0,
+            'automatic_progress':'Continue safe stages in this same run; never wait for user at each PASS.'}
+    with zipfile.ZipFile(report_path,'a',compression=zipfile.ZIP_DEFLATED) as z:
+        name='16_V65_AUTONOMOUS_STAGES.json'
+        if name in z.namelist():
+            raise RuntimeError('duplicate v65 pipeline report')
+        z.writestr(name,json.dumps(report,ensure_ascii=False,indent=2).encode('utf-8'))
+    return report
+
+
 def selftest():
     # Self-contained checks only; never read or change a real EET installation.
     p36,tra36=load_v36_preflight()
@@ -1256,6 +1316,7 @@ def selftest():
     assert callable(v58_local_tp2_bcs_gate)
     assert callable(v60_weidu_installed_components)
     assert callable(v64_two_segment_evidence)
+    assert callable(v65_autonomous_stages)
     assert V64_EARLY_COMPONENTS['IWD2_EET']==[0]
     assert len(V64_EARLY_WEIDU_SHA)==64
     # ARE V1.0 actor count is WORD; adjacent WORD at 0x5a is regions count.
