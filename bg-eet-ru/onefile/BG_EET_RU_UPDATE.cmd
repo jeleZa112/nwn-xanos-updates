@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 57
+SELF_VERSION = 58
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -840,6 +840,8 @@ def main(argv=None):
         raise RuntimeError('STOP: resource fingerprints changed during v56')
     v56_status=v56_static_audit(game,v56_before,report_path)
     print('v56 CRE/ARE/KEY:',v56_status['status'],v56_status['summary'])
+    v58_status=v58_local_tp2_bcs_gate(game,report_path)
+    print('v58 local TP2/BCS branch:',v58_status['branch_status'])
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
     print('Собрано DLG (v35):',dlg_status.get('found',0) if dlg_status else 0,'; статус:',used.get('v35'))
     print('Найдено исходных диалоговых строк для перевода:',status.get('v32_sources_ready',0))
@@ -988,6 +990,59 @@ def v56_preserve_prior(path):
     return result
 
 
+
+def v58_local_tp2_bcs_gate(game, report_path):
+    """Only inspect locally installed TP2/WeiDU.log/override BCS; no game changes."""
+    g=Path(game)
+    candidates=(
+        g/'iwd_eet-party-banter'/'Setup-iwd_eet-party-banter.tp2',
+        g/'Setup-iwd_eet-party-banter.tp2',
+        g/'iwd_eet-party-banter'/'iwd_eet-party-banter.tp2'
+    )
+    tp=next((p for p in candidates if p.is_file()),None)
+    log=next((p for p in (g/'WeiDU.log',g/'weidu.log') if p.is_file()),None)
+    result={'schema':'bg-eet-ru-v58-local-source-branch-gate-v1',
+            'status':'INSPECTED','tp2_present':tp is not None,
+            'weidu_log_present':log is not None,'branch_status':'UNKNOWN',
+            'game_files_written':False,'installation_allowed':False,
+            'runtime_visibility_proven':False,
+            'note':'Presence of BCS/ARE/DLG never proves activation of the banter mod or visibility.'}
+    if tp and log:
+        raw=tp.read_bytes()
+        src=raw.decode('utf-8-sig','replace')
+        lines=log.read_text('utf-8-sig','replace').splitlines()
+        matches=[s.strip()[:350] for s in lines if re.search(r'IWD2_EET[^\r\n]*#\s*[01]\b',s,re.I)]
+        installed0=any(re.search(r'#\s*0\b',s) for s in matches)
+        installed1=any(re.search(r'#\s*1\b',s) for s in matches)
+        needs1=bool(re.search(r'MOD_IS_INSTALLED\s*~IWD2_EET\.TP2~\s*~1~',src,re.I))
+        scripts=sorted(set(re.findall(r'EXTEND_TOP\s+~([A-Z0-9_]+\.bcs)~',src,re.I)),key=str.upper)
+        found=[]
+        for name in scripts[:250]:
+            p=g/'override'/name
+            if not p.is_file():continue
+            b=p.read_bytes()
+            found.append({'name':name.upper(),'size':len(b),'sha256':digest(b)})
+        result.update(tp2_relative_path=str(tp.relative_to(g)),
+                      tp2_sha256=digest(raw),iwd2_component_0=installed0,
+                      iwd2_component_1=installed1,source_requires_iwd2_component_1=needs1,
+                      matching_weidu_log_lines=matches[:12],
+                      source_extend_top_bcs_count=len(scripts),
+                      override_bcs_found_count=len(found),override_bcs=found)
+        result['branch_status']=(
+            'SOURCE_BRANCH_CONDITION_NOT_MET' if needs1 and installed0 and not installed1
+            else 'UNRESOLVED_OR_POSSIBLY_MET')
+    else:
+        result['status']='MISSING_LOCAL_SOURCE_OR_WEIDU_LOG'
+    with zipfile.ZipFile(report_path,'a',compression=zipfile.ZIP_DEFLATED) as z:
+        if '13_V58_LOCAL_TP2_BCS_GATE.json' in z.namelist():
+            raise RuntimeError('duplicate v58 report')
+        z.writestr('13_V58_LOCAL_TP2_BCS_GATE.json',
+                   json.dumps(result,ensure_ascii=False,indent=2).encode('utf-8'))
+    with zipfile.ZipFile(report_path) as z:
+        if z.testzip() is not None:raise RuntimeError('v58 ZIP integrity error')
+    return result
+
+
 def selftest():
     # Self-contained checks only; never read or change a real EET installation.
     p36,tra36=load_v36_preflight()
@@ -1042,6 +1097,7 @@ def selftest():
     assert 'BG_EET_RU_UPDATE.cmd' not in str(DEFAULT_GAME).split('\\')[:1]
     assert published_update(Path('/tmp/not_installed'),offline=True)[1] is False
     assert callable(v56_static_audit) and callable(v56_preserve_prior)
+    assert callable(v58_local_tp2_bcs_gate)
     # ARE V1.0 actor count is WORD; adjacent WORD at 0x5a is regions count.
     _are_test=bytearray(0x100)
     struct.pack_into('<IHH',_are_test,0x54,0xe0,2,320)
