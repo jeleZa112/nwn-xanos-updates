@@ -70,11 +70,35 @@ def native_candidate(root):
             cwd=temp,stdin=subprocess.DEVNULL,capture_output=True,text=True,errors="replace",timeout=180)
         if p.returncode or not baf.is_file():
             raise ValueError("NATIVE_DECOMPILE_STOP:"+((p.stdout or "")+"\n"+(p.stderr or ""))[-500:])
-        data=candidate(raw,baf.read_text(encoding="utf-8-sig",errors="replace"))
-        return data,{"status":"BGXSAFE_PROTECT_ISOLATION_PREFLIGHT_PASS",
-            "old_sha256":BASE_SHA,"candidate_sha256":sha(data),
+        stripped=candidate(raw,baf.read_text(encoding="utf-8-sig",errors="replace"))
+        # Compile V4 directly with current native WeiDU. Tighten attack target
+        # filters in the first three blocks in the SAME guarded installation.
+        v4_source=pathlib.Path(__file__).with_name("BGXRANGED_V4_NO_FRIEND_ATTACK.baf")
+        if v4_source.is_symlink() or not v4_source.is_file():
+            raise ValueError("V4_SOURCE_MISSING_OR_LINK")
+        v4_text=v4_source.read_text(encoding="ascii")
+        for text in ("!InParty(NearestEnemyOf(Myself))",
+                     "!Allegiance(NearestEnemyOf(Myself),GOODCUTOFF)"):
+            if v4_text.count(text)!=3:raise ValueError("V4_TARGET_GUARDS_MISSING")
+        v4_baf=temp/"BGXRANGEDV4.BAF";v4_baf.write_bytes(v4_source.read_bytes())
+        v4_bcs=temp/"BGXRANGEDV4.BCS"
+        p=subprocess.run([str(exe),"--game",str(root),"--out",str(v4_bcs),str(v4_baf)],
+            cwd=temp,stdin=subprocess.DEVNULL,capture_output=True,text=True,errors="replace",timeout=180)
+        if p.returncode or not v4_bcs.is_file():
+            raise ValueError("V4_NATIVE_COMPILE_STOP:"+((p.stdout or "")+"\n"+(p.stderr or ""))[-500:])
+        v4_parts=P.parts(v4_bcs.read_bytes())
+        if len(v4_parts)!=3:raise ValueError("V4_EXPECTED_THREE_BLOCKS")
+        stripped_parts=P.parts(stripped)
+        final=b"SC\n"+b"".join(v4_parts)[:-3]+b"".join(stripped_parts[3:])
+        final_parts=P.parts(final)
+        if len(final_parts)!=NEW_COUNT or final_parts[3:]!=stripped_parts[3:]:
+            raise ValueError("FINAL_NON_PROTECT_CODE_CHANGED")
+        return final,{"status":"BGXSAFE_PROTECT_ISOLATION_PREFLIGHT_PASS",
+            "old_sha256":BASE_SHA,"candidate_sha256":sha(final),
+            "v4_source_sha256":sha(v4_source.read_bytes()),
             "original_blocks":1173,"temporarily_disabled_protect_blocks":list(DISABLE),
-            "remaining_blocks":NEW_COUNT,"all_other_blocks_byte_identical":True,
+            "remaining_blocks":NEW_COUNT,"other_old_blocks_byte_identical":True,
+            "v4_attack_guards_compiled":True,
             "game_modified":False}
 def safe_backup(root):
     parent=pathlib.Path(os.environ.get("USERPROFILE",str(pathlib.Path.home())))/"Documents"/"BGXAI_SAFE_BACKUPS"
@@ -118,13 +142,16 @@ def status(root):
         if sha(bcs)!=expected or sha_file(root/STAGED)!=expected:raise ValueError("PATCHED_LIVE_SHA_MISMATCH")
         a=P.parts(bcs);original=P.parts(before.read_bytes())
         if len(a)!=NEW_COUNT or len(original)!=1173:raise ValueError("PATCHED_COUNT_DRIFT")
-        if a!=[item for i,item in enumerate(original,1) if i not in set(DISABLE)]:
+        retained=[item for i,item in enumerate(original,1) if i not in set(DISABLE)]
+        if a[3:]!=retained[3:]:
             raise ValueError("NON_PROTECT_CODE_CHANGED")
+        if proof.get("v4_source_sha256")!=sha(pathlib.Path(__file__).with_name("BGXRANGED_V4_NO_FRIEND_ATTACK.baf").read_bytes()):
+            raise ValueError("V4_SOURCE_SHA_CHANGED")
         for name in ("override/M_BX43.lua","override/PRIEST1.BCS"):
             if sha_file(root/name)!=P.PINS[name]:raise ValueError("OTHER_MODULE_DRIFT:"+name)
         return {"status":"BGXSAFE_PROTECT_ISOLATION_INSTALLED_VERIFIED",
             "candidate_sha256":expected,"blocks":NEW_COUNT,
-            "only_protect_blocks_removed":True,"game_modified":False}
+            "only_protect_blocks_removed":True,"v4_friend_filters_compiled":True,"game_modified":False}
     verify_live(root)
     return {"status":"BGXSAFE_NOT_INSTALLED_V3_VERIFIED","blocks":1173,"game_modified":False}
 def install(root):
@@ -141,7 +168,7 @@ def install(root):
     (root/STAGED).write_bytes(data)
     (root/TP2).write_text(TP2_DATA,encoding="utf-8",newline="\n")
     (root/PROOF).write_text(json.dumps({"base_sha256":BASE_SHA,
-        "candidate_sha256":report["candidate_sha256"],"backup":str(snap)},indent=2),encoding="utf-8")
+        "candidate_sha256":report["candidate_sha256"],"v4_source_sha256":report["v4_source_sha256"],"backup":str(snap)},indent=2),encoding="utf-8")
     shutil.copy2(root/"setup-enhanced-powergaming-scripts.exe",root/EXE)
     if sha_file(root/STAGED)!=report["candidate_sha256"]:raise ValueError("STAGED_SHA_DRIFT")
     V3.V2.V1.processes()
