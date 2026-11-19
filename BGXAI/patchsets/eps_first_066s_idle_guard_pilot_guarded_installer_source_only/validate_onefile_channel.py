@@ -24,7 +24,7 @@ RELEASES = (
     ('BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/', '0.3.40-BGXP3-AUTO-BUFFER', 9),
     ('BGXAI/patchsets/priest_auto_priority_guard_source_20261117/', '0.3.41-BGXP5-AUTO-PRIORITY-GUARD', 11),
     ('BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/', '0.3.50-BGX122-IDS-HYPHEN', 13),
-    ('BGXAI/patchsets/ranged_fighter_guarded_20261119/', '0.3.56-BGXRANGED-V3-GUARDED', 9),
+    ('BGXAI/patchsets/ranged_fighter_guarded_20261119/', '0.3.57-BGXAGGRO-READONLY', 10),
 )
 
 def git_bytes(rev: str, path: str) -> bytes:
@@ -70,9 +70,9 @@ def main():
         assert token in recovery, 'one CMD recovery expected SHA or commit absent'
     oldmenu, oldcase = menus(old)
     menu, case = menus(live)
-    assert len(oldmenu) == 97 and len(menu) == 135, 'menu length mismatch'
-    assert len(oldcase) == 96 and len(case) == 134, 'dispatch length mismatch'
-    assert [int(re.search(r"'(\s*\d+) -", item).group(1)) for item in menu[:-1]] == list(range(1,135)) and menu[-1] == oldmenu[-1], 'menu numbering changed'
+    assert len(oldmenu) == 97 and len(menu) == 136, 'menu length mismatch'
+    assert len(oldcase) == 96 and len(case) == 135, 'dispatch length mismatch'
+    assert [int(re.search(r"'(\s*\d+) -", item).group(1)) for item in menu[:-1]] == list(range(1,136)) and menu[-1] == oldmenu[-1], 'menu numbering changed'
     assert case[:96] == oldcase, 'old dispatch 1..96 changed'
     code = live.decode('utf-8-sig')
     for n in range(97,117):
@@ -93,6 +93,11 @@ def main():
     for i,mode in ((131,'install'),(132,'status'),(133,'rollback')):
         assert case[i].startswith(f"'{i+1}' {{SyncRelease $releaseRanged;& py -3"), f'V3 operation {i+1} missing'
         assert f'BGXRANGED_V3_GUARDED_INSTALL.py\') {mode}' in case[i], f'V3 {mode} not wired'
+    assert case[134].startswith("'135' {SyncRelease $releaseRanged;& py -3"), '135 aggro read-only missing'
+    assert "BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py" in case[134]
+    aggro_audit = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py')
+    ast.parse(aggro_audit.decode('utf-8'), filename='friendly aggro read-only audit')
+    assert b'BGXAI_AGGRO_READONLY_AUDIT_PASS' in aggro_audit
     v3 = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V3_PREFLIGHT.py')
     v3install = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V3_GUARDED_INSTALL.py')
     ast.parse(v3install.decode('utf-8'), filename='V3 guarded install')
@@ -161,7 +166,7 @@ def main():
     assert "'124' {SyncRelease $releaseRanged" in code
     assert "'125' {SyncRelease $releaseRanged" in code
     assert "'126' {SyncRelease $releaseRanged" in code
-    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-134; 80/80 source hashes; pin matched; game untouched')
+    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-135; 81/81 source hashes; pin matched; game untouched')
 
 if __name__ == '__main__':
     main()
