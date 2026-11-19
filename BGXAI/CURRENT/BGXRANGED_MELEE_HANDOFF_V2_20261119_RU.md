@@ -22,3 +22,12 @@ BGXRANGED_V2_PREFLIGHT.py accepts only exact pristine BDDEFAI (1170 blocks) with
 
 ## Next
 Integrate safe preflight into single BGXAI_UPDATE.cmd without changing pinned installer/rollback behavior, run native preflight on user's EET, then prepare guarded WeiDU upgrade with backups and V1→V2 rollback. Only after explicit install consent conduct live combat: Khalid starts with bow and arrows, close foe prompts melee switch, retreating foe prompts ranged switch, confirm BGXP5 heal and manual command preservation. If enemy stands in Web do NOT treat this pilot as hazard-safe; do not test that until AoE observer is implemented.
+
+## Update: one permanent updater menu 127 is ready (READ ONLY)
+
+- Manifest `0.3.53-BGXRANGED-V2-NATIVE-READONLY` includes 5 SHA-pinned source files; V1 protected installer remains unchanged.
+- Existing `BGXAI_UPDATE.cmd` now has 127: V2 native compile preflight (READ ONLY), supporting original baseline or V1 installed state; never install automatically.
+- Immutable pinned BGXAI_SYNC.ps1 commit 42a54c0d69d7555dc0451deca8acc99bf1fdd0b6, size 79382, SHA256 b498c1453f738ec872cddd9428aafc9c923f9d821ccc87ba108c1e03157dfb36, pin update commit 0091a20a0902da45de8dcda5a8f141c11945b737.
+- GitHub Windows PowerShell 5.1 AST + onefile SHA/menu 1–127 verification PASS on run 44484160978. The stand-alone V2 Python source test also PASS on runs 44483654759 and 44483866053.
+- **Only next step on PC**: run existing BGXAI_UPDATE.cmd → 127, return full output. Do NOT run 124 to install V2: 124 still installs V1. No game changes made by this development update.
+- Current stage: CODE yes; CI yes; native V2 compile in user game PENDING; V2 DEPLOY NO; V2 GAMEPLAY NO.
