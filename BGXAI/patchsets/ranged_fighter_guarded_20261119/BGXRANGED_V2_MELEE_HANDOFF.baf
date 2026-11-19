@@ -1,4 +1,4 @@
-// BGXAI V2 — melee handoff for a resilient PURE FIGHTER only.
+// BGXAI V2 - melee handoff for a resilient PURE FIGHTER only.
 // NOT INSTALLED. No movement. Preserves F guard/EPS healing gate.
 // Deliberately no enemy chase or AoE crossing; no universal class claims.
 // First priority: close enemy + ranged selected -> pick an available melee quickslot.
