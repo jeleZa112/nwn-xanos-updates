@@ -44,7 +44,7 @@ def sha(data):return hashlib.sha256(data).hexdigest()
 def digest(path):return sha(path.read_bytes())
 def ensure(root):
  if root!=ROOT:raise ValueError("UNEXPECTED_GAME_ROOT")
- V3.check_root(root)
+ V3.V2.require_root(root)
  for name in (*PROTECTED, "override/DPLAYER.BCS"):
   V3.V2.guard(root/name)
  if (root/"override/DPLAYER.BCS").exists():raise ValueError("DPLAYER_OVERRIDE_ALREADY_EXISTS")
@@ -165,7 +165,7 @@ def backup(root):
  return folder
 def last(root):return V3.last(root)
 def status(root):
- V3.check_root(root)
+ V3.V2.require_root(root)
  if LAST.match(last(root)):
   proof_file=root/PROOF;V3.V2.guard(proof_file)
   if not proof_file.is_file():raise ValueError("PROOF_MISSING")
