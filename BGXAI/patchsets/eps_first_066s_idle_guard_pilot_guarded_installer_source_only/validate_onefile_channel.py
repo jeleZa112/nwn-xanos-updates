@@ -24,7 +24,7 @@ RELEASES = (
     ('BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/', '0.3.40-BGXP3-AUTO-BUFFER', 9),
     ('BGXAI/patchsets/priest_auto_priority_guard_source_20261117/', '0.3.41-BGXP5-AUTO-PRIORITY-GUARD', 11),
     ('BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/', '0.3.50-BGX122-IDS-HYPHEN', 13),
-    ('BGXAI/patchsets/ranged_fighter_guarded_20261119/', '0.3.58-BGXSAFE-PROTECT-ISOLATION', 12),
+    ('BGXAI/patchsets/ranged_fighter_guarded_20261119/', '0.3.59-BGX-SCRIPT-SLOTS-AUDIT', 13),
 )
 
 def git_bytes(rev: str, path: str) -> bytes:
@@ -109,6 +109,12 @@ def main():
     aggro_audit = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py')
     ast.parse(aggro_audit.decode('utf-8'), filename='friendly aggro read-only audit')
     assert b'BGXAI_AGGRO_READONLY_AUDIT_PASS' in aggro_audit
+    assert b'BGXAI_SAVE_SCRIPT_AUDIT_READONLY' in aggro_audit
+    assigned = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_SAVE_SCRIPT_AUDIT_READONLY.py')
+    ast.parse(assigned.decode('utf-8'), filename='GAM CRE five-script slots read-only scanner')
+    assert b'GAMEV2.0' in assigned and b'CRE V1.0' in assigned
+    assert b'runtime_action_origin' in assigned and b'UNKNOWN' in assigned
+
     v3 = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V3_PREFLIGHT.py')
     v3install = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V3_GUARDED_INSTALL.py')
     ast.parse(v3install.decode('utf-8'), filename='V3 guarded install')
@@ -177,7 +183,7 @@ def main():
     assert "'124' {SyncRelease $releaseRanged" in code
     assert "'125' {SyncRelease $releaseRanged" in code
     assert "'126' {SyncRelease $releaseRanged" in code
-    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-138; 83/83 source hashes; pin matched; game untouched')
+    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-138; 84/84 source hashes; pin matched; game untouched')
 
 if __name__ == '__main__':
     main()
