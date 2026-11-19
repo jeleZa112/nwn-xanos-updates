@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 59
+SELF_VERSION = 60
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -842,6 +842,8 @@ def main(argv=None):
     print('v56 CRE/ARE/KEY:',v56_status['status'],v56_status['summary'])
     v58_status=v58_local_tp2_bcs_gate(game,report_path)
     print('v58 local TP2/BCS branch:',v58_status['branch_status'],v58_status.get('reason',''))
+    v60_status=v60_weidu_installed_components(game,report_path)
+    print('v60 WeiDU components:',v60_status['status'],v60_status.get('groups',{}))
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
     print('Собрано DLG (v35):',dlg_status.get('found',0) if dlg_status else 0,'; статус:',used.get('v35'))
     print('Найдено исходных диалоговых строк для перевода:',status.get('v32_sources_ready',0))
@@ -1064,6 +1066,53 @@ def v58_local_tp2_bcs_gate(game, report_path):
     return result
 
 
+
+def v60_weidu_installed_components(game, report_path):
+    """Read WeiDU.log independently of TP2 source availability."""
+    g=Path(game)
+    log=next((p for p in (g/'WeiDU.log',g/'weidu.log') if p.is_file()),None)
+    report={'schema':'bg-eet-ru-v60-installed-component-audit-v1',
+            'status':'WEIDU_LOG_NOT_FOUND','game_files_written':False,
+            'installation_allowed':False,'runtime_visibility_proven':False,
+            'groups':{},'matched_entries':[]}
+    if log is not None:
+        data=log.read_bytes()
+        src=data.decode('utf-8-sig','replace')
+        if src.count('\ufffd')>max(4,len(src)//2000):
+            src=data.decode('cp1251','replace')
+        entries=[]
+        for line_no,line in enumerate(src.splitlines(),1):
+            line=line.strip()
+            if not line or line.startswith('//'):continue
+            m=re.match(r'^~([^~]+\.tp2)~\s*#\s*(\d+)\s*#\s*(\d+)\b',line,re.I)
+            if not m:continue
+            modpath=m.group(1).replace('\\','/').lower()
+            if any(term in modpath for term in ('iwd1_eet','iwd2_eet','iwd_eet-party-banter','how_eet','totlm')):
+                entries.append({'line':line_no,'tp2_path':m.group(1),
+                                'language':int(m.group(2)),'component':int(m.group(3)),
+                                'comment':line.split('//',1)[-1].strip()[:180] if '//' in line else ''})
+        for mod,key in [('iwd1_eet','IWD1_EET'),('iwd2_eet','IWD2_EET'),
+                        ('iwd_eet-party-banter','IWD_PARTY_BANTER'),
+                        ('how_eet','HOW_EET'),('totlm','TOTLM')]:
+            values=sorted({e['component'] for e in entries if mod in e['tp2_path'].lower()})
+            report['groups'][key]={'installed_components':values,'found':bool(values)}
+        iwd2=report['groups']['IWD2_EET']['installed_components']
+        banter=report['groups']['IWD_PARTY_BANTER']['installed_components']
+        report.update(status='INSPECTED_WEIDU_LOG',log_sha256=digest(data),
+                      parsed_relevant_entries=len(entries),matched_entries=entries,
+                      observed_iwd2_component_0=0 in iwd2,
+                      observed_iwd2_component_1=1 in iwd2,
+                      observed_banter_component_0=0 in banter,
+                      condition_inferred='IWD2_1_NOT_LISTED' if 1 not in iwd2 else 'IWD2_1_LISTED')
+        report['note']='WeiDU.log only proves logged components; it cannot prove whether a TP2 branch executed, nor what appears on screen.'
+    with zipfile.ZipFile(report_path,'a',compression=zipfile.ZIP_DEFLATED) as z:
+        if '14_V60_WEIDU_COMPONENTS.json' in z.namelist():
+            raise RuntimeError('duplicate v60 report')
+        z.writestr('14_V60_WEIDU_COMPONENTS.json',
+                   json.dumps(report,ensure_ascii=False,indent=2).encode('utf-8'))
+    return report
+
+
 def selftest():
     # Self-contained checks only; never read or change a real EET installation.
     p36,tra36=load_v36_preflight()
@@ -1119,6 +1168,7 @@ def selftest():
     assert published_update(Path('/tmp/not_installed'),offline=True)[1] is False
     assert callable(v56_static_audit) and callable(v56_preserve_prior)
     assert callable(v58_local_tp2_bcs_gate)
+    assert callable(v60_weidu_installed_components)
     # ARE V1.0 actor count is WORD; adjacent WORD at 0x5a is regions count.
     _are_test=bytearray(0x100)
     struct.pack_into('<IHH',_are_test,0x54,0xe0,2,320)
