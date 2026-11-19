@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "39faabe04d74f8bb21c728e5db9435f0d7bca19c",
+  "commit": "ee9a884b120fab4ce3a958b70d906c1ff6d7895b",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "2b7e9b574ed0071668f3a026acbb9531ae51fcbd28b0026151ad29c9d47855c5",
-  "script_size": 79847,
-  "description": "BGXAI one permanent CMD 1-135; menu 135 native read-only decompile audit of live BDDEFAI BCS friendly-fire reaction. All earlier menus retained, game unchanged."
+  "script_sha256": "eff7dc0abba5649b7fbcaa01a8f3dfc458e9f7355a0f93b6603162ddc3955214",
+  "script_size": 79966,
+  "description": "BGXAI single CMD menus 1-138: BGXSAFE 136 guarded native V4 friendly-fire filter and exact BGX38/39 ProtectObject isolation, automatic postinstall validation; 137 status; 138 last-component rollback. No automatic install."
 }
