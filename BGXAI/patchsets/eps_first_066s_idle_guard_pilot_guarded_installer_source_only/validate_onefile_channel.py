@@ -24,7 +24,7 @@ RELEASES = (
     ('BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/', '0.3.40-BGXP3-AUTO-BUFFER', 9),
     ('BGXAI/patchsets/priest_auto_priority_guard_source_20261117/', '0.3.41-BGXP5-AUTO-PRIORITY-GUARD', 11),
     ('BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/', '0.3.50-BGX122-IDS-HYPHEN', 13),
-    ('BGXAI/patchsets/ranged_fighter_guarded_20261119/', '0.3.61-BGXFRIEND-GUARDED', 14),
+    ('BGXAI/patchsets/ranged_fighter_guarded_20261119/', '0.3.62-BGX-ACTION-LOG-READONLY', 15),
 )
 
 def git_bytes(rev: str, path: str) -> bytes:
@@ -119,6 +119,13 @@ def main():
     ast.parse(aggro_audit.decode('utf-8'), filename='friendly aggro read-only audit')
     assert b'BGXAI_AGGRO_READONLY_AUDIT_PASS' in aggro_audit
     assert b'BGXAI_SAVE_SCRIPT_AUDIT_READONLY' in aggro_audit
+    assert b'BGX_COMBAT_LOG_READONLY_AUDIT' in aggro_audit
+    logaudit = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_COMBAT_LOG_READONLY_AUDIT.py')
+    ast.parse(logaudit.decode('utf-8'), filename='BGXAI_COMBAT existing log read-only scanner')
+    assert b'NO_BGX71_TARGET_BEARING_EVENTS' in logaudit
+    assert b'PARTY_TO_PARTY_ATTACK_ACTION_STARTED_OBSERVED' in logaudit
+    assert b'proof_of_absence' in logaudit
+
     assigned = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_SAVE_SCRIPT_AUDIT_READONLY.py')
     ast.parse(assigned.decode('utf-8'), filename='GAM CRE five-script slots read-only scanner')
     assert b'GAMEV2.0' in assigned and b'CRE V1.0' in assigned
@@ -192,7 +199,7 @@ def main():
     assert "'124' {SyncRelease $releaseRanged" in code
     assert "'125' {SyncRelease $releaseRanged" in code
     assert "'126' {SyncRelease $releaseRanged" in code
-    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-141; 85/85 source hashes; pin matched; game untouched')
+    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-141; 86/86 source hashes; pin matched; game untouched')
 
 if __name__ == '__main__':
     main()
