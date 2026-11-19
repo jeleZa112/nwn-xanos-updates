@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 58,
-  "sha256": "62343e91791bcf1ddd43354cbfb027a39b1de87911dc9e091690a59f4eda6b28",
+  "version": 59,
+  "sha256": "6b9f64e8bc0cf748ef76252f3a453ae980ca0a3230e74f80c3d08de42af24b4e",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v58 one CMD: local TP2 and WeiDU IWD2 component gate, read-only BCS override presence, retain v55/v56 evidence, one ZIP, no game changes and no installation permission."
+  "note": "v59: diagnose local TP2 or WeiDU.log missing instead of opaque UNKNOWN; preserve v55 evidence when present, regenerate v56/v58 without duplicate ZIP entries; fallback to v35 target names is PARTIAL; read-only."
 }
