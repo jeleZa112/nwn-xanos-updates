@@ -22,3 +22,15 @@
 
 ## Следующий инженерный шаг
 READ ONLY аудит актуального override/BDDEFAI.BCS с нативным WeiDU декомпилятором или доказанным парсером, группировка действий Attack/AttackReevaluate/ProtectObject и их предикатов InParty/Allegiance, учёт порядка блоков и реального WeiDU.log/назначенного персонального AI скрипта Халида. Текущий документ диагностика, не установленный hotfix.
+
+
+## Реализация read-only проверки 19.11.2026
+
+Добавлен самостоятельный **BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py** в SHA-подписанный release source manifest 0.3.57-BGXAGGRO-READONLY. Существующий BGXAI_UPDATE.cmd использует тот же immutable bootstrap и теперь содержит пункт **135 — Friendly aggro audit (READ ONLY)**. Старые пункты 1–134 и их обработчики сохранены. Сокращены подписи части прежних пунктов меню, потому что у BGXAI_SYNC.ps1 жёсткий предел около 80 КБ.
+
+- Источник: BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py; SHA256 926bc0fafb15617cc11e63587589e92e62fbd75e81d5afb65820799c757a3b85.
+- Pinned script commit **39faabe04d74f8bb21c728e5db9435f0d7bca19c**; размер 79847 байт, SHA256 **2b7e9b574ed0071668f3a026acbb9531ae51fcbd28b0026151ad29c9d47855c5**; PIN commit 4119b2a0d9e50e899b7970aec38c6292b5817ec3.
+- Проверяет реальную BDDEFAI.BCS: хеш, BCS envelope, блоки, последнюю WeiDU компоненту; копирует BCS и WeiDU во временный каталог, декомпилирует BCS -> BAF **только во временной папке**, сверяет количество блоков; изучает Attack/AttackReevaluate/AttackOneRound/ProtectObject и LastAttacker/NearestEnemy, наличие InParty/Allegiance target guards, записывает JSON в Documents/BGXAI_LIVE_REPORTS (или Documents, если папки нет). Выводит первые 15 наиболее подозрительных блоков + путь полного JSON.
+- Это эвристическая разметка, не доказательство исполнившегося блока; пока нельзя автоматически объявить виновника.
+- GitHub Windows CI 44525952608 — **SUCCESS**, проверка PowerShell 5.1 AST, канала, SHA и меню 1–135. Исходные тесты парсера/блоков 44525423579 — **SUCCESS**. **На пользовательской EET ещё не запускалось.**
+- Следующее действие **одно**: закрыть игру/InfinityLoader, запустить текущий единственный BGXAI_UPDATE.cmd, выбрать 135; прислать текст TOP_SUSPECT_BLOCKS и/или JSON из указанного REPORT_FILE. Не запускать новые установки 132/дружественный боевой тест. По отчёту выбрать точечное безопасное исправление и подготовить автоматическую проверку после инсталляции.
