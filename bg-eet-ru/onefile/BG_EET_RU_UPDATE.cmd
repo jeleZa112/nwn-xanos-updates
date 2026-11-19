@@ -1192,7 +1192,7 @@ def selftest():
     assert callable(v58_local_tp2_bcs_gate)
     assert callable(v60_weidu_installed_components)
     _weidu_fixture=r'~mods\setup-iwd2_eet.tp2~ #0 #1 // test'
-    _weidu_match=re.search(r'~([^~\\r\\n]*?\\.tp2)~\\s*#\\s*(\\d+)\\s*#\\s*(\\d+)(?!\\d)',_weidu_fixture,re.I)
+    _weidu_match=re.search(r'~([^~\r\n]*?\.tp2)~\s*#\s*(\d+)\s*#\s*(\d+)(?!\d)',_weidu_fixture,re.I)
     assert _weidu_match is not None and _weidu_match.group(3)=='1'
     # ARE V1.0 actor count is WORD; adjacent WORD at 0x5a is regions count.
     _are_test=bytearray(0x100)
