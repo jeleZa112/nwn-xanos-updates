@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 58
+SELF_VERSION = 59
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -841,7 +841,7 @@ def main(argv=None):
     v56_status=v56_static_audit(game,v56_before,report_path)
     print('v56 CRE/ARE/KEY:',v56_status['status'],v56_status['summary'])
     v58_status=v58_local_tp2_bcs_gate(game,report_path)
-    print('v58 local TP2/BCS branch:',v58_status['branch_status'])
+    print('v58 local TP2/BCS branch:',v58_status['branch_status'],v58_status.get('reason',''))
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
     print('Собрано DLG (v35):',dlg_status.get('found',0) if dlg_status else 0,'; статус:',used.get('v35'))
     print('Найдено исходных диалоговых строк для перевода:',status.get('v32_sources_ready',0))
@@ -875,6 +875,17 @@ def v56_static_audit(game, previous_zip, output_zip):
             anchors=[]
     targets={str(a.get('target_dlg','')).upper() for a in anchors if isinstance(a,dict)}
     targets.discard('')
+    source='V55_ANCHORS'
+    if not targets:
+        try:
+            with zipfile.ZipFile(output_zip) as z:
+                status35=json.loads(z.read('09_IWD_BANTER_DLG_STATUS.json'))
+            raw_targets=status35.get('target_dialogues',[])
+            if isinstance(raw_targets,list):
+                targets={str(v).upper() for v in raw_targets if isinstance(v,str) and v}
+                source='V35_TARGETS_FALLBACK_NO_ANCHORS'
+        except (OSError,KeyError,ValueError,zipfile.BadZipFile):
+            pass
     errors=[]
     counts={'cre_scanned':0,'are_scanned':0,'are_actors':0}
     def u32(b,o):
@@ -952,13 +963,16 @@ def v56_static_audit(game, previous_zip, output_zip):
              'targets_with_override_are_link':sum(bool(x['override_are_links']) for x in rows),
              'targets_in_key_directory':sum(x['key_directory_dlg'] for x in rows),
              'errors':len(errors),**key_stats}
-    status='LIVE_STATIC_AUDIT' if len(anchors)==82 and len(targets)==26 else 'BLOCKED_MISSING_V55_ANCHORS'
+    status=('LIVE_STATIC_AUDIT' if len(anchors)==82 and len(targets)==26
+            else 'PARTIAL_V35_TARGET_FALLBACK' if len(targets)==26
+            else 'BLOCKED_MISSING_TARGETS')
     output={'schema':'bg-eet-ru-v56-static-cre-are-key-v1','status':status,
             'game_root':str(game),'summary':summary,'target_presence':rows,
             'errors':errors[:200],'game_files_written':False,'installation_allowed':False,
             'runtime_visibility_proven':False,
             'coverage':'CRE/ARE override and KEY directory only; no BIF content or BCS evaluation',
-            'v55_previous_report_preserved':bool(keep)}
+            'v55_previous_report_preserved':'11_V55_LIVE_OVERRIDE_AUDIT.json' in keep,
+            'target_source':source}
     data={'12_V56_CRE_ARE_KEY_AUDIT.json':json.dumps(output,ensure_ascii=False,indent=2).encode('utf-8')}
     csv_out=io.StringIO()
     writer=_csv.DictWriter(csv_out,fieldnames=['dialogue','override_dlg','key_directory_dlg','override_cre_links','override_are_links'])
@@ -968,7 +982,8 @@ def v56_static_audit(game, previous_zip, output_zip):
                            'override_are_links':';'.join(r['override_are_links'])})
     data['12_V56_TARGET_LINKS.csv']=csv_out.getvalue().encode('utf-8-sig')
     with zipfile.ZipFile(output_zip,'a',compression=zipfile.ZIP_DEFLATED) as z:
-        for name in ('11_V55_LIVE_OVERRIDE_AUDIT.json','11_V55_82_ANCHORS.csv'):
+        for name in ('11_V55_LIVE_OVERRIDE_AUDIT.json','11_V55_82_ANCHORS.csv',
+                     '13_V58_LOCAL_TP2_BCS_GATE.json'):
             if name in keep and name not in z.namelist():z.writestr(name,keep[name])
         for name,payload in data.items():
             if name in z.namelist():raise RuntimeError('duplicate v56 ZIP entry')
@@ -979,10 +994,13 @@ def v56_static_audit(game, previous_zip, output_zip):
 
 
 def v56_preserve_prior(path):
+    """Retain safe prior audit reports before the base ZIP is rewritten."""
     result={}
     if not Path(path).is_file():return result
     with zipfile.ZipFile(path) as z:
-        for name in ('11_V55_LIVE_OVERRIDE_AUDIT.json','11_V55_82_ANCHORS.csv'):
+        for name in ('11_V55_LIVE_OVERRIDE_AUDIT.json','11_V55_82_ANCHORS.csv',
+                     '12_V56_CRE_ARE_KEY_AUDIT.json','12_V56_TARGET_LINKS.csv',
+                     '13_V58_LOCAL_TP2_BCS_GATE.json'):
             try:
                 i=z.getinfo(name)
                 if i.file_size<2000000:result[name]=z.read(name)
@@ -1033,6 +1051,10 @@ def v58_local_tp2_bcs_gate(game, report_path):
             else 'UNRESOLVED_OR_POSSIBLY_MET')
     else:
         result['status']='MISSING_LOCAL_SOURCE_OR_WEIDU_LOG'
+        result['reason']='LOCAL_TP2_NOT_FOUND' if not tp else 'WEIDU_LOG_NOT_FOUND'
+        result['searched_tp2_paths']=[str(p.relative_to(g)) for p in candidates]
+        result['searched_weidu_logs']=['WeiDU.log','weidu.log']
+        result['branch_status']='UNDETERMINED_'+result['reason']
     with zipfile.ZipFile(report_path,'a',compression=zipfile.ZIP_DEFLATED) as z:
         if '13_V58_LOCAL_TP2_BCS_GATE.json' in z.namelist():
             raise RuntimeError('duplicate v58 report')
