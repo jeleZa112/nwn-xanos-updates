@@ -23,6 +23,7 @@ RELEASES = (
     ('BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/', '0.3.40-BGXP3-AUTO-BUFFER', 9),
     ('BGXAI/patchsets/priest_auto_priority_guard_source_20261117/', '0.3.41-BGXP5-AUTO-PRIORITY-GUARD', 11),
     ('BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/', '0.3.50-BGX122-IDS-HYPHEN', 13),
+    ('BGXAI/patchsets/ranged_fighter_guarded_20261119/', '0.3.52-BGXRANGED-GUARDED', 3),
 )
 
 def git_bytes(rev: str, path: str) -> bytes:
@@ -68,9 +69,9 @@ def main():
         assert token in recovery, 'one CMD recovery expected SHA or commit absent'
     oldmenu, oldcase = menus(old)
     menu, case = menus(live)
-    assert len(oldmenu) == 97 and len(menu) == 123, 'menu length mismatch'
-    assert len(oldcase) == 96 and len(case) == 122, 'dispatch length mismatch'
-    assert menu[:96] == oldmenu[:96] and menu[-1] == oldmenu[-1], 'old menu 1..96 changed'
+    assert len(oldmenu) == 97 and len(menu) == 127, 'menu length mismatch'
+    assert len(oldcase) == 96 and len(case) == 126, 'dispatch length mismatch'
+    assert [int(re.search(r"'(\\s*\\d+) -", item).group(1)) for item in menu[:-1]] == list(range(1,127)) and menu[-1] == oldmenu[-1], 'menu numbering changed'
     assert case[:96] == oldcase, 'old dispatch 1..96 changed'
     code = live.decode('utf-8-sig')
     for n in range(97,117):
@@ -82,6 +83,10 @@ def main():
     assert case[119].startswith("'120' {SyncRelease $releaseAOE;& py -3"), '120 guarded native Entangle installer missing'
     assert case[120].startswith("'121' {SyncRelease $releaseAOE;& py -3"), '121 read-only AOE spatial audit missing'
     assert case[121].startswith("'122' {SyncRelease $releaseAOE;& py -3"), '122 read-only modded projectile EFF audit missing'
+    assert case[122].startswith("'123' {SyncRelease $releaseRanged;& py -3"), '123 ranged preflight missing'
+    assert case[123].startswith("'124' {SyncRelease $releaseRanged;& py -3"), '124 guarded install missing'
+    assert case[124].startswith("'125' {SyncRelease $releaseRanged;& py -3"), '125 ranged status missing'
+    assert case[125].startswith("'126' {SyncRelease $releaseRanged;& py -3"), '126 guarded rollback missing'
     assert "function BGXAOEReadOnly" in code and "SyncRelease $releaseAOE" in code
     assert "function BGXTest6Safe" in code and "CREATE_BGXAI_TEST6_NO_PRIEST1" in code
     aoe_chunks = code.split("$releaseAOE=@{")
@@ -120,7 +125,7 @@ def main():
             original = git_bytes(pin['commit'], f['source'])
             assert len(original) == f['size'] and sha(original) == f['sha256'], f'bad source: {name}'
             assert f"'{name}'" in code, f'updater source absent: {name}'
-    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-122; 71/71 source hashes; pin matched; game untouched')
+    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-126; 74/74 source hashes; pin matched; game untouched')
 
 if __name__ == '__main__':
     main()
