@@ -1,0 +1,21 @@
+// BGXAI ranged fighter pilot; F guard required; only already-selected ranged weapon.
+// No weapon swaps, movement commands, spell casting or healing overrides.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Class(Myself,FIGHTER)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_HELPLESS)
+  HPPercentGT(Myself,75)
+  IsWeaponRanged(Myself)
+  !InParty(NearestEnemyOf(Myself))
+  See(NearestEnemyOf(Myself))
+  InWeaponRange(NearestEnemyOf(Myself))
+THEN
+  RESPONSE #100
+    AttackOneRound(NearestEnemyOf(Myself))
+END
