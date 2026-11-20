@@ -32,6 +32,12 @@ on:
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_friend_trace_guarded.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_friend_trace_report.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_m_bxfr.lua'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BXFR_CONSOLE_V2.lua'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXFTRACE_V2_GUARDED.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXFTRACE_CONSOLE_CAPTURE.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_bgxf2_console.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIEND_TRACE_REPORT.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py'
   workflow_dispatch:
@@ -71,3 +77,5 @@ jobs:
         run: python -m unittest -v BGXAI/patchsets/ranged_fighter_guarded_20261119/test_friend_trace_guarded.py
       - name: BGXFTRACE read-only target log analyser tests
         run: python -m unittest -v BGXAI/patchsets/ranged_fighter_guarded_20261119/test_friend_trace_report.py
+      - name: BGXFTRACE v2 INTERNAL Lua console fallback and guarded WeiDU regression
+        run: python -m unittest -v BGXAI/patchsets/ranged_fighter_guarded_20261119/test_bgxf2_console.py
