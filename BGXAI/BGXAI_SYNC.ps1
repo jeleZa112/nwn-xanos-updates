@@ -201,14 +201,16 @@ localPath=Join-Path $GameRoot 'BGXAI_DEV\aoe_readonly_verified';installer='BGXAI
 names=@('BGXAI_AOE_AUDIT.py','test_aoe_audit.py','BGXAI_TEST6_SAFE_COPY.py','test_safe_copy.py','BGX119_TRACE.py','BGX120_ENTANGLE_GUARD.py','test_guard120.py','BGX121_POLICY.py','BGX121_READONLY.py','test_121.py','BGX122_PROJECTILES_READONLY.py','test_122.py','README_RU.md')
 }
 $releaseRanged=@{
-id='BGXRANGED';version='0.3.62-BGX-ACTION-LOG-READONLY';
+id='BGXRANGED';version='0.3.63-BGXFTRACE-PASSIVE';
 manifest='BGXAI/patchsets/ranged_fighter_guarded_20261119/manifest_updater.json';
 prefix='BGXAI/patchsets/ranged_fighter_guarded_20261119/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\ranged_fighter_verified';installer='BGXRANGED_PREFLIGHT.py';
-names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INSTALL.py','BGXRANGED_V2_MELEE_HANDOFF.baf','BGXRANGED_V2_PREFLIGHT.py','BGXRANGED_V2_GUARDED_INSTALL.py','BGXRANGED_V3_MELEE_HANDOFF.baf','BGXRANGED_V3_PREFLIGHT.py','BGXRANGED_V3_GUARDED_INSTALL.py','BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py','BGXRANGED_V4_NO_FRIEND_ATTACK.baf','BGX_FRIENDLY_PROTECT_ISOLATION.py','BGXAI_SAVE_SCRIPT_AUDIT_READONLY.py','BGX_FRIENDLY_RETALIATION_GUARDED.py','BGX_COMBAT_LOG_READONLY_AUDIT.py')
+names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INSTALL.py','BGXRANGED_V2_MELEE_HANDOFF.baf','BGXRANGED_V2_PREFLIGHT.py','BGXRANGED_V2_GUARDED_INSTALL.py','BGXRANGED_V3_MELEE_HANDOFF.baf','BGXRANGED_V3_PREFLIGHT.py','BGXRANGED_V3_GUARDED_INSTALL.py','BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py','BGXRANGED_V4_NO_FRIEND_ATTACK.baf','BGX_FRIENDLY_PROTECT_ISOLATION.py','BGXAI_SAVE_SCRIPT_AUDIT_READONLY.py','BGX_FRIENDLY_RETALIATION_GUARDED.py','BGX_COMBAT_LOG_READONLY_AUDIT.py','M_BXFR.lua','BGX_FRIEND_TRACE_GUARDED.py','BGX_FRIEND_TRACE_REPORT.py')
 }
 $v2install=Join-Path $releaseRanged.localPath 'BGXRANGED_V2_GUARDED_INSTALL.py'
 $ff=Join-Path $releaseRanged.localPath 'BGX_FRIENDLY_RETALIATION_GUARDED.py'
+$rr=$releaseRanged.localPath
+$trace=Join-Path $rr 'BGX_FRIEND_TRACE_GUARDED.py'
 function Get-PinnedBytes([string]$remotePath) {
 if($remotePath -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116|patchsets/priest_combat_eps_first_20261116|patchsets/priest_auto_attack_buffer_source_only_20261117|patchsets/priest_auto_priority_guard_source_20261117|patchsets/aoe_entangle_readonly_onefile_20261117|patchsets/ranged_fighter_guarded_20261119)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
 throw ('Remote source path blocked: '+$remotePath)
@@ -1080,7 +1082,7 @@ Write-Host 'NO GAME FILES CHANGED.'
 }
 Write-Host ''
 Write-Host ' BGXAI ONE-FILE UPDATER / EET Foxx / EPS 18.4'
-Write-Host ' Game: EPS 18.4 / EET. Use menu 97 for installed BGXPR status.'
+Write-Host ' EPS 18.4 / EET. BGXPR status: 97.'
 Write-Host ' 1 - 040 download'
 Write-Host ' 2 - 040 status'
 Write-Host ' 3 - 040 install'
@@ -1150,67 +1152,67 @@ Write-Host ' 66 - 061 REAL '
 Write-Host ' 67 - install BGXAI 0'
 Write-Host ' 68 - 061/060 i'
 Write-Host ' 69 - Roll back BGXAI'
-Write-Host ' 70 - BGXAI 70'
-Write-Host ' 71 - BGXAI 71'
-Write-Host ' 72 - BGXAI 72'
-Write-Host ' 73 - BGXAI 73'
-Write-Host ' 74 - BGXAI 74'
-Write-Host ' 75 - BGXAI 75'
-Write-Host ' 76 - BGXAI 76'
-Write-Host ' 77 - BGXAI 77'
-Write-Host ' 78 - BGXAI 78'
-Write-Host ' 79 - BGXAI 79'
-Write-Host ' 80 - BGXAI 80'
-Write-Host ' 81 - BGXAI 81'
-Write-Host ' 82 - BGXAI 82'
-Write-Host ' 83 - BGXAI 83'
-Write-Host ' 84 - BGXAI 84'
-Write-Host ' 85 - BGXAI 85'
-Write-Host ' 86 - BGXAI 86'
-Write-Host ' 87 - BGXAI 87'
-Write-Host ' 88 - BGXAI 88'
-Write-Host ' 89 - BGXAI 89'
-Write-Host ' 90 - BGXAI 90'
-Write-Host ' 91 - BGXAI 91'
-Write-Host ' 92 - BGXAI 92'
+Write-Host ' 70 - BGX'
+Write-Host ' 71 - BGX'
+Write-Host ' 72 - BGX'
+Write-Host ' 73 - BGX'
+Write-Host ' 74 - BGX'
+Write-Host ' 75 - BGX'
+Write-Host ' 76 - BGX'
+Write-Host ' 77 - BGX'
+Write-Host ' 78 - BGX'
+Write-Host ' 79 - BGX'
+Write-Host ' 80 - BGX'
+Write-Host ' 81 - BGX'
+Write-Host ' 82 - BGX'
+Write-Host ' 83 - BGX'
+Write-Host ' 84 - BGX'
+Write-Host ' 85 - BGX'
+Write-Host ' 86 - BGX'
+Write-Host ' 87 - BGX'
+Write-Host ' 88 - BGX'
+Write-Host ' 89 - BGX'
+Write-Host ' 90 - BGX'
+Write-Host ' 91 - BGX'
+Write-Host ' 92 - BGX'
 Write-Host ' 93 - 066S precheck'
 Write-Host ' 94 - 066S install'
 Write-Host ' 95 - 066S status'
 Write-Host ' 96 - 066S rollback'
-Write-Host ' 97 - BGXAI 97'
-Write-Host ' 98 - BGXAI 98'
-Write-Host ' 99 - BGXAI 99'
-Write-Host '100 - BGXAI 100'
-Write-Host '101 - BGXAI 101'
-Write-Host '102 - BGXAI 102'
-Write-Host '103 - BGXAI 103'
-Write-Host '104 - BGXAI 104'
-Write-Host '105 - BGXAI 105'
-Write-Host '106 - BGXAI 106'
-Write-Host '107 - BGXAI 107'
-Write-Host '108 - BGXAI 108'
-Write-Host '109 - BGXAI 109'
-Write-Host '110 - BGXAI 110'
-Write-Host '111 - BGXAI 111'
-Write-Host '112 - BGXAI 112'
-Write-Host '113 - BGXAI 113'
-Write-Host '114 - BGXAI 114'
-Write-Host '115 - BGXAI 115'
-Write-Host '116 - BGXAI 116'
-Write-Host '117 - BGXAI 117'
-Write-Host '118 - BGXAI 118'
-Write-Host '119 - BGXAI 119'
-Write-Host '120 - BGXAI 120'
-Write-Host '121 - BGXAI 121'
-Write-Host '122 - BGXAI 122'
-Write-Host '123 - BGXAI 123'
-Write-Host '124 - BGXAI 124'
-Write-Host '125 - BGXAI 125'
-Write-Host '126 - BGXAI 126'
-Write-Host '127 - BGXAI 127'
-Write-Host '128 - BGXAI 128'
-Write-Host '129 - BGXAI 129'
-Write-Host '130 - BGXAI 130'
+Write-Host ' 97 - BGX'
+Write-Host ' 98 - BGX'
+Write-Host ' 99 - BGX'
+Write-Host '100 - BGX'
+Write-Host '101 - BGX'
+Write-Host '102 - BGX'
+Write-Host '103 - BGX'
+Write-Host '104 - BGX'
+Write-Host '105 - BGX'
+Write-Host '106 - BGX'
+Write-Host '107 - BGX'
+Write-Host '108 - BGX'
+Write-Host '109 - BGX'
+Write-Host '110 - BGX'
+Write-Host '111 - BGX'
+Write-Host '112 - BGX'
+Write-Host '113 - BGX'
+Write-Host '114 - BGX'
+Write-Host '115 - BGX'
+Write-Host '116 - BGX'
+Write-Host '117 - AOE'
+Write-Host '118 - AOE'
+Write-Host '119 - AOE'
+Write-Host '120 - AOE'
+Write-Host '121 - AOE'
+Write-Host '122 - AOE'
+Write-Host '123 - RANGE'
+Write-Host '124 - RANGE'
+Write-Host '125 - RANGE'
+Write-Host '126 - RANGE'
+Write-Host '127 - RANGE'
+Write-Host '128 - RANGE'
+Write-Host '129 - RANGE'
+Write-Host '130 - RANGE'
 Write-Host '131 - V3 native (RO)'
 Write-Host '132 - V3 install+verify'
 Write-Host '133 - V3 status (RO)'
@@ -1222,6 +1224,9 @@ Write-Host '138 - BGXSAFE rollback V3'
 Write-Host '139 - FRIEND install'
 Write-Host '140 - FRIEND status'
 Write-Host '141 - FRIEND rollback'
+Write-Host '142 - Trace install+verify'
+Write-Host '143 - Trace status (RO)'
+Write-Host '144 - Trace rollback'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -1350,30 +1355,33 @@ switch($choice){
 '120' {SyncRelease $releaseAOE;& py -3 (Join-Path $releaseAOE.localPath 'BGX120_ENTANGLE_GUARD.py');if($LASTEXITCODE){throw '120 STOP'};break}
 '121' {SyncRelease $releaseAOE;& py -3 (Join-Path $releaseAOE.localPath 'BGX121_READONLY.py');if($LASTEXITCODE){throw '121 STOP'};break}
 '122' {SyncRelease $releaseAOE;& py -3 (Join-Path $releaseAOE.localPath 'BGX122_PROJECTILES_READONLY.py');if($LASTEXITCODE){throw '122 STOP'};break}
-'123' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGXRANGED_PREFLIGHT.py') --mode preflight --game $GameRoot;if($LASTEXITCODE){throw '123 STOP'};break}
-'124' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGXRANGED_GUARDED_INSTALL.py') install --game $GameRoot;if($LASTEXITCODE){throw '124 STOP'};break}
-'125' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGXRANGED_GUARDED_INSTALL.py') status --game $GameRoot;if($LASTEXITCODE){throw '125 STOP'};break}
-'126' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGXRANGED_GUARDED_INSTALL.py') rollback --game $GameRoot;if($LASTEXITCODE){throw '126 STOP'};break}
-'127' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGXRANGED_V2_PREFLIGHT.py') --game $GameRoot;if($LASTEXITCODE){throw '127 STOP'};break}
+'123' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_PREFLIGHT.py') --mode preflight --game $GameRoot;if($LASTEXITCODE){throw '123 STOP'};break}
+'124' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_GUARDED_INSTALL.py') install --game $GameRoot;if($LASTEXITCODE){throw '124 STOP'};break}
+'125' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_GUARDED_INSTALL.py') status --game $GameRoot;if($LASTEXITCODE){throw '125 STOP'};break}
+'126' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_GUARDED_INSTALL.py') rollback --game $GameRoot;if($LASTEXITCODE){throw '126 STOP'};break}
+'127' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_V2_PREFLIGHT.py') --game $GameRoot;if($LASTEXITCODE){throw '127 STOP'};break}
 '128' {SyncRelease $releaseRanged;& py -3 $v2install install --game $GameRoot;if($LASTEXITCODE){throw '128 STOP'};& py -3 $v2install status --game $GameRoot;if($LASTEXITCODE){throw '128 VERIFY STOP'};break}
 '129' {SyncRelease $releaseRanged;& py -3 $v2install status --game $GameRoot;if($LASTEXITCODE){throw '129 STOP'};break}
 '130' {SyncRelease $releaseRanged;& py -3 $v2install rollback --game $GameRoot;if($LASTEXITCODE){throw '130 STOP'};break}
-'131' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGXRANGED_V3_PREFLIGHT.py') --game $GameRoot;if($LASTEXITCODE){throw '131 STOP'};break}
-'132' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGXRANGED_V3_GUARDED_INSTALL.py') install --game $GameRoot;if($LASTEXITCODE){throw '132 STOP'};break}
-'133' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGXRANGED_V3_GUARDED_INSTALL.py') status --game $GameRoot;if($LASTEXITCODE){throw '133 STOP'};break}
-'134' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGXRANGED_V3_GUARDED_INSTALL.py') rollback --game $GameRoot;if($LASTEXITCODE){throw '134 STOP'};break}
-'135' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py') --game $GameRoot;if($LASTEXITCODE){throw '135 STOP'};break}
-'136' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGX_FRIENDLY_PROTECT_ISOLATION.py') install --game $GameRoot;if($LASTEXITCODE){throw '136 STOP'};break}
-'137' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGX_FRIENDLY_PROTECT_ISOLATION.py') status --game $GameRoot;if($LASTEXITCODE){throw '137 STOP'};break}
-'138' {SyncRelease $releaseRanged;& py -3 (Join-Path $releaseRanged.localPath 'BGX_FRIENDLY_PROTECT_ISOLATION.py') rollback --game $GameRoot;if($LASTEXITCODE){throw '138 STOP'};break}
+'131' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_V3_PREFLIGHT.py') --game $GameRoot;if($LASTEXITCODE){throw '131 STOP'};break}
+'132' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_V3_GUARDED_INSTALL.py') install --game $GameRoot;if($LASTEXITCODE){throw '132 STOP'};break}
+'133' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_V3_GUARDED_INSTALL.py') status --game $GameRoot;if($LASTEXITCODE){throw '133 STOP'};break}
+'134' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_V3_GUARDED_INSTALL.py') rollback --game $GameRoot;if($LASTEXITCODE){throw '134 STOP'};break}
+'135' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py') --game $GameRoot;if($LASTEXITCODE){throw '135 STOP'};break}
+'136' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGX_FRIENDLY_PROTECT_ISOLATION.py') install --game $GameRoot;if($LASTEXITCODE){throw '136 STOP'};break}
+'137' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGX_FRIENDLY_PROTECT_ISOLATION.py') status --game $GameRoot;if($LASTEXITCODE){throw '137 STOP'};break}
+'138' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGX_FRIENDLY_PROTECT_ISOLATION.py') rollback --game $GameRoot;if($LASTEXITCODE){throw '138 STOP'};break}
 '139' {SyncRelease $releaseRanged;& py -3 $ff install --game $GameRoot;if($LASTEXITCODE){throw '139 STOP'};break}
 '140' {SyncRelease $releaseRanged;& py -3 $ff status --game $GameRoot;if($LASTEXITCODE){throw '140 STOP'};break}
 '141' {SyncRelease $releaseRanged;& py -3 $ff rollback --game $GameRoot;if($LASTEXITCODE){throw '141 STOP'};break}
+'142' {SyncRelease $releaseRanged;& py -3 $trace install --game $GameRoot;if($LASTEXITCODE){throw '142 STOP'};break}
+'143' {SyncRelease $releaseRanged;& py -3 $trace status --game $GameRoot;if($LASTEXITCODE){throw '143 STOP'};break}
+'144' {SyncRelease $releaseRanged;& py -3 $trace rollback --game $GameRoot;if($LASTEXITCODE){throw '144 STOP'};break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0
 } catch {
 Write-Host ('BGXAI STOP: '+$_.Exception.Message) -ForegroundColor Red
-Write-Host 'Failed install: no auto retry; review game status.'
+Write-Host 'STOP. No auto retry.'
 exit 1
 }
