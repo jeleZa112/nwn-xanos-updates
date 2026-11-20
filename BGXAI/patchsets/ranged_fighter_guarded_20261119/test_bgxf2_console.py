@@ -51,6 +51,7 @@ class TestBGXF2(unittest.TestCase):
    root=Path(d)/"game";root.mkdir();(root/"InfinityLoader.exe").write_bytes(b"MZsome executable")
    with mock.patch.dict(os.environ,{"USERPROFILE":d}),mock.patch.object(
         L.V3.V2.V1,"processes"),mock.patch.object(
+        L.V3TRACE,"last",return_value="~BGXF2/SETUP-BGXF2.TP2~ #0 #0"),mock.patch.object(
         L.V2,"status",return_value={"status":"BGXF2_INSTALLED_VERIFIED"}),mock.patch.object(
         L.subprocess,"Popen",return_value=mock.Mock(pid=12345)) as pop:
     info=L.start(root)
