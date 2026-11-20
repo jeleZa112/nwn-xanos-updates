@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "ac9b2b30699412f45ece6c1b0ef02bc450b1b31e",
+  "commit": "5d0cd3dc81f86883699f3e238d49c7f9adc1b207",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "99ffce0a51cdee0371a2efee502d519ee9961931a754bfc68c1624e460482818",
-  "script_size": 79990,
-  "description": "BGXAI onefile 1-148: 145 guarded BGXF2 EEex INTERNAL console observer, 146 capture InfinityLoader stdout, 147 status, 148 rollback; 135 read-only trace report. LuaPatchMode unchanged."
+  "script_sha256": "f1a29c84db7fbf8fdd64e75650aed2aabfea5489eb2fcd42897deff90515c2e2",
+  "script_size": 79789,
+  "description": "BGXAI onefile menus 1-151; BGXF3 149 guarded observer upgrade to log Khalid all started action IDs (move/guard), 150 status, 151 rollback; same 146 game capture and 135 read-only report; no combat changes."
 }
