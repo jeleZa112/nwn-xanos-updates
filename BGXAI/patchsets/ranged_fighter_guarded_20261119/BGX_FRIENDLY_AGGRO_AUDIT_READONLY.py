@@ -145,6 +145,15 @@ def main(root):
         action_log=result.get("combat_action_log_audit",{})
         trace=result.get("passive_friend_trace",{})
         print("PASSIVE_FRIEND_TRACE_STATUS="+str(trace.get("status","UNKNOWN")))
+        startup=trace.get("startup_diagnostics",{})
+        print("EEEX_LUA_PATCH_MODE="+str(startup.get("lua_patch_mode","UNKNOWN")))
+        print("EEEX_LUA_IO="+str(startup.get("lua_io_available","UNKNOWN")))
+        print("BGXFTRACE_OVERRIDE_PRESENT="+str(startup.get("observer_override_present","UNKNOWN")))
+        print("BGXFTRACE_STARTUP_HINT="+str(startup.get("hypothesis","UNKNOWN")))
+        for entry in startup.get("startup_logs",[]):
+            print("STARTUP_LOG="+str(entry.get("path",""))+
+                  " RELEVANT_LINES="+str(len(entry.get("relevant_lines",[]))))
+
         print("PASSIVE_PARTY_TARGETS_OBSERVED="+str(trace.get("party_target_attack_records",0)))
         for action in trace.get("observed_party_target_pairs",[])[:15]:
             print("PASSIVE_PAIR: actor_slot="+str(action.get("actor_slot"))+
