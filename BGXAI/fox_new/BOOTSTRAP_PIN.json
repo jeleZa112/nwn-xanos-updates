@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "5dc719353ef6156ec28328ae4d71155ecb24d80c",
+  "commit": "8623e9f025d9c5194f518faaf633ed296dfc8b3a",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "e12dd67b4e7054e824dfae68090c13603718cd779e524fefe785ac7856ecb9a9",
-  "script_size": 79974,
-  "description": "BGXAI one CMD 1-144; 135 read-only existing trace and InfinityLoader.ini LuaPatchMode/io startup diagnostics; 142-144 optional separate EEex tracer unchanged. No game changes by diagnostic."
+  "script_sha256": "8f29720a880ecb48c76e3b1e0bcf383fc24d5d84882dcb1c128fbb2d7a258e05",
+  "script_size": 79989,
+  "description": "BGXAI onefile 1-148: 145 guarded BGXF2 EEex INTERNAL console observer, 146 capture InfinityLoader stdout, 147 status, 148 rollback; 135 read-only trace report. LuaPatchMode unchanged."
 }
