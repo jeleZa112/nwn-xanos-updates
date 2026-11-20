@@ -15,7 +15,7 @@ end
 local function numeric(x) if type(x)=="number" and x==math.floor(x) then return x end; return -1 end
 local function emit(line)
  if M.handle then
-  local ok=pcall(function() M.handle:write(line,"\\n"); M.handle:flush() end)
+  local ok=pcall(function() M.handle:write(line,"\n"); M.handle:flush() end)
   if ok then return end
   M.errors=M.errors+1
   safe(function() M.handle:close() end)
