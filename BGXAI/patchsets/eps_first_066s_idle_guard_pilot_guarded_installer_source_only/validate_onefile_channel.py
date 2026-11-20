@@ -24,7 +24,7 @@ RELEASES = (
     ('BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/', '0.3.40-BGXP3-AUTO-BUFFER', 9),
     ('BGXAI/patchsets/priest_auto_priority_guard_source_20261117/', '0.3.41-BGXP5-AUTO-PRIORITY-GUARD', 11),
     ('BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/', '0.3.50-BGX122-IDS-HYPHEN', 13),
-    ('BGXAI/patchsets/ranged_fighter_guarded_20261119/', '0.3.63-BGXFTRACE-PASSIVE', 18),
+    ('BGXAI/patchsets/ranged_fighter_guarded_20261119/', '0.3.64-BGXFTRACE-STARTUP', 18),
 )
 
 def git_bytes(rev: str, path: str) -> bytes:
@@ -113,6 +113,9 @@ def main():
     trace_reader = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIEND_TRACE_REPORT.py')
     ast.parse(trace_reader.decode('utf-8'), filename='BGXFTRACE passive observer report analyser')
     assert b'no_observation_means_safe' in trace_reader
+    assert b'startup_diagnostics' in trace_reader and b'LuaPatchMode' in trace_reader
+    assert b'EEEX_LUA_PATCH_MODE' in git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py')
+
     assert b'BGX_FRIEND_TRACE_REPORT' in git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py')
     friend_fix = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_RETALIATION_GUARDED.py')
     ast.parse(friend_fix.decode('utf-8'), filename='guarded friendly retaliation WTASIGHT DPLAYER PRIEST1 installer')
