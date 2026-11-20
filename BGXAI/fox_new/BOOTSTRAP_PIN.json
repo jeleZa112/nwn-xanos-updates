@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "c5d44b90f80dad2b385746e1d182674f6a5d0a37",
+  "commit": "c070b71f9d5ff68c58402679a6a1475ed09fe181",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "8eac27d01aaaad35776e6809754c9d072962e966a0818d05567e2e7a6f4fd14d",
-  "script_size": 79997,
-  "description": "BGXAI onefile 1-141: existing menu 135 now also inspects existing BGXAI_COMBAT.log for started attack target and party IDs read-only. Menus 139-141 unchanged."
+  "script_sha256": "e648a15618a20c022997e794b8304c5b82fa20b29a7bb44e25a6b2a166b2f372",
+  "script_size": 79974,
+  "description": "BGXAI one CMD 1-144; 142 opt-in passive EEex party action observer, auto-verify; 143 status RO; 144 rollback. Existing 135 reads runtime trace log as evidence, not source provenance."
 }
