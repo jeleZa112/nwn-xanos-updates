@@ -18,4 +18,37 @@ class ReportTests(unittest.TestCase):
  def test_malformed_line_not_inferred(self):
   r=self.check("[BGXFTRACE] ACTION seq=2 actor=100 slot=2 action=3 target=101 target_slot=1 script=4\n")
   self.assertEqual(r['party_target_attack_records'],0)
+ def test_detect_internal_lua_without_io(self):
+  with tempfile.TemporaryDirectory() as d:
+   root=Path(d)
+   (root/"InfinityLoader.ini").write_text("[General]\nLuaPatchMode=INTERNAL\nLogFile=InfinityLoader.txt\n",encoding="utf-8")
+   (root/"override").mkdir()
+   (root/"override/M_BXFR.lua").write_bytes(b"test")
+   (root/"InfinityLoader.txt").write_text("Lua script M_BXFR.lua: io.open not available\n",encoding="utf-8")
+   r=M.audit(root)
+   diag=r["startup_diagnostics"]
+   self.assertEqual(diag["lua_patch_mode"],"INTERNAL")
+   self.assertEqual(diag["lua_io_available"],"LIKELY_UNAVAILABLE_IN_INTERNAL_LUA")
+   self.assertTrue(diag["observer_override_present"])
+   self.assertEqual(len(diag["startup_logs"]),1)
+   self.assertIn("io.open",diag["startup_logs"][0]["relevant_lines"][0])
+   self.assertEqual(r["status"],"TRACE_NOT_PRESENT")
+ def test_missing_ini_never_infers_no_io(self):
+  with tempfile.TemporaryDirectory() as d:
+   r=M.audit(Path(d))
+   self.assertEqual(r["startup_diagnostics"]["lua_io_available"],"UNKNOWN")
+   self.assertFalse(r["startup_diagnostics"]["observer_override_present"])
+ def test_disabled_ini_options_are_ignored(self):
+  with tempfile.TemporaryDirectory() as d:
+   root=Path(d)
+   (root/"InfinityLoader.ini").write_text(";LuaPatchMode=INTERNAL\n# LogFile=evil.txt\nLuaPatchMode=REPLACE_INTERNAL_WITH_EXTERNAL\n",encoding="utf-8")
+   r=M.audit(root)
+   self.assertEqual(r["startup_diagnostics"]["lua_patch_mode"],"REPLACE_INTERNAL_WITH_EXTERNAL")
+   self.assertEqual(r["startup_diagnostics"]["lua_io_available"],"POSSIBLE_NEEDS_RUNTIME_VERIFICATION")
+ def test_untrusted_logfile_relative_path_not_read(self):
+  with tempfile.TemporaryDirectory() as d:
+   root=Path(d)
+   (root/"InfinityLoader.ini").write_text("LogFile=../../private.txt\n")
+   r=M.audit(root)
+   self.assertFalse(r["startup_diagnostics"]["startup_logs"])
 if __name__=='__main__':unittest.main()
