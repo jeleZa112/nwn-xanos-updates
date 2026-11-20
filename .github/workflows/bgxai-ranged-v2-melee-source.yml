@@ -36,6 +36,9 @@ on:
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXFTRACE_V2_GUARDED.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXFTRACE_CONSOLE_CAPTURE.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_bgxf2_console.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BXFR_MOTION_V3.lua'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXFTRACE_V3_GUARDED.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_bgxf3_motion.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIEND_TRACE_REPORT.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py'
@@ -79,3 +82,5 @@ jobs:
         run: python -m unittest -v BGXAI/patchsets/ranged_fighter_guarded_20261119/test_friend_trace_report.py
       - name: BGXFTRACE v2 INTERNAL Lua console fallback and guarded WeiDU regression
         run: python -m unittest -v BGXAI/patchsets/ranged_fighter_guarded_20261119/test_bgxf2_console.py
+      - name: BGXF3 protected Khalid started-action motion tracing and existing V2 regressions
+        run: python -m unittest -v BGXAI/patchsets/ranged_fighter_guarded_20261119/test_bgxf3_motion.py BGXAI/patchsets/ranged_fighter_guarded_20261119/test_bgxf2_console.py
