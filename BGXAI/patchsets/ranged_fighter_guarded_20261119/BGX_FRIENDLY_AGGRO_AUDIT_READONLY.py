@@ -150,6 +150,17 @@ def main(root):
         print("BGXF2_CAPTURE_FILE="+str(capture.get("console_log","NONE")))
         print("BGXF2_CAPTURE_HOOK_READY="+str(capture.get("hook_ready_seen","UNKNOWN")))
         print("BGXF2_PARTY_ATTACK_PAIRS="+str(capture.get("party_target_attack_actions",0)))
+        print("BGXFTRACE_VERSION="+str(capture.get("trace_version","UNKNOWN")))
+        print("BGXF3_ALL_ACTIONS="+str(capture.get("all_started_actions_observed",0)))
+        print("BGXF3_KHALID_ACTIONS="+str(capture.get("khalid_started_actions_observed",0)))
+        print("BGXF3_NONATTACK_PARTY_TARGETS="+str(capture.get("nonattack_party_target_actions",0)))
+        for item in capture.get("khalid_started_action_records",[])[-20:]:
+            print("KHALID_STARTED_ACTION action="+str(item.get("action_id"))+
+                  " actee1="+str(item.get("actee1"))+
+                  " actee2="+str(item.get("actee2"))+
+                  " target_slot="+str(item.get("target_slot"))+
+                  " origin=UNKNOWN")
+
         for pair in capture.get("party_target_pairs",[])[:12]:
             print("BGXF2_PARTY_PAIR actor_slot="+str(pair.get("actor_slot"))+
                   " target_slot="+str(pair.get("target_slot"))+
