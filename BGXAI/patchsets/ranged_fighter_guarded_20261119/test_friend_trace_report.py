@@ -1,5 +1,7 @@
 import tempfile,unittest
 from pathlib import Path
+import sys
+sys.path.insert(0,str(Path(__file__).resolve().parent))
 import BGX_FRIEND_TRACE_REPORT as M
 class ReportTests(unittest.TestCase):
  def check(self,body):
