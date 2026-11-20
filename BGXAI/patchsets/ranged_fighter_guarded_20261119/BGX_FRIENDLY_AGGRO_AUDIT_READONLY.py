@@ -145,6 +145,16 @@ def main(root):
         action_log=result.get("combat_action_log_audit",{})
         trace=result.get("passive_friend_trace",{})
         print("PASSIVE_FRIEND_TRACE_STATUS="+str(trace.get("status","UNKNOWN")))
+        capture=trace.get("console_capture",{})
+        print("BGXF2_CONSOLE_STATUS="+str(capture.get("status","UNKNOWN")))
+        print("BGXF2_CAPTURE_FILE="+str(capture.get("console_log","NONE")))
+        print("BGXF2_CAPTURE_HOOK_READY="+str(capture.get("hook_ready_seen","UNKNOWN")))
+        print("BGXF2_PARTY_ATTACK_PAIRS="+str(capture.get("party_target_attack_actions",0)))
+        for pair in capture.get("party_target_pairs",[])[:12]:
+            print("BGXF2_PARTY_PAIR actor_slot="+str(pair.get("actor_slot"))+
+                  " target_slot="+str(pair.get("target_slot"))+
+                  " action_id="+str(pair.get("action_id"))+" source=UNKNOWN")
+
         startup=trace.get("startup_diagnostics",{})
         print("EEEX_LUA_PATCH_MODE="+str(startup.get("lua_patch_mode","UNKNOWN")))
         print("EEEX_LUA_IO="+str(startup.get("lua_io_available","UNKNOWN")))
