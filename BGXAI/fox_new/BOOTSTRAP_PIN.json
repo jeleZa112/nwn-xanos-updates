@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "c070b71f9d5ff68c58402679a6a1475ed09fe181",
+  "commit": "5dc719353ef6156ec28328ae4d71155ecb24d80c",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "e648a15618a20c022997e794b8304c5b82fa20b29a7bb44e25a6b2a166b2f372",
+  "script_sha256": "e12dd67b4e7054e824dfae68090c13603718cd779e524fefe785ac7856ecb9a9",
   "script_size": 79974,
-  "description": "BGXAI one CMD 1-144; 142 opt-in passive EEex party action observer, auto-verify; 143 status RO; 144 rollback. Existing 135 reads runtime trace log as evidence, not source provenance."
+  "description": "BGXAI one CMD 1-144; 135 read-only existing trace and InfinityLoader.ini LuaPatchMode/io startup diagnostics; 142-144 optional separate EEex tracer unchanged. No game changes by diagnostic."
 }
