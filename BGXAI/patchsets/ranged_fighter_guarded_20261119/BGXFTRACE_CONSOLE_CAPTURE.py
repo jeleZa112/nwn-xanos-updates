@@ -9,14 +9,20 @@ from __future__ import annotations
 import argparse,datetime,json,os,pathlib,subprocess,sys
 import BGX_FRIEND_TRACE_GUARDED as V1
 import BGXFTRACE_V2_GUARDED as V2
+import BGXFTRACE_V3_GUARDED as V3TRACE
 import BGXRANGED_V3_GUARDED_INSTALL as V3
 
 ROOT=V2.ROOT
 def start(root):
     V3.V2.V1.processes()
-    current=V2.status(root)
-    if current.get("status")!="BGXF2_INSTALLED_VERIFIED":
-        raise ValueError("V2_OBSERVER_NOT_VERIFIED")
+    if V3TRACE.LAST.match(V3TRACE.last(root)):
+        current=V3TRACE.status(root)
+        if current.get("status")!="BGXF3_INSTALLED_VERIFIED":
+            raise ValueError("V3_OBSERVER_NOT_VERIFIED")
+    else:
+        current=V2.status(root)
+        if current.get("status")!="BGXF2_INSTALLED_VERIFIED":
+            raise ValueError("V2_OBSERVER_NOT_VERIFIED")
     exe=root/"InfinityLoader.exe";V2.guard(exe)
     if not exe.is_file() or exe.is_symlink() or exe.read_bytes()[:2]!=b"MZ":
         raise ValueError("INFINITYLOADER_EXE_NOT_FOUND")
