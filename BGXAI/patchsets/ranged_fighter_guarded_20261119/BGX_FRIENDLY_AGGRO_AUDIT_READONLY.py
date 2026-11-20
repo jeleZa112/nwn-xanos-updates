@@ -113,6 +113,12 @@ def main(root):
             result["combat_action_log_audit"]={"status":"COMBAT_LOG_SCAN_STOP",
                 "reason":str(e)[:400], "runtime_action_origin":"UNKNOWN",
                 "game_modified":False}
+        try:
+            from BGX_FRIEND_TRACE_REPORT import audit as friend_trace_audit
+            result["passive_friend_trace"]=friend_trace_audit(root)
+        except (OSError,ValueError,RuntimeError) as e:
+            result["passive_friend_trace"]={"status":"FRIEND_TRACE_SCAN_STOP",
+                 "error":str(e)[:300],"runtime_origin":"UNKNOWN","game_modified":False}
         if sha(p)!=before:raise ValueError("GAME_CHANGED_DURING_AUDIT")
         dest=pathlib.Path(os.environ.get("USERPROFILE",str(pathlib.Path.home())))/"Documents"/"BGXAI_LIVE_REPORTS"
         if not dest.is_dir():
@@ -137,6 +143,15 @@ def main(root):
                   " ATTACK_BLOCKS="+str(script.get("attack_or_protect_blocks","UNKNOWN")))
         print("RUNTIME_ACTION_ORIGIN=UNKNOWN (static audit only)")
         action_log=result.get("combat_action_log_audit",{})
+        trace=result.get("passive_friend_trace",{})
+        print("PASSIVE_FRIEND_TRACE_STATUS="+str(trace.get("status","UNKNOWN")))
+        print("PASSIVE_PARTY_TARGETS_OBSERVED="+str(trace.get("party_target_attack_records",0)))
+        for action in trace.get("observed_party_target_pairs",[])[:15]:
+            print("PASSIVE_PAIR: actor_slot="+str(action.get("actor_slot"))+
+                " target_slot="+str(action.get("observed_target_slot"))+
+                " action="+str(action.get("action_id"))+
+                " script_index="+str(action.get("script_index_observed"))+
+                " origin=UNKNOWN")
         print("COMBAT_LOG_STATUS="+str(action_log.get("status","UNKNOWN")))
         print("COMBAT_BGX71_ACTIONS="+str(action_log.get("bgx71_actions_in_tail",0)))
         print("COMBAT_PARTY_ATTACK_STARTS_OBSERVED="+str(len(action_log.get("observed_party_attack_starts",[]))))
