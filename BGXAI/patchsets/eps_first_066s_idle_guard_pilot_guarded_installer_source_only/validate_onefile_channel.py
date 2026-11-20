@@ -24,7 +24,7 @@ RELEASES = (
     ('BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/', '0.3.40-BGXP3-AUTO-BUFFER', 9),
     ('BGXAI/patchsets/priest_auto_priority_guard_source_20261117/', '0.3.41-BGXP5-AUTO-PRIORITY-GUARD', 11),
     ('BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/', '0.3.50-BGX122-IDS-HYPHEN', 13),
-    ('BGXAI/patchsets/ranged_fighter_guarded_20261119/', '0.3.65-BGXF2-INTERNAL-CONSOLE', 21),
+    ('BGXAI/patchsets/ranged_fighter_guarded_20261119/', '0.3.66-BGXF3-KHALID-MOTION', 23),
 )
 
 def git_bytes(rev: str, path: str) -> bytes:
@@ -70,9 +70,9 @@ def main():
         assert token in recovery, 'one CMD recovery expected SHA or commit absent'
     oldmenu, oldcase = menus(old)
     menu, case = menus(live)
-    assert len(oldmenu) == 97 and len(menu) == 149, 'menu length mismatch'
-    assert len(oldcase) == 96 and len(case) == 148, 'dispatch length mismatch'
-    assert [int(re.search(r"'(\s*\d+) -", item).group(1)) for item in menu[:-1]] == list(range(1,149)) and menu[-1] == oldmenu[-1], 'menu numbering changed'
+    assert len(oldmenu) == 97 and len(menu) == 152, 'menu length mismatch'
+    assert len(oldcase) == 96 and len(case) == 151, 'dispatch length mismatch'
+    assert [int(re.search(r"'(\s*\d+) -", item).group(1)) for item in menu[:-1]] == list(range(1,152)) and menu[-1] == oldmenu[-1], 'menu numbering changed'
     assert case[:96] == oldcase, 'old dispatch 1..96 changed'
     code = live.decode('utf-8-sig')
     for n in range(97,117):
@@ -132,6 +132,21 @@ def main():
     assert b'InfinityLoader.exe' in cap and b'BGXAI_FRIEND_CONSOLE_' in cap
     report2 = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIEND_TRACE_REPORT.py')
     assert b'console_capture_report' in report2 and b'party_target_attack_actions' in report2
+    for i,mode in ((148,'install'),(149,'status'),(150,'rollback')):
+        assert case[i].startswith(f"'{i+1}' {{SyncRelease $releaseRanged;& py -3 $motion {mode}"), f'BGXF3 motion menu {i+1} missing'
+    motion = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BXFR_MOTION_V3.lua')
+    assert b'if slot~=3 and not party_target then return end' in motion
+    assert b'EEex_Action_AddSpriteStartedActionListener' in motion
+    assert b'origin=UNKNOWN' in motion
+    motion_install = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXFTRACE_V3_GUARDED.py')
+    ast.parse(motion_install.decode('utf-8'),filename='BGXF3 protected passive motion tracer WeiDU installer')
+    assert b'INSTALL_BGXFTRACE_V3_MOTION' in motion_install
+    assert b'ROLLBACK_BGXFTRACE_V3_MOTION' in motion_install
+    assert b'BGXF2_NOT_LAST_OR_DRIFT' in motion_install
+    assert b'COPY ~BGXF3/staged/M_BXFR.lua~ ~override/M_BXFR.lua~' in motion_install
+    assert b'V3TRACE.status(root)' in cap and b'BGXF3_INSTALLED_VERIFIED' in cap
+    assert b'khalid_started_actions_observed' in report2
+    assert b'BGXF3_KHALID_ACTIONS' in git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py')
     friend_fix = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_RETALIATION_GUARDED.py')
     ast.parse(friend_fix.decode('utf-8'), filename='guarded friendly retaliation WTASIGHT DPLAYER PRIEST1 installer')
     assert b'INSTALL_BGXFRIEND_RETALIATION_GUARD' in friend_fix
@@ -232,7 +247,7 @@ def main():
     assert "'124' {SyncRelease $releaseRanged" in code
     assert "'125' {SyncRelease $releaseRanged" in code
     assert "'126' {SyncRelease $releaseRanged" in code
-    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-148; 92/92 source hashes; pin matched; game untouched')
+    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-151; 94/94 source hashes; pin matched; game untouched')
 
 if __name__ == '__main__':
     main()
