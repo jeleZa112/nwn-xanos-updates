@@ -24,7 +24,7 @@ RELEASES = (
     ('BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/', '0.3.40-BGXP3-AUTO-BUFFER', 9),
     ('BGXAI/patchsets/priest_auto_priority_guard_source_20261117/', '0.3.41-BGXP5-AUTO-PRIORITY-GUARD', 11),
     ('BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/', '0.3.50-BGX122-IDS-HYPHEN', 13),
-    ('BGXAI/patchsets/ranged_fighter_guarded_20261119/', '0.3.64-BGXFTRACE-STARTUP', 18),
+    ('BGXAI/patchsets/ranged_fighter_guarded_20261119/', '0.3.65-BGXF2-INTERNAL-CONSOLE', 21),
 )
 
 def git_bytes(rev: str, path: str) -> bytes:
@@ -70,9 +70,9 @@ def main():
         assert token in recovery, 'one CMD recovery expected SHA or commit absent'
     oldmenu, oldcase = menus(old)
     menu, case = menus(live)
-    assert len(oldmenu) == 97 and len(menu) == 145, 'menu length mismatch'
-    assert len(oldcase) == 96 and len(case) == 144, 'dispatch length mismatch'
-    assert [int(re.search(r"'(\s*\d+) -", item).group(1)) for item in menu[:-1]] == list(range(1,145)) and menu[-1] == oldmenu[-1], 'menu numbering changed'
+    assert len(oldmenu) == 97 and len(menu) == 149, 'menu length mismatch'
+    assert len(oldcase) == 96 and len(case) == 148, 'dispatch length mismatch'
+    assert [int(re.search(r"'(\s*\d+) -", item).group(1)) for item in menu[:-1]] == list(range(1,149)) and menu[-1] == oldmenu[-1], 'menu numbering changed'
     assert case[:96] == oldcase, 'old dispatch 1..96 changed'
     code = live.decode('utf-8-sig')
     for n in range(97,117):
@@ -117,6 +117,21 @@ def main():
     assert b'EEEX_LUA_PATCH_MODE' in git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py')
 
     assert b'BGX_FRIEND_TRACE_REPORT' in git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py')
+    expected = {144:("install","$fix"),145:(None,"$cap"),146:("status","$fix"),147:("rollback","$fix")}
+    for i,(mode,var) in expected.items():
+        prefix = f"'{i+1}' {{SyncRelease $releaseRanged;& py -3 {var}"
+        assert case[i].startswith(prefix), f'BGXF2 menu {i+1} missing'
+        if mode: assert f' {mode};' in case[i], f'BGXF2 mode {i+1} missing'
+    bgxf2 = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXFTRACE_V2_GUARDED.py')
+    ast.parse(bgxf2.decode('utf-8'), filename='BGXF2 guarded console fallback WeiDU installer')
+    assert b'INSTALL_BGXFTRACE_V2_CONSOLE' in bgxf2 and b'ROLLBACK_BGXFTRACE_V2_CONSOLE' in bgxf2
+    lua2 = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BXFR_CONSOLE_V2.lua')
+    assert b'Infinity_Log' in lua2 and b'EEex_Action_AddSpriteStartedActionListener' in lua2
+    cap = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXFTRACE_CONSOLE_CAPTURE.py')
+    ast.parse(cap.decode('utf-8'), filename='BGXF2 safe InfinityLoader console launch')
+    assert b'InfinityLoader.exe' in cap and b'BGXAI_FRIEND_CONSOLE_' in cap
+    report2 = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIEND_TRACE_REPORT.py')
+    assert b'console_capture_report' in report2 and b'party_target_attack_actions' in report2
     friend_fix = git_bytes(pin['commit'], 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_RETALIATION_GUARDED.py')
     ast.parse(friend_fix.decode('utf-8'), filename='guarded friendly retaliation WTASIGHT DPLAYER PRIEST1 installer')
     assert b'INSTALL_BGXFRIEND_RETALIATION_GUARD' in friend_fix
@@ -217,7 +232,7 @@ def main():
     assert "'124' {SyncRelease $releaseRanged" in code
     assert "'125' {SyncRelease $releaseRanged" in code
     assert "'126' {SyncRelease $releaseRanged" in code
-    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-144; 89/89 source hashes; pin matched; game untouched')
+    print('BGXAI_ONEFILE_CHANNEL_PASS: legacy 1-96 unchanged, new 97-148; 92/92 source hashes; pin matched; game untouched')
 
 if __name__ == '__main__':
     main()
