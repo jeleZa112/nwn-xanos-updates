@@ -5,6 +5,8 @@ import inspect
 from pathlib import Path
 from unittest import mock
 import unittest
+import sys
+sys.path.insert(0,str(Path(__file__).resolve().parent))
 import BGX_FRIEND_TRACE_GUARDED as M
 
 DIR=Path(__file__).resolve().parent
