@@ -146,7 +146,81 @@ def startup_diagnostics(root:Path):
     return result
 
 
+def console_capture_report(root:Path):
+    import os
+    folder=Path(os.environ.get("USERPROFILE",str(Path.home())))/"Documents"/"BGXAI_LIVE_REPORTS"
+    if folder.is_symlink() or not folder.is_dir():
+        return {"status":"CAPTURE_DIRECTORY_ABSENT","game_modified":False}
+    logs=[]
+    for file in folder.glob("BGXAI_FRIEND_CONSOLE_*.log"):
+        if file.is_symlink():continue
+        try:
+            if file.is_file():logs.append((file.stat().st_mtime,file))
+        except OSError:pass
+    if not logs:return {"status":"NO_CONSOLE_CAPTURE_LOG","game_modified":False}
+    path=max(logs,key=lambda item:item[0])[1]
+    try:
+        st=path.stat()
+        with path.open("rb") as fp:
+            start=max(0,st.st_size-LOG_CAP)
+            if start:fp.seek(start)
+            raw=fp.read(LOG_CAP)
+        if start:
+            first=raw.find(b"\n")
+            raw=raw[first+1:] if first>=0 else b""
+    except OSError as exc:
+        return {"status":"CAPTURE_READ_STOP","error":str(exc)[:200],"game_modified":False}
+    payload=raw.decode("utf-8","replace")
+    sessions=0;ready=False;writer="UNKNOWN";actions=[];seen=set();errors=[]
+    for line in payload.splitlines():
+        idx=line.find("[BGXFTRACE]")
+        if idx<0:continue
+        line=line[idx:].strip()
+        if line.startswith("[BGXFTRACE] SESSION "):
+            if sessions==0 or not actions:
+                sessions+=1
+            else:
+                sessions+=1;actions=[];seen=set()
+            ready=False
+            continue
+        if line.startswith("[BGXFTRACE] READY "):
+            ready=True
+            w=re.search(r"\bwriter=(\S+)",line)
+            if w:writer=w.group(1)
+            continue
+        if line.startswith("[BGXFTRACE] STOP "):
+            errors.append(line[:250]);continue
+        match=PATTERN.match(line)
+        if not match:continue
+        seq,actor,slot,action,a1,a2,target,target_slot,script=(int(v) for v in match.groups()[:9])
+        if action not in ATTACKS:continue
+        fields=(seq,actor,slot,action,a1,a2,target,target_slot,script)
+        if fields in seen:continue
+        seen.add(fields)
+        valid=(match.group(10)=="PARTY_TARGET_OBSERVED" and target_slot in range(1,7)
+               and target>=0 and target!=actor)
+        actions.append({"sequence":seq,"actor_id":actor,"actor_slot":slot,
+            "action_id":action,"actee1":a1,"actee2":a2,"target_id":target,
+            "target_slot":target_slot,"script_index_observed":script if script>=0 else None,
+            "party_target_pair_observed":valid,"origin":"UNKNOWN"})
+        if len(actions)>400:actions.pop(0)
+    observed=[a for a in actions if a["party_target_pair_observed"]]
+    return {"status":("CAPTURE_PARTY_ACTIONS_OBSERVED" if actions else
+             "CAPTURE_HOOK_READY_NO_ATTACK_ACTIONS" if ready else "CAPTURE_NO_READY_OR_ACTIONS"),
+            "console_log":str(path),"console_log_bytes":st.st_size,
+            "modified_utc":datetime.datetime.fromtimestamp(st.st_mtime,datetime.timezone.utc).isoformat(),
+            "sample_sha256":hashlib.sha256(raw).hexdigest(),
+            "tail_truncated":start>0,"sessions_seen":sessions,
+            "hook_ready_seen":ready,"runtime_writer":writer,
+            "attack_actions_observed":len(actions),
+            "party_target_attack_actions":len(observed),
+            "party_target_pairs":observed[-30:],"last_attack_actions":actions[-50:],
+            "errors":errors[-10:],"source_or_command_origin":"UNKNOWN",
+            "absence_proves_safety":False,"game_modified":False}
+
+
 def audit(root:Path):
     result=_audit_trace(root)
     result["startup_diagnostics"]=startup_diagnostics(root)
+    result["console_capture"]=console_capture_report(root)
     return result
