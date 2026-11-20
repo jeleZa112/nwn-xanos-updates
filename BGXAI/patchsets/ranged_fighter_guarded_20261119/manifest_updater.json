@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
-  "version": "0.3.63-BGXFTRACE-PASSIVE",
+  "version": "0.3.64-BGXFTRACE-STARTUP",
   "files": [
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_PREFLIGHT.py",
@@ -60,8 +60,8 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py",
       "dest": "BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py",
-      "size": 10463,
-      "sha256": "62e70c05681576b2a0f9892a0d15570bf72c480e26cdc2aeb07b8f794b35d14c"
+      "size": 11051,
+      "sha256": "690eceeb536132d04ab4211c3a4ca493320b61876c4ff4e5e3dc4436b71dcce2"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V4_NO_FRIEND_ATTACK.baf",
@@ -108,8 +108,8 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIEND_TRACE_REPORT.py",
       "dest": "BGX_FRIEND_TRACE_REPORT.py",
-      "size": 3144,
-      "sha256": "948e396290a63a935474cbb079919967c595f5206f5bbe62eb1b13ad1ebd5af2"
+      "size": 7446,
+      "sha256": "2e3fc7a3ce8957cb2d228fac0986ff83acb334ae4169c63ec0fc00a4c38ccc27"
     }
   ]
 }
