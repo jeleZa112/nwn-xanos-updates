@@ -171,16 +171,27 @@ def console_capture_report(root:Path):
     except OSError as exc:
         return {"status":"CAPTURE_READ_STOP","error":str(exc)[:200],"game_modified":False}
     payload=raw.decode("utf-8","replace")
-    sessions=0;ready=False;writer="UNKNOWN";actions=[];seen=set();errors=[]
+    sessions=0
+    version=0
+    ready=False
+    writer="UNKNOWN"
+    all_events=[]
+    attack_events=[]
+    seen=set()
+    errors=[]
     for line in payload.splitlines():
         idx=line.find("[BGXFTRACE]")
         if idx<0:continue
         line=line[idx:].strip()
         if line.startswith("[BGXFTRACE] SESSION "):
-            if sessions==0 or not actions:
-                sessions+=1
-            else:
-                sessions+=1;actions=[];seen=set()
+            # Infinity_Log and print may both emit the same SESSION.
+            if sessions>0 and all_events:
+                all_events=[]
+                attack_events=[]
+                seen=set()
+            sessions+=1
+            match_version=re.search(r"\bversion=(\d+)",line)
+            if match_version:version=int(match_version.group(1))
             ready=False
             continue
         if line.startswith("[BGXFTRACE] READY "):
@@ -193,29 +204,46 @@ def console_capture_report(root:Path):
         match=PATTERN.match(line)
         if not match:continue
         seq,actor,slot,action,a1,a2,target,target_slot,script=(int(v) for v in match.groups()[:9])
-        if action not in ATTACKS:continue
-        fields=(seq,actor,slot,action,a1,a2,target,target_slot,script)
-        if fields in seen:continue
-        seen.add(fields)
-        valid=(match.group(10)=="PARTY_TARGET_OBSERVED" and target_slot in range(1,7)
-               and target>=0 and target!=actor)
-        actions.append({"sequence":seq,"actor_id":actor,"actor_slot":slot,
-            "action_id":action,"actee1":a1,"actee2":a2,"target_id":target,
-            "target_slot":target_slot,"script_index_observed":script if script>=0 else None,
-            "party_target_pair_observed":valid,"origin":"UNKNOWN"})
-        if len(actions)>400:actions.pop(0)
-    observed=[a for a in actions if a["party_target_pair_observed"]]
-    return {"status":("CAPTURE_PARTY_ACTIONS_OBSERVED" if actions else
-             "CAPTURE_HOOK_READY_NO_ATTACK_ACTIONS" if ready else "CAPTURE_NO_READY_OR_ACTIONS"),
+        if action<0:continue
+        unique=(seq,actor,slot,action,a1,a2,target,target_slot,script)
+        if unique in seen:continue
+        seen.add(unique)
+        party_target=(match.group(10)=="PARTY_TARGET_OBSERVED" and
+                      target_slot in range(1,7) and target>=0 and target!=actor)
+        item={"sequence":seq,"actor_id":actor,"actor_slot":slot,
+              "action_id":action,"actee1":a1,"actee2":a2,"target_id":target,
+              "target_slot":target_slot,"script_index_observed":script if script>=0 else None,
+              "party_target_pair_observed":party_target,
+              "action_origin":"UNKNOWN","origin":"UNKNOWN"}
+        all_events.append(item)
+        if len(all_events)>1600:all_events.pop(0)
+        if action in ATTACKS:
+            attack_events.append(item)
+            if len(attack_events)>400:attack_events.pop(0)
+    observed=[a for a in attack_events if a["party_target_pair_observed"]]
+    khalid=[a for a in all_events if a["actor_slot"]==3]
+    nonattack_party=[a for a in all_events if a["party_target_pair_observed"] and a["action_id"] not in ATTACKS]
+    return {"status":("CAPTURE_PARTY_ACTIONS_OBSERVED" if attack_events else
+            "CAPTURE_OTHER_STARTED_ACTIONS_OBSERVED" if all_events else
+            "CAPTURE_HOOK_READY_NO_ATTACK_ACTIONS" if ready else "CAPTURE_NO_READY_OR_ACTIONS"),
             "console_log":str(path),"console_log_bytes":st.st_size,
             "modified_utc":datetime.datetime.fromtimestamp(st.st_mtime,datetime.timezone.utc).isoformat(),
             "sample_sha256":hashlib.sha256(raw).hexdigest(),
             "tail_truncated":start>0,"sessions_seen":sessions,
+            "trace_version":version,
             "hook_ready_seen":ready,"runtime_writer":writer,
-            "attack_actions_observed":len(actions),
+            "all_started_actions_observed":len(all_events),
+            "khalid_started_actions_observed":len(khalid),
+            "khalid_started_action_records":khalid[-90:],
+            "nonattack_party_target_actions":len(nonattack_party),
+            "nonattack_party_target_records":nonattack_party[-45:],
+            "last_started_actions":all_events[-90:],
+            "attack_actions_observed":len(attack_events),
             "party_target_attack_actions":len(observed),
-            "party_target_pairs":observed[-30:],"last_attack_actions":actions[-50:],
+            "party_target_pairs":observed[-30:],
+            "last_attack_actions":attack_events[-50:],
             "errors":errors[-10:],"source_or_command_origin":"UNKNOWN",
+            "action_id_classification":"RAW_NUMERIC_ONLY_EXCEPT_LEGACY_ATTACK_IDS",
             "absence_proves_safety":False,"game_modified":False}
 
 
