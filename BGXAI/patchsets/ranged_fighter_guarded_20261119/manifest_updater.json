@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
-  "version": "0.3.65-BGXF2-INTERNAL-CONSOLE",
+  "version": "0.3.66-BGXF3-KHALID-MOTION",
   "files": [
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_PREFLIGHT.py",
@@ -60,8 +60,8 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py",
       "dest": "BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py",
-      "size": 11717,
-      "sha256": "c54c83b3c1192b38662dea8ddec68684065d15fbd009e0de94edabd740bf0f7b"
+      "size": 12441,
+      "sha256": "4f82acf3454292f03dd3dab7dbbe0fcca5216861e842c21f558012a0e98d37b8"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V4_NO_FRIEND_ATTACK.baf",
@@ -108,8 +108,8 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIEND_TRACE_REPORT.py",
       "dest": "BGX_FRIEND_TRACE_REPORT.py",
-      "size": 11046,
-      "sha256": "e0c3988f8b007615a04371d88fbf231db880e303b17a09271fd74543e9fdd615"
+      "size": 12291,
+      "sha256": "7849543b611c5179daa4a61b332ac5d47f30e851aea6f6bdeb6837159659a6d4"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BXFR_CONSOLE_V2.lua",
@@ -126,8 +126,20 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXFTRACE_CONSOLE_CAPTURE.py",
       "dest": "BGXFTRACE_CONSOLE_CAPTURE.py",
-      "size": 2326,
-      "sha256": "37d786fbec732414daf6156c062ae97a7c2cf362f0ff5ee3123196447977fbd3"
+      "size": 2590,
+      "sha256": "82955bbdc78e7c230b4784bcd0e796e61908abc762cc24cbbf67966e7dca99fc"
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BXFR_MOTION_V3.lua",
+      "dest": "M_BXFR_MOTION_V3.lua",
+      "size": 3976,
+      "sha256": "0ca56636c80095e1cca3e1191fa89e452aa98f55387f8975c3302cdbead6a6bb"
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXFTRACE_V3_GUARDED.py",
+      "dest": "BGXFTRACE_V3_GUARDED.py",
+      "size": 9140,
+      "sha256": "2f0383df531f1ed710607800db4e174d0561d070df6df3605886ec0d5d7eb9fa"
     }
   ]
 }
