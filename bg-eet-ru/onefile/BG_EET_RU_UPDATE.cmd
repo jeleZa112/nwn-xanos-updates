@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 83
+SELF_VERSION = 84
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -578,7 +578,9 @@ def v77_resume_after_static_v70(game, report_path, combat_only=False):
     if rc:return rc
     rc=v82_run(game,report_path)
     if rc:return rc
-    return v83_run(game,report_path)
+    rc=v83_run(game,report_path)
+    if rc:return rc
+    return v84_run(game,report_path)
 
 
 def v77_resume_selftest():
@@ -589,6 +591,7 @@ def v77_resume_selftest():
     original_v81=globals()['v81_run']
     original_v82=globals()['v82_run']
     original_v83=globals()['v83_run']
+    original_v84=globals()['v84_run']
     calls=[]
     try:
         globals()['v74_pilot']=lambda *a,**k: calls.append('v74') or 0
@@ -597,8 +600,9 @@ def v77_resume_selftest():
         globals()['v81_run']=lambda *a,**k: calls.append('v81') or 0
         globals()['v82_run']=lambda *a,**k: calls.append('v82') or 0
         globals()['v83_run']=lambda *a,**k: calls.append('v83') or 0
+        globals()['v84_run']=lambda *a,**k: calls.append('v84') or 0
         assert v77_resume_after_static_v70('fake_game','fake_zip')==0
-        assert calls==['v74','v76','v79','v81','v82','v83'],calls
+        assert calls==['v74','v76','v79','v81','v82','v83','v84'],calls
         calls.clear()
         assert v77_resume_after_static_v70('fake_game','fake_zip',True)==0
         assert calls==['v74'],calls
@@ -613,6 +617,7 @@ def v77_resume_selftest():
         globals()['v81_run']=original_v81
         globals()['v82_run']=original_v82
         globals()['v83_run']=original_v83
+        globals()['v84_run']=original_v84
     return True
 
 
@@ -1739,6 +1744,157 @@ def v83_selftest():
     return True
 
 
+# BG EET RU v84: read-only editorial preflight for the existing, runtime-proven
+# v74 combat format labels. One updater, one existing ZIP, NO game writes.
+V84_ENTRY = '32_V84_COMBAT_FORMAT_QA_READONLY.json'
+V84_FIXES = {'+Weapon Bonus %d': '+Бонус оружия: %d ', '+Launcher %d': '+Стрелковое оружие: %d ', '+Proficiency %d': '+Владение оружием: %d ', '+Dex %d': '+Ловкость: %d ', '+Missile %d': '+Дальний бой: %d ', '+STR %d': '+Сила: %d ', '+STREX %d': '+Добавочная сила: %d ', '+Melee bonus %d': '+Бонус ближнего боя: %d ', '+Racial %d': '+Расовый бонус: %d ', '+Effects %d': '+Эффекты: %d ', 'Roll:%d': 'Бросок: %d', ' +Luck:%d': ' +Удача: %d', ' +SpecialAC:%d ': ' +Особый КБ: %d ', ' +HitMod:%d ': ' +Модификатор попадания: %d ', ' +Attack of Opportunity:4 ': ' +Атака по возможности: 4 ', ' +Attack of Opportunity:0 ': ' +Атака по возможности: 0 ', ' +Berserk:2 ': ' +Берсерк: 2 ', ' +Berserk:0 ': ' +Берсерк: 0 ', ' +Left:%d ': ' +Левая рука: %d ', ' +Right:%d ': ' +Правая рука: %d ', ' +Invisible:%d ': ' +Невидимость: %d ', ' +Invisible Target:%d ': ' +Невидимая цель: %d ', ' +Range:%d ': ' +Дистанция: %d ', ' +Hated Race:%d ': ' +Избранный враг: %d ', ' +Special Target:%d ': ' +Особая цель: %d ', ' +Protections:%d ': ' +Защита: %d ', 'Roll:%d ': 'Бросок: %d ', ' +DamageMod:%d ': ' +Модификатор урона: %d ', ' +Hand bonus:%d ': ' +Бонус руки: %d ', ' *Backstab:%d ': ' *Удар в спину: %d ', ' +Berserk:%d ': ' +Берсерк: %d ', ' +Strength:%d ': ' +Сила: %d ', ' +Special Bonus:%d ': ' +Особый бонус: %d ', ' +Min Damage:%d ': ' +Минимальный урон: %d '}
+
+
+def v84_prepare_rows(rows=None):
+    if rows is None: rows = v74_manifest()
+    if len(rows) != 34 or len(V84_FIXES) != 34 or sum(len(r['refs']) for r in rows) != 44:
+        raise RuntimeError('V84_UNEXPECTED_SOURCE_SCOPE')
+    current = {r['source_en']:r for r in rows}
+    if len(current) != 34 or set(current) != set(V84_FIXES):
+        raise RuntimeError('V84_MANIFEST_KEYS_CHANGED')
+    result = []
+    for r in rows:
+        old = r['translation_ru']
+        new = V84_FIXES[r['source_en']]
+        if old == new or not old or not new:
+            raise RuntimeError('V84_MISSING_EDITORIAL_CHANGE:'+r['source_en'])
+        # This revision changes *only* spaces and ':' punctuation. Preserve
+        # every letter, plus/star marker, digit, printf directive and hook.
+        def letters_and_markers(value):
+            return re.sub(r'[\s:]', '', value)
+        if letters_and_markers(old) != letters_and_markers(new):
+            raise RuntimeError('V84_SEMANTIC_CHANGE_DISALLOWED:'+r['source_en'])
+        if (old.count('%d') != new.count('%d') or
+                old.count('%') != new.count('%') or
+                len(new.encode('utf8')) > 256 or
+                any(x in new for x in ('\x00','\n','\r'))):
+            raise RuntimeError('V84_FORMAT_SAFETY_FAILED:'+r['source_en'])
+        # Original 44 hook refs, x64 source addresses and English text stay same.
+        result.append({**r,'translation_ru':new})
+    return result
+
+
+def v84_build_report(game):
+    game = Path(game)
+    report = {'schema':'BG_EET_RU_V84_COMBAT_FORMAT_QA_READONLY',
+              'updater_version':SELF_VERSION,'game_root':str(game),
+              'status':'V84_READ_ONLY_HOLD','game_files_written':False,
+              'save_files_written':False,'installation_allowed':False,
+              'gameplay_revision_verified':False,
+              'scope':'Only editorial punctuation and separators in 34 existing v74 executable-format strings; not combat engine messages or dialogue TLKs',
+              'unsupported_changes':'Projectile damage declension is outside the 34 template set',
+              'evidence_source':'Pinned v74 manifest and installed game baseline',
+              'templates':[],'errors':[]}
+    try:
+        existing = v74_read_state()
+        if not existing or not existing.get('installed'):
+            raise RuntimeError('V84_V74_NOT_INSTALLED')
+        base = v74_manifest()
+        proposed = v84_prepare_rows(base)
+        exe = game/'Baldur.exe'
+        db = game/'InfinityLoader.db'
+        lua = game/'override'/V71_SHORT_SCRIPT
+        for f in (exe,db,lua):
+            if not f.is_file() or f.is_symlink():
+                raise RuntimeError('V84_MISSING_CURRENT_GAME_FILE:'+f.name)
+        original_exe = exe.read_bytes()
+        current_db_sha = digest(db.read_bytes())
+        current_lua_sha = digest(lua.read_bytes())
+        if (digest(original_exe) != existing.get('exe_sha256') or
+                current_db_sha != existing.get('db_sha256') or
+                current_lua_sha != existing.get('new_lua_sha256')):
+            raise RuntimeError('V84_CURRENT_GAME_INTEGRITY_CHANGED')
+        if digest(v74_lua_source(base)) != current_lua_sha:
+            raise RuntimeError('V84_OLD_PINNED_V74_SOURCE_MISMATCH')
+        guards = v74_check_manifest(original_exe,proposed)
+        candidate = v74_lua_source(proposed)
+        if digest(candidate) == current_lua_sha:
+            raise RuntimeError('V84_CANDIDATE_EQUALS_INSTALLED_UNEXPECTED')
+        report['templates'] = [
+            {'source_en':old['source_en'], 'before_ru':old['translation_ru'],
+             'after_ru':new['translation_ru'], 'hook_sites':len(old['refs']),
+             'hook_site_rvas':[t['ins_rva'] for t in old['refs']]}
+            for old,new in zip(base,proposed)]
+        report['checked_source_templates'] = guards['strings']
+        report['checked_original_hook_sites'] = guards['hook_sites']
+        report['old_installed_lua_sha256'] = current_lua_sha
+        report['candidate_uninstalled_lua_sha256'] = digest(candidate)
+        report['candidate_lua_bytes'] = len(candidate)
+        report['exe_sha256'] = digest(original_exe)
+        report['db_sha256'] = current_db_sha
+        report['status'] = 'V84_EDITORIAL_PREFLIGHT_PASS_NOT_INSTALLED'
+        report['next_gate'] = ('An independent, separately approved replacement installer with verified backup, '
+                               'closed game and robust rollback; do not rewrite the existing Lua in-place while running.')
+    except (OSError,ValueError,RuntimeError,KeyError,UnicodeError,struct.error) as exc:
+        report['errors'].append({'type':type(exc).__name__,'message':str(exc)[:230]})
+    return report
+
+
+def v84_run(game, report_path):
+    game, report_path = Path(game),Path(report_path)
+    try:
+        safe_external(game,report_path)
+        if not report_path.is_file():raise FileNotFoundError('V84_CANONICAL_REPORT_MISSING')
+        report = v84_build_report(game)
+        previous = None
+        with zipfile.ZipFile(report_path) as z:
+            if z.testzip() is not None:raise ValueError('V84_EXISTING_ZIP_BAD_CRC')
+            if V84_ENTRY in z.namelist():previous=json.loads(z.read(V84_ENTRY))
+        if previous == report:
+            print('v84: CACHE PASS — редакторская проверка прежняя')
+        else:
+            with tempfile.NamedTemporaryFile(dir=str(report_path.parent),prefix='.v84_',suffix='.zip',delete=False) as f:
+                temp=Path(f.name)
+            try:
+                with zipfile.ZipFile(report_path) as src,zipfile.ZipFile(
+                    temp,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=7) as dst:
+                    names=set()
+                    for member in src.infolist():
+                        if member.filename in names:raise ValueError('V84_DUPLICATE_SOURCE_MEMBER')
+                        names.add(member.filename)
+                        if member.filename != V84_ENTRY:dst.writestr(member,src.read(member))
+                    dst.writestr(V84_ENTRY,json.dumps(report,ensure_ascii=False,indent=2).encode('utf8'))
+                with zipfile.ZipFile(temp) as z:
+                    if z.testzip() is not None or z.namelist().count(V84_ENTRY)!=1:
+                        raise ValueError('V84_NEW_ZIP_CRC_OR_ENTRY_FAILED')
+                os.replace(temp,report_path)
+            finally:
+                if temp.exists():temp.unlink()
+        print('v84:',report['status'],'— шаблонов:',report.get('checked_source_templates',0),
+              'хуков:',report.get('checked_original_hook_sites',0),'изменений в игре: 0')
+        print('Единый ZIP:',report_path)
+        return 0
+    except (OSError,ValueError,RuntimeError,KeyError,UnicodeError,struct.error,zipfile.BadZipFile) as exc:
+        print('v84: SAFE_STOP — '+type(exc).__name__+': '+str(exc)[:180])
+        return 2
+
+
+def v84_selftest():
+    source=v74_manifest()
+    candidate=v84_prepare_rows(source)
+    assert len(candidate)==len(source)==34
+    assert sum(len(r['refs']) for r in candidate)==44
+    assert len({r['source_en'] for r in candidate})==34
+    for old,new in zip(source,candidate):
+        assert old['source_en']==new['source_en']
+        assert old['string_offset']==new['string_offset']
+        assert old['refs']==new['refs']
+        assert re.sub(r'[\s:]','',old['translation_ru'])==re.sub(r'[\s:]','',new['translation_ru'])
+    original=v74_lua_source(source)
+    replacement=v74_lua_source(candidate)
+    assert original != replacement and b'EEex_HookNOPs' in replacement
+    assert b'BG_EET_RU_V74_TARGETS=44' in replacement
+    assert b'BG_EET_RU_V74_FORMATS=34' in replacement
+    assert b'io.open' not in replacement and b'os.execute' not in replacement
+    assert len(replacement)<120000
+    return True
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description='BG_EET_RU one-file visible-only read-only auto-updater')
     p.add_argument('--game',default=DEFAULT_GAME)
@@ -2089,6 +2245,8 @@ def main(argv=None):
     if v82_rc:return v82_rc
     v83_rc=v83_run(game,report_path)
     if v83_rc:return v83_rc
+    v84_rc=v84_run(game,report_path)
+    if v84_rc:return v84_rc
     print('v67 cached DLG structure:',v67_status['status'],
           len(v67_status['target_references']),'target references')
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
@@ -4560,6 +4718,7 @@ def selftest():
     assert v81_selftest() and callable(v81_run)
     assert v82_selftest() and callable(v82_run)
     assert v83_selftest() and callable(v83_run)
+    assert v84_selftest() and callable(v84_run)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
