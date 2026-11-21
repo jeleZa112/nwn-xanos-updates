@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 69,
-  "sha256": "677b1439b56dafdf4f48178465526287db5604e0eeefbad4a414499d8a23d690",
+  "version": 70,
+  "sha256": "0d1c16cff0975d79aea5075fcf4d9d23ca55722e939b803b26bb2c20045512ae",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v69: one persistent BG_EET_RU_UPDATE.cmd, one ZIP, read-only replay of independently verified 47/47 x64 instruction boundaries and RIP targets. Runtime hook still HOLD; no game writes."
+  "note": "v70: one persistent BG_EET_RU_UPDATE.cmd, one ZIP, 47/47 independent code target replay plus read-only EEex M_ Lua / loader source diagnostics. No game writes; runtime hook remains HOLD."
 }
