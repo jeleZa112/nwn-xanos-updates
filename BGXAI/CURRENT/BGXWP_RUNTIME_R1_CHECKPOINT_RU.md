@@ -1,3 +1,13 @@
+# 21.11.2026 — BGXWP R1.1 реально установлен, LIVE ещё не проверен
+
+Получен `BGXWP_OBSERVER_SETUP_R1(1).json` от пользователя. Проверены байты: SHA256 `f8a1cfb448430c3107ae70f48d18438b603a5fceb304207779c1edc21a5fef0f`; статус `BGXWP_OBSERVER_INSTALLED_NOT_YET_RUNTIME_TESTED`; `game_modified=true`; `source_sha256=f62a467c8bc5b952612ca23f701ecc23838b8782799c7801f2e01a38267e8f36`; UTC установки `2026-11-21T12:47:16.604553+00:00`. Внешний backup: `C:\Users\Drevo\Documents\BGXAI_BACKUPS\PRE_BGXWP_20261121T124714Z`. Архив отчёта: Library `/BALDURS_GATE_EET_AI/DIAGNOSTICS/BGXWP_OBSERVER_INSTALL_REAL_20261121T124716Z.json`.
+
+**CODE/TEST:** R1.1 исходники опубликованы, 16/16 Lua и 18/18 Python офлайн PASS. **DEPLOY:** пользовательский guarded WeiDU установщик сообщил успех, новый `override/M_BGXWP.lua` установлен; независимо игровые файлы не просматривались, а доказательство — результат самого установщика. **LIVE:** не проверен EEex hook, запись APR/THAC0, значения 4 альтернативных слотов, источник ручной/EPS команды, выбор оружия. НЕ просить повторно 158, 159→1 или 159→2. Игру, V6, EPS и сейвы дополнительно не изменять.
+
+**Следующее действие:** закрыть игру, штатный `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd` → **159 → 5** (запускает InfinityLoader с перенаправлением консоли, это и есть запуск игры; не запускать InfinityLoader вторым способом). Провести обычный бой, затем выйти из игры и штатный updater → **159 → 6** (сбор данных), прислать `C:\Users\Drevo\Documents\BGXAI_LIVE_REPORTS\BGXAI_WEAPON_RUNTIME_RAW_R1.jsonl`, если он создан, и `BGXWP_OBSERVER_SETUP_R1.json` со статусом сборщика. При STOP, пустом логе или отсутствии JSONL: прислать последний setup report и сообщение, не запускать повторно без анализа. Без LIVE задача умного выбора оружия не завершена.
+
+---
+
 # 21.11.2026 — реальный Windows preflight 159→1: PASS
 
 Получен от пользователя `BGXWP_OBSERVER_SETUP_R1.json` (SHA256 вложения `76de217afb8132f08f0c72e1cfdf0b09aa356d3216f960a111d4010cb68eeb5e`). `status=PREFLIGHT_OBSERVER_READY_SOURCE_ONLY`, `game_modified=false`, `runtime_EEex_validated=false`, `source_sha256=f62a467c8bc5b952612ca23f701ecc23838b8782799c7801f2e01a38267e8f36`. Проверенные исходные BCS и Lua совпадают с V6 baseline. Последняя запись WeiDU: `BGXRANGED6`, а не `BGXWP`. Сохранённая копия отчёта: ChatGPT Library `/BALDURS_GATE_EET_AI/DIAGNOSTICS/BGXWP_OBSERVER_PREFLIGHT_REAL_PASS_20261121.json`.
