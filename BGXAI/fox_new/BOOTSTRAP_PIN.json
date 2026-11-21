@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "1c41448abb0f359c29d0819d7b89c0de9610d424",
+  "commit": "ed51f00a92766c8974650a2f9ff178a685126a13",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "584adaecd68d72bd96d7db43e3a603836b6be3a4c2e408b7cef472948e65d599",
-  "script_size": 79816,
-  "description": "BGXAI one-file 0.3.70: 28 SHA-verified files, source-only race/class/kit/weapon proficiency/dual bonus model; existing menu135 saved weapon survey, menus 1-155 unchanged, no live weapon choice install."
+  "script_sha256": "e7b990a6c44cc014459d41fcafd4866b889d759f02c4172c8697fe5a436dcf23",
+  "script_size": 79821,
+  "description": "BGXAI onefile 0.3.71: source-only race/class/kit/pips/dual weapon scorer + raw historical SAVED CRE trait IDs via menu 135, 28 SHA-verified files, menus 1-155, no live weapon execution."
 }
