@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 82
+SELF_VERSION = 83
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -576,7 +576,9 @@ def v77_resume_after_static_v70(game, report_path, combat_only=False):
     if rc:return rc
     rc=v81_run(game,report_path)
     if rc:return rc
-    return v82_run(game,report_path)
+    rc=v82_run(game,report_path)
+    if rc:return rc
+    return v83_run(game,report_path)
 
 
 def v77_resume_selftest():
@@ -586,6 +588,7 @@ def v77_resume_selftest():
     original_v79=globals()['v79_run']
     original_v81=globals()['v81_run']
     original_v82=globals()['v82_run']
+    original_v83=globals()['v83_run']
     calls=[]
     try:
         globals()['v74_pilot']=lambda *a,**k: calls.append('v74') or 0
@@ -593,8 +596,9 @@ def v77_resume_selftest():
         globals()['v79_run']=lambda *a,**k: calls.append('v79') or 0
         globals()['v81_run']=lambda *a,**k: calls.append('v81') or 0
         globals()['v82_run']=lambda *a,**k: calls.append('v82') or 0
+        globals()['v83_run']=lambda *a,**k: calls.append('v83') or 0
         assert v77_resume_after_static_v70('fake_game','fake_zip')==0
-        assert calls==['v74','v76','v79','v81','v82'],calls
+        assert calls==['v74','v76','v79','v81','v82','v83'],calls
         calls.clear()
         assert v77_resume_after_static_v70('fake_game','fake_zip',True)==0
         assert calls==['v74'],calls
@@ -608,6 +612,7 @@ def v77_resume_selftest():
         globals()['v79_run']=original_v79
         globals()['v81_run']=original_v81
         globals()['v82_run']=original_v82
+        globals()['v83_run']=original_v83
     return True
 
 
@@ -1514,12 +1519,234 @@ def v82_selftest():
     return True
 
 
+# BG EET RU V83 — single-updater ingestion of player-reported on-screen StrRefs/text.
+# User evidence is NOT engine-verified visibility. No writes under game root.
+V83_ENTRY = '31_V83_OBSERVED_TEXT_BATCH_READONLY.json'
+V83_INPUT = WORKDIR / 'BG_EET_RU_VISIBLE_TEXTS.txt'
+V83_MAX_LINES = 100
+V83_MAX_MATCHES = 25
+
+
+def v83_parse_evidence(raw):
+    if len(raw) > 65536:
+        raise ValueError('V83_INPUT_TOO_LARGE')
+    text = raw.decode('utf-8-sig')
+    entries, errors = [], []
+    for n, line in enumerate(text.splitlines(), 1):
+        line = line.strip()
+        if not line or line.startswith('#'):continue
+        if len(entries) >= V83_MAX_LINES:
+            errors.append({'line':n,'reason':'MAX_LINES_REACHED'})
+            break
+        base, _, note = line.partition('|')
+        base = base.strip(); note = note.strip()[:200]
+        numeric = re.fullmatch(r'(?:STRREF\s*[:=]?\s*)?(\d{1,8})',base,re.I)
+        if numeric:
+            ref = int(numeric.group(1))
+            entries.append({'type':'STRREF','strref':ref,'note':note,'input_line':n})
+        elif re.match(r'^TEXT\s*:',base,re.I):
+            phrase = re.sub(r'^TEXT\s*:\s*','',base,flags=re.I).strip()
+            if 12 <= len(phrase) <= 400:
+                entries.append({'type':'TEXT','phrase':phrase,'note':note,'input_line':n})
+            else:errors.append({'line':n,'reason':'TEXT_LENGTH_NOT_12_TO_400'})
+        else:errors.append({'line':n,'reason':'UNSUPPORTED_FORMAT'})
+    return entries,errors
+
+
+def v83_normalize(text):
+    return ' '.join(text.casefold().split())
+
+
+def v83_scan_tlk_phrases(path, phrases):
+    """Scan only when a reported text fragment has no StrRef. Bounds checked TLK."""
+    if not phrases:return {}
+    path=Path(path)
+    needles={s:v83_normalize(s) for s in phrases}
+    matches={s:[] for s in phrases}
+    with path.open('rb') as f:
+        f.seek(0,2);size=f.tell();f.seek(0)
+        head=f.read(18)
+        if len(head)!=18 or head[:8]!=b'TLK V1  ':raise ValueError('V83_BAD_TLK_HEADER')
+        lang,count,base=struct.unpack_from('<HII',head,8)
+        if not 0 <= count <= 1_000_000 or base<18+count*26 or base>size:
+            raise ValueError('V83_INVALID_TLK_DIRECTORY')
+        table=f.read(count*26)
+        if len(table)!=count*26:raise ValueError('V83_TRUNCATED_TLK_DIRECTORY')
+        f.seek(base);payload=f.read()
+    for ref in range(count):
+        off,length=struct.unpack_from('<II',table,ref*26+18)
+        if length==0 or length>2500 or off+length>len(payload):continue
+        raw=payload[off:off+length]
+        try:s=raw.decode('utf8','strict')
+        except UnicodeError:continue
+        norm=v83_normalize(s)
+        for needle,normalized in needles.items():
+            found = normalized==norm or (len(normalized)>=12 and normalized in norm)
+            if found and len(matches[needle])<V83_MAX_MATCHES:
+                matches[needle].append(ref)
+    return matches
+
+
+def v83_context_links(z,refs):
+    owners={str(ref):set() for ref in refs}
+    def j(name):return json.loads(z.read(name).decode('utf8')) if name in z.namelist() else {}
+    non=j('08_NON_DIALOGUE_SOURCE_BATCH.json')
+    for row in non.get('source_candidates',[]):
+        key=str(row.get('strref'))
+        if key in owners:
+            owners[key].update(str(x) for x in row.get('resource_owners',[]))
+    dlg=j('07_TRANSLATION_SOURCE_BATCH.json')
+    for row in dlg.get('translation_sources',[]):
+        key=str(row.get('strref'))
+        if key in owners:
+            owners[key].update(str(x)+'.DLG' for x in row.get('dlg_resources',[]))
+    match=j('17_V66_TARGETED_LIVE_ORIGINAL_MATCHES.json')
+    for row in match.get('matches',[]):
+        for ref in row.get('tlk_refs',[]):
+            key=str(ref)
+            if key in owners:
+                owners[key].update(str(x.get('dlg'))+'.DLG' for x in row.get('dlgs',[])
+                                   if x.get('strref')==ref and x.get('dlg'))
+    nalin=j('30_V82_NALIN_CURRENT_DLG_JOURNAL_READONLY.json')
+    for row in nalin.get('journal_text_rows',[]):
+        key=str(row.get('strref'))
+        if key in owners:owners[key].add('NALIN.DLG')
+    return {k:sorted(v) for k,v in owners.items()}
+
+
+def v83_build_report(game, report_path, raw_input, male_path=None, female_path=None):
+    game=Path(game);report_path=Path(report_path)
+    entries,errors=v83_parse_evidence(raw_input)
+    result={'schema':'BG_EET_RU_V83_REPORTED_ONSCREEN_TEXT_BATCH',
+        'updater_version':SELF_VERSION,'game_files_written':False,
+        'save_files_written':False,'gameplay_capture_verified':False,
+        'translation_install_allowed':False,'evidence_provenance':'USER_SUPPLIED_NOT_ENGINE_CAPTURED',
+        'input_sha256':hashlib.sha256(raw_input).hexdigest(),
+        'entries':[],'errors':errors,'candidate_count':0}
+    if not entries:
+        result['status']='V83_EMPTY_OR_INVALID_EVIDENCE_HOLD'
+        return result
+    paths={'dialog.tlk':Path(male_path or game/'lang'/'ru_RU'/'dialog.tlk'),
+           'dialogf.tlk':Path(female_path or game/'lang'/'ru_RU'/'dialogf.tlk')}
+    refs={e['strref'] for e in entries if e['type']=='STRREF'}
+    phrases={e['phrase'] for e in entries if e['type']=='TEXT'}
+    text_matches={}
+    for name,p in paths.items():
+        found=v83_scan_tlk_phrases(p,phrases) if phrases else {}
+        text_matches[name]=found
+        for matches in found.values():refs.update(matches)
+    selected={name:v79_selected_tlk(p,refs) for name,p in paths.items()}
+    with zipfile.ZipFile(report_path) as z:
+        if z.testzip() is not None:raise ValueError('V83_EXISTING_ZIP_BAD_CRC')
+        linked=v83_context_links(z,refs)
+    for item in entries:
+        found=[item['strref']] if item['type']=='STRREF' else sorted(set(
+            text_matches['dialog.tlk'].get(item['phrase'],[])+
+            text_matches['dialogf.tlk'].get(item['phrase'],[])))
+        status='MATCHED' if found else 'TEXT_NOT_FOUND_IN_CURRENT_RU_TLK'
+        rows=[]
+        for ref in found[:V83_MAX_MATCHES]:
+            a=selected['dialog.tlk'].get(str(ref),{});b=selected['dialogf.tlk'].get(str(ref),{})
+            if a.get('status')!='READ' or b.get('status')!='READ':
+                kind='TLK_READ_HOLD'
+            else:
+                kind='LATIN_ONLY_REVIEW' if (v81_language_hint(a)=='LATIN_ONLY_REVIEW' or
+                                          v81_language_hint(b)=='LATIN_ONLY_REVIEW') else (
+                    'MIXED_SCRIPT_REVIEW' if ('MIXED_SCRIPT_REVIEW' in
+                      (v81_language_hint(a),v81_language_hint(b))) else 'RUSSIAN_OR_NON_LATIN_REVIEW')
+            if kind in ('LATIN_ONLY_REVIEW','MIXED_SCRIPT_REVIEW'):result['candidate_count']+=1
+            rows.append({'strref':ref,'current_ru_male':a.get('text'),
+                        'current_ru_female':b.get('text') if a.get('sha256')!=b.get('sha256') else None,
+                        'male_status':a.get('status'),'female_status':b.get('status'),
+                        'language_hint':kind,'known_static_resource_owners':linked.get(str(ref),[]),
+                        'current_resource_owner_coverage':'PARTIAL_EXISTING_REPORTS_ONLY'})
+        result['entries'].append({**item,'status':status,'matches':rows,
+            'matches_capped':len(found)>V83_MAX_MATCHES})
+    result['status']='V83_REPORTED_EVIDENCE_INDEXED' if not errors else 'V83_EVIDENCE_PARTIAL_HOLD'
+    result['note']='User reports an on-screen observation; engine did not independently capture it. English names/abbreviations need review, not automatic translation. Resource owners only from prior limited reports.'
+    return result
+
+
+def v83_run(game,report_path,input_file=V83_INPUT,additional_strrefs=(),additional_texts=()):
+    game=Path(game);report_path=Path(report_path);input_file=Path(input_file)
+    try:
+        safe_external(game,report_path)
+        if input_file.is_symlink():raise ValueError('V83_EVIDENCE_SYMLINK_DENIED')
+        raw=input_file.read_bytes() if input_file.is_file() else b''
+        if additional_strrefs:
+            raw+=('\n'+'\n'.join('STRREF '+str(x) for x in additional_strrefs)).encode('utf8')
+        if additional_texts:
+            raw+=('\n'+'\n'.join('TEXT: '+str(x) for x in additional_texts)).encode('utf8')
+        if not raw.strip():
+            print('v83: данных наблюдения нет; повторная проверка не нужна')
+            return 0
+        if not report_path.is_file():raise FileNotFoundError('V83_EXISTING_SINGLE_ZIP_MISSING')
+        result=v83_build_report(game,report_path,raw)
+        if result['status']=='V83_EMPTY_OR_INVALID_EVIDENCE_HOLD':
+            print('v83: HOLD — файл наблюдений пуст или содержит ошибки')
+            return 0
+        with zipfile.ZipFile(report_path) as z:
+            previous=json.loads(z.read(V83_ENTRY)) if V83_ENTRY in z.namelist() else None
+        if previous==result:
+            print('v83: CACHE PASS — наблюдения не изменились')
+            return 0
+        with tempfile.NamedTemporaryFile(dir=str(report_path.parent),prefix='.v83_',suffix='.zip',delete=False) as f:
+            temp=Path(f.name)
+        try:
+            with zipfile.ZipFile(report_path) as src,zipfile.ZipFile(temp,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=7) as dst:
+                seen=set()
+                for info in src.infolist():
+                    if info.filename in seen:raise ValueError('V83_DUPLICATE_ZIP_ENTRY')
+                    seen.add(info.filename)
+                    if info.filename!=V83_ENTRY:dst.writestr(info,src.read(info))
+                dst.writestr(V83_ENTRY,json.dumps(result,ensure_ascii=False,indent=2).encode('utf8'))
+            with zipfile.ZipFile(temp) as z:
+                if z.testzip() is not None or z.namelist().count(V83_ENTRY)!=1:
+                    raise ValueError('V83_NEW_ZIP_CRC_INVALID')
+            os.replace(temp,report_path)
+        finally:
+            if temp.exists():temp.unlink()
+        print('v83:',result['status'],'— наблюдений:',len(result['entries']),
+              'требуют языкового разбора:',result['candidate_count'])
+        print('Единый ZIP:',report_path)
+        return 0
+    except (OSError,ValueError,KeyError,RuntimeError,zipfile.BadZipFile,UnicodeError) as exc:
+        print('v83: SAFE_STOP — '+type(exc).__name__+': '+str(exc)[:180])
+        return 2
+
+
+def v83_selftest():
+    with tempfile.TemporaryDirectory(prefix='BG_EET_RU_V83_TEST_') as d:
+        root=Path(d)
+        items,errors=v83_parse_evidence(b'\xef\xbb\xbf# comment\nSTRREF: 12 | dialog\nTEXT: A quick English sample\n')
+        assert len(items)==2 and not errors
+        assert items[0]['strref']==12 and items[1]['phrase']=='A quick English sample'
+        for side in ('dialog.tlk','dialogf.tlk'):
+            table=bytearray(26*32);payload=b''
+            for ref,text in ((12,'Русская реплика'),(13,'A quick English sample in the dialog.')):
+                raw=text.encode('utf8')
+                struct.pack_into('<II',table,ref*26+18,len(payload),len(raw));payload+=raw
+            (root/side).write_bytes(b'TLK V1  '+struct.pack('<HII',0,32,18+len(table))+table+payload)
+        zpath=root/'report.zip'
+        with zipfile.ZipFile(zpath,'w') as z:z.writestr('KEEP_EXISTING_REPORT.json',b'{}')
+        rows=v83_build_report(root,zpath,b'STRREF 12\nTEXT: A quick English sample',
+                              root/'dialog.tlk',root/'dialogf.tlk')
+        assert rows['status']=='V83_REPORTED_EVIDENCE_INDEXED' and len(rows['entries'])==2
+        assert rows['entries'][0]['matches'][0]['strref']==12
+        assert rows['entries'][1]['matches'][0]['strref']==13
+        assert rows['candidate_count']==1
+        assert v83_parse_evidence(b'invalid\n')[1][0]['reason']=='UNSUPPORTED_FORMAT'
+    return True
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description='BG_EET_RU one-file visible-only read-only auto-updater')
     p.add_argument('--game',default=DEFAULT_GAME)
     p.add_argument('--offline',action='store_true',help='no GitHub update check')
     p.add_argument('--force',action='store_true',help='ignore result cache, repeat audit')
     p.add_argument('--selftest',action='store_true')
+    p.add_argument('--seen-strref',action='append',type=int,default=[],help='v83: player-reported displayed StrRef, repeatable')
+    p.add_argument('--seen-text',action='append',default=[],help='v83: player-reported exact displayed text, repeatable')
     p.add_argument('--no-open',action='store_true',help='do not open output folder')
     p.add_argument('--no-install-prompt',action='store_true',help='compatibility: skip v34 prompt')
     p.add_argument('--offer-v34-edits',action='store_true',help='explicitly ask about old optional v34 edits')
@@ -1587,6 +1814,9 @@ def main(argv=None):
         # cannot update itself unless the release manifest has an even newer version.
         import subprocess
         return subprocess.call([sys.executable,'-x',str(canonical),*sys.argv[1:]])
+    # v83: player-observed text is processed directly; do not re-run expensive historical audits.
+    if args.seen_strref or args.seen_text:
+        return v83_run(game,WORKDIR/REPORT_NAME,additional_strrefs=args.seen_strref,additional_texts=args.seen_text)
     # v68: if the v67 game snapshot still matches, resume ONLY the new safe stage.
     if args.fix_leui_reverse or args.rollback_leui_reverse:
         if args.fix_leui_reverse and args.rollback_leui_reverse:
@@ -1857,6 +2087,8 @@ def main(argv=None):
     if v81_rc:return v81_rc
     v82_rc=v82_run(game,report_path)
     if v82_rc:return v82_rc
+    v83_rc=v83_run(game,report_path)
+    if v83_rc:return v83_rc
     print('v67 cached DLG structure:',v67_status['status'],
           len(v67_status['target_references']),'target references')
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
@@ -4327,6 +4559,7 @@ def selftest():
     assert v79_selftest() and callable(v79_run)
     assert v81_selftest() and callable(v81_run)
     assert v82_selftest() and callable(v82_run)
+    assert v83_selftest() and callable(v83_run)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
