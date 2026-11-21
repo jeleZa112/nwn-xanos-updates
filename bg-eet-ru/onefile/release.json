@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 85,
-  "sha256": "cc246bd75040a8e116b9937416d83b0dfbde742146d6f2a571442b81aeb2d0da",
-  "mode": "READ_ONLY_DEFAULT_EXPLICIT_APPROVAL_FOR_GAME_WRITE",
+  "version": 86,
+  "sha256": "c8214507be7cc4583ffe23e7cd158e026993e2d0f3ac9837972f39e0dd91e2f9",
+  "mode": "READ_ONLY_TWO_MODE_COMBAT_UI_SOURCE_FEASIBILITY",
   "game_writes_allowed": false,
-  "note": "v85 default read-only, preserves existing installed v74. Refined 34-format cosmetic candidate removes single trailing space after +Effects (%d) after real screenshot seam audit. Optional --install-v85-combat-format requires current v74 Lua + EXE/InfinityLoader DB exact SHA preflight, valid v84 report, closed Baldur.exe/InfinityLoader.exe, exact typed INSTALL_BG_EET_RU_V85_COMBAT_FORMAT, verified external backup, atomic replacement only override/M_BGERU.lua, independent persisted v85 state, and no automatic game writes. --rollback-v85-combat-format also requires exact typed approval and verified backup. A v74 status bridge avoids false tamper after authorized install. All 34 strings/44 original hooks remain, creates only 33_V85_COMBAT_FORMAT_GUARDED.json in same ZIP; v85 runtime success requires fresh in-game proof. CI on source commit 2b4d3f5 PASS."
+  "note": "v86 READ ONLY pilot of two-mode combat journal: parses genuine screenshot-derived attack result as isolated prototype, does not invent THAC0/AC, avoids double counting nested right-hand modifier values. Verifies current installed v85 M_BGERU.lua SHA against v85 state and inventories current override/UI.MENU combatLog references. Writes only 34_V86_COMBAT_JOURNAL_TWO_MODE_SOURCE_AUDIT.json in existing ZIP. NOT installed in game; no new EEex hooks, UI changes, BCS changes or text edits. Only after actual UI control/event and safe interception source proof, explicit approval, backup, and rollback may live journal be attempted. GitHub Actions run 44906765913 PASS."
 }
