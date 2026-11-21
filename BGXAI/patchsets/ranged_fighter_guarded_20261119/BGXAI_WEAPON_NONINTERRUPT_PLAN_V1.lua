@@ -7,6 +7,9 @@
 -- behind the current-stats/V4 bridge). It must never use foreground V3.choose
 -- with fabricated 'manualOrderActive=false' to force scoring during a cast.
 local M={version='BGXAI_WEAPON_NONINTERRUPT_PLAN_V1',installed=false}
+-- At identical evidence, keep pending advice for a few ticks instead of
+-- re-scoring every frame. Never skip evidence validation or issue actions.
+local PENDING_REFRESH_TICKS=5
 local function id(x)
  return type(x)=='string' and #x>0 and #x<=80 and not x:find('[^%w_%+%.%-]')
 end
@@ -78,11 +81,38 @@ function M.step(scene,previous,scoreReadOnly)
    tick(previous.tick) and f.tick>previous.tick and f.tick-previous.tick<=30
  local scorerToken=stillCurrent and previous.scorerToken or nil
  local pending=stillCurrent and previous.pending or nil
+ local lastRanked=stillCurrent and previous.lastRankedTick or nil
+ local ce=scene.cacheEvidence
+ local cacheProven=type(ce)=='table' and
+  ce.source=='INDEPENDENTLY_AUDITED_FULL_WEAPON_CACHE_SNAPSHOT' and
+  ce.snapshotId==f.snapshotId and ce.actorId==f.actorId and
+  ce.tick==f.tick and ce.allRelevantStateFingerprintComplete==true and
+  ce.ammoAndItemEffectsCovered==true and ce.activeBuffsCovered==true and
+  ce.targetProtectionsCovered==true
+ if cacheProven and pending and tick(pending.createdTick) and tick(lastRanked) and
+     f.tick-lastRanked<PENDING_REFRESH_TICKS and
+     f.tick-pending.createdTick<=45 and
+     pending.fromWeaponId==scene.actor.selectedWeaponId and
+     pending.targetId==f.enemyId and
+     scene.quickslotIds[pending.slotIndex+1]==pending.toWeaponId then
+  -- No scorer call at all while a verified, unchanged plan is still fresh.
+  -- Continuity / engine safety is STILL checked on every observation.
+  local next={key=k,tick=f.tick,scorerToken=scorerToken,
+   lastRankedTick=lastRanked,pending=pending}
+  if model_safe_window(scene) then
+   return output('ADVISORY_SAFE_BOUNDARY_OBSERVED_NO_DISPATCH',next,{
+    proposedWeaponId=pending.toWeaponId,proposedSlotIndex=pending.slotIndex,
+    scorerCalls=0})
+  end
+  return output('CONTINUE_CURRENT_ACTION_SWITCH_PENDING',next,{
+   proposedWeaponId=pending.toWeaponId,proposedSlotIndex=pending.slotIndex,
+   scorerCalls=0})
+ end
  local good,score=pcall(scoreReadOnly,scene,scorerToken)
  if not good or type(score)~='table' or score.passivePreview~=true or
     score.executable~=false or score.dispatchAuthorized~=false then
   return output('HOLD_SCORER_RESULT_UNTRUSTED',nil) end
- local next={key=k,tick=f.tick,scorerToken=score.next,pending=nil}
+ local next={key=k,tick=f.tick,scorerToken=score.next,pending=nil,lastRankedTick=f.tick}
  if score.status=='PASSIVE_RANKING_SUGGESTS_SLOT' then
   if not valid_proposal(scene,score) then
    return output('HOLD_RANKING_SLOT_OR_TARGET_MISMATCH',next) end
