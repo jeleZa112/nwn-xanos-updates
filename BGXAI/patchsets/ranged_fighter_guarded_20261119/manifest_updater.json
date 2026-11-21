@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
-  "version": "0.3.70-WEAPON-TRAITS-RO",
+  "version": "0.3.71-WEAPON-TRAIT-SNAPSHOT",
   "files": [
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_PREFLIGHT.py",
@@ -156,8 +156,8 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_SAVED_SNAPSHOT_READONLY.py",
       "dest": "BGXAI_WEAPON_SAVED_SNAPSHOT_READONLY.py",
-      "sha256": "0a1b0e6d82618cec35b5f6dd73e25ef139399a8fa280f287abdbe4fce60048a9",
-      "size": 5585
+      "sha256": "7142266ccc4d86fb4016b29ff3bb221bd7d52157b5e22a4002aceefb8f7cf240",
+      "size": 6919
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_CHOICE_ADVISORY_V1.js",
