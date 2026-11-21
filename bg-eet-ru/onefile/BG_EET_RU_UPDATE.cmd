@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 80
+SELF_VERSION = 81
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -572,7 +572,9 @@ def v77_resume_after_static_v70(game, report_path, combat_only=False):
     if combat_only:return 0
     rc=v76_live_audit(game,report_path)
     if rc:return rc
-    return v79_run(game,report_path)
+    rc=v79_run(game,report_path)
+    if rc:return rc
+    return v81_run(game,report_path)
 
 
 def v77_resume_selftest():
@@ -580,13 +582,15 @@ def v77_resume_selftest():
     original_v74=globals()['v74_pilot']
     original_v76=globals()['v76_live_audit']
     original_v79=globals()['v79_run']
+    original_v81=globals()['v81_run']
     calls=[]
     try:
         globals()['v74_pilot']=lambda *a,**k: calls.append('v74') or 0
         globals()['v76_live_audit']=lambda *a,**k: calls.append('v76') or 0
         globals()['v79_run']=lambda *a,**k: calls.append('v79') or 0
+        globals()['v81_run']=lambda *a,**k: calls.append('v81') or 0
         assert v77_resume_after_static_v70('fake_game','fake_zip')==0
-        assert calls==['v74','v76','v79'],calls
+        assert calls==['v74','v76','v79','v81'],calls
         calls.clear()
         assert v77_resume_after_static_v70('fake_game','fake_zip',True)==0
         assert calls==['v74'],calls
@@ -598,6 +602,7 @@ def v77_resume_selftest():
         globals()['v74_pilot']=original_v74
         globals()['v76_live_audit']=original_v76
         globals()['v79_run']=original_v79
+        globals()['v81_run']=original_v81
     return True
 
 
@@ -1011,6 +1016,238 @@ def v79_selftest():
         assert rows['456']['english_only_candidate']
     return True
 
+# BG_EET_RU V81: exhaustive-but-bounded saved-journal audit, READ ONLY.
+# This is intended to be embedded in the existing single updater, not shipped separately.
+V81_ENTRY = '29_V81_ALL_SAVED_JOURNALS_READONLY.json'
+V81_MAX_SAVES = 512
+
+
+def v81_find_all_saves(game, roots_override=None, max_saves=V81_MAX_SAVES):
+    roots = v79_save_roots(game) if roots_override is None else list(roots_override)
+    seen, slots, roots_checked, errors = set(), [], [], []
+    for root in roots:
+        root = Path(root)
+        state = {'path':str(root),'exists':root.is_dir(),'valid_gam_slots':0}
+        roots_checked.append(state)
+        if not root.is_dir() or root.is_symlink():
+            continue
+        try:
+            folders = list(root.iterdir())
+        except OSError as exc:
+            errors.append({'root':str(root),'error':type(exc).__name__})
+            continue
+        for folder in folders:
+            try:
+                if not folder.is_dir() or folder.is_symlink():continue
+                gam = folder/'BALDUR.GAM'
+                if not gam.is_file() or gam.is_symlink():continue
+                st = gam.stat()
+                if not 0x64 <= st.st_size <= 64 * 1024 * 1024:continue
+                key = str(gam.resolve()).casefold()
+                if key in seen:continue
+                seen.add(key)
+                slots.append({'file':gam,'slot':folder.name,'root':str(root),
+                              'modified_ns':st.st_mtime_ns,'size':st.st_size})
+                state['valid_gam_slots'] += 1
+            except OSError as exc:
+                errors.append({'slot':str(folder),'error':type(exc).__name__})
+    slots.sort(key=lambda s:(-s['modified_ns'], str(s['file']).casefold()))
+    if max_saves < 1:raise ValueError('V81_BAD_SAVE_LIMIT')
+    return slots[:max_saves], len(slots), roots_checked, errors
+
+
+def v81_language_hint(tlk_row):
+    if tlk_row.get('status') != 'READ' or tlk_row.get('text_truncated'):
+        return 'HOLD_TLK_TEXT'
+    value = tlk_row.get('text','')
+    if not value.strip():return 'EMPTY'
+    latin = len(re.findall(r'[A-Za-z]',value))
+    cyr = len(re.findall(r'[А-Яа-яЁё]',value))
+    if latin and not cyr:return 'LATIN_ONLY_REVIEW'
+    if cyr and latin:return 'MIXED_SCRIPT_REVIEW'
+    if cyr:return 'CYRILLIC_PRESENT_NOT_PROOF'
+    return 'NON_LETTER_TEXT_REVIEW'
+
+
+def v81_build_report(game, roots_override=None, tlk_paths_override=None, max_saves=V81_MAX_SAVES):
+    game = Path(game)
+    result = {'schema':'BG_EET_RU_V81_ALL_SAVED_JOURNALS_READONLY',
+              'updater_version':SELF_VERSION,'game_root':str(game),
+              'game_files_written':False,'save_files_written':False,
+              'translation_install_allowed':False,'runtime_displays_proven':False,
+              'scope':'Available saved GAME V2.x journal entries only; not all potential game quests',
+              'errors':[],'saves':[],'journal_text_rows':[],'game_tlks':{}}
+    saves, total, roots, errors = v81_find_all_saves(game,roots_override,max_saves)
+    result['save_roots'] = roots
+    result['saves_total_discovered'] = total
+    result['saves_limit'] = max_saves
+    result['save_limit_reached'] = total > max_saves
+    result['errors'].extend(errors)
+    if not saves:
+        result['status']='V81_NO_VALID_GAM_SAVES_HOLD'
+        return result
+    refs, save_refs, external_count = set(), {}, 0
+    for record in saves:
+        gam = record['file']
+        try:
+            raw = gam.read_bytes()
+            if len(raw) != record['size']:
+                raise ValueError('V81_GAM_CHANGED_DURING_AUDIT')
+            parsed = v79_read_gam_journal(raw)
+            inner = [r for r in parsed['journal_entries'] if r['in_internal_tlk']]
+            external_count += len(parsed['journal_entries'])-len(inner)
+            refs.update(r['strref'] for r in inner)
+            for row in inner:
+                save_refs.setdefault(row['strref'],set()).add(record['slot'])
+            result['saves'].append({
+                'slot':record['slot'],'source_root':record['root'],
+                'gam_sha256':hashlib.sha256(raw).hexdigest(),
+                'gam_version':parsed['gam_version'],
+                'journal_count':parsed['journal_count'],
+                'internal_tlk_journal_count':len(inner),
+                'external_text_journal_count':len(parsed['journal_entries'])-len(inner),
+                'journal_rows':parsed['journal_entries'][:30000],
+                'journal_rows_truncated':len(parsed['journal_entries'])>30000})
+        except (OSError,ValueError,struct.error) as exc:
+            result['errors'].append({'slot':record['slot'],'error':type(exc).__name__,
+                                     'detail':str(exc)[:160]})
+    result['saves_scanned'] = len(result['saves'])
+    result['unique_internal_journal_strrefs'] = len(refs)
+    result['external_text_journal_entries'] = external_count
+    if not result['saves']:
+        result['status']='V81_SAVE_READ_ERRORS_HOLD'
+        return result
+    paths = tlk_paths_override or {name:game/'lang'/'ru_RU'/name
+                                    for name in ('dialog.tlk','dialogf.tlk')}
+    sides = {}
+    for name in ('dialog.tlk','dialogf.tlk'):
+        path = Path(paths[name])
+        try:
+            if not path.is_file() or path.is_symlink():raise FileNotFoundError(name)
+            sides[name] = v79_selected_tlk(path,refs)
+            result['game_tlks'][name] = {'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),
+                                        'entries_checked':len(sides[name])}
+        except (OSError,ValueError,struct.error) as exc:
+            result['errors'].append({'file':name,'error':type(exc).__name__,
+                                     'detail':str(exc)[:160]})
+    if len(sides)!=2:
+        result['status']='V81_TLK_READ_HOLD'
+        return result
+    counts = {}
+    for ref in sorted(refs):
+        male = sides['dialog.tlk'].get(str(ref),{'status':'MISSING_TLK_ROW'})
+        female = sides['dialogf.tlk'].get(str(ref),{'status':'MISSING_TLK_ROW'})
+        male_hint = v81_language_hint(male)
+        female_hint = v81_language_hint(female)
+        hints = (male_hint,female_hint)
+        if 'LATIN_ONLY_REVIEW' in hints:overall = 'LATIN_ONLY_REVIEW'
+        elif 'MIXED_SCRIPT_REVIEW' in hints:overall = 'MIXED_SCRIPT_REVIEW'
+        elif any(x.startswith('HOLD') for x in hints):overall = 'HOLD_TLK_TEXT'
+        elif 'EMPTY' in hints:overall = 'EMPTY_REVIEW'
+        elif 'NON_LETTER_TEXT_REVIEW' in hints:overall = 'NON_LETTER_TEXT_REVIEW'
+        else:overall = 'CYRILLIC_PRESENT_NOT_PROOF'
+        counts[overall] = counts.get(overall,0)+1
+        same = (male.get('sha256') is not None and
+                male.get('sha256')==female.get('sha256'))
+        result['journal_text_rows'].append({
+            'strref':ref,'observed_in_save_slots':sorted(save_refs.get(ref,[])),
+            'review_status':overall,'male_hint':male_hint,'female_hint':female_hint,
+            'male_status':male.get('status'),'female_status':female.get('status'),
+            'male_text':male.get('text'),
+            'female_text':None if same else female.get('text'),
+            'male_text_truncated':male.get('text_truncated',False),
+            'female_text_truncated':female.get('text_truncated',False),
+            'male_female_same_bytes':same})
+    result['review_counts']=counts
+    result['potential_language_review_count'] = sum(counts.get(x,0) for x in
+        ('LATIN_ONLY_REVIEW','MIXED_SCRIPT_REVIEW','HOLD_TLK_TEXT',
+         'EMPTY_REVIEW','NON_LETTER_TEXT_REVIEW'))
+    result['approved_translation_count'] = 0
+    result['status'] = ('V81_PARTIAL_REVIEW_HOLD' if
+                       result['errors'] or result['save_limit_reached']
+                       else 'V81_SAVED_JOURNALS_READ_ONLY_CHECKED')
+    result['note'] = ('A text containing Cyrillic is not proof that it is translated. '
+                      'Latin characters may be proper names. All flagged rows require contextual review; '
+                      'save membership does not prove an on-screen journal visit.')
+    return result
+
+
+def v81_run(game, report_path):
+    game, report_path = Path(game),Path(report_path)
+    try:
+        safe_external(game, report_path)
+        if not report_path.is_file():raise FileNotFoundError('V81_SINGLE_ZIP_MISSING')
+        result=v81_build_report(game)
+        previous=None
+        with zipfile.ZipFile(report_path) as z:
+            if z.testzip() is not None:raise ValueError('V81_OLD_ZIP_BAD_CRC')
+            if V81_ENTRY in z.namelist():previous=json.loads(z.read(V81_ENTRY))
+        if previous==result:
+            print('v81: CACHE PASS — сохранения и TLK не изменились')
+        else:
+            with tempfile.NamedTemporaryFile(dir=str(report_path.parent),
+                                             prefix='.v81_',suffix='.zip',delete=False) as f:
+                temp=Path(f.name)
+            try:
+                with zipfile.ZipFile(report_path) as src,zipfile.ZipFile(
+                        temp,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=7) as dst:
+                    names=set()
+                    for member in src.infolist():
+                        if member.filename in names:raise ValueError('V81_DUPLICATE_ZIP_ENTRY')
+                        names.add(member.filename)
+                        if member.filename!=V81_ENTRY:dst.writestr(member,src.read(member))
+                    dst.writestr(V81_ENTRY,json.dumps(result,ensure_ascii=False,indent=2).encode('utf8'))
+                with zipfile.ZipFile(temp) as check:
+                    if check.testzip() is not None or check.namelist().count(V81_ENTRY)!=1:
+                        raise ValueError('V81_NEW_ZIP_BAD_CRC')
+                os.replace(temp,report_path)
+            finally:
+                if temp.exists():temp.unlink()
+        print('v81:',result['status'],'— сохранений:',result.get('saves_scanned',0),
+              'из',result['saves_total_discovered'],
+              'уникальных записей:',result.get('unique_internal_journal_strrefs',0),
+              'на языковую проверку:',result.get('potential_language_review_count',0))
+        print('Единый ZIP:',report_path)
+        return 0
+    except (OSError,ValueError,RuntimeError,KeyError,struct.error,zipfile.BadZipFile) as exc:
+        print('v81: SAFE_STOP — '+type(exc).__name__+': '+str(exc)[:200])
+        return 2
+
+
+def v81_selftest():
+    with tempfile.TemporaryDirectory(prefix='BG_EET_RU_V81_TEST_') as d:
+        root=Path(d);save_root=root/'EET'/'save';save_root.mkdir(parents=True)
+        gam_raw=bytearray(0x140);gam_raw[:8]=b'GAMEV2.0'
+        struct.pack_into('<II',gam_raw,0x4c,3,0xa0)
+        for i,ref in enumerate((123,456,457)):
+            struct.pack_into('<IIBBBB',gam_raw,0xa0+i*12,ref,42,1,0,1,255)
+        for i in range(4):
+            slot=save_root/('00000000'+str(i)+'-FIXTURE')
+            slot.mkdir();(slot/'BALDUR.GAM').write_bytes(gam_raw)
+        tlks={}
+        for name in ('dialog.tlk','dialogf.tlk'):
+            p=root/name;count=458;tab=bytearray(count*26);data=b''
+            for ref,value in ((123,'Русская запись'),(456,'Go now!'),
+                              (457,'Смотри: Go now!')):
+                raw=value.encode('utf8')
+                struct.pack_into('<II',tab,ref*26+18,len(data),len(raw));data+=raw
+            p.write_bytes(b'TLK V1  '+struct.pack('<HII',0,count,18+len(tab))+tab+data)
+            tlks[name]=p
+        found,total,_,err=v81_find_all_saves(root,roots_override=[save_root])
+        assert total==4 and len(found)==4 and not err
+        report=v81_build_report(root,roots_override=[save_root],tlk_paths_override=tlks)
+        assert report['status']=='V81_SAVED_JOURNALS_READ_ONLY_CHECKED'
+        assert report['saves_scanned']==4 and report['unique_internal_journal_strrefs']==3
+        assert report['review_counts']['LATIN_ONLY_REVIEW']==1
+        assert report['review_counts']['MIXED_SCRIPT_REVIEW']==1
+        assert report['journal_text_rows'][1]['male_text']=='Go now!'
+        limited=v81_build_report(root,roots_override=[save_root],
+                                 tlk_paths_override=tlks,max_saves=2)
+        assert limited['status']=='V81_PARTIAL_REVIEW_HOLD'
+        assert limited['saves_scanned']==2 and limited['saves_total_discovered']==4
+    return True
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description='BG_EET_RU one-file visible-only read-only auto-updater')
     p.add_argument('--game',default=DEFAULT_GAME)
@@ -1350,6 +1587,8 @@ def main(argv=None):
         return v76_rc
     v79_rc=v79_run(game,report_path)
     if v79_rc:return v79_rc
+    v81_rc=v81_run(game,report_path)
+    if v81_rc:return v81_rc
     print('v67 cached DLG structure:',v67_status['status'],
           len(v67_status['target_references']),'target references')
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
@@ -3818,6 +4057,7 @@ def selftest():
     assert v77_resume_selftest() and callable(v77_resume_after_static_v70)
     assert v78_selftest() and callable(v78_live_fix)
     assert v79_selftest() and callable(v79_run)
+    assert v81_selftest() and callable(v81_run)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
