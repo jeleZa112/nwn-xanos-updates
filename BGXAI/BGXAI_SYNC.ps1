@@ -208,6 +208,7 @@ localPath=Join-Path $GameRoot 'BGXAI_DEV\ranged_fighter_verified';installer='BGX
 names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INSTALL.py','BGXRANGED_V2_MELEE_HANDOFF.baf','BGXRANGED_V2_PREFLIGHT.py','BGXRANGED_V2_GUARDED_INSTALL.py','BGXRANGED_V3_MELEE_HANDOFF.baf','BGXRANGED_V3_PREFLIGHT.py','BGXRANGED_V3_GUARDED_INSTALL.py','BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py','BGXRANGED_V4_NO_FRIEND_ATTACK.baf','BGX_FRIENDLY_PROTECT_ISOLATION.py','BGXAI_SAVE_SCRIPT_AUDIT_READONLY.py','BGX_FRIENDLY_RETALIATION_GUARDED.py','BGX_COMBAT_LOG_READONLY_AUDIT.py','M_BXFR.lua','BGX_FRIEND_TRACE_GUARDED.py','BGX_FRIEND_TRACE_REPORT.py','M_BXFR_CONSOLE_V2.lua','BGXFTRACE_V2_GUARDED.py','BGXFTRACE_CONSOLE_CAPTURE.py','M_BXFR_MOTION_V3.lua','BGXFTRACE_V3_GUARDED.py','BGXF_WTASIGHT_ENEMY_GUARD_SOURCE_ONLY.py','BGXFENEMY_WTASIGHT_GUARDED.py','BGXAI_WEAPON_SAVED_SNAPSHOT_READONLY.py','BGXAI_WEAPON_CHOICE_ADVISORY_V1.js','BGXAI_WEAPON_TRAITS_ADVISORY_V1.js','BGXRANGED_V5_ANTICIPATORY_CLOSE_SOURCE_ONLY.baf','BGXRANGED_V5_NATIVE_CANDIDATE_READONLY.py','BGXRANGED_V5_GUARDED_INSTALL.py','BGXRANGED_V6_DPLAYER_CLOSE_GUARD_SOURCE_ONLY.baf','BGXRANGED_V6_DPLAYER_NATIVE_READONLY.py','BGXRANGED_V6_GUARDED_INSTALL.py')
 }
 $releaseWeaponRO=@{id='WRO';version='0.3.77-WEAPON-NATIVE-READONLY';manifest=($releaseRanged.prefix+'BGXAI_WEAPON_NATIVE_PREFLIGHT_MANIFEST_V1.json');prefix=$releaseRanged.prefix;localPath=Join-Path $GameRoot 'BGXAI_DEV\weapon_native_ro';names=@('BGXAI_WEAPON_GAME_PREFLIGHT_RO.py','BGXAI_WEAPON_GAME_PREFLIGHT_V1.baf')}
+$wp=@{id='WP';version='0.3.78-BGXWP-RUNTIME-OBSERVER-R1';manifest=($releaseRanged.prefix+'BGXWP_OBSERVER_MANIFEST_R1.json');prefix=$releaseRanged.prefix;localPath=Join-Path $GameRoot 'BGXAI_DEV\weapon_runtime_ro';names=@('BGXWP_OBSERVER_GUARDED.py','M_BGXWP.lua')}
 $v2install=Join-Path $releaseRanged.localPath 'BGXRANGED_V2_GUARDED_INSTALL.py'
 $ff=Join-Path $releaseRanged.localPath 'BGX_FRIENDLY_RETALIATION_GUARDED.py'
 $rr=$releaseRanged.localPath
@@ -1086,77 +1087,79 @@ Write-Host '049 present; status 51.'
 Write-Host 'NO GAME WRITE.'
 }
 Write-Host ''
-echo ' BGXAI ONE-FILE UPDATER / EET Foxx / EPS 18.4'
-echo ' EPS 18.4 / EET. BGXPR status: 97.'
-echo ' 1 - 040 download'
-echo ' 2 - 040 status'
-echo ' 3 - 040 install'
-echo ' 4 - 040 rollback'
-echo ' 5 - 039 status'
-echo ' 6 - 039 rollback'
-echo ' 7 - BGXAI 041 game precheck (READ-' 
-echo ' 8 - 041 download'
-echo ' 9 - 041 status'
-echo ' 10 - 041 install'
-echo ' 11 - 041 rollback'
-echo ' 12 - 042 precheck'
-echo ' 13 - 042B preflight'
-echo ' 14 - 042B download'
-echo ' 15 - 042B install'
-echo ' 16 - 042B status'
-echo ' 17 - 042B rollback'
-echo ' 18 - 043P EEex'
-echo ' 19 - 043P sour'
-echo ' 20 - install PASSIVE'
-echo ' 21 - 043P stat'
-echo ' 22 - Roll back BGXAI'
-echo ' 23 - 044 hotke'
-echo ' 24 - 044 sourc'
-echo ' 25 - install PASSIVE'
-echo ' 26 - 044 statu'
-echo ' 27 - Roll back BGXAI'
-echo ' 28 - 045 short'
-echo ' 29 - 045 sourc'
-echo ' 30 - install PASSIVE'
-echo ' 31 - 045 statu'
-echo ' 32 - Roll back BGXAI'
-echo ' 33 - 046 attac'
-echo ' 34 - 046 SOURC'
-echo ' 35 - install PASSIVE'
-echo ' 36 - 046 statu'
-echo ' 37 - Roll back BGXAI'
-echo ' 38 - 047 targe'
-echo ' 39 - 047 SOURC'
-echo ' 40 - install PASSIVE'
-echo ' 41 - 047 statu'
-echo ' 42 - Roll back BGXAI'
-echo ' 43 - 048 weapo'
-echo ' 44 - 048 SOURC'
-echo ' 45 - install PASSIVE'
-echo ' 46 - 048 statu'
-echo ' 47 - Roll back BGXAI'
-echo ' 48 - 049 guard'
-echo ' 49 - 049 SOURC'
-echo ' 50 - install PASSIVE'
-echo ' 51 - 049 statu'
-echo ' 52 - Roll back BGXAI'
-echo ' 53 - 054 downl'
-echo ' 54 - 054 compi'
-echo ' 55 - 056 activ'
-echo ' 56 - 056 ACTIV'
-echo ' 57 - install BGXAI 0'
-echo ' 58 - 056 activ'
-echo ' 59 - Roll back BGXAI'
-echo ' 60 - 060 SOURC'
-echo ' 61 - 060 read-'
-echo ' 62 - install BGXAI 0'
-echo ' 63 - 060/056 i'
-echo ' 64 - Roll back BGXAI'
-echo ' 65 - 061 SOURC'
-echo ' 66 - 061 REAL '
-echo ' 67 - install BGXAI 0'
-echo ' 68 - 061/060 i'
-echo ' 69 - Roll back BGXAI'
+Write-Host @'
+ BGXAI ONE-FILE UPDATER / EET Foxx / EPS 18.4
+ EPS 18.4 / EET. BGXPR status: 97.
+ 1 - 040 download
+ 2 - 040 status
+ 3 - 040 install
+ 4 - 040 rollback
+ 5 - 039 status
+ 6 - 039 rollback
+ 7 - BGXAI 041 game precheck (READ-
+ 8 - 041 download
+ 9 - 041 status
+ 10 - 041 install
+ 11 - 041 rollback
+ 12 - 042 precheck
+ 13 - 042B preflight
+ 14 - 042B download
+ 15 - 042B install
+ 16 - 042B status
+ 17 - 042B rollback
+ 18 - 043P EEex
+ 19 - 043P sour
+ 20 - install PASSIVE
+ 21 - 043P stat
+ 22 - Roll back BGXAI
+ 23 - 044 hotke
+ 24 - 044 sourc
+ 25 - install PASSIVE
+ 26 - 044 statu
+ 27 - Roll back BGXAI
+ 28 - 045 short
+ 29 - 045 sourc
+ 30 - install PASSIVE
+ 31 - 045 statu
+ 32 - Roll back BGXAI
+ 33 - 046 attac
+ 34 - 046 SOURC
+ 35 - install PASSIVE
+ 36 - 046 statu
+ 37 - Roll back BGXAI
+ 38 - 047 targe
+ 39 - 047 SOURC
+ 40 - install PASSIVE
+ 41 - 047 statu
+ 42 - Roll back BGXAI
+ 43 - 048 weapo
+ 44 - 048 SOURC
+ 45 - install PASSIVE
+ 46 - 048 statu
+ 47 - Roll back BGXAI
+ 48 - 049 guard
+ 49 - 049 SOURC
+ 50 - install PASSIVE
+ 51 - 049 statu
+ 52 - Roll back BGXAI
+ 53 - 054 downl
+ 54 - 054 compi
+ 55 - 056 activ
+ 56 - 056 ACTIV
+ 57 - install BGXAI 0
+ 58 - 056 activ
+ 59 - Roll back BGXAI
+ 60 - 060 SOURC
+ 61 - 060 read-
+ 62 - install BGXAI 0
+ 63 - 060/056 i
+ 64 - Roll back BGXAI
+ 65 - 061 SOURC
+ 66 - 061 REAL 
+ 67 - install BGXAI 0
+ 68 - 061/060 i
+ 69 - Roll back BGXAI
+'@
 70..92 | ForEach-Object { Write-Host ('{0,3} - BGX' -f $_) }
 echo ' 93 - 066S precheck'
 echo ' 94 - 066S install'
@@ -1166,14 +1169,17 @@ echo ' 96 - 066S rollback'
 117..122 | ForEach-Object { Write-Host ('{0} - AOE' -f $_) }
 123..130 | ForEach-Object { Write-Host ('{0} - RANGE' -f $_) }
 $bgx131='V3 native (RO)|V3 install+verify|V3 status (RO)|V3 rollback (consent)|Aggro log audit (RO)|BGXSAFE install+verify|BGXSAFE status (RO)|BGXSAFE rollback V3|FRIEND install|FRIEND status|FRIEND rollback|Trace install+verify|Trace status (RO)|Trace rollback|V2 console install+verify|Start game + capture log|V2 status (RO)|V2 rollback|Motion trace install|Motion trace status|Motion trace rollback' -split '\|';131..151 | ForEach-Object { Write-Host ('{0} - {1}' -f $_,$bgx131[$_-131]) }
-echo '152 - Enemy guard native preflight (RO)'
-echo '153 - Enemy guard install+verify'
-echo '154 - Enemy guard status (RO)'
-echo '155 - Enemy guard rollback'
-echo '156 - V5 ranged handoff pilot (guarded menu)'
-echo '157 - V6 DPLAYER guard pilot (guarded menu)'
-echo '158 - Weapon V3 native preflight READ ONLY'
-echo ' 0 - Exit [default]'
+Write-Host @'
+152 - Enemy guard native preflight (RO)
+153 - Enemy guard install+verify
+154 - Enemy guard status (RO)
+155 - Enemy guard rollback
+156 - V5 ranged handoff pilot (guarded menu)
+157 - V6 DPLAYER guard pilot (guarded menu)
+158 - Weapon V3 native preflight READ ONLY
+159 - Weapon EEex R1 passive observer (guarded)
+ 0 - Exit [default]
+'@
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
 if($choice -eq '0'){Write-Host 'No changes.';exit 0}
@@ -1337,6 +1343,7 @@ switch($choice){
 '156' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_V5_GUARDED_INSTALL.py') --game $GameRoot;if($LASTEXITCODE){throw '156 STOP'};break}
 '157' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_V6_GUARDED_INSTALL.py') --game $GameRoot;if($LASTEXITCODE){throw '157 STOP'};break}
 '158' {SyncRelease $releaseWeaponRO;& py -3 (Join-Path $releaseWeaponRO.localPath 'BGXAI_WEAPON_GAME_PREFLIGHT_RO.py') --game $GameRoot;if($LASTEXITCODE){throw '158 STOP'};break}
+'159' {SyncRelease $wp;& py -3 (Join-Path $wp.localPath 'BGXWP_OBSERVER_GUARDED.py') --game $GameRoot;if($LASTEXITCODE){throw '159 STOP'};break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0
