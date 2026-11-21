@@ -116,7 +116,7 @@ def advise(s: Situation, allies: Iterable[Ally],
 
     if not safe_here:
         if retreat():
-            return Advice("RETREAT_VERIFIED_ROUTE","", "IN_HAZARD_ROUTE_EXTERNAL_VERIFIED")
+            return Advice("RETREAT_VERIFIED_ROUTE",reason="IN_HAZARD_ROUTE_EXTERNAL_VERIFIED")
         return Advice("HOLD_HAZARD_EGRESS_UNVERIFIED")
 
     path_unsafe=any(path_crosses(s.position,s.melee_position,h,current)
