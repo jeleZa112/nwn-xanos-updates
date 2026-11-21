@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 69
+SELF_VERSION = 70
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -638,7 +638,9 @@ def main(argv=None):
     if args.combat_only or (not args.force and v68_baseline_report_ready(game, WORKDIR/REPORT_NAME)):
         print('v68: предыдущие проверки v67 сохранены; продолжаю с боевого журнала (READ ONLY).')
         rc=v68_combat_evidence(game, WORKDIR/REPORT_NAME)
-        return rc if rc else v69_static_proof(WORKDIR/REPORT_NAME)
+        if rc: return rc
+        rc=v69_static_proof(WORKDIR/REPORT_NAME)
+        return rc if rc else v70_eeex_loader_diagnostic(game, WORKDIR/REPORT_NAME)
     print('BG_EET_RU v'+str(SELF_VERSION)+' — один отчёт; изменение игры только при отдельном подтверждении.')
     print('Папка:',WORKDIR)
     print('Проверяю существующие отчёты (без повторных запусков)...')
@@ -870,6 +872,10 @@ def main(argv=None):
     if v69_rc:
         print('v69: подтверждение кода остановлено безопасно; смотри единый ZIP.')
         return v69_rc
+    v70_rc=v70_eeex_loader_diagnostic(game, report_path)
+    if v70_rc:
+        print('v70: проверка скриптов EEex остановлена безопасно; смотри единый ZIP.')
+        return v70_rc
     print('v67 cached DLG structure:',v67_status['status'],
           len(v67_status['target_references']),'target references')
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
@@ -1674,6 +1680,128 @@ def v69_static_proof(report_path):
     print('Единый ZIP:', report_path)
     return 0 if result['status'] == 'STATIC_CODE_REFERENCES_CONFIRMED_RUNTIME_HOLD' else 2
 
+# v70 is a read-only EEex auto-load source inventory, not runtime hook/installer.
+V70_PROBE_SCHEMA='BG_EET_RU_V70_EEEX_LOADER_SOURCE_DIAGNOSTIC_V1'
+
+
+def v70_eeex_loader_diagnostic(game, report_path):
+    """Collect minimal EEex loader/M_ lua evidence in one existing ZIP."""
+    game=Path(game)
+    report_path=Path(report_path)
+    safe_external(game,report_path)
+    try:
+        with zipfile.ZipFile(report_path,'r') as z:
+            graph=json.loads(z.read('20_V69_INDEPENDENT_DISASSEMBLY.json'))
+        if graph.get('schema')!=V69_PROOF_SCHEMA or graph.get('status')!='STATIC_CODE_REFERENCES_CONFIRMED_RUNTIME_HOLD':
+            raise RuntimeError('V69_NOT_CONFIRMED')
+        exe=game/'Baldur.exe'; db=game/'InfinityLoader.db'
+        if not exe.is_file() or not db.is_file():
+            raise RuntimeError('MISSING_EXE_OR_INFINITYLOADER_DB')
+        exe_sha=sha_path(exe);db_sha=sha_path(db)
+        if exe_sha!=graph['exe_sha256']:
+            raise RuntimeError('EXE_CHANGED_FROM_V69')
+        result={
+            'schema':V70_PROBE_SCHEMA,
+            'status':'READ_ONLY_SOURCE_AUDIT_COMPLETE_RUNTIME_UNPROVEN',
+            'game_root':str(game),
+            'exe_sha256':exe_sha,
+            'loader_db_sha256':db_sha,
+            'game_files_written':False,
+            'installation_allowed':False,
+            'runtime_lua_execution_verified':False,
+            'runtime_hook_verified':False,
+            'read_only':True,
+            'notes':["The presence of Lua, labels or a matching DLL does NOT prove actual execution.",
+                     "V2 'Luck' failed in prior visual runtime test; do not install V2 again."],
+            'script_evidence':[],
+            'loader_db_mentions':[],
+            'eeex_directory_summary':{},
+            'runtime_log_sources':[],
+        }
+        dbdata=db.read_bytes()
+        for term in (b'BG_EET_RU',b'B3Luck',b'M_BG_EET_RU'):
+            start=0
+            while len(result['loader_db_mentions'])<30:
+                i=dbdata.find(term,start)
+                if i<0:break
+                a=max(0,i-80); b=min(len(dbdata),i+140)
+                chunk=dbdata[a:b]
+                result['loader_db_mentions'].append({'offset':i,'term':term.decode('ascii'),
+                    'nearby_printable':''.join(chr(v) if 32<=v<127 else '.' for v in chunk)[:220],
+                    'nearby_sha256':digest(chunk)})
+                start=i+len(term)
+        for directory in (game/'override',game/'EEex_scripts'):
+            key=directory.name
+            if not directory.is_dir():
+                result['eeex_directory_summary'][key]={'exists':False}
+                continue
+            files=sorted((p for p in directory.iterdir() if p.is_file() and p.name.lower().startswith('m_') and p.suffix.lower()=='.lua'),key=lambda p:p.name.lower())
+            result['eeex_directory_summary'][key]={
+                'exists':True,'m_lua_count':len(files),'m_lua_names':[p.name for p in files[:150]]}
+            for path in files:
+                if not (path.name.lower().startswith('m_bg_eet_ru') or path.name.lower()=='m___eeex.lua'):
+                    continue
+                raw=path.read_bytes()
+                entry={'path':str(path.relative_to(game)),'bytes':len(raw),'sha256':digest(raw),
+                    'inspection_scope':'own_BG_EET_RU_or_EEex_bootstrap_only'}
+                if len(raw)<=30000:
+                    # Read full script for actual diagnosis; no changes in game.
+                    entry['source_text']=raw.decode('utf-8-sig','replace')
+                else:
+                    entry['source_too_large']=True
+                result['script_evidence'].append(entry)
+        ini=game/'InfinityLoader.ini'
+        if ini.is_file():
+            raw=ini.read_bytes()
+            result['infinityloader_ini']={'exists':True,'bytes':len(raw),'sha256':digest(raw),
+                'relevant_lines':[line.strip()[:200] for line in raw.decode('utf-8-sig','replace').splitlines()
+                 if any(k in line.lower() for k in ('eeex','lua','script','load','debug','logging','logfile'))
+                 and not any(k in line.lower() for k in ('password','token','secret','key='))][:70]}
+        else:result['infinityloader_ini']={'exists':False}
+        for name in ('InfinityLoader.log','EEex.log','InfinityLoader_Error.log','EEex_Error.log'):
+            p=game/name
+            if p.is_file():
+                raw=p.read_bytes()
+                result['runtime_log_sources'].append({'name':name,'size':len(raw),'sha256':digest(raw),
+                  'error_tail':[line.strip()[:220] for line in raw[-25000:].decode('utf-8-sig','replace').splitlines()
+                    if any(k in line.lower() for k in ('error','warning','m_bg_eet_ru','lua','b3luck'))][-50:]})
+        with zipfile.ZipFile(report_path,'r') as z:
+            try:old=json.loads(z.read('21_V70_EEEX_LOADER_SOURCE_DIAGNOSTIC.json'))
+            except (KeyError,ValueError,UnicodeError):old={}
+        # Compare all relevant evidence, not merely the Loader DB checksum.
+        stable=dict(result);stable.pop('status',None)
+        result['snapshot_sha256']=digest(json.dumps(stable,ensure_ascii=False,sort_keys=True).encode('utf-8'))
+        if old.get('schema')==V70_PROBE_SCHEMA and old.get('snapshot_sha256')==result['snapshot_sha256'] and old.get('status')==result['status']:
+            print('v70: CACHE PASS — EEex M_Lua sources unchanged. Runtime still requires separate proof.')
+            return 0
+        if sha_path(exe)!=exe_sha or sha_path(db)!=db_sha:
+            raise RuntimeError('GAME_CHANGED_DURING_READONLY_AUDIT')
+    except (OSError,RuntimeError,ValueError,TypeError,KeyError,zipfile.BadZipFile) as exc:
+        result={'schema':V70_PROBE_SCHEMA,'status':'HOLD_SAFE_STOP','game_files_written':False,
+                'installation_allowed':False,'error':type(exc).__name__+': '+str(exc)[:350]}
+    if not report_path.is_file():
+        print('v70: SAFE_STOP no report path')
+        return 2
+    tmp=report_path.with_name(report_path.name+'.v70.tmp')
+    try:
+        with zipfile.ZipFile(report_path,'r') as src,zipfile.ZipFile(tmp,'w',compression=zipfile.ZIP_DEFLATED) as dst:
+            if src.testzip() is not None:raise RuntimeError('PRIOR_ZIP_CRC_BAD')
+            names=set()
+            for entry in src.infolist():
+                if entry.filename=='21_V70_EEEX_LOADER_SOURCE_DIAGNOSTIC.json':continue
+                if entry.filename in names or entry.file_size>32_000_000:
+                    raise RuntimeError('PRIOR_REPORT_ZIP_INVALID')
+                names.add(entry.filename);dst.writestr(entry,src.read(entry))
+            dst.writestr('21_V70_EEEX_LOADER_SOURCE_DIAGNOSTIC.json',(json.dumps(result,ensure_ascii=False,indent=2)+'\n').encode('utf-8'))
+        with zipfile.ZipFile(tmp) as z:
+            if z.testzip() is not None:raise RuntimeError('REPORT_ZIP_CRC_FAILED')
+        os.replace(tmp,report_path)
+    finally:
+        if tmp.exists():tmp.unlink()
+    print('v70:',result['status'],'scripts:',len(result.get('script_evidence',[])))
+    print('Единый ZIP:',report_path)
+    return 0 if result['status']=='READ_ONLY_SOURCE_AUDIT_COMPLETE_RUNTIME_UNPROVEN' else 2
+
 def selftest():
     # Self-contained checks only; never read or change a real EET installation.
     p36,tra36=load_v36_preflight()
@@ -1748,6 +1876,7 @@ def selftest():
     v69proof=json.loads(V69_PROOF_DATA)
     assert len(v69proof['refs'])==47 and len(v69proof['functions'])==4
     assert callable(v69_static_proof)
+    assert callable(v70_eeex_loader_diagnostic)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
