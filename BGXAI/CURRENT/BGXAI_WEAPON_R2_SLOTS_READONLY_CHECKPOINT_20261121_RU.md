@@ -1,3 +1,13 @@
+# 21.11.2026 — R2 DEPLOY СООБЩЁН ПОЛЬЗОВАТЕЛЕМ, LIVE ЕЩЁ НЕТ
+
+Пользователь запустил неизменённый `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd` → **159 → 7 → 2**, ввёл точную фразу `INSTALL_BGXW2_READONLY_SLOTS`. Обновлятор из pinned commit проверил четыре файла (`BGXWP_OBSERVER_GUARDED.py`, `M_BGXWP.lua`, `BGXW2_OBSERVER_GUARDED.py`, `M_BGXW2.lua`), синхронизировал только исходники и вывел `REPORT_FILE: C:\Users\Drevo\Documents\BGXAI_LIVE_REPORTS\BGXW2_SETUP_R2.json` и **`STATUS: BGXW2_PASSIVE_INSTALLED_AWAITING_RUNTIME_TEST`**, затем `BGXAI: update/status action completed.`
+
+**CODE:** изолированный наблюдатель R2 установлен по сообщению о результате установщика; прежде установленные R1.1, BGXRANGED6 и EPS не заменялись целевым исходником. **TEST:** 70/70 локальных офлайн-проверок прежних исходников плюс текущая положительная Windows install-status строка; `BGXW2_SETUP_R2.json` ещё не прислан, поэтому полный SHA/backup постфактум из самого файла не аудитировались здесь. **DEPLOY:** `BGXW2_PASSIVE_INSTALLED_AWAITING_RUNTIME_TEST` по выводу пользователя. **LIVE:** запуск EEex R2, перечисление 4 weapon/4 quiver, resref и переключение по R2 ещё НЕ проверены. R2 не принимает решения и не отправляет команд.
+
+**Далее только один игровой A/B:** обычный обновлятор **159 → 5** (запуск InfinityLoader с захватом), короткий бой с дальним/ближним оружием и сменой, выход из игры, затем обновлятор **159 → 7 → 5** (сбор R2). Один файл `Documents\BGXAI_LIVE_REPORTS\BGXAI_WEAPON_SLOTS_RAW_R2.jsonl`. При `STOP` не повторять установку, прислать сообщение. Не просить повторять 158, preflight, установку R1.1 или R2, прежний журнал R1.1. Новый интеллектуальный выбор по APR/effects всё ещё SOURCE ONLY, до проверки идентичности предметов и действий EPS = HOLD.
+
+---
+
 # АКТУАЛЬНО — R2 ПОДКЛЮЧЁН К ЕДИНОМУ ОБНОВЛЯТОРУ (21.11.2026)
 
 **Реальный прогресс CODE:** кроме чистого R2 Lua-снимка слотов, написан пассивный EEex-приёмник `M_BGXW2.lua`, который считывает 4 quick weapons (`35..38`), 4 колчана (`11..14`), offhand (`9`), необязательные raw `cResRef:get()`, useCount, выбранный индекс/ability. Регистрируется только на начатые действия членов партии; максимум 64 среза за игровой запуск. Поля остаются `itemIdentityVerified=false`, `perSlotAPRVerified=false`, `epsQueueVerified=false`, `switchAuthorized=false`. При отсутствии файловой записи используется консоль; последний лог собирается вне игры. **Это не управляющий ИИ.**
