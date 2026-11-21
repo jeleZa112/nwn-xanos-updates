@@ -117,6 +117,12 @@ jobs:
           print("PASS source syntax + 25/25 SHA + mock guard + menus 1-155")
           PY
 
+      - name: Weapon-selection safety model tests (Node, no game writes)
+        shell: bash
+        run: |
+          node --check BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_CHOICE_ADVISORY_V1.js
+          node BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_choice_advisory_v1.js
+
   windows-powershell-syntax:
     runs-on: windows-latest
     steps:
