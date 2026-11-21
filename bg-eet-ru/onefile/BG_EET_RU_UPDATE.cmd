@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 67
+SELF_VERSION = 68
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -575,6 +575,7 @@ def main(argv=None):
     p.add_argument('--no-install-prompt',action='store_true',help='compatibility: skip v34 prompt')
     p.add_argument('--offer-v34-edits',action='store_true',help='explicitly ask about old optional v34 edits')
     p.add_argument('--skip-iwd-dlg',action='store_true',help='skip v35 DLG read-only capture; keep earlier capture if valid')
+    p.add_argument('--combat-only',action='store_true',help='v68: capture/cache combat evidence in the existing single ZIP only')
     args=p.parse_args(argv)
     if args.selftest: return selftest()
     game=Path(args.game).expanduser().resolve()
@@ -633,6 +634,10 @@ def main(argv=None):
         # cannot update itself unless the release manifest has an even newer version.
         import subprocess
         return subprocess.call([sys.executable,'-x',str(canonical),*sys.argv[1:]])
+    # v68: if the v67 game snapshot still matches, resume ONLY the new safe stage.
+    if args.combat_only or (not args.force and v68_baseline_report_ready(game, WORKDIR/REPORT_NAME)):
+        print('v68: предыдущие проверки v67 сохранены; продолжаю с боевого журнала (READ ONLY).')
+        return v68_combat_evidence(game, WORKDIR/REPORT_NAME)
     print('BG_EET_RU v'+str(SELF_VERSION)+' — один отчёт; изменение игры только при отдельном подтверждении.')
     print('Папка:',WORKDIR)
     print('Проверяю существующие отчёты (без повторных запусков)...')
@@ -856,6 +861,10 @@ def main(argv=None):
     print('v66 exact English originals in live TLK:',v66_status['originals_with_exact_live_tlk_text'],
           'with cached DLG references:',v66_status['originals_with_refs_in_captured_dlgs'])
     v67_status=v67_cached_dlg_graph(report_path)
+    v68_rc = v68_combat_evidence(game,report_path)
+    if v68_rc:
+        print('v68: проверка боевого журнала остановлена безопасно; смотри единый ZIP.')
+        return v68_rc
     print('v67 cached DLG structure:',v67_status['status'],
           len(v67_status['target_references']),'target references')
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
@@ -1383,6 +1392,168 @@ def v67_cached_dlg_graph(report_path):
     return report
 
 
+V68_COMBAT_SOURCE = "# -*- coding: utf-8 -*-\n\"\"\"BG EET RU Extra Combat Info V4 — SINGLE FILE READ-ONLY CODE EVIDENCE.\n\nDoes not install or alter Baldur.exe, InfinityLoader.db, Lua, TLK, game saves,\nBGXAI, or BG Voice RU. Checks all 36 exact original strings and 47 LEA candidates,\nextracts only relevant x64 function/code slices for independent disassembly.\nRuns once without other files/dependencies, writes one ZIP into Downloads.\n\"\"\"\nimport base64, datetime, hashlib, json, os, re, struct, sys, zipfile, zlib\nfrom pathlib import Path\n\nGAME=Path(r'C:\\Games\\BG_EET_FOXX_NEW')\nEXE_HASH='fc821a4806a0305b84fd85f1aad2bd472c8db642ed34b4494ae62351cae1c580'\nLATEST_DB_HASH='5e4fb47ed1575255f79a03e7b4edfcc3bd9ee5dcb700059e0833aa8d4fae3ca0'\nV2_MARKER=b'[BG_EET_RU_RU_LUCK_V2_RIP_LEA]'\n_EMBED='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'\n\n\ndef sha(data):return hashlib.sha256(data).hexdigest()\n\n\ndef sections_of(data):\n    if len(data)<0x100 or data[:2]!=b'MZ':raise RuntimeError('EXE_NOT_MZ')\n    nt=struct.unpack_from('<I',data,0x3C)[0]\n    if nt+264>=len(data) or data[nt:nt+4]!=b'PE\\0\\0':raise RuntimeError('EXE_NOT_PE')\n    machine,num=struct.unpack_from('<HH',data,nt+4)\n    if machine!=0x8664:raise RuntimeError('NOT_X64_EXE')\n    optsize=struct.unpack_from('<H',data,nt+20)[0]\n    opt=nt+24\n    if struct.unpack_from('<H',data,opt)[0]!=0x20B:raise RuntimeError('NOT_PE32_PLUS')\n    secstart=opt+optsize\n    sections=[]\n    for i in range(num):\n        a=secstart+i*40\n        if a+40>len(data):raise RuntimeError('SECTION_HEADER_OUT_OF_RANGE')\n        vsize,rva,rawsize,rawptr=struct.unpack_from('<IIII',data,a+8)\n        flag=struct.unpack_from('<I',data,a+36)[0]\n        sections.append({'name':data[a:a+8].split(b'\\0')[0].decode('ascii','replace'),\n                         'rva':rva,'virtual_size':vsize,'rawsize':rawsize,'rawptr':rawptr,\n                         'executable':bool(flag&0x20000000),'readable':bool(flag&0x40000000)})\n    # Exception directory is data-directory index 3 in PE32+\n    ep_rva,ep_len=struct.unpack_from('<II',data,opt+112+3*8)\n    return sections, {'rva':ep_rva,'size':ep_len}\n\n\ndef raw_to_rva(offset,secs):\n    for s in secs:\n        if s['rawptr']<=offset<s['rawptr']+s['rawsize']:\n            return s['rva']+(offset-s['rawptr'])\n    raise ValueError('RAW_OFFSET_OUTSIDE_SECTIONS')\n\n\ndef rva_to_raw(rva,secs):\n    for s in secs:\n        if s['rva']<=rva<s['rva']+s['rawsize']:\n            return s['rawptr']+(rva-s['rva'])\n    raise ValueError('RVA_OUTSIDE_FILE')\n\n\ndef get_unwind(data,secs,dir):\n    if dir['rva']==0 or dir['size']==0:raise RuntimeError('NO_EXCEPTION_DIRECTORY')\n    off=rva_to_raw(dir['rva'],secs)\n    if off+dir['size']>len(data):raise RuntimeError('EXCEPTION_DIRECTORY_TRUNCATED')\n    table=[]\n    for pos in range(off,off+dir['size']//12*12,12):\n        beg,end,unw=struct.unpack_from('<III',data,pos)\n        if beg and end>beg:table.append((beg,end,unw))\n    return table\n\n\ndef validate(data,secs,src):\n    result=[]\n    count=0\n    for row in src:\n        soff=row['offset'];en=row['en'].encode('ascii');ru=row['ru']\n        if data[soff:soff+len(en)+1]!=en+b'\\0':\n            raise RuntimeError('SOURCE_STRING_MISMATCH_OFFSET_'+str(soff))\n        srva=raw_to_rva(soff,secs)\n        new={'string_offset':soff,'source_en':row['en'],'translation_ru':ru,\n             'source_rva':srva,'source_bytes':len(en),'ru_utf8_bytes':len(ru.encode('utf-8')),\n             'refs':[],'visibility':'UNPROVEN'}\n        # These may be internal string keys, not visible journal messages:\n        if row['en'] in ('THAC0Right','THAC0Left'):new['visibility']='HOLD_INTERNAL_IDENTIFIER_POSSIBLE'\n        for ref in row['refs']:\n            off=ref['ins_file_offset'];expected=bytes.fromhex(ref['opcode'])\n            if len(expected)!=7 or expected[:3]!=b'\\x48\\x8d\\x15':\n                raise RuntimeError('UNSUPPORTED_LEA_OPCODE_AT_'+str(off))\n            if data[off:off+7]!=expected:raise RuntimeError('LEA_OPCODE_MISMATCH_AT_'+str(off))\n            irva=raw_to_rva(off,secs)\n            if not any(s['executable'] and s['rawptr']<=off< s['rawptr']+s['rawsize'] for s in secs):\n                raise RuntimeError('LEA_OUTSIDE_EXECUTABLE_SECTION_AT_'+str(off))\n            disp=struct.unpack_from('<i',expected,3)[0]\n            if irva+7+disp!=srva:raise RuntimeError('LEA_TARGET_MISMATCH_AT_'+str(off))\n            if data.count(expected)!=1:raise RuntimeError('LEA_NOT_UNIQUE_AT_'+str(off))\n            new['refs'].append({'file_offset':off,'ins_rva':irva,'original_bytes':ref['opcode'],\n                'target_rva':srva,'instruction_boundary_confirmed':False,\n                'function':None})\n            count+=1\n        result.append(new)\n    if len(result)!=36 or count!=47:raise RuntimeError('UNEXPECTED_SOURCE_COUNT_'+str(len(result))+'_'+str(count))\n    return result\n\n\ndef capture(data,secs,unwind,rows,zipf):\n    funcs={}\n    missing=[]\n    for row in rows:\n        for ref in row['refs']:\n            rva=ref['ins_rva']\n            choices=[f for f in unwind if f[0]<=rva<f[1]]\n            if choices:\n                beg,end,unw=min(choices,key=lambda t:t[1]-t[0])\n                length=end-beg\n                if length<7 or length>262144:\n                    ref['function']={'status':'TOO_LARGE_FOR_EVIDENCE','begin_rva':beg,'end_rva':end,'length':length}\n                    missing.append(ref['file_offset']);continue\n                k=(beg,end)\n                ref['function']={'status':'UNWIND_FUNCTION_FOUND','begin_rva':beg,'end_rva':end,\n                                 'unwind_rva':unw,'length':length,'evidence_filename':'functions/%08X_%08X.bin'%k}\n                if k not in funcs:\n                    start=rva_to_raw(beg,secs)\n                    section=next((x for x in secs if x['rawptr']<=start<x['rawptr']+x['rawsize']),None)\n                    if section is None or not section['executable'] or start+length>section['rawptr']+section['rawsize']:\n                        ref['function']['status']='FUNCTION_CROSSES_SECTION_HOLD';missing.append(ref['file_offset']);continue\n                    funcs[k]=data[start:start+length]\n            else:\n                # No unwind entry; get a non-verified code window around LEA.\n                o=ref['file_offset'];s=next(x for x in secs if x['rawptr']<=o<x['rawptr']+x['rawsize'])\n                left=max(s['rawptr'],o-1024);right=min(s['rawptr']+s['rawsize'],o+128)\n                name='windows/at_%08X.bin'%o\n                zipf.writestr(name,data[left:right])\n                ref['function']={'status':'NO_UNWIND_ENTRY_HOLD','evidence_filename':name,\n                                 'window_first_rva':raw_to_rva(left,secs),'window_start_raw':left}\n                missing.append(o)\n    for (beg,end),code in funcs.items():\n        zipf.writestr('functions/%08X_%08X.bin'%(beg,end),code)\n    return len(funcs),missing\n\n\ndef main():\n    outdir=Path.home()/'Downloads';outdir.mkdir(exist_ok=True)\n    now=datetime.datetime.now().strftime('%Y%m%d_%H%M%S')\n    out=outdir/('SEND_TO_CHATGPT_BG_EET_RU_COMBAT_V4_CODE_EVIDENCE_'+now+'.zip')\n    summary={'schema':'BG_EET_RU_V4_X64_FUNCTION_EVIDENCE_READONLY',\n             'game_root':str(GAME),'game_files_modified':0,'runtime_install':False,\n             'disassembly_claim':'NOT_PROVEN_BY_THIS_SCRIPT',\n             'safety':'ALL_OUTPUTS_ARE_READ_ONLY_EVIDENCE_NOT_INSTALL_INSTRUCTIONS'}\n    rows=[];exceptions=[]\n    try:\n        raw=(GAME/'Baldur.exe').read_bytes()\n        summary['exe_bytes']=len(raw)\n        summary['exe_sha256']=sha(raw)\n        if summary['exe_sha256']!=EXE_HASH:raise RuntimeError('WRONG_Baldur_EXE_SHA256')\n        dbfile=GAME/'InfinityLoader.db'\n        if not dbfile.is_file():raise RuntimeError('INFINITYLOADER_DB_MISSING')\n        db=dbfile.read_bytes();summary['loader_db_sha256']=sha(db)\n        summary['loader_db_matches_v3_recovered']=sha(db)==LATEST_DB_HASH\n        summary['v2_pilot_marker_absent']=V2_MARKER not in db\n        if V2_MARKER in db:raise RuntimeError('FAILED_V2_STILL_PRESENT_STOP')\n        secs,directory=sections_of(raw)\n        summary['sections']=secs\n        summary['exception_directory']=directory\n        src=json.loads(zlib.decompress(base64.b64decode(_EMBED)).decode('utf8'))\n        rows=validate(raw,secs,src)\n        exceptions=get_unwind(raw,secs,directory)\n        summary['unwind_function_entries']=len(exceptions)\n        summary['strings_exact_verified']=len(rows)\n        summary['references_exact_verified']=sum(len(x['refs']) for x in rows)\n        with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:\n            unique,missing=capture(raw,secs,exceptions,rows,z)\n            summary['unique_unwind_functions_captured']=unique\n            summary['references_without_full_function_evidence']=len(missing)\n            summary['status']='CODE_EVIDENCE_CAPTURED_NEEDS_INDEPENDENT_DISASSEMBLY'\n            z.writestr('00_STATUS.json',json.dumps(summary,ensure_ascii=False,indent=2))\n            z.writestr('01_REFERENCES_47_AND_FUNCTION_RANGES.json',json.dumps(rows,ensure_ascii=False,indent=2))\n            z.writestr('README_RU.txt',\n                'BG EET RU V4. READ ONLY. V2 cleanup verified, game untouched in this pass. '\n                'This ZIP carries only code fragments for independent offline disassembly; '\n                '35 of 36 full Russian translations exceed the original string slots. '\n                'THAC0Right/Left are HOLD until proven player-visible. '\n                'Do NOT install any full-36 hook based solely on this archive.\\n')\n    except Exception as e:\n        summary['status']='STOP_NO_GAME_CHANGES';summary['error']=repr(e)\n        with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED) as z:\n            z.writestr('00_STATUS.json',json.dumps(summary,ensure_ascii=False,indent=2))\n            z.writestr('README_RU.txt','Read-only preflight stopped. No game files modified.\\n')\n    print(json.dumps({k:v for k,v in summary.items() if k!='sections'},ensure_ascii=False,indent=2))\n    print('REPORT_ZIP:',out)\n    return 0 if summary['status'].startswith('CODE_EVIDENCE_CAPTURED') else 2\n\nif __name__=='__main__':sys.exit(main())"
+
+# V68 adds an autonomous, strictly read-only combat-code-evidence stage to the
+# existing persistent BG_EET_RU_UPDATE.cmd. It is NOT an installer.
+V68_COMBAT_STAGE_ID = 'BG_EET_RU_V68_UNWIND_EVIDENCE_V1'
+
+
+def v68_load_combat_module():
+    module = types.ModuleType('bg_eet_ru_v68_embedded_v4')
+    module.__file__ = str(Path(__file__).resolve())
+    # V4 source is embedded in this same CMD; nothing else is downloaded.
+    exec(compile(V68_COMBAT_SOURCE, module.__file__, 'exec'), module.__dict__)
+    return module
+
+
+def v68_baseline_report_ready(game, report_path):
+    """Reuse fully completed v67 when the three checked game anchors match."""
+    if not report_path.is_file():
+        return False
+    try:
+        with zipfile.ZipFile(report_path, 'r') as z:
+            status = json.loads(z.read('00_STATUS.json'))
+            stored = json.loads(z.read('04_FINGERPRINT.json'))
+            graph = json.loads(z.read('18_V67_CACHED_DLG_GRAPH.json'))
+            if (int(status.get('updater_version', 0)) < 67 or
+                    str(status.get('game_root', '')).casefold() != str(game).casefold() or
+                    status.get('game_files_written') is not False or
+                    graph.get('status') != 'PASS_STRUCTURAL_ONLY'):
+                return False
+            for key, relative in (
+                ('chitin.key', Path('chitin.key')),
+                ('dialog.tlk', Path('lang') / 'ru_RU' / 'dialog.tlk'),
+                ('dialogf.tlk', Path('lang') / 'ru_RU' / 'dialogf.tlk'),
+            ):
+                expected = stored.get(key, {}).get('sha256', '')
+                if not isinstance(expected, str) or len(expected) != 64:
+                    return False
+                if not (game / relative).is_file() or sha_path(game / relative) != expected:
+                    return False
+            return True
+    except (OSError, KeyError, ValueError, TypeError, zipfile.BadZipFile):
+        return False
+
+
+def v68_combat_evidence(game, report_path):
+    """V4 read-only evidence in the SAME existing ZIP; cached by fingerprints."""
+    safe_external(game, report_path)
+    if not report_path.is_file():
+        print('SAFE_STOP: нет единого отчёта v67; запусти обновлятор без параметров.')
+        return 2
+    v4 = v68_load_combat_module()
+    status = {
+        'schema': V68_COMBAT_STAGE_ID,
+        'game_root': str(game),
+        'stage': 'V68_COMBAT_CODE_EVIDENCE',
+        'game_files_written': False,
+        'installation_allowed': False,
+        'runtime_translation_verified': False,
+        'disassembly_claim': 'NOT_YET_PERFORMED',
+        'targeted_v2_cleanup': 'ALREADY_VERIFIED_IN_USER_V3_REPORT',
+        'next_goal': 'Independently disassemble captured functions, then prepare a separately approved reversible runtime pilot',
+        'hold_internal_identifiers': ['THAC0Right', 'THAC0Left'],
+        'source_sha256': digest(V68_COMBAT_SOURCE.encode('utf-8')),
+    }
+    captures = {}
+    exe_data = None
+    db_data = None
+    try:
+        exe_path = game / 'Baldur.exe'
+        db_path = game / 'InfinityLoader.db'
+        exe_data = exe_path.read_bytes()
+        db_data = db_path.read_bytes()
+        status['exe_sha256'] = digest(exe_data)
+        status['loader_db_sha256'] = digest(db_data)
+        # Reuse the result on repeated runs. Existing v67 evidence stays intact.
+        with zipfile.ZipFile(report_path, 'r') as z:
+            try:
+                cached = json.loads(z.read('19_V68_COMBAT_CODE_STATUS.json'))
+            except (KeyError, ValueError, UnicodeDecodeError):
+                cached = {}
+            if (cached.get('schema') == V68_COMBAT_STAGE_ID and
+                    cached.get('source_sha256') == status['source_sha256'] and
+                    cached.get('exe_sha256') == status['exe_sha256'] and
+                    cached.get('loader_db_sha256') == status['loader_db_sha256'] and
+                    cached.get('status') == 'CODE_EVIDENCE_CAPTURED_HOLD_DISASSEMBLY' and
+                    '19_V68_COMBAT_CODE_REFERENCES.json' in z.namelist() and
+                    z.testzip() is None):
+                print('v68: CACHE PASS — 36 строк / 47 обращений, новые проверки не нужны.')
+                print('Единый ZIP:', report_path)
+                return 0
+        if status['exe_sha256'] != v4.EXE_HASH:
+            raise RuntimeError('EXE_SHA_MISMATCH_SAFE_STOP')
+        if v4.V2_MARKER in db_data:
+            raise RuntimeError('FAILED_V2_MARKER_STILL_PRESENT_SAFE_STOP')
+        sections, directory = v4.sections_of(exe_data)
+        source = json.loads(zlib.decompress(base64.b64decode(v4._EMBED)).decode('utf-8'))
+        rows = v4.validate(exe_data, sections, source)
+        unwind = v4.get_unwind(exe_data, sections, directory)
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, 'w', compression=zipfile.ZIP_DEFLATED) as z:
+            functions, incomplete = v4.capture(exe_data, sections, unwind, rows, z)
+        with zipfile.ZipFile(io.BytesIO(buffer.getvalue()), 'r') as z:
+            for name in z.namelist():
+                captures['19_V68_COMBAT_CODE/' + name] = z.read(name)
+        for item in rows:
+            for ref in item['refs']:
+                detail = ref.get('function')
+                if isinstance(detail, dict) and detail.get('evidence_filename'):
+                    detail['evidence_filename'] = '19_V68_COMBAT_CODE/' + detail['evidence_filename']
+        status.update(
+            strings_verified=len(rows),
+            references_verified=sum(len(row['refs']) for row in rows),
+            unique_unwind_functions=functions,
+            incomplete_function_evidence=len(incomplete),
+            complete_hook_safety_proven=False,
+            visible_labels_confirmed_in_runtime=False,
+            status='CODE_EVIDENCE_CAPTURED_HOLD_DISASSEMBLY',
+        )
+        captures['19_V68_COMBAT_CODE_REFERENCES.json'] = (
+            json.dumps(rows, ensure_ascii=False, indent=2) + '\n').encode('utf-8')
+        if digest(exe_path.read_bytes()) != status['exe_sha256'] or digest(db_path.read_bytes()) != status['loader_db_sha256']:
+            raise RuntimeError('GAME_CHANGED_DURING_READONLY_CHECK_SAFE_STOP')
+    except (OSError, ValueError, RuntimeError, KeyError, struct.error, zipfile.BadZipFile) as exc:
+        status['status'] = 'HOLD_SAFE_STOP_NO_GAME_WRITES'
+        status['error'] = type(exc).__name__ + ': ' + str(exc)[:250]
+        captures = {}
+
+    # Transactional rewrite of the ONE existing report ZIP. Never touch the game.
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = report_path.with_name(report_path.name + '.v68.tmp')
+    try:
+        with zipfile.ZipFile(report_path, 'r') as previous, zipfile.ZipFile(
+                tmp, 'w', compression=zipfile.ZIP_DEFLATED) as target:
+            if previous.testzip() is not None:
+                raise RuntimeError('PREVIOUS_REPORT_ZIP_CRC_FAILED')
+            seen = set()
+            for info in previous.infolist():
+                if info.filename.startswith('19_V68_COMBAT_'):
+                    continue
+                if info.filename in seen or info.file_size > 32_000_000:
+                    raise RuntimeError('REPORT_DUPLICATE_OR_OVERSIZED_ENTRY')
+                seen.add(info.filename)
+                target.writestr(info, previous.read(info))
+            for name, payload in captures.items():
+                if name in seen:
+                    raise RuntimeError('REPORT_NAME_COLLISION')
+                target.writestr(name, payload)
+            target.writestr('19_V68_COMBAT_CODE_STATUS.json',
+                            (json.dumps(status, ensure_ascii=False, indent=2) + '\n').encode('utf-8'))
+        with zipfile.ZipFile(tmp, 'r') as verified:
+            if verified.testzip() is not None:
+                raise RuntimeError('V68_REPORT_CRC_ERROR')
+        os.replace(tmp, report_path)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+    print('v68:', status['status'],
+          'строк:', status.get('strings_verified', 0),
+          'LEA:', status.get('references_verified', 0))
+    print('Единый ZIP:', report_path)
+    return 0 if status['status'] == 'CODE_EVIDENCE_CAPTURED_HOLD_DISASSEMBLY' else 2
+
 def selftest():
     # Self-contained checks only; never read or change a real EET installation.
     p36,tra36=load_v36_preflight()
@@ -1450,6 +1621,10 @@ def selftest():
     struct.pack_into('<IHH',_are_test,0x54,0xe0,2,320)
     assert struct.unpack_from('<H',_are_test,0x58)[0]==2
     assert struct.unpack_from('<I',_are_test,0x58)[0]!=2
+    v68mod=v68_load_combat_module()
+    v68rows=json.loads(zlib.decompress(base64.b64decode(v68mod._EMBED)).decode('utf-8'))
+    assert len(v68rows)==36 and sum(len(r['refs']) for r in v68rows)==47
+    assert callable(v68_combat_evidence) and callable(v68_baseline_report_ready)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
