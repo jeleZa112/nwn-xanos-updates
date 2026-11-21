@@ -94,8 +94,17 @@ def main(root):
         # V5 candidate: native WeiDU compilation to TEMP ONLY. Fail closed.
         # This never installs a BCS; report it separately from the 135 audit.
         try:
+            from BGXRANGED_V6_GUARDED_INSTALL import LAST as V6_LAST, status as V6_status
             from BGXRANGED_V5_GUARDED_INSTALL import LAST as V5_LAST, status as V5_status
-            if V5_LAST.match(component[-1]):
+            if V6_LAST.match(component[-1]):
+                verified_v6=V6_status(root)
+                if verified_v6.get("status")!="BGXRANGED6_INSTALLED_VERIFIED":
+                    raise ValueError("V6_POSTINSTALL_READONLY_STATUS_DRIFT")
+                result["melee_handoff_native_preview"]={
+                    "status":"V5_NOT_ACTIVE_V6_INSTALLED",
+                    "current_version":"BGXRANGED6",
+                    "live_tested":False,"game_modified":False}
+            elif V5_LAST.match(component[-1]):
                 installed=V5_status(root)
                 if installed.get("status")!="BGXRANGED5_INSTALLED_VERIFIED":
                     raise ValueError("V5_POSTINSTALL_READONLY_STATUS_DRIFT")
@@ -135,9 +144,18 @@ def main(root):
         # V6 DPLAYER: native TWO-block advisory proof on exact post-V5 rollback
         # baseline; sources and WeiDU temp only, no install/no live edits.
         try:
-            from BGXRANGED_V6_DPLAYER_NATIVE_READONLY import preview as preview_dplayer_v6
-            result["dplayer_v6_native_preview"]=preview_dplayer_v6(
-                root,result["saved_party_script_audit"])
+            from BGXRANGED_V6_GUARDED_INSTALL import LAST as V6_LAST, status as V6_status
+            if V6_LAST.match(component[-1]):
+                verified=V6_status(root)
+                if verified.get("status")!="BGXRANGED6_INSTALLED_VERIFIED":
+                    raise ValueError("V6_INSTALLED_SHA_DRIFT")
+                result["dplayer_v6_native_preview"]={
+                    **verified,"native_candidate_already_installed":True,
+                    "game_modified":False,"install_performed":False}
+            else:
+                from BGXRANGED_V6_DPLAYER_NATIVE_READONLY import preview as preview_dplayer_v6
+                result["dplayer_v6_native_preview"]=preview_dplayer_v6(
+                    root,result["saved_party_script_audit"])
         except (OSError,ValueError,RuntimeError,UnicodeError,ImportError,
                 subprocess.TimeoutExpired,struct.error) as e:
             result["dplayer_v6_native_preview"]={
