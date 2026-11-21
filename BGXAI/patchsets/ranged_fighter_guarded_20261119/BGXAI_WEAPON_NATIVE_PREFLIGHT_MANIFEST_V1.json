@@ -6,8 +6,8 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_GAME_PREFLIGHT_RO.py",
       "dest": "BGXAI_WEAPON_GAME_PREFLIGHT_RO.py",
-      "size": 8306,
-      "sha256": "59b33bfa43683735e9f3e2d71095726d33073c1ca9bed2ccfd2c58b0d956e9b2"
+      "size": 8412,
+      "sha256": "a02930a6ba5f7a093475f9105fc72d385d5ab1aac40c588763c5bc941dfe5547"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_GAME_PREFLIGHT_V1.baf",
