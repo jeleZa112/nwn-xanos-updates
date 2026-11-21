@@ -1,3 +1,9 @@
+# 21.11.2026 — РЕАЛЬНЫЙ BGXWP R1.1 LIVE: 29 действий, 1 смена слота, модель V2 исправлена
+
+Файл пользователя `BGXAI_WEAPON_RUNTIME_RAW_R1.jsonl` прочитан полностью: 31 JSONL, `SESSION` + `READY` + 29 `ACTION`, source SHA256 `6e4c7ee138790ad56458c9bf40fb02029d173193e919a5010f8a3655d6d95811`. Единственный actor 139135050, portraitIndex 2. На sequence 28 `selectedWeaponRaw:12→35`, `aprRaw:2→7`. Обычный `SLOTS.IDS`: 12=AMMO1,35=WEAPON (не verified item resrefs); IESDP условно расшифровывает APR 2=2.0 и 7=1.5, НЕ 7 APR. Реальный запуск наблюдателя подтверждён; источники ручной/EPS очереди, защиты врага и пер-слотового APR не доказаны. **Установленный BGXWP R1.1 LIVE PASS только для чтения текущего слота/статистики; улучшенный выбор оружия по V3–V5 НЕ установлен.** В рабочем Lua `BGXAI_EEEX117_WEAPON_RUNTIME_EVIDENCE_V2.lua` обнаружен и исправлен лимит actorId 65535, исключавший этот реальный ID; 18/18 Lua офлайн PASS, все изменения SOURCE ONLY. Дополнительный read-only аудит 12/12 Python PASS. Никаких новых игровых установок. Строгий `HOLD_NO_ENGINE_DISPATCH`. **Никаких повторов 158,159→1,159→2,159→5/6 по прежнему файлу.** Следующая функциональная задача — дополучить item+ammo+launcher и реальные четыре quickslot, цель/бафы и происхождение EPS/manual перед приоритетным переключением, без простоев. Полная единственная LIVE контрольная точка: `BGXAI/CURRENT/BGXAI_WEAPON_RUNTIME_R1_LIVE_CHECKPOINT_20261121_RU.md`; исходный журнал и JSON аудита сохранены в Library `/BALDURS_GATE_EET_AI/DIAGNOSTICS/`.
+
+---
+
 # 21.11.2026 — R1.1 WEAPON RUNTIME (актуальная контрольная точка)
 
 Пункт **158** уже READONLY_NATIVE_PREFLIGHT_PASS (native WeiDU 4 slots, V6 exact). Не повторять. Фокус — выбор лучшего оружия без разрыва текущей атаки, каста, лечения или ручного приказа.
