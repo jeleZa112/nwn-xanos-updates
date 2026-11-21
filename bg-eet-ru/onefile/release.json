@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 76,
-  "sha256": "e7fca1d4a2fedf960b348dabe8e28b79ae9d2949912629bcf53e215d880b223b",
+  "version": 77,
+  "sha256": "ea6a1569611d27d87af84ac98e0d98d11ae40ba8767d1235c4cfabce56c825e7",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v76: read-only targeted CURRENT game source evidence for TLK StrRef 266659/273940 (male and female) and LEUI_REVERSE_BUTTON_POSITIONS_LABEL in override/UI.MENU. Reuses historic source and 63 DLG audits, no mass scans or install. Reports old-source matches, already-translated SoD, live file hashes and UI key contexts in SAME ZIP 26_V76_...json. Does not alter TLK, UI, working v75 Lua or BGXAI/Voice. Separate explicit authorization remains required for any later edit."
+  "note": "v77 READ ONLY: fixes cached v67 path prematurely exiting after v74 combat status, which skipped v76 targeted live TLK+UI.MENU report. Cached path now runs existing working v74 then v76 before exit; --combat-only retains combat-only behavior. Includes in-memory regression selftest ensuring v74->v76, combat-only skip, and fail-closed stop. Same one CMD, same one ZIP, no game file changes and no repeat DLG scan."
 }
