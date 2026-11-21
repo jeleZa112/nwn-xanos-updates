@@ -115,6 +115,9 @@ function chooseWeapon(scene) {
                 improvement:Math.round(improvement*1000)/1000,
                 threshold:Math.round(threshold*1000)/1000,
                 candidates:scored};
+  if (valid.every(x=>x.dpr===0 && !x.penetrates))
+    return result("HOLD_NO_EFFECTIVE_ATTACK",{...common,
+      reason:"ALL_VERIFIED_CANDIDATES_BLOCKED"});
   if (best.id===current.id || improvement<=threshold)
     return result("KEEP_CURRENT",{...common,reason:"HYSTERESIS_OR_CURRENT_BEST"});
   if (!best.penetrates && best.dpr===0)
