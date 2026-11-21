@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 68,
-  "sha256": "c20d675cf17be36343659f4b716a3889d48421d438a6e38e41ceab23ca1600dc",
+  "version": 69,
+  "sha256": "677b1439b56dafdf4f48178465526287db5604e0eeefbad4a414499d8a23d690",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v68: one persistent BG_EET_RU_UPDATE.cmd, one report ZIP, cached read-only V4 combat x64 code evidence (36 strings/47 LEA), no installation. Existing v67 audits reused on matching source fingerprints."
+  "note": "v69: one persistent BG_EET_RU_UPDATE.cmd, one ZIP, read-only replay of independently verified 47/47 x64 instruction boundaries and RIP targets. Runtime hook still HOLD; no game writes."
 }
