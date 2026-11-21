@@ -1,3 +1,9 @@
+# 21.11.2026 — R2 УСТАНОВЛЕН ПО ВЫВОДУ WINDOWS, НУЖЕН LIVE
+
+Пользователь прислал успешный результат единого обновлятора `159→7→2`: `STATUS: BGXW2_PASSIVE_INSTALLED_AWAITING_RUNTIME_TEST`; источник `BGXW2_SETUP_R2.json` на Windows по `C:\Users\Drevo\Documents\BGXAI_LIVE_REPORTS\BGXW2_SETUP_R2.json`. Отдельный JSON ещё не прислан. **DEPLOY по выводу YES, LIVE R2 NO.** Исходники R2 и манифест SHA закреплены в immutable commit, R1.1 ранее LIVE PASS. Не просить заново установку/preflight ни R1, ни R2. Следующее действие: один обычный запуск `159→5` с консольным захватом; бой и смена оружия, закрыть игру; затем `159→7→5` для `BGXAI_WEAPON_SLOTS_RAW_R2.jsonl`. При STOP не повторять. Полная контрольная точка `BGXAI/CURRENT/BGXAI_WEAPON_R2_SLOTS_READONLY_CHECKPOINT_20261121_RU.md`. Новый интеллектуальный dispatch не внедрён, прежняя V6/EPS не заменялись. Остальные разделы ниже — история.
+
+---
+
 # 21.11.2026 — АКТУАЛЬНЫЙ СТАТУС: WEAPON R2 SOURCE+ONEFILE READY, DEPLOY/LIVE R2 NO
 
 Единственный текущий фокус — приоритетное оружие. Установленный R1.1 LIVE подтверждён: 29 ACTION, actor 139135050, selection raw 12→35, APR raw 2→7 (не 7 APR), но пер-слотовые характеристики и происхождение EPS/manual приказа отсутствуют. R1.1 не повторять и не переустанавливать.
