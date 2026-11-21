@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "3043e5188ad4754d1fdb71bef23f1a793f367129",
+  "commit": "807240b21819d79531cb3a853d24f31283b3f8f9",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
   "script_sha256": "6f1e0a03968785ef916c85d5b7a8c82c99c49fa1102ffa43097b8d2172fde45c",
   "script_size": 79900,
-  "description": "BGXAI 0.3.78 onefile menus 1-159. 158 native WeiDU preflight PASS; 159 optional guarded EEex weapon action/stat observer, typed install and WeiDU LAST-only rollback. Reports: Documents/BGXAI_LIVE_REPORTS. No automatic game changes."
+  "description": "BGXAI 0.3.78 onefile menus 1-159 unchanged. 159 now syncs R1.1 passive weapon observer; submenus 5 InfinityLoader console capture / 6 read-only collection. Install and rollback still require exact typed approval and guarded WeiDU. RAW observations do not establish per-slot APR or weapon priority switching."
 }
