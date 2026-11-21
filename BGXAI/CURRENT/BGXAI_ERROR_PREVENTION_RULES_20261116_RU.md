@@ -74,3 +74,9 @@
 ## 21.11.2026 — V5 откат выполнен, не запрашивать снова
 
 Пользователь **уже выполнил** штатный LAST-only откат `156 → 4` с точным token. Вывод: `BGXRANGED5_ROLLBACK_VERIFIED_BGXFENEMY_RESTORED`, восстановлен `BDDEFAI.BCS` SHA256 `9bd4e5b413f60ba383fcb78859f9bfe0aab762ee8b0ec2b3f164b6c03377055e`; BGXFENEMY сохранён. **Не запрашивать новый rollback, не считать V5 установленным**, не повторять прошлый бой и меню 146 по старой ошибке. Сейчас V6 только SOURCE-ONLY: native DPLAYER audit `135` новой версии `0.3.75-V6-DPLAYER-NATIVE-RO` (33 SHA, CI SUCCESS), не установка. Сначала real native DPLAYER read-only proof, потом отдельный guarded install с разрешением; никаких автоматических изменений игры.
+
+## 21.11.2026 — user V6 native proof PASS; guarded pilot needs explicit typed consent
+
+Пришёл новый пользовательский JSON `BGXAI_FRIENDLY_AGGRO_READONLY_20261121T064234Z.json`. В нём **реальный нативный PASS** для DPLAYER V6: старый SHA `1786f4dc…`, новый точно скомпилированный SHA `4d640ed7…`, изменения только два исходных блока и сохранённые `AttackOneRound`. BGXFENEMY восстановлен LAST после V5 rollback; BDDEFAI baseline SHA `9bd4e5…`. Ни отчёт 135, ни тест компиляции не изменили игру. **Не просить повторить 135 или откат V5.**
+
+Подготовлен guarded installer V6, `0.3.76`, через один и тот же `BGXAI_UPDATE.cmd`, меню **157** с отдельным typed consent и LAST-only rollback, резервная копия вне игры, exact SHA DPLAYER/BDDEFAI/WTASIGHT. 34/34 source hashes + Python mocks + Windows PowerShell 5.1 CI PASS. **V6 ещё не установлена**. Не считать `script_index6` доказательством исходного BCS; V6 — проверяемая гипотеза устранения новой близкой стрельбы, не гарантированный результат. Сохранять EPS, BGXFENEMY, иные классы/киты, AoE, ручные действия; не добавлять ForceAttack/ClearActions/FillSlot и не возобновлять V5.
