@@ -133,6 +133,22 @@ class GuardedV5(unittest.TestCase):
         self.assertTrue(I.LAST.match(r"~BGXRANGED5\SETUP-BGXRANGED5.TP2~ #0 #0"))
         self.assertFalse(I.LAST.match(r"~BGXFENEMY\SETUP-BGXFENEMY.TP2~ #0 #0"))
 
+    def test_single_menu_cancel_never_installs(self):
+        with patch.object(I.sys,"argv",["BGXRANGED_V5_GUARDED_INSTALL.py",
+                                         "--game",str(self.root)]), \
+             patch("builtins.input",return_value="0"), \
+             patch.object(I,"install",side_effect=AssertionError("MUST_NOT_INSTALL")):
+            self.assertEqual(I.main(),0)
+        self.assertFalse((self.root/I.PACKAGE).exists())
+
+    def test_single_menu_install_requires_exact_typed_consent(self):
+        with patch.object(I.sys,"argv",["BGXRANGED_V5_GUARDED_INSTALL.py",
+                                        "--game",str(self.root)]), \
+             patch("builtins.input",side_effect=["2","yes"]), \
+             patch.object(I,"install",side_effect=AssertionError("MUST_NOT_INSTALL")):
+            self.assertEqual(I.main(),1)
+        self.assertFalse((self.root/I.PACKAGE).exists())
+
     def test_no_queue_clearing_or_inventory_loss_in_installer(self):
         text=pathlib.Path(I.__file__).read_text("utf-8")
         for forbidden in ("ClearActions(","ClearAllActions(","FillSlot(",
