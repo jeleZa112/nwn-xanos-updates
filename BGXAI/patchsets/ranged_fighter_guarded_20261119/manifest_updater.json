@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
-  "version": "0.3.67-BGXFENEMY-WTASIGHT-GUARD",
+  "version": "0.3.68-BGXFENEMY-CAPTURE-COMPAT",
   "files": [
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_PREFLIGHT.py",
@@ -126,8 +126,8 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXFTRACE_CONSOLE_CAPTURE.py",
       "dest": "BGXFTRACE_CONSOLE_CAPTURE.py",
-      "size": 2590,
-      "sha256": "82955bbdc78e7c230b4784bcd0e796e61908abc762cc24cbbf67966e7dca99fc"
+      "size": 2838,
+      "sha256": "c706962b8fd1d8a141d6e0a6d5b3d169dad5c86c105b8f6a5ff4a2e492607d09"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BXFR_MOTION_V3.lua",
