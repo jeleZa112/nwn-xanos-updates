@@ -1,0 +1,93 @@
+name: BGXAI WTASIGHT Enemy guard source and pinned updater
+
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - "BGXAI/patchsets/ranged_fighter_guarded_20261119/**"
+      - "BGXAI/BGXAI_SYNC.ps1"
+      - ".github/workflows/bgxai-wtasight-enemy-guard.yml"
+  workflow_dispatch:
+
+jobs:
+  python-safe-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python source syntax, manifest integrity, and isolated mock cases
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import ast
+          import hashlib
+          import json
+          import pathlib
+          import sys
+
+          root = pathlib.Path("BGXAI/patchsets/ranged_fighter_guarded_20261119")
+          manifest = json.loads((root / "manifest_updater.json").read_text(encoding="utf-8"))
+          assert manifest["schema"] == 1
+          assert manifest["version"] == "0.3.67-BGXFENEMY-WTASIGHT-GUARD"
+          assert len(manifest["files"]) == 25
+          for entry in manifest["files"]:
+              raw = pathlib.Path(entry["source"]).read_bytes()
+              assert len(raw) == entry["size"], entry["dest"]
+              assert hashlib.sha256(raw).hexdigest() == entry["sha256"], entry["dest"]
+          for name in ("BGXF_WTASIGHT_ENEMY_GUARD_SOURCE_ONLY.py", "BGXFENEMY_WTASIGHT_GUARDED.py"):
+              ast.parse((root / name).read_text(encoding="utf-8"), filename=name)
+          sys.path.insert(0, str(root.resolve()))
+          import BGXF_WTASIGHT_ENEMY_GUARD_SOURCE_ONLY as C
+          import BGXFENEMY_WTASIGHT_GUARDED as I
+          friendly = "IF\n  AttackedBy([GOODCUTOFF],DEFAULT)\nTHEN\n  RESPONSE #100\n    Enemy()\nEND"
+          ordinary = "IF\n  False()\nTHEN\n  RESPONSE #100\n    NoAction()\nEND"
+          base = "\n".join([ordinary, friendly, ordinary, ordinary, ordinary, ordinary]) + "\n"
+          updated, ix = C.transform_baf(base)
+          assert ix == 2
+          assert updated.count("!InParty(Myself)") == 1
+          assert updated.count("    Enemy()") == 1
+          assert "  !InParty(Myself)\nTHEN" in updated
+          assert updated.replace("  !InParty(Myself)\n", "") == base
+          for malformed in (
+              base.replace("AttackedBy([GOODCUTOFF],DEFAULT)", "AttackedBy([ANYONE],DEFAULT)"),
+              base.replace("    Enemy()", "    Enemy()\n    NoAction()"),
+              base.replace("    Enemy()", "    NoAction()"),
+              base.replace("  False()", "  False()\n  Enemy()", 1),
+              base.replace("  False()", "  False()\n  !InParty(Myself)", 1),
+          ):
+              try:
+                  result = C.transform_baf(malformed)
+              except ValueError:
+                  pass
+              else:
+                  assert malformed != base or result, "unexpected successful candidate"
+          assert I.INSTALL_TOKEN == "INSTALL_BGXFENEMY_WTASIGHT_GUARD"
+          assert I.LAST.match(r"~BGXFENEMY\SETUP-BGXFENEMY.TP2~ #0 #0 // install")
+          assert I.TP2_TEXT.count("\n") == 4
+          assert I.TP2_TEXT.startswith("BACKUP ~BGXFENEMY/backup~\n")
+          assert I.TARGET == "override/WTASIGHT.BCS"
+          assert I.OTHER["override/M_BXFR.lua"] == I.TRACE.SOURCE_SHA
+          updater = pathlib.Path("BGXAI/BGXAI_SYNC.ps1").read_text(encoding="utf-8")
+          assert "0.3.67-BGXFENEMY-WTASIGHT-GUARD" in updater
+          for n in range(1, 156):
+              assert ("'"+str(n)+"' {") in updater, n
+          for n in range(152, 156):
+              assert ("Write-Host '"+str(n)+" - ") in updater, n
+          print("PASS source syntax + 25/25 SHA + mock guard + menus 1-155")
+          PY
+
+  windows-powershell-syntax:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Windows PowerShell 5.1 one-file updater AST
+        shell: powershell
+        run: |
+          $path = Join-Path $env:GITHUB_WORKSPACE 'BGXAI\BGXAI_SYNC.ps1'
+          $tokens = $null
+          $errors = $null
+          $ast = [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors)
+          if ($null -eq $ast -or $errors.Count -gt 0) {
+            $errors | Format-List
+            throw 'PowerShell AST parse FAIL'
+          }
+          Write-Host 'PASS Windows PowerShell 5.1 AST / menus 1-155'
