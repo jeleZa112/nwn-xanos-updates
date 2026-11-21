@@ -196,8 +196,8 @@ def preview(root: pathlib.Path, live_bcs: bytes, baf_text: str,
         if sha(p.read_bytes())!=expected:
             raise ValueError("GAME_CHANGED_DURING_READONLY_PREVIEW:"+str(p))
     return {
-       "status":"BGXRANGED_V5_NATIVE_READONLY_CANDIDATE_PASS",
        **proof,**built,
+       "status":"BGXRANGED_V5_NATIVE_READONLY_CANDIDATE_PASS",
        "candidate_baf_sha256":sha(new),
        "remaining_other_attack_sources":attack_sources(baf_text),
        "attack_action_origin_verified":False,
