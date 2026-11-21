@@ -40,11 +40,26 @@ function M.observe_portrait(index,read_portrait)
  local action=protected_get(sprite,'m_curAction')
  local actionId=protected_get(action,'m_actionID')
  local scriptNumber=protected_get(sprite,'m_curScriptNum')
+ -- EEex 1.1.7 exposes sprite:getActiveStats(): actual derived or temporary
+ -- derived stats depending on an in-progress effect-list recalculation.
+ -- Existence of the object is NOT proof of final APR, complete buffs, or
+ -- counterfactual stats for another quickslot.
+ local activeOK,activeStats=pcall(function()
+  local fn=protected_get(sprite,'getActiveStats')
+  if type(fn)=='function' then return fn(sprite) end
+  if type(EEex_Sprite_GetActiveStats)=='function' then
+   return EEex_Sprite_GetActiveStats(sprite)
+  end
+  return nil
+ end)
  local observed={portraitIndex=index,actorIdObserved=safe_num(id) and id or nil,
   rawSelectedWeaponSlot=safe_num(selected) and selected or nil,
   position= safe_num(px) and safe_num(py) and {x=px,y=py} or nil,
   rawActionId=safe_num(actionId) and actionId or nil,
   rawCurrentScriptNumber=safe_num(scriptNumber) and scriptNumber or nil,
+  activeDerivedStatsObjectSeen=activeOK and activeStats~=nil,
+  activeDerivedStatsValuesRead=false,completeBuffEffectsObserved=false,
+  hypotheticalOtherQuickslotStatsObserved=false,
   quickslotsRead=false,quiverRead=false,selectedWeaponMappingVerified=false,
   observationsOnly=true}
  if not safe_num(id) or not safe_num(selected) then
