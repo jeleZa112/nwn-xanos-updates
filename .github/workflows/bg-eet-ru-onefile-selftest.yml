@@ -1,0 +1,19 @@
+name: BG EET RU single-updater source selftest
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - '.github/workflows/bg-eet-ru-onefile-selftest.yml'
+  workflow_dispatch:
+jobs:
+  isolated-source-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run all existing isolated updater selftests
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
