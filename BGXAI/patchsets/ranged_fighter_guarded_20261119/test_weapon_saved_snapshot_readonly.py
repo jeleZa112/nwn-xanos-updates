@@ -11,7 +11,7 @@ def fixture(selected=0, weapon="SW1H01", broken=False):
     cre=bytearray(0x420)
     cre[0:8]=b"CRE V1.0"
     struct.pack_into("<III",cre,0x2B8,0x300,0x360,3)
-    struct.pack_into("<40H",cre,0x300,*([65535]*9+[0]+[65535]*3+[1]+[65535]*7+[2]+[65535]*16+[65535,selected,0]))
+    struct.pack_into("<40H",cre,0x300,*([65535]*9+[0]+[65535]*3+[1]+[65535]*7+[2]+[65535]*15+[65535,selected,0]))
     for i,res in enumerate([weapon,"AROW01","C#MOD+1"]):
         off=0x360+20*i
         cre[off:off+8]=res.encode("ascii").ljust(8,b"\0")
