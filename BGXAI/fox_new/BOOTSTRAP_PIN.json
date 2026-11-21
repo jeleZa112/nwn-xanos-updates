@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "d0df099a7ef895be6137c898f9655fe249b6cd83",
+  "commit": "23d183a7e900f9392cc279064e4329e5939c0d8f",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "2e4ec3ec530d47ff04db416f10534db4c77585111ede2b010430ac07a4818058",
-  "script_size": 79940,
-  "description": "BGXAI 0.3.73 one-file menus 1-156, 31 SHA-pinned sources; 156 opens typed-consent BGXRANGED5 V5 6/10 pilot install/status/native preflight/last-only rollback. No automatic game install; preserves BGXFENEMY."
+  "script_sha256": "ce8b5a9880d39d86b4906244ba454111835f4a02aff1bec7577010bbb29af64e",
+  "script_size": 79939,
+  "description": "BGXAI 0.3.74, 31 SHA-pinned sources, onefile menus 1-156; after V5 guarded installed, menu146 captures game and menu135 reports V5 status read-only. No new game modification."
 }
