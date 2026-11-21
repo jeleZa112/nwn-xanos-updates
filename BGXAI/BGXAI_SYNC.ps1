@@ -201,11 +201,11 @@ localPath=Join-Path $GameRoot 'BGXAI_DEV\aoe_readonly_verified';installer='BGXAI
 names=@('BGXAI_AOE_AUDIT.py','test_aoe_audit.py','BGXAI_TEST6_SAFE_COPY.py','test_safe_copy.py','BGX119_TRACE.py','BGX120_ENTANGLE_GUARD.py','test_guard120.py','BGX121_POLICY.py','BGX121_READONLY.py','test_121.py','BGX122_PROJECTILES_READONLY.py','test_122.py','README_RU.md')
 }
 $releaseRanged=@{
-id='BGXRANGED';version='0.3.74-V5-LIVE-CAPTURE';
+id='BGXRANGED';version='0.3.75-V6-DPLAYER-NATIVE-RO';
 manifest='BGXAI/patchsets/ranged_fighter_guarded_20261119/manifest_updater.json';
 prefix='BGXAI/patchsets/ranged_fighter_guarded_20261119/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\ranged_fighter_verified';installer='BGXRANGED_PREFLIGHT.py';
-names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INSTALL.py','BGXRANGED_V2_MELEE_HANDOFF.baf','BGXRANGED_V2_PREFLIGHT.py','BGXRANGED_V2_GUARDED_INSTALL.py','BGXRANGED_V3_MELEE_HANDOFF.baf','BGXRANGED_V3_PREFLIGHT.py','BGXRANGED_V3_GUARDED_INSTALL.py','BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py','BGXRANGED_V4_NO_FRIEND_ATTACK.baf','BGX_FRIENDLY_PROTECT_ISOLATION.py','BGXAI_SAVE_SCRIPT_AUDIT_READONLY.py','BGX_FRIENDLY_RETALIATION_GUARDED.py','BGX_COMBAT_LOG_READONLY_AUDIT.py','M_BXFR.lua','BGX_FRIEND_TRACE_GUARDED.py','BGX_FRIEND_TRACE_REPORT.py','M_BXFR_CONSOLE_V2.lua','BGXFTRACE_V2_GUARDED.py','BGXFTRACE_CONSOLE_CAPTURE.py','M_BXFR_MOTION_V3.lua','BGXFTRACE_V3_GUARDED.py','BGXF_WTASIGHT_ENEMY_GUARD_SOURCE_ONLY.py','BGXFENEMY_WTASIGHT_GUARDED.py','BGXAI_WEAPON_SAVED_SNAPSHOT_READONLY.py','BGXAI_WEAPON_CHOICE_ADVISORY_V1.js','BGXAI_WEAPON_TRAITS_ADVISORY_V1.js','BGXRANGED_V5_ANTICIPATORY_CLOSE_SOURCE_ONLY.baf','BGXRANGED_V5_NATIVE_CANDIDATE_READONLY.py','BGXRANGED_V5_GUARDED_INSTALL.py')
+names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INSTALL.py','BGXRANGED_V2_MELEE_HANDOFF.baf','BGXRANGED_V2_PREFLIGHT.py','BGXRANGED_V2_GUARDED_INSTALL.py','BGXRANGED_V3_MELEE_HANDOFF.baf','BGXRANGED_V3_PREFLIGHT.py','BGXRANGED_V3_GUARDED_INSTALL.py','BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py','BGXRANGED_V4_NO_FRIEND_ATTACK.baf','BGX_FRIENDLY_PROTECT_ISOLATION.py','BGXAI_SAVE_SCRIPT_AUDIT_READONLY.py','BGX_FRIENDLY_RETALIATION_GUARDED.py','BGX_COMBAT_LOG_READONLY_AUDIT.py','M_BXFR.lua','BGX_FRIEND_TRACE_GUARDED.py','BGX_FRIEND_TRACE_REPORT.py','M_BXFR_CONSOLE_V2.lua','BGXFTRACE_V2_GUARDED.py','BGXFTRACE_CONSOLE_CAPTURE.py','M_BXFR_MOTION_V3.lua','BGXFTRACE_V3_GUARDED.py','BGXF_WTASIGHT_ENEMY_GUARD_SOURCE_ONLY.py','BGXFENEMY_WTASIGHT_GUARDED.py','BGXAI_WEAPON_SAVED_SNAPSHOT_READONLY.py','BGXAI_WEAPON_CHOICE_ADVISORY_V1.js','BGXAI_WEAPON_TRAITS_ADVISORY_V1.js','BGXRANGED_V5_ANTICIPATORY_CLOSE_SOURCE_ONLY.baf','BGXRANGED_V5_NATIVE_CANDIDATE_READONLY.py','BGXRANGED_V5_GUARDED_INSTALL.py','BGXRANGED_V6_DPLAYER_CLOSE_GUARD_SOURCE_ONLY.baf','BGXRANGED_V6_DPLAYER_NATIVE_READONLY.py')
 }
 $v2install=Join-Path $releaseRanged.localPath 'BGXRANGED_V2_GUARDED_INSTALL.py'
 $ff=Join-Path $releaseRanged.localPath 'BGX_FRIENDLY_RETALIATION_GUARDED.py'
@@ -1164,27 +1164,7 @@ Write-Host ' 96 - 066S rollback'
 97..116 | ForEach-Object { Write-Host ('{0,3} - BGX' -f $_) }
 117..122 | ForEach-Object { Write-Host ('{0} - AOE' -f $_) }
 123..130 | ForEach-Object { Write-Host ('{0} - RANGE' -f $_) }
-Write-Host '131 - V3 native (RO)'
-Write-Host '132 - V3 install+verify'
-Write-Host '133 - V3 status (RO)'
-Write-Host '134 - V3 rollback (consent)'
-Write-Host '135 - Aggro log audit (RO)'
-Write-Host '136 - BGXSAFE install+verify'
-Write-Host '137 - BGXSAFE status (RO)'
-Write-Host '138 - BGXSAFE rollback V3'
-Write-Host '139 - FRIEND install'
-Write-Host '140 - FRIEND status'
-Write-Host '141 - FRIEND rollback'
-Write-Host '142 - Trace install+verify'
-Write-Host '143 - Trace status (RO)'
-Write-Host '144 - Trace rollback'
-Write-Host '145 - V2 console install+verify'
-Write-Host '146 - Start game + capture log'
-Write-Host '147 - V2 status (RO)'
-Write-Host '148 - V2 rollback'
-Write-Host '149 - Motion trace install'
-Write-Host '150 - Motion trace status'
-Write-Host '151 - Motion trace rollback'
+$bgx131=@('V3 native (RO)','V3 install+verify','V3 status (RO)','V3 rollback (consent)','Aggro log audit (RO)','BGXSAFE install+verify','BGXSAFE status (RO)','BGXSAFE rollback V3','FRIEND install','FRIEND status','FRIEND rollback','Trace install+verify','Trace status (RO)','Trace rollback','V2 console install+verify','Start game + capture log','V2 status (RO)','V2 rollback','Motion trace install','Motion trace status','Motion trace rollback');131..151 | ForEach-Object { Write-Host ('{0} - {1}' -f $_,$bgx131[$_-131]) }
 Write-Host '152 - Enemy guard native preflight (RO)'
 Write-Host '153 - Enemy guard install+verify'
 Write-Host '154 - Enemy guard status (RO)'
