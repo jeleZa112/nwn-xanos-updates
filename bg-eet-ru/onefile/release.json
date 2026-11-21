@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 73,
-  "sha256": "7289d9d2f33fb73d6e874841a14e3004847217782fae49ed719f2becd08140e9",
+  "version": 74,
+  "sha256": "03f2a849e35ad98647974acb8846dec555e382f7d118c38f61c796eff5eb436c",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v73: one BG_EET_RU_UPDATE.cmd and one ZIP. Confirmed via in-game console: v72 Lua loads but EEex_ReadByte API missing. Use documented EEex_ReadU8 plus standard mov rdx pointer hook, UTF-8 Удача. Explicit typed consent only; guarded single-Lua replacement, verified backup, --combat-rollback. Other game files untouched. Gameplay unverified."
+  "note": "v74: one BG_EET_RU_UPDATE.cmd and same report ZIP. Consent-gated upgrade of proven v73 +Удача to 34 Russian visible combat format strings, 44 EEex LEA hooks. Excludes internal THAC0Right/THAC0Left, checks all x64 bytes, UTF-8 and printf tokens before hooks. Only replaces M_BGERU.lua with verified backup; --combat-rollback restores working v73 exactly. Game runtime test still required."
 }
