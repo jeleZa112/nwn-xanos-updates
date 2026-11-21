@@ -94,9 +94,25 @@ def main(root):
         # V5 candidate: native WeiDU compilation to TEMP ONLY. Fail closed.
         # This never installs a BCS; report it separately from the 135 audit.
         try:
-            from BGXRANGED_V5_NATIVE_CANDIDATE_READONLY import preview as preview_handoff
-            result["melee_handoff_native_preview"]=preview_handoff(
-                root,raw,text,binary,component[-1])
+            from BGXRANGED_V5_GUARDED_INSTALL import LAST as V5_LAST, status as V5_status
+            if V5_LAST.match(component[-1]):
+                installed=V5_status(root)
+                if installed.get("status")!="BGXRANGED5_INSTALLED_VERIFIED":
+                    raise ValueError("V5_POSTINSTALL_READONLY_STATUS_DRIFT")
+                result["melee_handoff_native_preview"]={
+                    "status":"BGXRANGED5_INSTALLED_VERIFIED",
+                    "candidate_bcs_sha256":installed["new_sha256"],
+                    "changed_blocks":installed["changed_blocks"],
+                    "preserved_blocks":installed["preserved_blocks"],
+                    "bgxfenemy_wtasight_preserved":installed["bgxfenemy_wtasight_preserved"],
+                    "native_candidate_already_installed":True,
+                    "predicted_latency_improvement_verified":False,
+                    "attack_action_origin_verified":False,
+                    "live_tested":False,"game_modified":False}
+            else:
+                from BGXRANGED_V5_NATIVE_CANDIDATE_READONLY import preview as preview_handoff
+                result["melee_handoff_native_preview"]=preview_handoff(
+                    root,raw,text,binary,component[-1])
         except (OSError,ValueError,RuntimeError,UnicodeError,ImportError,
                 subprocess.TimeoutExpired,struct.error) as e:
             result["melee_handoff_native_preview"]={
