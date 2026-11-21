@@ -90,6 +90,37 @@ class SavedWeaponSnapshot(unittest.TestCase):
             self.assertEqual(r["party"][0]["selected_weapon"]["resref"],"SW1H01")
             self.assertEqual(sf.read_bytes(),before)
             self.assertFalse(r["game_modified"])
+    def test_saved_trait_raw_offsets(self):
+        raw=bytearray(fixture())
+        raw[0x272]=101  # synthetic modded race, do not label it ELF
+        raw[0x273]=34  # synthetic class id, resolve only via actual CLASS.IDS
+        raw[0x244:0x248]=bytes.fromhex("00000740")
+        raw[0x234:0x237]=bytes([13,14,0])
+        raw[0x241]=92
+        raw[0x238]=18
+        raw[0x23C]=19
+        t=W.extract_trait_ids(bytes(raw))
+        self.assertEqual(t["race_id_raw"],101)
+        self.assertEqual(t["class_id_raw"],34)
+        self.assertEqual(t["kit_bytes_hex_raw"],"00000740")
+        self.assertEqual(t["levels_raw"],[13,14,0])
+        self.assertEqual(t["favored_enemy_race_id_raw"],92)
+        self.assertEqual((t["strength_raw_saved"],t["dexterity_raw_saved"]),(18,19))
+        self.assertFalse(t["active_dual_class_verified"])
+        self.assertFalse(t["proficiency_pips_verified"])
+        self.assertFalse(t["effective_racial_class_bonuses_verified"])
+    def test_saved_trait_unknown_level_stop(self):
+        raw=bytearray(fixture())
+        raw[0x234]=201
+        with self.assertRaisesRegex(ValueError,"TRAIT_LEVEL_OUT_OF_BOUNDS"):
+            W.extract_trait_ids(bytes(raw))
+    def test_gam_includes_raw_trait_ids_without_live_claim(self):
+        raw=bytearray(fixture());raw[0x272]=44;raw[0x273]=3
+        report=W.inspect_gam(gam(bytes(raw)))
+        t=report["party"][0]["saved_trait_ids"]
+        self.assertEqual((t["race_id_raw"],t["class_id_raw"]),(44,3))
+        self.assertFalse(report["runtime_verified"])
+        self.assertFalse(t["race_name_verified"])
     def test_wrong_gam_stop(self):
         with self.assertRaisesRegex(ValueError,"UNSUPPORTED_GAM_VERSION"):
             W.inspect_gam(b"garbage")
