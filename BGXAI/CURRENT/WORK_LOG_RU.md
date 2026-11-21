@@ -1,3 +1,9 @@
+# 21.11.2026 — ОРУЖИЕ: ГОТОВ READ-ONLY ПУНКТ 158 В ОДНОМ BGXAI_UPDATE.cmd
+
+**CODE:** новая [native preflight](../patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_GAME_PREFLIGHT_RO.py) для реальной EET: проверка SHA игровых ресурсов и WeiDU-компиляция четырёх-слотового BAF в системном TEMP, без копирования в override. [Подробный checkpoint](BGXAI_WEAPON_NATIVE_ONEFILE_158_CHECKPOINT_RU.md). **TEST:** Python unittest 13/13 + py_compile PASS; GH manifest 2/2 exact SHA256; новый `BGXAI_SYNC.ps1` меню 1-158, 79 962 bytes, SHA256 `5fc39ea68c0eeab4aed8d014c02b07fe05eaaa6657cc6b59757d39614db1f9d6`, pinned commit `fad6c28957bc0f09f3655193f08fe7c7b8f77416`; старые ветви 1-157 побайтно сохранены (кроме вывода экранного меню и 9 текстов статуса). Pin commit `4ce5d61013d28cd6dda08d8b304e27529f15fba7`. **DEPLOY:** исходники и обновлятор доступны из GitHub, но на Windows НЕ запускались. **LIVE:** новый выбор приоритетного оружия НЕ УСТАНОВЛЕН; действующая V6/EPS/BGXFENEMY сохранена. **NEXT USER ACTION:** обычный `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd` → **158** → прислать JSON по `REPORT_FILE`, один запуск. Никаких доп. CMD/ZIP, никакого install, не повторять старые проверки, не переходить к AoE.
+
+---
+
 # 21.11.2026 — WEAPON RUNTIME EVIDENCE V2, NO-INTERRUPT (SOURCE ONLY)
 
 **ACTIVE:** только приоритетный выбор оружия, без перехода к AoE/командной тактике. [Checkpoint](BGXAI_WEAPON_RUNTIME_EVIDENCE_V2_CHECKPOINT_RU.md).
