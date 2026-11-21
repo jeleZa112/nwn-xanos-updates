@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 67,
-  "sha256": "2a61b2b175d23c7dadc841543b311d01bcd32d26d0f20116f281ee4a78ee3a2c",
+  "version": 68,
+  "sha256": "c20d675cf17be36343659f4b716a3889d48421d438a6e38e41ceab23ca1600dc",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v67: automatic read-only DLG graph audit of five cached NEERAJ/SAFANJ references (63 captured DLG). Static ownership only, not proven runtime visibility. One CMD/ZIP; no game changes."
+  "note": "v68: one persistent BG_EET_RU_UPDATE.cmd, one report ZIP, cached read-only V4 combat x64 code evidence (36 strings/47 LEA), no installation. Existing v67 audits reused on matching source fingerprints."
 }
