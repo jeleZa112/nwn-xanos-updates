@@ -10,12 +10,17 @@ import argparse,datetime,json,os,pathlib,subprocess,sys
 import BGX_FRIEND_TRACE_GUARDED as V1
 import BGXFTRACE_V2_GUARDED as V2
 import BGXFTRACE_V3_GUARDED as V3TRACE
+import BGXFENEMY_WTASIGHT_GUARDED as ENEMY
 import BGXRANGED_V3_GUARDED_INSTALL as V3
 
 ROOT=V2.ROOT
 def start(root):
     V3.V2.V1.processes()
-    if V3TRACE.LAST.match(V3TRACE.last(root)):
+    if ENEMY.LAST.match(V3TRACE.last(root)):
+        current=ENEMY.status(root)
+        if current.get("status")!="BGXFENEMY_INSTALLED_VERIFIED":
+            raise ValueError("ENEMY_GUARD_NOT_VERIFIED")
+    elif V3TRACE.LAST.match(V3TRACE.last(root)):
         current=V3TRACE.status(root)
         if current.get("status")!="BGXF3_INSTALLED_VERIFIED":
             raise ValueError("V3_OBSERVER_NOT_VERIFIED")
