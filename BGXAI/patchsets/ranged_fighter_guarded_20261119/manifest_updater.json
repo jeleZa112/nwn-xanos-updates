@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
-  "version": "0.3.68-BGXFENEMY-CAPTURE-COMPAT",
+  "version": "0.3.69-WEAPON-RO-ADVISORY",
   "files": [
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_PREFLIGHT.py",
@@ -60,8 +60,8 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py",
       "dest": "BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py",
-      "size": 12441,
-      "sha256": "4f82acf3454292f03dd3dab7dbbe0fcca5216861e842c21f558012a0e98d37b8"
+      "size": 13123,
+      "sha256": "89b4101fe83d03b06ec7a3d418c245fb6ce4816bca03f22d0dc143d57cb2e745"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V4_NO_FRIEND_ATTACK.baf",
@@ -152,6 +152,18 @@
       "dest": "BGXFENEMY_WTASIGHT_GUARDED.py",
       "size": 11426,
       "sha256": "182ca0c9c3810642689bcf5fcf9f3e9accb5461ff3457ff994a30fb117580e52"
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_SAVED_SNAPSHOT_READONLY.py",
+      "dest": "BGXAI_WEAPON_SAVED_SNAPSHOT_READONLY.py",
+      "sha256": "0a1b0e6d82618cec35b5f6dd73e25ef139399a8fa280f287abdbe4fce60048a9",
+      "size": 5585
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_CHOICE_ADVISORY_V1.js",
+      "dest": "BGXAI_WEAPON_CHOICE_ADVISORY_V1.js",
+      "sha256": "baed7f261122a7c7d79f5f3b5606cae882831f1f040139ce0a11716d1652cdc3",
+      "size": 7258
     }
   ]
 }
