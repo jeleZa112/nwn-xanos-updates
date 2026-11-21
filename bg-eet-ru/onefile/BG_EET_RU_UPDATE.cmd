@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 86
+SELF_VERSION = 87
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -584,12 +584,16 @@ def v77_resume_after_static_v70(game, report_path, combat_only=False):
     if current and current['phase'] in ('INSTALLED','PREPARED'):
         rc=v85_run(game,report_path)
         if rc:return rc
-        return v86_run(game,report_path)
+        rc=v86_run(game,report_path)
+        if rc:return rc
+        return v87_run(game,report_path)
     rc=v84_run(game,report_path)
     if rc:return rc
     rc=v85_run(game,report_path)
     if rc:return rc
-    return v86_run(game,report_path)
+    rc=v86_run(game,report_path)
+    if rc:return rc
+    return v87_run(game,report_path)
 
 
 def v77_resume_selftest():
@@ -604,6 +608,7 @@ def v77_resume_selftest():
     original_v85=globals()['v85_run']
     original_v85_state_read=globals()['v85_state_read']
     original_v86=globals()['v86_run']
+    original_v87=globals()['v87_run']
     calls=[]
     try:
         globals()['v74_pilot']=lambda *a,**k: calls.append('v74') or 0
@@ -616,15 +621,16 @@ def v77_resume_selftest():
         globals()['v85_run']=lambda *a,**k: calls.append('v85') or 0
         globals()['v85_state_read']=lambda *a,**k: None
         globals()['v86_run']=lambda *a,**k: calls.append('v86') or 0
+        globals()['v87_run']=lambda *a,**k: calls.append('v87') or 0
         assert v77_resume_after_static_v70('fake_game','fake_zip')==0
-        assert calls==['v74','v76','v79','v81','v82','v83','v84','v85','v86'],calls
+        assert calls==['v74','v76','v79','v81','v82','v83','v84','v85','v86','v87'],calls
         calls.clear()
         assert v77_resume_after_static_v70('fake_game','fake_zip',True)==0
         assert calls==['v74'],calls
         calls.clear()
         globals()['v85_state_read']=lambda *a,**k: {'phase':'INSTALLED'}
         assert v77_resume_after_static_v70('fake_game','fake_zip')==0
-        assert calls==['v74','v76','v79','v81','v82','v83','v85','v86'],calls
+        assert calls==['v74','v76','v79','v81','v82','v83','v85','v86','v87'],calls
         calls.clear()
         globals()['v85_state_read']=lambda *a,**k: None
         globals()['v74_pilot']=lambda *a,**k: calls.append('v74') or 2
@@ -641,6 +647,7 @@ def v77_resume_selftest():
         globals()['v85_run']=original_v85
         globals()['v85_state_read']=original_v85_state_read
         globals()['v86_run']=original_v86
+        globals()['v87_run']=original_v87
     return True
 
 
@@ -2454,6 +2461,149 @@ def v86_selftest():
     return True
 
 
+# BG EET RU v87 — focused read-only UI.MENU journal list binding audit.
+# No runtime hooks, no UI edits, no gameplay effects.
+V87_ENTRY = '35_V87_COMBAT_JOURNAL_UI_BINDING_EXACT_SOURCE.json'
+V87_SCHEMA = 'BG_EET_RU_V87_COMBAT_JOURNAL_UI_BINDING_EXACT_SOURCE'
+V87_PINNED_UI_SHA = '1ee8212c54cd294c10bdc8188e1f17365d7785829dbbb407c0a557a4b22e088b'
+V87_ANCHORS = {
+    'text_renderer': r'''\btext\s+lua\s+(["'])clean\(combatLog\[rowNumber\]\)\1''',
+    'list_data': r'''\btable\s+(["'])combatLog\1''',
+    'message_box': r'''\bname\s+(["'])worldMessageBox\1''',
+    'clean_definition': r'''\bfunction\s+clean\s*\(''',
+    'world_messages_menu': r'''\bname\s+(["'])\[WORLD_MESSAGES\]\1''',
+}
+
+
+def v87_context_source(text, line_no, before=20, after=40, max_chars=14000):
+    lines=text.splitlines()
+    first=max(0,line_no-1-before)
+    last=min(len(lines),line_no+after)
+    excerpt='\n'.join('%05d | %s' % (i+1,lines[i]) for i in range(first,last))
+    return {'start_line':first+1,'end_line':last,'text':excerpt[:max_chars],
+            'truncated':len(excerpt)>max_chars,
+            'excerpt_sha256':digest(excerpt.encode('utf-8'))}
+
+
+def v87_inspect_ui(raw, require_pinned=True):
+    if not isinstance(raw, bytes) or not 100<=len(raw)<=4_000_000:
+        raise ValueError('V87_BAD_UI_SIZE')
+    if b'\x00' in raw:raise ValueError('V87_UI_HAS_NUL')
+    sha=digest(raw)
+    text=raw.decode('utf-8-sig','strict')
+    report={'bytes':len(raw),'sha256':sha,'source_only':True,
+            'source_line_count':len(text.splitlines()),'anchors':{},
+            'candidate_expression_only':'text lua "BG_EET_RU_LogView(clean(combatLog[rowNumber]))"',
+            'candidate_is_not_executable_without_new_helper':True,
+            'no_ui_source_replacement_performed':True,
+            'notes':['The rendering expression is UI text display, not a verified engine event listener.',
+                     'A UI renderer alone cannot reliably merge multiple combat events or delete existing rows.',
+                     'A real UI toggle requires a separate complete layout review and explicit approval.']}
+    for label,pattern in V87_ANCHORS.items():
+        found=list(re.finditer(pattern,text,re.I))
+        item={'count':len(found),'line_numbers':[text.count('\n',0,m.start())+1 for m in found[:8]]}
+        if found:
+            line=item['line_numbers'][0]
+            pre,post=(12,22) if label!='world_messages_menu' else (32,110)
+            item['source']=v87_context_source(text,line,pre,post)
+        report['anchors'][label]=item
+    pinned_match=(sha==V87_PINNED_UI_SHA) if require_pinned else True
+    anchor_match=all(v['count']==1 for v in report['anchors'].values())
+    report['pinned_original_sha_matches']=pinned_match
+    report['all_five_ui_anchors_unique']=anchor_match
+    report['binding_verified_static_only']=bool(pinned_match and anchor_match)
+    report['live_ui_toggle_supported_proven']=False
+    report['source_gate_status']='V87_EXACT_STATIC_RENDER_ANCHORS_READY' if report['binding_verified_static_only'] else 'V87_UI_ANCHOR_OR_SHA_HOLD'
+    return report
+
+
+def v87_build_report(game,previous_v86=None):
+    game=Path(game)
+    report={'schema':V87_SCHEMA,'updater_version':SELF_VERSION,
+            'game_root':str(game),'game_files_written':False,
+            'save_files_written':False,'runtime_observer_installed':False,
+            'ui_toggle_installed':False,'gameplay_verified':False,
+            'safe_to_install_now':False,'errors':[],
+            'status':'V87_READ_ONLY_AUDIT_HOLD',
+            'next_gate':'Review exact clean() and WORLD_MESSAGES UI layout; prove safe rendering of real row types. Only then separately authorize a backed-up UI pilot.'}
+    try:
+        if not isinstance(previous_v86,dict) or previous_v86.get('status')!='V86_STATIC_UI_FEASIBILITY_CAPTURED_NO_LIVE_HOOK':
+            raise RuntimeError('V87_PRIOR_V86_PROOF_NOT_PRESENT')
+        path=game/'override'/'UI.MENU'
+        if not path.is_file() or path.is_symlink():raise RuntimeError('V87_LIVE_UI_MISSING_OR_SYMLINK')
+        raw=path.read_bytes()
+        inspected=v87_inspect_ui(raw)
+        previous_sha=(previous_v86.get('ui_menu') or {}).get('sha256')
+        if inspected['sha256'] != previous_sha:
+            raise RuntimeError('V87_UI_SHA_CHANGED_AFTER_V86')
+        state=v85_state_read()
+        lua=game/'override'/V71_SHORT_SCRIPT
+        if not state or state.get('phase')!='INSTALLED' or not lua.is_file() or lua.is_symlink():
+            raise RuntimeError('V87_V85_WORKING_LUA_NOT_PRESENT')
+        current_sha=digest(lua.read_bytes())
+        if current_sha!=state.get('candidate_sha256'):
+            raise RuntimeError('V87_V85_LUA_HASH_CHANGED')
+        report['ui']=inspected
+        report['v85_installed_lua_sha256']=current_sha
+        report['status']=inspected['source_gate_status']
+    except (OSError,ValueError,UnicodeError,RuntimeError,KeyError,TypeError) as exc:
+        report['errors'].append({'type':type(exc).__name__,'message':str(exc)[:230]})
+    return report
+
+
+def v87_run(game,report_path):
+    game,report_path=Path(game),Path(report_path)
+    try:
+        safe_external(game,report_path)
+        if not report_path.is_file():raise RuntimeError('V87_SINGLE_REPORT_MISSING')
+        with zipfile.ZipFile(report_path) as src:
+            if src.testzip() is not None:raise RuntimeError('V87_PRIOR_ZIP_BAD_CRC')
+            names=src.namelist()
+            if len(names)!=len(set(names)):raise RuntimeError('V87_ZIP_HAS_DUPLICATES')
+            v86=json.loads(src.read(V86_ENTRY)) if V86_ENTRY in names else None
+            previous=json.loads(src.read(V87_ENTRY)) if V87_ENTRY in names else None
+        report=v87_build_report(game,v86)
+        if report==previous:
+            print('v87: CACHE PASS — точное окружение UI.MENU прежнее')
+        else:
+            with tempfile.NamedTemporaryFile(dir=str(report_path.parent),prefix='.v87_',suffix='.zip',delete=False) as f:
+                temp=Path(f.name)
+            try:
+                with zipfile.ZipFile(report_path) as src,zipfile.ZipFile(temp,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=7) as dst:
+                    for member in src.infolist():
+                        if member.filename!=V87_ENTRY:dst.writestr(member,src.read(member))
+                    dst.writestr(V87_ENTRY,json.dumps(report,ensure_ascii=False,indent=2).encode('utf-8'))
+                with zipfile.ZipFile(temp) as verify:
+                    if verify.testzip() is not None or verify.namelist().count(V87_ENTRY)!=1:
+                        raise RuntimeError('V87_NEW_ZIP_BAD_CRC')
+                os.replace(temp,report_path)
+            finally:
+                if temp.exists():temp.unlink()
+        print('v87:',report['status'],'— UI исходник: только чтение; изменений игры: 0')
+        print('Единый ZIP:',report_path)
+        return 0
+    except (OSError,ValueError,UnicodeError,RuntimeError,KeyError,zipfile.BadZipFile) as exc:
+        print('v87: SAFE_STOP — '+type(exc).__name__+': '+str(exc)[:180])
+        return 2
+
+
+def v87_selftest():
+    mock=b'''function clean(str)\n return str\nend\ncombatLog={}\nmenu { name '[WORLD_MESSAGES]'\nlist {\n name "worldMessageBox"\n list { table "combatLog" label { text lua "clean(combatLog[rowNumber])" } }\n}\n}\n'''
+    row=v87_inspect_ui(mock,require_pinned=False)
+    assert row['binding_verified_static_only'] and row['all_five_ui_anchors_unique']
+    assert row['anchors']['text_renderer']['count']==1
+    assert 'clean(combatLog[rowNumber])' in row['anchors']['text_renderer']['source']['text']
+    assert row['live_ui_toggle_supported_proven'] is False
+    assert row['no_ui_source_replacement_performed'] is True
+    assert v87_context_source('a\nb\nc',2,1,1)['text'].startswith('00001 | a')
+    bad=mock.replace(b'clean(combatLog[rowNumber])',b'clean(combatLog[rowNum])')
+    assert v87_inspect_ui(bad,require_pinned=False)['binding_verified_static_only'] is False
+    try:v87_inspect_ui(b'header\x00'+mock)
+    except ValueError:pass
+    else:raise AssertionError('V87_BINARY_ACCEPTED')
+    return True
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description='BG_EET_RU one-file visible-only read-only auto-updater')
     p.add_argument('--game',default=DEFAULT_GAME)
@@ -2816,13 +2966,17 @@ def main(argv=None):
     if latest and latest['phase'] in ('INSTALLED','PREPARED'):
         rc=v85_run(game,report_path)
         if rc:return rc
-        return v86_run(game,report_path)
+        rc=v86_run(game,report_path)
+        if rc:return rc
+        return v87_run(game,report_path)
     v84_rc=v84_run(game,report_path)
     if v84_rc:return v84_rc
     v85_rc=v85_run(game,report_path)
     if v85_rc:return v85_rc
     v86_rc=v86_run(game,report_path)
     if v86_rc:return v86_rc
+    v87_rc=v87_run(game,report_path)
+    if v87_rc:return v87_rc
     print('v67 cached DLG structure:',v67_status['status'],
           len(v67_status['target_references']),'target references')
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
@@ -5300,6 +5454,7 @@ def selftest():
     assert v84_selftest() and callable(v84_run)
     assert v85_selftest() and callable(v85_run)
     assert v86_selftest() and callable(v86_run)
+    assert v87_selftest() and callable(v87_run)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
