@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "f502eed6fca8e5522e49b4d3dc062581d99c2cf8",
+  "commit": "b1dcdf06ebdc7e390d15e873478b7107a0b2c3bb",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "6f1e0a03968785ef916c85d5b7a8c82c99c49fa1102ffa43097b8d2172fde45c",
-  "script_size": 79900,
-  "description": "BGXAI onefile menus 1-159, 159 R1.1 passive weapon observer with direct JSONL or console fallback; submenu 5 capture / 6 report collect, SHA pinned. No auto game changes; guarded opt-in install and WeiDU rollback only with typed approval."
+  "script_sha256": "49840eb7c5ce055c796f9482fbe7c90595ca79f4f5ddf089ab74350ec975225b",
+  "script_size": 79934,
+  "description": "BGXAI onefile menus 1-159 unchanged. 159->7: isolated R2 fixed quick-weapon/quiver EEex observer with exact SHA, external backup and typed consent for WeiDU. R1.1 V6 EPS unmodified. R2 source-only until user opts in; use 159->5 for usual game console launch; 159->7->5 to collect R2 after game exits."
 }
