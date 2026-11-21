@@ -316,14 +316,27 @@ def rollback(root:pathlib.Path)->dict:
 
 def main()->int:
     p=argparse.ArgumentParser()
-    p.add_argument("mode",choices=("preflight","status","install","rollback"))
+    p.add_argument("mode",nargs="?",choices=("preflight","status","install","rollback"))
     p.add_argument("--game",default=str(ROOT))
     args=p.parse_args()
     root=pathlib.Path(args.game)
     try:
-        if args.mode=="preflight":result=preflight(root)
-        elif args.mode=="status":result=status(root)
-        elif args.mode=="install":
+        mode=args.mode
+        if mode is None:
+            print("BGXRANGED5 - guarded 6/10 melee handoff pilot")
+            print("1 - native preflight READ ONLY")
+            print("2 - install+verify (typed consent required)")
+            print("3 - status READ ONLY")
+            print("4 - rollback (typed consent, last WeiDU only)")
+            print("0 - exit, no changes")
+            choice=input("V5 choice [0]: ").strip() or "0"
+            if choice=="0":return 0
+            actions={"1":"preflight","2":"install","3":"status","4":"rollback"}
+            if choice not in actions:raise ValueError("INVALID_V5_CHOICE")
+            mode=actions[choice]
+        if mode=="preflight":result=preflight(root)
+        elif mode=="status":result=status(root)
+        elif mode=="install":
             if input("Type "+TOKEN_INSTALL+" exactly: ").strip()!=TOKEN_INSTALL:
                 raise ValueError("INSTALL_NOT_AUTHORIZED")
             result=install(root)
