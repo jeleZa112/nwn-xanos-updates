@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 76
+SELF_VERSION = 77
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -565,6 +565,37 @@ def load_v36_preflight():
 
 
 
+# v77 regression: cached historical evidence must not bypass new safe stages.
+def v77_resume_after_static_v70(game, report_path, combat_only=False):
+    rc=v74_pilot(game,report_path,mode='auto')
+    if rc:return rc
+    if combat_only:return 0
+    return v76_live_audit(game,report_path)
+
+
+def v77_resume_selftest():
+    # Patch only in-memory functions. Never open a game, report or user file.
+    original_v74=globals()['v74_pilot']
+    original_v76=globals()['v76_live_audit']
+    calls=[]
+    try:
+        globals()['v74_pilot']=lambda *a,**k: calls.append('v74') or 0
+        globals()['v76_live_audit']=lambda *a,**k: calls.append('v76') or 0
+        assert v77_resume_after_static_v70('fake_game','fake_zip')==0
+        assert calls==['v74','v76'],calls
+        calls.clear()
+        assert v77_resume_after_static_v70('fake_game','fake_zip',True)==0
+        assert calls==['v74'],calls
+        calls.clear()
+        globals()['v74_pilot']=lambda *a,**k: calls.append('v74') or 2
+        assert v77_resume_after_static_v70('fake_game','fake_zip')==2
+        assert calls==['v74'],calls
+    finally:
+        globals()['v74_pilot']=original_v74
+        globals()['v76_live_audit']=original_v76
+    return True
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description='BG_EET_RU one-file visible-only read-only auto-updater')
     p.add_argument('--game',default=DEFAULT_GAME)
@@ -648,7 +679,10 @@ def main(argv=None):
         rc=v69_static_proof(WORKDIR/REPORT_NAME)
         if rc: return rc
         rc=v70_eeex_loader_diagnostic(game, WORKDIR/REPORT_NAME)
-        return rc if rc else v74_pilot(game, WORKDIR/REPORT_NAME, mode='auto')
+        if rc: return rc
+        # v77: cached v67 branch must still reach the v76 TLK/UI audit.
+        # Keep --combat-only restricted to combat evidence; never install implicitly.
+        return v77_resume_after_static_v70(game, WORKDIR/REPORT_NAME, args.combat_only)
     print('BG_EET_RU v'+str(SELF_VERSION)+' — один отчёт; изменение игры только при отдельном подтверждении.')
     print('Папка:',WORKDIR)
     print('Проверяю существующие отчёты (без повторных запусков)...')
@@ -3352,6 +3386,7 @@ def selftest():
     assert v73_selftest() and callable(v73_pilot) and callable(v73_zip_report)
     assert v74_selftest() and callable(v74_pilot) and callable(v74_report)
     assert v76_selftest() and callable(v76_live_audit)
+    assert v77_resume_selftest() and callable(v77_resume_after_static_v70)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
