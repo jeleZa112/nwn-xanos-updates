@@ -18,11 +18,13 @@ R2 — отдельная чистая Lua-модель read-only, **не нов
 - боеприпасы/колчан: `11,12,13,14`;
 - offhand/shield: `9` (только контекст).
 
+R2 дополнительно пробует read-only `item.cResRef:get()` (поле `CResHelper.cResRef` и метод `CResRef:get()` из upstream EEex): возвращает `itemResrefRaw` только для строго проверенного ASCII resref до 8 символов и помечает его как `RAW_RESREF_RETURNED_UNVERIFIED`. Доступность в актуальной EET пока не доказана. Даже `BOW05` или `AROW01`, полученные в моках, не означают, что такой предмет реально обнаружен в игре или может быть экипирован.
+
 R2 аккуратно снимает необязательные *сырые* числовые `m_useCount1`, `m_useCount2`, `m_useCount3`, `m_flags` (если доступны), выбранный индекс/способность и факт возврата объекта; не считает наличие объекта достаточным доказательством предмета или заряда. Модельные примеры покрывают реальный 31-битный ID `139135050`, выбор `12` и `35`, изменения количества, пустые или недоступные слоты, тайные поля, несовпадающие акторы, сохранение действия. Сравнение R2 только аннулирует устаревшую рекомендацию, **не посылает действие и не создаёт простоя**. Любой результат всегда содержит `executable=false`, `dispatchAuthorized=false`, `weaponSwitchAuthorized=false`, `perSlotAPRVerified=false`, `ammoCountVerified=false`, `itemIdentityVerified=false`, `epsQueueVerified=false`.
 
-**TEST:** 25/25 Lua 5.3 (luahbtex) PASS на модельных структурах; это НЕ игровая проверка функции `m_items:get(index)` для всех незаполненных слотов и НЕ доказательство безопасного live-доступа на данной сборке.
+**TEST:** 28/28 Lua 5.3 (luahbtex) PASS на модельных структурах; это НЕ игровая проверка функции `m_items:get(index)` для всех незаполненных слотов и НЕ доказательство безопасного live-доступа на данной сборке.
 
-**CODE:** готов исходник для дальнейшего guarded observer. **DEPLOY:** нет для R2 (R1.1 остаётся установленным). **LIVE:** нет для R2. Все поля предметов, ITM эффекты, идентификаторы, стеки боеприпасов, связь launcher+ammo, APR каждого оружия, очереди EPS/manual остаются непроверенными.
+**CODE:** готов исходник для дальнейшего guarded observer. **DEPLOY:** нет для R2 (R1.1 остаётся установленным). **LIVE:** нет для R2. Все поля предметов, ITM эффекты, проверенные идентификаторы предметов, стеки боеприпасов, связь launcher+ammo, APR каждого оружия, очереди EPS/manual остаются непроверенными.
 
 ## Критические ограничения
 - Ни в коем случае не считать `selectedWeaponRaw=12` «луком»: это AMMO1. `selectedWeaponRaw=35` — WEAPON0, но не доказательство меча. Для названий предметов нужно наблюдение `CItem` resref, а не исторический сейв или предположение.
@@ -31,4 +33,4 @@ R2 аккуратно снимает необязательные *сырые* �
 - Не изменять BGXRANGED6, EPS 18.4, BGXFENEMY, BG Voice RU, BG_EET_RU и сохранения. Не заменять `BGXAI_UPDATE.cmd`, не просить повтор 158/159 или уже присланный R1.1 JSONL.
 - Следующий функциональный шаг: ограниченный read-only EEex R2 capture с защищённым внешним бэкапом / SHA / last-only WeiDU через **этот же** обновлятор и **новым отдельным разрешением**, после него живой тест списка предметов. До проверки исходники не исполняют игровую логику. Если фактический доступ к item slots/identity невозможен, HOLD — не догадки.
 
-Справочные источники: IESDP BG(2)EE opcode 143 / `SLOTS.IDS` https://iesdp.bgforge.net/opcodes/bgee ; EEex upstream `B3AttackInfo.lua` (чтение `m_equipment.m_items:get(m_selectedWeapon)`): https://github.com/Bubb13/EEex/blob/master/EEex/copy/EEex_scripts/B3AttackInfo.lua .
+Справочные источники: IESDP BG(2)EE opcode 143 / `SLOTS.IDS` https://iesdp.bgforge.net/opcodes/bgee ; EEex upstream `B3AttackInfo.lua`; класс `CItem`/`CResHelper` в EEex-Docs `https://github.com/Bubb13/EEex-Docs/blob/master/source/EE%20Game%20Structures%20(x64)/CR/index.rst`; `B3AttackInfo.lua` (чтение `m_equipment.m_items:get(m_selectedWeapon)`): https://github.com/Bubb13/EEex/blob/master/EEex/copy/EEex_scripts/B3AttackInfo.lua .
