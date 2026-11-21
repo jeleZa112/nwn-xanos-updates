@@ -1,3 +1,11 @@
+## АУДИТ ПРОДОЛЖЕНИЯ 21.11.2026: РИСК RUNTIME-ВЫВОДА R1
+
+Проверено чтением GitHub-исходника `BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BGXWP.lua`, теста `test_weapon_runtime_observer_r1.lua` и предыдущего `M_BXFR_CONSOLE_V2.lua`. В R1 функция `init()` НЕ регистрирует EEex listener, если отсутствует Lua `os.getenv` или `io.open`, либо файл не открылся: возвращает `REPORT_IO_UNAVAILABLE` / `REPORT_DIRECTORY_UNAVAILABLE` и `registered=false`. Консольного fallback в R1 НЕТ. Старый BGXFTRACE использовал console fallback именно для `LuaPatchMode=INTERNAL`. Офлайн-тесты R1 подменяют `io` и `os` макетами, а случай `no_file` прямо проверяет **отсутствие регистрации**. Поэтому 12/12 + 22/22 и 34/34 НЕ доказывают, что R1 создаст JSONL на действительной EET.
+
+Существование API `EEex_Sprite_GetInPortraitID`, `EEex_Sprite_GetActiveStats`, `EEex_Action_AddSpriteStartedActionListener` подтверждено в upstream EEex v1.1.7. **Состояние реального `io/os` в пользовательском runtime НЕ проверено**; не называть R1 установленным или сломанным в игре без LIVE. Пункт 159→1 безопасен как read-only preflight, но **НЕ рекомендовать пока 159→2** до подтверждения рабочего output sink либо source-only исправления с консольным fallback + автоматическим сбором в едином обновляторе, SHA-проверкой, новыми тестами и отдельным разрешением установки. Не подменять это новым номером версии бота; не трогать V6, EPS, WeiDU, сейвы. Актуальная активная задача — по-прежнему приоритетный выбор оружия без прерывания действий.
+
+---
+
 # BGXAI — Weapon Runtime R1: реальное пассивное наблюдение EEex 1.1.7
 
 Дата: 21.11.2026. Задача: выбор лучшего оружия, без остановок текущих действий. Основная ветка BGXAI сохраняет установленную V6 и EPS.
