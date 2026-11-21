@@ -57,4 +57,29 @@ t('read-only module no mutation of mock sprite',function()
  equal(s.m_equipment.m_selectedWeapon,before)
  equal(r.ordersSent,0);equal(r.localsWritten,0)
 end)
+
+t('active derived stats object read without interpreting APR',function()
+ local function good_with_active(i)
+  local s=good(i)
+  if s then s.getActiveStats=function()return {mockOnly=true}end end
+  return s
+ end
+ local r=m.observe_portrait(2,good_with_active)
+ equal(r.partial.activeDerivedStatsObjectSeen,true)
+ equal(r.partial.activeDerivedStatsValuesRead,false)
+ equal(r.partial.completeBuffEffectsObserved,false)
+ equal(r.canRankWeapon,false)
+end)
+t('in-progress active stat read error remains fail closed',function()
+ local function throws(i)
+  local s=good(i)
+  if s then s.getActiveStats=function()error('recalculation')end end
+  return s
+ end
+ local r=m.observe_portrait(2,throws)
+ equal(r.partial.activeDerivedStatsObjectSeen,false)
+ equal(r.canRankWeapon,false)
+ equal(r.engineDispatchAllowed,false)
+end)
+
 print('PASS EEex117 READ-ONLY PROBE '..n..'/'..n..' SOURCE ONLY')
