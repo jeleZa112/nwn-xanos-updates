@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 71,
-  "sha256": "c9373e5ac81803ef2b790404ef88cfeec71a7ca5a4267b30844c119c970c1316",
+  "version": 72,
+  "sha256": "d2db84be74940daa4e40d5b3105111b8f7011196c280220dabf58896bf4ef757",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v71: one persistent BG_EET_RU_UPDATE.cmd, one report ZIP. Explicit opt-in only for reversible single M_BGERU.lua (7-char ResRef) Luck runtime pilot. EXE/loader DB/TLK unchanged. Exact pinned 7-byte instruction and loader hashes; new external runtime marker; same CMD rollback."
+  "note": "v72: single updater and ZIP, replace failed M_BGERU.lua with an explicit-consent no-hook diagnostic Lua. The stock game Lua often lacks io.open, so old v71 marker was inconclusive. New probe uses Infinity_DisplayString/Infinity_Log; guarded reversible upgrade only. No EXE/TLK/loader DB writes."
 }
