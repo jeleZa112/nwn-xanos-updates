@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "f30892e87151743fcdef6fde1c1e216c8fced459",
+  "commit": "57cc063574ef24fe78192d46ada871508f1b58c0",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "cadbf6812e20be73239901578d2ff2fa1f803f4ae7d94247862bc5f11360cfaa",
-  "script_size": 79768,
-  "description": "BGXAI onefile 0.3.75: menu135 includes native read-only DPLAYER 2-block V6 preflight after V5 rollback; 33 SHA-verified sources. No V6 install; menus 1-156 retained; menu 131-151 labels identical compact loop."
+  "script_sha256": "127de840a5f733011197b22840c0fc772ba219ce0ad7541d7ade81ec07f78d99",
+  "script_size": 79976,
+  "description": "BGXAI 0.3.76 onefile menus 1-157, 34 SHA-verified sources; 157 guarded V6 DPLAYER pilot with native SHA, external backup, typed install, status, LAST-only rollback. 135/146 verify V6 if installed. No automatic game modification."
 }
