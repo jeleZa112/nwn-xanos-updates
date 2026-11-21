@@ -6,6 +6,7 @@ on:
     paths:
       - "BGXAI/patchsets/ranged_fighter_guarded_20261119/**"
       - "BGXAI/BGXAI_SYNC.ps1"
+      - "BGXAI_UPDATE.cmd"
       - ".github/workflows/bgxai-wtasight-enemy-guard.yml"
   workflow_dispatch:
 
