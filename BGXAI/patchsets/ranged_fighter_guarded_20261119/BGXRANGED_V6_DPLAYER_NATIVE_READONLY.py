@@ -113,7 +113,7 @@ def preview(root:Path,evidence:dict)->dict:
     if SOURCE.is_symlink() or not SOURCE.is_file():
         raise ValueError("V6_SOURCE_MISSING")
     fresh=SOURCE.read_bytes()
-    if sha(fresh)!="c2f706f9dd26c246dd43468db3ba7620e38ba50ab1b9094602a8e2710ed59127c6":
+    if sha(fresh)!="2fd136f4eac23beb24c31744b01ae897aa6a9476e27cfe8392941ef30b600032":
         raise ValueError("V6_CANDIDATE_SOURCE_SHA_DRIFT")
     native=(root/DPLAYER).read_bytes()
     original=V5.bcs_parts(native)
