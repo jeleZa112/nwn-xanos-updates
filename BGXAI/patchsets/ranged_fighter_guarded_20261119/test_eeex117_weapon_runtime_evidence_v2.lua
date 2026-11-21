@@ -87,6 +87,27 @@ test('actor identity mismatch cannot reuse prior observation',function()
  local a=sample(mk(1));local s=mk(1);s.m_id=252
  local r=M.compare(a,sample(s));eq(r.status,'HOLD_INCOMPARABLE_RAW_OBSERVATIONS')
 end)
+test('LIVE actor id 139135050 passes 31-bit actor guard',function()
+ local s=mk(1,12);s.m_id=139135050
+ local r=sample(s)
+ eq(r.status,'OBSERVED_RAW_SELECTED_AND_ACTIVE_STATS_CONTEXT_ONLY')
+ eq(r.raw.actorId,139135050);eq(r.raw.selectedWeaponRaw,12)
+ eq(r.dispatchAuthorized,false)
+end)
+test('LIVE id and 12-to-35 selected slot change only invalidates advice',function()
+ local a=mk(1,12);a.m_id=139135050
+ local b=mk(1,35);b.m_id=139135050
+ local r=M.compare(sample(a),sample(b))
+ eq(r.status,'INVALIDATE_WEAPON_ADVICE_KEEP_CURRENT_ACTION')
+ eq(r.selectedWeaponChanged,true);eq(r.currentActionPreserved,true)
+ eq(r.ordersSent,0)
+end)
+test('31-bit range overflow stops',function()
+ local s=mk(1,35);s.m_id=2147483648
+ local r=sample(s)
+ eq(r.status,'HOLD_SELECTED_WEAPON_OR_ID_UNAVAILABLE')
+ eq(r.dispatchAuthorized,false)
+end)
 test('no writes occur to mocked game sprite',function()
  local s=mk(1);local before={id=s.m_id,slot=s.m_equipment.m_selectedWeapon,
   action=s.m_curAction.m_actionID,flag=s.m_bAllowEffectListCall}
