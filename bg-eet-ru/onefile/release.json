@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 70,
-  "sha256": "0d1c16cff0975d79aea5075fcf4d9d23ca55722e939b803b26bb2c20045512ae",
+  "version": 71,
+  "sha256": "c9373e5ac81803ef2b790404ef88cfeec71a7ca5a4267b30844c119c970c1316",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v70: one persistent BG_EET_RU_UPDATE.cmd, one ZIP, 47/47 independent code target replay plus read-only EEex M_ Lua / loader source diagnostics. No game writes; runtime hook remains HOLD."
+  "note": "v71: one persistent BG_EET_RU_UPDATE.cmd, one report ZIP. Explicit opt-in only for reversible single M_BGERU.lua (7-char ResRef) Luck runtime pilot. EXE/loader DB/TLK unchanged. Exact pinned 7-byte instruction and loader hashes; new external runtime marker; same CMD rollback."
 }
