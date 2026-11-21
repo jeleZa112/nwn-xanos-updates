@@ -28,8 +28,8 @@ jobs:
           root = pathlib.Path("BGXAI/patchsets/ranged_fighter_guarded_20261119")
           manifest = json.loads((root / "manifest_updater.json").read_text(encoding="utf-8"))
           assert manifest["schema"] == 1
-          assert manifest["version"] == "0.3.71-WEAPON-TRAIT-SNAPSHOT"
-          assert len(manifest["files"]) == 28
+          assert manifest["version"] == "0.3.72-V5-NATIVE-READONLY"
+          assert len(manifest["files"]) == 30
           for entry in manifest["files"]:
               raw = pathlib.Path(entry["source"]).read_bytes()
               assert len(raw) == entry["size"], entry["dest"]
@@ -78,6 +78,14 @@ jobs:
           assert 'def extract_cre(' in snapshot and 'def inspect_gam(' in snapshot
           assert 'def extract_trait_ids(' in snapshot
           assert '"saved_trait_ids":raw_traits' in snapshot
+          assert 'result["melee_handoff_native_preview"]=preview_handoff(' in report_135
+          assert 'MELEE_V5_NATIVE_PREFLIGHT_STATUS=' in report_135
+          native_v5 = (root / "BGXRANGED_V5_NATIVE_CANDIDATE_READONLY.py").read_text("utf-8")
+          ast.parse(native_v5)
+          assert 'EXACT_BCS_SHA = "9bd4e5b413f60ba383fcb78859f9bfe0aab762ee8b0ec2b3f164b6c03377055e"' in native_v5
+          assert 'EXACT_WTASIGHT_SHA = "ec50ad2e91a33aad4e4b6b1bc33ac87f0f02f4af49f9649b5cad6c36faeaa403"' in native_v5
+          assert 'preview(' in native_v5 and 'splice_native(' in native_v5
+
 
           # 146 must work after BGXFENEMY becomes LAST (it was previously BGXF3-only).
           import BGXFTRACE_CONSOLE_CAPTURE as CAP
@@ -122,15 +130,17 @@ jobs:
           assert "70..92 | ForEach-Object" in updater_bytes.decode("utf-8")
           assert "97..116 | ForEach-Object" in updater_bytes.decode("utf-8")
           updater = pathlib.Path("BGXAI/BGXAI_SYNC.ps1").read_text(encoding="utf-8")
-          assert "0.3.71-WEAPON-TRAIT-SNAPSHOT" in updater
+          assert "0.3.72-V5-NATIVE-READONLY" in updater
           assert "BGXAI_WEAPON_SAVED_SNAPSHOT_READONLY.py" in updater
           assert "BGXAI_WEAPON_CHOICE_ADVISORY_V1.js" in updater
           assert "BGXAI_WEAPON_TRAITS_ADVISORY_V1.js" in updater
+          assert "BGXRANGED_V5_NATIVE_CANDIDATE_READONLY.py" in updater
+          assert "BGXRANGED_V5_ANTICIPATORY_CLOSE_SOURCE_ONLY.baf" in updater
           for n in range(1, 156):
               assert ("'"+str(n)+"' {") in updater, n
           for n in range(152, 156):
               assert ("Write-Host '"+str(n)+" - ") in updater, n
-          print("PASS source syntax + 28/28 SHA + mock guard + menu 135 weapon snapshot + menus 1-155")
+          print("PASS source syntax + 30/30 SHA + mock guard + menu 135 weapon snapshot + menus 1-155")
           PY
 
       - name: Weapon saved GAM/CRE snapshot isolated tests (Python, read only)
