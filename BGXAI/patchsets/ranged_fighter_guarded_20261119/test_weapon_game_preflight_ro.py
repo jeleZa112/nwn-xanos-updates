@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 import unittest
 import sys
+from unittest import mock
 sys.path.insert(0,str(Path(__file__).parent))
 import BGXAI_WEAPON_GAME_PREFLIGHT_RO as P
 
@@ -97,5 +98,43 @@ class TestReadOnly(unittest.TestCase):
         script=Path(P.__file__).read_text()
         for banned in ('--force-install','--force-uninstall','weidu --install','CreateItem(','Stop()'):
             self.assertNotIn(banned,script)
+
+    def test_report_path_existing_unified_documents_folder(self):
+        profile=self.game / 'User'
+        unified=profile / 'Documents' / 'BGXAI_LIVE_REPORTS'
+        unified.mkdir(parents=True)
+        previous=unified / 'BGXAI_FRIENDLY_AGGRO_READONLY_old.json'
+        previous.write_text('\u007b"original": true\u007d', encoding='utf-8')
+        other=self.game / 'old_localappdata'
+        report={'status':'READONLY_NATIVE_PREFLIGHT_PASS', 'game_files_unchanged':True,
+                'weidu_compile':{'state':'NATIVE_COMPILED_TEMP_ONLY'}}
+        with mock.patch.dict('os.environ', {'USERPROFILE':str(profile), 'LOCALAPPDATA':str(other)}), \
+             mock.patch.object(P, 'audit', return_value=report), \
+             mock.patch.object(sys,'argv',['pref.py','--game',str(self.game)]), \
+             contextlib.redirect_stdout(io.StringIO()) as out:
+            rc=P.main()
+        target=unified / 'BGXAI_WEAPON_NATIVE_PREFLIGHT_V1.json'
+        self.assertEqual(rc,0)
+        self.assertTrue(target.is_file())
+        self.assertEqual(json.loads(target.read_text(encoding='utf-8')),report)
+        self.assertIn('REPORT_FILE: '+str(target),out.getvalue())
+        self.assertTrue(previous.is_file())
+        self.assertFalse((other/'BGXAI_UPDATER'/'reports'/'BGXAI_WEAPON_NATIVE_PREFLIGHT_V1.json').exists())
+
+    def test_report_write_failure_does_not_fall_back_elsewhere(self):
+        profile=self.game / 'User'
+        unified=profile / 'Documents' / 'BGXAI_LIVE_REPORTS'
+        target=unified / 'BGXAI_WEAPON_NATIVE_PREFLIGHT_V1.json'
+        target.mkdir(parents=True)
+        other=self.game / 'old_localappdata'
+        report={'status':'READONLY_NATIVE_PREFLIGHT_PASS', 'game_files_unchanged':True}
+        with mock.patch.dict('os.environ', {'USERPROFILE':str(profile), 'LOCALAPPDATA':str(other)}), \
+             mock.patch.object(P, 'audit', return_value=report), \
+             mock.patch.object(sys,'argv',['pref.py','--game',str(self.game)]), \
+             contextlib.redirect_stdout(io.StringIO()) as out:
+            rc=P.main()
+        self.assertEqual(rc,2)
+        self.assertIn('REPORT_WRITE_ERROR',out.getvalue())
+        self.assertFalse((other/'BGXAI_UPDATER'/'reports'/'BGXAI_WEAPON_NATIVE_PREFLIGHT_V1.json').exists())
 
 if __name__=='__main__':unittest.main(verbosity=2)
