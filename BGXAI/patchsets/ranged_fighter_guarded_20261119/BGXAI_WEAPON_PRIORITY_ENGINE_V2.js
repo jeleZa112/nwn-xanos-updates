@@ -12,7 +12,10 @@ const tickOK = x => Number.isSafeInteger(x) && x >= 0;
 const hold = (status, extra={}) => ({status, executable:false, dispatchAuthorized:false, ...extra});
 function signature(scene) {
   const f=scene.frame, a=scene.actor, e=scene.enemy;
-  return [f.area,f.actorId,f.enemyId,f.snapshotId,a.selectedWeaponId,
+  // A unique capture snapshot ID MUST change between frames. Stability instead
+  // binds to separately verified equipment/protection/effective-stat fingerprints.
+  return [f.area,f.actorId,f.enemyId,f.equipmentFingerprint,
+          f.protectionFingerprint,f.combatFingerprint,a.selectedWeaponId,
           a.traitProfile.modFingerprint,
           scene.quickslotIds.map(x=>x===null?"-":x).join("/")].join("|");
 }
@@ -23,6 +26,8 @@ function validate(scene) {
   const {frame:f,actor:a,enemy:e}=scene;
   if (!tickOK(f.tick) || !validId(f.snapshotId) || !validId(f.area) ||
       !validId(f.actorId) || !validId(f.enemyId) || f.actorId===f.enemyId ||
+      !validId(f.equipmentFingerprint) || !validId(f.protectionFingerprint) ||
+      !validId(f.combatFingerprint) ||
       f.captureContract!=="COMPLETE_EFFECTIVE_SNAPSHOT" ||
       f.completeEquipmentObserved!==true || f.completeQuiverObserved!==true ||
       f.completeTargetObserved!==true) return "HOLD_CAPTURE_CONTRACT_UNVERIFIED";
