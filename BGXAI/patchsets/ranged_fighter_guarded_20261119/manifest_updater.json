@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
-  "version": "0.3.73-V5-GUARDED-PILOT",
+  "version": "0.3.74-V5-LIVE-CAPTURE",
   "files": [
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_PREFLIGHT.py",
@@ -60,8 +60,8 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py",
       "dest": "BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py",
-      "size": 14286,
-      "sha256": "55a92984c6d50fc27f073bda0aa7019f466b346becd7de7e85066382de65190d"
+      "size": 15317,
+      "sha256": "5613c1f90a96da2a896e344c0c9595c3f2ce9d5b211340336772bbb25d0abbfa"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V4_NO_FRIEND_ATTACK.baf",
@@ -126,8 +126,8 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXFTRACE_CONSOLE_CAPTURE.py",
       "dest": "BGXFTRACE_CONSOLE_CAPTURE.py",
-      "size": 2838,
-      "sha256": "c706962b8fd1d8a141d6e0a6d5b3d169dad5c86c105b8f6a5ff4a2e492607d09"
+      "size": 3094,
+      "sha256": "a725587b2987fcc02f2ef8e52c441acdb4d00a57fe70e8e3c9e8689c2935e568"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BXFR_MOTION_V3.lua",
