@@ -27,14 +27,14 @@ STAGED = COMPONENT + "/staged/WTASIGHT.BCS"
 PROOF = COMPONENT + "/PROOF.json"
 TP2 = COMPONENT + "/setup-BGXFENEMY.tp2"
 EXE = "setup-BGXFENEMY.exe"
-LAST = re.compile(r"^~(?:[^~]*[/\\])?BGXFENEMY[/\\]SETUP-BGXFENEMY[.]TP2~\\s+#0\\s+#0(?:\\s|$)", re.I)
+LAST = re.compile(r"^~(?:[^~]*[/\\])?BGXFENEMY[/\\]SETUP-BGXFENEMY[.]TP2~\s+#0\s+#0(?:\s|$)", re.I)
 INSTALL_TOKEN = "INSTALL_BGXFENEMY_WTASIGHT_GUARD"
 ROLLBACK_TOKEN = "ROLLBACK_BGXFENEMY_WTASIGHT_GUARD"
 TP2_TEXT = (
-    "BACKUP ~BGXFENEMY/backup~\\n"
-    "AUTHOR ~BGXAI safe party Enemy guard~\\n"
-    "BEGIN ~BGXFENEMY guard friendly-fire Enemy() in WTASIGHT for party only~\\n"
-    "COPY ~BGXFENEMY/staged/WTASIGHT.BCS~ ~override/WTASIGHT.BCS~\\n"
+    "BACKUP ~BGXFENEMY/backup~\n"
+    "AUTHOR ~BGXAI safe party Enemy guard~\n"
+    "BEGIN ~BGXFENEMY guard friendly-fire Enemy() in WTASIGHT for party only~\n"
+    "COPY ~BGXFENEMY/staged/WTASIGHT.BCS~ ~override/WTASIGHT.BCS~\n"
 )
 BASE = dict(TRACE.BASE)
 OTHER = {name: value for name, value in BASE.items() if name != TARGET}
@@ -168,7 +168,7 @@ def run_weidu(root: pathlib.Path, remove: bool = False) -> None:
     p = subprocess.run(command, cwd=root, stdin=subprocess.DEVNULL,
                        capture_output=True, text=True, errors="replace", timeout=240)
     stdout = (p.stdout or "") + "\n" + (p.stderr or "")
-    if p.returncode or re.search(r"(?im)^\\s*(?:ERROR:|FATAL ERROR:)", stdout):
+    if p.returncode or re.search(r"(?im)^\s*(?:ERROR:|FATAL ERROR:)", stdout):
         raise ValueError("WEIDU_STOP_MANUAL_REVIEW:" + stdout[-700:])
 
 
