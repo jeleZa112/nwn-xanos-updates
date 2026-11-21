@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 81,
-  "sha256": "917288a5a3dd51037feeaf39ef361459e65d7cb78a9dc8e5319620dbf12b1d9b",
+  "version": 82,
+  "sha256": "3b65ff8f1f13f734298b65a95b458861ccbf8853f81cda3ff4e252b67bf3eaf8",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v81 READ ONLY: scans up to 512 existing EET/BGEE saved GAME journals (reports discovered count and explicitly marks partial coverage), reuses current RU TLK sparse reader, includes text of all encountered journal StrRefs for both dialog.tlk and dialogf.tlk in SAME SEND_TO_CHATGPT_BG_EET_RU.zip entry 29_V81_ALL_SAVED_JOURNALS_READONLY.json. Flags Latin-only/mixed-script/unknown texts for review, never approves translations. Preserves v80, game, saves, BGXAI, BG Voice RU and rolled-back v78 UI; no automatic installs. Isolated synthetic regression: 4/4 saves, short English, mixed script and truncation HOLD."
+  "note": "v82 READ ONLY: targeted NALIN.DLG current build journal inspection. Loads active override/NALIN.DLG or current chitin.key resource through indexed BIFF (no historical strref substitution). Finds direct journal transitions and numeric AddJournalEntry calls, looks up each referenced strref in both installed Russian dialog.tlk and dialogf.tlk, saves text and source SHA into the SAME SEND_TO_CHATGPT_BG_EET_RU.zip entry 30_V82_NALIN_CURRENT_DLG_JOURNAL_READONLY.json. Explicit HOLD on absent/unparseable resources; no edits to game, TLK, saves, UI, BGXAI, BG Voice RU. Includes isolated synthetic KEY/BIFF, override precedence, English detection, corrupt-source regression. Maintains one auto-updater."
 }
