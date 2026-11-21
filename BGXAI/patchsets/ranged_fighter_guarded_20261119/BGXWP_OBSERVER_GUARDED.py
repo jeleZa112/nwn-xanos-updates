@@ -284,15 +284,56 @@ def _validated_action(event: dict) -> bool:
     return True
 
 
+def _direct_report(out_dir: Path) -> dict | None:
+    dest = out_dir / RAW_FILENAME
+    if dest.is_symlink():
+        raise ValueError('RAW_REPORT_SYMLINK')
+    if not dest.exists():
+        return None
+    st = dest.stat()
+    if not dest.is_file() or st.st_size <= 0 or st.st_size > MAX_LOG_BYTES:
+        return {'status': 'WEAPON_DIRECT_RAW_REPORT_INVALID_SIZE',
+                'report_file': str(dest), 'game_modified': False}
+    with dest.open('rb') as stream:
+        data = stream.read(MAX_LOG_BYTES + 1)
+    if len(data) != st.st_size or dest.stat().st_size != st.st_size:
+        raise ValueError('RAW_REPORT_CHANGED_WHILE_READING')
+    session = False
+    ready = False
+    actions = 0
+    for line in data.decode('utf-8', 'replace').splitlines():
+        try:
+            e = json.loads(line)
+        except ValueError:
+            continue
+        if not isinstance(e, dict):
+            continue
+        if e.get('type') == 'SESSION' and e.get('schema') == SCHEMA_NAME and e.get('readOnly') is True:
+            session = True
+            ready = False
+            actions = 0
+        elif session and e.get('type') == 'READY' and e.get('observerRegistered') is True:
+            ready = True
+        elif session and ready and _validated_action(e):
+            actions += 1
+    return {'status': 'WEAPON_RAW_DIRECT_FILE_READY' if session and ready and actions else
+            'WEAPON_RAW_DIRECT_FILE_INCOMPLETE',
+            'report_file': str(dest), 'actions': actions,
+            'game_modified': False, 'per_slot_apr_verified': False,
+            'manual_eps_queue_verified': False}
+
+
 def collect_capture(out_dir: Path) -> dict:
     """Creates a new raw JSONL only if the verified file sink has not done so.
 
     Duplicate Infinity_Log/print messages use the Lua sequence number;
     distinct attacks with identical combat statistics stay distinct.
     """
+    direct = _direct_report(out_dir)
     path = _candidate(out_dir)
     if path is None:
-        return {'status': 'WEAPON_CONSOLE_CAPTURE_ABSENT', 'game_modified': False}
+        return direct if direct is not None else {
+            'status': 'WEAPON_CONSOLE_CAPTURE_ABSENT', 'game_modified': False}
     st = path.stat()
     if not 1 <= st.st_size <= MAX_LOG_BYTES:
         return {'status': 'WEAPON_CONSOLE_CAPTURE_EMPTY_OR_OVERSIZED',
@@ -335,20 +376,19 @@ def collect_capture(out_dir: Path) -> dict:
                 raise ValueError('CONFLICTING_CONSOLE_SEQUENCE')
             events[seq] = event
     if session is None or not ready:
+        if direct is not None: return direct
         return {'status': 'WEAPON_CONSOLE_SESSION_OR_READY_NOT_CONFIRMED',
                 'console_log': str(path), 'invalid_lines': malformed,
                 'game_modified': False}
     if not events:
+        if direct is not None: return direct
         return {'status': 'WEAPON_CONSOLE_READY_NO_PARTY_ACTIONS',
                 'console_log': str(path), 'invalid_lines': malformed,
                 'game_modified': False}
     dest = out_dir / RAW_FILENAME
-    if dest.is_symlink():
-        raise ValueError('RAW_REPORT_SYMLINK')
-    if dest.exists():
-        return {'status': 'WEAPON_RAW_REPORT_ALREADY_PRESENT_PRESERVED',
-                'report_file': str(dest), 'console_log': str(path),
-                'actions_in_console': len(events), 'game_modified': False}
+    if direct is not None:
+        return {**direct, 'status': 'WEAPON_RAW_DIRECT_PRESERVED_CONSOLE_ALSO_SEEN',
+                'console_log': str(path), 'actions_in_console': len(events)}
     lines = [json.dumps(session, separators=(',', ':'), sort_keys=True),
              json.dumps({'type':'READY', 'schema':SCHEMA_NAME,
                          'observerRegistered':True, 'source':'CONSOLE_CAPTURE'},
