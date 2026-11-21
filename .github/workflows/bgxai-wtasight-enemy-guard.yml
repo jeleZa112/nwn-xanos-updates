@@ -81,7 +81,8 @@ jobs:
               (game / "InfinityLoader.exe").write_bytes(b"MZtest")
               with patch.object(CAP.V3.V2.V1, "processes", return_value=None), \
                    patch.object(CAP.V2, "guard", return_value=None), \
-                   patch.object(CAP.ENEMY.LAST, "match", return_value=True), \
+                   patch.object(CAP.ENEMY, "LAST", SimpleNamespace(match=lambda _: True)), \
+                   patch.object(CAP.V3TRACE, "last", return_value="~BGXFENEMY/SETUP-BGXFENEMY.TP2~ #0 #0"), \
                    patch.object(CAP.ENEMY, "status", return_value={"status":"BGXFENEMY_INSTALLED_VERIFIED"}), \
                    patch.object(CAP.subprocess, "Popen", return_value=SimpleNamespace(pid=123)), \
                    patch.dict(CAP.os.environ, {"USERPROFILE":str(pathlib.Path(d))}):
@@ -90,7 +91,8 @@ jobs:
                   assert pathlib.Path(outcome["console_log"]).exists()
                   assert outcome["game_modified"] is False
               with patch.object(CAP.V3.V2.V1, "processes", return_value=None), \
-                   patch.object(CAP.ENEMY.LAST, "match", return_value=True), \
+                   patch.object(CAP.ENEMY, "LAST", SimpleNamespace(match=lambda _: True)), \
+                   patch.object(CAP.V3TRACE, "last", return_value="~BGXFENEMY/SETUP-BGXFENEMY.TP2~ #0 #0"), \
                    patch.object(CAP.ENEMY, "status", return_value={"status":"DRIFT"}):
                   try:
                       CAP.start(game)
