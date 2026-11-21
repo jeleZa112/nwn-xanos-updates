@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 75
+SELF_VERSION = 76
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -888,6 +888,10 @@ def main(argv=None):
     if v74_rc:
         print('v74: проверка или установка перевода остановлена безопасно; смотри единый ZIP.')
         return v74_rc
+    v76_rc=v76_live_audit(game,report_path)
+    if v76_rc:
+        print('v76: только адресная проверка остановлена безопасно; игра не изменена.')
+        return v76_rc
     print('v67 cached DLG structure:',v67_status['status'],
           len(v67_status['target_references']),'target references')
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
@@ -3036,6 +3040,238 @@ def v74_selftest():
     assert v73_lua_source().startswith(b'-- BG EET RU V73:')
     return True
 
+# BG_EET_RU v76: target-specific read-only evidence stage, same updater + same ZIP.
+# No game writes. Do not infer gameplay visibility from mere source presence.
+V76_ENTRY = '26_V76_TWO_STRREFS_AND_ACTIVE_UI_READONLY.json'
+V76_TARGETS = (
+    (266659, 'Скрытая атака: настройка третьей редакции',
+     "Включает/отключает Скрытную Атаку и Калечащий удар, которые являются специальными способностями, похожими на таковые из правил Wizards of the Coast's 3rd Edition Dungeons & Dragons(R).",
+     'Включает или отключает Скрытую атаку и Калечащий удар — особые способности, основанные на правилах третьей редакции Dungeons & Dragons от Wizards of the Coast.'),
+    (273940, 'Диалоговое предупреждение пропуска SoD',
+     'Вообще-то, с меня хватит. Не буду лакеем - ни у вас, ни у кого-то ещё. Я покидаю Врата Балдура, чтобы искать свою судьбу в другом месте. Счастливо! (ВНИМАНИЕ! Выбрав этот вариант диалога, вы полностью пропустите дополнение Siege of Dragonspear).',
+     'Вообще-то, с меня хватит. Не буду лакеем - ни у вас, ни у кого-то ещё. Я покидаю Врата Балдура, чтобы искать свою судьбу в другом месте. Счастливо! (ВНИМАНИЕ! Выбрав этот вариант диалога, вы полностью пропустите дополнение «Осада Драконьего Копья»).'),
+)
+V76_OLD_RU_SHA = {
+    'dialog.tlk': '5c17097543ddd1f2db85c30de32fc422670c95caab7bd12e810ac4754e8b823a',
+    'dialogf.tlk': 'a4b335fda2c9b1e3d6b03d991457e84be8e9fc03cf5de83e9a5273cc0ac0a0f9',
+}
+V76_OLD_UI_SHA = '1ee8212c54cd294c10bdc8188e1f17365d7785829dbbb407c0a557a4b22e088b'
+V76_UI_KEY = 'LEUI_REVERSE_BUTTON_POSITIONS_LABEL'
+V76_UI_OLD_TEXT = 'Реверсивные кнопоки'
+
+
+def v76_file_sha(path):
+    h=hashlib.sha256()
+    with Path(path).open('rb') as f:
+        for part in iter(lambda:f.read(1024*1024), b''):
+            h.update(part)
+    return h.hexdigest()
+
+
+def v76_tlk_selected(path):
+    """Read only two chosen StrRefs, without enumerating or altering TLK entries."""
+    path=Path(path)
+    count=None
+    with path.open('rb') as f:
+        size=path.stat().st_size
+        header=f.read(18)
+        if len(header)!=18 or header[:8]!=b'TLK V1  ':
+            raise ValueError('INVALID_TLK_HEADER')
+        language_id,count,text_base=struct.unpack_from('<HII',header,8)
+        if count>10_000_000 or text_base<18+count*26 or text_base>size:
+            raise ValueError('INVALID_TLK_TABLE_OR_TEXT_BASE')
+        rows={}
+        for strref,context,old,new in V76_TARGETS:
+            if strref>=count:
+                rows[str(strref)]={'status':'STRREF_OUTSIDE_TLK','strref':strref,'tlk_count':count}
+                continue
+            off=18+strref*26
+            f.seek(off)
+            entry=f.read(26)
+            if len(entry)!=26:raise ValueError('TRUNCATED_TLK_ENTRY')
+            flags=struct.unpack_from('<H',entry,0)[0]
+            ptr,length=struct.unpack_from('<II',entry,18)
+            if ptr+length>size-text_base or length>2_000_000:
+                raise ValueError('STRING_BYTES_OUTSIDE_TLK_'+str(strref))
+            f.seek(text_base+ptr)
+            data=f.read(length)
+            if len(data)!=length:raise ValueError('TRUNCATED_TLK_STRING')
+            try:
+                text=data.decode('utf-8')
+                decoding='utf-8'
+            except UnicodeDecodeError:
+                # Strictly report a decode problem; never replace or silently reinterpret.
+                rows[str(strref)]={'strref':strref,'status':'NON_UTF8_STRING_HOLD',
+                                   'source_bytes_sha256':hashlib.sha256(data).hexdigest(),
+                                   'flags':flags,'length':length}
+                continue
+            rows[str(strref)]={
+                'strref':strref,'status':('ALREADY_MATCHES_PROPOSED_TRANSLATION' if text==new else ('EXACT_SOURCE_MATCH' if text==old else 'CURRENT_STRING_DIFFERENT_FROM_OLD_SOURCE')),
+                'old_source_matches':text==old,'already_matches_proposed_translation':text==new,
+                'context':context,'current_text':text,'current_text_sha256':hashlib.sha256(data).hexdigest(),
+                'current_text_bytes':length,'flags':flags,'decoding':decoding,
+                'historical_source_text':old,'proposed_text':new,
+                'active_runtime_visibility':'NOT_PROVEN_BY_TLK_CONTENT',
+                'safe_to_install_without_additional_proof':False,
+            }
+        return {'status':'READ_ONLY_TWO_STRREFS_EXTRACTED', 'entries':rows,
+                'tlk_count':count,'language_id':language_id,'file_size':size}
+
+
+def v76_ui_selected(path):
+    """Look for one known UI key and typo in active override/UI.MENU only."""
+    path=Path(path)
+    if not path.is_file():
+        return {'status':'UI_MENU_NOT_IN_OVERRIDE','path':str(path),
+                'runtime_visibility':'NOT_PROVEN','edit_permitted':False}
+    length=path.stat().st_size
+    if length>20_000_000:
+        return {'status':'UI_MENU_LARGE_READ_HOLD','bytes':length,'path':str(path),
+                'runtime_visibility':'NOT_PROVEN','edit_permitted':False}
+    raw=path.read_bytes()
+    result={'status':'SOURCE_FOUND_RUNTIME_VISIBILITY_UNPROVEN',
+            'path':str(path),'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest(),
+            'matches_2026_11_18_snapshot':hashlib.sha256(raw).hexdigest()==V76_OLD_UI_SHA,
+            'runtime_visibility':'NOT_PROVEN','edit_permitted':False}
+    try:source=raw.decode('utf-8-sig')
+    except UnicodeDecodeError:
+        result['status']='NON_UTF8_UI_MENU_HOLD'
+        return result
+    hits=list(re.finditer(r'(?<![A-Za-z0-9_])'+re.escape(V76_UI_KEY)+r'(?![A-Za-z0-9_])',source))
+    old=list(re.finditer(re.escape(V76_UI_OLD_TEXT),source))
+    result.update(key_occurrences=len(hits),typo_occurrences=len(old),
+                  key_contexts=[source[max(0,m.start()-140):min(len(source),m.end()+160)] for m in hits[:5]],
+                  typo_contexts=[source[max(0,m.start()-100):min(len(source),m.end()+130)] for m in old[:3]],
+                  suggested_russian_label='Поменять кнопки местами',
+                  note='Source occurrence or references alone never prove active on-screen display.')
+    return result
+
+
+def v76_report(game):
+    game=Path(game)
+    report={'schema':'BG_EET_RU_V76_TARGETED_CURRENT_VISIBLE_EVIDENCE',
+            'updater_version':SELF_VERSION,'mode':'READ_ONLY','game_root':str(game),
+            'game_files_written':False,'game_changes_permitted':False,
+            'already_done':'Prior 62/63 DLG and CRE/STO broad scans are NOT repeated.',
+            'current_game_used':True,'captured_utc':dt.datetime.now(dt.timezone.utc).isoformat(),
+            'tlks':{},'ui':None,'errors':[], 'approved_translations':[],
+            'gameplay_visibility_confirmed':False}
+    folder=game/'lang'/'ru_RU'
+    for name in ('dialog.tlk','dialogf.tlk'):
+        path=folder/name
+        row={'path':str(path),'old_baseline_sha256':V76_OLD_RU_SHA[name]}
+        try:
+            if not path.is_file():raise FileNotFoundError(name)
+            row['sha256']=v76_file_sha(path)
+            row['matches_old_2026_11_17_baseline']=(row['sha256']==V76_OLD_RU_SHA[name])
+            row.update(v76_tlk_selected(path))
+        except (OSError,ValueError,OverflowError,struct.error) as exc:
+            row['status']='SOURCE_READ_ERROR_HOLD'
+            row['error_type']=type(exc).__name__
+            row['error']=str(exc)[:300]
+            report['errors'].append(name+':'+row['error'])
+        report['tlks'][name]=row
+    try:report['ui']=v76_ui_selected(game/'override'/'UI.MENU')
+    except (OSError,ValueError) as exc:
+        report['ui']={'status':'UI_READ_ERROR_HOLD','error':str(exc)[:300],
+                      'edit_permitted':False,'runtime_visibility':'NOT_PROVEN'}
+        report['errors'].append('UI:'+str(exc)[:300])
+    report['status']='V76_CURRENT_SOURCES_READ_ONLY_DONE' if not report['errors'] else 'V76_PARTIAL_HOLD_ERRORS'
+    report['next_action']='Use exact game-side evidence before any game text replacement.'
+    return report
+
+
+def v76_update_zip(report_path,result):
+    report_path=Path(report_path)
+    if not report_path.is_file():
+        raise FileNotFoundError('V76_PREVIOUS_SINGLE_REPORT_ZIP_MISSING')
+    import tempfile as _tmp
+    with _tmp.NamedTemporaryFile(prefix='.v76_',suffix='.zip',dir=str(report_path.parent),delete=False) as f:
+        staged=Path(f.name)
+    try:
+        with zipfile.ZipFile(report_path,'r') as source,zipfile.ZipFile(staged,'w',zipfile.ZIP_DEFLATED,compresslevel=7) as target:
+            if source.testzip() is not None:raise ValueError('PREVIOUS_ZIP_CRC_FAILED')
+            seen=set()
+            for info in source.infolist():
+                if info.filename in seen:raise ValueError('PREVIOUS_ZIP_DUPLICATE_ENTRY')
+                seen.add(info.filename)
+                if info.filename!=V76_ENTRY:
+                    target.writestr(info,source.read(info.filename))
+            target.writestr(V76_ENTRY,json.dumps(result,ensure_ascii=False,indent=2).encode('utf-8'))
+        with zipfile.ZipFile(staged,'r') as check:
+            if check.testzip() is not None or check.namelist().count(V76_ENTRY)!=1:
+                raise ValueError('V76_NEW_ZIP_VALIDATION_FAILED')
+        os.replace(staged,report_path)
+    finally:
+        if staged.exists():staged.unlink()
+
+
+def v76_live_audit(game,report_path):
+    game=Path(game)
+    report_path=Path(report_path)
+    try:
+        safe_external(game,report_path)
+        result=v76_report(game)
+        prior=None
+        try:
+            with zipfile.ZipFile(report_path,'r') as z:
+                if V76_ENTRY in z.namelist():prior=json.loads(z.read(V76_ENTRY))
+        except (KeyError,ValueError,OSError,zipfile.BadZipFile):pass
+        comparable=lambda r: {k:v for k,v in r.items() if k not in ('captured_utc',)}
+        if prior is not None and comparable(prior)==comparable(result):
+            print('v76: CACHE PASS — текущие два StrRef и UI.MENU не менялись; без записи.')
+        else:
+            v76_update_zip(report_path,result)
+            print('v76:',result['status'],'— адресная сверка 266659/273940 и UI.MENU. Игра не изменялась.')
+        print('Единый ZIP:',report_path)
+        return 0
+    except (OSError,ValueError,RuntimeError,zipfile.BadZipFile) as exc:
+        print('v76: SAFE_STOP — '+type(exc).__name__+': '+str(exc)[:220])
+        return 2
+
+
+def v76_selftest():
+    """Isolated TLK+UI fixture; no installed game dependency."""
+    import tempfile as _tmp
+    assert len(V76_TARGETS)==2 and V76_TARGETS[0][0]==266659 and V76_TARGETS[1][0]==273940
+    with _tmp.TemporaryDirectory(prefix='BG_EET_RU_V76_TEST_') as d:
+        p=Path(d);folder=p/'lang'/'ru_RU';folder.mkdir(parents=True)
+        u=p/'override';u.mkdir()
+        labels={i:s for i,_,s,_ in V76_TARGETS}
+        def create_tlk(path,remap=None):
+            entries=bytearray(26*(273940+1));payload=bytearray()
+            for i,s in labels.items():
+                if remap and i in remap:s=remap[i]
+                b=s.encode('utf8')
+                struct.pack_into('<H',entries,26*i,1)
+                struct.pack_into('<II',entries,26*i+18,len(payload),len(b))
+                payload.extend(b)
+            base=18+len(entries)
+            with path.open('wb') as f:
+                f.write(b'TLK V1  '+struct.pack('<HII',0,273941,base));f.write(entries);f.write(payload)
+        for name in ('dialog.tlk','dialogf.tlk'):create_tlk(folder/name)
+        (u/'UI.MENU').write_text('label = "Реверсивные кнопоки"; value = LEUI_REVERSE_BUTTON_POSITIONS_LABEL',encoding='utf8')
+        result=v76_report(p)
+        assert result['status']=='V76_CURRENT_SOURCES_READ_ONLY_DONE'
+        assert all(all(r['status']=='EXACT_SOURCE_MATCH' for r in f['entries'].values()) for f in result['tlks'].values())
+        assert result['ui']['typo_occurrences']==1 and result['ui']['key_occurrences']==1
+        assert not result['gameplay_visibility_confirmed'] and not result['game_changes_permitted']
+        out=p/'_v76_test_unified.zip'
+        try:
+            with zipfile.ZipFile(out,'w') as z:z.writestr('00_STATUS.json','{}')
+            v76_update_zip(out,result)
+            v76_update_zip(out,result)
+            with zipfile.ZipFile(out) as z:
+                assert z.namelist()==['00_STATUS.json',V76_ENTRY]
+                assert not json.loads(z.read(V76_ENTRY))['game_changes_permitted']
+            create_tlk(folder/'dialogf.tlk', {273940:V76_TARGETS[1][3]})
+            changed=v76_report(p)
+            assert changed['tlks']['dialogf.tlk']['entries']['273940']['already_matches_proposed_translation'] is True
+            assert changed['tlks']['dialog.tlk']['entries']['273940']['old_source_matches'] is True
+        finally:
+            if out.exists():out.unlink()
+    return True
+
 def selftest():
     # Self-contained checks only; never read or change a real EET installation.
     p36,tra36=load_v36_preflight()
@@ -3115,6 +3351,7 @@ def selftest():
     assert v72_selftest() and callable(v72_pilot) and callable(v72_zip_report)
     assert v73_selftest() and callable(v73_pilot) and callable(v73_zip_report)
     assert v74_selftest() and callable(v74_pilot) and callable(v74_report)
+    assert v76_selftest() and callable(v76_live_audit)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
