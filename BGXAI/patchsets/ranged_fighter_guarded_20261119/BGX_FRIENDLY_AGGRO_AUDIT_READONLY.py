@@ -91,6 +91,18 @@ def main(root):
           "suspect_blocks":len(suspects),"last_weidu":component[-1],
           "suspects":suspects
         }
+        # V5 candidate: native WeiDU compilation to TEMP ONLY. Fail closed.
+        # This never installs a BCS; report it separately from the 135 audit.
+        try:
+            from BGXRANGED_V5_NATIVE_CANDIDATE_READONLY import preview as preview_handoff
+            result["melee_handoff_native_preview"]=preview_handoff(
+                root,raw,text,binary,component[-1])
+        except (OSError,ValueError,RuntimeError,UnicodeError,ImportError,
+                subprocess.TimeoutExpired,struct.error) as e:
+            result["melee_handoff_native_preview"]={
+                "status":"BGXRANGED_V5_NATIVE_READONLY_STOP",
+                "reason":str(e)[:480],"game_modified":False,
+                "install_performed":False,"live_tested":False}
         # Inspect the last saved party CRE script slots and decompile its
         # actual referenced scripts. This is historical save evidence, NEVER
         # runtime command provenance. No read-only scan may change the game.
@@ -136,6 +148,12 @@ def main(root):
         report.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding="utf-8")
         print(json.dumps({k:v for k,v in result.items() if k!="suspects"},ensure_ascii=False,indent=2))
         print("REPORT_FILE="+str(report))
+        pre=result.get("melee_handoff_native_preview",{})
+        print("MELEE_V5_NATIVE_PREFLIGHT_STATUS="+str(pre.get("status","UNKNOWN")))
+        print("MELEE_V5_NATIVE_CHANGED_BLOCKS="+str(pre.get("changed_blocks","UNKNOWN")))
+        print("MELEE_V5_NATIVE_STOP_REASON="+str(pre.get("reason","NONE")))
+        print("MELEE_V5_ACTION_SOURCE_COUNT="+str(len(pre.get("remaining_other_attack_sources",[]))))
+
         print("WEAPON_SAVED_SNAPSHOT_STATUS="+str(result.get("saved_weapon_snapshot",{}).get("status","UNKNOWN")))
         evidence=result.get("saved_party_script_audit",{})
         saved=evidence.get("saved_party",{})
