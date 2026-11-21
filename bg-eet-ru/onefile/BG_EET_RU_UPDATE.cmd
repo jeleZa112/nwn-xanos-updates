@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 77
+SELF_VERSION = 78
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -596,6 +596,189 @@ def v77_resume_selftest():
     return True
 
 
+# BG EET RU v78 — OPTIONAL, EXPLICITLY APPROVED and rollbackable UI.MENU label repair.
+# Default updater behavior remains READ ONLY. Never runs automatically.
+V78_ENTRY = '27_V78_LEUI_REVERSE_LABEL_SAFE_FIX.json'
+V78_UI_ORIGINAL_SHA = '1ee8212c54cd294c10bdc8188e1f17365d7785829dbbb407c0a557a4b22e088b'
+V78_UI_ORIGINAL_BYTES = 583996
+V78_APPROVAL = 'INSTALL_BG_EET_RU_LEUI_LABEL_78'
+V78_ROLLBACK_APPROVAL = 'RESTORE_BG_EET_RU_LEUI_LABEL_78'
+V78_OLD = 'Реверсивные кнопоки'
+V78_NEW = 'Поменять кнопки местами'
+
+
+def v78_make_patch(raw):
+    """Pure exact-replacement transformer. Persisted LeUI option name stays unchanged."""
+    if not isinstance(raw, bytes):raise ValueError('V78_RAW_NOT_BYTES')
+    a=('LEUI_REVERSE_BUTTON_POSITIONS_LABEL = "'+V78_OLD+'"').encode('utf-8')
+    b=('LEUI_REVERSE_BUTTON_POSITIONS_LABEL = "'+V78_NEW+'"').encode('utf-8')
+    getter=b'LeUIGetOption(LeUI_uiStrings.LEUI_REVERSE_BUTTON_POSITIONS_LABEL, true)'
+    getter_new=('LeUIGetOption("'+V78_OLD+'", true)').encode('utf-8')
+    writer=b"options['LeUI'][LeUI_uiStrings.LEUI_REVERSE_BUTTON_POSITIONS_LABEL]"
+    writer_new=("options['LeUI'][\""+V78_OLD+"\"]").encode('utf-8')
+    key=b'LEUI_REVERSE_BUTTON_POSITIONS_LABEL'
+    if (raw.count(a)!=1 or raw.count(getter)!=1 or raw.count(writer)!=2 or
+        raw.count(key)!=5 or raw.count(V78_OLD.encode('utf-8'))!=1 or
+        raw.count(V78_NEW.encode('utf-8'))!=0):
+        raise ValueError('V78_UI_CONTEXT_NOT_EXACT_DO_NOT_PATCH')
+    new=raw.replace(a,b,1).replace(getter,getter_new,1).replace(writer,writer_new,2)
+    if (new.count(key)!=2 or new.count(V78_OLD.encode('utf8'))!=3 or
+        new.count(V78_NEW.encode('utf8'))!=1 or new==raw or
+        new.count(b"options['LeUI'][")!=raw.count(b"options['LeUI'][")):
+        raise ValueError('V78_REPLACEMENT_POSTCHECK_FAILED')
+    return new
+
+
+def v78_backup_path():
+    return WORKDIR/'SAFE_BACKUPS'/('UI.MENU_V78_'+V78_UI_ORIGINAL_SHA[:16]+'.bak')
+
+
+def v78_update_zip(path, result):
+    import tempfile as _tmp
+    if not path.is_file():raise ValueError('V78_PREVIOUS_SINGLE_ZIP_MISSING')
+    with _tmp.NamedTemporaryFile(dir=str(path.parent),suffix='.zip',prefix='.v78_',delete=False) as f:
+        staged=Path(f.name)
+    try:
+        with zipfile.ZipFile(path,'r') as original,zipfile.ZipFile(staged,'w',zipfile.ZIP_DEFLATED,compresslevel=7) as new:
+            if original.testzip() is not None:raise ValueError('V78_OLD_ZIP_CORRUPTED')
+            names=set()
+            for member in original.infolist():
+                if member.filename in names:raise ValueError('V78_DUPLICATE_OLD_ZIP_MEMBER')
+                names.add(member.filename)
+                if member.filename!=V78_ENTRY:new.writestr(member,original.read(member))
+            new.writestr(V78_ENTRY,json.dumps(result,ensure_ascii=False,indent=2).encode('utf-8'))
+        with zipfile.ZipFile(staged) as verify:
+            if verify.testzip() is not None or verify.namelist().count(V78_ENTRY)!=1:
+                raise ValueError('V78_NEW_ZIP_CORRUPTED')
+        os.replace(staged,path)
+    finally:
+        if staged.exists():staged.unlink()
+
+
+def v78_atomic_replace(path, raw, tempname, expected):
+    stage=path.with_name(tempname)
+    if stage.exists():raise ValueError('V78_STALE_STAGE_STOP')
+    try:
+        with stage.open('xb') as f:
+            f.write(raw);f.flush();os.fsync(f.fileno())
+        if digest(stage.read_bytes())!=expected:raise ValueError('V78_STAGE_HASH_MISMATCH')
+        os.replace(stage,path)
+        if digest(path.read_bytes())!=expected:raise ValueError('V78_POST_SWAP_HASH_MISMATCH')
+    finally:
+        if stage.exists():stage.unlink()
+
+
+def v78_live_fix(game,report_path,mode):
+    """Guarded, externally backed-up optional action; separate approval every time."""
+    game=Path(game);report_path=Path(report_path)
+    safe_external(game,report_path)
+    backup=v78_backup_path()
+    safe_external(game,backup)
+    target=game/'override'/'UI.MENU'
+    result={'schema':'BG_EET_RU_V78_GUARDED_LEUI_LABEL','mode':mode,
+            'updater_version':SELF_VERSION,'file':str(target),'backup':str(backup),
+            'game_files_written':0,'tlk_changed':False,'combat_lua_changed':False,
+            'bgxai_voice_changed':False,'prior_sha256':V78_UI_ORIGINAL_SHA,
+            'permission_requested':True,'source_provenance':'v77 current SHA and five keyed UI.MENU references'}
+    try:
+        if mode not in ('install','rollback'):raise ValueError('V78_UNSUPPORTED_MODE')
+        if not target.is_file() or target.is_symlink():raise ValueError('V78_UI_MENU_NOT_REGULAR_FILE')
+        if not report_path.is_file():raise ValueError('V78_SINGLE_REPORT_MISSING')
+        with zipfile.ZipFile(report_path) as z:
+            if z.testzip() is not None:raise ValueError('V78_PREVIOUS_REPORT_BAD_CRC')
+            v76=json.loads(z.read(V76_ENTRY))
+            old=v76.get('ui') or {}
+            if mode=='install' and (old.get('sha256')!=V78_UI_ORIGINAL_SHA or
+                old.get('key_occurrences')!=5 or old.get('typo_occurrences')!=1):
+                # A previous successful install may have updated the v76 audit.
+                if not (backup.is_file() and digest(backup.read_bytes())==V78_UI_ORIGINAL_SHA):
+                    raise ValueError('V78_LIVE_AUDIT_BASELINE_NOT_CONFIRMED')
+        current=target.read_bytes()
+        current_hash=digest(current)
+        result['current_sha256']=current_hash
+        if mode=='install':
+            if current_hash!=V78_UI_ORIGINAL_SHA or len(current)!=V78_UI_ORIGINAL_BYTES:
+                if backup.is_file() and digest(backup.read_bytes())==V78_UI_ORIGINAL_SHA and \
+                   digest(v78_make_patch(backup.read_bytes()))==current_hash:
+                    result['status']='V78_ALREADY_INSTALLED_NO_CHANGES'
+                else:raise ValueError('V78_CURRENT_UI_CHANGED_NO_PATCH')
+            else:
+                new=v78_make_patch(current)
+                new_sha=digest(new)
+                result['new_sha256']=new_sha
+                closed,why=v71_processes_closed()
+                if not closed:raise ValueError('V78_CLOSE_GAME_AND_LOADER:'+str(why))
+                try:approval=input('Подтверди изменение ТОЛЬКО UI.MENU: '+V78_APPROVAL+' (Enter = отмена): ').strip()
+                except EOFError:approval=''
+                if approval!=V78_APPROVAL:
+                    result['status']='V78_INSTALL_NOT_AUTHORIZED_NO_CHANGES'
+                else:
+                    if not v71_processes_closed()[0]:raise ValueError('V78_GAME_REOPENED')
+                    if digest(target.read_bytes())!=current_hash:raise ValueError('V78_UI_CHANGED_AFTER_APPROVAL')
+                    if not backup.parent.is_dir():backup.parent.mkdir(parents=True,exist_ok=True)
+                    if backup.exists():
+                        if not backup.is_file() or backup.is_symlink() or digest(backup.read_bytes())!=current_hash:
+                            raise ValueError('V78_BACKUP_COLLISION_WRONG_SHA')
+                    else:
+                        with backup.open('xb') as f:
+                            f.write(current);f.flush();os.fsync(f.fileno())
+                    if digest(backup.read_bytes())!=current_hash:raise ValueError('V78_BACKUP_VERIFY_FAILED')
+                    v78_atomic_replace(target,new,'UI.MENU.v78stage',new_sha)
+                    result['status']='V78_UI_LABEL_FIXED_LEGACY_OPTION_KEY_PRESERVED'
+                    result['game_files_written']=1
+        else:
+            if current_hash==V78_UI_ORIGINAL_SHA:
+                result['status']='V78_ALREADY_ORIGINAL_NO_CHANGES'
+            else:
+                if not backup.is_file() or backup.is_symlink():raise ValueError('V78_MISSING_BACKUP')
+                original=backup.read_bytes()
+                if digest(original)!=V78_UI_ORIGINAL_SHA:raise ValueError('V78_BACKUP_HASH_WRONG')
+                correct_patched_sha=digest(v78_make_patch(original))
+                if current_hash!=correct_patched_sha:raise ValueError('V78_CURRENT_UI_NOT_EXACT_INSTALLED_PATCH')
+                closed,why=v71_processes_closed()
+                if not closed:raise ValueError('V78_CLOSE_GAME_AND_LOADER:'+str(why))
+                try:approval=input('Подтверди восстановление UI.MENU: '+V78_ROLLBACK_APPROVAL+' (Enter = отмена): ').strip()
+                except EOFError:approval=''
+                if approval!=V78_ROLLBACK_APPROVAL:
+                    result['status']='V78_ROLLBACK_NOT_AUTHORIZED_NO_CHANGES'
+                else:
+                    if not v71_processes_closed()[0]:raise ValueError('V78_GAME_REOPENED')
+                    if digest(target.read_bytes())!=current_hash:raise ValueError('V78_UI_CHANGED_AFTER_APPROVAL')
+                    v78_atomic_replace(target,original,'UI.MENU.v78rollback',V78_UI_ORIGINAL_SHA)
+                    result['status']='V78_UI_LABEL_RESTORED_ORIGINAL'
+                    result['game_files_written']=1
+        result.setdefault('status','V78_NO_ACTION')
+    except (OSError,ValueError,KeyError,RuntimeError,zipfile.BadZipFile) as exc:
+        result['status']='V78_SAFE_STOP'
+        result['error_type']=type(exc).__name__
+        result['error']=str(exc)[:400]
+    try:v78_update_zip(report_path,result)
+    except (OSError,ValueError,RuntimeError,zipfile.BadZipFile) as exc:
+        print('V78_REPORT_ZIP_WRITE_FAILED:',str(exc)[:220])
+        return 2
+    print('v78:',result['status'],'— игра изменена:',result['game_files_written'])
+    print('Один отчёт:',report_path)
+    return 2 if result['status']=='V78_SAFE_STOP' else 0
+
+
+def v78_selftest():
+    # Pure in-memory replacement test: key ID 106 and two persisted save operations stay stable.
+    base='''{'LEUI_REVERSE_BUTTON_POSITIONS_LABEL','LEUI_REVERSE_BUTTON_POSITIONS_DESCRIPTION', 106, 0, 0, 0},
+  LEUI_REVERSE_BUTTON_POSITIONS_LABEL = "Реверсивные кнопоки",
+reverseButtonPosition = LeUIGetOption(LeUI_uiStrings.LEUI_REVERSE_BUTTON_POSITIONS_LABEL, true)
+options['LeUI'][LeUI_uiStrings.LEUI_REVERSE_BUTTON_POSITIONS_LABEL] = var[5] == 1 and '1' or '0'
+options['LeUI'][LeUI_uiStrings.LEUI_REVERSE_BUTTON_POSITIONS_LABEL] = var[5] == 1 and '1' or '0'
+'''.encode('utf-8')
+    changed=v78_make_patch(base).decode('utf-8')
+    assert changed.count('Поменять кнопки местами')==1
+    assert changed.count('LeUIGetOption("Реверсивные кнопоки", true)')==1
+    assert changed.count('options[\'LeUI\']["Реверсивные кнопоки"]')==2
+    assert changed.count('LEUI_REVERSE_BUTTON_POSITIONS_LABEL')==2
+    try:v78_make_patch(base.replace('Реверсивные кнопоки'.encode('utf8'),'Broken'.encode('utf8')))
+    except ValueError:pass
+    else:raise AssertionError('V78_ACCEPTED_WRONG_LABEL')
+    return True
+
 def main(argv=None):
     p=argparse.ArgumentParser(description='BG_EET_RU one-file visible-only read-only auto-updater')
     p.add_argument('--game',default=DEFAULT_GAME)
@@ -608,6 +791,8 @@ def main(argv=None):
     p.add_argument('--skip-iwd-dlg',action='store_true',help='skip v35 DLG read-only capture; keep earlier capture if valid')
     p.add_argument('--combat-only',action='store_true',help='v68: capture/cache combat evidence in the existing single ZIP only')
     p.add_argument('--combat-status',action='store_true',help='v71: read status of the single Lua pilot, no changes')
+    p.add_argument('--fix-leui-reverse',action='store_true',help='v78: optional guarded UI.MENU label repair with consent and backup')
+    p.add_argument('--rollback-leui-reverse',action='store_true',help='v78: optional consent-based exact rollback of only UI.MENU')
     p.add_argument('--combat-rollback',action='store_true',help='v71: guarded rollback of only the single short Lua pilot')
     args=p.parse_args(argv)
     if args.selftest: return selftest()
@@ -668,6 +853,11 @@ def main(argv=None):
         import subprocess
         return subprocess.call([sys.executable,'-x',str(canonical),*sys.argv[1:]])
     # v68: if the v67 game snapshot still matches, resume ONLY the new safe stage.
+    if args.fix_leui_reverse or args.rollback_leui_reverse:
+        if args.fix_leui_reverse and args.rollback_leui_reverse:
+            print('V78_STOP: mutually exclusive actions')
+            return 2
+        return v78_live_fix(game,WORKDIR/REPORT_NAME,mode=('install' if args.fix_leui_reverse else 'rollback'))
     if args.combat_status or args.combat_rollback:
         if args.combat_rollback:
             return v74_pilot(game,WORKDIR/REPORT_NAME,mode='rollback')
@@ -3178,6 +3368,11 @@ def v76_ui_selected(path):
                   typo_contexts=[source[max(0,m.start()-100):min(len(source),m.end()+130)] for m in old[:3]],
                   suggested_russian_label='Поменять кнопки местами',
                   note='Source occurrence or references alone never prove active on-screen display.')
+    display_values=re.findall(r'(?m)^\\s*LEUI_REVERSE_BUTTON_POSITIONS_LABEL\\s*=\\s*"([^"]+)"',source)
+    result['display_label_definition_values']=display_values
+    result['display_label_has_typo']=(display_values==[V76_UI_OLD_TEXT])
+    result['display_label_is_corrected']=(display_values==['Поменять кнопки местами'])
+    result['legacy_option_key_literal_occurrences']=source.count('"'+V76_UI_OLD_TEXT+'"')-(1 if result['display_label_has_typo'] else 0)
     return result
 
 
@@ -3387,6 +3582,7 @@ def selftest():
     assert v74_selftest() and callable(v74_pilot) and callable(v74_report)
     assert v76_selftest() and callable(v76_live_audit)
     assert v77_resume_selftest() and callable(v77_resume_after_static_v70)
+    assert v78_selftest() and callable(v78_live_fix)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
