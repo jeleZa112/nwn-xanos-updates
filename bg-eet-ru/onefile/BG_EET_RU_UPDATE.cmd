@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 84
+SELF_VERSION = 85
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -580,7 +580,12 @@ def v77_resume_after_static_v70(game, report_path, combat_only=False):
     if rc:return rc
     rc=v83_run(game,report_path)
     if rc:return rc
-    return v84_run(game,report_path)
+    current=v85_state_read()
+    if current and current['phase'] in ('INSTALLED','PREPARED'):
+        return v85_run(game,report_path)
+    rc=v84_run(game,report_path)
+    if rc:return rc
+    return v85_run(game,report_path)
 
 
 def v77_resume_selftest():
@@ -592,6 +597,8 @@ def v77_resume_selftest():
     original_v82=globals()['v82_run']
     original_v83=globals()['v83_run']
     original_v84=globals()['v84_run']
+    original_v85=globals()['v85_run']
+    original_v85_state_read=globals()['v85_state_read']
     calls=[]
     try:
         globals()['v74_pilot']=lambda *a,**k: calls.append('v74') or 0
@@ -601,12 +608,19 @@ def v77_resume_selftest():
         globals()['v82_run']=lambda *a,**k: calls.append('v82') or 0
         globals()['v83_run']=lambda *a,**k: calls.append('v83') or 0
         globals()['v84_run']=lambda *a,**k: calls.append('v84') or 0
+        globals()['v85_run']=lambda *a,**k: calls.append('v85') or 0
+        globals()['v85_state_read']=lambda *a,**k: None
         assert v77_resume_after_static_v70('fake_game','fake_zip')==0
-        assert calls==['v74','v76','v79','v81','v82','v83','v84'],calls
+        assert calls==['v74','v76','v79','v81','v82','v83','v84','v85'],calls
         calls.clear()
         assert v77_resume_after_static_v70('fake_game','fake_zip',True)==0
         assert calls==['v74'],calls
         calls.clear()
+        globals()['v85_state_read']=lambda *a,**k: {'phase':'INSTALLED'}
+        assert v77_resume_after_static_v70('fake_game','fake_zip')==0
+        assert calls==['v74','v76','v79','v81','v82','v83','v85'],calls
+        calls.clear()
+        globals()['v85_state_read']=lambda *a,**k: None
         globals()['v74_pilot']=lambda *a,**k: calls.append('v74') or 2
         assert v77_resume_after_static_v70('fake_game','fake_zip')==2
         assert calls==['v74'],calls
@@ -618,6 +632,8 @@ def v77_resume_selftest():
         globals()['v82_run']=original_v82
         globals()['v83_run']=original_v83
         globals()['v84_run']=original_v84
+        globals()['v85_run']=original_v85
+        globals()['v85_state_read']=original_v85_state_read
     return True
 
 
@@ -1895,12 +1911,402 @@ def v84_selftest():
     return True
 
 
+# BG EET RU v85 — OPTIONAL guarded install of an evidence-refined 34-label combat format revision.
+# Default and status paths are READ ONLY; install and rollback require an explicit CLI flag
+# AND exact typed approval. Works through the one existing updater / report ZIP only.
+V85_ENTRY = '33_V85_COMBAT_FORMAT_GUARDED.json'
+V85_STATE = WORKDIR / 'BG_EET_RU_V85_COMBAT_FORMAT_STATE.json'
+V85_SCHEMA = 'BG_EET_RU_V85_COMBAT_FORMAT_GUARDED_V1'
+V85_INSTALL_APPROVAL = 'INSTALL_BG_EET_RU_V85_COMBAT_FORMAT'
+V85_ROLLBACK_APPROVAL = 'ROLLBACK_BG_EET_RU_V85_COMBAT_FORMAT'
+V85_FINAL_TOKEN = '+Effects %d'
+V85_FINAL_REVISED = '+Эффекты: %d'
+
+
+def v85_prepare_rows():
+    original = v74_manifest()
+    revised = v84_prepare_rows(original)
+    count = 0
+    for row in revised:
+        if row['source_en'] == V85_FINAL_TOKEN:
+            if row['translation_ru'] != '+Эффекты: %d ':
+                raise RuntimeError('V85_EXPECTED_V84_EFFECTS_CHANGED')
+            row['translation_ru'] = V85_FINAL_REVISED
+            count += 1
+    if count != 1 or len(revised) != 34 or sum(len(r['refs']) for r in revised) != 44:
+        raise RuntimeError('V85_UNEXPECTED_SOURCE_SCOPE')
+    for old, new in zip(original, revised):
+        if (old['source_en'] != new['source_en'] or old['refs'] != new['refs']
+                or old['string_offset'] != new['string_offset']
+                or re.sub(r'[\s:]', '', old['translation_ru'])
+                != re.sub(r'[\s:]', '', new['translation_ru'])
+                or old['translation_ru'].count('%d') != new['translation_ru'].count('%d')
+                or len(new['translation_ru'].encode('utf-8')) > 256):
+            raise RuntimeError('V85_SOURCE_OR_HOOK_CHANGE_DISALLOWED')
+    return revised
+
+
+def v85_lua_source(rows=None):
+    if rows is None: rows = v85_prepare_rows()
+    src = v74_lua_source(rows)
+    # Keep v74 runtime ABI and 44 hooks intact. Add a distinct V85 runtime marker
+    # only AFTER successful installation of ALL 44 hooks in a newly started game.
+    needle = b'  BG_EET_RU_V74_HOOKED=true\n  notify("SUCCESS_34_STRINGS_44_HOOKS")'
+    replacement = (b'  BG_EET_RU_V74_HOOKED=true\n'
+                   b'  BG_EET_RU_V85_FORMAT_ACTIVE=true\n'
+                   b'  notify("SUCCESS_34_STRINGS_44_HOOKS")')
+    if src.count(needle) != 1:
+        raise RuntimeError('V85_RUNTIME_SOURCE_MARKER_MISSING')
+    new = src.replace(needle, replacement, 1)
+    if (not new.isascii() or b'BG_EET_RU_V85_FORMAT_ACTIVE=true' not in new
+            or new.count(b'EEex_HookNOPs(') != 1
+            or len(new) >= 120000):
+        raise RuntimeError('V85_INVALID_GENERATED_LUA')
+    return new
+
+
+def v85_state_read(path=None):
+    path = Path(path) if path is not None else V85_STATE
+    if not path.exists(): return None
+    if path.is_symlink() or not path.is_file():
+        raise RuntimeError('V85_INVALID_STATE_PATH')
+    try:
+        record = json.loads(path.read_text('utf8'))
+    except (OSError, ValueError, UnicodeError) as exc:
+        raise RuntimeError('V85_STATE_UNREADABLE:'+type(exc).__name__)
+    if (not isinstance(record, dict) or record.get('schema') != V85_SCHEMA
+            or record.get('phase') not in ('PREPARED','INSTALLED','ROLLED_BACK')):
+        raise RuntimeError('V85_UNKNOWN_STATE_SCHEMA_OR_PHASE')
+    return record
+
+
+def v85_state_write(record, path=None):
+    path = Path(path) if path is not None else V85_STATE
+    if path.is_symlink():raise RuntimeError('V85_STATE_SYMLINK')
+    if record.get('schema') != V85_SCHEMA:
+        raise RuntimeError('V85_BAD_STATE_DATA')
+    path.parent.mkdir(parents=True,exist_ok=True)
+    stage = path.with_suffix('.v85statetmp')
+    if stage.exists():raise RuntimeError('V85_STALE_STATE_STAGE')
+    try:
+        with stage.open('x',encoding='utf8') as out:
+            json.dump(record,out,ensure_ascii=False,indent=2)
+        if json.loads(stage.read_text('utf8'))!=record:
+            raise RuntimeError('V85_STATE_VERIFY_FAILED')
+        os.replace(stage,path)
+        if v85_state_read(path)!=record:
+            raise RuntimeError('V85_PERSISTED_STATE_VERIFY_FAILED')
+    finally:
+        if stage.exists():stage.unlink()
+
+
+def v85_zip_report(game, report_path, report):
+    game,report_path=Path(game),Path(report_path)
+    safe_external(game,report_path)
+    if not report_path.is_file() or report_path.is_symlink():
+        raise RuntimeError('V85_CANONICAL_ZIP_NOT_FOUND_OR_SYMLINK')
+    tmp=report_path.with_suffix('.v85ziptmp')
+    if tmp.exists():raise RuntimeError('V85_STALE_ZIP_STAGE')
+    try:
+        with zipfile.ZipFile(report_path) as src, zipfile.ZipFile(
+                tmp,'x',compression=zipfile.ZIP_DEFLATED,compresslevel=7) as dst:
+            if src.testzip() is not None:
+                raise RuntimeError('V85_OLD_ZIP_CRC_ERROR')
+            names=set()
+            for entry in src.infolist():
+                if entry.filename in names:raise RuntimeError('V85_DUPLICATE_ZIP_ENTRY')
+                names.add(entry.filename)
+                if entry.filename!=V85_ENTRY:
+                    dst.writestr(entry,src.read(entry))
+            dst.writestr(V85_ENTRY,json.dumps(report,ensure_ascii=False,indent=2).encode('utf8'))
+        with zipfile.ZipFile(tmp) as z:
+            if z.testzip() is not None or z.namelist().count(V85_ENTRY)!=1:
+                raise RuntimeError('V85_NEW_ZIP_VERIFY_FAILED')
+        os.replace(tmp,report_path)
+    finally:
+        if tmp.exists():tmp.unlink()
+
+
+def v85_read_input_approval(expected):
+    try:return input('Явное разрешение: '+expected+' (Enter=отмена): ').strip() == expected
+    except (EOFError,KeyboardInterrupt):return False
+
+
+def v85_files_and_candidate(game):
+    game=Path(game)
+    base=v74_read_state()
+    if not base or not base.get('installed'):
+        raise RuntimeError('V85_V74_STATE_NOT_INSTALLED')
+    paths={name:game/name for name in ('Baldur.exe','InfinityLoader.db')}
+    paths['M_BGERU.lua']=game/'override'/V71_SHORT_SCRIPT
+    for key,p in paths.items():
+        if not p.is_file() or p.is_symlink():
+            raise RuntimeError('V85_REQUIRED_GAME_FILE_MISSING:'+key)
+    hashes={name:digest(path.read_bytes()) for name,path in paths.items()}
+    if hashes['Baldur.exe']!=base['exe_sha256'] or hashes['InfinityLoader.db']!=base['db_sha256']:
+        raise RuntimeError('V85_BASE_EXE_DB_CHANGED')
+    # Manifest and actual on-disk original v74 Lua must match exactly.
+    baseline=v74_lua_source(v74_manifest())
+    if digest(baseline)!=base['new_lua_sha256']:
+        raise RuntimeError('V85_PINNED_BASE_V74_NOT_EQUAL_INSTALL_STATE')
+    rows=v85_prepare_rows()
+    guards=v74_check_manifest(paths['Baldur.exe'].read_bytes(),rows)
+    updated=v85_lua_source(rows)
+    if digest(updated)==digest(baseline):
+        raise RuntimeError('V85_CANDIDATE_NOT_DISTINCT')
+    return base,paths,hashes,baseline,updated,guards
+
+
+def v85_v84_gate(report_path,expected_hashes,oldsha):
+    with zipfile.ZipFile(report_path) as z:
+        if z.testzip() is not None or V84_ENTRY not in z.namelist():
+            raise RuntimeError('V85_V84_REPORT_MISSING_OR_CORRUPT')
+        record=json.loads(z.read(V84_ENTRY))
+    if (record.get('status')!='V84_EDITORIAL_PREFLIGHT_PASS_NOT_INSTALLED'
+            or record.get('old_installed_lua_sha256')!=oldsha
+            or record.get('exe_sha256')!=expected_hashes['Baldur.exe']
+            or record.get('db_sha256')!=expected_hashes['InfinityLoader.db']
+            or record.get('checked_original_hook_sites')!=44
+            or record.get('checked_source_templates')!=34
+            or record.get('errors')):
+        raise RuntimeError('V85_V84_SOURCE_PRECHECK_STALE_OR_FAILED')
+
+
+def v85_check_live_state(game,record):
+    game=Path(game)
+    paths={name:game/name for name in ('Baldur.exe','InfinityLoader.db')}
+    paths['M_BGERU.lua']=game/'override'/V71_SHORT_SCRIPT
+    for p in paths.values():
+        if not p.is_file() or p.is_symlink():
+            raise RuntimeError('V85_INSTALLED_GAME_FILE_MISSING')
+    if (digest(paths['Baldur.exe'].read_bytes())!=record['exe_sha256']
+            or digest(paths['InfinityLoader.db'].read_bytes())!=record['db_sha256']):
+        raise RuntimeError('V85_INSTALLED_EXE_DB_MISMATCH')
+    current_sha=digest(paths['M_BGERU.lua'].read_bytes())
+    if record['phase']=='INSTALLED' and current_sha!=record['candidate_sha256']:
+        raise RuntimeError('V85_INSTALLED_LUA_SHA_CHANGED')
+    if record['phase']=='PREPARED' and current_sha not in (
+            record['candidate_sha256'],record['old_sha256']):
+        raise RuntimeError('V85_PREPARED_LUA_SHA_UNKNOWN')
+    return current_sha
+
+
+def v85_v74_bridge(game,report_path,mode,record):
+    report={'schema':V74_SCHEMA,'updater_version':SELF_VERSION,'game_root':str(game),
+            'mode':mode,'game_files_written':0,'save_files_written':False,
+            'exe_changed':False,'db_changed':False,'tlk_changed':False,
+            'bgxai_voice_changed':False,'installation_requires_explicit_consent':True,
+            'gameplay_verified':False,'only_modified_game_file':'override/'+V71_SHORT_SCRIPT}
+    try:
+        v85_check_live_state(game,record)
+        if mode=='rollback':
+            report['status']='V85_ROLLBACK_FIRST_SEPARATE_EXPLICIT_APPROVAL_REQUIRED'
+        elif record['phase']=='PREPARED':
+            report['status']='V85_INCOMPLETE_INSTALL_RECOVERY_HOLD'
+        else:
+            report['status']='V85_INSTALLED_RESTART_AND_GAMEPLAY_TEST_REQUIRED'
+            report['lua_valid']=True
+            report['exe_valid']=True
+            report['db_valid']=True
+            report['expected_runtime_hooks']=44
+            report['runtime_console_command']='C:DisplayText("V85="..tostring(BG_EET_RU_V85_FORMAT_ACTIVE).." hooks="..tostring(BG_EET_RU_V74_INSTALLED))'
+    except (OSError,ValueError,RuntimeError,KeyError) as exc:
+        report['status']='V85_INSTALLED_INTEGRITY_HOLD'
+        report['error']=str(exc)[:200]
+    try:v74_report(game,report_path,report)
+    except (OSError,ValueError,RuntimeError,zipfile.BadZipFile) as exc:
+        print('v74/v85: SAFE_STOP report:',type(exc).__name__,str(exc)[:180]);return 2
+    print('v74/v85:',report['status'])
+    return 2 if report['status'] in ('V85_INSTALLED_INTEGRITY_HOLD','V85_INCOMPLETE_INSTALL_RECOVERY_HOLD','V85_ROLLBACK_FIRST_SEPARATE_EXPLICIT_APPROVAL_REQUIRED') else 0
+
+
+def v85_run(game,report_path,mode='status'):
+    game,report_path=Path(game),Path(report_path)
+    report={'schema':V85_SCHEMA,'updater_version':SELF_VERSION,'mode':mode,
+            'status':'V85_NO_ACTION','game_files_written':False,'save_files_written':False,
+            'game_root':str(game),'installation_requires_explicit_consent':True,
+            'gameplay_verified':False,'errors':[]}
+    try:
+        safe_external(game,report_path)
+        if mode not in ('status','install','rollback'):
+            raise RuntimeError('V85_BAD_MODE')
+        state=v85_state_read()
+        if state and state['phase'] in ('INSTALLED','PREPARED'):
+            current=v85_check_live_state(game,state)
+            report.update({'old_lua_sha256':state['old_sha256'],
+                           'candidate_lua_sha256':state['candidate_sha256'],
+                           'current_lua_sha256':current,
+                           'state_phase':state['phase'],
+                           'backup_sha256':state['old_sha256']})
+            if mode=='install':
+                report['status']='V85_ALREADY_INSTALLED_OR_RECOVERY_HOLD'
+            elif mode=='status':
+                report['status']=('V85_INSTALLED_RESTART_AND_GAMEPLAY_TEST_REQUIRED' if
+                                  state['phase']=='INSTALLED' else 'V85_INCOMPLETE_INSTALL_RECOVERY_HOLD')
+            else:
+                closed,why=v71_processes_closed()
+                if not closed:raise RuntimeError('V85_CLOSE_GAME_AND_LOADER_BEFORE_ROLLBACK:'+why)
+                backup=Path(state['backup'])
+                safe_external(game,backup)
+                if not backup.is_file() or backup.is_symlink():
+                    raise RuntimeError('V85_BACKUP_NOT_FOUND')
+                previous=backup.read_bytes()
+                if digest(previous)!=state['old_sha256']:
+                    raise RuntimeError('V85_BACKUP_SHA_MISMATCH')
+                if not v85_read_input_approval(V85_ROLLBACK_APPROVAL):
+                    report['status']='V85_ROLLBACK_NOT_AUTHORIZED'
+                else:
+                    lua=game/'override'/V71_SHORT_SCRIPT
+                    restore=lua.with_name('M_BGERU.v85restore')
+                    if restore.exists():raise RuntimeError('V85_STALE_RESTORE')
+                    try:
+                        with restore.open('xb') as f:f.write(previous)
+                        if digest(restore.read_bytes())!=state['old_sha256']:
+                            raise RuntimeError('V85_RESTORE_STAGE_BAD_HASH')
+                        # Atomic restore; content matches signed, earlier installed v74.
+                        os.replace(restore,lua)
+                        if digest(lua.read_bytes())!=state['old_sha256']:
+                            raise RuntimeError('V85_RESTORE_VERIFICATION_FAILED')
+                    finally:
+                        if restore.exists():restore.unlink()
+                    state={**state,'phase':'ROLLED_BACK','rolled_back_utc':now()}
+                    v85_state_write(state)
+                    report['status']='V85_ROLLBACK_TO_V74_VERIFIED'
+                    report['game_files_written']=True
+        elif mode=='rollback':
+            report['status']='V85_NOT_INSTALLED_NO_ROLLBACK'
+        else:
+            if state and state['phase']!='ROLLED_BACK':
+                raise RuntimeError('V85_UNKNOWN_PENDING_STATE')
+            base,paths,hashes,previous,candidate,guards=v85_files_and_candidate(game)
+            if hashes['M_BGERU.lua']!=base['new_lua_sha256']:
+                raise RuntimeError('V85_CURRENT_V74_LUA_HASH_MISMATCH')
+            v85_v84_gate(report_path,hashes,digest(previous))
+            report.update({'old_lua_sha256':digest(previous),
+                           'candidate_lua_sha256':digest(candidate),
+                           'candidate_lua_bytes':len(candidate),
+                           'original_hook_sites':guards['hook_sites'],
+                           'original_format_strings':guards['strings'],
+                           'effects_seam_refinement':'+Эффекты: %d (no trailing whitespace)',
+                           'source_v84_reviewed':True})
+            report['status']='V85_EDITORIAL_REFINED_PREFLIGHT_PASS_NOT_INSTALLED'
+            if mode=='install':
+                closed,why=v71_processes_closed()
+                if not closed:raise RuntimeError('V85_CLOSE_GAME_AND_LOADER_BEFORE_INSTALL:'+why)
+                if not v85_read_input_approval(V85_INSTALL_APPROVAL):
+                    report['status']='V85_INSTALL_NOT_AUTHORIZED_NO_GAME_CHANGES'
+                else:
+                    # Verify current files immediately before commit, even after interactive approval.
+                    for name,path in paths.items():
+                        if digest(path.read_bytes())!=hashes[name]:
+                            raise RuntimeError('V85_GAME_CHANGED_DURING_APPROVAL:'+name)
+                    closed,why=v71_processes_closed()
+                    if not closed:raise RuntimeError('V85_GAME_STARTED_DURING_APPROVAL:'+why)
+                    backup_dir=WORKDIR/'SAFE_BACKUPS'
+                    safe_external(game,backup_dir)
+                    backup_dir.mkdir(parents=True,exist_ok=True)
+                    backup=backup_dir/('M_BGERU_V74_'+digest(previous)[:16]+'.lua.bak')
+                    if backup.exists():
+                        if backup.is_symlink() or not backup.is_file() or digest(backup.read_bytes())!=digest(previous):
+                            raise RuntimeError('V85_BACKUP_NAME_COLLISION')
+                    else:
+                        with backup.open('xb') as b:b.write(previous)
+                    if digest(backup.read_bytes())!=digest(previous):
+                        raise RuntimeError('V85_BACKUP_NOT_VERIFIED')
+                    lua=paths['M_BGERU.lua']
+                    stage=lua.with_name('M_BGERU.v85stage')
+                    if stage.exists():raise RuntimeError('V85_STALE_GAME_STAGE')
+                    record={'schema':V85_SCHEMA,'phase':'PREPARED','created_utc':now(),
+                            'exe_sha256':hashes['Baldur.exe'],'db_sha256':hashes['InfinityLoader.db'],
+                            'old_sha256':digest(previous),'candidate_sha256':digest(candidate),
+                            'backup':str(backup),'only_changed_file':str(lua)}
+                    try:
+                        with stage.open('xb') as out:out.write(candidate)
+                        if digest(stage.read_bytes())!=digest(candidate):
+                            raise RuntimeError('V85_STAGE_NOT_VERIFIED')
+                        v85_state_write(record)
+                        if digest(lua.read_bytes())!=digest(previous):
+                            raise RuntimeError('V85_LUA_CHANGED_BEFORE_SWAP')
+                        os.replace(stage,lua)
+                        if digest(lua.read_bytes())!=digest(candidate):
+                            raise RuntimeError('V85_INSTALLED_LUA_HASH_MISMATCH')
+                        v85_state_write({**record,'phase':'INSTALLED','installed_utc':now()})
+                    except Exception:
+                        # If candidate landed but state commit failed, immediately restore
+                        # the independently verified v74 backup, without touching any other file.
+                        if lua.is_file() and digest(lua.read_bytes())==digest(candidate):
+                            fix=lua.with_name('M_BGERU.v85failedrestore')
+                            if not fix.exists():
+                                with fix.open('xb') as out:out.write(previous)
+                                if digest(fix.read_bytes())==digest(previous):
+                                    os.replace(fix,lua)
+                                    record2=v85_state_read()
+                                    if record2 and record2.get('phase')=='PREPARED':
+                                        v85_state_write({**record2,'phase':'ROLLED_BACK','failed_utc':now()})
+                        raise
+                    finally:
+                        if stage.exists():stage.unlink()
+                    report['status']='V85_INSTALLED_RESTART_AND_GAMEPLAY_TEST_REQUIRED'
+                    report['game_files_written']=True
+        if mode=='status' and report['status']=='V85_EDITORIAL_REFINED_PREFLIGHT_PASS_NOT_INSTALLED':
+            print('v85: редакторский пакет готов; установка отдельно и только с явным разрешением')
+    except (OSError,RuntimeError,ValueError,KeyError,UnicodeError,struct.error,zipfile.BadZipFile) as exc:
+        report['status']='V85_SAFE_STOP'
+        report['errors'].append({'type':type(exc).__name__,'message':str(exc)[:250]})
+    try:
+        v85_zip_report(game,report_path,report)
+    except (OSError,RuntimeError,ValueError,KeyError,zipfile.BadZipFile) as exc:
+        print('v85: ZIP REPORT SAFE_STOP',type(exc).__name__,str(exc)[:180]);return 2
+    print('v85:',report['status'],'— изменений:',int(bool(report['game_files_written'])))
+    print('Единый ZIP:',report_path)
+    return 2 if report['status']=='V85_SAFE_STOP' else 0
+
+
+def v85_selftest():
+    rows=v85_prepare_rows()
+    assert len(rows)==34 and sum(len(x['refs']) for x in rows)==44
+    old=v74_lua_source(v74_manifest());new=v85_lua_source(rows)
+    assert digest(old)=='297c83b60693eb5b19cc2e4497335a8ef1895be9f4165fc2a1bb3a30c7c1ab4d'
+    assert digest(new)!=digest(old)
+    assert b'BG_EET_RU_V85_FORMAT_ACTIVE=true' in new
+    assert new.count(b'EEex_HookNOPs(')==old.count(b'EEex_HookNOPs(')==1
+    assert b'BG_EET_RU_V74_STATUS' in new and b'io.open' not in new
+    m={r['source_en']:r['translation_ru'] for r in rows}
+    for group in (
+        (('+Weapon Bonus %d',0),('+Proficiency %d',-2),('+Dex %d',1),('+Effects %d',0)),
+        (('+STR %d',1),('+Melee bonus %d',0),('+Effects %d',0)),
+        (('+Missile %d',0),('+Effects %d',0))):
+        result='('+''.join(m[key].replace('%d',str(num)) for key,num in group)+')'
+        assert not re.search(r'\d\+',result)
+        assert not re.search(r'\d \)',result)
+        assert not re.search(r' {2,}',result)
+    assert m['+Effects %d']=='+Эффекты: %d'
+    assert m[' *Backstab:%d '].startswith(' *')
+    with tempfile.TemporaryDirectory(prefix='BG_EET_RU_V85_STATE_TEST_') as td:
+        path=Path(td)/'record.json'
+        assert v85_state_read(path) is None
+        row={'schema':V85_SCHEMA,'phase':'PREPARED','old_sha256':'abc'}
+        v85_state_write(row,path)
+        assert v85_state_read(path)==row
+        v85_state_write({**row,'phase':'INSTALLED'},path)
+        assert v85_state_read(path)['phase']=='INSTALLED'
+        v85_state_write({**row,'phase':'ROLLED_BACK'},path)
+        assert v85_state_read(path)['phase']=='ROLLED_BACK'
+        try:
+            v85_state_write({'schema':'BAD','phase':'INSTALLED'},path)
+            raise AssertionError('BAD STATE accepted')
+        except RuntimeError:pass
+    return True
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description='BG_EET_RU one-file visible-only read-only auto-updater')
     p.add_argument('--game',default=DEFAULT_GAME)
     p.add_argument('--offline',action='store_true',help='no GitHub update check')
     p.add_argument('--force',action='store_true',help='ignore result cache, repeat audit')
     p.add_argument('--selftest',action='store_true')
+    p.add_argument('--install-v85-combat-format',action='store_true',help='optional signed v85 Lua replacement; exact typed approval required')
+    p.add_argument('--rollback-v85-combat-format',action='store_true',help='optional signed restore to v74; exact typed approval required')
     p.add_argument('--seen-strref',action='append',type=int,default=[],help='v83: player-reported displayed StrRef, repeatable')
     p.add_argument('--seen-text',action='append',default=[],help='v83: player-reported exact displayed text, repeatable')
     p.add_argument('--no-open',action='store_true',help='do not open output folder')
@@ -1973,6 +2379,12 @@ def main(argv=None):
     # v83: player-observed text is processed directly; do not re-run expensive historical audits.
     if args.seen_strref or args.seen_text:
         return v83_run(game,WORKDIR/REPORT_NAME,additional_strrefs=args.seen_strref,additional_texts=args.seen_text)
+    if args.install_v85_combat_format or args.rollback_v85_combat_format:
+        if args.install_v85_combat_format and args.rollback_v85_combat_format:
+            print('V85_STOP: install and rollback cannot be requested together')
+            return 2
+        return v85_run(game,WORKDIR/REPORT_NAME,
+                       mode=('install' if args.install_v85_combat_format else 'rollback'))
     # v68: if the v67 game snapshot still matches, resume ONLY the new safe stage.
     if args.fix_leui_reverse or args.rollback_leui_reverse:
         if args.fix_leui_reverse and args.rollback_leui_reverse:
@@ -2245,8 +2657,13 @@ def main(argv=None):
     if v82_rc:return v82_rc
     v83_rc=v83_run(game,report_path)
     if v83_rc:return v83_rc
+    latest=v85_state_read()
+    if latest and latest['phase'] in ('INSTALLED','PREPARED'):
+        return v85_run(game,report_path)
     v84_rc=v84_run(game,report_path)
     if v84_rc:return v84_rc
+    v85_rc=v85_run(game,report_path)
+    if v85_rc:return v85_rc
     print('v67 cached DLG structure:',v67_status['status'],
           len(v67_status['target_references']),'target references')
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
@@ -4218,6 +4635,9 @@ def v74_report(game,report_path,report):
 
 def v74_pilot(game,report_path,mode='auto'):
     game=Path(game)
+    latest=v85_state_read()
+    if latest and latest['phase'] in ('INSTALLED','PREPARED'):
+        return v85_v74_bridge(game,report_path,mode,latest)
     lua=game/'override'/V71_SHORT_SCRIPT
     report={'schema':V74_SCHEMA,'updater_version':SELF_VERSION,'game_root':str(game),
             'mode':mode,'game_files_written':0,'new_file_count':0,
@@ -4719,6 +5139,7 @@ def selftest():
     assert v82_selftest() and callable(v82_run)
     assert v83_selftest() and callable(v83_run)
     assert v84_selftest() and callable(v84_run)
+    assert v85_selftest() and callable(v85_run)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
