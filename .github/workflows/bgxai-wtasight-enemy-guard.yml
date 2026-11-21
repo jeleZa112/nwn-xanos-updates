@@ -150,6 +150,7 @@ jobs:
           python3 -m unittest test_weapon_saved_snapshot_readonly.py -v
           python3 -m unittest test_ranged_v5_anticipatory_close_source_only.py -v
           python3 -m unittest test_ranged_v5_native_candidate_readonly.py -v
+          python3 -m unittest test_ranged_v5_guarded_install_mock.py -v
       - name: Weapon-selection safety model tests (Node, no game writes)
         shell: bash
         run: |
