@@ -39,3 +39,12 @@ jobs:
           if($LASTEXITCODE -ne 0){throw 'BGXAI_AOE_PYTHON_PARSE_STOP'}
           python -m unittest -v test_aoe_audit test_safe_copy test_trace119 test_guard120 test_121 test_122
           if($LASTEXITCODE -ne 0){throw 'BGXAI_AOE_MOCK_STOP'}
+      - name: Role, class, EPS and hazard arbitration advisory (SOURCE ONLY)
+        working-directory: BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117
+        shell: pwsh
+        run: |
+          python -m py_compile BGXAI_ROLE_HAZARD_ARBITER_V1.py test_role_hazard_arbiter_v1.py
+          if($LASTEXITCODE -ne 0){throw 'BGXAI_ROLE_PYTHON_PARSE_STOP'}
+          python -m unittest -v test_role_hazard_arbiter_v1
+          if($LASTEXITCODE -ne 0){throw 'BGXAI_ROLE_HAZARD_SAFETY_STOP'}
+
