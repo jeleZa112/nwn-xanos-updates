@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 88
+SELF_VERSION = 89
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -2655,51 +2655,46 @@ def v88_ui_candidate(original):
         raise RuntimeError('V88_RENDER_SOURCE_NOT_UNIQUE')
     if any(token in original for token in (b'BG_EET_RU_LOG_MODE',b'BG_EET_RU_LogView',b'BG_EET_RU_JOURNAL_TOGGLE')):
         raise RuntimeError('V88_EXISTING_PILOT_NAMES_COLLIDE')
-    # Exact UI.MENU anchors from v87. The old gate had a false negative because
-    # the actual menu is name 'WORLD_MESSAGES', not name '[WORLD_MESSAGES]'.
     ui = original.decode('utf-8-sig','strict')
     if (len(re.findall(r'''\bname\s+(['"])WORLD_MESSAGES\1''',ui))!=1 or
         len(re.findall(r'''\bname\s+(['"])worldMessageBox\1''',ui))!=1 or
         len(re.findall(r'''\btable\s+(['"])combatLog\1''',ui))!=1 or
         len(re.findall(r'''\bfunction\s+clean\s*\(''',ui))!=1):
         raise RuntimeError('V88_UI_BINDINGS_NOT_UNIQUE')
-    line_end = '\r\n' if original.count(b'\r\n')>0 else '\n'
-    if line_end=='\r\n' and original.count(b'\n')!=original.count(b'\r\n'):
-        raise RuntimeError('V88_MIXED_LINE_ENDINGS_HOLD')
-    # Only the end of the known clean() block, which in this UI precedes the
-    # backtick that closes the Lua source chunk for the world messages menu.
-    clean = re.search(r'''(?ms)^function clean\(str\)\s*\n(.*?)^end\s*\n(?=`\s*\nmenu\s*\n\{)''',
-                      ui.replace('\r\n','\n'))
-    if not clean or 'return str' not in clean.group(0) or len(clean.group(0))>900:
+    # Match only a known and unique function end immediately before the Lua
+    # chunk terminator, without rewriting any original line endings.
+    clean_pattern = re.compile(
+        rb'''(?ms)^function clean\(str\)[ \t]*\r?\n.*?^end[ \t]*\r?\n(?=`[ \t]*\r?\nmenu[ \t]*\r?\n\{)''')
+    clean_matches=list(clean_pattern.finditer(original))
+    if len(clean_matches)!=1 or b'return str' not in clean_matches[0].group(0) or len(clean_matches[0].group(0))>900:
         raise RuntimeError('V88_CLEAN_FUNCTION_END_NOT_PINNED')
-    before_close=ui.replace('\r\n','\n')
-    old_chunk=clean.group(0)
-    if before_close.count(old_chunk)!=1:raise RuntimeError('V88_CLEAN_SOURCE_NOT_UNIQUE')
-    before_close=before_close.replace(old_chunk,old_chunk + V88_HELPER,1)
-    before_close=before_close.replace(V88_RENDER_OLD.decode('ascii'),V88_RENDER_NEW.decode('ascii'),1)
-    # Insert click control after existing combat log list; the table is unchanged.
-    # The compact button sits over the upper right edge of the existing panel.
-    marker=re.compile(r'''(?m)^(\s*scrollbar skipReset\s*\n\s*\}\s*\n)(\s*handle\s*\n\s*\{\s*\n\s*name ['"]messagesHandleY['"])''')
-    found=list(marker.finditer(before_close))
+    clean=clean_matches[0]
+    clean_eol='\r\n' if b'\r\n' in clean.group(0) else '\n'
+    helper_bytes=V88_HELPER.replace('\n',clean_eol).encode('utf-8')
+    if original.count(helper_bytes):
+        raise RuntimeError('V88_EXISTING_HELPER_COLLISION')
+    staged=original[:clean.end()]+helper_bytes+original[clean.end():]
+    staged=staged.replace(V88_RENDER_OLD,V88_RENDER_NEW,1)
+    # Explicit whitespace-only anchors, allowing local LF and CRLF mixtures.
+    marker = re.compile(
+        rb'''(?m)^[ \t]*scrollbar skipReset[ \t]*\r?\n[ \t]*\}[ \t]*\r?\n(?P<handle>[ \t]*handle[ \t]*\r?\n[ \t]*\{[ \t]*\r?\n[ \t]*name ["']messagesHandleY["'])''')
+    found=list(marker.finditer(staged))
     if len(found)!=1:raise RuntimeError('V88_LIST_TO_HANDLE_ANCHOR_NOT_UNIQUE')
     m=found[0]
-    candidate=before_close[:m.start(2)]+V88_BUTTON+before_close[m.start(2):]
-    # Strong reversible proof: remove only our three injections and require the
-    # remaining complete source to be byte-for-byte the original UI.
-    restored=candidate.replace(V88_BUTTON,'',1).replace(V88_HELPER,'',1)
-    restored=restored.replace(V88_RENDER_NEW.decode('ascii'),V88_RENDER_OLD.decode('ascii'),1)
-    if restored!=ui.replace('\r\n','\n'):
+    button_eol='\r\n' if b'\r\n' in m.group(0) else '\n'
+    button_bytes=V88_BUTTON.replace('\n',button_eol).encode('utf-8')
+    candidate=staged[:m.start('handle')]+button_bytes+staged[m.start('handle'):]
+    restored=(candidate.replace(button_bytes,b'',1).replace(helper_bytes,b'',1)
+              .replace(V88_RENDER_NEW,V88_RENDER_OLD,1))
+    if restored!=original:
         raise RuntimeError('V88_PATCH_NOT_BYTE_EXACT_REVERSIBLE')
-    if line_end=='\r\n':candidate=candidate.replace('\n','\r\n')
-    out=candidate.encode('utf-8')
-    if out.count(V88_RENDER_NEW)!=1 or out.count(V88_RENDER_OLD)!=0 or out.count(b'BG_EET_RU_JOURNAL_TOGGLE')!=1:
+    if candidate.count(V88_RENDER_NEW)!=1 or candidate.count(V88_RENDER_OLD)!=0 or candidate.count(b'BG_EET_RU_JOURNAL_TOGGLE')!=1:
         raise RuntimeError('V88_POST_PATCH_RENDER_OR_TOGGLE_MISMATCH')
-    if out.count(b'combatLog')!=original.count(b'combatLog') or out.count(b'table "combatLog"')!=original.count(b'table "combatLog"'):
+    if candidate.count(b'combatLog')!=original.count(b'combatLog') or candidate.count(b'table "combatLog"')!=original.count(b'table "combatLog"'):
         raise RuntimeError('V88_COMBATLOG_SOURCE_SCOPE_CHANGED')
-    if len(out)-len(original)>8000 or len(out)==len(original):
+    if not 0<len(candidate)-len(original)<=8000:
         raise RuntimeError('V88_PATCH_SIZE_HOLD')
-    return out
-
+    return candidate
 
 def v88_state_read(path=V88_STATE):
     path=Path(path)
@@ -2905,14 +2900,25 @@ def v88_selftest():
              "\t\tname 'messagesHandleY'\n\t}\n}\n")
     old_pin=globals()['V88_PINNED_UI_SHA']
     try:
-        for eol in ('\n','\r\n'):
-            raw=fixture.replace('\n',eol).encode('utf8')
+        for eol in ('\n','\r\n','MIXED1','MIXED2'):
+            if eol=='MIXED1':
+                fixture_bytes=(fixture.replace('function clean(str)\n','function clean(str)\r\n')
+                               .replace('\n\thandle','\r\n\thandle'))
+            elif eol=='MIXED2':
+                fixture_bytes=(fixture.replace('end\n`\nmenu\n{\n','end\r\n`\r\nmenu\n{\n')
+                               .replace('scrollbar skipReset\n','scrollbar skipReset\r\n'))
+            else:
+                fixture_bytes=fixture.replace('\n',eol)
+            raw=fixture_bytes.encode('utf8')
             globals()['V88_PINNED_UI_SHA']=digest(raw)
             patched=v88_ui_candidate(raw)
             assert patched.count(V88_RENDER_NEW)==1 and V88_RENDER_OLD not in patched
             assert patched.count(b'BG_EET_RU_JOURNAL_TOGGLE')==1
             if eol=='\r\n':
                 assert patched.count(b'\r\n')>0 and patched.count(b'\r\n')==patched.count(b'\n')
+            if eol.startswith('MIXED'):
+                assert raw.count(b'\r\n')>0 and raw.count(b'\n')>raw.count(b'\r\n')
+                assert patched.count(b'\r\n')>0 and patched.count(b'\n')>patched.count(b'\r\n')
     finally:
         globals()['V88_PINNED_UI_SHA']=old_pin
     with tempfile.TemporaryDirectory(prefix='BG_EET_RU_V88_STATE_TEST_') as d:
