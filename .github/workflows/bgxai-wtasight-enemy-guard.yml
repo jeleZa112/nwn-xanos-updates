@@ -28,8 +28,8 @@ jobs:
           root = pathlib.Path("BGXAI/patchsets/ranged_fighter_guarded_20261119")
           manifest = json.loads((root / "manifest_updater.json").read_text(encoding="utf-8"))
           assert manifest["schema"] == 1
-          assert manifest["version"] == "0.3.69-WEAPON-RO-ADVISORY"
-          assert len(manifest["files"]) == 27
+          assert manifest["version"] == "0.3.70-WEAPON-TRAITS-RO"
+          assert len(manifest["files"]) == 28
           for entry in manifest["files"]:
               raw = pathlib.Path(entry["source"]).read_bytes()
               assert len(raw) == entry["size"], entry["dest"]
@@ -120,14 +120,15 @@ jobs:
           assert "70..92 | ForEach-Object" in updater_bytes.decode("utf-8")
           assert "97..116 | ForEach-Object" in updater_bytes.decode("utf-8")
           updater = pathlib.Path("BGXAI/BGXAI_SYNC.ps1").read_text(encoding="utf-8")
-          assert "0.3.69-WEAPON-RO-ADVISORY" in updater
+          assert "0.3.70-WEAPON-TRAITS-RO" in updater
           assert "BGXAI_WEAPON_SAVED_SNAPSHOT_READONLY.py" in updater
           assert "BGXAI_WEAPON_CHOICE_ADVISORY_V1.js" in updater
+          assert "BGXAI_WEAPON_TRAITS_ADVISORY_V1.js" in updater
           for n in range(1, 156):
               assert ("'"+str(n)+"' {") in updater, n
           for n in range(152, 156):
               assert ("Write-Host '"+str(n)+" - ") in updater, n
-          print("PASS source syntax + 27/27 SHA + mock guard + menu 135 weapon snapshot + menus 1-155")
+          print("PASS source syntax + 28/28 SHA + mock guard + menu 135 weapon snapshot + menus 1-155")
           PY
 
       - name: Weapon saved GAM/CRE snapshot isolated tests (Python, read only)
