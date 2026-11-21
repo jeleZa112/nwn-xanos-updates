@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 85
+SELF_VERSION = 86
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -582,10 +582,14 @@ def v77_resume_after_static_v70(game, report_path, combat_only=False):
     if rc:return rc
     current=v85_state_read()
     if current and current['phase'] in ('INSTALLED','PREPARED'):
-        return v85_run(game,report_path)
+        rc=v85_run(game,report_path)
+        if rc:return rc
+        return v86_run(game,report_path)
     rc=v84_run(game,report_path)
     if rc:return rc
-    return v85_run(game,report_path)
+    rc=v85_run(game,report_path)
+    if rc:return rc
+    return v86_run(game,report_path)
 
 
 def v77_resume_selftest():
@@ -599,6 +603,7 @@ def v77_resume_selftest():
     original_v84=globals()['v84_run']
     original_v85=globals()['v85_run']
     original_v85_state_read=globals()['v85_state_read']
+    original_v86=globals()['v86_run']
     calls=[]
     try:
         globals()['v74_pilot']=lambda *a,**k: calls.append('v74') or 0
@@ -610,15 +615,16 @@ def v77_resume_selftest():
         globals()['v84_run']=lambda *a,**k: calls.append('v84') or 0
         globals()['v85_run']=lambda *a,**k: calls.append('v85') or 0
         globals()['v85_state_read']=lambda *a,**k: None
+        globals()['v86_run']=lambda *a,**k: calls.append('v86') or 0
         assert v77_resume_after_static_v70('fake_game','fake_zip')==0
-        assert calls==['v74','v76','v79','v81','v82','v83','v84','v85'],calls
+        assert calls==['v74','v76','v79','v81','v82','v83','v84','v85','v86'],calls
         calls.clear()
         assert v77_resume_after_static_v70('fake_game','fake_zip',True)==0
         assert calls==['v74'],calls
         calls.clear()
         globals()['v85_state_read']=lambda *a,**k: {'phase':'INSTALLED'}
         assert v77_resume_after_static_v70('fake_game','fake_zip')==0
-        assert calls==['v74','v76','v79','v81','v82','v83','v85'],calls
+        assert calls==['v74','v76','v79','v81','v82','v83','v85','v86'],calls
         calls.clear()
         globals()['v85_state_read']=lambda *a,**k: None
         globals()['v74_pilot']=lambda *a,**k: calls.append('v74') or 2
@@ -634,6 +640,7 @@ def v77_resume_selftest():
         globals()['v84_run']=original_v84
         globals()['v85_run']=original_v85
         globals()['v85_state_read']=original_v85_state_read
+        globals()['v86_run']=original_v86
     return True
 
 
@@ -2299,6 +2306,154 @@ def v85_selftest():
     return True
 
 
+# BG EET RU v86 — READ ONLY two-mode combat journal feasibility audit.
+# No hooks, no UI.MENU rewriting, no game writes. One updater, one ZIP.
+V86_ENTRY = '34_V86_COMBAT_JOURNAL_TWO_MODE_SOURCE_AUDIT.json'
+V86_SCHEMA = 'BG_EET_RU_V86_TWO_MODE_COMBAT_JOURNAL_SOURCE_AUDIT'
+V86_UI_TOKENS = ('combatLog', 'WORLD_MESSAGES', 'WORLD', 'm_bDisplayExtraCombatInfo', 'Infinity_DisplayString')
+
+
+def v86_extract_ui_references(ui_bytes):
+    if not isinstance(ui_bytes, bytes) or len(ui_bytes)>4_000_000:
+        raise ValueError('V86_UI_TOO_LARGE_OR_INVALID')
+    if b'\0' in ui_bytes[:1000]:
+        raise ValueError('V86_UI_BINARY_HOLD')
+    ui = ui_bytes.decode('utf-8-sig', 'replace')
+    matches = []
+    counts = {}
+    for token in V86_UI_TOKENS:
+        found = list(re.finditer(r'(?<![A-Za-z0-9_])'+re.escape(token)+r'(?![A-Za-z0-9_])',ui,re.I))
+        counts[token]=len(found)
+        for match in found[:10]:
+            pos=match.start()
+            left=ui[max(0,pos-125):pos]
+            right=ui[match.end():match.end()+125]
+            excerpt=(left+'['+match.group(0)+']'+right).replace('\r',' ').replace('\n',' ')
+            excerpt=re.sub(r'\s{2,}',' ',excerpt)
+            matches.append({'symbol':token,'line':ui.count('\n',0,pos)+1,
+                            'context':excerpt[:290]})
+    return {'bytes':len(ui_bytes),'sha256':hashlib.sha256(ui_bytes).hexdigest(),
+            'token_counts':counts,'limited_contexts':matches,
+            'proves_safe_interception':False,
+            'warnings':['UI.MENU contains static code, not a verified combat-log event hook.',
+                        'The detected labels alone do not justify changing UI.MENU.']}
+
+
+def v86_parse_roll_line(line):
+    # Group outcomes using only literal evidence from screenshots, never fabricate AC / THAC0.
+    m=re.fullmatch(r'\s*([^:\r\n]{1,80}):\s*бросок атаки\s*(\d{1,2})\s*([+\-])\s*(\d{1,3})\s*=\s*(-?\d{1,3})\s*:\s*(попадание|промах)\s*',line,re.I)
+    if not m:return None
+    actor,roll,operator,delta,total,outcome=m.groups()
+    roll=int(roll);delta=int(delta)*(1 if operator=='+' else -1);total=int(total)
+    if roll<1 or roll>20 or roll+delta!=total: return None
+    return {'actor':actor,'d20':roll,'net_adjustment':delta,'result':total,
+            'outcome':outcome.upper(), 'verified_arithmetic':True}
+
+
+def v86_build_modes():
+    # These are screenshots provided by the player, NOT hooked live events.
+    sample=v86_parse_roll_line('Халид: бросок атаки 2 - 1 = 1 : промах')
+    if sample is None:raise RuntimeError('V86_DEMO_SOURCE_PARSER_ERROR')
+    return {'provenance':'MANUAL_EXAMPLE_FROM_USER_COMBAT_SCREENSHOT_NOT_LIVE_CAPTURE',
+            'raw_source_line':'Халид: бросок атаки 2 - 1 = 1 : промах',
+            'brief':{'headline':'Халид → Больной гибберлинг: ПРОМАХ',
+                     'calculation':'Бросок 2 − 1 = 1',
+                     'ac_or_thac0':'UNKNOWN_NOT_DISPLAYED'},
+            'detailed':{'event':sample,'known_nested_group':{
+                     'name':'Правая рука', 'reported_group_total':-1,
+                     'visible_children':[{'name':'Владение оружием','value':-2},
+                                         {'name':'Ловкость','value':1}],
+                     'no_double_count_rule':True},
+                     'zero_modifiers':'KEEP_IN_DETAILED_MODE',
+                     'unsupported':'Do not assume group sum equals full attack result until log event boundaries are verified.'}}
+
+
+def v86_build_report(game):
+    game=Path(game)
+    report={'schema':V86_SCHEMA,'version':SELF_VERSION,'game_root':str(game),
+            'status':'V86_SOURCE_AUDIT_HOLD_NO_GAME_UI_HOOK',
+            'game_files_written':False,'report_only':True,
+            'does_not_modify_v85':True,'runtime_observer_installed':False,
+            'ui_toggle_in_game':False,'runtime_event_capture_verified':False,
+            'errors':[],'example':v86_build_modes(),
+            'next_gate':'Verify actual UI.MENU combatLog binding and supported safe EEex display-message listener before any UI or code hook. Explicit approval, backup and rollback required to install.'}
+    try:
+        ui=game/'override'/'UI.MENU'
+        if not ui.is_file() or ui.is_symlink():
+            report['status']='V86_UI_MENU_MISSING_SOURCE_HOLD'
+            return report
+        read=ui.read_bytes()
+        report['ui_menu']=v86_extract_ui_references(read)
+        report['ui_menu']['path']='override/UI.MENU'
+        lua=game/'override'/V71_SHORT_SCRIPT
+        if not lua.is_file() or lua.is_symlink():
+            raise RuntimeError('V86_INSTALLED_COMBAT_LUA_MISSING_OR_SYMLINK')
+        lua_hash=digest(lua.read_bytes())
+        v85=v85_state_read()
+        if not v85 or v85.get('phase')!='INSTALLED':
+            raise RuntimeError('V86_V85_NOT_INSTALLED')
+        if lua_hash!=v85['candidate_sha256']:
+            raise RuntimeError('V86_V85_RUNTIME_LUA_SHA_MISMATCH')
+        report['installed_v85_lua_sha256']=lua_hash
+        report['installed_v85_state_phase']=v85['phase']
+        report['status']='V86_STATIC_UI_FEASIBILITY_CAPTURED_NO_LIVE_HOOK'
+    except (OSError,RuntimeError,ValueError,UnicodeError,KeyError) as exc:
+        report['errors'].append({'type':type(exc).__name__,'message':str(exc)[:220]})
+    return report
+
+
+def v86_run(game,report_path):
+    game,report_path=Path(game),Path(report_path)
+    try:
+        safe_external(game,report_path)
+        if not report_path.is_file():raise FileNotFoundError('V86_CANONICAL_REPORT_MISSING')
+        report=v86_build_report(game)
+        with zipfile.ZipFile(report_path) as z:
+            if z.testzip() is not None:raise ValueError('V86_BAD_PRIOR_ZIP')
+            if len(z.namelist())!=len(set(z.namelist())):
+                raise ValueError('V86_DUPLICATE_ARCHIVE_MEMBER')
+            previous=json.loads(z.read(V86_ENTRY)) if V86_ENTRY in z.namelist() else None
+        if previous==report:
+            print('v86: CACHE PASS — проверка UI источника неизменна')
+            return 0
+        with tempfile.NamedTemporaryFile(dir=str(report_path.parent),prefix='.v86_',suffix='.zip',delete=False) as f:
+            temp=Path(f.name)
+        try:
+            with zipfile.ZipFile(report_path,'r') as src,zipfile.ZipFile(temp,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=7) as dst:
+                for member in src.infolist():
+                    if member.filename!=V86_ENTRY:dst.writestr(member,src.read(member))
+                dst.writestr(V86_ENTRY,json.dumps(report,ensure_ascii=False,indent=2).encode('utf-8'))
+            with zipfile.ZipFile(temp) as z:
+                if z.testzip() is not None or z.namelist().count(V86_ENTRY)!=1:
+                    raise ValueError('V86_NEW_ZIP_BAD_CRC_OR_DUPLICATE')
+            os.replace(temp,report_path)
+        finally:
+            if temp.exists():temp.unlink()
+        print('v86:',report['status'],'— только аудит UI.MENU; изменение игры: 0')
+        print('Единый ZIP:',report_path)
+        return 0
+    except (OSError,ValueError,RuntimeError,UnicodeError,zipfile.BadZipFile,KeyError) as exc:
+        print('v86: SAFE_STOP — '+type(exc).__name__+': '+str(exc)[:180])
+        return 2
+
+
+def v86_selftest():
+    x=v86_parse_roll_line('Халид: бросок атаки 2 - 1 = 1 : промах')
+    assert x['d20']==2 and x['net_adjustment']==-1 and x['result']==1 and x['outcome']=='ПРОМАХ'
+    assert v86_parse_roll_line('Халид: бросок атаки 2 - 1 = 7 : промах') is None
+    assert v86_parse_roll_line('Халид: бросок атаки 2 - 1 = 1 : попадание')['outcome']=='ПОПАДАНИЕ'
+    assert v86_parse_roll_line('Халид: бросок атаки 0 - 0 = 0 : промах') is None
+    m=v86_build_modes()
+    assert m['detailed']['known_nested_group']['no_double_count_rule']
+    a=v86_extract_ui_references(b'// the combatLog value\nmenu { name "WORLD_MESSAGES" }')
+    assert a['token_counts']['combatLog']==1 and a['token_counts']['WORLD_MESSAGES']==1
+    assert a['proves_safe_interception'] is False
+    try:v86_extract_ui_references(b'\x00 bad')
+    except ValueError:pass
+    else:raise AssertionError('V86_BINARY_UI_ACCEPTED')
+    return True
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description='BG_EET_RU one-file visible-only read-only auto-updater')
     p.add_argument('--game',default=DEFAULT_GAME)
@@ -2659,11 +2814,15 @@ def main(argv=None):
     if v83_rc:return v83_rc
     latest=v85_state_read()
     if latest and latest['phase'] in ('INSTALLED','PREPARED'):
-        return v85_run(game,report_path)
+        rc=v85_run(game,report_path)
+        if rc:return rc
+        return v86_run(game,report_path)
     v84_rc=v84_run(game,report_path)
     if v84_rc:return v84_rc
     v85_rc=v85_run(game,report_path)
     if v85_rc:return v85_rc
+    v86_rc=v86_run(game,report_path)
+    if v86_rc:return v86_rc
     print('v67 cached DLG structure:',v67_status['status'],
           len(v67_status['target_references']),'target references')
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
@@ -5140,6 +5299,7 @@ def selftest():
     assert v83_selftest() and callable(v83_run)
     assert v84_selftest() and callable(v84_run)
     assert v85_selftest() and callable(v85_run)
+    assert v86_selftest() and callable(v86_run)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
