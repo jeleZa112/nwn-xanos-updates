@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 86,
-  "sha256": "c8214507be7cc4583ffe23e7cd158e026993e2d0f3ac9837972f39e0dd91e2f9",
-  "mode": "READ_ONLY_TWO_MODE_COMBAT_UI_SOURCE_FEASIBILITY",
+  "version": 87,
+  "sha256": "45eabc98efa6af6b655dd8cb7861944079169347e905bee3cc45a1ac348f4720",
+  "mode": "READ_ONLY_EXACT_UI_SOURCE_GUARD",
   "game_writes_allowed": false,
-  "note": "v86 READ ONLY pilot of two-mode combat journal: parses genuine screenshot-derived attack result as isolated prototype, does not invent THAC0/AC, avoids double counting nested right-hand modifier values. Verifies current installed v85 M_BGERU.lua SHA against v85 state and inventories current override/UI.MENU combatLog references. Writes only 34_V86_COMBAT_JOURNAL_TWO_MODE_SOURCE_AUDIT.json in existing ZIP. NOT installed in game; no new EEex hooks, UI changes, BCS changes or text edits. Only after actual UI control/event and safe interception source proof, explicit approval, backup, and rollback may live journal be attempted. GitHub Actions run 44906765913 PASS."
+  "note": "v87 READ ONLY: exact UI.MENU source capture for combatLog table, worldMessageBox label, clean() function and WORLD_MESSAGES menu, plus checked pinned original UI SHA and installed v85 Lua SHA. No hook, no UI toggle, no game modification. Outputs only 35_V87_COMBAT_JOURNAL_UI_BINDING_EXACT_SOURCE.json to single existing ZIP. Source CI run 44907413243 PASS. Next gate requires display helper design and separate guarded install after UI context audit."
 }
