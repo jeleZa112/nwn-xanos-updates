@@ -12,12 +12,17 @@ import BGXFTRACE_V2_GUARDED as V2
 import BGXFTRACE_V3_GUARDED as V3TRACE
 import BGXFENEMY_WTASIGHT_GUARDED as ENEMY
 import BGXRANGED_V5_GUARDED_INSTALL as HANDOFF
+import BGXRANGED_V6_GUARDED_INSTALL as HANDOFF6
 import BGXRANGED_V3_GUARDED_INSTALL as V3
 
 ROOT=V2.ROOT
 def start(root):
     V3.V2.V1.processes()
-    if HANDOFF.LAST.match(V3TRACE.last(root)):
+    if HANDOFF6.LAST.match(V3TRACE.last(root)):
+        current=HANDOFF6.status(root)
+        if current.get("status")!="BGXRANGED6_INSTALLED_VERIFIED":
+            raise ValueError("V6_DPLAYER_GUARD_NOT_VERIFIED")
+    elif HANDOFF.LAST.match(V3TRACE.last(root)):
         current=HANDOFF.status(root)
         if current.get("status")!="BGXRANGED5_INSTALLED_VERIFIED":
             raise ValueError("V5_HANDOFF_NOT_VERIFIED")
