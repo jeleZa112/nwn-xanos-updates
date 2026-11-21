@@ -1,3 +1,13 @@
+# 21.11.2026 — АКТУАЛЬНО: R3 NATIVE ITM/SPL/2DA SOURCE+PIN READY, LIVE R3 НЕТ
+
+**CODE/TEST:** Прочитан сохранённый архив пользователя `BG_EET_AUDIT_01_MAGIC.zip` (5 804 ITM). Найдены `SW1H04.ITM` 1d8/дистанция 1/speed 5, с opcode146 на `SW1H04.SPL` (опкоды 318,112,122,139), и `STAF01.ITM` 1d6/дистанция 2/speed4; архив не содержит `BOW05.ITM`, `AROW01.ITM`, `SHLD03A.ITM`. В старом архиве `CLSWPBON.2DA` 77 строк, `FIGHTER:GETS_PROF_APR=1`; это НЕ текущая game runtime. Написан `BGXAI_WEAPON_NATIVE_ITM_R3_RO.py` (только чтение `chitin.key`/BIFF, ITM, SPL, 2DA, без выбора оружия), 30/30 локальных unit PASS; R2 guarded menu+collector 35/35 PASS = 65/65 OFFLINE. **DEPLOY/LIVE R3:** НЕ ПРОВЕРЕН НА WINDOWS, игра не менялась. R1.1/R2 уже установлены и LIVE подтверждены, не повторять.
+
+**Один обновлятор:** старый `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd` остаётся. Новый SHA-проверенный source pin `e0f606a6b780d1eef1b77a8f5f204db927dc5a0c`, PowerShell SHA256 `be239cfabfa6efe1bdd651264231d14afc7e05783b6800cf0487f0992dafe595`, 79 967 bytes; проверены 5/5 файлов immutable manifest. **Следующий единственный нужный тест:** закрыть игру/InfinityLoader и запустить `BGXAI_UPDATE.cmd` → `159 → 7 → 6` (R3 native read-only). Прислать `C:\Users\Drevo\Documents\BGXAI_LIVE_REPORTS\BGXAI_WEAPON_NATIVE_ITM_R3.json`; если STOP/HOLD — один обновлённый `BGXW2_SETUP_R2.json` + причина. **Установка WeiDU для R3 не нужна**, не нажимать 158 или 159→7→2 снова. Нет данных EPS/manual action queue, active-buff/proficiency snapshot, target resistance и per-slot current APR: `dispatchAuthorized=false`.
+
+**Единственный полный checkpoint:** `BGXAI/CURRENT/BGXAI_WEAPON_NATIVE_ITM_R3_CHECKPOINT_20261121_RU.md` (GitHub и Library). Все ниже — прошлые стадии, не отменяющие верхнюю.
+
+---
+
 # LATEST 21.11.2026 — R2 LIVE ПРОЙДЕН, ВЫБОР ОРУЖИЯ ЕЩЁ НЕ ПОДКЛЮЧЕН
 
 Игровые файлы R2: пользователь приложил `BGXAI_WEAPON_SLOTS_RAW_R2.jsonl` (SESSION,READY,10 SLOTS), полный захваченный `BGXAI_WEAPON_CONSOLE_20261121T132309314256Z.log` (все 10 R1 ACTION совпали с 10 R2 по seq, actor 139135050, partyIndex 2, action, selected), `BGXW2_SETUP_R2.json` (`R2_CONSOLE_RAW_COLLECTED`, actions 10, malformed 0, game_modified false), и повторный `BGXAI_WEAPON_NATIVE_PREFLIGHT_V1(1).json` (`READONLY_NATIVE_PREFLIGHT_PASS`, game_files_unchanged true, V6 exact). **158 случайно запускался только READ ONLY, без ущерба.** Выбор raw 38(посох STAF01, APR1) → 12(стрелы AROW01/предполагаемый BOW05, APR2) → 35(меч SW1H04, APR7=код, НЕ 7 атак/раунд). AROW01 useCount 20→18; offhand SHLD03A; quick slot37 пуст. Все данные itemIdentity/launcher/perSlotAPR/EPS/manual не подтверждены и `dispatchAuthorized=false`.
