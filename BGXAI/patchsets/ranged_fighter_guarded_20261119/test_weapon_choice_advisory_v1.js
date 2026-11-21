@@ -38,7 +38,7 @@ test("do not select big damage but magically blocked",()=>{
  const s=scene(weapon("PLUS3",{avgDamageOnHit:100,enchantment:3}),{
  enemy:{...enemy(),protections:{...enemy().protections,magicalWeaponsBlocked:true}}
  });
- assert.equal(rec(s).status,"KEEP_CURRENT");
+ assert.equal(rec(s).status,"HOLD_NO_EFFECTIVE_ATTACK");
  const x=rec(s).candidates.find(v=>v.id==="PLUS3");
  assert.equal(x.dpr,0);assert.deepEqual(x.reasons,["CONFIRMED_PROTECTION_BLOCKS_WEAPON"]);
 });
