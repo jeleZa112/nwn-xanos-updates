@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "d15b0220729b84fcff377a4e347418a102f055d9",
+  "commit": "ec3d70d8a06cf0967c107326b6da907c07423305",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "26c08051251385d3305160a0d1035f220432e7a9195f5397c6c6078ba7657264",
+  "script_sha256": "2aa5445c5dd864858ec2b751beaf9a982fccdf524246186ac80571b5d44f62b0",
   "script_size": 79708,
-  "description": "BGXAI one-file menus 1-155, exact previous CMD 80 KB bootstrap compatible; WTASIGHT friendly Enemy() guard 152 preflight,153 guarded consent install,154 status,155 rollback; retained BGXF3."
+  "description": "BGXAI onefile 1-155; BGXFENEMY guarded WTASIGHT installed separately, read-only menu 146 console capture now accepts BGXFENEMY last, menu 135 trace audit; 25 exact SHA files, CMD <=80000 bytes."
 }
