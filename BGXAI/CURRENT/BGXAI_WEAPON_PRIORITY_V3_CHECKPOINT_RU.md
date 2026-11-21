@@ -33,3 +33,9 @@
 5. При подготовке установки — тот же `BGXAI_UPDATE.cmd`, SHA preflight, внешний backup, WeiDU last-only rollback, отдельное буквальное разрешение пользователя. Затем игровой A/B дротики/меч, скорость переходов, ручной приказ, EPS, иммунитеты и два оружия.
 
 **CODE:** Lua scorer + точный BCS-кандидат готовы. **TEST:** 24 Lua + 9 Python + 5 JS PASS (offline). **DEPLOY:** НЕТ. **LIVE:** НЕТ. Никаких действий от пользователя на этом этапе.
+
+## Дополнение — пассивная сверка с EEex 1.1.7 (только исходник)
+
+Найдены **не вымышленные** API и поля непосредственно в публичном исходнике EEex тега `v1.1.7`: `EEex_Sprite_GetInPortrait(index)` и `sprite.m_equipment.m_selectedWeapon` (`EEex/copy/EEex_scripts/EEex_Sprite.lua`, `EEex_Opcode.lua`). Создан `BGXAI_EEEX117_WEAPON_READONLY_PROBE_V1.lua`, который через `pcall` читает raw ID портрета, сырое поле выбранного оружия, позицию и текущее действие. **Не трактует** числовой `m_selectedWeapon` как проверенный `SLOT_WEAPON0..3`, не декодирует весь инвентарь/боеприпасы/статы, не подтверждает происхождение ручного приказа или пустую очередь EPS, всегда возвращает `bcsRequestAllowed=false`, `engineDispatchAllowed=false`. `m_actionID=0` остаётся просто наблюдением.
+
+Проверка: `luatex --luaonly test_eeex117_weapon_readonly_probe_v1.lua` — **9/9 PASS на мок-EEex**, никаких runtime-тестов в сборке пользователя. Оба файла сохранены в GitHub ветке `bg-eet-ai` рядом с V3, а также в постоянной библиотеке `/BALDURS_GATE_EET_AI/BUILD`. **DEPLOY/LIVE остаются НЕТ.** Следующий шаг — проверить карту реального `m_equipment.m_items`/resref и runtime EPS/manual, затем native WeiDU компиляция и guarded install через один обновлятор при отдельном подтверждении.
