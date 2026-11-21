@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 78
+SELF_VERSION = 79
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -570,19 +570,23 @@ def v77_resume_after_static_v70(game, report_path, combat_only=False):
     rc=v74_pilot(game,report_path,mode='auto')
     if rc:return rc
     if combat_only:return 0
-    return v76_live_audit(game,report_path)
+    rc=v76_live_audit(game,report_path)
+    if rc:return rc
+    return v79_run(game,report_path)
 
 
 def v77_resume_selftest():
     # Patch only in-memory functions. Never open a game, report or user file.
     original_v74=globals()['v74_pilot']
     original_v76=globals()['v76_live_audit']
+    original_v79=globals()['v79_run']
     calls=[]
     try:
         globals()['v74_pilot']=lambda *a,**k: calls.append('v74') or 0
         globals()['v76_live_audit']=lambda *a,**k: calls.append('v76') or 0
+        globals()['v79_run']=lambda *a,**k: calls.append('v79') or 0
         assert v77_resume_after_static_v70('fake_game','fake_zip')==0
-        assert calls==['v74','v76'],calls
+        assert calls==['v74','v76','v79'],calls
         calls.clear()
         assert v77_resume_after_static_v70('fake_game','fake_zip',True)==0
         assert calls==['v74'],calls
@@ -593,6 +597,7 @@ def v77_resume_selftest():
     finally:
         globals()['v74_pilot']=original_v74
         globals()['v76_live_audit']=original_v76
+        globals()['v79_run']=original_v79
     return True
 
 
@@ -777,6 +782,213 @@ options['LeUI'][LeUI_uiStrings.LEUI_REVERSE_BUTTON_POSITIONS_LABEL] = var[5] == 
     try:v78_make_patch(base.replace('Реверсивные кнопоки'.encode('utf8'),'Broken'.encode('utf8')))
     except ValueError:pass
     else:raise AssertionError('V78_ACCEPTED_WRONG_LABEL')
+    return True
+
+# BG_EET_RU v79: source-only runtime-saved journal evidence from existing GAM saves.
+# Reads GAM and the two installed RU TLK files. Never modifies game, saves, or logs.
+V79_ENTRY = '28_V79_SAVED_JOURNAL_VISIBLE_SOURCES_READONLY.json'
+
+
+def v79_read_gam_journal(raw):
+    if not isinstance(raw,bytes) or len(raw)<0x64 or raw[:4]!=b'GAME' or raw[4:8] not in (b'V2.0',b'V2.1',b'V2.2'):
+        raise ValueError('V79_UNSUPPORTED_GAM_FORMAT')
+    count, offset = struct.unpack_from('<II',raw,0x4c)
+    if count>30000 or (count and (offset<0x64 or offset+count*12>len(raw))):
+        raise ValueError('V79_GAM_JOURNAL_TABLE_OUT_OF_BOUNDS')
+    items=[]
+    for i in range(count):
+        k,time,chapter,readby,section,external=struct.unpack_from('<IIBBBB',raw,offset+i*12)
+        items.append({'index':i,'strref':k,'chapter':chapter,'section':section,'text_location':external,
+                      'in_internal_tlk':external==255})
+    return {'gam_version':raw[4:8].decode('ascii'),'journal_count':count,'journal_entries':items}
+
+
+def v79_selected_tlk(path,strrefs):
+    """Sparse read of indexed journal StrRefs; no full 360k-string iteration."""
+    path=Path(path)
+    result={}
+    with path.open('rb') as f:
+        size=path.stat().st_size
+        head=f.read(18)
+        if len(head)!=18 or head[:8]!=b'TLK V1  ':
+            raise ValueError('V79_BAD_TLK_HEADER')
+        lang,count,base=struct.unpack_from('<HII',head,8)
+        if count>10_000_000 or base<18+count*26 or base>size:
+            raise ValueError('V79_BAD_TLK_STRING_TABLE')
+        for ref in sorted(set(strrefs)):
+            if not 0<=ref<count:
+                result[str(ref)]={'status':'OUTSIDE_CURRENT_TLK'}
+                continue
+            f.seek(18+26*ref+18)
+            off,length=struct.unpack('<II',f.read(8))
+            if length>1_000_000 or off+length>size-base:
+                result[str(ref)]={'status':'INVALID_STRING_BOUNDS'}
+                continue
+            f.seek(base+off)
+            raw=f.read(length)
+            try:
+                val=raw.decode('utf-8','strict')
+            except UnicodeError:
+                result[str(ref)]={'status':'NON_UTF8_TEXT_HOLD','sha256':hashlib.sha256(raw).hexdigest()}
+                continue
+            latin=len(re.findall(r'[A-Za-z]',val))
+            cyr=len(re.findall(r'[А-Яа-яЁё]',val))
+            words=len(re.findall(r'\b[A-Za-z]{3,}\b',val))
+            candidate=bool(latin>=24 and words>=4 and cyr==0)
+            result[str(ref)]={'status':'READ','text':val[:2500],'text_truncated':len(val)>2500,
+                              'sha256':hashlib.sha256(raw).hexdigest(),
+                              'english_only_candidate':candidate,'cyrillic_letters':cyr,
+                              'latin_letters':latin}
+    return result
+
+
+def v79_find_saves(game):
+    game=Path(game)
+    roots=[game/'save',game/'mpsave',game/'sodsave',
+           Path.home()/'Documents'/"Baldur's Gate II - Enhanced Edition"/'save',
+           Path.home()/'Documents'/"Baldur's Gate II - Enhanced Edition"/'mpsave',
+           Path.home()/'Documents'/"Baldur's Gate - Enhanced Edition"/'save']
+    seen=set()
+    slots=[]
+    for root in roots:
+        if not root.is_dir():continue
+        for folder in root.iterdir():
+            if not folder.is_dir() or folder.is_symlink():continue
+            gam=folder/'BALDUR.GAM'
+            if not gam.is_file() or gam.is_symlink():continue
+            try:
+                absolute=str(gam.resolve()).casefold()
+                if absolute in seen:continue
+                seen.add(absolute)
+                st=gam.stat()
+                if st.st_size<0x64 or st.st_size>64*1024*1024:continue
+                slots.append({'file':gam,'modified_ns':st.st_mtime_ns,'size':st.st_size})
+            except OSError:continue
+    return sorted(slots,key=lambda x:x['modified_ns'],reverse=True)[:3]
+
+
+def v79_build_report(game):
+    game=Path(game)
+    report={'schema':'BG_EET_RU_V79_READ_ONLY_SAVE_JOURNAL',
+            'updater_version':SELF_VERSION,'game_root':str(game),
+            'status':'READ_ONLY','game_files_written':False,'save_files_written':False,
+            'runtime_displays_proven':False,
+            'scope':'Actual journal StrRefs stored in most recent GAME V2.x save(s), not exhaustive unused DLG; game not modified',
+            'translation_install_allowed':False,'errors':[],'saves':[],
+            'game_tlks':{},'candidate_rows':[]}
+    saves=v79_find_saves(game)
+    if not saves:
+        report['status']='V79_NO_GAM_SAVES_FOUND_HOLD'
+        return report
+    refs=set()
+    for s in saves:
+        try:
+            raw=s['file'].read_bytes()
+            parsed=v79_read_gam_journal(raw)
+            valid=[r for r in parsed['journal_entries'] if r['in_internal_tlk']]
+            refs.update(r['strref'] for r in valid)
+            report['saves'].append({'slot':s['file'].parent.name,
+                    'gam_size_bytes':len(raw),'gam_sha256':hashlib.sha256(raw).hexdigest(),
+                    'gam_version':parsed['gam_version'],'journal_count':parsed['journal_count'],
+                    'internal_tlk_journal_count':len(valid),
+                    'journal_rows':parsed['journal_entries'][:1500],
+                    'journal_rows_truncated':len(parsed['journal_entries'])>1500})
+        except (OSError,ValueError,struct.error) as exc:
+            report['errors'].append({'source':str(s['file']),'type':type(exc).__name__,
+                                    'error':str(exc)[:160]})
+    if not report['saves']:
+        report['status']='V79_SAVE_READ_ERRORS_HOLD'
+        return report
+    sides={}
+    for name in ('dialog.tlk','dialogf.tlk'):
+        path=game/'lang'/'ru_RU'/name
+        try:
+            if not path.is_file() or path.is_symlink():raise FileNotFoundError(name)
+            sides[name]=v79_selected_tlk(path,refs)
+            report['game_tlks'][name]={'sha256':v76_file_sha(path), 'entries_checked':len(sides[name])}
+        except (OSError,ValueError,struct.error) as exc:
+            report['errors'].append({'source':str(path),'type':type(exc).__name__,'error':str(exc)[:160]})
+    if len(sides)!=2:
+        report['status']='V79_TLK_ERRORS_HOLD'
+        return report
+    report['unique_internal_journal_strrefs']=len(refs)
+    for ref in sorted(refs):
+        a=sides['dialog.tlk'].get(str(ref),{})
+        b=sides['dialogf.tlk'].get(str(ref),{})
+        row={'strref':ref,'male':a,'female_status':b.get('status'),
+             'female_sha256':b.get('sha256'),'male_female_same':a.get('sha256')==b.get('sha256'),
+             'english_candidate_male':bool(a.get('english_only_candidate')),
+             'english_candidate_female':bool(b.get('english_only_candidate'))}
+        if row['english_candidate_male'] or row['english_candidate_female']:
+            row['female_text']=b.get('text')
+            report['candidate_rows'].append(row)
+    report['candidate_count']=len(report['candidate_rows'])
+    report['status']='V79_SAVED_GAME_JOURNALS_CHECKED' if not report['errors'] else 'V79_PARTIAL_SAVES_CHECKED_HOLD'
+    report['note']='Saved journal presence proves journal membership, not necessarily that player opened the journal or that other quests are installed.'
+    return report
+
+
+def v79_run(game,report_path):
+    game=Path(game);report_path=Path(report_path)
+    try:
+        safe_external(game,report_path)
+        if not report_path.is_file():raise FileNotFoundError('V79_PREVIOUS_SINGLE_ZIP_MISSING')
+        result=v79_build_report(game)
+        previous=None
+        with zipfile.ZipFile(report_path) as z:
+            if z.testzip() is not None:raise ValueError('V79_PREVIOUS_ZIP_BAD_CRC')
+            if V79_ENTRY in z.namelist():previous=json.loads(z.read(V79_ENTRY))
+        if previous==result:
+            print('v79: CACHE PASS — журнал сохранённых игр не изменился')
+        else:
+            import tempfile as _temp
+            with _temp.NamedTemporaryFile(dir=str(report_path.parent),prefix='.v79_',suffix='.zip',delete=False) as f:
+                temp=Path(f.name)
+            try:
+                with zipfile.ZipFile(report_path) as source,zipfile.ZipFile(temp,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=7) as dest:
+                    seen=set()
+                    for i in source.infolist():
+                        if i.filename in seen:raise ValueError('V79_DUPLICATE_ARCHIVE_ENTRY')
+                        seen.add(i.filename)
+                        if i.filename!=V79_ENTRY:dest.writestr(i,source.read(i))
+                    dest.writestr(V79_ENTRY,json.dumps(result,ensure_ascii=False,indent=2).encode('utf8'))
+                with zipfile.ZipFile(temp) as check:
+                    if check.testzip() is not None or check.namelist().count(V79_ENTRY)!=1:
+                        raise ValueError('V79_NEW_ZIP_CRC_FAILED')
+                os.replace(temp,report_path)
+            finally:
+                if temp.exists():temp.unlink()
+        print('v79:',result['status'],
+              '— сохранений:',len(result['saves']),'кандидатов:',len(result['candidate_rows']))
+        print('Единый ZIP:',report_path)
+        return 0
+    except (OSError,ValueError,RuntimeError,KeyError,struct.error,zipfile.BadZipFile) as exc:
+        print('v79: SAFE_STOP — '+type(exc).__name__+': '+str(exc)[:200])
+        return 2
+
+
+def v79_selftest():
+    # Isolated GAM + TLK fixtures only. No installed game touched.
+    import tempfile as _tmp
+    game=bytearray(0x140)
+    game[:8]=b'GAMEV2.0'
+    struct.pack_into('<II',game,0x4c,2,0xa0)
+    struct.pack_into('<IIBBBB',game,0xa0,123,42,1,0,1,255)
+    struct.pack_into('<IIBBBB',game,0xac,456,44,1,0,2,255)
+    g=v79_read_gam_journal(bytes(game))
+    assert g['journal_count']==2 and g['journal_entries'][1]['strref']==456
+    try:v79_read_gam_journal(b'GAMEV2.0'+bytes(20))
+    except ValueError:pass
+    else:raise AssertionError('V79 accepted too short GAM')
+    with _tmp.TemporaryDirectory(prefix='BG_EET_RU_V79_TEST_') as d:
+        p=Path(d)/'dialog.tlk'
+        count=457;table=bytearray(count*26);payload=b''
+        for i,text in ((123,'Русское описание задания'),(456,'An English journal quest with several words.')):
+            b=text.encode('utf8');struct.pack_into('<II',table,i*26+18,len(payload),len(b));payload+=b
+        p.write_bytes(b'TLK V1  '+struct.pack('<HII',0,count,18+len(table))+table+payload)
+        rows=v79_selected_tlk(p,[123,456])
+        assert not rows['123']['english_only_candidate']
+        assert rows['456']['english_only_candidate']
     return True
 
 def main(argv=None):
@@ -1116,6 +1328,8 @@ def main(argv=None):
     if v76_rc:
         print('v76: только адресная проверка остановлена безопасно; игра не изменена.')
         return v76_rc
+    v79_rc=v79_run(game,report_path)
+    if v79_rc:return v79_rc
     print('v67 cached DLG structure:',v67_status['status'],
           len(v67_status['target_references']),'target references')
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
@@ -3583,6 +3797,7 @@ def selftest():
     assert v76_selftest() and callable(v76_live_audit)
     assert v77_resume_selftest() and callable(v77_resume_after_static_v70)
     assert v78_selftest() and callable(v78_live_fix)
+    assert v79_selftest() and callable(v79_run)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
