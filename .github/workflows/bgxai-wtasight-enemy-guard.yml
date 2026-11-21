@@ -96,4 +96,20 @@ jobs:
             $errors | Format-List
             throw 'PowerShell AST parse FAIL'
           }
+          $cmdPath = Join-Path $env:GITHUB_WORKSPACE 'BGXAI_UPDATE.cmd'
+          $rawCmd = [IO.File]::ReadAllText($cmdPath)
+          $tag = '# BEGIN_BGXAI_RAW_BOOTSTRAP_PS'
+          $idx = $rawCmd.LastIndexOf($tag)
+          if ($idx -lt 0) { throw 'CMD embedded PowerShell marker missing' }
+          $cmdTokens = $null
+          $cmdErrors = $null
+          $cmdAst = [System.Management.Automation.Language.Parser]::ParseInput($rawCmd.Substring($idx), [ref]$cmdTokens, [ref]$cmdErrors)
+          if ($null -eq $cmdAst -or $cmdErrors.Count -gt 0) {
+            $cmdErrors | Format-List
+            throw 'Embedded CMD PowerShell AST parse FAIL'
+          }
+          if (-not $rawCmd.Contains("dc32a50aad462bbfc9d3c15a9d0c22c640d7c156") -or -not $rawCmd.Contains("80574") -or -not $rawCmd.Contains("26c08051251385d3305160a0d1035f220432e7a9195f5397c6c6078ba7657264")) {
+            throw 'Known stale pin recovery signature missing'
+          }
+          Write-Host 'PASS current CMD embedded bootstrap syntax and trusted stale-pin recovery'
           Write-Host 'PASS Windows PowerShell 5.1 AST / menus 1-155'
