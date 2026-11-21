@@ -124,10 +124,22 @@ def advise(s: Situation, allies: Iterable[Ally],
     # An unverified effect is never deemed safe for party/summons, even if
     # an earlier saved creature looked immune. Only exact effect immunity counts.
     if s.proposed_aoe is not None and s.role in ("CASTER","HYBRID"):
-        if s.aoe_spell_verified and s.spell_resource_verified:
-            allowed,unsafe=safe_aoe(s.proposed_aoe,allies,roster_complete)
-            if allowed and (s.proposed_aoe.area==s.actor.area) and \
-                    s.proposed_aoe.harmful_effects:
+        proposed=s.proposed_aoe
+        # Do not let an incomplete, duplicated or actor-omitting roster
+        # certify safety. This matters for the caster as well as summons.
+        ids=[a.ident for a in allies]
+        complete=(roster_complete is True and 1 <= len(allies) <= 64 and
+                  len(ids)==len(set(ids)) and current.ident in ids)
+        valid_aoe=(isinstance(proposed,Hazard) and proposed.area==current.area and
+                   _point((proposed.x,proposed.y)) and
+                   isinstance(proposed.radius_px,(int,float)) and
+                   not isinstance(proposed.radius_px,bool) and
+                   isfinite(proposed.radius_px) and proposed.radius_px>0 and
+                   isinstance(proposed.harmful_effects,frozenset) and
+                   bool(proposed.harmful_effects))
+        if complete and valid_aoe and s.aoe_spell_verified and s.spell_resource_verified:
+            allowed,unsafe=safe_aoe(proposed,allies,True)
+            if allowed:
                 return Advice("AOE_SAFE_CANDIDATE",reason="ALL_ALLIES_AND_SUMMONS_CLEARED")
         # Fall through to a safer single-target or ordinary ranged choice.
 
