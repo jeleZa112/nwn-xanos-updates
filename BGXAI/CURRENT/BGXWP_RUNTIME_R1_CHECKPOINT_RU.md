@@ -1,3 +1,9 @@
+## НАЙНОВЕЙШИЙ LIVE РЕЗУЛЬТАТ 21.11.2026 — R1.1 ИЗ ИГРЫ
+
+**DEPLOY/LIVE наблюдателя уже подтверждены** пользовательским `BGXAI_WEAPON_RUNTIME_RAW_R1.jsonl`: 1 SESSION, 1 READY, 29 ACTION, actor 139135050 (portrait 2), selected raw 12→35 на seq28, aprRaw 2→7. Старое `DEPLOY/LIVE=NO` ниже относится к прошлому этапу ДО установки и теперь устарело. Кодировка IESDP условно означает 2.0→1.5 APR, а не 2→7 APR; `SLOTS.IDS` предполагает AMMO1→WEAPON. Не доказаны реальные item/launcher/ammo resref, четыре альтернативных APR и происхождение ручной/EPS команды. Обнаружен и исправлен SOURCE ONLY баг 16-битного лимита actorId в V2, 18/18 Lua offline PASS. Игровой приоритетный переключатель НЕ установлен, только прежняя V6. Не повторять 158, 159 preflight/install и уже выполненный live-сбор. Подробнее: `CURRENT/BGXAI_WEAPON_RUNTIME_R1_LIVE_CHECKPOINT_20261121_RU.md`. Текущий следующий этап: per-slot / item / ammo / EPS evidence read-only, после отдельного разрешения на любой новый игровой deploy. Документ ниже хранит исторические этапы.
+
+---
+
 # 21.11.2026 — BGXWP R1.1 реально установлен, LIVE ещё не проверен
 
 Получен `BGXWP_OBSERVER_SETUP_R1(1).json` от пользователя. Проверены байты: SHA256 `f8a1cfb448430c3107ae70f48d18438b603a5fceb304207779c1edc21a5fef0f`; статус `BGXWP_OBSERVER_INSTALLED_NOT_YET_RUNTIME_TESTED`; `game_modified=true`; `source_sha256=f62a467c8bc5b952612ca23f701ecc23838b8782799c7801f2e01a38267e8f36`; UTC установки `2026-11-21T12:47:16.604553+00:00`. Внешний backup: `C:\Users\Drevo\Documents\BGXAI_BACKUPS\PRE_BGXWP_20261121T124714Z`. Архив отчёта: Library `/BALDURS_GATE_EET_AI/DIAGNOSTICS/BGXWP_OBSERVER_INSTALL_REAL_20261121T124716Z.json`.
