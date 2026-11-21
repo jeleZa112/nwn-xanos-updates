@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 81
+SELF_VERSION = 82
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -574,7 +574,9 @@ def v77_resume_after_static_v70(game, report_path, combat_only=False):
     if rc:return rc
     rc=v79_run(game,report_path)
     if rc:return rc
-    return v81_run(game,report_path)
+    rc=v81_run(game,report_path)
+    if rc:return rc
+    return v82_run(game,report_path)
 
 
 def v77_resume_selftest():
@@ -583,14 +585,16 @@ def v77_resume_selftest():
     original_v76=globals()['v76_live_audit']
     original_v79=globals()['v79_run']
     original_v81=globals()['v81_run']
+    original_v82=globals()['v82_run']
     calls=[]
     try:
         globals()['v74_pilot']=lambda *a,**k: calls.append('v74') or 0
         globals()['v76_live_audit']=lambda *a,**k: calls.append('v76') or 0
         globals()['v79_run']=lambda *a,**k: calls.append('v79') or 0
         globals()['v81_run']=lambda *a,**k: calls.append('v81') or 0
+        globals()['v82_run']=lambda *a,**k: calls.append('v82') or 0
         assert v77_resume_after_static_v70('fake_game','fake_zip')==0
-        assert calls==['v74','v76','v79','v81'],calls
+        assert calls==['v74','v76','v79','v81','v82'],calls
         calls.clear()
         assert v77_resume_after_static_v70('fake_game','fake_zip',True)==0
         assert calls==['v74'],calls
@@ -603,6 +607,7 @@ def v77_resume_selftest():
         globals()['v76_live_audit']=original_v76
         globals()['v79_run']=original_v79
         globals()['v81_run']=original_v81
+        globals()['v82_run']=original_v82
     return True
 
 
@@ -1248,6 +1253,267 @@ def v81_selftest():
     return True
 
 
+# BG_EET_RU v82: NALIN.DLG current resource journal verification, READ ONLY.
+# Included inside permanent BG_EET_RU_UPDATE.cmd; no secondary scripts or installers.
+V82_ENTRY = '30_V82_NALIN_CURRENT_DLG_JOURNAL_READONLY.json'
+V82_TARGET = 'NALIN.DLG'
+
+
+def v82_bounds(raw, off, count, row_size, label):
+    if count < 0 or count > 500_000 or off < 0 or off > len(raw) or count*row_size > len(raw)-off:
+        raise ValueError('V82_'+label+'_BOUNDS')
+
+
+def v82_key_bif_lookup(game):
+    game=Path(game)
+    key=game/'chitin.key'
+    raw=key.read_bytes()
+    if len(raw)<24 or raw[:8]!=b'KEY V1  ':
+        raise ValueError('V82_INVALID_KEY_HEADER')
+    nb,nr,bo,ro=struct.unpack_from('<IIII',raw,8)
+    if nb>50_000 or nr>3_000_000:
+        raise ValueError('V82_KEY_TOO_MANY_RECORDS')
+    v82_bounds(raw,bo,nb,12,'BIF_DIRECTORY')
+    v82_bounds(raw,ro,nr,14,'RESOURCE_DIRECTORY')
+    wanted=b'NALIN'
+    matches=[]
+    for i in range(nr):
+        x=ro+i*14
+        if raw[x:x+8].split(b'\x00',1)[0].upper()!=wanted:continue
+        typ,loc=struct.unpack_from('<HI',raw,x+8)
+        if typ==0x3f3:matches.append((loc,i))
+    evidence={'key_sha256':hashlib.sha256(raw).hexdigest(),'bif_count':nb,
+              'key_resource_count':nr,'NALIN_DLG_key_entries':len(matches)}
+    if len(matches)>1:raise ValueError('V82_DUPLICATE_NALIN_KEY_ENTRIES')
+    if not matches:return None,evidence
+    loc,rec=matches[0]
+    bi=loc>>20;fi=loc&0x3fff
+    if bi>=nb:raise ValueError('V82_KEY_BIF_INDEX_OUT_OF_RANGE')
+    _,nameoff,namelen,_=struct.unpack_from('<IIHH',raw,bo+12*bi)
+    if not 0<namelen<=260 or nameoff+namelen>len(raw):
+        raise ValueError('V82_INVALID_BIF_FILENAME')
+    name=raw[nameoff:nameoff+namelen].split(b'\x00',1)[0].decode('cp1252')
+    parts=[x for x in name.replace('\\','/').split('/') if x]
+    if not parts or any(x in ('..','.') or ':' in x for x in parts):
+        raise ValueError('V82_UNSAFE_BIF_PATH')
+    path=game.joinpath(*parts)
+    evidence.update({'bif_relative_path':'/'.join(parts),'bif_index':bi,
+                     'file_index':fi,'key_resource_index':rec})
+    if not path.is_file() or path.is_symlink():
+        raise FileNotFoundError('V82_REFERENCED_BIF_MISSING: '+name)
+    with path.open('rb') as f:
+        header=f.read(20)
+        if len(header)!=20 or header[:8]!=b'BIFFV1  ':
+            raise ValueError('V82_UNSUPPORTED_BIF_FORMAT')
+        entries,tiles,entryoff=struct.unpack_from('<III',header,8)
+        f.seek(0,2);size=f.tell()
+        if entries>500_000 or entryoff<20 or entries*16>size-entryoff:
+            raise ValueError('V82_BAD_BIF_DIRECTORY')
+        f.seek(entryoff)
+        found=[]
+        for i in range(entries):
+            entry=f.read(16)
+            if len(entry)!=16:raise ValueError('V82_SHORT_BIF_ENTRY')
+            rid,offset,length,typ,other=struct.unpack('<IIIHH',entry)
+            if (rid&0x3fff)==fi and typ==0x3f3:
+                found.append((offset,length,i))
+        if len(found)!=1:raise ValueError('V82_BIF_TARGET_NOT_UNIQUE_'+str(len(found)))
+        offset,length,entry_no=found[0]
+        if length<0x30 or length>8*1024*1024 or offset+length>size:
+            raise ValueError('V82_DLG_RESOURCE_BOUNDS')
+        f.seek(offset);data=f.read(length)
+        if len(data)!=length:raise ValueError('V82_DLG_RESOURCE_SHORT_READ')
+    evidence.update({'source':'CHITIN_KEY_BIF','bif_entry_index':entry_no,
+                     'resource_size':len(data),'resource_sha256':hashlib.sha256(data).hexdigest()})
+    return data,evidence
+
+
+def v82_get_live_dlg(game):
+    game=Path(game)
+    path=game/'override'/V82_TARGET
+    if path.is_file():
+        if path.is_symlink():raise ValueError('V82_OVERRIDE_SYMLINK_HOLD')
+        sz=path.stat().st_size
+        if not 0x30<=sz<=8*1024*1024:raise ValueError('V82_OVERRIDE_DLG_SIZE_HOLD')
+        data=path.read_bytes()
+        if len(data)!=sz:raise ValueError('V82_OVERRIDE_DLG_CHANGED_HOLD')
+        return data,{'source':'OVERRIDE','path':str(path),'resource_size':len(data),
+                     'resource_sha256':hashlib.sha256(data).hexdigest()}
+    return v82_key_bif_lookup(game)
+
+
+def v82_parse_nalin(raw):
+    if not isinstance(raw,bytes) or len(raw)<0x30 or raw[:8]!=b'DLG V1.0':
+        raise ValueError('V82_NOT_DLG_V1_0')
+    ns,so,nt,to=struct.unpack_from('<IIII',raw,8)
+    v82_bounds(raw,so,ns,16,'STATES')
+    v82_bounds(raw,to,nt,32,'TRANSITIONS')
+    if ns>100_000 or nt>200_000:raise ValueError('V82_DLG_TOO_MANY_ROWS')
+    states=[]
+    for i in range(ns):
+        text,start,count,tr=struct.unpack_from('<IIII',raw,so+16*i)
+        if start>nt or count>nt-start:raise ValueError('V82_STATE_TRANSITIONS_OUTSIDE_TABLE')
+        states.append({'index':i,'first_transition':start,'transition_count':count})
+    refs=set();rows=[]
+    for i in range(nt):
+        flags,player,ref=struct.unpack_from('<III',raw,to+32*i)
+        if flags & 0x10:
+            refs.add(ref)
+            parent=[s['index'] for s in states if s['first_transition']<=i<s['first_transition']+s['transition_count']]
+            rows.append({'transition_index':i,'flags_hex':hex(flags),'strref':ref,
+                         'parent_states':parent,'quest_kind_flags_hex':hex(flags&(0x40|0x80|0x100)),
+                         'has_parent_state':bool(parent)})
+    # Compiled action strings are another possible direct journal source; do not assume
+    # the transition journal flag covers all ways this dialogue might add journal text.
+    action_offset,action_count=struct.unpack_from('<II',raw,0x28)
+    v82_bounds(raw,action_offset,action_count,8,'ACTIONS')
+    action_matches=[];dynamic=[]
+    for i in range(action_count):
+        off,length=struct.unpack_from('<II',raw,action_offset+8*i)
+        if length>1_000_000 or off>len(raw) or length>len(raw)-off:
+            raise ValueError('V82_ACTION_STRING_BOUNDS')
+        txt=raw[off:off+length].decode('latin-1')
+        for m in re.finditer(r'\bAddJournalEntry\s*\(\s*([^\r\n),]+)',txt,re.I):
+            token=m.group(1).strip()
+            numeric=re.fullmatch(r'(?:I:)?\s*(\d+)',token,re.I)
+            ref=int(numeric.group(1)) if numeric else None
+            if ref is None:dynamic.append({'action_index':i,'token':token[:100]})
+            else:refs.add(ref)
+            action_matches.append({'action_index':i,'strref':ref,'raw_token':token[:100],
+                                   'action_sha256':hashlib.sha256(raw[off:off+length]).hexdigest()})
+    return {'dlg_states':ns,'dlg_transitions':nt,'dlg_actions':action_count,
+            'journal_transitions':rows,'add_journal_actions':action_matches,
+            'unresolved_action_calls':dynamic,'direct_journal_strrefs':sorted(refs)}
+
+
+def v82_build_report(game,resource_override=None,tlk_paths_override=None):
+    game=Path(game)
+    result={'schema':'BG_EET_RU_V82_NALIN_CURRENT_DLG_JOURNAL_READONLY',
+            'updater_version':SELF_VERSION,'game_root':str(game),
+            'game_files_written':False,'save_files_written':False,
+            'translation_install_allowed':False,'runtime_displays_proven':False,
+            'target':'NALIN.DLG','historical_strref_not_reused':276932,
+            'errors':[],'text_rows':[]}
+    try:
+        if resource_override is None:raw,source=v82_get_live_dlg(game)
+        else:raw,source=resource_override
+        result['current_dlg_source']=source
+        if raw is None:
+            result['status']='V82_NALIN_NOT_IN_KEY_OR_OVERRIDE_HOLD'
+            result['reason']='Historical NALIN.DLG not found in active override/KEY; cannot infer current game visibility.'
+            return result
+        parsed=v82_parse_nalin(raw)
+        result.update(parsed)
+        refs=parsed['direct_journal_strrefs']
+        if parsed['unresolved_action_calls'] or any(not row['has_parent_state'] for row in parsed['journal_transitions']):
+            result['status']='V82_NALIN_UNRESOLVED_JOURNAL_LINK_HOLD'
+        if not refs:
+            result.setdefault('status','V82_NALIN_NO_DIRECT_JOURNAL_REFS')
+            result['reason']='No direct transition journal or numeric AddJournalEntry in this specific current DLG; other DLG or scripts not audited.'
+            return result
+        paths=tlk_paths_override or {name:game/'lang'/'ru_RU'/name for name in ('dialog.tlk','dialogf.tlk')}
+        sides={}
+        for name in ('dialog.tlk','dialogf.tlk'):
+            p=Path(paths[name])
+            if not p.is_file() or p.is_symlink():raise FileNotFoundError('V82_TLK_MISSING_'+name)
+            sides[name]=v79_selected_tlk(p,refs)
+        result['tlk_sources']={name:hashlib.sha256(Path(paths[name]).read_bytes()).hexdigest() for name in sides}
+        review=0
+        for ref in refs:
+            male=sides['dialog.tlk'].get(str(ref),{'status':'MISSING'})
+            female=sides['dialogf.tlk'].get(str(ref),{'status':'MISSING'})
+            mh=v81_language_hint(male);fh=v81_language_hint(female)
+            if any(h!='CYRILLIC_PRESENT_NOT_PROOF' for h in (mh,fh)):review+=1
+            result['text_rows'].append({'strref':ref,'male_status':male.get('status'),
+                'female_status':female.get('status'),'male_hint':mh,'female_hint':fh,
+                'male_text':male.get('text'),'female_text':female.get('text'),
+                'male_female_same_bytes':male.get('sha256')==female.get('sha256') and male.get('sha256') is not None})
+        result['language_review_count']=review
+        result.setdefault('status', 'V82_NALIN_LANGUAGE_REVIEW_HOLD' if review else 'V82_NALIN_DIRECT_JOURNAL_RU_TLK_FOUND')
+        result['note']='Current compiled DLG references prove an installed journal source, not that the player encountered it. Cyrillic presence is not translation quality proof.'
+    except (OSError,ValueError,struct.error,UnicodeError,KeyError) as exc:
+        result['status']='V82_NALIN_SOURCE_OR_TLK_HOLD'
+        result['errors'].append({'type':type(exc).__name__,'message':str(exc)[:200]})
+    return result
+
+
+def v82_run(game,report_path):
+    game=Path(game);report_path=Path(report_path)
+    try:
+        safe_external(game,report_path)
+        if not report_path.is_file():raise FileNotFoundError('V82_PREVIOUS_SINGLE_ZIP_MISSING')
+        result=v82_build_report(game)
+        old=None
+        with zipfile.ZipFile(report_path) as z:
+            if z.testzip() is not None:raise ValueError('V82_OLD_ZIP_BAD_CRC')
+            if V82_ENTRY in z.namelist():old=json.loads(z.read(V82_ENTRY))
+        if old==result:
+            print('v82: CACHE PASS — NALIN.DLG и TLK без изменений')
+        else:
+            with tempfile.NamedTemporaryFile(dir=str(report_path.parent),prefix='.v82_',suffix='.zip',delete=False) as f:
+                temp=Path(f.name)
+            try:
+                with zipfile.ZipFile(report_path) as src,zipfile.ZipFile(temp,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=7) as dst:
+                    names=set()
+                    for member in src.infolist():
+                        if member.filename in names:raise ValueError('V82_DUPLICATE_ZIP_ENTRY')
+                        names.add(member.filename)
+                        if member.filename!=V82_ENTRY:dst.writestr(member,src.read(member))
+                    dst.writestr(V82_ENTRY,json.dumps(result,ensure_ascii=False,indent=2).encode('utf8'))
+                with zipfile.ZipFile(temp) as check:
+                    if check.testzip() is not None or check.namelist().count(V82_ENTRY)!=1:
+                        raise ValueError('V82_NEW_ZIP_BAD_CRC')
+                os.replace(temp,report_path)
+            finally:
+                if temp.exists():temp.unlink()
+        print('v82:',result['status'],'— ресурс:',result.get('current_dlg_source',{}).get('source','NOT_FOUND'),
+              'ссылок на журнал:',len(result.get('direct_journal_strrefs',[])),
+              'на проверку:',result.get('language_review_count',0))
+        print('Единый ZIP:',report_path)
+        return 0
+    except (OSError,ValueError,RuntimeError,KeyError,struct.error,zipfile.BadZipFile) as exc:
+        print('v82: SAFE_STOP — '+type(exc).__name__+': '+str(exc)[:200])
+        return 2
+
+
+def v82_selftest():
+    with tempfile.TemporaryDirectory(prefix='BG_EET_RU_V82_TEST_') as d:
+        game=Path(d);(game/'data').mkdir();(game/'override').mkdir()
+        dlg=bytearray(0x94);dlg[:8]=b'DLG V1.0'
+        struct.pack_into('<IIII',dlg,8,1,0x34,2,0x44)
+        struct.pack_into('<IIII',dlg,0x34,11,0,2,0xffffffff)
+        struct.pack_into('<III',dlg,0x44,0x50,0,456)
+        struct.pack_into('<III',dlg,0x64,0,0,0)
+        # actions can be zero; offset still within file
+        struct.pack_into('<II',dlg,0x28,0x84,0)
+        bif=b'BIFFV1  '+struct.pack('<III',1,0,20)+struct.pack('<IIIHH',0,36,len(dlg),0x3f3,0)+bytes(dlg)
+        bifpath=game/'data'/'TEST.BIF';bifpath.write_bytes(bif)
+        filename=b'data\\TEST.BIF\x00'
+        key=b'KEY V1  '+struct.pack('<IIII',1,1,24,36)+struct.pack('<IIHH',len(bif),50,len(filename),1)+struct.pack('<8sHI',b'NALIN\x00\x00\x00',0x3f3,0)+filename
+        (game/'chitin.key').write_bytes(key)
+        found,info=v82_get_live_dlg(game)
+        assert found==bytes(dlg) and info['source']=='CHITIN_KEY_BIF'
+        parsed=v82_parse_nalin(found)
+        assert parsed['direct_journal_strrefs']==[456] and len(parsed['journal_transitions'])==1
+        paths={}
+        for name in ('dialog.tlk','dialogf.tlk'):
+            p=game/name;tab=bytearray(457*26);data=b'English Captain Brage quest.'
+            struct.pack_into('<II',tab,456*26+18,0,len(data))
+            p.write_bytes(b'TLK V1  '+struct.pack('<HII',0,457,18+len(tab))+tab+data)
+            paths[name]=p
+        report=v82_build_report(game,tlk_paths_override=paths)
+        assert report['status']=='V82_NALIN_LANGUAGE_REVIEW_HOLD' and report['language_review_count']==1,report
+        # Override must supersede BIFF, and Russian text remains separate from historical strref.
+        (game/'override'/'NALIN.DLG').write_bytes(bytes(dlg))
+        o,src=v82_get_live_dlg(game)
+        assert o==bytes(dlg) and src['source']=='OVERRIDE'
+        # Broken live resource must not be counted as a completed audit.
+        (game/'override'/'NALIN.DLG').write_bytes(b'bad')
+        held=v82_build_report(game,tlk_paths_override=paths)
+        assert held['status']=='V82_NALIN_SOURCE_OR_TLK_HOLD'
+    return True
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description='BG_EET_RU one-file visible-only read-only auto-updater')
     p.add_argument('--game',default=DEFAULT_GAME)
@@ -1589,6 +1855,8 @@ def main(argv=None):
     if v79_rc:return v79_rc
     v81_rc=v81_run(game,report_path)
     if v81_rc:return v81_rc
+    v82_rc=v82_run(game,report_path)
+    if v82_rc:return v82_rc
     print('v67 cached DLG structure:',v67_status['status'],
           len(v67_status['target_references']),'target references')
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
@@ -4058,6 +4326,7 @@ def selftest():
     assert v78_selftest() and callable(v78_live_fix)
     assert v79_selftest() and callable(v79_run)
     assert v81_selftest() and callable(v81_run)
+    assert v82_selftest() and callable(v82_run)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
