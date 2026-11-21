@@ -226,8 +226,8 @@ jobs:
           assert "BGXRANGED_V6_DPLAYER_NATIVE_READONLY.py" in updater
           assert "BGXRANGED_V6_GUARDED_INSTALL.py" in updater
           assert "131..151 | ForEach-Object" in updater
-          assert "'Aggro log audit (RO)'" in updater
-          assert "'Start game + capture log'" in updater
+          assert "|Aggro log audit (RO)|" in updater
+          assert "|Start game + capture log|" in updater
           assert "117..122 | ForEach-Object" in updater
           assert "123..130 | ForEach-Object" in updater
           assert "Write-Host '156 - " in updater
