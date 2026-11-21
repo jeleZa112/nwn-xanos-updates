@@ -31,6 +31,35 @@ def ref(raw:bytes)->str:
         raise ValueError("INVALID_ITEM_RESREF")
     return candidate.upper()
 
+def extract_trait_ids(cre:bytes)->dict:
+    """Only historical CRE V1.0 raw IDS IDs; NO inferred live bonuses or dual state.
+
+    IESDP: race=0x272, class=0x273, kit=0x244 (4 bytes);
+    levels=0x234..236; favored-enemy RACE.IDS=0x241.
+    Modded RACE/CLASS/KIT IDS must be resolved from the actual installed EET.
+    """
+    if len(cre)<0x2D4 or cre[:8]!=b"CRE V1.0":
+        raise ValueError("UNSUPPORTED_TRAIT_CRE")
+    levels=list(cre[0x234:0x237])
+    if any(level>100 for level in levels):
+        raise ValueError("TRAIT_LEVEL_OUT_OF_BOUNDS")
+    return {"status":"SAVED_CRE_TRAITS_RAW_IDS_ONLY",
+            "race_id_raw":cre[0x272],
+            "class_id_raw":cre[0x273],
+            "kit_bytes_hex_raw":cre[0x244:0x248].hex().upper(),
+            "levels_raw":levels,
+            "favored_enemy_race_id_raw":cre[0x241],
+            "strength_raw_saved":cre[0x238],
+            "dexterity_raw_saved":cre[0x23C],
+            "race_name_verified":False,
+            "class_name_verified":False,
+            "kit_name_verified":False,
+            "proficiency_pips_verified":False,
+            "active_dual_class_verified":False,
+            "effective_racial_class_bonuses_verified":False,
+            "live_combat_stats_verified":False}
+
+
 def extract_cre(cre:bytes)->dict:
     if len(cre)<0x2D4 or cre[:8]!=b"CRE V1.0":
         raise ValueError("UNSUPPORTED_CRE")
@@ -88,9 +117,10 @@ def inspect_gam(data:bytes)->dict:
             continue
         try:
             slot_data=extract_cre(data[co:co+cs])
+            raw_traits=extract_trait_ids(data[co:co+cs])
             results.append({"position":idx,
                             "name_from_saved_record":base["name_from_saved_record"],
-                            "cre_sha256":base["cre_sha256"], **slot_data})
+                            "cre_sha256":base["cre_sha256"], "saved_trait_ids":raw_traits, **slot_data})
         except (struct.error, ValueError) as exc:
             results.append({"position":idx,"status":"CRE_WEAPON_SLOTS_READ_STOP",
                             "reason":str(exc)})
