@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 68
+SELF_VERSION = 69
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -637,7 +637,8 @@ def main(argv=None):
     # v68: if the v67 game snapshot still matches, resume ONLY the new safe stage.
     if args.combat_only or (not args.force and v68_baseline_report_ready(game, WORKDIR/REPORT_NAME)):
         print('v68: предыдущие проверки v67 сохранены; продолжаю с боевого журнала (READ ONLY).')
-        return v68_combat_evidence(game, WORKDIR/REPORT_NAME)
+        rc=v68_combat_evidence(game, WORKDIR/REPORT_NAME)
+        return rc if rc else v69_static_proof(WORKDIR/REPORT_NAME)
     print('BG_EET_RU v'+str(SELF_VERSION)+' — один отчёт; изменение игры только при отдельном подтверждении.')
     print('Папка:',WORKDIR)
     print('Проверяю существующие отчёты (без повторных запусков)...')
@@ -865,6 +866,10 @@ def main(argv=None):
     if v68_rc:
         print('v68: проверка боевого журнала остановлена безопасно; смотри единый ZIP.')
         return v68_rc
+    v69_rc=v69_static_proof(report_path)
+    if v69_rc:
+        print('v69: подтверждение кода остановлено безопасно; смотри единый ZIP.')
+        return v69_rc
     print('v67 cached DLG structure:',v67_status['status'],
           len(v67_status['target_references']),'target references')
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
@@ -1554,6 +1559,121 @@ def v68_combat_evidence(game, report_path):
     print('Единый ZIP:', report_path)
     return 0 if status['status'] == 'CODE_EVIDENCE_CAPTURED_HOLD_DISASSEMBLY' else 2
 
+# v69 uses independent disassembly proof obtained from a real user V68 ZIP.
+# It never injects code and does not assert that an in-game translation works.
+V69_PROOF_SCHEMA = 'BG_EET_RU_V69_INDEPENDENT_DISASM_REPLAY_V1'
+V69_PROOF_DATA = '{"functions":{"19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin":"6191eadc6417846290e659abb1e81f7f2ee60a408b247a3e8d3f2fe7408ed5a2","19_V68_COMBAT_CODE/functions/0037ECA0_0038552C.bin":"8c6fae5b8a25834289d63c166824502a04f6bf4422e9b7d0be671620b762f00f","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin":"59fa0cdbc7206698acd7bd49c7c68807a02d9318a001f13911e04d0d5e49723a","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin":"19c1d11b7ac41d261d22b19506b3570427e356544e48f2e2c622c1efdb74cc79"},"refs":{"3458097":[5949192,"488d15d0022600","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3458184":[5949216,"488d1591022600","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3458658":[5949232,"488d15c7002600","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3458987":[5949232,"488d157eff2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459174":[5949248,"488d15d3fe2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459214":[5949256,"488d15b3fe2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459253":[5949256,"488d158cfe2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459574":[5949272,"488d155bfd2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459610":[5949280,"488d153ffd2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459678":[5949296,"488d150bfd2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459722":[5949296,"488d15dffc2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459920":[5949328,"488d1539fc2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459955":[5949344,"488d1526fc2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3460003":[5949344,"488d15f6fb2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3460298":[5949344,"488d15cffa2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3673126":[5950952,"488d15bbc12200","19_V68_COMBAT_CODE/functions/0037ECA0_0038552C.bin"],"3673511":[5950952,"488d153ac02200","19_V68_COMBAT_CODE/functions/0037ECA0_0038552C.bin"],"3673325":[5950968,"488d1504c12200","19_V68_COMBAT_CODE/functions/0037ECA0_0038552C.bin"],"3791578":[5952264,"488d1527f82000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3791683":[5952272,"488d15c6f72000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792268":[5952288,"488d158df52000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792304":[5952304,"488d1579f52000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3735649":[5952320,"488d15d8d22100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3736015":[5952320,"488d156ad12100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3792482":[5952320,"488d15d7f42000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792649":[5952320,"488d1530f42000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3735749":[5952352,"488d1594d22100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3792574":[5952352,"488d159bf42000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792636":[5952384,"488d157df42000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792663":[5952400,"488d1572f42000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792727":[5952416,"488d1542f42000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792866":[5952432,"488d15c7f32000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3793213":[5952448,"488d157cf22000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3793311":[5952464,"488d152af22000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3793934":[5952488,"488d15d3ef2000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3738589":[5952504,"488d1514c82100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3794036":[5952504,"488d157def2000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3794110":[5952528,"488d154bef2000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3794187":[5952552,"488d1516ef2000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3735182":[5952576,"488d15abd52100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3735245":[5952592,"488d157cd52100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3735400":[5952608,"488d15f1d42100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3738043":[5952632,"488d15b6ca2100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3738115":[5952648,"488d157eca2100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3738475":[5952664,"488d1526c92100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3738655":[5952680,"488d1582c82100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3738692":[5952704,"488d1575c82100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"]},"exe_sha256":"fc821a4806a0305b84fd85f1aad2bd472c8db642ed34b4494ae62351cae1c580","analysis_tool":"GNU objdump 2.44 x86-64; independent RIP target calculation","disassembly_anomalies":{"19_V68_COMBAT_CODE/functions/0037ECA0_0038552C.bin":14}}'
+
+
+def v69_static_proof(report_path):
+    """Replay pinned independent x64 decoding against the existing one ZIP."""
+    report_path = Path(report_path)
+    proof = json.loads(V69_PROOF_DATA)
+    result = {
+        'schema': V69_PROOF_SCHEMA,
+        'status': 'SAFE_STOP',
+        'game_files_written': False,
+        'installation_allowed': False,
+        'runtime_translation_verified': False,
+        'translation_note': 'Confirmed instruction boundaries do not prove that hooks are safe or active.',
+        'disassembler': proof['analysis_tool'],
+        'original_user_evidence_sha256': 'b8a371f9e9771a072fb0dfa72fbc9dd41ea22851dbf959ddcce34c7e8e2058d5',
+        'hold_internal_identifiers': ['THAC0Right', 'THAC0Left'],
+    }
+    if not report_path.is_file():
+        print('SAFE_STOP: v69 no existing single ZIP report')
+        return 2
+    try:
+        with zipfile.ZipFile(report_path, 'r') as z:
+            if z.testzip() is not None:
+                raise RuntimeError('BAD_PREVIOUS_ZIP_CRC')
+            cached = {}
+            try:
+                cached = json.loads(z.read('20_V69_INDEPENDENT_DISASSEMBLY.json'))
+            except (KeyError, ValueError, UnicodeError):
+                pass
+            if (cached.get('schema') == V69_PROOF_SCHEMA and
+                cached.get('status') == 'STATIC_CODE_REFERENCES_CONFIRMED_RUNTIME_HOLD' and
+                cached.get('exe_sha256') == proof['exe_sha256'] and
+                cached.get('function_sha256') == proof['functions']):
+                print('v69: CACHE PASS — 47/47 instruction boundaries confirmed; runtime pilot still HOLD.')
+                return 0
+            status = json.loads(z.read('19_V68_COMBAT_CODE_STATUS.json'))
+            rows = json.loads(z.read('19_V68_COMBAT_CODE_REFERENCES.json'))
+            if (status.get('schema') != V68_COMBAT_STAGE_ID or
+                status.get('status') != 'CODE_EVIDENCE_CAPTURED_HOLD_DISASSEMBLY' or
+                status.get('exe_sha256') != proof['exe_sha256'] or
+                status.get('game_files_written') is not False or
+                len(rows) != 36):
+                raise RuntimeError('V68_EVIDENCE_NOT_VERIFIED')
+            for name, wanted in proof['functions'].items():
+                if digest(z.read(name)) != wanted:
+                    raise RuntimeError('FUNCTION_SHA_MISMATCH: ' + name)
+            found = {}
+            labels = set()
+            for row in rows:
+                labels.add(row['source_en'])
+                for ref in row['refs']:
+                    addr = ref['ins_rva']
+                    instruction = bytes.fromhex(ref['original_bytes'])
+                    f = ref['function']
+                    filename = f['evidence_filename']
+                    code = z.read(filename)
+                    start = f['begin_rva']
+                    if not start <= addr <= f['end_rva'] - 7:
+                        raise RuntimeError('OUTSIDE_FUNCTION')
+                    if code[addr - start:addr - start + 7] != instruction:
+                        raise RuntimeError('INSTRUCTION_BYTES_DIFFER')
+                    if instruction[:3] != b'\x48\x8d\x15' or len(instruction) != 7:
+                        raise RuntimeError('NOT_EXPECTED_LEA_RDX_RIP')
+                    destination = addr + 7 + struct.unpack_from('<i', instruction, 3)[0]
+                    if destination != row['source_rva']:
+                        raise RuntimeError('RIP_TARGET_DIFFER')
+                    if str(addr) in found:
+                        raise RuntimeError('DUPLICATE_INSTRUCTION')
+                    found[str(addr)] = [destination, instruction.hex(), filename]
+            if len(found) != 47 or found != proof['refs']:
+                raise RuntimeError('INDEPENDENT_DISASSEMBLY_PROOF_MISMATCH')
+            result.update({
+                'status': 'STATIC_CODE_REFERENCES_CONFIRMED_RUNTIME_HOLD',
+                'exe_sha256': proof['exe_sha256'],
+                'labels_checked': len(rows),
+                'reference_count': len(found),
+                'independent_instruction_boundaries_confirmed': 47,
+                'independent_rip_targets_confirmed': 47,
+                'function_sha256': proof['functions'],
+                'linear_disassembly_bad_instructions_elsewhere': proof['disassembly_anomalies'],
+                'source': 'Independent GNU objdump decoding of exact V68 function snapshots; locally replayed against their SHA256 and bytes.',
+                'verified_branch_reachability': False,
+                'all_eeex_hooks_safe': False,
+                'next_goal': 'Read-only diagnostic of Lua/EEex loader setup before a separately authorized single-line runtime pilot',
+            })
+    except (OSError, UnicodeError, ValueError, RuntimeError, KeyError, TypeError, zipfile.BadZipFile, struct.error) as exc:
+        result['error'] = type(exc).__name__ + ': ' + str(exc)[:350]
+
+    tmp = report_path.with_name(report_path.name + '.v69.tmp')
+    try:
+        with zipfile.ZipFile(report_path, 'r') as src, zipfile.ZipFile(tmp, 'w', compression=zipfile.ZIP_DEFLATED) as dest:
+            seen = set()
+            for entry in src.infolist():
+                if entry.filename == '20_V69_INDEPENDENT_DISASSEMBLY.json':
+                    continue
+                if entry.filename in seen or entry.file_size > 32_000_000:
+                    raise RuntimeError('BAD_REPORT_ENTRY')
+                seen.add(entry.filename)
+                dest.writestr(entry, src.read(entry))
+            dest.writestr('20_V69_INDEPENDENT_DISASSEMBLY.json',
+                (json.dumps(result, ensure_ascii=False, indent=2) + '\n').encode('utf-8'))
+        with zipfile.ZipFile(tmp) as z:
+            if z.testzip() is not None:
+                raise RuntimeError('V69_REPORT_CRC_FAILED')
+        os.replace(tmp, report_path)
+    finally:
+        if tmp.exists(): tmp.unlink()
+    print('v69:', result['status'], 'refs:', result.get('reference_count', 0))
+    print('Единый ZIP:', report_path)
+    return 0 if result['status'] == 'STATIC_CODE_REFERENCES_CONFIRMED_RUNTIME_HOLD' else 2
+
 def selftest():
     # Self-contained checks only; never read or change a real EET installation.
     p36,tra36=load_v36_preflight()
@@ -1625,6 +1745,9 @@ def selftest():
     v68rows=json.loads(zlib.decompress(base64.b64decode(v68mod._EMBED)).decode('utf-8'))
     assert len(v68rows)==36 and sum(len(r['refs']) for r in v68rows)==47
     assert callable(v68_combat_evidence) and callable(v68_baseline_report_ready)
+    v69proof=json.loads(V69_PROOF_DATA)
+    assert len(v69proof['refs'])==47 and len(v69proof['functions'])==4
+    assert callable(v69_static_proof)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
