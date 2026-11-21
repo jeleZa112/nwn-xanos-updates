@@ -1,0 +1,161 @@
+-- Standalone native Lua 5.3 source-only tests; NO user game or EEex runtime.
+local filename = arg and arg[0] or 'test_weapon_priority_lua_v3.lua'
+local root = filename:match('^(.*[/\\])') or './'
+local choose = dofile(root..'BGXAI_WEAPON_PRIORITY_LUA_V3.lua').choose
+local function deep(v)
+ if type(v)~='table' then return v end
+ local t={} for k,x in pairs(v) do t[k]=deep(x) end return t
+end
+local function weapon(id,ix,over)
+ local w={id=id,quickslotIndex=ix,slot='QUICKSLOT',mode='MELEE',
+ usableVerified=true,equippedWeaponSlotVerified=true,inRange=true,
+ finalTHAC0=10,apr=2,avgDamageOnHit=7,damageType='SLASHING',
+ enchantment=1,magical=true,switchCost=0,resourceCost=0,retaliationRisk=0,
+ movementCost=0,extraEffectValue=0,combatCostsVerified=true,
+ statBasis='FINAL_EFFECTIVE',allRaceClassKitProficiencyBonusesIncluded=true,
+ finalCombatStatsVerified=true,modFingerprint='EET',snapshotId='SNAP1',
+ weaponGroup='LONG_SWORD'}
+ for k,v in pairs(over or {}) do w[k]=v end return w
+end
+local function mk(close,kind)
+ local sel=close and 'DART' or 'SWORD'
+ return {frame={tick=100,area='AR001',actorId='FIGHTER1',enemyId='EN1',
+ snapshotId='SNAP1',equipmentFingerprint='EQUIP1',protectionFingerprint='PROT1',
+ combatFingerprint=close and 'CLOSE' or 'FAR',selectedWeaponId=sel,
+ captureContract='COMPLETE_EFFECTIVE_SNAPSHOT',completeEquipmentObserved=true,
+ completeQuiverObserved=true,completeTargetObserved=true},
+ actor={actorId='FIGHTER1',area='AR001',currentTargetId='EN1',handsMode='SINGLE',
+ observationVerified=true,manualOrderActive=false,currentlyCasting=false,
+ healingReserved=false,epsBusy=false,originVerified='AI',selectedWeaponId=sel,
+ pathSafeVerified=true,canSustainMelee=true,nearRangedEnemy=close,
+ traitProfile={verified=true,activeClassesVerified=true,raceClassKitBonusesIncluded=true,
+ modFingerprint='EET',snapshotId='SNAP1'}},
+ enemy={enemyId='EN1',area='AR001',observationVerified=true,
+ hostileVerified=true,visibleVerified=true,armorClass=0,
+ protections={snapshotId='SNAP1',observed=true,immuneDamageTypes={},
+ minimumEnchantment=0,magicalWeaponsBlocked=false,normalWeaponsBlocked=false,
+ missilesBlocked=false,resistance={SLASHING=0,CRUSHING=0,PIERCING=0,MISSILE=0}}},
+ quickslotIds={'SWORD','DART',false,false},
+ weapons={weapon('SWORD',0,close and {} or {inRange=false,canReachWithSafeMove=true,movementCost=8}),
+ weapon('DART',1,{mode='RANGED',damageType='MISSILE',weaponGroup='DART',
+ ammoVerified=true,ammunitionModel='SELF',ammoCount=30,avgDamageOnHit=5.5,
+ apr=3,finalTHAC0=close and 18 or 10,rangedClosePenaltyAccounted=true})}}
+end
+local function two(s)
+ local a=choose(s)
+ local changed=deep(s);changed.frame.tick=s.frame.tick+1
+ return a,choose(changed,a.next)
+end
+local count=0
+local function check(name,fn) fn();count=count+1;print('PASS '..name) end
+local function eq(a,b) assert(a==b,tostring(a)..' != '..tostring(b)) end
+check('far preferred self-ammo dart',function()
+ local a,b=two(mk(false));eq(a.status,'HOLD_STABILIZE_TARGET_AND_EQUIPMENT')
+ eq(b.status,'ADVISE_PRIORITY_QUICKSLOT_ONLY');eq(b.toWeaponId,'DART');eq(b.slotIndex,1)
+ eq(b.executable,false);eq(b.dispatchAuthorized,false)
+end)
+check('close gets sword with native +8 THAC0 already included',function()
+ local _,b=two(mk(true));eq(b.status,'ADVISE_PRIORITY_QUICKSLOT_ONLY')
+ eq(b.toWeaponId,'SWORD');eq(b.slotIndex,0)
+end)
+check('unknown point blank penalty HOLD',function()
+ local s=mk(true);s.weapons[2].rangedClosePenaltyAccounted=false
+ eq(two(s).status,'HOLD_STABILIZE_TARGET_AND_EQUIPMENT')
+ local _,b=two(s);eq(b.status,'HOLD_UNRANKABLE_OCCUPIED_WEAPON')
+end)
+check('verified alternate effective stats retain darts in melee',function()
+ local s=mk(true);s.weapons[2].avgDamageOnHit=8;s.weapons[2].finalTHAC0=10
+ local _,b=two(s);eq(b.status,'KEEP_CURRENT')
+end)
+check('guard denies manually ordered action',function()
+ local s=mk(true);s.actor.manualOrderActive=true
+ eq(choose(s).status,'HOLD_PRESERVE_MANUAL_OR_EPS')
+end)
+check('guard denies unknown manual origin',function()
+ local s=mk(true);s.actor.originVerified='UNKNOWN'
+ eq(choose(s).status,'HOLD_PRESERVE_MANUAL_OR_EPS')
+end)
+check('unknown distance context HOLD',function()
+ local s=mk(true);s.actor.nearRangedEnemy=nil
+ eq(choose(s).status,'HOLD_DISTANCE_OR_PENALTY_CONTEXT_UNKNOWN')
+end)
+check('guard denies EPS busy',function()
+ local s=mk(true);s.actor.epsBusy=true
+ eq(choose(s).status,'HOLD_PRESERVE_MANUAL_OR_EPS')
+end)
+check('guard denies pending healing',function()
+ local s=mk(true);s.actor.healingReserved=true
+ eq(choose(s).status,'HOLD_PRESERVE_MANUAL_OR_EPS')
+end)
+check('guard denies casting',function()
+ local s=mk(true);s.actor.currentlyCasting=true
+ eq(choose(s).status,'HOLD_PRESERVE_MANUAL_OR_EPS')
+end)
+check('empty quickslot nil unknown; false known empty',function()
+ local s=mk(true);s.quickslotIds[4]=nil
+ eq(choose(s).status,'HOLD_INCOMPLETE_LOADOUT')
+ s.quickslotIds[4]=false
+ eq(choose(s).status,'HOLD_STABILIZE_TARGET_AND_EQUIPMENT')
+end)
+check('occupied slot missing weapon HOLD',function()
+ local s=mk(true);s.weapons[2]=nil
+ eq(choose(s).status,'HOLD_QUICKSLOT_EVIDENCE_INCOMPLETE')
+end)
+check('out of ammo HOLD',function()
+ local s=mk(true);s.weapons[2].ammoCount=0
+ eq(choose(s).status,'HOLD_AMMO_OR_THROWABLE_UNVERIFIED')
+end)
+check('wrong enemy identity HOLD',function()
+ local s=mk(true);s.enemy.enemyId='ALLY'
+ eq(choose(s).status,'HOLD_TARGET_OR_SELECTION_CHANGED')
+end)
+check('enemy in other area HOLD',function()
+ local s=mk(true);s.enemy.area='AR002'
+ eq(choose(s).status,'HOLD_TARGET_OR_SELECTION_CHANGED')
+end)
+check('stale final combat facts HOLD',function()
+ local s=mk(true);s.weapons[2].snapshotId='OLD'
+ eq(choose(s).status,'HOLD_QUICKSLOT_EVIDENCE_INCOMPLETE')
+end)
+check('dual wield requires aggregate verified stats',function()
+ local s=mk(true);s.actor.handsMode='DUAL'
+ eq(choose(s).status,'HOLD_DUAL_WIELD_COMBAT_STATS_UNKNOWN')
+ s.weapons[1].dualWieldStatsVerified=true
+ eq(choose(s).status,'HOLD_STABILIZE_TARGET_AND_EQUIPMENT')
+end)
+check('switch cooldown',function()
+ local s=mk(true);local a,b=two(s)
+ local t=deep(s);t.frame.tick=102
+ eq(choose(t,b.next).status,'HOLD_ADVISORY_SWITCH_COOLDOWN')
+end)
+check('combat fingerprint changed between frames restarts',function()
+ local s=mk(true);local a=choose(s)
+ s.frame.tick=101;s.frame.combatFingerprint='RANGE_CHANGED'
+ eq(choose(s,a.next).status,'HOLD_STABILIZE_TARGET_AND_EQUIPMENT')
+end)
+check('capture ID may change if weapons and trait profiles match new ID',function()
+ local s=mk(true);local a=choose(s)
+ s.frame.tick=101;s.frame.snapshotId='SNAP2'
+ s.actor.traitProfile.snapshotId='SNAP2';s.enemy.protections.snapshotId='SNAP2'
+ for _,w in ipairs(s.weapons) do w.snapshotId='SNAP2' end
+ eq(choose(s,a.next).status,'ADVISE_PRIORITY_QUICKSLOT_ONLY')
+end)
+check('impermeable melee selects ranged if safe',function()
+ local s=mk(false);s.enemy.protections.immuneDamageTypes={'SLASHING'}
+ local _,b=two(s);eq(b.toWeaponId,'DART')
+end)
+check('partial resistance changes relative DPS',function()
+ local s=mk(true);s.enemy.protections.resistance.SLASHING=0.9
+ local _,b=two(s);eq(b.status,'KEEP_CURRENT')
+end)
+check('unknown occupied weapon inRange HOLD',function()
+ local s=mk(true);s.weapons[1].inRange=nil
+ local _,b=two(s);eq(b.status,'HOLD_UNRANKABLE_OCCUPIED_WEAPON')
+end)
+check('input remains unchanged',function()
+ local s=mk(true);local orig=deep(s)
+ local _,b=two(s)
+ eq(s.weapons[2].finalTHAC0,orig.weapons[2].finalTHAC0)
+ eq(s.frame.tick,100);eq(b.executable,false)
+end)
+print('PASS WEAPON PRIORITY NATIVE LUA '..count..'/'..count..' SOURCE ONLY')
