@@ -28,8 +28,8 @@ jobs:
           root = pathlib.Path("BGXAI/patchsets/ranged_fighter_guarded_20261119")
           manifest = json.loads((root / "manifest_updater.json").read_text(encoding="utf-8"))
           assert manifest["schema"] == 1
-          assert manifest["version"] == "0.3.75-V6-DPLAYER-NATIVE-RO"
-          assert len(manifest["files"]) == 33
+          assert manifest["version"] == "0.3.76-V6-GUARDED-PILOT"
+          assert len(manifest["files"]) == 34
           for entry in manifest["files"]:
               raw = pathlib.Path(entry["source"]).read_bytes()
               assert len(raw) == entry["size"], entry["dest"]
@@ -106,6 +106,8 @@ jobs:
           assert 'ENEMY.status(root)' in capture_src
           assert 'HANDOFF.LAST.match(V3TRACE.last(root))' in capture_src
           assert 'HANDOFF.status(root)' in capture_src
+          assert 'HANDOFF6.LAST.match(V3TRACE.last(root))' in capture_src
+          assert 'HANDOFF6.status(root)' in capture_src
           current_audit = (root / "BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py").read_text("utf-8")
           ast.parse(current_audit)
           assert '"native_candidate_already_installed":True' in current_audit
@@ -117,6 +119,16 @@ jobs:
           assert 'BGXRANGED_V6_DPLAYER_NATIVE_READONLY_PASS' in native_dplayer
           assert 'GAME_CHANGED_DURING_RO_PREFLIGHT' in native_dplayer
           assert '"status":"BGXRANGED5_INSTALLED_VERIFIED"' in current_audit
+          assert '"status":"V5_NOT_ACTIVE_V6_INSTALLED"' in current_audit
+          assert '"native_candidate_already_installed":True' in current_audit
+          assert 'verified=V6_status(root)' in current_audit
+          v6_installer = (root / "BGXRANGED_V6_GUARDED_INSTALL.py").read_text("utf-8")
+          ast.parse(v6_installer)
+          assert 'INSTALL_BGXRANGED6_DPLAYER_GUARD_PILOT' in v6_installer
+          assert 'ROLLBACK_BGXRANGED6_DPLAYER_GUARD_PILOT' in v6_installer
+          assert 'BGXRANGED6_INSTALLED_VERIFIED' in v6_installer
+          assert 'BACKUP_CORRUPTED' in v6_installer
+
           with TemporaryDirectory() as d:
               game = pathlib.Path(d) / "game"
               game.mkdir()
@@ -170,6 +182,32 @@ jobs:
                   else:
                       raise AssertionError("V5 postinstall drift must STOP capture")
 
+          # V6 LAST capture is allowed only for an exact installed SHA proof.
+          with TemporaryDirectory() as d:
+              game = pathlib.Path(d) / "game"
+              game.mkdir()
+              (game / "InfinityLoader.exe").write_bytes(b"MZmock")
+              with patch.object(CAP.V3.V2.V1, "processes", return_value=None), \
+                   patch.object(CAP.V2, "guard", return_value=None), \
+                   patch.object(CAP.HANDOFF6, "LAST", SimpleNamespace(match=lambda _: True)), \
+                   patch.object(CAP.V3TRACE, "last", return_value="~BGXRANGED6/SETUP-BGXRANGED6.TP2~ #0 #0"), \
+                   patch.object(CAP.HANDOFF6, "status", return_value={"status":"BGXRANGED6_INSTALLED_VERIFIED"}), \
+                   patch.object(CAP.subprocess, "Popen", return_value=SimpleNamespace(pid=157)), \
+                   patch.dict(CAP.os.environ, {"USERPROFILE":str(pathlib.Path(d))}):
+                  result = CAP.start(game)
+                  assert result["status"] == "INFINITYLOADER_CAPTURE_LAUNCH_REQUESTED"
+                  assert result["game_modified"] is False
+              with patch.object(CAP.V3.V2.V1, "processes", return_value=None), \
+                   patch.object(CAP.HANDOFF6, "LAST", SimpleNamespace(match=lambda _: True)), \
+                   patch.object(CAP.V3TRACE, "last", return_value="~BGXRANGED6/SETUP-BGXRANGED6.TP2~ #0 #0"), \
+                   patch.object(CAP.HANDOFF6, "status", return_value={"status":"INVALID"}):
+                  try:
+                      CAP.start(game)
+                  except ValueError as exc:
+                      assert str(exc) == "V6_DPLAYER_GUARD_NOT_VERIFIED"
+                  else:
+                      raise AssertionError("unverified V6 must refuse capture")
+
           bootstrap = pathlib.Path("BGXAI_UPDATE.cmd").read_bytes()
           assert b"$expectedSize -gt 80000" in bootstrap
           assert b"Download-Limited $scriptSources $temporaryScript 80000" in bootstrap
@@ -178,7 +216,7 @@ jobs:
           assert "70..92 | ForEach-Object" in updater_bytes.decode("utf-8")
           assert "97..116 | ForEach-Object" in updater_bytes.decode("utf-8")
           updater = pathlib.Path("BGXAI/BGXAI_SYNC.ps1").read_text(encoding="utf-8")
-          assert "0.3.75-V6-DPLAYER-NATIVE-RO" in updater
+          assert "0.3.76-V6-GUARDED-PILOT" in updater
           assert "BGXAI_WEAPON_SAVED_SNAPSHOT_READONLY.py" in updater
           assert "BGXAI_WEAPON_CHOICE_ADVISORY_V1.js" in updater
           assert "BGXAI_WEAPON_TRAITS_ADVISORY_V1.js" in updater
@@ -186,19 +224,22 @@ jobs:
           assert "BGXRANGED_V5_GUARDED_INSTALL.py" in updater
           assert "BGXRANGED_V6_DPLAYER_CLOSE_GUARD_SOURCE_ONLY.baf" in updater
           assert "BGXRANGED_V6_DPLAYER_NATIVE_READONLY.py" in updater
+          assert "BGXRANGED_V6_GUARDED_INSTALL.py" in updater
           assert "131..151 | ForEach-Object" in updater
           assert "'Aggro log audit (RO)'" in updater
           assert "'Start game + capture log'" in updater
           assert "117..122 | ForEach-Object" in updater
           assert "123..130 | ForEach-Object" in updater
           assert "Write-Host '156 - " in updater
+          assert "Write-Host '157 - " in updater
+          assert "'157' {SyncRelease $releaseRanged;" in updater
           assert "'156' {SyncRelease $releaseRanged;" in updater
           assert "BGXRANGED_V5_ANTICIPATORY_CLOSE_SOURCE_ONLY.baf" in updater
-          for n in range(1, 157):
+          for n in range(1, 158):
               assert ("'"+str(n)+"' {") in updater, n
           for n in range(152, 156):
               assert ("Write-Host '"+str(n)+" - ") in updater, n
-          print("PASS source syntax + 33/33 SHA + mock guard + menu 135 weapon snapshot + menus 1-155")
+          print("PASS source syntax + 34/34 SHA + mock guard + menu 135 weapon snapshot + menus 1-157")
           PY
 
       - name: Weapon saved GAM/CRE snapshot isolated tests (Python, read only)
