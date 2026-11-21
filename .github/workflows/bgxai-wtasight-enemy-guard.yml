@@ -28,8 +28,8 @@ jobs:
           root = pathlib.Path("BGXAI/patchsets/ranged_fighter_guarded_20261119")
           manifest = json.loads((root / "manifest_updater.json").read_text(encoding="utf-8"))
           assert manifest["schema"] == 1
-          assert manifest["version"] == "0.3.74-V5-LIVE-CAPTURE"
-          assert len(manifest["files"]) == 31
+          assert manifest["version"] == "0.3.75-V6-DPLAYER-NATIVE-RO"
+          assert len(manifest["files"]) == 33
           for entry in manifest["files"]:
               raw = pathlib.Path(entry["source"]).read_bytes()
               assert len(raw) == entry["size"], entry["dest"]
@@ -109,6 +109,13 @@ jobs:
           current_audit = (root / "BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py").read_text("utf-8")
           ast.parse(current_audit)
           assert '"native_candidate_already_installed":True' in current_audit
+          assert 'result["dplayer_v6_native_preview"]=preview_dplayer_v6(' in current_audit
+          assert "DPLAYER_V6_NATIVE_PREFLIGHT_STATUS=" in current_audit
+          native_dplayer = (root / "BGXRANGED_V6_DPLAYER_NATIVE_READONLY.py").read_text("utf-8")
+          ast.parse(native_dplayer)
+          assert 'EXPECTED_DPLAYER_SHA="1786f4dc050be5c4bef65d9b0c39100975a03fdf74057b21fe1b1c2b926d661f"' in native_dplayer
+          assert 'BGXRANGED_V6_DPLAYER_NATIVE_READONLY_PASS' in native_dplayer
+          assert 'GAME_CHANGED_DURING_RO_PREFLIGHT' in native_dplayer
           assert '"status":"BGXRANGED5_INSTALLED_VERIFIED"' in current_audit
           with TemporaryDirectory() as d:
               game = pathlib.Path(d) / "game"
@@ -171,12 +178,17 @@ jobs:
           assert "70..92 | ForEach-Object" in updater_bytes.decode("utf-8")
           assert "97..116 | ForEach-Object" in updater_bytes.decode("utf-8")
           updater = pathlib.Path("BGXAI/BGXAI_SYNC.ps1").read_text(encoding="utf-8")
-          assert "0.3.74-V5-LIVE-CAPTURE" in updater
+          assert "0.3.75-V6-DPLAYER-NATIVE-RO" in updater
           assert "BGXAI_WEAPON_SAVED_SNAPSHOT_READONLY.py" in updater
           assert "BGXAI_WEAPON_CHOICE_ADVISORY_V1.js" in updater
           assert "BGXAI_WEAPON_TRAITS_ADVISORY_V1.js" in updater
           assert "BGXRANGED_V5_NATIVE_CANDIDATE_READONLY.py" in updater
           assert "BGXRANGED_V5_GUARDED_INSTALL.py" in updater
+          assert "BGXRANGED_V6_DPLAYER_CLOSE_GUARD_SOURCE_ONLY.baf" in updater
+          assert "BGXRANGED_V6_DPLAYER_NATIVE_READONLY.py" in updater
+          assert "131..151 | ForEach-Object" in updater
+          assert "'Aggro log audit (RO)'" in updater
+          assert "'Start game + capture log'" in updater
           assert "117..122 | ForEach-Object" in updater
           assert "123..130 | ForEach-Object" in updater
           assert "Write-Host '156 - " in updater
@@ -186,7 +198,7 @@ jobs:
               assert ("'"+str(n)+"' {") in updater, n
           for n in range(152, 156):
               assert ("Write-Host '"+str(n)+" - ") in updater, n
-          print("PASS source syntax + 31/31 SHA + mock guard + menu 135 weapon snapshot + menus 1-155")
+          print("PASS source syntax + 33/33 SHA + mock guard + menu 135 weapon snapshot + menus 1-155")
           PY
 
       - name: Weapon saved GAM/CRE snapshot isolated tests (Python, read only)
