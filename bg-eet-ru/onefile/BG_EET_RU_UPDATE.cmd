@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 74
+SELF_VERSION = 75
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -2619,9 +2619,30 @@ V74_ANCHOR_RVA = 3791683
 def v74_manifest():
     # This is the PINNED v68 manifest already embedded in the same updater.
     module = v68_load_combat_module()
-    rows = json.loads(zlib.decompress(base64.b64decode(module._EMBED)).decode('utf-8'))
-    if len(rows) != 36 or sum(len(r['refs']) for r in rows) != 47:
-        raise RuntimeError('V74_SOURCE_MANIFEST_COUNT_MISMATCH')
+    raw = json.loads(zlib.decompress(base64.b64decode(module._EMBED)).decode('utf-8'))
+    if len(raw) != 36 or sum(len(r['refs']) for r in raw) != 47:
+        raise RuntimeError('V75_SOURCE_MANIFEST_COUNT_MISMATCH')
+    # V4 / V68 embeds the *raw* source schema (en, ru, offset, ins_file_offset,
+    # opcode). V68 converted that to source_en/translation_ru only in its ZIP.
+    # Normalize here before the v74 safety/format/code checks; do not re-scan.
+    rows = []
+    for item in raw:
+        off = item['offset']
+        en = item['en']
+        ru = item['ru']
+        if not isinstance(off, int) or not isinstance(en, str) or not isinstance(ru, str):
+            raise RuntimeError('V75_BAD_SOURCE_ROW_TYPES')
+        refs = []
+        for ref in item['refs']:
+            file_off = ref['ins_file_offset']
+            opcode = ref['opcode']
+            if not isinstance(file_off, int) or not isinstance(opcode, str):
+                raise RuntimeError('V75_BAD_REFERENCE_ROW_TYPES')
+            refs.append({'file_offset': file_off, 'ins_rva': file_off + 3072,
+                         'original_bytes': opcode})
+        rows.append({'source_en': en, 'translation_ru': ru,
+                     'string_offset': off, 'source_rva': off + 5632,
+                     'refs': refs})
     included = [r for r in rows if r['source_en'] not in V74_EXCLUDED]
     if len(included) != 34 or sum(len(r['refs']) for r in included) != 44:
         raise RuntimeError('V74_UNEXPECTED_VISIBLE_SCOPE')
