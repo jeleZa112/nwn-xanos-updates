@@ -1,0 +1,41 @@
+// BGXAI V6: DPLAYER duplicate attack ordering guard; SOURCE ONLY, NOT INSTALLED.
+// Based on saved-game 21 Nov DPLAYER.BCS SHA 1786f4dc050be5c4bef65d9b0c39100975a03fdf74057b21fe1b1c2b926d661f.
+// V5 live test: user saw 3 arrows fired at melee contact despite 6/10 thresholds.
+// Passive EEex trace: action 105 on script 3 then script 6, action 149 on script 3.
+// Hypothesis: a second AttackOneRound from DPLAYER can delay melee equip.
+// This does not cancel queued attacks or prevent earlier projectiles from firing.
+// Both blocks are preserved EXCEPT an OR(5) veto for protected party pure fighters
+// with ranged weapon in close proximity to each block's actual target.
+// Ordinary NPCs and party non-fighters retain DPLAYER behavior.
+// This is NOT an installer. Do not overwrite DPLAYER.BCS or WTASIGHT.BCS.
+// In-game native BCS semantic match, compiled block-diff and LIVE not yet verified.
+IF
+  InWeaponRange(NearestEnemyOf(Myself))
+  ActionListEmpty()
+  !InParty(NearestEnemyOf(Myself))
+  !Allegiance(NearestEnemyOf(Myself),GOODCUTOFF)
+  OR(5)
+    !InParty(Myself)
+    !Class(Myself,FIGHTER)
+    !Global("BGX38_GUARD","LOCALS",1)
+    !IsWeaponRanged(Myself)
+    !Range(NearestEnemyOf(Myself),6)
+THEN
+  RESPONSE #100
+    AttackOneRound(NearestEnemyOf(Myself))
+END
+
+IF
+  AttackedBy([ANYONE],DEFAULT)
+  !InParty(LastAttackerOf(Myself))
+  !Allegiance(LastAttackerOf(Myself),GOODCUTOFF)
+  OR(5)
+    !InParty(Myself)
+    !Class(Myself,FIGHTER)
+    !Global("BGX38_GUARD","LOCALS",1)
+    !IsWeaponRanged(Myself)
+    !Range(LastAttackerOf(Myself),6)
+THEN
+  RESPONSE #100
+    AttackOneRound(LastAttackerOf(Myself))
+END
