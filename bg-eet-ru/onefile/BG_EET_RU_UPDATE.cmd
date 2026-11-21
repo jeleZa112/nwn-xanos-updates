@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 87
+SELF_VERSION = 88
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -2471,7 +2471,7 @@ V87_ANCHORS = {
     'list_data': r'''\btable\s+(["'])combatLog\1''',
     'message_box': r'''\bname\s+(["'])worldMessageBox\1''',
     'clean_definition': r'''\bfunction\s+clean\s*\(''',
-    'world_messages_menu': r'''\bname\s+(["'])\[WORLD_MESSAGES\]\1''',
+    'world_messages_menu': r'''\bname\s+(["'])WORLD_MESSAGES\1''',
 }
 
 
@@ -2588,7 +2588,7 @@ def v87_run(game,report_path):
 
 
 def v87_selftest():
-    mock=b'''function clean(str)\n return str\nend\ncombatLog={}\nmenu { name '[WORLD_MESSAGES]'\nlist {\n name "worldMessageBox"\n list { table "combatLog" label { text lua "clean(combatLog[rowNumber])" } }\n}\n}\n'''
+    mock=b'''function clean(str)\n return str\nend\ncombatLog={}\nmenu { name 'WORLD_MESSAGES'\nlist {\n name "worldMessageBox"\n list { table "combatLog" label { text lua "clean(combatLog[rowNumber])" } }\n}\n}\n'''
     row=v87_inspect_ui(mock,require_pinned=False)
     assert row['binding_verified_static_only'] and row['all_five_ui_anchors_unique']
     assert row['anchors']['text_renderer']['count']==1
@@ -2604,6 +2604,339 @@ def v87_selftest():
     return True
 
 
+# BG EET RU v88 — guarded live UI.MENU two-mode combat log pilot.
+# Changes only the existing UI.MENU file, after exact approval and verified backup.
+# Installed v85 combat Lua, x64 hooks, save files, TLK and engine are never changed.
+V88_ENTRY = '36_V88_COMBAT_JOURNAL_UI_PILOT.json'
+V88_SCHEMA = 'BG_EET_RU_V88_COMBAT_JOURNAL_UI_PILOT'
+V88_STATE = WORKDIR/'BG_EET_RU_V88_UI_PILOT_STATE.json'
+V88_INSTALL_APPROVAL = 'INSTALL_BG_EET_RU_V88_JOURNAL_UI_PILOT'
+V88_ROLLBACK_APPROVAL = 'ROLLBACK_BG_EET_RU_V88_JOURNAL_UI_PILOT'
+V88_PINNED_UI_SHA = '1ee8212c54cd294c10bdc8188e1f17365d7785829dbbb407c0a557a4b22e088b'
+V88_RENDER_OLD = b'text lua "clean(combatLog[rowNumber])"'
+V88_RENDER_NEW = b'text lua "BG_EET_RU_LogView(clean(combatLog[rowNumber]))"'
+V88_BUTTON = '''\tbutton
+\t{
+\t\tname 'BG_EET_RU_JOURNAL_TOGGLE'
+\t\tarea 644 0 184 22
+\t\ttext lua "(BG_EET_RU_LOG_MODE == 1) and 'ЖУРНАЛ: КРАТКИЙ' or 'ЖУРНАЛ: ПОЛНЫЙ'"
+\t\ttext style "button"
+\t\taction "BG_EET_RU_LOG_MODE = (BG_EET_RU_LOG_MODE == 1) and 0 or 1"
+\t}
+'''
+V88_HELPER = '''
+-- BG_EET_RU v88: display-only, never edits message table or engine data.
+BG_EET_RU_LOG_MODE = 0
+function BG_EET_RU_LogView(original)
+    if BG_EET_RU_LOG_MODE ~= 1 or type(original) ~= 'string' then return original end
+    local p = original:find('бросок атаки', 1, true)
+    if not p then return original end
+    local prefix = original:sub(1, p-1)
+    local tail = original:sub(p):gsub('%%^0x%%x%%x%%x%%x%%x%%x%%x', '')
+    local d20,sign,bonus,total,decision = tail:match('^бросок атаки%%s+(%%d+)%%s*([%%+%%-])%%s*(%%d+)%%s*=%%s*(-?%%d+)%%s*:%s*(.+)$')
+    if not d20 then return original end
+    local n, b, t = tonumber(d20), tonumber(bonus), tonumber(total)
+    if not n or not b or not t or n < 1 or n > 20 then return original end
+    local adjust = (sign == '-') and -b or b
+    if n + adjust ~= t then return original end
+    local label
+    if decision:match('^%%s*промах%%s*$') then label='ПРОМАХ'
+    elseif decision:match('^%%s*попадание%%s*$') then label='ПОПАДАНИЕ'
+    else return original end
+    return prefix .. 'd20: ' .. d20 .. ' ' .. sign .. ' ' .. bonus .. ' = ' .. total .. ' — ' .. label
+end
+'''.replace('%%','%')
+
+
+def v88_ui_candidate(original):
+    if not isinstance(original,bytes) or digest(original)!=V88_PINNED_UI_SHA:
+        raise RuntimeError('V88_BASE_UI_SHA_MISMATCH')
+    if original.count(V88_RENDER_OLD)!=1 or V88_RENDER_NEW in original:
+        raise RuntimeError('V88_RENDER_SOURCE_NOT_UNIQUE')
+    if any(token in original for token in (b'BG_EET_RU_LOG_MODE',b'BG_EET_RU_LogView',b'BG_EET_RU_JOURNAL_TOGGLE')):
+        raise RuntimeError('V88_EXISTING_PILOT_NAMES_COLLIDE')
+    # Exact UI.MENU anchors from v87. The old gate had a false negative because
+    # the actual menu is name 'WORLD_MESSAGES', not name '[WORLD_MESSAGES]'.
+    ui = original.decode('utf-8-sig','strict')
+    if (len(re.findall(r'''\bname\s+(['"])WORLD_MESSAGES\1''',ui))!=1 or
+        len(re.findall(r'''\bname\s+(['"])worldMessageBox\1''',ui))!=1 or
+        len(re.findall(r'''\btable\s+(['"])combatLog\1''',ui))!=1 or
+        len(re.findall(r'''\bfunction\s+clean\s*\(''',ui))!=1):
+        raise RuntimeError('V88_UI_BINDINGS_NOT_UNIQUE')
+    line_end = '\r\n' if original.count(b'\r\n')>0 else '\n'
+    if line_end=='\r\n' and original.count(b'\n')!=original.count(b'\r\n'):
+        raise RuntimeError('V88_MIXED_LINE_ENDINGS_HOLD')
+    # Only the end of the known clean() block, which in this UI precedes the
+    # backtick that closes the Lua source chunk for the world messages menu.
+    clean = re.search(r'''(?ms)^function clean\(str\)\s*\n(.*?)^end\s*\n(?=`\s*\nmenu\s*\n\{)''',
+                      ui.replace('\r\n','\n'))
+    if not clean or 'return str' not in clean.group(0) or len(clean.group(0))>900:
+        raise RuntimeError('V88_CLEAN_FUNCTION_END_NOT_PINNED')
+    before_close=ui.replace('\r\n','\n')
+    old_chunk=clean.group(0)
+    if before_close.count(old_chunk)!=1:raise RuntimeError('V88_CLEAN_SOURCE_NOT_UNIQUE')
+    before_close=before_close.replace(old_chunk,old_chunk + V88_HELPER,1)
+    before_close=before_close.replace(V88_RENDER_OLD.decode('ascii'),V88_RENDER_NEW.decode('ascii'),1)
+    # Insert click control after existing combat log list; the table is unchanged.
+    # The compact button sits over the upper right edge of the existing panel.
+    marker=re.compile(r'''(?m)^(\s*scrollbar skipReset\s*\n\s*\}\s*\n)(\s*handle\s*\n\s*\{\s*\n\s*name ['"]messagesHandleY['"])''')
+    found=list(marker.finditer(before_close))
+    if len(found)!=1:raise RuntimeError('V88_LIST_TO_HANDLE_ANCHOR_NOT_UNIQUE')
+    m=found[0]
+    candidate=before_close[:m.start(2)]+V88_BUTTON+before_close[m.start(2):]
+    # Strong reversible proof: remove only our three injections and require the
+    # remaining complete source to be byte-for-byte the original UI.
+    restored=candidate.replace(V88_BUTTON,'',1).replace(V88_HELPER,'',1)
+    restored=restored.replace(V88_RENDER_NEW.decode('ascii'),V88_RENDER_OLD.decode('ascii'),1)
+    if restored!=ui.replace('\r\n','\n'):
+        raise RuntimeError('V88_PATCH_NOT_BYTE_EXACT_REVERSIBLE')
+    if line_end=='\r\n':candidate=candidate.replace('\n','\r\n')
+    out=candidate.encode('utf-8')
+    if out.count(V88_RENDER_NEW)!=1 or out.count(V88_RENDER_OLD)!=0 or out.count(b'BG_EET_RU_JOURNAL_TOGGLE')!=1:
+        raise RuntimeError('V88_POST_PATCH_RENDER_OR_TOGGLE_MISMATCH')
+    if out.count(b'combatLog')!=original.count(b'combatLog') or out.count(b'table "combatLog"')!=original.count(b'table "combatLog"'):
+        raise RuntimeError('V88_COMBATLOG_SOURCE_SCOPE_CHANGED')
+    if len(out)-len(original)>8000 or len(out)==len(original):
+        raise RuntimeError('V88_PATCH_SIZE_HOLD')
+    return out
+
+
+def v88_state_read(path=V88_STATE):
+    path=Path(path)
+    if not path.is_file():return None
+    obj=json.loads(path.read_text('utf8'))
+    if (obj.get('schema')!=V88_SCHEMA or obj.get('phase') not in ('PREPARED','INSTALLED','ROLLED_BACK') or
+        not all(isinstance(obj.get(k),str) and len(obj[k])==64 for k in ('old_sha256','new_sha256'))):
+        raise RuntimeError('V88_UNKNOWN_INSTALL_STATE')
+    return obj
+
+
+def v88_state_write(obj,path=V88_STATE):
+    path=Path(path)
+    if path.is_symlink():raise RuntimeError('V88_STATE_SYMLINK_DENIED')
+    path.parent.mkdir(parents=True,exist_ok=True)
+    pending=path.with_suffix('.v88tmp')
+    if pending.exists():raise RuntimeError('V88_STALE_STATE_TEMP')
+    try:
+        with pending.open('x',encoding='utf8') as f:json.dump(obj,f,ensure_ascii=False,indent=2)
+        os.replace(pending,path)
+    finally:
+        if pending.exists():pending.unlink()
+
+
+def v88_read_live(game,state=None):
+    game=Path(game)
+    ui=game/'override'/'UI.MENU'
+    if not ui.is_file() or ui.is_symlink():raise RuntimeError('V88_UI_MISSING_OR_SYMLINK')
+    data=ui.read_bytes()
+    current=digest(data)
+    if state:
+        valid=(state['old_sha256'],state['new_sha256']) if state['phase']=='PREPARED' else (
+            (state['old_sha256'],) if state['phase']=='ROLLED_BACK' else (state['new_sha256'],))
+        if current not in valid:raise RuntimeError('V88_INSTALLED_UI_SHA_CHANGED_SAFE_STOP')
+    elif current!=V88_PINNED_UI_SHA:raise RuntimeError('V88_ORIGINAL_UI_CHANGED_SAFE_STOP')
+    return ui,data,current
+
+
+def v88_zip_report(game,report_path,report):
+    safe_external(game,report_path)
+    report_path=Path(report_path)
+    if not report_path.is_file():raise RuntimeError('V88_SINGLE_REPORT_ZIP_MISSING')
+    with zipfile.ZipFile(report_path) as src:
+        if src.testzip() is not None:raise RuntimeError('V88_OLD_ZIP_CRC')
+        names=src.namelist()
+        if len(names)!=len(set(names)):raise RuntimeError('V88_DUPLICATE_ZIP_MEMBERS')
+        old=json.loads(src.read(V88_ENTRY)) if V88_ENTRY in names else None
+    if old==report:return
+    with tempfile.NamedTemporaryFile(dir=str(report_path.parent),prefix='.v88_',suffix='.zip',delete=False) as f:
+        stage=Path(f.name)
+    try:
+        with zipfile.ZipFile(report_path,'r') as src,zipfile.ZipFile(stage,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=7) as dst:
+            for member in src.infolist():
+                if member.filename!=V88_ENTRY:dst.writestr(member,src.read(member))
+            dst.writestr(V88_ENTRY,json.dumps(report,ensure_ascii=False,indent=2).encode('utf8'))
+        with zipfile.ZipFile(stage) as z:
+            if z.testzip() is not None or z.namelist().count(V88_ENTRY)!=1:
+                raise RuntimeError('V88_NEW_ZIP_CRC')
+        os.replace(stage,report_path)
+    finally:
+        if stage.exists():stage.unlink()
+
+
+def v88_run(game,report_path,mode='status'):
+    game,report_path=Path(game),Path(report_path)
+    report={'schema':V88_SCHEMA,'updater_version':SELF_VERSION,'mode':mode,'game_root':str(game),
+            'status':'V88_READ_ONLY_HOLD','game_files_written':0,'save_files_written':False,
+            'installed_v85_lua_unchanged':False,'live_gameplay_verified':False,
+            'pilot_scope':'UI display-only outcome lines; other messages unchanged; no row removal','errors':[]}
+    try:
+        safe_external(game,report_path)
+        if mode not in ('status','install','rollback'):raise RuntimeError('V88_BAD_MODE')
+        v85=v85_state_read()
+        lua=game/'override'/V71_SHORT_SCRIPT
+        if not v85 or v85.get('phase')!='INSTALLED' or not lua.is_file() or lua.is_symlink():
+            raise RuntimeError('V88_V85_NOT_INSTALLED')
+        sha_lua=digest(lua.read_bytes())
+        if sha_lua!=v85.get('candidate_sha256'):
+            raise RuntimeError('V88_INSTALLED_V85_LUA_CHANGED')
+        report['installed_v85_lua_unchanged']=True
+        record=v88_state_read()
+        ui,source,current=v88_read_live(game,record)
+        if record and record['phase'] in ('INSTALLED','PREPARED'):
+            report['ui_sha256']=current
+            report['expected_installed_sha256']=record['new_sha256']
+            report['phase']=record['phase']
+            if mode=='status':
+                report['status']=('V88_INSTALLED_GAME_UI_TEST_REQUIRED' if record['phase']=='INSTALLED' else
+                                  'V88_PREPARED_RECOVERY_HOLD')
+            elif mode=='install':report['status']='V88_ALREADY_INSTALLED_OR_PENDING'
+            else:
+                closed,why=v71_processes_closed()
+                if not closed:raise RuntimeError('V88_CLOSE_GAME_AND_LOADER_BEFORE_ROLLBACK:'+why)
+                backup=Path(record['backup'])
+                safe_external(game,backup)
+                if not backup.is_file() or backup.is_symlink() or digest(backup.read_bytes())!=record['old_sha256']:
+                    raise RuntimeError('V88_BACKUP_MISSING_OR_CHANGED')
+                if not v85_read_input_approval(V88_ROLLBACK_APPROVAL):
+                    report['status']='V88_ROLLBACK_NOT_AUTHORIZED'
+                elif current==record['old_sha256']:
+                    v88_state_write({**record,'phase':'ROLLED_BACK','rolled_back_utc':now()})
+                    report['status']='V88_ALREADY_RESTORED'
+                elif current==record['new_sha256']:
+                    stage=ui.with_name('UI.MENU.v88restore')
+                    if stage.exists():raise RuntimeError('V88_STALE_RESTORE')
+                    try:
+                        with stage.open('xb') as f:f.write(backup.read_bytes())
+                        if digest(stage.read_bytes())!=record['old_sha256']:
+                            raise RuntimeError('V88_RESTORE_STAGE_SHA')
+                        os.replace(stage,ui)
+                        if digest(ui.read_bytes())!=record['old_sha256']:
+                            raise RuntimeError('V88_RESTORED_UI_SHA_MISMATCH')
+                    finally:
+                        if stage.exists():stage.unlink()
+                    v88_state_write({**record,'phase':'ROLLED_BACK','rolled_back_utc':now()})
+                    report['status']='V88_ROLLED_BACK_TO_ORIGINAL_UI'
+                    report['game_files_written']=1
+        elif mode=='rollback':report['status']='V88_NOT_INSTALLED_NO_ROLLBACK'
+        else:
+            if record and record['phase']!='ROLLED_BACK':raise RuntimeError('V88_UNKNOWN_PENDING_STATE')
+            ui86=v86_extract_ui_references(source)
+            if ui86['sha256']!=V88_PINNED_UI_SHA:raise RuntimeError('V88_V86_BASE_UI_SHA_CHANGED')
+            revised=v88_ui_candidate(source)
+            report['old_ui_sha256']=current
+            report['candidate_ui_sha256']=digest(revised)
+            report['candidate_ui_bytes']=len(revised)
+            report['status']='V88_UI_PILOT_PREFLIGHT_PASS_NOT_INSTALLED'
+            report['corrected_v87_menu_anchor']='name WORLD_MESSAGES (without square brackets)'
+            if mode=='install':
+                closed,why=v71_processes_closed()
+                if not closed:raise RuntimeError('V88_CLOSE_GAME_AND_LOADER_BEFORE_INSTALL:'+why)
+                if not v85_read_input_approval(V88_INSTALL_APPROVAL):
+                    report['status']='V88_INSTALL_NOT_AUTHORIZED'
+                else:
+                    if digest(ui.read_bytes())!=current or digest(lua.read_bytes())!=sha_lua:
+                        raise RuntimeError('V88_FILES_CHANGED_DURING_CONSENT')
+                    closed,why=v71_processes_closed()
+                    if not closed:raise RuntimeError('V88_GAME_STARTED_DURING_CONSENT:'+why)
+                    backup_dir=WORKDIR/'SAFE_BACKUPS'
+                    safe_external(game,backup_dir)
+                    backup_dir.mkdir(parents=True,exist_ok=True)
+                    backup=backup_dir/('UI.MENU_V88_'+current[:16]+'.bak')
+                    if backup.exists():
+                        if backup.is_symlink() or digest(backup.read_bytes())!=current:
+                            raise RuntimeError('V88_BACKUP_NAME_COLLISION')
+                    else:
+                        with backup.open('xb') as f:f.write(source)
+                    if digest(backup.read_bytes())!=current:
+                        raise RuntimeError('V88_BACKUP_NOT_VERIFIED')
+                    stage=ui.with_name('UI.MENU.v88stage')
+                    if stage.exists():raise RuntimeError('V88_PENDING_UI_STAGE')
+                    state={'schema':V88_SCHEMA,'phase':'PREPARED','old_sha256':current,
+                           'new_sha256':digest(revised),'backup':str(backup),'created_utc':now()}
+                    try:
+                        with stage.open('xb') as f:f.write(revised)
+                        if digest(stage.read_bytes())!=state['new_sha256']:
+                            raise RuntimeError('V88_STAGE_SHA_MISMATCH')
+                        v88_state_write(state)
+                        if digest(ui.read_bytes())!=current:raise RuntimeError('V88_UI_CHANGED_BEFORE_SWAP')
+                        os.replace(stage,ui)
+                        if digest(ui.read_bytes())!=state['new_sha256']:
+                            raise RuntimeError('V88_INSTALLED_SHA_MISMATCH')
+                        v88_state_write({**state,'phase':'INSTALLED','installed_utc':now()})
+                    except Exception:
+                        if ui.is_file() and digest(ui.read_bytes())==state['new_sha256']:
+                            restore=ui.with_name('UI.MENU.v88failedrestore')
+                            if not restore.exists():
+                                with restore.open('xb') as f:f.write(source)
+                                if digest(restore.read_bytes())==current:
+                                    os.replace(restore,ui)
+                                    v88_state_write({**state,'phase':'ROLLED_BACK','failed_utc':now()})
+                        raise
+                    finally:
+                        if stage.exists():stage.unlink()
+                    report['status']='V88_INSTALLED_GAME_UI_TEST_REQUIRED'
+                    report['game_files_written']=1
+                    report['phase']='INSTALLED'
+                    report['ui_sha256']=digest(revised)
+    except (OSError,RuntimeError,ValueError,KeyError,UnicodeError,TypeError) as exc:
+        report['status']='V88_SAFE_STOP'
+        report['errors'].append({'type':type(exc).__name__,'message':str(exc)[:220]})
+    try:v88_zip_report(game,report_path,report)
+    except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
+        print('v88: report SAFE_STOP:',type(exc).__name__,str(exc)[:200]);return 2
+    print('v88:',report['status'],'— изменений в игре:',report['game_files_written'])
+    print('Единый ZIP:',report_path)
+    return 2 if report['status']=='V88_SAFE_STOP' else 0
+
+
+def v88_selftest():
+    # Unit tests for status/guarded UI transformations, not game proof.
+    assert V88_RENDER_OLD not in V88_RENDER_NEW
+    assert V88_RENDER_NEW.endswith(b')"')
+    assert 'BG_EET_RU_LOG_MODE = 0' in V88_HELPER
+    assert "original:sub(1, p-1)" in V88_HELPER
+    assert 'return original' in V88_HELPER
+    assert V88_BUTTON.count("action \"BG_EET_RU_LOG_MODE") == 1
+    # Synthetic UI preserves all old bytes and supports both line endings.
+    fixture=('function clean(str)\n\treturn str\nend\n`\nmenu\n{\n'
+             "\tname 'WORLD_MESSAGES'\n\tlist\n\t{\n\t\tname \"worldMessageBox\"\n"
+             "\t\ttable \"combatLog\"\n\t\ttext lua \"clean(combatLog[rowNumber])\"\n"
+             "\t\tscrollbar skipReset\n\t}\n\thandle\n\t{\n"
+             "\t\tname 'messagesHandleY'\n\t}\n}\n")
+    old_pin=globals()['V88_PINNED_UI_SHA']
+    try:
+        for eol in ('\n','\r\n'):
+            raw=fixture.replace('\n',eol).encode('utf8')
+            globals()['V88_PINNED_UI_SHA']=digest(raw)
+            patched=v88_ui_candidate(raw)
+            assert patched.count(V88_RENDER_NEW)==1 and V88_RENDER_OLD not in patched
+            assert patched.count(b'BG_EET_RU_JOURNAL_TOGGLE')==1
+            if eol=='\r\n':
+                assert patched.count(b'\r\n')>0 and patched.count(b'\r\n')==patched.count(b'\n')
+    finally:
+        globals()['V88_PINNED_UI_SHA']=old_pin
+    with tempfile.TemporaryDirectory(prefix='BG_EET_RU_V88_STATE_TEST_') as d:
+        p=Path(d)/'state.json'
+        assert v88_state_read(p) is None
+        state={'schema':V88_SCHEMA,'phase':'PREPARED','old_sha256':'a'*64,'new_sha256':'b'*64}
+        v88_state_write(state,p)
+        assert v88_state_read(p)==state
+        v88_state_write({**state,'phase':'INSTALLED'},p)
+        assert v88_state_read(p)['phase']=='INSTALLED'
+        v88_state_write({**state,'phase':'ROLLED_BACK'},p)
+        assert v88_state_read(p)['phase']=='ROLLED_BACK'
+    return True
+
+
+def v88_resume_after_cached(game, report_path, combat_only=False):
+    state=v88_state_read()
+    if state and state['phase'] in ('INSTALLED','PREPARED') and not combat_only:
+        return v88_run(game, report_path)
+    rc=v77_resume_after_static_v70(game, report_path, combat_only)
+    if rc or combat_only:return rc
+    return v88_run(game, report_path)
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description='BG_EET_RU one-file visible-only read-only auto-updater')
     p.add_argument('--game',default=DEFAULT_GAME)
@@ -2612,6 +2945,8 @@ def main(argv=None):
     p.add_argument('--selftest',action='store_true')
     p.add_argument('--install-v85-combat-format',action='store_true',help='optional signed v85 Lua replacement; exact typed approval required')
     p.add_argument('--rollback-v85-combat-format',action='store_true',help='optional signed restore to v74; exact typed approval required')
+    p.add_argument('--install-v88-journal-ui',action='store_true',help='optional guarded UI.MENU two-mode pilot; exact approval required')
+    p.add_argument('--rollback-v88-journal-ui',action='store_true',help='optional guarded UI.MENU restore; exact approval required')
     p.add_argument('--seen-strref',action='append',type=int,default=[],help='v83: player-reported displayed StrRef, repeatable')
     p.add_argument('--seen-text',action='append',default=[],help='v83: player-reported exact displayed text, repeatable')
     p.add_argument('--no-open',action='store_true',help='do not open output folder')
@@ -2684,6 +3019,11 @@ def main(argv=None):
     # v83: player-observed text is processed directly; do not re-run expensive historical audits.
     if args.seen_strref or args.seen_text:
         return v83_run(game,WORKDIR/REPORT_NAME,additional_strrefs=args.seen_strref,additional_texts=args.seen_text)
+    if args.install_v88_journal_ui or args.rollback_v88_journal_ui:
+        if args.install_v88_journal_ui and args.rollback_v88_journal_ui:
+            print('V88_STOP: install and rollback options conflict')
+            return 2
+        return v88_run(game,WORKDIR/REPORT_NAME,mode=('install' if args.install_v88_journal_ui else 'rollback'))
     if args.install_v85_combat_format or args.rollback_v85_combat_format:
         if args.install_v85_combat_format and args.rollback_v85_combat_format:
             print('V85_STOP: install and rollback cannot be requested together')
@@ -2710,7 +3050,7 @@ def main(argv=None):
         if rc: return rc
         # v77: cached v67 branch must still reach the v76 TLK/UI audit.
         # Keep --combat-only restricted to combat evidence; never install implicitly.
-        return v77_resume_after_static_v70(game, WORKDIR/REPORT_NAME, args.combat_only)
+        return v88_resume_after_cached(game, WORKDIR/REPORT_NAME, args.combat_only)
     print('BG_EET_RU v'+str(SELF_VERSION)+' — один отчёт; изменение игры только при отдельном подтверждении.')
     print('Папка:',WORKDIR)
     print('Проверяю существующие отчёты (без повторных запусков)...')
@@ -2966,9 +3306,14 @@ def main(argv=None):
     if latest and latest['phase'] in ('INSTALLED','PREPARED'):
         rc=v85_run(game,report_path)
         if rc:return rc
+        ui_state=v88_state_read()
+        if ui_state and ui_state['phase'] in ('INSTALLED','PREPARED'):
+            return v88_run(game,report_path)
         rc=v86_run(game,report_path)
         if rc:return rc
-        return v87_run(game,report_path)
+        rc=v87_run(game,report_path)
+        if rc:return rc
+        return v88_run(game,report_path)
     v84_rc=v84_run(game,report_path)
     if v84_rc:return v84_rc
     v85_rc=v85_run(game,report_path)
@@ -2977,6 +3322,8 @@ def main(argv=None):
     if v86_rc:return v86_rc
     v87_rc=v87_run(game,report_path)
     if v87_rc:return v87_rc
+    v88_rc=v88_run(game,report_path)
+    if v88_rc:return v88_rc
     print('v67 cached DLG structure:',v67_status['status'],
           len(v67_status['target_references']),'target references')
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
@@ -5455,6 +5802,7 @@ def selftest():
     assert v85_selftest() and callable(v85_run)
     assert v86_selftest() and callable(v86_run)
     assert v87_selftest() and callable(v87_run)
+    assert v88_selftest() and callable(v88_run) and callable(v88_resume_after_cached)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
