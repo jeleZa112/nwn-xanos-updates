@@ -25,7 +25,8 @@ function scene(extra={}){
  const e={enemyId:"EN1",area:"AR001",observationVerified:true,
  hostileVerified:true,visibleVerified:true,armorClass:0,protections:prot()};
  return {frame:{tick:100,area:"AR001",actorId:"KHALID",enemyId:"EN1",
- snapshotId:"SNAP1",selectedWeaponId:"SWORD",captureContract:"COMPLETE_EFFECTIVE_SNAPSHOT",
+ snapshotId:"SNAP1",equipmentFingerprint:"EQUIP1",protectionFingerprint:"PROT1",
+ combatFingerprint:"COMBAT1",selectedWeaponId:"SWORD",captureContract:"COMPLETE_EFFECTIVE_SNAPSHOT",
  completeEquipmentObserved:true,completeQuiverObserved:true,completeTargetObserved:true},
  actor:a,enemy:e,quickslotIds:["SWORD","MACE",null,null],
  weapons:[sword("SWORD",0),sword("MACE",1,{avgDamageOnHit:10,apr:3,damageType:"CRUSHING"})],
@@ -125,6 +126,20 @@ test("target or loadout change restarts stabilization",()=>{
  const s=scene(),a=choose(s);const next=scene();next.frame.tick=101;
  next.enemy.enemyId="EN2";next.frame.enemyId="EN2";next.actor.currentTargetId="EN2";
  assert.equal(choose(next,a.next).status,"HOLD_STABILIZE_TARGET_AND_EQUIPMENT");
+});
+test("new EEex capture ID each frame still allows stable loadout",()=>{
+ const s=scene(),a=choose(s),next=scene();next.frame.tick=101;
+ next.frame.snapshotId="SNAP2";next.actor.traitProfile.snapshotId="SNAP2";
+ next.enemy.protections.snapshotId="SNAP2";
+ next.weapons.forEach(w=>w.snapshotId="SNAP2");
+ assert.equal(choose(next,a.next).status,"ADVISE_PRIORITY_QUICKSLOT_ONLY");
+});
+test("changed protections or actual combat stats restart stability",()=>{
+ const s=scene(),a=choose(s),e=scene();e.frame.tick=101;
+ e.frame.protectionFingerprint="PROT2";
+ assert.equal(choose(e,a.next).status,"HOLD_STABILIZE_TARGET_AND_EQUIPMENT");
+ e.frame.protectionFingerprint="PROT1";e.frame.combatFingerprint="COMBAT2";
+ assert.equal(choose(e,a.next).status,"HOLD_STABILIZE_TARGET_AND_EQUIPMENT");
 });
 test("repeated tick / excessively old observation restarts stabilization",()=>{
  const s=scene(),a=choose(s);
