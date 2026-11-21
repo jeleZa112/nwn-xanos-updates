@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
-  "version": "0.3.75-V6-DPLAYER-NATIVE-RO",
+  "version": "0.3.76-V6-GUARDED-PILOT",
   "files": [
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_PREFLIGHT.py",
@@ -60,8 +60,8 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py",
       "dest": "BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py",
-      "size": 16310,
-      "sha256": "e6520c89e0986e93f06e21fc60518de9c1bc54ab065e9a9b4faaccd5100efc4c"
+      "size": 17420,
+      "sha256": "31d722ef0aa0e4040e0b212af29e0a3439bc05565904f6db68b1dc307d5a8d10"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V4_NO_FRIEND_ATTACK.baf",
@@ -126,8 +126,8 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXFTRACE_CONSOLE_CAPTURE.py",
       "dest": "BGXFTRACE_CONSOLE_CAPTURE.py",
-      "size": 3094,
-      "sha256": "a725587b2987fcc02f2ef8e52c441acdb4d00a57fe70e8e3c9e8689c2935e568"
+      "size": 3359,
+      "sha256": "8d69394053eaf5e9463d78c0aa0ebab4e4834bcdc126022cabc058b99f6615eb"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BXFR_MOTION_V3.lua",
@@ -200,6 +200,12 @@
       "dest": "BGXRANGED_V6_DPLAYER_NATIVE_READONLY.py",
       "sha256": "845bef0220ef4929072a88c270f85c8f984db2c0bfadf271c86db4ecda00ddff",
       "size": 8047
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V6_GUARDED_INSTALL.py",
+      "dest": "BGXRANGED_V6_GUARDED_INSTALL.py",
+      "sha256": "0d1fbd369ddab0998b473b132fdc8fdc01f918c2efa49710ae9c1b31f9bb4324",
+      "size": 15857
     }
   ]
 }
