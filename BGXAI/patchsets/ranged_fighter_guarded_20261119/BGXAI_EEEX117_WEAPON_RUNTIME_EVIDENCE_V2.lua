@@ -6,6 +6,8 @@
 -- This is an ON-DEMAND snapshot, not a hook or automatic background service.
 -- It cannot prove any combat stats, buff completeness, manual/EPS queue state,
 -- or whether a new slot can be safely equipped. No calls write game state.
+-- LIVE R1.1 captured actorId=139135050; 16-bit actor guard was invalid.
+-- This SOURCE-ONLY adapter uses the same 31-bit id range as installed observer.
 local M={version='BGXAI_EEEX117_WEAPON_RUNTIME_EVIDENCE_V2',installed=false}
 local function safe(obj,key)
  if obj==nil then return nil end
@@ -41,7 +43,7 @@ function M.observe_portrait(index,getter)
  local actionId=safe(safe(sprite,'m_curAction'),'m_actionID')
  local script=safe(sprite,'m_curScriptNum')
  local raw={portraitIndex=index,
-  actorId=integer(id,0,65535) and id or nil,
+  actorId=integer(id,0,2147483647) and id or nil,
   selectedWeaponRaw=integer(selection,0,65535) and selection or nil,
   actionIdRaw=integer(actionId,0,65535) and actionId or nil,
   scriptNumberRaw=integer(script,0,65535) and script or nil,
@@ -60,7 +62,7 @@ function M.observe_portrait(index,getter)
   activeOk,activeStats=pcall(EEex_Sprite_GetActiveStats,sprite)
  end
  raw.statsObjectSeen=activeOk and activeStats~=nil
- if not integer(id,0,65535) or not integer(selection,0,65535) then
+ if not integer(id,0,2147483647) or not integer(selection,0,65535) then
   return state('HOLD_SELECTED_WEAPON_OR_ID_UNAVAILABLE',raw) end
  if not num(flag) or not raw.statsObjectSeen then
   return state('HOLD_ACTIVE_STATS_CONTEXT_UNAVAILABLE',raw) end
@@ -73,7 +75,7 @@ function M.compare(before,after)
     type(before.raw)~='table' or type(after.raw)~='table' then
   return state('HOLD_MISSING_OBSERVATIONS') end
  local a,b=before.raw,after.raw
- if not integer(a.actorId,0,65535) or a.actorId~=b.actorId or
+ if not integer(a.actorId,0,2147483647) or a.actorId~=b.actorId or
     not integer(a.selectedWeaponRaw,0,65535) or
     not integer(b.selectedWeaponRaw,0,65535) or
     not num(a.effectListAccessFlagRaw) or
