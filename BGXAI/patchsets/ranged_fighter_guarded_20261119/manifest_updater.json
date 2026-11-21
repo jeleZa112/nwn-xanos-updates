@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
-  "version": "0.3.71-WEAPON-TRAIT-SNAPSHOT",
+  "version": "0.3.72-V5-NATIVE-READONLY",
   "files": [
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_PREFLIGHT.py",
@@ -60,8 +60,8 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py",
       "dest": "BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py",
-      "size": 13123,
-      "sha256": "89b4101fe83d03b06ec7a3d418c245fb6ce4816bca03f22d0dc143d57cb2e745"
+      "size": 14286,
+      "sha256": "55a92984c6d50fc27f073bda0aa7019f466b346becd7de7e85066382de65190d"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V4_NO_FRIEND_ATTACK.baf",
@@ -170,6 +170,18 @@
       "dest": "BGXAI_WEAPON_TRAITS_ADVISORY_V1.js",
       "sha256": "f23277540659658faba4199f18ca326dd0034bdb44a1281837bd36b000eac789",
       "size": 5564
+    },
+    {
+      "dest": "BGXRANGED_V5_ANTICIPATORY_CLOSE_SOURCE_ONLY.baf",
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V5_ANTICIPATORY_CLOSE_SOURCE_ONLY.baf",
+      "sha256": "010d4a16bd786bf6b67d230a541586650beec79eedcd63d8dde198e4905d6bab",
+      "size": 2769
+    },
+    {
+      "dest": "BGXRANGED_V5_NATIVE_CANDIDATE_READONLY.py",
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V5_NATIVE_CANDIDATE_READONLY.py",
+      "sha256": "698121c27c20d8551367873c7707f4fde957ba40d3f101c1d08573c47f4581cb",
+      "size": 9963
     }
   ]
 }
