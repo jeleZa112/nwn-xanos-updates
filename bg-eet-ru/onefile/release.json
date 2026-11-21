@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 75,
-  "sha256": "4e3d002bad3049403af57abfb3640cf291b159afe7506a7051e15e72fc6d451b",
+  "version": 76,
+  "sha256": "e7fca1d4a2fedf960b348dabe8e28b79ae9d2949912629bcf53e215d880b223b",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v75: correct v74 self-test KeyError source_en by normalizing embedded raw en/ru/offset/ins_file_offset/opcode to V68 report fields before 34-string/44-hook checks. Local fixture tests pass with ACTUAL embedded raw source. Same one CMD, one ZIP; typed consent required before Lua change; working v73 remains until authorized; guarded rollback restores v73."
+  "note": "v76: read-only targeted CURRENT game source evidence for TLK StrRef 266659/273940 (male and female) and LEUI_REVERSE_BUTTON_POSITIONS_LABEL in override/UI.MENU. Reuses historic source and 63 DLG audits, no mass scans or install. Reports old-source matches, already-translated SoD, live file hashes and UI key contexts in SAME ZIP 26_V76_...json. Does not alter TLK, UI, working v75 Lua or BGXAI/Voice. Separate explicit authorization remains required for any later edit."
 }
