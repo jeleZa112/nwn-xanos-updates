@@ -65,6 +65,13 @@ jobs:
           assert I.TP2_TEXT.startswith("BACKUP ~BGXFENEMY/backup~\n")
           assert I.TARGET == "override/WTASIGHT.BCS"
           assert I.OTHER["override/M_BXFR.lua"] == I.TRACE.SOURCE_SHA
+          bootstrap = pathlib.Path("BGXAI_UPDATE.cmd").read_bytes()
+          assert b"$expectedSize -gt 80000" in bootstrap
+          assert b"Download-Limited $scriptSources $temporaryScript 80000" in bootstrap
+          updater_bytes = pathlib.Path("BGXAI/BGXAI_SYNC.ps1").read_bytes()
+          assert 3000 <= len(updater_bytes) <= 80000, ("CMD_BOOTSTRAP_SIZE_CAP", len(updater_bytes))
+          assert "70..92 | ForEach-Object" in updater_bytes.decode("utf-8")
+          assert "97..116 | ForEach-Object" in updater_bytes.decode("utf-8")
           updater = pathlib.Path("BGXAI/BGXAI_SYNC.ps1").read_text(encoding="utf-8")
           assert "0.3.67-BGXFENEMY-WTASIGHT-GUARD" in updater
           for n in range(1, 156):
