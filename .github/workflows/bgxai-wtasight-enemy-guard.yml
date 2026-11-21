@@ -49,17 +49,16 @@ jobs:
           assert updated.replace("  !InParty(Myself)\n", "") == base
           for malformed in (
               base.replace("AttackedBy([GOODCUTOFF],DEFAULT)", "AttackedBy([ANYONE],DEFAULT)"),
-              base.replace("    Enemy()", "    Enemy()\n    NoAction()"),
+              base.replace("    Enemy()", "    Enemy()\\n    NoAction()"),
               base.replace("    Enemy()", "    NoAction()"),
-              base.replace("  False()", "  False()\n  Enemy()", 1),
-              base.replace("  False()", "  False()\n  !InParty(Myself)", 1),
+              base.replace(friendly, friendly.replace("THEN", "  !InParty(Myself)\\nTHEN", 1)),
           ):
               try:
-                  result = C.transform_baf(malformed)
+                  C.transform_baf(malformed)
               except ValueError:
                   pass
               else:
-                  assert malformed != base or result, "unexpected successful candidate"
+                  raise AssertionError("unsafe candidate unexpectedly accepted")
           assert I.INSTALL_TOKEN == "INSTALL_BGXFENEMY_WTASIGHT_GUARD"
           assert I.LAST.match(r"~BGXFENEMY\SETUP-BGXFENEMY.TP2~ #0 #0 // install")
           assert I.TP2_TEXT.count("\n") == 4
