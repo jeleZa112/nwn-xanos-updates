@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 87,
-  "sha256": "45eabc98efa6af6b655dd8cb7861944079169347e905bee3cc45a1ac348f4720",
-  "mode": "READ_ONLY_EXACT_UI_SOURCE_GUARD",
+  "version": 88,
+  "sha256": "e24c5c9f919f9de7a21c04c876ecd48cc57f73b1c343cfee1c9175b93b63cec4",
+  "mode": "READ_ONLY_DEFAULT_EXPLICIT_APPROVAL_FOR_UI_PILOT",
   "game_writes_allowed": false,
-  "note": "v87 READ ONLY: exact UI.MENU source capture for combatLog table, worldMessageBox label, clean() function and WORLD_MESSAGES menu, plus checked pinned original UI SHA and installed v85 Lua SHA. No hook, no UI toggle, no game modification. Outputs only 35_V87_COMBAT_JOURNAL_UI_BINDING_EXACT_SOURCE.json to single existing ZIP. Source CI run 44907413243 PASS. Next gate requires display helper design and separate guarded install after UI context audit."
+  "note": "v88: fixed v87 false HOLD caused by expecting [WORLD_MESSAGES] menu name instead of actual WORLD_MESSAGES. Optional strictly SHA-pinned exact UI.MENU pilot provides clickable detailed/brief display-mode button, preserves underlying combatLog table and installed v85 Lua. Only recognized Russian attack outcome lines condensed; others unchanged. Standard updater performs SHA checked source-only preflight and writes 36_V88_COMBAT_JOURNAL_UI_PILOT.json to same ZIP. --install-v88-journal-ui requires closed Baldur.exe and InfinityLoader.exe, exact typed INSTALL_BG_EET_RU_V88_JOURNAL_UI_PILOT, verified external backup, byte exact reversible source patch and guarded atomic replacement. --rollback-v88-journal-ui requires ROLLBACK_BG_EET_RU_V88_JOURNAL_UI_PILOT. Game installation/runtime tests not yet confirmed. CI 44908414006 PASS."
 }
