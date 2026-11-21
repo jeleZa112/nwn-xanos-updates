@@ -10,7 +10,7 @@ local function scene(opts)
  opts=opts or {}
  local read={};local calls={}
  for i=0,38 do read[i]=nil end
- read[35]={m_useCount1=3,m_flags=1};read[36]={m_useCount1=1};read[12]={m_useCount1=16};read[9]={m_useCount1=1}
+ read[35]={m_useCount1=3,m_flags=1,cResRef={get=function() return 'BOW05' end}};read[36]={m_useCount1=1};read[12]={m_useCount1=16,cResRef={get=function() return 'AROW01' end}};read[9]={m_useCount1=1}
  local items={get=function(self,idx)
    calls[#calls+1]=idx
    if opts.throwIndex==idx then error('unavailable') end
@@ -36,7 +36,20 @@ test('12 is ammo index and not bow identity',function()
  local s=scene();local r=M.observe_sprite(s);eq(r.selectedInventoryKind,'AMMO_QUICKSLOT');eq(r.itemIdentityVerified,false)
 end)
 test('35 is first weapon slot',function()local s=scene({sel=35});local r=M.observe_sprite(s);eq(r.selectedInventoryKind,'WEAPON_QUICKSLOT')end)
-test('resref never guessed',function()local s=scene();local r=M.observe_sprite(s);eq(r.quickWeapons[1].resref,nil);eq(r.quivers[2].resref,nil)end)
+test('resref never guessed',function()local s=scene();local r=M.observe_sprite(s);eq(r.quickWeapons[1].itemResrefRaw,'BOW05');eq(r.quivers[2].itemResrefRaw,'AROW01');eq(r.itemIdentityVerified,false)end)
+test('malformed resref rejected not guessed',function()
+ local s,raw=scene();raw[35].cResRef={get=function() return 'BOW05\nEVIL' end}
+ local r=M.observe_sprite(s);eq(r.quickWeapons[1].itemResrefRaw,nil);eq(r.quickWeapons[1].resrefAccess,'INVALID_RESREF')
+end)
+test('resref getter errors fail closed',function()
+ local s,raw=scene();raw[35].cResRef={get=function() error('bad') end}
+ local r=M.observe_sprite(s);eq(r.quickWeapons[1].itemResrefRaw,nil);eq(r.quickWeapons[1].resrefAccess,'RESREF_READ_ERROR')
+end)
+test('resref presence alone never authorizes weapon',function()
+ local s=scene();local r=M.observe_sprite(s)
+ eq(r.quickWeapons[1].itemResrefRaw,'BOW05');eq(r.quickWeapons[1].canEquip,false)
+ eq(r.weaponSwitchAuthorized,false);eq(r.abilityVerified,false)
+end)
 test('empty slot no invented item',function()local s=scene();local r=M.observe_sprite(s);eq(r.quickWeapons[3].access,'NULL')end)
 test('object returned does not certify identity',function()
  local s=scene();local r=M.observe_sprite(s);eq(r.quickWeapons[1].access,'OBJECT_RETURNED_UNVERIFIED');eq(r.quickWeapons[1].identityVerified,false)
@@ -88,4 +101,4 @@ end)
 test('fist flagged not a real weapon identity',function()
  local s=scene({sel=10});local r=M.observe_sprite(s);eq(r.selectedInventoryKind,'FIST_INDEX');eq(r.weaponSwitchAuthorized,false)
 end)
-print('R2_READONLY_TESTS '..total..'/25 PASS; SOURCE ONLY, NO GAME CHANGES')
+print('R2_READONLY_TESTS '..total..'/28 PASS; SOURCE ONLY, NO GAME CHANGES')
