@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 82,
-  "sha256": "3b65ff8f1f13f734298b65a95b458861ccbf8853f81cda3ff4e252b67bf3eaf8",
+  "version": 83,
+  "sha256": "cbe19f3e23e13384be495fbb46b329dd1f5bfc1780c6388b54375d88309e91b0",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v82 READ ONLY: targeted NALIN.DLG current build journal inspection. Loads active override/NALIN.DLG or current chitin.key resource through indexed BIFF (no historical strref substitution). Finds direct journal transitions and numeric AddJournalEntry calls, looks up each referenced strref in both installed Russian dialog.tlk and dialogf.tlk, saves text and source SHA into the SAME SEND_TO_CHATGPT_BG_EET_RU.zip entry 30_V82_NALIN_CURRENT_DLG_JOURNAL_READONLY.json. Explicit HOLD on absent/unparseable resources; no edits to game, TLK, saves, UI, BGXAI, BG Voice RU. Includes isolated synthetic KEY/BIFF, override precedence, English detection, corrupt-source regression. Maintains one auto-updater."
+  "note": "v83 READ ONLY: optional batch intake of player-reported actual on-screen StrRefs or text fragments, with no installed game modifications. Existing updater understands repeatable --seen-strref 123 and --seen-text 'exact text', or optional UTF-8 BG_EET_RU_VISIBLE_TEXTS.txt in the same work directory. Sparse current RU TLK lookup for IDs and bounded full current RU TLK search for reported phrases, male and female variants; merges one 31_V83_OBSERVED_TEXT_BATCH_READONLY.json into the existing report ZIP. Evidence marked user-reported, NOT independently captured by engine; existing v81/v82 and v74 untouched. No input => no new ZIP entry, no scanning. Bounded inputs, isolated selftest and source SHA pinned."
 }
