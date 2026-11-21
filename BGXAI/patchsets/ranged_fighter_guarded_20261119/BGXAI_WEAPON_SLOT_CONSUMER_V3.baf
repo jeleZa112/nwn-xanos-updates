@@ -1,0 +1,92 @@
+// BGXAI Weapon Priority V3 — proposed guarded slot-specific BCS consumer.
+// SOURCE ONLY. NOT COMPILED FOR THE USER'S EET, NOT INSTALLED, NOT LIVE.
+// Requires a separate verified EEex/EPS/manual-safe producer to request 1..4.
+// BGXW3_REQ and BGXW3_LEASE must NEVER be set from untrusted advisory alone.
+// Append only after preserving all existing EPS/manual/guardian priorities.
+// A BCS action may silently fail (cursed/magically created weapon or ammunition):
+// the producer must re-read the selected weapon before claiming success.
+// No inventory movement, target selection, attacking, spell use or actions off-party.
+
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  Global("BGXW3_REQ","LOCALS",1)
+  GlobalTimerNotExpired("BGXW3_LEASE","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_HELPLESS)
+  See(NearestEnemyOf(Myself))
+  !InParty(NearestEnemyOf(Myself))
+  !Allegiance(NearestEnemyOf(Myself),GOODCUTOFF)
+  HasItemSlot(Myself,SLOT_WEAPON0)
+THEN
+  RESPONSE #100
+    SelectWeaponAbility(SLOT_WEAPON0,0)
+    SetGlobal("BGXW3_REQ","LOCALS",0)
+END
+
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  Global("BGXW3_REQ","LOCALS",2)
+  GlobalTimerNotExpired("BGXW3_LEASE","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_HELPLESS)
+  See(NearestEnemyOf(Myself))
+  !InParty(NearestEnemyOf(Myself))
+  !Allegiance(NearestEnemyOf(Myself),GOODCUTOFF)
+  HasItemSlot(Myself,SLOT_WEAPON1)
+THEN
+  RESPONSE #100
+    SelectWeaponAbility(SLOT_WEAPON1,0)
+    SetGlobal("BGXW3_REQ","LOCALS",0)
+END
+
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  Global("BGXW3_REQ","LOCALS",3)
+  GlobalTimerNotExpired("BGXW3_LEASE","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_HELPLESS)
+  See(NearestEnemyOf(Myself))
+  !InParty(NearestEnemyOf(Myself))
+  !Allegiance(NearestEnemyOf(Myself),GOODCUTOFF)
+  HasItemSlot(Myself,SLOT_WEAPON2)
+THEN
+  RESPONSE #100
+    SelectWeaponAbility(SLOT_WEAPON2,0)
+    SetGlobal("BGXW3_REQ","LOCALS",0)
+END
+
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  Global("BGXW3_REQ","LOCALS",4)
+  GlobalTimerNotExpired("BGXW3_LEASE","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_HELPLESS)
+  See(NearestEnemyOf(Myself))
+  !InParty(NearestEnemyOf(Myself))
+  !Allegiance(NearestEnemyOf(Myself),GOODCUTOFF)
+  HasItemSlot(Myself,SLOT_WEAPON3)
+THEN
+  RESPONSE #100
+    SelectWeaponAbility(SLOT_WEAPON3,0)
+    SetGlobal("BGXW3_REQ","LOCALS",0)
+END
