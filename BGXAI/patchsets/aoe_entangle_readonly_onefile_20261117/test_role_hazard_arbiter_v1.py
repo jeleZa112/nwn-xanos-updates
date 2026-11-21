@@ -9,8 +9,8 @@ from BGX121_POLICY import Ally, Hazard
 from BGXAI_ROLE_HAZARD_ARBITER_V1 import Advice, Situation, advise
 
 ALLY=Ally("khalid",0,0,"AR2600")
-FRIEND=Ally("jaheira",130,0,"AR2600")
-GIBBERLING=Hazard("web01",50,0,"AR2600",15,frozenset({"WEB"}))
+FRIEND=Ally("jaheira",250,0,"AR2600")
+GIBBERLING=Hazard("web01",90,0,"AR2600",15,frozenset({"WEB"}))
 SAFE_AOE=Hazard("entangle_target",100,0,"AR2600",20,frozenset({"ENTANGLE"}))
 
 def scene(**kw):
