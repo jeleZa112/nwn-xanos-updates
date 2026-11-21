@@ -140,6 +140,8 @@ jobs:
         run: |
           node --check BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_CHOICE_ADVISORY_V1.js
           node BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_choice_advisory_v1.js
+          node --check BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_TRAITS_ADVISORY_V1.js
+          node BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_traits_advisory_v1.js
 
   windows-powershell-syntax:
     runs-on: windows-latest
