@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
-  "version": "0.3.66-BGXF3-KHALID-MOTION",
+  "version": "0.3.67-BGXFENEMY-WTASIGHT-GUARD",
   "files": [
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_PREFLIGHT.py",
@@ -140,6 +140,18 @@
       "dest": "BGXFTRACE_V3_GUARDED.py",
       "size": 9140,
       "sha256": "2f0383df531f1ed710607800db4e174d0561d070df6df3605886ec0d5d7eb9fa"
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXF_WTASIGHT_ENEMY_GUARD_SOURCE_ONLY.py",
+      "dest": "BGXF_WTASIGHT_ENEMY_GUARD_SOURCE_ONLY.py",
+      "size": 7583,
+      "sha256": "05ab890091031b8f1a3075d5d6732852b9353dcc8bb9ad5e9c9993c50f859300"
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXFENEMY_WTASIGHT_GUARDED.py",
+      "dest": "BGXFENEMY_WTASIGHT_GUARDED.py",
+      "size": 11426,
+      "sha256": "182ca0c9c3810642689bcf5fcf9f3e9accb5461ff3457ff994a30fb117580e52"
     }
   ]
 }
