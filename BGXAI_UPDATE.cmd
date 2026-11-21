@@ -77,7 +77,7 @@ try {
         $commitId=[string]$pin.commit
         $expectedHash=[string]$pin.script_sha256
         $expectedSize=[int]$pin.script_size
-        # Recover only the exact oversized 80574-byte or previously good 79789-byte pinned sources.
+        # Verify any stale known pin by exact immutable commit, SHA256 and size before recovery.
         $oldExactPin=$false
         if($commitId -ceq 'dc32a50aad462bbfc9d3c15a9d0c22c640d7c156') {
             if($expectedHash -cne '7e464fe389d5a40447d7238e95d4aaaec93c6c22637beb376f74cf86f6a3e46f' -or $expectedSize -ne 80574) {throw 'Untrusted stale BGXAI pin'}
@@ -92,99 +92,7 @@ try {
             $expectedSize=79708
             Write-Host 'BGXAI: trusted old pin updated to exact SHA-checked onefile menus 1-155.'
         }
-        if($commitId -cnotmatch '^[0-9a-f]{40}
-            throw 'Invalid pinned commit, SHA256 or size'
-        }
-        # Recover only two known, exact SHA-pinned stale channel descriptions.
-        # All other channel pins are left unchanged; SHA verification remains mandatory.
-        $staleKnown=$false
-        if($commitId -ceq '711840d55df51c86da9b9464aa2bc22b882cfa1e') {
-            if($expectedHash -cne 'b5c8f6af7d2168f51556d955ae2238a0ad1226906deef4311319185b0b319511' -or $expectedSize -ne 79725) {throw 'Untrusted stale BGXAI pin'}
-            $staleKnown=$true
-        } elseif($commitId -ceq '0c01f9f5c56087b1ff39471c3a06a1409cfe2a14') {
-            if($expectedHash -cne '6897f43009d32008fe499db871fb17c9c09ad494a7e69e142474a646b8c072bd' -or $expectedSize -ne 79730) {throw 'Untrusted stale BGXAI pin'}
-            $staleKnown=$true
-        }
-        if($staleKnown) {
-            $commitId='96dcda9cf91d921e9a37d67f7c382b6ba2abe394'
-            $expectedHash='a77fbae9579d3c192cca3269dae25e0a1b3b2610995e3a97acf5197b65554f39'
-            $expectedSize=79934
-            Write-Host 'BGXAI: stale verified pin upgraded to 0.3.45 script trace (SHA256 required).'
-        }
-        $scriptSources=@(
-          ('https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/'+$commitId+'/BGXAI/BGXAI_SYNC.ps1'),
-          ('https://cdn.jsdelivr.net/gh/jeleZa112/nwn-xanos-updates@'+$commitId+'/BGXAI/BGXAI_SYNC.ps1')
-        )
-        Download-Limited $scriptSources $temporaryScript 80000
-        if((Get-Item -LiteralPath $temporaryScript).Length -ne $expectedSize) {throw 'Downloaded updater size mismatch'}
-        $actualHash=(Get-FileHash -LiteralPath $temporaryScript -Algorithm SHA256).Hash.ToLowerInvariant()
-        if($actualHash -cne $expectedHash) {throw 'Downloaded updater SHA256 mismatch; refusing execution'}
-        $targetScript=Join-Path $cacheDir 'BGXAI_SYNC.current.ps1'
-        [IO.File]::Copy($temporaryScript,$targetScript,$true)
-        if((Get-FileHash -LiteralPath $targetScript -Algorithm SHA256).Hash.ToLowerInvariant() -cne $expectedHash) {
-            throw 'Cached updater SHA256 mismatch; refusing execution'
-        }
-        [IO.File]::WriteAllText((Join-Path $cacheDir 'head.txt'),$commitId,[Text.Encoding]::ASCII)
-        Write-Host ('BGXAI: verified pinned script '+$commitId.Substring(0,12)+' (SHA256 OK)')
-        Write-Host 'GitHub REST API: not used.'
-    } finally {
-        foreach($item in @($temporaryPin,$temporaryScript)) {
-            if(Test-Path -LiteralPath $item) {Remove-Item -LiteralPath $item -Force -ErrorAction SilentlyContinue}
-        }
-    }
-    exit 0
-} catch {
-    Write-Host ('BGXAI BOOTSTRAP STOP: '+$_.Exception.Message) -ForegroundColor Red
-    Write-Host 'No EET game or WeiDU resources were changed.'
-    exit 1
-}
- -or $expectedHash -cnotmatch '^[0-9a-f]{64}
-            throw 'Invalid pinned commit, SHA256 or size'
-        }
-        # Recover only two known, exact SHA-pinned stale channel descriptions.
-        # All other channel pins are left unchanged; SHA verification remains mandatory.
-        $staleKnown=$false
-        if($commitId -ceq '711840d55df51c86da9b9464aa2bc22b882cfa1e') {
-            if($expectedHash -cne 'b5c8f6af7d2168f51556d955ae2238a0ad1226906deef4311319185b0b319511' -or $expectedSize -ne 79725) {throw 'Untrusted stale BGXAI pin'}
-            $staleKnown=$true
-        } elseif($commitId -ceq '0c01f9f5c56087b1ff39471c3a06a1409cfe2a14') {
-            if($expectedHash -cne '6897f43009d32008fe499db871fb17c9c09ad494a7e69e142474a646b8c072bd' -or $expectedSize -ne 79730) {throw 'Untrusted stale BGXAI pin'}
-            $staleKnown=$true
-        }
-        if($staleKnown) {
-            $commitId='96dcda9cf91d921e9a37d67f7c382b6ba2abe394'
-            $expectedHash='a77fbae9579d3c192cca3269dae25e0a1b3b2610995e3a97acf5197b65554f39'
-            $expectedSize=79934
-            Write-Host 'BGXAI: stale verified pin upgraded to 0.3.45 script trace (SHA256 required).'
-        }
-        $scriptSources=@(
-          ('https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/'+$commitId+'/BGXAI/BGXAI_SYNC.ps1'),
-          ('https://cdn.jsdelivr.net/gh/jeleZa112/nwn-xanos-updates@'+$commitId+'/BGXAI/BGXAI_SYNC.ps1')
-        )
-        Download-Limited $scriptSources $temporaryScript 80000
-        if((Get-Item -LiteralPath $temporaryScript).Length -ne $expectedSize) {throw 'Downloaded updater size mismatch'}
-        $actualHash=(Get-FileHash -LiteralPath $temporaryScript -Algorithm SHA256).Hash.ToLowerInvariant()
-        if($actualHash -cne $expectedHash) {throw 'Downloaded updater SHA256 mismatch; refusing execution'}
-        $targetScript=Join-Path $cacheDir 'BGXAI_SYNC.current.ps1'
-        [IO.File]::Copy($temporaryScript,$targetScript,$true)
-        if((Get-FileHash -LiteralPath $targetScript -Algorithm SHA256).Hash.ToLowerInvariant() -cne $expectedHash) {
-            throw 'Cached updater SHA256 mismatch; refusing execution'
-        }
-        [IO.File]::WriteAllText((Join-Path $cacheDir 'head.txt'),$commitId,[Text.Encoding]::ASCII)
-        Write-Host ('BGXAI: verified pinned script '+$commitId.Substring(0,12)+' (SHA256 OK)')
-        Write-Host 'GitHub REST API: not used.'
-    } finally {
-        foreach($item in @($temporaryPin,$temporaryScript)) {
-            if(Test-Path -LiteralPath $item) {Remove-Item -LiteralPath $item -Force -ErrorAction SilentlyContinue}
-        }
-    }
-    exit 0
-} catch {
-    Write-Host ('BGXAI BOOTSTRAP STOP: '+$_.Exception.Message) -ForegroundColor Red
-    Write-Host 'No EET game or WeiDU resources were changed.'
-    exit 1
-}
- -or $expectedSize -lt 3000 -or $expectedSize -gt 80000) {
+        if($commitId -cnotmatch '^[0-9a-f]{40}$' -or $expectedHash -cnotmatch '^[0-9a-f]{64}$' -or $expectedSize -lt 3000 -or $expectedSize -gt 80000) {
             throw 'Invalid pinned commit, SHA256 or size'
         }
         # Recover only two known, exact SHA-pinned stale channel descriptions.
