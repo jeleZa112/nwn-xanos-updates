@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 73
+SELF_VERSION = 74
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -639,8 +639,8 @@ def main(argv=None):
     # v68: if the v67 game snapshot still matches, resume ONLY the new safe stage.
     if args.combat_status or args.combat_rollback:
         if args.combat_rollback:
-            return v73_pilot(game,WORKDIR/REPORT_NAME,mode='rollback')
-        return v73_pilot(game,WORKDIR/REPORT_NAME,mode='status')
+            return v74_pilot(game,WORKDIR/REPORT_NAME,mode='rollback')
+        return v74_pilot(game,WORKDIR/REPORT_NAME,mode='status')
     if args.combat_only or (not args.force and v68_baseline_report_ready(game, WORKDIR/REPORT_NAME)):
         print('v68: предыдущие проверки v67 сохранены; продолжаю с боевого журнала (READ ONLY).')
         rc=v68_combat_evidence(game, WORKDIR/REPORT_NAME)
@@ -648,7 +648,7 @@ def main(argv=None):
         rc=v69_static_proof(WORKDIR/REPORT_NAME)
         if rc: return rc
         rc=v70_eeex_loader_diagnostic(game, WORKDIR/REPORT_NAME)
-        return rc if rc else v73_pilot(game, WORKDIR/REPORT_NAME, mode='auto')
+        return rc if rc else v74_pilot(game, WORKDIR/REPORT_NAME, mode='auto')
     print('BG_EET_RU v'+str(SELF_VERSION)+' — один отчёт; изменение игры только при отдельном подтверждении.')
     print('Папка:',WORKDIR)
     print('Проверяю существующие отчёты (без повторных запусков)...')
@@ -884,10 +884,10 @@ def main(argv=None):
     if v70_rc:
         print('v70: проверка скриптов EEex остановлена безопасно; смотри единый ZIP.')
         return v70_rc
-    v73_rc=v73_pilot(game,report_path,mode='auto')
-    if v73_rc:
-        print('v73: проверка или установка Lua остановлена безопасно; смотри единый ZIP.')
-        return v73_rc
+    v74_rc=v74_pilot(game,report_path,mode='auto')
+    if v74_rc:
+        print('v74: проверка или установка перевода остановлена безопасно; смотри единый ZIP.')
+        return v74_rc
     print('v67 cached DLG structure:',v67_status['status'],
           len(v67_status['target_references']),'target references')
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
@@ -2605,6 +2605,416 @@ def v73_selftest():
     assert callable(v73_zip_report) and callable(v73_pilot)
     return True
 
+# BG_EET_RU v74 — same one BG_EET_RU_UPDATE.cmd / same report ZIP.
+# Requires existing v68/v69/v71/v73 helpers. Game changes require explicit typed approval.
+
+V74_SCHEMA = 'BG_EET_RU_V74_FULL_VISIBLE_COMBAT_LUA'
+V74_STATUS_ENTRY = '25_V74_FULL_VISIBLE_COMBAT.json'
+V74_STATE = WORKDIR / 'BG_EET_RU_V74_FULL_COMBAT_STATE.json'
+V74_APPROVAL = 'INSTALL_BG_EET_RU_V74_FULL_COMBAT_RU'
+V74_EXCLUDED = frozenset(('THAC0Right', 'THAC0Left'))
+V74_ANCHOR_RVA = 3791683
+
+
+def v74_manifest():
+    # This is the PINNED v68 manifest already embedded in the same updater.
+    module = v68_load_combat_module()
+    rows = json.loads(zlib.decompress(base64.b64decode(module._EMBED)).decode('utf-8'))
+    if len(rows) != 36 or sum(len(r['refs']) for r in rows) != 47:
+        raise RuntimeError('V74_SOURCE_MANIFEST_COUNT_MISMATCH')
+    included = [r for r in rows if r['source_en'] not in V74_EXCLUDED]
+    if len(included) != 34 or sum(len(r['refs']) for r in included) != 44:
+        raise RuntimeError('V74_UNEXPECTED_VISIBLE_SCOPE')
+    if sum(r['source_en'] == ' +Luck:%d' for r in included) != 1:
+        raise RuntimeError('V74_ANCHOR_MISSING')
+    if sum(ref['ins_rva'] == V74_ANCHOR_RVA for r in included for ref in r['refs']) != 1:
+        raise RuntimeError('V74_ANCHOR_REFERENCE_MISSING')
+    return included
+
+
+def v74_check_manifest(exe, rows):
+    # Strict offline validation of every source label and every x64 LEA instruction.
+    if digest(exe) != V71_EXE_SHA:
+        raise RuntimeError('V74_EXE_HASH_NOT_PINNED')
+    seen = set()
+    used_spans = []
+    for row in rows:
+        original = row['source_en'].encode('ascii')
+        ru = row['translation_ru'].encode('utf-8')
+        if (not original or b'\0' in original or b'\0' in ru or
+            b'\r' in ru or b'\n' in ru or b'\r' in original or b'\n' in original):
+            raise RuntimeError('V74_INVALID_LITERAL')
+        if (original.count(b'%') != ru.count(b'%') or
+            original.count(b'%d') != ru.count(b'%d') or
+            original.count(b'%') != original.count(b'%d')):
+            raise RuntimeError('V74_PRINTF_FORMAT_CHANGED:' + row['source_en'])
+        if len(ru) > 256:
+            raise RuntimeError('V74_TRANSLATION_TOO_LONG')
+        off = row['string_offset']
+        if exe[off:off+len(original)+1] != original + b'\0':
+            raise RuntimeError('V74_ORIGINAL_LITERAL_DIFFER:' + row['source_en'])
+        if row['source_rva'] != off + 5632:
+            raise RuntimeError('V74_SOURCE_RVA_MISMATCH')
+        for ref in row['refs']:
+            rva = ref['ins_rva']
+            file_off = ref['file_offset']
+            ins = bytes.fromhex(ref['original_bytes'])
+            if len(ins) != 7 or ins[:3] != b'\x48\x8d\x15':
+                raise RuntimeError('V74_NOT_SEVEN_BYTE_LEA')
+            if rva != file_off + 3072:
+                raise RuntimeError('V74_INS_RVA_MISMATCH')
+            if exe[file_off:file_off+7] != ins:
+                raise RuntimeError('V74_INSTRUCTION_CHANGED:' + str(rva))
+            dest = rva + 7 + struct.unpack_from('<i', ins, 3)[0]
+            if dest != row['source_rva']:
+                raise RuntimeError('V74_RIP_TARGET_MISMATCH:' + str(rva))
+            if rva in seen:raise RuntimeError('V74_DUPLICATE_HOOK_ADDRESS')
+            seen.add(rva)
+            used_spans.append((rva,rva+7))
+    used_spans.sort()
+    for prev,next_ in zip(used_spans,used_spans[1:]):
+        if next_[0] < prev[1]:raise RuntimeError('V74_OVERLAPPING_HOOKS')
+    if len(seen) != 44:raise RuntimeError('V74_REF_COUNT_MISMATCH')
+    return {'strings':len(rows),'hook_sites':len(seen),'internal_labels_excluded':sorted(V74_EXCLUDED),
+            'printf_tokens_preserved':True, 'no_overlapping_hooks':True}
+
+
+def v74_lua_source(rows=None):
+    if rows is None: rows=v74_manifest()
+    # Completely ASCII Lua; UTF-8 is assembled with string.char(<exact bytes>).
+    literals=[]
+    for row in rows:
+        name=json.dumps(row['source_en'],ensure_ascii=True)
+        encoded=','.join(map(str,row['translation_ru'].encode('utf-8')))
+        refs=','.join('{%d,{%s}}' % (
+            ref['ins_rva']-V74_ANCHOR_RVA,
+            ','.join('0x%02X' % x for x in bytes.fromhex(ref['original_bytes'])))
+            for ref in row['refs'])
+        literals.append('  {'+name+',string.char('+encoded+'),{'+refs+'}}')
+    data=',\n'.join(literals)
+    template='''-- BG EET RU v74 full visible combat labels; exactly 34 strings and 44 hooks.
+-- All original 7-byte LEA instructions are verified BEFORE any runtime code patch.
+-- Internal identifiers are not modified.
+(function()
+ BG_EET_RU_V74_LOADED=true
+ BG_EET_RU_V74_STATUS="STARTED"
+ BG_EET_RU_V74_FORMATS=34
+ BG_EET_RU_V74_TARGETS=44
+ BG_EET_RU_V74_INSTALLED=0
+ local function notify(s)
+  BG_EET_RU_V74_STATUS=tostring(s)
+  local message="BG_EET_RU_V74: "..BG_EET_RU_V74_STATUS
+  if type(Infinity_Log)=="function" then pcall(Infinity_Log,message) end
+  if type(Infinity_DisplayString)=="function" then pcall(Infinity_DisplayString,message) end
+ end
+ local entries={
+__LITERALS__
+ }
+ local function start()
+  if BG_EET_RU_V74_HOOKED then notify("ALREADY_HOOKED") return end
+  for _,name in ipairs({"EEex_Label","EEex_ReadU8","EEex_WriteStringAuto",
+    "EEex_HookNOPs","EEex_DisableCodeProtection","EEex_EnableCodeProtection"}) do
+   if type(_G[name])~="function" then notify("API_MISSING="..name) return end
+  end
+  local labelOK,anchor=pcall(EEex_Label,"BG_EET_RU_V2_LuckStringRef")
+  if not labelOK or type(anchor)~="number" or anchor==0 then
+   notify("ANCHOR_MISSING="..tostring(anchor)) return
+  end
+  -- Validate all 44 site bytes and the full plan before writing ANY hook.
+  local count=0
+  for index,entry in ipairs(entries) do
+   for _,site in ipairs(entry[3]) do
+    local address=anchor+site[1]
+    for i=1,7 do
+     local ok,b=pcall(EEex_ReadU8,address+i-1)
+     if not ok or b~=site[2][i] then
+      notify("BYTES_MISMATCH_STRING="..index.."_AT="..i) return
+     end
+    end
+    count=count+1
+   end
+  end
+  if #entries~=34 or count~=44 then notify("SCOPE_MISMATCH="..count) return end
+  notify("ALL_44_SITES_VERIFIED")
+  local strings={}
+  for i,entry in ipairs(entries) do
+   local ok,pointer=pcall(EEex_WriteStringAuto,entry[2])
+   if not ok or type(pointer)~="number" or pointer==0 then
+    notify("ALLOC_FAILED_STRING="..i) return
+   end
+   strings[i]=pointer
+  end
+  local unlockOK,unlockErr=pcall(EEex_DisableCodeProtection)
+  if not unlockOK then notify("UNLOCK_FAILED="..tostring(unlockErr)) return end
+  local failed=nil
+  local completed=0
+  for i,entry in ipairs(entries) do
+   if failed then break end
+   for _,site in ipairs(entry[3]) do
+    local address=anchor+site[1]
+    local ptr=strings[i]
+    -- EEex_HookNOPs replaces exactly the original 7-byte LEA with jmp + 2 NOPs.
+    -- It adds the return jump automatically. Use the proven v73 mov rdx, imm64.
+    local ok,err=pcall(function()
+     EEex_HookNOPs(address,2,{[[
+       mov rdx, #$(1) ]],{ptr},[[ #ENDL
+     ]]})
+    end)
+    if not ok then failed="HOOK_ERROR_STRING="..i..":"..tostring(err);break end
+    completed=completed+1
+    BG_EET_RU_V74_INSTALLED=completed
+   end
+  end
+  local lockOK,lockErr=pcall(EEex_EnableCodeProtection)
+  if not lockOK then
+   notify("RELOCK_FAILED_HOOKS="..completed..":"..tostring(lockErr)) return
+  end
+  if failed then
+   notify("PARTIAL_HOOKS="..completed.."_"..failed) return
+  end
+  if completed~=44 then notify("HOOK_COUNT_DIFFER="..completed) return end
+  BG_EET_RU_V74_HOOKED=true
+  notify("SUCCESS_34_STRINGS_44_HOOKS")
+ end
+ local listenerOK,listenerError=pcall(function()
+  if type(EEex_GameState_AddInitializedListener)=="function" then
+   EEex_GameState_AddInitializedListener(start)
+  else start() end
+ end)
+ if not listenerOK then notify("LISTENER_ERROR="..tostring(listenerError)) end
+end)()
+'''
+    data=template.replace('__LITERALS__',data)
+    code=data.encode('ascii')
+    if b'EEex_ReadByte' in code or b'io.open' in code or b'os.execute' in code:
+        raise RuntimeError('V74_UNSUPPORTED_API_OR_LUA_IO')
+    return code
+
+
+def v74_read_state():
+    if not V74_STATE.is_file():return None
+    try:
+        state=json.loads(V74_STATE.read_text('utf-8'))
+        if state.get('schema')!=V74_SCHEMA:raise ValueError('wrong schema')
+        return state
+    except (OSError,UnicodeError,ValueError) as ex:
+        raise RuntimeError('V74_CORRUPT_STATE:'+str(ex)[:180])
+
+
+def v74_save_state(state):
+    V74_STATE.parent.mkdir(parents=True,exist_ok=True)
+    tmp=V74_STATE.with_suffix('.v74tmp')
+    if tmp.exists():raise RuntimeError('V74_STALE_PENDING_STATE')
+    try:
+        with tmp.open('x',encoding='utf-8') as f:
+            json.dump(state,f,ensure_ascii=False,indent=2)
+        os.replace(tmp,V74_STATE)
+    finally:
+        if tmp.exists():tmp.unlink()
+
+
+def v74_report(game,report_path,report):
+    safe_external(game,report_path)
+    report_path=Path(report_path)
+    if not report_path.is_file():raise RuntimeError('V74_MISSING_SINGLE_ZIP')
+    staged=report_path.with_suffix('.v74tmp')
+    if staged.exists():raise RuntimeError('V74_PENDING_ZIP_EXISTS')
+    try:
+        with zipfile.ZipFile(report_path,'r') as src,zipfile.ZipFile(staged,'w',compression=zipfile.ZIP_DEFLATED) as dst:
+            if src.testzip() is not None:raise RuntimeError('V74_PRIOR_ZIP_CRC_FAILED')
+            seen=set()
+            for member in src.infolist():
+                if member.filename==V74_STATUS_ENTRY:continue
+                if member.filename in seen:raise RuntimeError('V74_ZIP_DUPLICATE_ENTRY')
+                seen.add(member.filename)
+                dst.writestr(member,src.read(member))
+            dst.writestr(V74_STATUS_ENTRY,json.dumps(report,ensure_ascii=False,indent=2).encode('utf-8'))
+        with zipfile.ZipFile(staged) as verify:
+            if verify.testzip() is not None:raise RuntimeError('V74_NEW_ZIP_CRC_FAILED')
+        os.replace(staged,report_path)
+    finally:
+        if staged.exists():staged.unlink()
+
+
+def v74_pilot(game,report_path,mode='auto'):
+    game=Path(game)
+    lua=game/'override'/V71_SHORT_SCRIPT
+    report={'schema':V74_SCHEMA,'updater_version':SELF_VERSION,'game_root':str(game),
+            'mode':mode,'game_files_written':0,'new_file_count':0,
+            'exe_changed':False,'db_changed':False,'tlk_changed':False,
+            'bgxai_voice_changed':False,'installation_requires_explicit_consent':True,
+            'gameplay_verified':False,'only_modified_game_file':'override/'+V71_SHORT_SCRIPT}
+    try:
+        existing=v74_read_state()
+        v73=v73_read_state()
+        if existing and existing.get('installed'):
+            if mode=='rollback':
+                closed,why=v71_processes_closed()
+                if not closed:raise RuntimeError('V74_CLOSE_GAME_AND_LOADER_FIRST:'+why)
+                if not lua.is_file() or digest(lua.read_bytes())!=existing['new_lua_sha256']:
+                    raise RuntimeError('V74_INSTALLED_LUA_DIFFERENT_SAFE_STOP')
+                if digest((game/'Baldur.exe').read_bytes())!=existing['exe_sha256']:
+                    raise RuntimeError('V74_EXE_CHANGED_SAFE_STOP')
+                if digest((game/'InfinityLoader.db').read_bytes())!=existing['db_sha256']:
+                    raise RuntimeError('V74_DB_CHANGED_SAFE_STOP')
+                backup=Path(existing['v73_backup'])
+                if not backup.is_file() or digest(backup.read_bytes())!=existing['v73_lua_sha256']:
+                    raise RuntimeError('V74_V73_BACKUP_MISSING_OR_CHANGED')
+                old=backup.read_bytes()
+                stage=lua.with_name('M_BGERU.v74rollbacktmp')
+                if stage.exists():raise RuntimeError('V74_STALE_RESTORE_STAGE')
+                try:
+                    with stage.open('xb') as f:f.write(old)
+                    if digest(stage.read_bytes())!=existing['v73_lua_sha256']:
+                        raise RuntimeError('V74_RESTORE_STAGE_HASH_WRONG')
+                    os.replace(stage,lua)
+                    if digest(lua.read_bytes())!=existing['v73_lua_sha256']:
+                        raise RuntimeError('V74_POST_ROLLBACK_HASH_WRONG')
+                finally:
+                    if stage.exists():stage.unlink()
+                existing['installed']=False
+                existing['rollback_utc']=now()
+                v74_save_state(existing)
+                report['status']='V74_ROLLBACK_TO_WORKING_V73_VERIFIED'
+                report['game_files_written']=1
+                report['restored_v73_sha256']=existing['v73_lua_sha256']
+            else:
+                report['lua_valid']=lua.is_file() and digest(lua.read_bytes())==existing['new_lua_sha256']
+                report['exe_valid']=(game/'Baldur.exe').is_file() and digest((game/'Baldur.exe').read_bytes())==existing['exe_sha256']
+                report['db_valid']=(game/'InfinityLoader.db').is_file() and digest((game/'InfinityLoader.db').read_bytes())==existing['db_sha256']
+                if not (report['lua_valid'] and report['exe_valid'] and report['db_valid']):
+                    raise RuntimeError('V74_INSTALLED_STATE_INTEGRITY_MISMATCH')
+                report['status']='V74_INSTALLED_GAMEPLAY_TEST_REQUIRED'
+                report['expected_format_strings']=34
+                report['expected_runtime_hooks']=44
+                report['runtime_console_command']='C:DisplayText("BGV74="..tostring(BG_EET_RU_V74_STATUS).." count="..tostring(BG_EET_RU_V74_INSTALLED))'
+                report['note']='Runtime status and screenshot required; source SHA alone is not gameplay PASS.'
+        elif mode=='rollback':
+            if existing and existing.get('installed') is False:
+                report['status']='V74_ALREADY_ROLLED_BACK_TO_V73'
+            else:
+                # Other legacy pilot modes are kept intact. If no v74 is installed,
+                # do not unexpectedly remove the working v73 pilot.
+                report['status']='V74_NOT_INSTALLED_NO_CHANGES'
+        elif mode=='status':
+            report['status']='V74_NOT_INSTALLED'
+            report['v73_state_installed']=bool(v73 and v73.get('installed'))
+        elif existing and not existing.get('installed'):
+            report['status']='V74_ALREADY_ROLLED_BACK_TO_V73'
+        else:
+            if not v73 or not v73.get('installed'):
+                report['status']='V74_REQUIRES_WORKING_V73_STATE'
+            else:
+                if not lua.is_file() or digest(lua.read_bytes())!=v73['new_sha256']:
+                    raise RuntimeError('V74_EXISTING_V73_LUA_HASH_MISMATCH')
+                if digest(v73_lua_source())!=v73['new_sha256']:
+                    raise RuntimeError('V74_PINNED_V73_CODE_SHA_MISMATCH')
+                exe=(game/'Baldur.exe').read_bytes()
+                db=(game/'InfinityLoader.db').read_bytes()
+                if digest(exe)!=V71_EXE_SHA or digest(db)!=V71_DB_SHA:
+                    raise RuntimeError('V74_BASELINE_EXE_DB_DIFFERENT')
+                if digest(exe)!=v73['exe_sha256'] or digest(db)!=v73['db_sha256']:
+                    raise RuntimeError('V74_V73_INSTALL_BASE_CHANGED')
+                rows=v74_manifest()
+                checks=v74_check_manifest(exe,rows)
+                # Validate the independent static proof already preserved in the one ZIP.
+                with zipfile.ZipFile(report_path,'r') as z:
+                    st=json.loads(z.read('20_V69_INDEPENDENT_DISASSEMBLY.json'))
+                    if (st.get('status')!='STATIC_CODE_REFERENCES_CONFIRMED_RUNTIME_HOLD' or
+                        st.get('exe_sha256')!=V71_EXE_SHA or
+                        st.get('independent_instruction_boundaries_confirmed')!=47):
+                        raise RuntimeError('V74_INDEPENDENT_DISASSEMBLY_NOT_CONFIRMED')
+                code=v74_lua_source(rows)
+                report.update(checks)
+                report['new_lua_sha256']=digest(code)
+                report['v73_lua_sha256']=v73['new_sha256']
+                report['status']='V74_PREFLIGHT_PASS_CONSENT_REQUIRED'
+                closed,why=v71_processes_closed()
+                report['process_check']=why
+                if not closed:
+                    report['status']='V74_CLOSE_GAME_AND_LOADER_FIRST'
+                elif mode=='auto':
+                    print('v74: проверены 34 строки, 44 x64-ссылки, UTF-8 и все плейсхолдеры.')
+                    print('Только один Lua M_BGERU.lua; резервная копия работающей v73 обязательна.')
+                    print('Восстановление --combat-rollback вернёт +Удача (v73), не удаляя другие моды.')
+                    try:approval=input('Разрешение установки: '+V74_APPROVAL+' (Enter=отмена): ').strip()
+                    except EOFError:approval=''
+                    if approval!=V74_APPROVAL:
+                        report['status']='V74_INSTALL_NOT_AUTHORIZED_NO_CHANGES'
+                    else:
+                        # Check again AFTER the user grants permission.
+                        if not v71_processes_closed()[0]:
+                            raise RuntimeError('V74_GAME_REOPENED_AFTER_CONSENT')
+                        old=lua.read_bytes()
+                        if digest(old)!=v73['new_sha256']:
+                            raise RuntimeError('V74_LUA_CHANGED_AFTER_CONSENT')
+                        if digest((game/'Baldur.exe').read_bytes())!=V71_EXE_SHA:
+                            raise RuntimeError('V74_EXE_CHANGED_AFTER_CONSENT')
+                        if digest((game/'InfinityLoader.db').read_bytes())!=V71_DB_SHA:
+                            raise RuntimeError('V74_LOADER_CHANGED_AFTER_CONSENT')
+                        backups=WORKDIR/'SAFE_BACKUPS'
+                        safe_external(game,backups)
+                        backups.mkdir(parents=True,exist_ok=True)
+                        backup=backups/('M_BGERU_V73_'+digest(old)[:16]+'.lua.bak')
+                        if backup.exists():
+                            if digest(backup.read_bytes())!=digest(old):
+                                raise RuntimeError('V74_V73_BACKUP_NAME_COLLISION')
+                        else:
+                            with backup.open('xb') as f:f.write(old)
+                        if digest(backup.read_bytes())!=digest(old):
+                            raise RuntimeError('V74_V73_BACKUP_HASH_FAILED')
+                        if V74_STATE.exists():raise RuntimeError('V74_ALREADY_HAS_STATE')
+                        stage=lua.with_name('M_BGERU.v74tmp')
+                        if stage.exists():raise RuntimeError('V74_STALE_INSTALL_STAGE')
+                        try:
+                            with stage.open('xb') as f:f.write(code)
+                            if digest(stage.read_bytes())!=digest(code):
+                                raise RuntimeError('V74_STAGED_LUA_SHA_FAILED')
+                            os.replace(stage,lua)
+                            if digest(lua.read_bytes())!=digest(code):
+                                raise RuntimeError('V74_INSTALLED_LUA_SHA_FAILED')
+                            record={'schema':V74_SCHEMA,'installed':True,
+                                    'installed_utc':now(),'new_lua_sha256':digest(code),
+                                    'v73_lua_sha256':digest(old),'v73_backup':str(backup),
+                                    'exe_sha256':V71_EXE_SHA,'db_sha256':V71_DB_SHA,
+                                    'format_count':34,'hook_count':44}
+                            v74_save_state(record)
+                        except Exception:
+                            if lua.is_file() and digest(lua.read_bytes())==digest(code):
+                                restored=lua.with_name('M_BGERU.v74failtmp')
+                                if not restored.exists():
+                                    with restored.open('xb') as f:f.write(old)
+                                    os.replace(restored,lua)
+                            raise
+                        finally:
+                            if stage.exists():stage.unlink()
+                        report['status']='V74_FULL_COMBAT_LUA_INSTALLED_RUNTIME_TEST_REQUIRED'
+                        report['game_files_written']=1
+                        report['v73_backup']=str(backup)
+        report.setdefault('status','V74_NO_ACTION')
+    except (OSError,ValueError,RuntimeError,KeyError,TypeError,zipfile.BadZipFile) as exc:
+        report['status']='V74_SAFE_STOP'
+        report['error_type']=type(exc).__name__
+        report['error']=str(exc)[:400]
+    v74_report(game,report_path,report)
+    print('v74:',report['status'])
+    print('Единый ZIP:',report_path)
+    return 2 if report['status'] in ('V74_SAFE_STOP','V74_CLOSE_GAME_AND_LOADER_FIRST') else 0
+
+
+def v74_selftest():
+    rows=v74_manifest()
+    assert len(rows)==34 and sum(len(r['refs']) for r in rows)==44
+    assert all('%d' in r['source_en'] or '%' not in r['source_en'] for r in rows)
+    b=v74_lua_source(rows)
+    assert b'BG_EET_RU_V74' in b and b'EEex_ReadU8' in b
+    assert b'EEex_ReadByte' not in b and b'THAC0Right' not in b and b'THAC0Left' not in b
+    assert b'io.open' not in b and b'jmp #L(return)' not in b
+    assert b'EEex_HookNOPs(address,2' in b
+    assert b'BG_EET_RU_V74_INSTALLED=completed' in b
+    assert v73_lua_source().startswith(b'-- BG EET RU V73:')
+    return True
+
 def selftest():
     # Self-contained checks only; never read or change a real EET installation.
     p36,tra36=load_v36_preflight()
@@ -2683,6 +3093,7 @@ def selftest():
     assert v71_selftest() and callable(v71_pilot) and callable(v71_zip_report)
     assert v72_selftest() and callable(v72_pilot) and callable(v72_zip_report)
     assert v73_selftest() and callable(v73_pilot) and callable(v73_zip_report)
+    assert v74_selftest() and callable(v74_pilot) and callable(v74_report)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
