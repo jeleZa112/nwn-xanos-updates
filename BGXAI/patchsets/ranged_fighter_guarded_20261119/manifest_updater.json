@@ -180,7 +180,7 @@
     {
       "dest": "BGXRANGED_V5_NATIVE_CANDIDATE_READONLY.py",
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V5_NATIVE_CANDIDATE_READONLY.py",
-      "sha256": "698121c27c20d8551367873c7707f4fde957ba40d3f101c1d08573c47f4581cb",
+      "sha256": "f764180e1e5cb94072b2ecd7620c4baf33e9d86f563dd37df66fda58bf431bd2",
       "size": 9963
     }
   ]
