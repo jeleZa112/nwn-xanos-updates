@@ -201,11 +201,11 @@ localPath=Join-Path $GameRoot 'BGXAI_DEV\aoe_readonly_verified';installer='BGXAI
 names=@('BGXAI_AOE_AUDIT.py','test_aoe_audit.py','BGXAI_TEST6_SAFE_COPY.py','test_safe_copy.py','BGX119_TRACE.py','BGX120_ENTANGLE_GUARD.py','test_guard120.py','BGX121_POLICY.py','BGX121_READONLY.py','test_121.py','BGX122_PROJECTILES_READONLY.py','test_122.py','README_RU.md')
 }
 $releaseRanged=@{
-id='BGXRANGED';version='0.3.72-V5-NATIVE-READONLY';
+id='BGXRANGED';version='0.3.73-V5-GUARDED-PILOT';
 manifest='BGXAI/patchsets/ranged_fighter_guarded_20261119/manifest_updater.json';
 prefix='BGXAI/patchsets/ranged_fighter_guarded_20261119/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\ranged_fighter_verified';installer='BGXRANGED_PREFLIGHT.py';
-names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INSTALL.py','BGXRANGED_V2_MELEE_HANDOFF.baf','BGXRANGED_V2_PREFLIGHT.py','BGXRANGED_V2_GUARDED_INSTALL.py','BGXRANGED_V3_MELEE_HANDOFF.baf','BGXRANGED_V3_PREFLIGHT.py','BGXRANGED_V3_GUARDED_INSTALL.py','BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py','BGXRANGED_V4_NO_FRIEND_ATTACK.baf','BGX_FRIENDLY_PROTECT_ISOLATION.py','BGXAI_SAVE_SCRIPT_AUDIT_READONLY.py','BGX_FRIENDLY_RETALIATION_GUARDED.py','BGX_COMBAT_LOG_READONLY_AUDIT.py','M_BXFR.lua','BGX_FRIEND_TRACE_GUARDED.py','BGX_FRIEND_TRACE_REPORT.py','M_BXFR_CONSOLE_V2.lua','BGXFTRACE_V2_GUARDED.py','BGXFTRACE_CONSOLE_CAPTURE.py','M_BXFR_MOTION_V3.lua','BGXFTRACE_V3_GUARDED.py','BGXF_WTASIGHT_ENEMY_GUARD_SOURCE_ONLY.py','BGXFENEMY_WTASIGHT_GUARDED.py','BGXAI_WEAPON_SAVED_SNAPSHOT_READONLY.py','BGXAI_WEAPON_CHOICE_ADVISORY_V1.js','BGXAI_WEAPON_TRAITS_ADVISORY_V1.js','BGXRANGED_V5_ANTICIPATORY_CLOSE_SOURCE_ONLY.baf','BGXRANGED_V5_NATIVE_CANDIDATE_READONLY.py')
+names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INSTALL.py','BGXRANGED_V2_MELEE_HANDOFF.baf','BGXRANGED_V2_PREFLIGHT.py','BGXRANGED_V2_GUARDED_INSTALL.py','BGXRANGED_V3_MELEE_HANDOFF.baf','BGXRANGED_V3_PREFLIGHT.py','BGXRANGED_V3_GUARDED_INSTALL.py','BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py','BGXRANGED_V4_NO_FRIEND_ATTACK.baf','BGX_FRIENDLY_PROTECT_ISOLATION.py','BGXAI_SAVE_SCRIPT_AUDIT_READONLY.py','BGX_FRIENDLY_RETALIATION_GUARDED.py','BGX_COMBAT_LOG_READONLY_AUDIT.py','M_BXFR.lua','BGX_FRIEND_TRACE_GUARDED.py','BGX_FRIEND_TRACE_REPORT.py','M_BXFR_CONSOLE_V2.lua','BGXFTRACE_V2_GUARDED.py','BGXFTRACE_CONSOLE_CAPTURE.py','M_BXFR_MOTION_V3.lua','BGXFTRACE_V3_GUARDED.py','BGXF_WTASIGHT_ENEMY_GUARD_SOURCE_ONLY.py','BGXFENEMY_WTASIGHT_GUARDED.py','BGXAI_WEAPON_SAVED_SNAPSHOT_READONLY.py','BGXAI_WEAPON_CHOICE_ADVISORY_V1.js','BGXAI_WEAPON_TRAITS_ADVISORY_V1.js','BGXRANGED_V5_ANTICIPATORY_CLOSE_SOURCE_ONLY.baf','BGXRANGED_V5_NATIVE_CANDIDATE_READONLY.py','BGXRANGED_V5_GUARDED_INSTALL.py')
 }
 $v2install=Join-Path $releaseRanged.localPath 'BGXRANGED_V2_GUARDED_INSTALL.py'
 $ff=Join-Path $releaseRanged.localPath 'BGX_FRIENDLY_RETALIATION_GUARDED.py'
@@ -1162,20 +1162,8 @@ Write-Host ' 94 - 066S install'
 Write-Host ' 95 - 066S status'
 Write-Host ' 96 - 066S rollback'
 97..116 | ForEach-Object { Write-Host ('{0,3} - BGX' -f $_) }
-Write-Host '117 - AOE'
-Write-Host '118 - AOE'
-Write-Host '119 - AOE'
-Write-Host '120 - AOE'
-Write-Host '121 - AOE'
-Write-Host '122 - AOE'
-Write-Host '123 - RANGE'
-Write-Host '124 - RANGE'
-Write-Host '125 - RANGE'
-Write-Host '126 - RANGE'
-Write-Host '127 - RANGE'
-Write-Host '128 - RANGE'
-Write-Host '129 - RANGE'
-Write-Host '130 - RANGE'
+117..122 | ForEach-Object { Write-Host ('{0} - AOE' -f $_) }
+123..130 | ForEach-Object { Write-Host ('{0} - RANGE' -f $_) }
 Write-Host '131 - V3 native (RO)'
 Write-Host '132 - V3 install+verify'
 Write-Host '133 - V3 status (RO)'
@@ -1201,6 +1189,7 @@ Write-Host '152 - Enemy guard native preflight (RO)'
 Write-Host '153 - Enemy guard install+verify'
 Write-Host '154 - Enemy guard status (RO)'
 Write-Host '155 - Enemy guard rollback'
+Write-Host '156 - V5 ranged handoff pilot (guarded menu)'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -1362,6 +1351,7 @@ switch($choice){
 '153' {SyncRelease $releaseRanged;& py -3 $enemy install --game $GameRoot;if($LASTEXITCODE){throw '153 STOP'};break}
 '154' {SyncRelease $releaseRanged;& py -3 $enemy status --game $GameRoot;if($LASTEXITCODE){throw '154 STOP'};break}
 '155' {SyncRelease $releaseRanged;& py -3 $enemy rollback --game $GameRoot;if($LASTEXITCODE){throw '155 STOP'};break}
+'156' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_V5_GUARDED_INSTALL.py') --game $GameRoot;if($LASTEXITCODE){throw '156 STOP'};break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0
