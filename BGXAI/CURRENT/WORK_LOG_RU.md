@@ -1,3 +1,13 @@
+# 2026-11-21 — ТАКТИЧЕСКАЯ КООРДИНАЦИЯ ПАРТИИ V1 (SOURCE ONLY; NOT INSTALLED)
+
+**Актуальный checkpoint:** [BGXAI_PARTY_HAZARD_COORD_V1_CHECKPOINT_RU.md](BGXAI_PARTY_HAZARD_COORD_V1_CHECKPOINT_RU.md).
+
+**CODE:** новый чистый [BGXAI_PARTY_HAZARD_COORDINATOR_V1.py](../patchsets/aoe_entangle_readonly_onefile_20261117/BGXAI_PARTY_HAZARD_COORDINATOR_V1.py) координирует рекомендации существующего Role & Hazard Arbiter: один AoE-кандидат за кадр, резерв фронтлайнеров, перехват угрозы задней линии, распределение целей, один вор на одну спину. При неполном составе партии/призывов, неизвестной геометрии, неизвестной очереди EPS/ручном происхождении приказа — HOLD. Все результаты advisory, executable=false; нет dispatch/EEex hook/BCS install.
+
+**TEST:** 31/31 локальных Python unittest PASS, py_compile PASS и AST read-only PASS. **DEPLOY:** игра не изменена, единый BGXAI_UPDATE.cmd не менялся. **LIVE:** нового AI ещё нет. Сохранена подтверждённая пользователем игровая BGXRANGED6 V6; ещё один выстрел при контакте возможен. Пользователь отложил проблему загрузки сейва и неизвестную историю ручного PRIEST1; НЕ анализировать сейвы и не просить старые EET архивы. **NEXT:** безопасный EEex evidence adapter для состава группы, ARE, F, опасных зон и призывов. Не подменять неизвестную очередь EPS истинным признаком. Без достоверного runtime-контракта — HOLD_NO_ENGINE_DISPATCH. Текст ниже — история.
+
+---
+
 # 2026-11-16 — BGXP2 REAL BCS COMBAT PRIEST upgrade, SAME ONE CMD, NOT INSTALLED
 
 **Actual new gameplay code completed:** [BGXP2 28 BCS blocks](../patchsets/priest_combat_eps_first_20261116/BGXP2_LAST_PRIORITY.baf), SHA256 `a93dd1d46bf55ff7a5d53f15b0b55c1fc2ad10e39a4a23ae90ece62bfd76df2d`. SUPPORT cures panic/poison via memorized Remove Fear/Slow Poison; BATTLE casts Command and attacks **one round** only (prevents indefinite attack from blocking healing); AUTO prioritizes existing old cures, handles panic/poison, and attacks only if no portrait member below 45% HP, healthy priest. Uses verified `BGXR_ROLE` and F, `ActionListEmpty`, eps-last BCS fallback, no changed Lua or previous BGXPR blocks, no duplicate Cure Light Wounds implementation. 28 appended native game BCS blocks only if independently authorized.
