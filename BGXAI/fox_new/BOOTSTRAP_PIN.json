@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "57cc063574ef24fe78192d46ada871508f1b58c0",
+  "commit": "fad6c28957bc0f09f3655193f08fe7c7b8f77416",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "127de840a5f733011197b22840c0fc772ba219ce0ad7541d7ade81ec07f78d99",
-  "script_size": 79976,
-  "description": "BGXAI 0.3.76 onefile menus 1-157, 34 SHA-verified sources; 157 guarded V6 DPLAYER pilot with native SHA, external backup, typed install, status, LAST-only rollback. 135/146 verify V6 if installed. No automatic game modification."
+  "script_sha256": "5fc39ea68c0eeab4aed8d014c02b07fe05eaaa6657cc6b59757d39614db1f9d6",
+  "script_size": 79962,
+  "description": "BGXAI 0.3.77 onefile menus 1-158; new 158 native WeiDU weapon-slot preflight READ ONLY (temporary compile, one JSON report). 1-157 preserved, V6/EPS unchanged, no automatic game installation."
 }
