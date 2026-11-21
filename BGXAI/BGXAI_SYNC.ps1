@@ -201,11 +201,11 @@ localPath=Join-Path $GameRoot 'BGXAI_DEV\aoe_readonly_verified';installer='BGXAI
 names=@('BGXAI_AOE_AUDIT.py','test_aoe_audit.py','BGXAI_TEST6_SAFE_COPY.py','test_safe_copy.py','BGX119_TRACE.py','BGX120_ENTANGLE_GUARD.py','test_guard120.py','BGX121_POLICY.py','BGX121_READONLY.py','test_121.py','BGX122_PROJECTILES_READONLY.py','test_122.py','README_RU.md')
 }
 $releaseRanged=@{
-id='BGXRANGED';version='0.3.66-BGXF3-KHALID-MOTION';
+id='BGXRANGED';version='0.3.67-BGXFENEMY-WTASIGHT-GUARD';
 manifest='BGXAI/patchsets/ranged_fighter_guarded_20261119/manifest_updater.json';
 prefix='BGXAI/patchsets/ranged_fighter_guarded_20261119/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\ranged_fighter_verified';installer='BGXRANGED_PREFLIGHT.py';
-names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INSTALL.py','BGXRANGED_V2_MELEE_HANDOFF.baf','BGXRANGED_V2_PREFLIGHT.py','BGXRANGED_V2_GUARDED_INSTALL.py','BGXRANGED_V3_MELEE_HANDOFF.baf','BGXRANGED_V3_PREFLIGHT.py','BGXRANGED_V3_GUARDED_INSTALL.py','BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py','BGXRANGED_V4_NO_FRIEND_ATTACK.baf','BGX_FRIENDLY_PROTECT_ISOLATION.py','BGXAI_SAVE_SCRIPT_AUDIT_READONLY.py','BGX_FRIENDLY_RETALIATION_GUARDED.py','BGX_COMBAT_LOG_READONLY_AUDIT.py','M_BXFR.lua','BGX_FRIEND_TRACE_GUARDED.py','BGX_FRIEND_TRACE_REPORT.py','M_BXFR_CONSOLE_V2.lua','BGXFTRACE_V2_GUARDED.py','BGXFTRACE_CONSOLE_CAPTURE.py','M_BXFR_MOTION_V3.lua','BGXFTRACE_V3_GUARDED.py')
+names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INSTALL.py','BGXRANGED_V2_MELEE_HANDOFF.baf','BGXRANGED_V2_PREFLIGHT.py','BGXRANGED_V2_GUARDED_INSTALL.py','BGXRANGED_V3_MELEE_HANDOFF.baf','BGXRANGED_V3_PREFLIGHT.py','BGXRANGED_V3_GUARDED_INSTALL.py','BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py','BGXRANGED_V4_NO_FRIEND_ATTACK.baf','BGX_FRIENDLY_PROTECT_ISOLATION.py','BGXAI_SAVE_SCRIPT_AUDIT_READONLY.py','BGX_FRIENDLY_RETALIATION_GUARDED.py','BGX_COMBAT_LOG_READONLY_AUDIT.py','M_BXFR.lua','BGX_FRIEND_TRACE_GUARDED.py','BGX_FRIEND_TRACE_REPORT.py','M_BXFR_CONSOLE_V2.lua','BGXFTRACE_V2_GUARDED.py','BGXFTRACE_CONSOLE_CAPTURE.py','M_BXFR_MOTION_V3.lua','BGXFTRACE_V3_GUARDED.py','BGXF_WTASIGHT_ENEMY_GUARD_SOURCE_ONLY.py','BGXFENEMY_WTASIGHT_GUARDED.py')
 }
 $v2install=Join-Path $releaseRanged.localPath 'BGXRANGED_V2_GUARDED_INSTALL.py'
 $ff=Join-Path $releaseRanged.localPath 'BGX_FRIENDLY_RETALIATION_GUARDED.py'
@@ -214,6 +214,7 @@ $trace=Join-Path $rr 'BGX_FRIEND_TRACE_GUARDED.py'
 $fix=Join-Path $rr 'BGXFTRACE_V2_GUARDED.py'
 $cap=Join-Path $rr 'BGXFTRACE_CONSOLE_CAPTURE.py'
 $motion=Join-Path $rr 'BGXFTRACE_V3_GUARDED.py'
+$enemy=Join-Path $rr 'BGXFENEMY_WTASIGHT_GUARDED.py'
 function Get-PinnedBytes([string]$remotePath) {
 if($remotePath -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116|patchsets/priest_combat_eps_first_20261116|patchsets/priest_auto_attack_buffer_source_only_20261117|patchsets/priest_auto_priority_guard_source_20261117|patchsets/aoe_entangle_readonly_onefile_20261117|patchsets/ranged_fighter_guarded_20261119)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
 throw ('Remote source path blocked: '+$remotePath)
@@ -1237,6 +1238,10 @@ Write-Host '148 - V2 rollback'
 Write-Host '149 - Motion trace install'
 Write-Host '150 - Motion trace status'
 Write-Host '151 - Motion trace rollback'
+Write-Host '152 - Enemy guard native preflight (RO)'
+Write-Host '153 - Enemy guard install+verify'
+Write-Host '154 - Enemy guard status (RO)'
+Write-Host '155 - Enemy guard rollback'
 Write-Host ' 0 - Exit [default]'
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
@@ -1394,6 +1399,10 @@ switch($choice){
 '149' {SyncRelease $releaseRanged;& py -3 $motion install;if($LASTEXITCODE){throw '149 STOP'};break}
 '150' {SyncRelease $releaseRanged;& py -3 $motion status;if($LASTEXITCODE){throw '150 STOP'};break}
 '151' {SyncRelease $releaseRanged;& py -3 $motion rollback;if($LASTEXITCODE){throw '151 STOP'};break}
+'152' {SyncRelease $releaseRanged;& py -3 $enemy preflight --game $GameRoot;if($LASTEXITCODE){throw '152 STOP'};break}
+'153' {SyncRelease $releaseRanged;& py -3 $enemy install --game $GameRoot;if($LASTEXITCODE){throw '153 STOP'};break}
+'154' {SyncRelease $releaseRanged;& py -3 $enemy status --game $GameRoot;if($LASTEXITCODE){throw '154 STOP'};break}
+'155' {SyncRelease $releaseRanged;& py -3 $enemy rollback --game $GameRoot;if($LASTEXITCODE){throw '155 STOP'};break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0
