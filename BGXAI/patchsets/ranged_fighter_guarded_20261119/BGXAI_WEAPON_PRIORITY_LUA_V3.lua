@@ -24,7 +24,7 @@ local function signature(s)
  for i=1,4 do t[#t+1]=s.quickslotIds[i]==false and '-' or s.quickslotIds[i] end
  return table.concat(t,'|')
 end
-local function verified_scene(s)
+local function verified_scene(s,passivePreview)
  if type(s)~='table' or type(s.frame)~='table' or type(s.actor)~='table' or
     type(s.enemy)~='table' or type(s.weapons)~='table' or type(s.quickslotIds)~='table' then
   return 'HOLD_INCOMPLETE_LOADOUT'
@@ -50,8 +50,11 @@ local function verified_scene(s)
     e.protections.observed~=true then return 'HOLD_STALE_ENEMY_PROTECTIONS' end
  if not hands[a.handsMode] then return 'HOLD_HANDS_CONFIGURATION_UNKNOWN' end
  if type(a.nearRangedEnemy)~='boolean' then return 'HOLD_DISTANCE_OR_PENALTY_CONTEXT_UNKNOWN' end
- if a.manualOrderActive~=false or a.epsBusy~=false or a.healingReserved~=false or
-    a.currentlyCasting~=false or a.originVerified~='AI' then return 'HOLD_PRESERVE_MANUAL_OR_EPS' end
+ -- Read-only background ranking must not pretend that actions are free.
+ -- The old foreground choose() continues enforcing manual/EPS protections.
+ if not passivePreview and (a.manualOrderActive~=false or a.epsBusy~=false or
+    a.healingReserved~=false or a.currentlyCasting~=false or a.originVerified~='AI') then
+  return 'HOLD_PRESERVE_MANUAL_OR_EPS' end
  if #s.weapons>4 then return 'HOLD_INCOMPLETE_LOADOUT' end
  local seen,occupied={},0
  for i=1,4 do
@@ -123,8 +126,8 @@ local function scored_weapon(w,a,e)
  return {id=w.id,slotIndex=w.quickslotIndex,value=value,dpr=dpr,penetrates=not immune,
          hitChance=hit,mode=w.mode},nil
 end
-function M.choose(scene,previous)
- local problem=verified_scene(scene)
+local function choose_impl(scene,previous,passivePreview)
+ local problem=verified_scene(scene,passivePreview)
  if problem then return issue(problem) end
  local f,a,e=scene.frame,scene.actor,scene.enemy
  local sig=signature(scene)
@@ -158,5 +161,22 @@ function M.choose(scene,previous)
   fromWeaponId=current.id,toWeaponId=best.id,slotIndex=best.slotIndex,
   targetId=e.enemyId,improvement=diff,threshold=threshold,next=next,candidates=candidates,
   reason='COMPLETE_EFFECTIVE_STATS_BETTER_AFTER_STABILITY'})
+end
+-- Existing foreground scorer remains strict: no recommendation under manual/EPS/cast.
+function M.choose(scene,previous)
+ return choose_impl(scene,previous,false)
+end
+-- Pure background scoring only: this bypasses activity gates solely for a
+-- NON-EXECUTABLE comparison. It does NOT bypass inventory/target/trait/effect
+-- evidence checks, and grants NO order/LOCALS/BCS authority to a caller.
+function M.preview(scene,previous)
+ local out=choose_impl(scene,previous,true)
+ if out.status=='ADVISE_PRIORITY_QUICKSLOT_ONLY' then
+  out.status='PASSIVE_RANKING_SUGGESTS_SLOT'
+ end
+ out.passivePreview=true
+ out.executable=false
+ out.dispatchAuthorized=false
+ return out
 end
 return M
