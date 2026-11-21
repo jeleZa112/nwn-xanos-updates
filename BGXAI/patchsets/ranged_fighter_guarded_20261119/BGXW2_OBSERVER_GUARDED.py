@@ -380,9 +380,10 @@ def menu(root:Path=ROOT)->int:
         print('3 - R2 status READ ONLY')
         print('4 - R2 rollback ONLY if LAST WeiDU')
         print('5 - R2 collect console RAW after exiting game')
+        print('6 - R3 native ITM/SPL from KEY/BIFF READ ONLY (no game edits)')
         print('0 - cancel')
         answer=(input('BGXW2 choice [0]: ').strip() or '0')
-        actions={'1':'preflight','2':'install','3':'status','4':'rollback','5':'collect'}
+        actions={'1':'preflight','2':'install','3':'status','4':'rollback','5':'collect','6':'native_itm'}
         if answer=='0':return 0
         if answer not in actions:raise ValueError('UNKNOWN_R2_MENU_CHOICE')
         mode=actions[answer]
@@ -396,6 +397,12 @@ def menu(root:Path=ROOT)->int:
             data=rollback(root)
         elif mode=='preflight':data=preflight(root)
         elif mode=='collect':data=collect_checked(root)
+        elif mode=='native_itm':
+            check_processes()
+            if status(root)['status']!='BGXW2_PASSIVE_INSTALLED_SOURCE_EXACT':
+                raise ValueError('R3_REQUIRES_EXACT_R2_SOURCE')
+            import BGXAI_WEAPON_NATIVE_ITM_R3_RO as native_itm
+            data=native_itm.native_run(root)
         else:data=status(root)
         report(data)
         print('STATUS: '+data['status'])
