@@ -166,8 +166,10 @@ def main() -> int:
                   'status': 'READONLY_PREFLIGHT_STOP',
                   'reason': f'{type(exc).__name__}: {exc}',
                   'game_modified_by_this_program': False}
-    base = os.environ.get('LOCALAPPDATA')
-    reportdir = Path(base) / 'BGXAI_UPDATER' / 'reports' if base else Path(tempfile.gettempdir()) / 'BGXAI_UPDATER' / 'reports'
+    # Keep every BGXAI diagnostic in the existing shared reports directory.
+    # This is intentionally outside the game and source-sync directory.
+    reportdir = (Path(os.environ.get('USERPROFILE') or str(Path.home()))
+                 / 'Documents' / 'BGXAI_LIVE_REPORTS')
     try:
         reportdir.mkdir(parents=True, exist_ok=True)
         target = reportdir / 'BGXAI_WEAPON_NATIVE_PREFLIGHT_V1.json'
