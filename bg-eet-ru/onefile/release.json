@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 79,
-  "sha256": "29040303604632931807f7561be221386a96cf6b1ffd15485aaff3c71348d45f",
+  "version": 80,
+  "sha256": "351adadee1db1ae5d0d8209f6db3856427edf5dd9348b26445c3219d96933c9a",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v79 READ ONLY: inspect real journal StrRefs from up to 3 newest existing GAME V2.0/2.1/2.2 save BALDUR.GAM files and the installed male/female RU TLK. Flag only clearly English-only stored quest entries; no repeat mass dialogue scan. Does not write game files, save files, UI.MENU or combat Lua. Output stays in existing single SEND_TO_CHATGPT_BG_EET_RU.zip (28_V79_SAVED_JOURNAL_VISIBLE_SOURCES_READONLY.json). 2026-08 archived 6252 DLG source audit and newer 2026-11 RU crosswalk are separately preserved, not auto installed. v78 LeUI patch rolled back due MENU syntax regression; never auto run."
+  "note": "v80 READ ONLY: fixes v79 NO_GAM_SAVES_FOUND_HOLD by adding actual EET-specific Documents/Baldur's Gate - Enhanced Edition Trilogy/save (+ mpsave/sodsave) roots. Previously confirmed 159 saves and BGXAI_TEST_6_NO_PRIEST1 located there. Bounded newest 3 saved BALDUR.GAM scan, journal StrRefs only, in SAME ZIP 28_V79_...json. Adds synthetic discovery regression and explicit searched_save_roots diagnostics on hold. No files written to game/saves; broken v78 UI patch remains rolled back."
 }
