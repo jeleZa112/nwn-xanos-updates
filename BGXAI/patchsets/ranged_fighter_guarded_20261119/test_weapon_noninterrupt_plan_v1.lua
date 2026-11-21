@@ -153,4 +153,66 @@ test('no input mutation on successful ranking',function()
  eq(s.frame.tick..s.actor.activeStatsEvidence.buffFingerprint,before)
  eq(b.next.pending.toWeaponId,'SWORD')
 end)
+local function certifyCache(s)
+ s.cacheEvidence={source='INDEPENDENTLY_AUDITED_FULL_WEAPON_CACHE_SNAPSHOT',
+  snapshotId=s.frame.snapshotId,actorId=s.frame.actorId,tick=s.frame.tick,
+  allRelevantStateFingerprintComplete=true,ammoAndItemEffectsCovered=true,
+  activeBuffsCovered=true,targetProtectionsCovered=true}
+end
+test('pending plan skips redundant scoring for unchanged 4 ticks',function()
+ local calls=0
+ local wrapped=function(s,p) calls=calls+1;return score(s,p) end
+ local s=sample()
+ local a=M.step(s,nil,wrapped)
+ local s2=advance(s)
+ local b=M.step(s2,a.next,wrapped)
+ eq(b.status,'CONTINUE_CURRENT_ACTION_SWITCH_PENDING')
+ eq(calls,2)
+ for j=1,4 do
+  s2=advance(s2);certifyCache(s2)
+  b=M.step(s2,b.next,wrapped)
+  eq(b.status,'CONTINUE_CURRENT_ACTION_SWITCH_PENDING')
+  eq(b.scorerCalls,0)
+  eq(b.ordersSent,0)
+ end
+ eq(calls,2)
+ s2=advance(s2)
+ b=M.step(s2,b.next,wrapped)
+ eq(calls,3)
+end)
+test('changed buff invalidates cache, recomputes without stopping attack',function()
+ local calls=0
+ local wrapped=function(s,p)calls=calls+1;return score(s,p)end
+ local s=sample()
+ local a=M.step(s,nil,wrapped)
+ s=advance(s);local b=M.step(s,a.next,wrapped)
+ s=advance(s);certifyCache(s);b=M.step(s,b.next,wrapped)
+ eq(calls,2)
+ s=advance(s);s.actor.activeStatsEvidence.buffFingerprint='HASTE_ENDED'
+ local c=M.step(s,b.next,wrapped)
+ eq(calls,3);eq(c.status,'CONTINUE_CURRENT_ACTION_RECALCULATING')
+ eq(c.currentActionPreserved,true);eq(c.ordersSent,0)
+end)
+test('cached plan remains nonexecutable at independently proven boundary',function()
+ local s=sample();local a=M.step(s,nil,score)
+ s=advance(s);local b=M.step(s,a.next,score)
+ s=advance(s)
+ s.activity={source='INDEPENDENTLY_AUDITED_EEEX_EPS_ACTIVITY',
+  snapshotId=s.frame.snapshotId,actorId=s.frame.actorId,tick=s.frame.tick,
+  provenNoManualOrder=true,provenEpsFree=true,provenActionBoundary=true,
+  provenAttackRecoveryComplete=true,provenNoCasting=true,
+  provenNoHealing=true,provenNoQueuedAction=true}
+ certifyCache(s)
+ local c=M.step(s,b.next,score)
+ eq(c.scorerCalls,0);eq(c.status,'ADVISORY_SAFE_BOUNDARY_OBSERVED_NO_DISPATCH')
+ eq(c.dispatchAuthorized,false);eq(c.ordersSent,0)
+end)
+test('changed target while cached prevents reuse of pending slot',function()
+ local s=sample();local a=M.step(s,nil,score)
+ s=advance(s);local b=M.step(s,a.next,score)
+ s=advance(s);certifyCache(s);s.frame.enemyId='E2'
+ certifyCache(s)
+ local c=M.step(s,b.next,score)
+ eq(c.status,'CONTINUE_CURRENT_ACTION_RECALCULATING');assert(not c.next.pending)
+end)
 print('PASS NONINTERRUPT SCHEDULER '..count..'/'..count..' SOURCE ONLY')
