@@ -104,6 +104,12 @@ jobs:
           ast.parse(capture_src)
           assert 'ENEMY.LAST.match(V3TRACE.last(root))' in capture_src
           assert 'ENEMY.status(root)' in capture_src
+          assert 'HANDOFF.LAST.match(V3TRACE.last(root))' in capture_src
+          assert 'HANDOFF.status(root)' in capture_src
+          current_audit = (root / "BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py").read_text("utf-8")
+          ast.parse(current_audit)
+          assert '"native_candidate_already_installed":True' in current_audit
+          assert '"status":"BGXRANGED5_INSTALLED_VERIFIED"' in current_audit
           with TemporaryDirectory() as d:
               game = pathlib.Path(d) / "game"
               game.mkdir()
@@ -129,6 +135,33 @@ jobs:
                       assert str(exc) == "ENEMY_GUARD_NOT_VERIFIED"
                   else:
                       raise AssertionError("Must fail closed after ENEMY status drift")
+
+          # On V5 LAST, 146 must launch only after native guarded installed status.
+          with TemporaryDirectory() as d:
+              game = pathlib.Path(d) / "game"
+              game.mkdir()
+              (game / "InfinityLoader.exe").write_bytes(b"MZmock")
+              with patch.object(CAP.V3.V2.V1, "processes", return_value=None), \
+                   patch.object(CAP.V2, "guard", return_value=None), \
+                   patch.object(CAP.HANDOFF, "LAST", SimpleNamespace(match=lambda _: True)), \
+                   patch.object(CAP.V3TRACE, "last", return_value="~BGXRANGED5/SETUP-BGXRANGED5.TP2~ #0 #0"), \
+                   patch.object(CAP.HANDOFF, "status", return_value={"status":"BGXRANGED5_INSTALLED_VERIFIED"}), \
+                   patch.object(CAP.subprocess, "Popen", return_value=SimpleNamespace(pid=124)), \
+                   patch.dict(CAP.os.environ, {"USERPROFILE":str(pathlib.Path(d))}):
+                  outcome = CAP.start(game)
+                  assert outcome["status"] == "INFINITYLOADER_CAPTURE_LAUNCH_REQUESTED"
+                  assert pathlib.Path(outcome["console_log"]).exists()
+                  assert outcome["game_modified"] is False
+              with patch.object(CAP.V3.V2.V1, "processes", return_value=None), \
+                   patch.object(CAP.HANDOFF, "LAST", SimpleNamespace(match=lambda _: True)), \
+                   patch.object(CAP.V3TRACE, "last", return_value="~BGXRANGED5/SETUP-BGXRANGED5.TP2~ #0 #0"), \
+                   patch.object(CAP.HANDOFF, "status", return_value={"status":"INVALID"}):
+                  try:
+                      CAP.start(game)
+                  except ValueError as exc:
+                      assert str(exc) == "V5_HANDOFF_NOT_VERIFIED"
+                  else:
+                      raise AssertionError("V5 postinstall drift must STOP capture")
 
           bootstrap = pathlib.Path("BGXAI_UPDATE.cmd").read_bytes()
           assert b"$expectedSize -gt 80000" in bootstrap
