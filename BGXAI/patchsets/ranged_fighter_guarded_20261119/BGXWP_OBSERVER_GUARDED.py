@@ -22,7 +22,7 @@ import sys
 
 GAME = Path(r'C:\Games\BG_EET_FOXX_NEW')
 SOURCE = Path(__file__).with_name('M_BGXWP.lua')
-SOURCE_SHA = 'ef8249cf9866f5c03bd4a79e057245f1f5f1e1b8eac721ab3db3bb1b2e9e713b'
+SOURCE_SHA = 'f62a467c8bc5b952612ca23f701ecc23838b8782799c7801f2e01a38267e8f36'
 INSTALL_TOKEN = 'INSTALL_BGXWP_READONLY_OBSERVER'
 ROLLBACK_TOKEN = 'ROLLBACK_BGXWP_READONLY_OBSERVER'
 MODULE = 'override/M_BGXWP.lua'
@@ -208,6 +208,181 @@ def rollback(root:Path) -> dict:
     baseline(root)
     return {'status':'BGXWP_LAST_ONLY_WEIDU_ROLLBACK_VERIFIED','game_modified':True}
 
+"""Passive BGXWP console evidence capture; no game-state writes or orders.
+
+This module is integrated into BGXWP_OBSERVER_GUARDED.py under one updater.
+All installer-facing entrypoints must first call game path / baseline / installed
+observer and process guards; this module handles only bounded report I/O.
+"""
+from datetime import datetime, timezone
+import json
+import os
+from pathlib import Path
+import subprocess
+
+CAPTURE_PREFIX = 'BGXAI_WEAPON_CONSOLE_'
+RAW_FILENAME = 'BGXAI_WEAPON_RUNTIME_RAW_R1.jsonl'
+SCHEMA_NAME = 'BGXAI_WEAPON_RUNTIME_RAW_R1'
+MARKER = '[BGXWP] '
+MAX_LOG_BYTES = 12_000_000
+
+
+def launch_capture(root: Path, out_dir: Path) -> dict:
+    """Launches the existing InfinityLoader with redirected stdout only."""
+    launcher = root / 'InfinityLoader.exe'
+    if launcher.is_symlink() or not launcher.is_file() or launcher.stat().st_size > 70_000_000:
+        raise ValueError('INFINITYLOADER_NOT_VERIFIED')
+    with launcher.open('rb') as fh:
+        if fh.read(2) != b'MZ':
+            raise ValueError('INFINITYLOADER_PE_HEADER_INVALID')
+    if out_dir.is_symlink():
+        raise ValueError('REPORT_DIR_SYMLINK')
+    out_dir.mkdir(parents=True, exist_ok=True)
+    name = CAPTURE_PREFIX + datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ') + '.log'
+    dest = out_dir / name
+    if dest.is_symlink():
+        raise ValueError('CONSOLE_LOG_SYMLINK')
+    try:
+        with dest.open('xb') as sink:
+            child = subprocess.Popen([str(launcher)], cwd=root, stdin=subprocess.DEVNULL,
+                                     stdout=sink, stderr=subprocess.STDOUT, close_fds=True)
+    except (OSError, ValueError) as exc:
+        raise ValueError('INFINITYLOADER_CAPTURE_LAUNCH_FAILED') from exc
+    return {'status': 'WEAPON_CONSOLE_CAPTURE_LAUNCHED_UNVERIFIED',
+            'pid': child.pid, 'console_log': str(dest), 'game_modified': False,
+            'next': 'Play a normal fight, exit the game, choose 159 -> 6 to collect'}
+
+
+def _candidate(folder: Path) -> Path | None:
+    if folder.is_symlink() or not folder.is_dir():
+        raise ValueError('REPORT_DIR_MISSING_OR_SYMLINK')
+    options = []
+    for path in folder.glob(CAPTURE_PREFIX + '*.log'):
+        if path.is_symlink():
+            continue
+        if path.is_file():
+            options.append((path.stat().st_mtime_ns, path.name, path))
+    return max(options)[2] if options else None
+
+
+def _validated_action(event: dict) -> bool:
+    if event.get('type') != 'ACTION':
+        return False
+    if type(event.get('sequence')) is not int or not 1 <= event['sequence'] <= 320:
+        return False
+    if type(event.get('partyIndex')) is not int or not 0 <= event['partyIndex'] <= 5:
+        return False
+    if type(event.get('actor')) is not int or event['actor'] < 0:
+        return False
+    if type(event.get('action')) is not int or not 0 <= event['action'] <= 65535:
+        return False
+    for field in ('weaponAbilityVerified', 'actualPerSlotAPRVerified',
+                  'buffsExhaustivelyObserved', 'manualOrderOriginVerified',
+                  'epsQueueVerified', 'weaponSwitchAuthorized'):
+        if event.get(field) is not False:
+            return False
+    return True
+
+
+def collect_capture(out_dir: Path) -> dict:
+    """Creates a new raw JSONL only if the verified file sink has not done so.
+
+    Duplicate Infinity_Log/print messages use the Lua sequence number;
+    distinct attacks with identical combat statistics stay distinct.
+    """
+    path = _candidate(out_dir)
+    if path is None:
+        return {'status': 'WEAPON_CONSOLE_CAPTURE_ABSENT', 'game_modified': False}
+    st = path.stat()
+    if not 1 <= st.st_size <= MAX_LOG_BYTES:
+        return {'status': 'WEAPON_CONSOLE_CAPTURE_EMPTY_OR_OVERSIZED',
+                'console_log': str(path), 'game_modified': False}
+    with path.open('rb') as stream:
+        payload = stream.read(MAX_LOG_BYTES + 1)
+    if len(payload) != st.st_size or path.stat().st_size != st.st_size:
+        raise ValueError('CAPTURE_LOG_CHANGED_WHILE_READING')
+    session = None
+    ready = False
+    events = {}
+    malformed = 0
+    for raw_line in payload.decode('utf-8', 'replace').splitlines():
+        marker_pos = raw_line.find(MARKER + '{')
+        if marker_pos < 0:
+            continue
+        try:
+            event = json.loads(raw_line[marker_pos + len(MARKER):].strip())
+        except (ValueError, TypeError):
+            malformed += 1
+            continue
+        if not isinstance(event, dict):
+            malformed += 1
+            continue
+        kind = event.get('type')
+        if kind == 'SESSION' and event.get('schema') == SCHEMA_NAME:
+            if event.get('readOnly') is True and event.get('noActionsIssued') is True:
+                session = event
+                ready = False
+                events = {}
+        elif kind == 'READY' and event.get('schema') == SCHEMA_NAME:
+            if session is not None and event.get('observerRegistered') is True:
+                ready = True
+        elif ready and kind == 'ACTION':
+            if not _validated_action(event):
+                malformed += 1
+                continue
+            seq = event['sequence']
+            if seq in events and events[seq] != event:
+                raise ValueError('CONFLICTING_CONSOLE_SEQUENCE')
+            events[seq] = event
+    if session is None or not ready:
+        return {'status': 'WEAPON_CONSOLE_SESSION_OR_READY_NOT_CONFIRMED',
+                'console_log': str(path), 'invalid_lines': malformed,
+                'game_modified': False}
+    if not events:
+        return {'status': 'WEAPON_CONSOLE_READY_NO_PARTY_ACTIONS',
+                'console_log': str(path), 'invalid_lines': malformed,
+                'game_modified': False}
+    dest = out_dir / RAW_FILENAME
+    if dest.is_symlink():
+        raise ValueError('RAW_REPORT_SYMLINK')
+    if dest.exists():
+        return {'status': 'WEAPON_RAW_REPORT_ALREADY_PRESENT_PRESERVED',
+                'report_file': str(dest), 'console_log': str(path),
+                'actions_in_console': len(events), 'game_modified': False}
+    lines = [json.dumps(session, separators=(',', ':'), sort_keys=True),
+             json.dumps({'type':'READY', 'schema':SCHEMA_NAME,
+                         'observerRegistered':True, 'source':'CONSOLE_CAPTURE'},
+                        separators=(',', ':'), sort_keys=True)]
+    lines.extend(json.dumps(event, separators=(',', ':'), sort_keys=True)
+                 for _,event in sorted(events.items()))
+    # Exclusive-create: never overwrite a direct live-EEex file if it appears.
+    with dest.open('x', encoding='utf-8', newline='\n') as output:
+        output.write('\n'.join(lines) + '\n')
+    return {'status':'WEAPON_RAW_CONSOLE_CAPTURE_COLLECTED',
+            'report_file':str(dest), 'console_log':str(path),
+            'actions':len(events), 'invalid_lines':malformed,
+            'game_modified':False, 'per_slot_apr_verified':False,
+            'manual_eps_queue_verified':False}
+
+
+def capture_checked(root:Path) -> dict:
+    # Fail-closed before starting a new copy of the user's usual game launcher.
+    check_path(root);check_processes()
+    current=status(root)
+    if current['status']!='INSTALLED_READONLY_OBSERVER_SOURCE_EXACT':
+        raise ValueError('WEAPON_OBSERVER_MUST_BE_INSTALLED_FIRST')
+    return launch_capture(root,report_dir())
+
+
+def collect_checked(root:Path) -> dict:
+    # Read and parse console capture only after the game has exited.
+    check_path(root);check_processes()
+    current=status(root)
+    if current['status']!='INSTALLED_READONLY_OBSERVER_SOURCE_EXACT':
+        raise ValueError('WEAPON_OBSERVER_NOT_INSTALLED')
+    return collect_capture(report_dir())
+
+
 def write_report(data:dict) -> None:
     out=report_dir();out.mkdir(parents=True,exist_ok=True)
     report=out/'BGXWP_OBSERVER_SETUP_R1.json'
@@ -218,7 +393,7 @@ def write_report(data:dict) -> None:
 def main() -> int:
     parser=argparse.ArgumentParser()
     parser.add_argument('--game',default=str(GAME))
-    parser.add_argument('mode',nargs='?',choices=('preflight','install','status','rollback'))
+    parser.add_argument('mode',nargs='?',choices=('preflight','install','status','rollback','capture','collect'))
     args=parser.parse_args()
     root=Path(args.game)
     try:
@@ -229,9 +404,11 @@ def main() -> int:
             print('2 - install guarded (typed approval, modifies only new Lua + WeiDU metadata)')
             print('3 - status READ ONLY')
             print('4 - rollback LAST-ONLY (typed approval)')
+            print('5 - launch usual game with console capture (no game edits)')
+            print('6 - collect RAW weapon report after closing game (READ ONLY game)')
             print('0 - exit')
             answer=(input('BGXWP choice [0]: ').strip() or '0')
-            choices={'1':'preflight','2':'install','3':'status','4':'rollback'}
+            choices={'1':'preflight','2':'install','3':'status','4':'rollback','5':'capture','6':'collect'}
             if answer=='0':return 0
             if answer not in choices:raise ValueError('MENU_CHOICE_INVALID')
             mode=choices[answer]
@@ -244,6 +421,8 @@ def main() -> int:
                 raise ValueError('ROLLBACK_NOT_AUTHORIZED')
             data=rollback(root)
         elif mode=='preflight':data=preflight(root)
+        elif mode=='capture':data=capture_checked(root)
+        elif mode=='collect':data=collect_checked(root)
         else:data=status(root)
         write_report(data)
         print('STATUS: '+data['status'])
