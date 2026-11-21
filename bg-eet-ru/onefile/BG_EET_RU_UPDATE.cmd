@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 79
+SELF_VERSION = 80
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -842,12 +842,20 @@ def v79_selected_tlk(path,strrefs):
     return result
 
 
-def v79_find_saves(game):
+def v79_save_roots(game):
+    """Include the EET-specific Documents directory confirmed by prior user saves."""
     game=Path(game)
-    roots=[game/'save',game/'mpsave',game/'sodsave',
-           Path.home()/'Documents'/"Baldur's Gate II - Enhanced Edition"/'save',
-           Path.home()/'Documents'/"Baldur's Gate II - Enhanced Edition"/'mpsave',
-           Path.home()/'Documents'/"Baldur's Gate - Enhanced Edition"/'save']
+    documents=Path.home()/'Documents'
+    eet=documents/"Baldur's Gate - Enhanced Edition Trilogy"
+    return [eet/'save',eet/'mpsave',eet/'sodsave',
+            game/'save',game/'mpsave',game/'sodsave',
+            documents/"Baldur's Gate II - Enhanced Edition"/'save',
+            documents/"Baldur's Gate II - Enhanced Edition"/'mpsave',
+            documents/"Baldur's Gate - Enhanced Edition"/'save']
+
+
+def v79_find_saves(game, roots_override=None):
+    roots=v79_save_roots(game) if roots_override is None else list(roots_override)
     seen=set()
     slots=[]
     for root in roots:
@@ -879,6 +887,9 @@ def v79_build_report(game):
     saves=v79_find_saves(game)
     if not saves:
         report['status']='V79_NO_GAM_SAVES_FOUND_HOLD'
+        report['searched_save_roots']=[{'path':str(root),'directory_exists':root.is_dir()}
+                    for root in v79_save_roots(game)]
+        report['reason']='No BALDUR.GAM in the bounded, previously known EET and BGEE save directories.'
         return report
     refs=set()
     for s in saves:
@@ -981,6 +992,15 @@ def v79_selftest():
     except ValueError:pass
     else:raise AssertionError('V79 accepted too short GAM')
     with _tmp.TemporaryDirectory(prefix='BG_EET_RU_V79_TEST_') as d:
+        # Regression for a real EET-specific save path, previously omitted in v79.
+        assert any(p.name=='save' and p.parent.name=="Baldur's Gate - Enhanced Edition Trilogy"
+                   for p in v79_save_roots(Path(d)/'fake_game'))
+        save_root=Path(d)/"Baldur's Gate - Enhanced Edition Trilogy"/'save'
+        slot=save_root/'000000901-BGXAI_TEST_6_NO_PRIEST1'
+        slot.mkdir(parents=True)
+        (slot/'BALDUR.GAM').write_bytes(bytes(game))
+        discovered=v79_find_saves(Path(d)/'fake_game',roots_override=[save_root])
+        assert len(discovered)==1 and discovered[0]['file']==slot/'BALDUR.GAM'
         p=Path(d)/'dialog.tlk'
         count=457;table=bytearray(count*26);payload=b''
         for i,text in ((123,'Русское описание задания'),(456,'An English journal quest with several words.')):
