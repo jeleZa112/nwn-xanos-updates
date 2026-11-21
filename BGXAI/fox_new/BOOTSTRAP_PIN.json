@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "fad6c28957bc0f09f3655193f08fe7c7b8f77416",
+  "commit": "c9ef9245d20621a7bb05b5ab4abc363b6688a87a",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
   "script_sha256": "5fc39ea68c0eeab4aed8d014c02b07fe05eaaa6657cc6b59757d39614db1f9d6",
   "script_size": 79962,
-  "description": "BGXAI 0.3.77 onefile menus 1-158; new 158 native WeiDU weapon-slot preflight READ ONLY (temporary compile, one JSON report). 1-157 preserved, V6/EPS unchanged, no automatic game installation."
+  "description": "BGXAI 0.3.77 onefile menus 1-158. Menu 158 read-only native WeiDU preflight; reports now saved to the existing C:\\Users\\Drevo\\Documents\\BGXAI_LIVE_REPORTS. Existing game/V6/EPS untouched; script checksum unchanged."
 }
