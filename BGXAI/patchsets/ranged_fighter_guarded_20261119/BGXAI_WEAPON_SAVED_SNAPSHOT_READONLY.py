@@ -8,6 +8,7 @@ It never issues inventory actions and never writes the game or save.
 """
 from __future__ import annotations
 import hashlib
+import re
 from pathlib import Path
 import struct
 import BGXAI_SAVE_SCRIPT_AUDIT_READONLY as S
@@ -22,9 +23,13 @@ BACKPACK=range(21,37)
 
 def ref(raw:bytes)->str:
     head=raw.split(b"\x00",1)[0].strip()
-    if not head or any(x>127 or not (65<=x<=90 or 97<=x<=122 or 48<=x<=57 or x==95) for x in head):
+    try:
+        candidate=head.decode("ascii")
+    except UnicodeError:
         raise ValueError("INVALID_ITEM_RESREF")
-    return head.decode("ascii").upper()
+    if not re.fullmatch(r"[A-Za-z0-9_+#~.$^*-]{1,8}", candidate):
+        raise ValueError("INVALID_ITEM_RESREF")
+    return candidate.upper()
 
 def extract_cre(cre:bytes)->dict:
     if len(cre)<0x2D4 or cre[:8]!=b"CRE V1.0":
