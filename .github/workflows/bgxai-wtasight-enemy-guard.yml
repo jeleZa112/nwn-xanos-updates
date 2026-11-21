@@ -28,8 +28,8 @@ jobs:
           root = pathlib.Path("BGXAI/patchsets/ranged_fighter_guarded_20261119")
           manifest = json.loads((root / "manifest_updater.json").read_text(encoding="utf-8"))
           assert manifest["schema"] == 1
-          assert manifest["version"] == "0.3.68-BGXFENEMY-CAPTURE-COMPAT"
-          assert len(manifest["files"]) == 25
+          assert manifest["version"] == "0.3.69-WEAPON-RO-ADVISORY"
+          assert len(manifest["files"]) == 27
           for entry in manifest["files"]:
               raw = pathlib.Path(entry["source"]).read_bytes()
               assert len(raw) == entry["size"], entry["dest"]
@@ -66,6 +66,17 @@ jobs:
           assert I.TP2_TEXT.startswith("BACKUP ~BGXFENEMY/backup~\n")
           assert I.TARGET == "override/WTASIGHT.BCS"
           assert I.OTHER["override/M_BXFR.lua"] == I.TRACE.SOURCE_SHA
+          # New source-only weapon inputs are present but no game executor is.
+          weapon_files = ["BGXAI_WEAPON_SAVED_SNAPSHOT_READONLY.py",
+                          "BGXAI_WEAPON_CHOICE_ADVISORY_V1.js"]
+          assert all(any(row["dest"] == name for row in manifest["files"]) for name in weapon_files)
+          report_135 = (root / "BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py").read_text("utf-8")
+          ast.parse(report_135)
+          assert 'result["saved_weapon_snapshot"]=inspect_weapon_slots(root)' in report_135
+          snapshot = (root / weapon_files[0]).read_text("utf-8")
+          ast.parse(snapshot)
+          assert 'def extract_cre(' in snapshot and 'def inspect_gam(' in snapshot
+
           # 146 must work after BGXFENEMY becomes LAST (it was previously BGXF3-only).
           import BGXFTRACE_CONSOLE_CAPTURE as CAP
           from unittest.mock import patch
@@ -109,12 +120,14 @@ jobs:
           assert "70..92 | ForEach-Object" in updater_bytes.decode("utf-8")
           assert "97..116 | ForEach-Object" in updater_bytes.decode("utf-8")
           updater = pathlib.Path("BGXAI/BGXAI_SYNC.ps1").read_text(encoding="utf-8")
-          assert "0.3.68-BGXFENEMY-CAPTURE-COMPAT" in updater
+          assert "0.3.69-WEAPON-RO-ADVISORY" in updater
+          assert "BGXAI_WEAPON_SAVED_SNAPSHOT_READONLY.py" in updater
+          assert "BGXAI_WEAPON_CHOICE_ADVISORY_V1.js" in updater
           for n in range(1, 156):
               assert ("'"+str(n)+"' {") in updater, n
           for n in range(152, 156):
               assert ("Write-Host '"+str(n)+" - ") in updater, n
-          print("PASS source syntax + 25/25 SHA + mock guard + menus 1-155")
+          print("PASS source syntax + 27/27 SHA + mock guard + menu 135 weapon snapshot + menus 1-155")
           PY
 
       - name: Weapon saved GAM/CRE snapshot isolated tests (Python, read only)
