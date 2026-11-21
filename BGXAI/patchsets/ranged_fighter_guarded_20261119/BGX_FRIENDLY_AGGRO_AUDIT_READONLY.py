@@ -4,7 +4,7 @@ Runs WeiDU against an immutable TEMP copy, never uses WeiDU install.
 Reports suspicious attacker-target selection without claiming causality.
 """
 from __future__ import annotations
-import argparse, hashlib, json, os, pathlib, re, shutil, subprocess, sys, tempfile, datetime
+import argparse, hashlib, json, os, pathlib, re, shutil, subprocess, sys, tempfile, datetime, struct
 
 GAME=pathlib.Path(r"C:\Games\BG_EET_FOXX_NEW")
 BCS="override/BDDEFAI.BCS"
@@ -119,6 +119,14 @@ def main(root):
         except (OSError,ValueError,RuntimeError) as e:
             result["passive_friend_trace"]={"status":"FRIEND_TRACE_SCAN_STOP",
                  "error":str(e)[:300],"runtime_origin":"UNKNOWN","game_modified":False}
+        # The last saved GAM is historical, not a runtime snapshot.
+        # Read item-slot references only: never infer live APR, THAC0 or legal use.
+        try:
+            from BGXAI_WEAPON_SAVED_SNAPSHOT_READONLY import inspect_latest as inspect_weapon_slots
+            result["saved_weapon_snapshot"]=inspect_weapon_slots(root)
+        except (OSError,ValueError,RuntimeError,ImportError,struct.error) as e:
+            result["saved_weapon_snapshot"]={"status":"SAVED_WEAPON_SURVEY_STOP",
+                "reason":str(e)[:250],"game_modified":False}
         if sha(p)!=before:raise ValueError("GAME_CHANGED_DURING_AUDIT")
         dest=pathlib.Path(os.environ.get("USERPROFILE",str(pathlib.Path.home())))/"Documents"/"BGXAI_LIVE_REPORTS"
         if not dest.is_dir():
@@ -128,6 +136,7 @@ def main(root):
         report.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding="utf-8")
         print(json.dumps({k:v for k,v in result.items() if k!="suspects"},ensure_ascii=False,indent=2))
         print("REPORT_FILE="+str(report))
+        print("WEAPON_SAVED_SNAPSHOT_STATUS="+str(result.get("saved_weapon_snapshot",{}).get("status","UNKNOWN")))
         evidence=result.get("saved_party_script_audit",{})
         saved=evidence.get("saved_party",{})
         print("SAVED_GAME_STATUS="+str(saved.get("status","UNAVAILABLE")))
