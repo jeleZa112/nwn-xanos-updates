@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 84,
-  "sha256": "7b5f8f633cae0d77100366a1f7c2ca54ca2fcdfa01a1f0faca3a9c9489aaefd2",
-  "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
+  "version": 85,
+  "sha256": "cc246bd75040a8e116b9937416d83b0dfbde742146d6f2a571442b81aeb2d0da",
+  "mode": "READ_ONLY_DEFAULT_EXPLICIT_APPROVAL_FOR_GAME_WRITE",
   "game_writes_allowed": false,
-  "note": "v84 READ ONLY: editorial preflight against installed v74 combat labels. Proposes punctuation/separator edits in 34 Russian printf format templates, retaining 44 existing x64 hook sites, all English source keys, plus/asterisk markers, all printf tokens, letters and digits. Reads pinned original v74 Lua and hashes current Baldur.exe/InfinityLoader.db/override/M_BGERU.lua against installed state; builds uninstalled candidate Lua SHA, never replaces game files. Stores new 32_V84_COMBAT_FORMAT_QA_READONLY.json into SAME SEND_TO_CHATGPT_BG_EET_RU.zip. If any mismatch -> explicit HOLD. Cosmetic fix does not cover independent 'метательного урона' damage line. One updater; user approval required before future separate guarded install."
+  "note": "v85 default read-only, preserves existing installed v74. Refined 34-format cosmetic candidate removes single trailing space after +Effects (%d) after real screenshot seam audit. Optional --install-v85-combat-format requires current v74 Lua + EXE/InfinityLoader DB exact SHA preflight, valid v84 report, closed Baldur.exe/InfinityLoader.exe, exact typed INSTALL_BG_EET_RU_V85_COMBAT_FORMAT, verified external backup, atomic replacement only override/M_BGERU.lua, independent persisted v85 state, and no automatic game writes. --rollback-v85-combat-format also requires exact typed approval and verified backup. A v74 status bridge avoids false tamper after authorized install. All 34 strings/44 original hooks remain, creates only 33_V85_COMBAT_FORMAT_GUARDED.json in same ZIP; v85 runtime success requires fresh in-game proof. CI on source commit 2b4d3f5 PASS."
 }
