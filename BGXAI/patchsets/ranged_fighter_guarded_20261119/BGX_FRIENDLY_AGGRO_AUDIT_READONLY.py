@@ -132,6 +132,18 @@ def main(root):
                 "runtime_action_origin":"UNKNOWN",
                 "game_modified":False
             }
+        # V6 DPLAYER: native TWO-block advisory proof on exact post-V5 rollback
+        # baseline; sources and WeiDU temp only, no install/no live edits.
+        try:
+            from BGXRANGED_V6_DPLAYER_NATIVE_READONLY import preview as preview_dplayer_v6
+            result["dplayer_v6_native_preview"]=preview_dplayer_v6(
+                root,result["saved_party_script_audit"])
+        except (OSError,ValueError,RuntimeError,UnicodeError,ImportError,
+                subprocess.TimeoutExpired,struct.error) as e:
+            result["dplayer_v6_native_preview"]={
+                "status":"BGXRANGED_V6_DPLAYER_NATIVE_READONLY_STOP",
+                "reason":str(e)[:480],"game_modified":False,
+                "install_performed":False,"runtime_latency_fixed":False}
         # Existing combat log only. Does not enable/modify any EEex listener.
         # When no target-bearing BGX71 records exist, runtime attack proof=UNKNOWN.
         try:
@@ -165,6 +177,9 @@ def main(root):
         print(json.dumps({k:v for k,v in result.items() if k!="suspects"},ensure_ascii=False,indent=2))
         print("REPORT_FILE="+str(report))
         pre=result.get("melee_handoff_native_preview",{})
+        dv6=result.get("dplayer_v6_native_preview",{})
+        print("DPLAYER_V6_NATIVE_PREFLIGHT_STATUS="+str(dv6.get("status","UNKNOWN")))
+        print("DPLAYER_V6_NATIVE_STOP_REASON="+str(dv6.get("reason","NONE")))
         print("MELEE_V5_NATIVE_PREFLIGHT_STATUS="+str(pre.get("status","UNKNOWN")))
         print("MELEE_V5_NATIVE_CHANGED_BLOCKS="+str(pre.get("changed_blocks","UNKNOWN")))
         print("MELEE_V5_NATIVE_STOP_REASON="+str(pre.get("reason","NONE")))
