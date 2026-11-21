@@ -49,9 +49,9 @@ jobs:
           assert updated.replace("  !InParty(Myself)\n", "") == base
           for malformed in (
               base.replace("AttackedBy([GOODCUTOFF],DEFAULT)", "AttackedBy([ANYONE],DEFAULT)"),
-              base.replace("    Enemy()", "    Enemy()\\n    NoAction()"),
+              base.replace("    Enemy()", "    Enemy()\n    NoAction()"),
               base.replace("    Enemy()", "    NoAction()"),
-              base.replace(friendly, friendly.replace("THEN", "  !InParty(Myself)\\nTHEN", 1)),
+              base.replace(friendly, friendly.replace("THEN", "  !InParty(Myself)\nTHEN", 1)),
           ):
               try:
                   C.transform_baf(malformed)
