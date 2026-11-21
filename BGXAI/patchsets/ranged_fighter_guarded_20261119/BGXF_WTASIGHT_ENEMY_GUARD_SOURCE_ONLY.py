@@ -96,7 +96,7 @@ def execute_weidu(exe: pathlib.Path, game: pathlib.Path, work: pathlib.Path, src
         raise ValueError("WEIDU_" + label + "_FAILED:" + transcript[-400:])
 
 
-def preflight(game: pathlib.Path) -> dict:
+def build_candidate(game: pathlib.Path) -> tuple[bytes, int]:
     if game != ROOT or not (game / "chitin.key").is_file():
         raise ValueError("GAME_ROOT_NOT_VERIFIED")
     candidate = game / BASE_BCS
@@ -140,17 +140,22 @@ def preflight(game: pathlib.Path) -> dict:
             raise ValueError("NON_TARGET_BLOCK_DRIFT")
         if check[index - 1] == old[index - 1]:
             raise ValueError("NO_BYTE_CHANGE")
-        return {
-            "status": "BGXF_WTASIGHT_SOURCE_ONLY_PREFLIGHT_PASS",
-            "game_modified": False,
-            "live_wtasight_sha256": BASE_SHA,
-            "patched_bcs_sha256": digest(merged),
-            "changed_block": index,
-            "preserved_other_blocks": BCS_COUNT - 1,
-            "safety": "Only guard Enemy() after friendly attack for characters currently in party",
-            "combat_tested": False,
-            "installed": False,
-        }
+        return merged, index
+
+
+def preflight(game: pathlib.Path) -> dict:
+    merged, index = build_candidate(game)
+    return {
+        "status": "BGXF_WTASIGHT_SOURCE_ONLY_PREFLIGHT_PASS",
+        "game_modified": False,
+        "live_wtasight_sha256": BASE_SHA,
+        "patched_bcs_sha256": digest(merged),
+        "changed_block": index,
+        "preserved_other_blocks": BCS_COUNT - 1,
+        "safety": "Only guard Enemy() after friendly attack for characters currently in party",
+        "combat_tested": False,
+        "installed": False,
+    }
 
 
 def main() -> int:
