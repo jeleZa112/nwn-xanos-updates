@@ -1,19 +1,31 @@
 {
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
-  "version": "0.3.78-BGXWP-RUNTIME-OBSERVER-R1",
+  "version": "0.3.79-BGXW2-R2-READONLY",
   "files": [
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXWP_OBSERVER_GUARDED.py",
       "dest": "BGXWP_OBSERVER_GUARDED.py",
-      "size": 22340,
-      "sha256": "90dd7386eb94bccce959f14ef0fea40779d7b1f4fea461a55dd5cd22607fbcb6"
+      "size": 22556,
+      "sha256": "622b888ae5db0b5664e0e9108a1a808b742f1dafc113bad4bed5c82768e5810c"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BGXWP.lua",
       "dest": "M_BGXWP.lua",
       "size": 5149,
       "sha256": "f62a467c8bc5b952612ca23f701ecc23838b8782799c7801f2e01a38267e8f36"
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXW2_OBSERVER_GUARDED.py",
+      "dest": "BGXW2_OBSERVER_GUARDED.py",
+      "size": 19204,
+      "sha256": "289bfec04198a17a3fa2e1c42462eefb77d0476da9d41f939fa665345d85f34e"
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BGXW2.lua",
+      "dest": "M_BGXW2.lua",
+      "size": 12545,
+      "sha256": "dab7b3f5e55307088090666cb9d47989385c6895820cdf6a860e4db0f1b6b053"
     }
   ]
 }
