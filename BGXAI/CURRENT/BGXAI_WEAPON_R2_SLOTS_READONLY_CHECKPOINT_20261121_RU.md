@@ -1,3 +1,9 @@
+# ТЕКУЩАЯ ТОЧКА: R2 УЖЕ LIVE ПРОВЕРЕН — 21.11.2026
+
+Пользователь получил `R2_CONSOLE_RAW_COLLECTED` с 10 действиями, 0 ошибок, R1+R2 оба реально работали, отследили сырые предметы `SW1H04`, `BOW05`, `STAF01`, `AROW01` (20→18), `SHLD03A` и выбор слота `38→12→35`; APR R1 `1→2→7` (сырые значения). Случайный запуск 158 имел `READONLY_NATIVE_PREFLIGHT_PASS`, `game_files_unchanged=true`, V6 exact, ничего не повредил. Источник GitHub и Library: **`BGXAI/CURRENT/BGXAI_WEAPON_R2_LIVE_CHECKPOINT_20261121_RU.md`** — читай его как актуальное доказательство. Новый офлайн bridge R1↔R2: 16/16 PASS, не установлен; интеллектуальный scorer / switcher остаётся HOLD, не выдавать разрешение на переключение. Все формулировки «R2 LIVE НЕТ» ниже — история и теперь устарели. Не просить повторять 158, install R2, 159→7→5, старые R1 отчёты.
+
+---
+
 # 21.11.2026 — R2 DEPLOY СООБЩЁН ПОЛЬЗОВАТЕЛЕМ, LIVE ЕЩЁ НЕТ
 
 Пользователь запустил неизменённый `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd` → **159 → 7 → 2**, ввёл точную фразу `INSTALL_BGXW2_READONLY_SLOTS`. Обновлятор из pinned commit проверил четыре файла (`BGXWP_OBSERVER_GUARDED.py`, `M_BGXWP.lua`, `BGXW2_OBSERVER_GUARDED.py`, `M_BGXW2.lua`), синхронизировал только исходники и вывел `REPORT_FILE: C:\Users\Drevo\Documents\BGXAI_LIVE_REPORTS\BGXW2_SETUP_R2.json` и **`STATUS: BGXW2_PASSIVE_INSTALLED_AWAITING_RUNTIME_TEST`**, затем `BGXAI: update/status action completed.`
