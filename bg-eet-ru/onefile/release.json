@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 88,
-  "sha256": "e24c5c9f919f9de7a21c04c876ecd48cc57f73b1c343cfee1c9175b93b63cec4",
-  "mode": "READ_ONLY_DEFAULT_EXPLICIT_APPROVAL_FOR_UI_PILOT",
+  "version": 89,
+  "sha256": "0d9927e216aa789bc3cf9d63dcb5d2a9d919a168eb1fa685b72ad1ee7c350a5d",
+  "mode": "READ_ONLY_DEFAULT_OPTIONAL_EXPLICIT_UI_PILOT",
   "game_writes_allowed": false,
-  "note": "v88: fixed v87 false HOLD caused by expecting [WORLD_MESSAGES] menu name instead of actual WORLD_MESSAGES. Optional strictly SHA-pinned exact UI.MENU pilot provides clickable detailed/brief display-mode button, preserves underlying combatLog table and installed v85 Lua. Only recognized Russian attack outcome lines condensed; others unchanged. Standard updater performs SHA checked source-only preflight and writes 36_V88_COMBAT_JOURNAL_UI_PILOT.json to same ZIP. --install-v88-journal-ui requires closed Baldur.exe and InfinityLoader.exe, exact typed INSTALL_BG_EET_RU_V88_JOURNAL_UI_PILOT, verified external backup, byte exact reversible source patch and guarded atomic replacement. --rollback-v88-journal-ui requires ROLLBACK_BG_EET_RU_V88_JOURNAL_UI_PILOT. Game installation/runtime tests not yet confirmed. CI 44908414006 PASS."
+  "note": "v89 fixes v88 V88_MIXED_LINE_ENDINGS_HOLD from uploaded actual user report by operating on original UI.MENU bytes and preserving mixed CRLF/LF verbatim. Only three guarded target injections; exact byte-for-byte reverse proof before any optional install. Synthetic LF, CRLF, two mixed-EOL fixtures pass; GitHub Actions isolated full selftest run 44909429360 PASS. Existing default updater remains READ ONLY and writes only the existing 36_V88_COMBAT_JOURNAL_UI_PILOT.json in canonical ZIP. UI game modifications require the same --install-v88-journal-ui flag and separately typed consent with closed game/loader, verified backup, SHA checks and rollback. Working installed v85 Lua and 44 hooks unchanged. Actual Windows preflight and runtime gameplay still not verified."
 }
