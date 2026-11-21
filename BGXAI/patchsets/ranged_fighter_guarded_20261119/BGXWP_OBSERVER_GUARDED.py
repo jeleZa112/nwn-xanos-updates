@@ -433,7 +433,7 @@ def write_report(data:dict) -> None:
 def main() -> int:
     parser=argparse.ArgumentParser()
     parser.add_argument('--game',default=str(GAME))
-    parser.add_argument('mode',nargs='?',choices=('preflight','install','status','rollback','capture','collect'))
+    parser.add_argument('mode',nargs='?',choices=('preflight','install','status','rollback','capture','collect','r2'))
     args=parser.parse_args()
     root=Path(args.game)
     try:
@@ -446,12 +446,16 @@ def main() -> int:
             print('4 - rollback LAST-ONLY (typed approval)')
             print('5 - launch usual game with console capture (no game edits)')
             print('6 - collect RAW weapon report after closing game (READ ONLY game)')
+            print('7 - R2 passive weapon/quiver observer submenu (separate consent)')
             print('0 - exit')
             answer=(input('BGXWP choice [0]: ').strip() or '0')
-            choices={'1':'preflight','2':'install','3':'status','4':'rollback','5':'capture','6':'collect'}
+            choices={'1':'preflight','2':'install','3':'status','4':'rollback','5':'capture','6':'collect','7':'r2'}
             if answer=='0':return 0
             if answer not in choices:raise ValueError('MENU_CHOICE_INVALID')
             mode=choices[answer]
+        if mode=='r2':
+            import BGXW2_OBSERVER_GUARDED as slots_r2
+            return slots_r2.menu(root)
         if mode=='install':
             if input('Type '+INSTALL_TOKEN+' exactly to install: ').strip()!=INSTALL_TOKEN:
                 raise ValueError('INSTALL_NOT_AUTHORIZED')
