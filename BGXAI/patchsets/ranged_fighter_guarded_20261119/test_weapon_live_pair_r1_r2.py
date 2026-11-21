@@ -6,15 +6,44 @@ from pathlib import Path
 from unittest.mock import patch
 import BGXAI_WEAPON_LIVE_PAIR_R1_R2_READONLY as M
 
-R2_PATH=Path('/mnt/data/BGXAI_WEAPON_SLOTS_RAW_R2.jsonl')
-CONSOLE_PATH=Path('/mnt/data/BGXAI_WEAPON_CONSOLE_20261121T132309314256Z.log')
+def slot(i,ref,count=0):
+    if ref is None:
+        return dict(index=i,access='NULL',resrefRaw=None,useCount1Raw=None,useCount2Raw=None,useCount3Raw=None,
+                    flagsRaw=None,identityVerified=False,usableVerified=False,ammoVerified=False)
+    return dict(index=i,access='OBJECT_RETURNED_UNVERIFIED',resrefRaw=ref,useCount1Raw=count,
+                useCount2Raw=1 if i==12 else 0,useCount3Raw=1 if i==12 else 0,flagsRaw=1,
+                identityVerified=False,usableVerified=False,ammoVerified=False)
+
+
+def synthetic_live_shape():
+    # Independent portable synthetic fixture derived from the documented shape,
+    # not a copy of a user's private console log or an executable game command.
+    r1,r2={},{}
+    actions=[30,30,115,160,269,23,174,105,149,134]
+    for seq,action in enumerate(actions,1):
+        selected=38 if seq<=7 else 12 if seq<=9 else 35
+        apr=1 if seq<=7 else 2 if seq<=9 else 7
+        flags=dict(itemIdentityVerified=False,perSlotAPRVerified=False,
+                   manualOrderOriginVerified=False,epsQueueVerified=False,switchAuthorized=False)
+        r2[seq]=dict(type='SLOTS',schema=M.SCHEMA_R2,seq=seq,partyIndex=2,actor=139135050,
+                     actionRaw=action,selectedWeaponRaw=selected,selectedAbilityRaw=0,
+                     status='RAW_FIXED_SLOTS_OBSERVED_IDENTITY_UNKNOWN',
+                     quickWeapons=[slot(35,'SW1H04'),slot(36,'BOW05'),slot(37,None),slot(38,'STAF01')],
+                     quivers=[slot(11,None),slot(12,'AROW01',20 if seq<=8 else 18),slot(13,None),slot(14,None)],
+                     offhand=slot(9,'SHLD03A'),**flags)
+        r1[seq]=dict(type='ACTION',sequence=seq,partyIndex=2,actor=139135050,action=action,
+                     selectedWeaponRaw=selected,aprRaw=apr,thac0Raw=20,strengthRaw=15,dexRaw=16,
+                     improvedHasteRaw=0,weaponAbilityVerified=False,actualPerSlotAPRVerified=False,
+                     buffsExhaustivelyObserved=False,manualOrderOriginVerified=False,epsQueueVerified=False,
+                     weaponSwitchAuthorized=False)
+    return r1,r2
+
 
 class PairTests(unittest.TestCase):
     def setUp(self):
-        self.r2=M.read_r2(R2_PATH)
-        self.r1=M.read_r1_console(CONSOLE_PATH)
+        self.r1,self.r2=synthetic_live_shape()
 
-    def test_actual_user_game_log_pair(self):
+    def test_portable_synthetic_shape_matching_real_scenario(self):
         p=M.pair(self.r1,self.r2)
         self.assertEqual(p['pairedActions'],10)
         self.assertEqual(p['actor'],139135050)
@@ -32,6 +61,24 @@ class PairTests(unittest.TestCase):
         self.assertEqual(p['observations'][7]['selectedKind'],'AMMO_SLOT_LAUNCHER_UNVERIFIED')
         self.assertEqual(p['observations'][7]['selectedResrefRaw'],'AROW01')
         self.assertEqual(p['observations'][9]['selectedResrefRaw'],'SW1H04')
+
+    def test_file_parser_with_portable_synthetic_r2(self):
+        session={'type':'SESSION','schema':M.SCHEMA_R2,'readOnly':True}
+        ready={'type':'READY','schema':M.SCHEMA_R2,'hookRegistered':True}
+        data=[session,ready,*self.r2.values()]
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'r2.jsonl'
+            p.write_text('\n'.join(json.dumps(x) for x in data)+'\n')
+            self.assertEqual(len(M.read_r2(p)),10)
+
+    def test_console_parser_deduplicates_print_and_log(self):
+        session={'type':'SESSION','schema':M.SCHEMA_R1,'readOnly':True}
+        ready={'type':'READY','schema':M.SCHEMA_R1,'observerRegistered':True}
+        data=[session,session,ready,ready,self.r1[1],self.r1[1]]
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'console.log'
+            p.write_text('\n'.join('INFO: LUA: [BGXWP] '+json.dumps(x) for x in data)+'\n')
+            self.assertEqual(list(M.read_r1_console(p)),[1])
 
     def test_wrong_actor_rejected(self):
         r=copy.deepcopy(self.r1);r[2]['actor']+=1
