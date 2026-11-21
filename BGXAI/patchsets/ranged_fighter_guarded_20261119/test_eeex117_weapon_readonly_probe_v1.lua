@@ -1,0 +1,60 @@
+local f=arg and arg[0] or 'test_eeex117_weapon_readonly_probe_v1.lua'
+local dir=f:match('^(.*[/\\])') or './'
+local m=dofile(dir..'BGXAI_EEEX117_WEAPON_READONLY_PROBE_V1.lua')
+local n=0;local function t(label,fn)fn();n=n+1;print('PASS '..label)end
+local function equal(a,b)assert(a==b,tostring(a)..' != '..tostring(b))end
+local good=function(i)
+ if i~=2 then return nil end
+ return {m_id=124,m_equipment={m_selectedWeapon=1},m_pos={x=100,y=200},
+  m_curAction={m_actionID=0},m_curScriptNum=3}
+end
+t('passive actor+raw weapon observation only',function()
+ local r=m.observe_portrait(2,good)
+ equal(r.status,'OBSERVED_ID_AND_SELECTED_WEAPON_RAW_ONLY')
+ equal(r.partial.actorIdObserved,124)
+ equal(r.partial.rawSelectedWeaponSlot,1)
+ equal(r.partial.position.x,100)
+ equal(r.completeEquipmentObserved,false)
+ equal(r.originVerified,false)
+ equal(r.epsQueueEmptyVerified,false)
+ equal(r.bcsRequestAllowed,false)
+ equal(r.engineDispatchAllowed,false)
+ equal(r.localsWritten,0)
+end)
+t('action ID zero does not authorize game orders',function()
+ local r=m.observe_portrait(2,good)
+ equal(r.partial.rawActionId,0)
+ equal(r.canRankWeapon,false);equal(r.engineDispatchAllowed,false)
+end)
+t('missing equipment HALTs',function()
+ local r=m.observe_portrait(2,function() return {m_id=1,m_equipment=nil} end)
+ equal(r.status,'HOLD_EQUIPMENT_FIELDS_UNVERIFIED')
+end)
+t('missing EEex function HALTs',function()
+ local r=m.observe_portrait(2,nil)
+ equal(r.status,'HOLD_EEEX117_API_MISSING')
+end)
+t('unexpected getter failure HALTs',function()
+ local r=m.observe_portrait(2,function() error('simulated userdata failure') end)
+ equal(r.status,'HOLD_NO_PORTRAIT_SPRITE')
+end)
+t('no actor in portrait HALTs',function()
+ local r=m.observe_portrait(4,good)
+ equal(r.status,'HOLD_NO_PORTRAIT_SPRITE')
+end)
+t('out of bounds portrait rejected',function()
+ for _,v in ipairs({-1,6,2.5,math.huge}) do
+  equal(m.observe_portrait(v,good).status,'HOLD_INVALID_PORTRAIT_INDEX')
+ end
+end)
+t('unknown selected weapon blocks',function()
+ local r=m.observe_portrait(2,function()return {m_id=7,m_equipment={}} end)
+ equal(r.status,'HOLD_EQUIPMENT_FIELDS_UNVERIFIED')
+end)
+t('read-only module no mutation of mock sprite',function()
+ local s=good(2);local before=s.m_equipment.m_selectedWeapon
+ local r=m.observe_portrait(2,function() return s end)
+ equal(s.m_equipment.m_selectedWeapon,before)
+ equal(r.ordersSent,0);equal(r.localsWritten,0)
+end)
+print('PASS EEex117 READ-ONLY PROBE '..n..'/'..n..' SOURCE ONLY')
