@@ -25,6 +25,12 @@ class ConsoleCollector(unittest.TestCase):
   with self.log.open('w',encoding='utf-8') as f:
    for e in records:
     f.write('Infinity: [BGXWP] '+json.dumps(e)+'\n')
+ def test_direct_file_sink_without_console_log(self):
+  path=self.folder/c.RAW_FILENAME
+  path.write_text('\n'.join(json.dumps(e) for e in (SESSION,READY,source()))+'\n')
+  out=c.collect_capture(self.folder)
+  self.assertEqual(out['status'],'WEAPON_RAW_DIRECT_FILE_READY')
+  self.assertEqual(out['actions'],1)
  def test_no_console_log(self):
   self.assertEqual(c.collect_capture(self.folder)['status'],'WEAPON_CONSOLE_CAPTURE_ABSENT')
  def test_valid_duplicate_two_channel(self):
@@ -59,7 +65,7 @@ class ConsoleCollector(unittest.TestCase):
  def test_report_existing_preserved(self):
   self.log_events(SESSION,READY,source())
   raw=self.folder/c.RAW_FILENAME;raw.write_text('ORIGINAL')
-  out=c.collect_capture(self.folder);self.assertEqual(out['status'],'WEAPON_RAW_REPORT_ALREADY_PRESENT_PRESERVED')
+  out=c.collect_capture(self.folder);self.assertEqual(out['status'],'WEAPON_RAW_DIRECT_PRESERVED_CONSOLE_ALSO_SEEN')
   self.assertEqual(raw.read_text(),'ORIGINAL')
  def test_log_oversize_bounded(self):
   self.log.write_bytes(b'x'*(c.MAX_LOG_BYTES+1))
