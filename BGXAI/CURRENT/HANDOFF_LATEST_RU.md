@@ -1,3 +1,9 @@
+# 2026-11-21 — ТЕКУЩИЙ ПРИОРИТЕТ: ВЫБОР ОРУЖИЯ V2; НЕ ПЕРЕКЛЮЧАТЬСЯ НА ДРУГИЕ ЗАДАЧИ
+
+**CODE:** [BGXAI_WEAPON_PRIORITY_ENGINE_V2.js](../patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_PRIORITY_ENGINE_V2.js) собирает действующие V1-оценку и Traits с обязательной полнотой 4 быстрых слотов, боеприпасов, связности цели/снимка, двухоружия, EPS/manual-приказов; исправлена ложная уверенность `KEEP_CURRENT` при неизвестной альтернативе; двухкадровая стабилизация с fingerprint и cooldown. [Checkpoint](BGXAI_WEAPON_PRIORITY_V2_CHECKPOINT_RU.md). **TEST:** 26/26 JS V8 PASS на реальных V1/Traits; Node syntax PASS. **DEPLOY/LIVE:** V2 НЕ подключён к EEex и НЕ установлен; V6 остаётся игровым пилотом. **СТОП-КРИТЕРИЙ:** пока нет безопасной реальной смены лучшего из 4 слотов с подтверждённой EA/EPS/manual и игрового A/B, не считать оружие законченным и не возвращаться к AoE/координации. **NEXT:** достоверный read-only источник фактического состояния оружия в EEex 1.1.7, затем отдельный guarded executor через один `BGXAI_UPDATE.cmd` с явной установочной авторизацией; не использовать `m_actionID=0` как разрешение. Не просить старые EET архивы/сейвы.
+
+---
+
 # 2026-11-21 — ТАКТИЧЕСКАЯ КООРДИНАЦИЯ ПАРТИИ V1 (SOURCE ONLY; NOT INSTALLED)
 
 **Актуальный checkpoint:** [BGXAI_PARTY_HAZARD_COORD_V1_CHECKPOINT_RU.md](BGXAI_PARTY_HAZARD_COORD_V1_CHECKPOINT_RU.md).
