@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "ed51f00a92766c8974650a2f9ff178a685126a13",
+  "commit": "34a51c19a0f9e6e2ffce386e1df6be56ad84b339",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "e7b990a6c44cc014459d41fcafd4866b889d759f02c4172c8697fe5a436dcf23",
-  "script_size": 79821,
-  "description": "BGXAI onefile 0.3.71: source-only race/class/kit/pips/dual weapon scorer + raw historical SAVED CRE trait IDs via menu 135, 28 SHA-verified files, menus 1-155, no live weapon execution."
+  "script_sha256": "a630d77859c01d6c0672ba016273642ea5f98fd1610c46e70249a93ec34f8bc5",
+  "script_size": 79912,
+  "description": "BGXAI one-file 0.3.72, 30 SHA-pinned files: menu135 now validates native V5 6/10 candidate against exact installed BDDEFAI+WTASIGHT, TEMP-only WeiDU, 1160 preserved blocks; no installation or live weapon fix."
 }
