@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 77,
-  "sha256": "ea6a1569611d27d87af84ac98e0d98d11ae40ba8767d1235c4cfabce56c825e7",
+  "version": 78,
+  "sha256": "417865f41d15de878ff97c3e93a5bdd1fa814f568b17a391989304862221a0a6",
   "mode": "READ_ONLY_UNLESS_SEPARATELY_AUTHORIZED",
   "game_writes_allowed": false,
-  "note": "v77 READ ONLY: fixes cached v67 path prematurely exiting after v74 combat status, which skipped v76 targeted live TLK+UI.MENU report. Cached path now runs existing working v74 then v76 before exit; --combat-only retains combat-only behavior. Includes in-memory regression selftest ensuring v74->v76, combat-only skip, and fail-closed stop. Same one CMD, same one ZIP, no game file changes and no repeat DLG scan."
+  "note": "v78 adds optional explicit-approval --fix-leui-reverse and --rollback-leui-reverse modes to existing one-file updater. Exact SHA-pinned 583996-byte UI.MENU, read/display label rewritten only with legacy LeUI setting key preserved in getter and two saves; external verified backup, closed-process check, exact rollback, no TLK or combat Lua changes. Default mode READ ONLY; no automatic installation. Includes isolated source and guarded install/rollback/foreign-file refusal tests. Same report ZIP; v76 distinguishes display label from legacy storage literals."
 }
