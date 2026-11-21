@@ -149,7 +149,8 @@ def compile_candidate(root:Path)->tuple[bytes,dict]:
 
 def preflight(root:Path)->dict:
     _,proof=compile_candidate(root)
-    return {"status":"BGXRANGED6_NATIVE_GUARDED_PREFLIGHT_PASS",**proof}
+    return {**proof,"status":"BGXRANGED6_NATIVE_GUARDED_PREFLIGHT_PASS",
+            "game_modified":False,"install_performed":False}
 
 def backup(root:Path)->Path:
     parent=Path(os.environ.get("USERPROFILE",str(Path.home())))\
@@ -254,6 +255,7 @@ def status(root:Path)->dict:
 
 def install(root:Path)->dict:
     running()
+    before(root)
     candidate,pre=compile_candidate(root)
     original_log=sha(root/"WeiDU.log")
     dest=backup(root)
