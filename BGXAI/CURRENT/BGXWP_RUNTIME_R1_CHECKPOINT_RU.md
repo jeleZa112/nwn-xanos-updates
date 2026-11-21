@@ -1,3 +1,11 @@
+# 21.11.2026 — реальный Windows preflight 159→1: PASS
+
+Получен от пользователя `BGXWP_OBSERVER_SETUP_R1.json` (SHA256 вложения `76de217afb8132f08f0c72e1cfdf0b09aa356d3216f960a111d4010cb68eeb5e`). `status=PREFLIGHT_OBSERVER_READY_SOURCE_ONLY`, `game_modified=false`, `runtime_EEex_validated=false`, `source_sha256=f62a467c8bc5b952612ca23f701ecc23838b8782799c7801f2e01a38267e8f36`. Проверенные исходные BCS и Lua совпадают с V6 baseline. Последняя запись WeiDU: `BGXRANGED6`, а не `BGXWP`. Сохранённая копия отчёта: ChatGPT Library `/BALDURS_GATE_EET_AI/DIAGNOSTICS/BGXWP_OBSERVER_PREFLIGHT_REAL_PASS_20261121.json`.
+
+**Не просить повторять 159→1 или 158.** Следующая контролируемая стадия — 159→2 (guarded install) **только с отдельным явно введённым разрешением** `INSTALL_BGXWP_READONLY_OBSERVER`; до него `DEPLOY=NO, LIVE=NO`. Установка касается только нового пассивного `override/M_BGXWP.lua` и WeiDU метаданных, но требует закрытых игры/InfinityLoader/WeiDU, SHA-валидации и внешнего backup. Получить один `BGXWP_OBSERVER_SETUP_R1.json` после установки либо STOP (при STOP не повторять, не вмешиваться). При успехе — 159→5 для консольного захвата, обычный бой, выход из игры, 159→6 для сбора `BGXAI_WEAPON_RUNTIME_RAW_R1.jsonl`. Реальный APR всех альтернативных слотов, provenance EPS/manual и переключение без задержки пока НЕ доказаны. Прежние разделы ниже — история.
+
+---
+
 # 21.11.2026 — BGXAI Weapon Runtime R1.1: резервный вывод и единый пункт 159
 
 **Активная задача только одна:** приоритетный выбор оружия без прерывания атаки, заклинания, лечения или ручного приказа. Рабочая BGXRANGED6 V6, BGXFENEMY, EPS 18.4, EET и сохранения не изменены.
