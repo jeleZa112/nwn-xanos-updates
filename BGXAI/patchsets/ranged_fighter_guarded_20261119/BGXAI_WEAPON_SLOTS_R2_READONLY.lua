@@ -36,6 +36,18 @@ local function result(status,data)
  for k,v in pairs(data or {}) do s[k]=v end
  return s
 end
+local function resref_raw(item)
+ -- EEex CItem inherits CResHelper.cResRef; CResRef:get() is used upstream.
+ -- Availability is runtime- and version-dependent, so never infer identity.
+ local ref=field(item,'cResRef')
+ if ref==nil then return nil,'NO_RESREF_FIELD' end
+ local getter=field(ref,'get')
+ if type(getter)~='function' then return nil,'NO_RESREF_GETTER' end
+ local val,okay=safe(function() return getter(ref) end)
+ if not okay or type(val)~='string' then return nil,'RESREF_READ_ERROR' end
+ if #val<1 or #val>8 or val:find('[^%w_]') then return nil,'INVALID_RESREF' end
+ return val:upper(),'RAW_RESREF_RETURNED_UNVERIFIED'
+end
 local function take_slot(items,index,kind,ordinal)
  local read={index=index,kind=kind,ordinal=ordinal,access='UNAVAILABLE',
    identityVerified=false,usableVerified=false,selectedAbilityVerified=false,
@@ -48,6 +60,7 @@ local function take_slot(items,index,kind,ordinal)
  if not ok then read.access='READ_ERROR';return read end
  if item==nil then read.access='NULL';return read end
  read.access='OBJECT_RETURNED_UNVERIFIED'
+ read.itemResrefRaw,read.resrefAccess=resref_raw(item)
  -- These CItem fields are raw optional observations, NOT charge/ammo guarantees.
  read.useCount1Raw=raw(field(item,'m_useCount1'),0,65535)
  read.useCount2Raw=raw(field(item,'m_useCount2'),0,65535)
