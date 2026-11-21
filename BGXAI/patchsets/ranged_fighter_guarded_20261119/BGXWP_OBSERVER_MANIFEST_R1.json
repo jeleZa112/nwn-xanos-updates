@@ -6,14 +6,14 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXWP_OBSERVER_GUARDED.py",
       "dest": "BGXWP_OBSERVER_GUARDED.py",
-      "size": 12672,
-      "sha256": "4c4e6d60c149605f332a0ec529bd9119fbc1c40d78e164ffd3bb066f9027311f"
+      "size": 20681,
+      "sha256": "33c6652c8e5328e61e7077a1cc75f82578591c9c9c797ca25f17001b1851386b"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BGXWP.lua",
       "dest": "M_BGXWP.lua",
-      "size": 5564,
-      "sha256": "ef8249cf9866f5c03bd4a79e057245f1f5f1e1b8eac721ab3db3bb1b2e9e713b"
+      "size": 5149,
+      "sha256": "f62a467c8bc5b952612ca23f701ecc23838b8782799c7801f2e01a38267e8f36"
     }
   ]
 }
