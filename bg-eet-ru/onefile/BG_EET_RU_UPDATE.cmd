@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 89
+SELF_VERSION = 90
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -2935,12 +2935,288 @@ def v88_selftest():
 
 
 def v88_resume_after_cached(game, report_path, combat_only=False):
+    state90=v90_state_read()
+    if state90 and state90['phase'] in ('INSTALLED','PREPARED') and not combat_only:
+        return v90_run(game, report_path)
     state=v88_state_read()
     if state and state['phase'] in ('INSTALLED','PREPARED') and not combat_only:
-        return v88_run(game, report_path)
+        rc=v88_run(game, report_path)
+        if rc:return rc
+        return v90_run(game,report_path)
     rc=v77_resume_after_static_v70(game, report_path, combat_only)
     if rc or combat_only:return rc
-    return v88_run(game, report_path)
+    rc=v88_run(game, report_path)
+    if rc:return rc
+    return v90_run(game,report_path)
+
+
+# BG EET RU v90 — guarded layout-only upgrade of the installed v88 UI pilot.
+# Preserve all game combat code. No changes without typed consent and verified backups.
+V90_ENTRY = '37_V90_JOURNAL_BUTTON_REPOSITION.json'
+V90_SCHEMA = 'BG_EET_RU_V90_JOURNAL_BUTTON_REPOSITION'
+V90_STATE = WORKDIR/'BG_EET_RU_V90_UI_STATE.json'
+V90_APPROVAL = 'UPGRADE_BG_EET_RU_V90_JOURNAL_UI'
+V90_ROLLBACK_APPROVAL = 'ROLLBACK_BG_EET_RU_V90_JOURNAL_UI'
+V90_BUTTON = (V88_BUTTON
+    .replace('area 644 0 184 22','area 592 -34 242 30')
+    .replace('text style "button"','text style "normal"'))
+V90_DRAG = b'adjustItemGroup({"BG_EET_RU_JOURNAL_TOGGLE"},0,newY,0,0)'
+
+
+def v90_transform_installed_ui(source):
+    if not isinstance(source,bytes) or len(source)>4_000_000:
+        raise RuntimeError('V90_BAD_UI_SOURCE')
+    old_options=[V88_BUTTON.encode('utf8'),V88_BUTTON.replace('\n','\r\n').encode('utf8')]
+    present=[x for x in old_options if source.count(x)==1]
+    if len(present)!=1 or any(source.count(x)>1 for x in old_options):
+        raise RuntimeError('V90_OLD_BUTTON_NOT_EXACT')
+    old_btn=present[0]
+    if source.count(V90_DRAG)>0:
+        raise RuntimeError('V90_DRAG_ALREADY_MODIFIED')
+    if source.count(V88_RENDER_NEW)!=1 or source.count(b'BG_EET_RU_LogView')<2:
+        raise RuntimeError('V90_V88_HELPER_OR_RENDER_NOT_FOUND')
+    without=source.replace(old_btn,b'',1)
+    # The actual LeUI drag handler controls the moving top border of the log.
+    drag_pattern=re.compile(rb'(?m)^([ \t]*)adjustItemGroup\(\{"messagesHandleY"\},0,newY,0,0\)[ \t]*(\r?\n)')
+    drag=list(drag_pattern.finditer(without))
+    if len(drag)!=1 or b'function dragMessagesY(newY)' not in without[max(0,drag[0].start()-800):drag[0].start()]:
+        raise RuntimeError('V90_DRAG_ANCHOR_NOT_UNIQUE')
+    m=drag[0]
+    inserted_drag=m.group(1)+V90_DRAG+m.group(2)
+    with_drag=without[:m.end()]+inserted_drag+without[m.end():]
+    # Insert AFTER the drag handle to avoid list/handle hit-testing overlays.
+    anchor=re.compile(
+        rb'(?m)^[ \t]*handle[ \t]*\r?\n[ \t]*\{[ \t]*\r?\n'
+        rb'[ \t]*name [\'\"]messagesHandleY[\'\"][ \t]*\r?\n'
+        rb'[ \t]*area 0 0 840 20[ \t]*\r?\n'
+        rb'[ \t]*actionDrag[ \t]*\r?\n[ \t]*\"[ \t]*\r?\n'
+        rb'[ \t]*dragMessagesY\(motionY\)[ \t]*\r?\n'
+        rb'[ \t]*\"[ \t]*\r?\n[ \t]*\}[ \t]*\r?\n'
+        rb'(?=[ \t]*\}[ \t]*\r?\n`)')
+    handles=list(anchor.finditer(with_drag))
+    if len(handles)!=1:raise RuntimeError('V90_HANDLE_AFTER_LIST_NOT_UNIQUE')
+    handle=handles[0]
+    eol=b'\r\n' if b'\r\n' in handle.group(0) else b'\n'
+    new_btn=V90_BUTTON.replace('\n','\r\n' if eol==b'\r\n' else '\n').encode('utf8')
+    if new_btn in with_drag:raise RuntimeError('V90_BUTTON_ALREADY_PRESENT')
+    candidate=with_drag[:handle.end()]+new_btn+with_drag[handle.end():]
+    # Byte exact reversible proof: strip ONLY the two new additions.
+    undone=candidate.replace(new_btn,b'',1).replace(inserted_drag,b'',1)
+    if undone!=without:raise RuntimeError('V90_NOT_BYTE_EXACT_REVERSIBLE')
+    if undone.count(V88_RENDER_NEW)!=1 or candidate.count(V88_RENDER_NEW)!=1:
+        raise RuntimeError('V90_RENDER_CHANGED')
+    if candidate.count(b'combatLog')!=source.count(b'combatLog'):
+        raise RuntimeError('V90_LOG_TABLE_CHANGED')
+    if candidate.count(V90_DRAG)!=1 or candidate.count(b'BG_EET_RU_JOURNAL_TOGGLE')!=source.count(b'BG_EET_RU_JOURNAL_TOGGLE')+1:
+        raise RuntimeError('V90_BUTTON_OR_DRAG_COUNT')
+    if not 0<len(candidate)-len(source)<2500:
+        raise RuntimeError('V90_CHANGE_TOO_LARGE')
+    return candidate
+
+
+def v90_state_read(path=V90_STATE):
+    path=Path(path)
+    if not path.is_file():return None
+    if path.is_symlink():raise RuntimeError('V90_STATE_SYMLINK')
+    obj=json.loads(path.read_text('utf8'))
+    if (obj.get('schema')!=V90_SCHEMA or obj.get('phase') not in ('PREPARED','INSTALLED','ROLLED_BACK') or
+        not all(isinstance(obj.get(x),str) and len(obj[x])==64 for x in ('v88_sha256','v90_sha256','original_sha256'))):
+        raise RuntimeError('V90_STATE_INVALID')
+    return obj
+
+
+def v90_state_write(obj):
+    V90_STATE.parent.mkdir(parents=True,exist_ok=True)
+    if V90_STATE.exists() and V90_STATE.is_symlink():raise RuntimeError('V90_STATE_SYMLINK')
+    stage=V90_STATE.with_suffix('.v90tmp')
+    if stage.exists():raise RuntimeError('V90_STALE_STATE_TEMP')
+    try:
+        with stage.open('x',encoding='utf8') as f:json.dump(obj,f,ensure_ascii=False,indent=2)
+        os.replace(stage,V90_STATE)
+    finally:
+        if stage.exists():stage.unlink()
+
+
+def v90_zip_report(game, report_path, result):
+    safe_external(game,report_path)
+    report_path=Path(report_path)
+    if not report_path.is_file():raise RuntimeError('V90_CANONICAL_ZIP_NOT_FOUND')
+    with zipfile.ZipFile(report_path) as z:
+        if z.testzip() is not None or len(z.namelist())!=len(set(z.namelist())):
+            raise RuntimeError('V90_PRIOR_ZIP_CRC_OR_DUPLICATES')
+        previous=json.loads(z.read(V90_ENTRY)) if V90_ENTRY in z.namelist() else None
+    if previous==result:return
+    with tempfile.NamedTemporaryFile(dir=str(report_path.parent),prefix='.v90_',suffix='.zip',delete=False) as f:
+        staged=Path(f.name)
+    try:
+        with zipfile.ZipFile(report_path) as src,zipfile.ZipFile(staged,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=7) as dst:
+            for member in src.infolist():
+                if member.filename!=V90_ENTRY:dst.writestr(member,src.read(member))
+            dst.writestr(V90_ENTRY,json.dumps(result,ensure_ascii=False,indent=2).encode('utf8'))
+        with zipfile.ZipFile(staged) as z:
+            if z.testzip() is not None or z.namelist().count(V90_ENTRY)!=1:
+                raise RuntimeError('V90_NEW_ZIP_CRC')
+        os.replace(staged,report_path)
+    finally:
+        if staged.exists():staged.unlink()
+
+
+def v90_run(game, report_path, mode='status'):
+    game,report_path=Path(game),Path(report_path)
+    r={'schema':V90_SCHEMA,'updater_version':SELF_VERSION,'mode':mode,'status':'V90_NO_ACTION',
+       'game_files_written':0,'save_files_written':False,'v85_changed':False,'button_runtime_verified':False,
+       'scope':'exact UI.MENU button rehome + moving-header tracking only; preserves log data',
+       'errors':[]}
+    try:
+        safe_external(game,report_path)
+        if mode not in ('status','upgrade','rollback'):raise RuntimeError('V90_INVALID_MODE')
+        v85=v85_state_read()
+        lua=game/'override'/V71_SHORT_SCRIPT
+        if not v85 or v85.get('phase')!='INSTALLED' or not lua.is_file() or lua.is_symlink() or digest(lua.read_bytes())!=v85.get('candidate_sha256'):
+            raise RuntimeError('V90_V85_LUA_INTEGRITY_HOLD')
+        ui=game/'override'/'UI.MENU'
+        if not ui.is_file() or ui.is_symlink():raise RuntimeError('V90_UI_FILE_MISSING')
+        source=ui.read_bytes();live=digest(source)
+        st=v90_state_read()
+        if st and st['phase'] in ('PREPARED','INSTALLED'):
+            if st['phase']=='PREPARED':
+                r['status']='V90_PREPARED_RECOVERY_HOLD'
+            elif live!=st['v90_sha256']:
+                raise RuntimeError('V90_INSTALLED_UI_SHA_CHANGED')
+            elif mode=='rollback':
+                closed,why=v71_processes_closed()
+                if not closed:raise RuntimeError('V90_CLOSE_GAME_AND_LOADER:'+why)
+                backup=Path(st['original_backup']);safe_external(game,backup)
+                if not backup.is_file() or backup.is_symlink() or digest(backup.read_bytes())!=st['original_sha256']:
+                    raise RuntimeError('V90_ORIGINAL_BACKUP_INTEGRITY_HOLD')
+                if not v85_read_input_approval(V90_ROLLBACK_APPROVAL):
+                    r['status']='V90_ROLLBACK_NOT_AUTHORIZED'
+                else:
+                    old=backup.read_bytes()
+                    stage=ui.with_name('UI.MENU.v90restore')
+                    if stage.exists():raise RuntimeError('V90_STALE_RESTORE')
+                    try:
+                        with stage.open('xb') as f:f.write(old)
+                        if digest(stage.read_bytes())!=st['original_sha256']:raise RuntimeError('V90_RESTORE_STAGE_SHA')
+                        if digest(ui.read_bytes())!=st['v90_sha256']:raise RuntimeError('V90_LIVE_UI_CHANGED_BEFORE_RESTORE')
+                        os.replace(stage,ui)
+                        if digest(ui.read_bytes())!=st['original_sha256']:raise RuntimeError('V90_RESTORED_SHA_MISMATCH')
+                    finally:
+                        if stage.exists():stage.unlink()
+                    v88=v88_state_read()
+                    if not v88 or v88.get('phase')!='INSTALLED' or v88.get('old_sha256')!=st['original_sha256']:
+                        raise RuntimeError('V90_V88_STATE_NOT_SAFE_TO_RESET')
+                    v88_state_write({**v88,'phase':'ROLLED_BACK','v90_rollback_utc':now()})
+                    v90_state_write({**st,'phase':'ROLLED_BACK','rolled_back_utc':now()})
+                    r['status']='V90_ROLLED_BACK_TO_ORIGINAL_UI';r['game_files_written']=1
+            else:r['status']='V90_INSTALLED_LIVE_CLICK_TEST_REQUIRED'
+        elif mode=='rollback':r['status']='V90_NOT_INSTALLED'
+        else:
+            if st and st['phase']!='ROLLED_BACK':raise RuntimeError('V90_UNKNOWN_STATE')
+            v88=v88_state_read()
+            if not v88 or v88.get('phase')!='INSTALLED' or live!=v88.get('new_sha256'):
+                r['status']='V90_NEEDS_INSTALLED_V88_UI'
+            else:
+                backup=Path(v88['backup']);safe_external(game,backup)
+                if not backup.is_file() or backup.is_symlink():raise RuntimeError('V90_V88_ORIGINAL_BACKUP_MISSING')
+                old=backup.read_bytes()
+                if digest(old)!=v88.get('old_sha256') or digest(old)!=V88_PINNED_UI_SHA:
+                    raise RuntimeError('V90_ORIGINAL_BACKUP_SHA_MISMATCH')
+                # Cross-check: installed UI is exactly what signed v89 transformer makes from original.
+                if v88_ui_candidate(old)!=source:
+                    raise RuntimeError('V90_V88_INSTALLED_UI_NOT_EXACT_CANDIDATE')
+                candidate=v90_transform_installed_ui(source)
+                r.update({'status':'V90_RELOCATE_PREFLIGHT_PASS_NOT_INSTALLED',
+                          'v88_sha256':live,'v90_candidate_sha256':digest(candidate),
+                          'original_ui_sha256':digest(old),'candidate_bytes':len(candidate)})
+                if mode=='upgrade':
+                    closed,why=v71_processes_closed()
+                    if not closed:raise RuntimeError('V90_CLOSE_GAME_AND_LOADER:'+why)
+                    if not v85_read_input_approval(V90_APPROVAL):
+                        r['status']='V90_UPGRADE_NOT_AUTHORIZED'
+                    else:
+                        if digest(ui.read_bytes())!=live or digest(lua.read_bytes())!=v85.get('candidate_sha256'):
+                            raise RuntimeError('V90_LIVE_FILES_CHANGED_DURING_CONSENT')
+                        closed,why=v71_processes_closed()
+                        if not closed:raise RuntimeError('V90_GAME_STARTED_DURING_CONSENT:'+why)
+                        backup_dir=WORKDIR/'SAFE_BACKUPS';safe_external(game,backup_dir)
+                        backup_dir.mkdir(parents=True,exist_ok=True)
+                        v88backup=backup_dir/('UI.MENU_V90_PRE_'+live[:16]+'.bak')
+                        if v88backup.exists():
+                            if v88backup.is_symlink() or digest(v88backup.read_bytes())!=live:
+                                raise RuntimeError('V90_BACKUP_NAME_COLLISION')
+                        else:
+                            with v88backup.open('xb') as f:f.write(source)
+                        if digest(v88backup.read_bytes())!=live:raise RuntimeError('V90_V88_BACKUP_NOT_VERIFIED')
+                        stage=ui.with_name('UI.MENU.v90stage')
+                        if stage.exists():raise RuntimeError('V90_STALE_UI_STAGE')
+                        rec={'schema':V90_SCHEMA,'phase':'PREPARED','created_utc':now(),
+                             'original_sha256':digest(old),'original_backup':str(backup),
+                             'v88_sha256':live,'v88_backup':str(v88backup),
+                             'v90_sha256':digest(candidate)}
+                        try:
+                            with stage.open('xb') as f:f.write(candidate)
+                            if digest(stage.read_bytes())!=rec['v90_sha256']:raise RuntimeError('V90_STAGE_BAD_SHA')
+                            v90_state_write(rec)
+                            if digest(ui.read_bytes())!=live:raise RuntimeError('V90_UI_CHANGED_BEFORE_SWAP')
+                            os.replace(stage,ui)
+                            if digest(ui.read_bytes())!=rec['v90_sha256']:raise RuntimeError('V90_INSTALL_UI_SHA_MISMATCH')
+                            v90_state_write({**rec,'phase':'INSTALLED','installed_utc':now()})
+                        except Exception:
+                            if ui.is_file() and digest(ui.read_bytes())==rec['v90_sha256']:
+                                restore=ui.with_name('UI.MENU.v90failedrestore')
+                                if not restore.exists():
+                                    with restore.open('xb') as f:f.write(source)
+                                    if digest(restore.read_bytes())==live:
+                                        os.replace(restore,ui)
+                                        v90_state_write({**rec,'phase':'ROLLED_BACK','failed_utc':now()})
+                            raise
+                        finally:
+                            if stage.exists():stage.unlink()
+                        r['status']='V90_INSTALLED_LIVE_CLICK_TEST_REQUIRED';r['game_files_written']=1
+    except (OSError,RuntimeError,ValueError,KeyError,UnicodeError,TypeError) as exc:
+        r['status']='V90_SAFE_STOP'
+        r['errors'].append({'type':type(exc).__name__,'message':str(exc)[:230]})
+    try:v90_zip_report(game,report_path,r)
+    except (OSError,RuntimeError,ValueError,KeyError,zipfile.BadZipFile) as exc:
+        print('v90: ZIP SAFE_STOP',type(exc).__name__,str(exc)[:180]);return 2
+    print('v90:',r['status'],'— изменений в игре:',r['game_files_written'])
+    print('Единый ZIP:',report_path)
+    return 2 if r['status']=='V90_SAFE_STOP' else 0
+
+
+def v90_selftest():
+    # Build the normal v88 sample without a real game, then relocate it.
+    sample=('function dragMessagesY(newY)\n'
+            '    adjustItemGroup({"messagesHandleY"},0,newY,0,0)\n'
+            'end\n'
+            'function clean(str)\n  return str\nend\n`\nmenu\n{\n'
+            "    name 'WORLD_MESSAGES'\n"
+            '    list\n    {\n        name "worldMessageBox"\n'
+            '        table "combatLog"\n'
+            '        text lua "clean(combatLog[rowNumber])"\n'
+            '        scrollbar skipReset\n    }\n'
+            '    handle\n    {\n'
+            "        name 'messagesHandleY'\n"
+            '        area 0 0 840 20\n'
+            '        actionDrag\n        "\n            dragMessagesY(motionY)\n        "\n'
+            '    }\n}\n`\n')
+    # Inject additional Lua marker expected by the transformer without changing any actual game.
+    sample=sample.replace('function clean(str)\n', '-- prefix\nfunction clean(str)\n')
+    if True:
+        for kind in ('LF','CRLF','MIXED'):
+            original=sample if kind=='LF' else (sample.replace('\n','\r\n') if kind=='CRLF' else sample.replace('function clean(str)\n','function clean(str)\r\n'))
+            source=original.replace('text lua "clean(combatLog[rowNumber])"','text lua "BG_EET_RU_LogView(clean(combatLog[rowNumber]))"')
+            eol='\r\n' if kind=='CRLF' else '\n'
+            source=source.replace('    handle\n' if kind!='CRLF' else '    handle\r\n',
+                                  V88_BUTTON.replace('\n',eol)+('    handle\n' if kind!='CRLF' else '    handle\r\n'),1)
+            source=source.replace('function clean(str)', 'function BG_EET_RU_LogView(original)\n    return original\nend\nfunction clean(str)')
+            next_source=v90_transform_installed_ui(source.encode('utf8'))
+            assert b'area 592 -34 242 30' in next_source
+            assert next_source.count(V90_DRAG)==1
+            assert next_source.count(b'combatLog')==source.encode('utf8').count(b'combatLog')
+            assert len(next_source)>len(source.encode('utf8'))
+    return True
 
 
 def main(argv=None):
@@ -2953,6 +3229,8 @@ def main(argv=None):
     p.add_argument('--rollback-v85-combat-format',action='store_true',help='optional signed restore to v74; exact typed approval required')
     p.add_argument('--install-v88-journal-ui',action='store_true',help='optional guarded UI.MENU two-mode pilot; exact approval required')
     p.add_argument('--rollback-v88-journal-ui',action='store_true',help='optional guarded UI.MENU restore; exact approval required')
+    p.add_argument('--upgrade-v90-journal-ui',action='store_true',help='optional v88-to-v90 display-button reposition; exact approval')
+    p.add_argument('--rollback-v90-journal-ui',action='store_true',help='optional v90 rollback to original UI.MENU; exact approval')
     p.add_argument('--seen-strref',action='append',type=int,default=[],help='v83: player-reported displayed StrRef, repeatable')
     p.add_argument('--seen-text',action='append',default=[],help='v83: player-reported exact displayed text, repeatable')
     p.add_argument('--no-open',action='store_true',help='do not open output folder')
@@ -3022,9 +3300,28 @@ def main(argv=None):
         # cannot update itself unless the release manifest has an even newer version.
         import subprocess
         return subprocess.call([sys.executable,'-x',str(canonical),*sys.argv[1:]])
+    # v90: after a permitted upgrade, avoid stale v88 baseline scans of UI.MENU.
+    if not any((args.seen_strref,args.seen_text,args.combat_only,args.combat_status,
+                args.install_v85_combat_format,args.rollback_v85_combat_format,
+                args.install_v88_journal_ui,args.rollback_v88_journal_ui,
+                args.upgrade_v90_journal_ui,args.rollback_v90_journal_ui,
+                args.fix_leui_reverse,args.rollback_leui_reverse,args.combat_rollback)):
+        ui_v90=v90_state_read()
+        if ui_v90 and ui_v90['phase'] in ('INSTALLED','PREPARED'):
+            return v90_run(game,WORKDIR/REPORT_NAME)
     # v83: player-observed text is processed directly; do not re-run expensive historical audits.
     if args.seen_strref or args.seen_text:
         return v83_run(game,WORKDIR/REPORT_NAME,additional_strrefs=args.seen_strref,additional_texts=args.seen_text)
+    if args.upgrade_v90_journal_ui or args.rollback_v90_journal_ui:
+        if args.upgrade_v90_journal_ui and args.rollback_v90_journal_ui:
+            print('V90_STOP: upgrade and rollback flags conflict')
+            return 2
+        return v90_run(game,WORKDIR/REPORT_NAME,mode=('upgrade' if args.upgrade_v90_journal_ui else 'rollback'))
+    if args.rollback_v88_journal_ui:
+        ui_v90=v90_state_read()
+        if ui_v90 and ui_v90['phase'] in ('INSTALLED','PREPARED'):
+            print('V90_STOP: use --rollback-v90-journal-ui to restore UI.MENU safely')
+            return 2
     if args.install_v88_journal_ui or args.rollback_v88_journal_ui:
         if args.install_v88_journal_ui and args.rollback_v88_journal_ui:
             print('V88_STOP: install and rollback options conflict')
@@ -3314,7 +3611,9 @@ def main(argv=None):
         if rc:return rc
         ui_state=v88_state_read()
         if ui_state and ui_state['phase'] in ('INSTALLED','PREPARED'):
-            return v88_run(game,report_path)
+            rc=v88_run(game,report_path)
+            if rc:return rc
+            return v90_run(game,report_path)
         rc=v86_run(game,report_path)
         if rc:return rc
         rc=v87_run(game,report_path)
@@ -3330,6 +3629,8 @@ def main(argv=None):
     if v87_rc:return v87_rc
     v88_rc=v88_run(game,report_path)
     if v88_rc:return v88_rc
+    v90_rc=v90_run(game,report_path)
+    if v90_rc:return v90_rc
     print('v67 cached DLG structure:',v67_status['status'],
           len(v67_status['target_references']),'target references')
     print('Компиляция в изоляции (v52):',v36_preflight.get('status'),'— игра не изменена')
@@ -5809,6 +6110,7 @@ def selftest():
     assert v86_selftest() and callable(v86_run)
     assert v87_selftest() and callable(v87_run)
     assert v88_selftest() and callable(v88_run) and callable(v88_resume_after_cached)
+    assert v90_selftest() and callable(v90_run)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
