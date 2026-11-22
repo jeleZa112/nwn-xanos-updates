@@ -6474,8 +6474,8 @@ V104_ANCHORS = {
         'damage_listener_add': 'function EEex_Sprite_AddAlterBaseWeaponDamageListener(listener)',
     },
     'EEex_scripts/EEex_Sprite_Patch.lua': {
-        'damage_hook': 'callAlterBaseWeaponDamageHook(',
-        'swing_symbol': 'Hook-CGameSprite::Swing()-CGameSprite::Damage()',
+        'damage_hook_1': 'callAlterBaseWeaponDamageHook(EEex_Label("Hook-CGameSprite::Swing()-CGameSprite::Damage()-1"))',
+        'damage_hook_2': 'callAlterBaseWeaponDamageHook(EEex_Label("Hook-CGameSprite::Swing()-CGameSprite::Damage()-2"))',
     },
 }
 V104_OPTIONAL_COMPONENT = 'EEex_scripts/B3AttackInfo.lua'
