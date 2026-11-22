@@ -2,18 +2,77 @@
 -- Access only known fields from EEex-Docs CDerivedStatsTemplate (x64).
 -- Selected weapon stats apply to the CURRENT selection, NEVER every quickslot.
 -- No engine actions, no LOCALS/BCS/WeiDU changes, no queued-activity inference.
-local M = {version='BGXAI_WEAPON_ACTIVE_R4_SOURCE_ONLY'}
-local FIELDS = {
+local M = {version='BGXAI_WEAPON_ACTIVE_R4_ALL_PROF_SOURCE_ONLY'}
+-- Weapon proficiency IDs 89..115 are documented EE WPROF.IDS categories.
+-- 116..134 are extra raw stat slots: do NOT claim the mod's names or effective pips.
+-- This data only describes the selected character, not an alternate weapon's APR.
+local BASE_FIELDS={
  'm_nNumberOfAttacks','m_nTHAC0','m_nLevel1','m_nLevel2','m_nLevel3','m_nKit',
  'm_nSTR','m_nSTRExtra','m_nDEX','m_nDamageBonus',
  'm_nMeleeTHAC0Bonus','m_nMeleeDamageBonus','m_nMissileTHAC0Bonus','m_nMissileDamageBonus',
  'm_nHitBonus','m_bImprovedHaste','m_nLuck','m_nLevelDrain',
- 'm_THAC0BonusRight','m_THAC0BonusLeft','m_DamageBonusRight','m_DamageBonusLeft',
- 'm_nProficiencyLongSword','m_nProficiencyShortBow','m_nProficiencyQuarterStaff',
- 'm_nProficiencySwordAndShield','m_nProficiency2Handed','m_nProficiencySingleWeapon',
- 'm_nProficiency2Weapon'
+ 'm_THAC0BonusRight','m_THAC0BonusLeft','m_DamageBonusRight','m_DamageBonusLeft'
 }
+local PROFICIENCY_BY_ID={
+ [89]='m_nProficiencyBastardSword',
+ [90]='m_nProficiencyLongSword',
+ [91]='m_nProficiencyShortSword',
+ [92]='m_nProficiencyAxe',
+ [93]='m_nProficiencyTwoHandedSword',
+ [94]='m_nProficiencyKatana',
+ [95]='m_nProficiencyScimitarWakisashiNinjaTo',
+ [96]='m_nProficiencyDagger',
+ [97]='m_nProficiencyWarhammer',
+ [98]='m_nProficiencySpear',
+ [99]='m_nProficiencyHalberd',
+ [100]='m_nProficiencyFlailMorningStar',
+ [101]='m_nProficiencyMace',
+ [102]='m_nProficiencyQuarterStaff',
+ [103]='m_nProficiencyCrossbow',
+ [104]='m_nProficiencyLongBow',
+ [105]='m_nProficiencyShortBow',
+ [106]='m_nProficiencyDart',
+ [107]='m_nProficiencySling',
+ [108]='m_nProficiencyBlackjack',
+ [109]='m_nProficiencyGun',
+ [110]='m_nProficiencyMartialArts',
+ [111]='m_nProficiency2Handed',
+ [112]='m_nProficiencySwordAndShield',
+ [113]='m_nProficiencySingleWeapon',
+ [114]='m_nProficiency2Weapon',
+ [115]='m_nProficiencyClub'
+}
+for profId=116,134 do
+ PROFICIENCY_BY_ID[profId]='m_nExtraProficiency'..tostring(profId-114)
+end
+local FIELDS={}
+for _,name in ipairs(BASE_FIELDS) do FIELDS[#FIELDS+1]=name end
+for profId=89,134 do FIELDS[#FIELDS+1]=PROFICIENCY_BY_ID[profId] end
 M.fields=FIELDS
+M.proficiencyFieldById=PROFICIENCY_BY_ID
+M.proficiencyIdMin=89
+M.proficiencyIdMax=134
+M.standardProficiencyIdMax=115
+-- Never assign an ID 116..134 to a mod proficiency name without a live WPROF.IDS audit.
+function M.lookupProficiencyForItem(snapshot,item)
+ local hold={status='HOLD_PROFICIENCY_FOR_ITEM_UNVERIFIED',proficiencyRawOnly=true,
+  actorProficiencyRankVerified=false,installedWPROFMappingVerified=false,
+  alternateSlotAPRVerified=false,dispatchAuthorized=false,executable=false}
+ if type(snapshot)~='table' or type(snapshot.fields)~='table' or
+    type(item)~='table' or type(item.proficiencyIdRaw)~='number' or
+    item.proficiencyIdRaw%1~=0 then return hold end
+ local profId=item.proficiencyIdRaw
+ local name=PROFICIENCY_BY_ID[profId]
+ if name==nil then hold.reason='ITEM_PROFICIENCY_OUTSIDE_AUDITED_IDS';return hold end
+ local value=snapshot.fields[name]
+ if type(value)~='number' or value~=math.floor(value) then
+  hold.reason='ACTOR_PROFICIENCY_FIELD_UNREADABLE';return hold end
+ return {status=profId<=115 and 'RAW_STANDARD_PROFICIENCY_ID_MATCH' or
+   'HOLD_MODDED_WPROF_NAME_UNVERIFIED',proficiencyIdRaw=profId,field=name,
+   rawValue=value,proficiencyRawOnly=true,actorProficiencyRankVerified=false,
+   installedWPROFMappingVerified=false,alternateSlotAPRVerified=false,
+   dispatchAuthorized=false,executable=false}
+end
 local function protected(fn)
  local ok,value=pcall(fn)
  if ok then return value end
@@ -84,6 +143,70 @@ function M.compare(before,after)
   'RAW_SELECTED_STATS_UNCHANGED_NOT_PROOF_OF_ALL_EFFECTS'
  return output
 end
+-- Holy Power / Champion's Strength / druid form / haste can change derived
+-- THAC0, STR or APR without changing class or permanent proficiency. The
+-- observed change is evidence for re-ranking only, NEVER identification of a
+-- particular spell or a switch authorization. In particular fighter-like THAC0
+-- is not proof of fighter specialization or fighter-level APR.
+local COMBAT_DYNAMIC={
+ 'm_nNumberOfAttacks','m_nTHAC0','m_nSTR','m_nSTRExtra','m_nDEX',
+ 'm_nDamageBonus','m_nMeleeTHAC0Bonus','m_nMeleeDamageBonus',
+ 'm_nMissileTHAC0Bonus','m_nMissileDamageBonus','m_nHitBonus',
+ 'm_bImprovedHaste','m_nLuck','m_nLevelDrain',
+ 'm_THAC0BonusRight','m_THAC0BonusLeft','m_DamageBonusRight','m_DamageBonusLeft'
+}
+local CLASS_DYNAMIC={'m_nLevel1','m_nLevel2','m_nLevel3','m_nKit'}
+function M.auditTemporaryCombatShift(before,after)
+ local out={status='HOLD_UNCOMPARABLE_COMBAT_BUFF_SNAPSHOTS',
+  selectedStatsOnly=true,spellIdentityVerified=false,allBuffsObserved=false,
+  fighterClassGranted=false,fighterProficienciesGranted=false,
+  fighterAPRNotInferred=true,fullPerSlotAPRVerified=false,
+  currentActionPreserved=true,ordersSent=0,executable=false,
+  weaponSwitchAuthorized=false,dispatchAuthorized=false}
+ if type(before)~='table' or type(after)~='table' or
+   not integer(before.actorId,0,2147483647) or
+   before.actorId~=after.actorId or
+   type(before.fields)~='table' or type(after.fields)~='table' then
+  return out end
+ out.actorId=before.actorId
+ if before.selectedWeaponRaw~=after.selectedWeaponRaw or
+    before.selectedAbilityRaw~=after.selectedAbilityRaw then
+  out.status='HOLD_SELECTION_CHANGED_REAUDIT_ALL_WEAPONS'
+  return out end
+ for _,name in ipairs(CLASS_DYNAMIC) do
+  local a=before.fields[name];local b=after.fields[name]
+  if not integer(a,-2147483648,2147483647) or
+     not integer(b,-2147483648,2147483647) then
+   out.status='HOLD_CLASS_STAT_UNREADABLE';return out end
+  if a~=b then out.status='HOLD_CLASS_OR_KIT_CHANGED_NOT_BUFF_PROOF';return out end
+ end
+ for id=89,134 do
+  local name=PROFICIENCY_BY_ID[id]
+  local a=before.fields[name];local b=after.fields[name]
+  if not integer(a,-2147483648,2147483647) or
+     not integer(b,-2147483648,2147483647) then
+   out.status='HOLD_PROFICIENCY_UNREADABLE';return out end
+  if a~=b then
+   out.status='HOLD_PROFICIENCY_CHANGED_REAUDIT_WEAPON';return out end
+ end
+ local changes={}
+ for _,name in ipairs(COMBAT_DYNAMIC) do
+  local a=before.fields[name];local b=after.fields[name]
+  if not integer(a,-2147483648,2147483647) or
+     not integer(b,-2147483648,2147483647) then
+   out.status='HOLD_CURRENT_COMBAT_STAT_UNREADABLE';return out end
+  if a~=b then changes[#changes+1]={field=name,fromRaw=a,toRaw=b} end
+ end
+ out.changed=changes;out.changeCount=#changes
+ out.beforeAPRRaw=before.fields.m_nNumberOfAttacks
+ out.afterAPRRaw=after.fields.m_nNumberOfAttacks
+ out.beforeTHAC0Raw=before.fields.m_nTHAC0
+ out.afterTHAC0Raw=after.fields.m_nTHAC0
+ out.status=#changes>0 and 'CURRENT_SELECTED_COMBAT_SHIFT_RECALCULATE_KEEP_ACTION' or
+  'NO_OBSERVED_SHIFT_BUFFS_STILL_NOT_EXHAUSTIVE'
+ return out
+end
+
 -- This is an index of the *proven observed fields*, not a proof of pips,
 -- ability-specific APR, buff completeness, item usability, or action safety.
 function M.classifyObservedEvidence(snapshot)
