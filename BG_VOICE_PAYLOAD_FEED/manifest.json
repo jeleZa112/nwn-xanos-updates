@@ -5,15 +5,15 @@
   "owner_scope": "voice_payloads_only",
   "updater_owner": "main_voice_video_chat",
   "updater_name": "BG_VOICE_UPDATE.cmd",
-  "latest_payload_version": 71,
+  "latest_payload_version": 73,
   "state": {
-    "version": 71,
+    "version": 73,
     "library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_PROJECT_STATE.md",
-    "verification": "Library state version 71"
+    "verification": "Library state version 73 after checkpoint sync"
   },
   "package_transport": "chatgpt_shared_library",
   "windows_auto_download_enabled": false,
-  "note": "Public GitHub feed indexes packages stored in shared ChatGPT Library. ZIP bytes are not hosted by this GitHub branch. Windows updater must not attempt to download the ZIPs from nonexistent GitHub asset URLs.",
+  "note": "GitHub public branch hosts metadata and original generic V73 Python source, not game dialogue CSV, WAV, or ZIP bytes. Full payloads remain in the shared ChatGPT Library. Windows automatic download of complete ZIP is NOT connected.",
   "packages": [
     {
       "version": 69,
@@ -47,6 +47,22 @@
       "status": "library_ready_host_integration_unverified",
       "jobs": 33,
       "for_game_install": false
+    },
+    {
+      "version": 73,
+      "kind": "calibration_audition_worker",
+      "name": "BG_VOICE_RU_V73_CALIBRATION_PAYLOAD_20261122.zip",
+      "library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_V73_CALIBRATION_PAYLOAD_20261122.zip",
+      "bytes": 8696,
+      "sha256": "c3961cae741acf110e54c71446ca80bee3b9ca0b367f8775f403d037a29b2ba7",
+      "status": "library_ready_main_updater_integration_unverified",
+      "source_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/v73/BGVOICE_V73_CALIBRATION_WORKER.py",
+      "source_manifest_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/v73/MANIFEST_V73.json",
+      "calibration_lines": 96,
+      "batches": 6,
+      "batch_size": 16,
+      "stage_only": true,
+      "for_game_install": false
     }
   ],
   "human_locks": {
@@ -63,5 +79,6 @@
     "ERROR_QUEUE_AND_RESUME",
     "DO_NOT_RESTART_FINISHED_QA",
     "VOICE_UPDATER_OWNER_MUST_APPROVE_INTEGRATION"
-  ]
+  ],
+  "shared_chat_consumer_instruction": "Read manifest; fetch matching Library ZIP autonomously; verify ZIP SHA256; import into ONE existing updater. Do not ask user to forward every version."
 }
