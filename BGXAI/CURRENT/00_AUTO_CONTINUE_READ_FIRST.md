@@ -111,3 +111,7 @@ R4 LIVE по 16 событиям реальной сессии третьего 
 **Запрет неправильной остановки:** прежде чем писать окончательное сообщение, проверить наличие следующего безопасного действия. Если оно доступно — выполнить, а не ждать команды `+`.
 
 **Этот файл ставится в начало папки `CURRENT`, перед `PROJECT_STATE` и `HANDOFF`.**
+
+## 22.11.2026 — LATEST: MENU 160 READ ONLY RELEASED, USER CHECK NOW
+
+**NEWEST checkpoint:** `BGXAI/CURRENT/BGXAI_WEAPON160_RELEASED_READONLY_20261122_RU.md` (GitHub+Library). One existing `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd` now pulls verified pinned script with option **160 — Weapon EEex R11 static compat READ ONLY** (PIN release commit `6b26d44770a14aeb63277e17e14e91796bcce56c`, SHA256 `30b248b6d043580eeec32e243ecc529b51fa6299724a0f448b81c88060e0c1ed`, 79943 bytes). Windows CI PowerShell 5.1/7 AST and all old 1–159 handler regression PASS, static scanner 26/26 PASS. No live scan yet, no game modification or weapon switching. **USER ACTION NOW**: launch existing updater; choose `160`; return complete console output incl `status`; no other files/commands. Then continue proactively without asking '+', but any in-game installation still needs separately typed approval.
