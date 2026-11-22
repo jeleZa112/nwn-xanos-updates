@@ -43,6 +43,16 @@ jobs:
           $h=([BitConverter]::ToString([Security.Cryptography.SHA256]::HashData($b))).Replace('-','').ToLowerInvariant()
           Write-Host ('BGXAI_160_PINNED_SCRIPT_BYTES='+$b.Length)
           Write-Host ('BGXAI_160_PINNED_SCRIPT_SHA256='+$h)
+      - name: Native Windows PowerShell 5.1 AST compatibility
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $script='BGXAI/BUILD/WEAPON_160_SOURCE_ONLY/BGXAI_SYNC_160_CANDIDATE.ps1'
+          $tokens=$null
+          $errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $script).Path,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -ne 0){throw ('BGXAI_160_WINPS51_AST_FAILED: '+(($errors|ForEach-Object {$_.Message}) -join '; '))}
+          Write-Host 'BGXAI_160_WINPS51_AST_PASS'
       - name: Offline EEex V2 scanner regression (never touches game)
         shell: pwsh
         run: |
