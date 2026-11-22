@@ -59,6 +59,40 @@ def _item(r3,name):
     _effects(val)
     return val,prov
 
+def _item_loss_risks(r3, name, abilities):
+    """Detect resource-based replacement chains; describes *potential* loss only.
+
+    The effect activation (including iron-crisis story state, weapon ownership,
+    opcode target semantics) is unproven. Do not invent damage or probability.
+    """
+    found=[]
+    for a in abilities:
+        for e in a.get('effects',[]):
+            if e.get('opcodeRaw')!=146 or not _ref(e.get('resourceRaw')):
+                continue
+            spname=e['resourceRaw']
+            sp=r3.get('linkedSpells',{}).get(spname)
+            if not isinstance(sp,dict):
+                raise EvidenceHold('LINKED_SPELL_MISSING_IN_R3:'+spname)
+            spr=sp.get('provenance',{})
+            _req(spr.get('origin') in ('CURRENT_GAME_BIFF','CURRENT_GAME_OVERRIDE') and
+                 isinstance(spr.get('sha256'),str) and SHA.fullmatch(spr['sha256']),
+                 'LINKED_SPELL_PROVENANCE_INVALID:'+spname)
+            ability_fx=[x for ab in sp.get('spell',{}).get('abilities',[]) for x in ab.get('effects',[])]
+            removes=[x.get('resourceRaw') for x in ability_fx if x.get('opcodeRaw')==112]
+            creates=[x.get('resourceRaw') for x in ability_fx if x.get('opcodeRaw')==122]
+            replacement=name in removes and 'MISC56_' in creates
+            if replacement:
+                found.append({'type':'POTENTIAL_WEAPON_BREAKAGE_REPLACEMENT',
+                    'triggerOpcodeRaw':146,'triggerSpellRaw':spname,
+                    'triggerProbability1Raw':e.get('probability1Raw'),
+                    'triggerProbability2Raw':e.get('probability2Raw'),
+                    'removeItemRaw':name,'createItemRaw':'MISC56_',
+                    'narrativeContext':'IRON_CRISIS_POSSIBLE_NOT_LIVE_PROVEN',
+                    'observedTriggerCount':0,'numericalDamageContributionCounted':0,
+                    'activationAndTargetConditionsVerified':False})
+    return found
+
 def _read(path):
     p=Path(path)
     _req(p.is_file() and not p.is_symlink() and 0<p.stat().st_size<=12_000_000,'INPUT_FILE_INVALID')
@@ -152,7 +186,8 @@ def analyze(r3,paired,r3sha=None,pairedsha=None):
          'conditionalAmmoCandidates':reference,'staticBaseDamageMeanWithoutStatsOrEffects':rawbase,
          'fixedAPRByEquippedEffectRaw':flat,'sampledAPRAfterSelection':sampledcode,
          'staticBaseDamageTimesSampledAPR_NotDPS':sampledDpr,
-         'specialHitEffectsUnvalued':special,'equippedEffectOpcodesRaw':[e['opcodeRaw'] for e in fx],
+         'specialHitEffectsUnvalued':special,'potentialItemLossRisks':_item_loss_risks(r3,name,abilities),
+         'equippedEffectOpcodesRaw':[e['opcodeRaw'] for e in fx],
          'offhandShieldMayBeSuppressed':bool(item.get('twoHandedFlagRaw') and hand.get('resrefRaw')),
          'status':'STATIC_ONLY_ABILITY_AND_AMMO_NOT_VALIDATED_FOR_SWITCH',
          'executable':False,'dispatchAuthorized':False})
