@@ -19,3 +19,7 @@ R1–R4: подтверждены ранее LIVE в наблюдательно�
 ## Следующее действие
 
 Не переустанавливать R1–R4. Для настоящего прогресса необходимо подтвердить, что в установленной EEex соответствующие функции доступны, вызываются в безопасном потоке и не меняют игру. Затем отдельный защищённый read-only LIVE pilot через **существующий** updater, с явным согласием до установки. Считывать только текущий выбранный слот и идентифицированную цель. APR альтернативных слотов, происхождение очереди EPS/manual и разрешение переключения ещё не подтверждены.
+
+## Latest verified continuation (22.11.2026)
+
+R11 target-bound V2 source-only: 26/26 Lua offline tests. It pins the started-action actor, actee, selected weapon and ability across EEex read calls, never calls dispatch and never claims hostile-target, installed EEex API, alternate APR, EPS or manual-action queue proof. Combined current offline regression: 145/145 tests. Check `BGXAI_R11_TARGET_BOUND_CHECKPOINT_RU.md` and `BGXAI/BUILD/R11_R12_SELECTED_HIT_SOURCE_ONLY/`. **Automatic progress means continue within the same available turn, not asynchronous work after a reply.** Stop only at real safety/authorization/environment blocker.

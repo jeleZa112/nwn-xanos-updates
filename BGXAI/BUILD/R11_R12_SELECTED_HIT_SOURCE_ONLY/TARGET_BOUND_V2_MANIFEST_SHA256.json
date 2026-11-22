@@ -1,0 +1,27 @@
+{
+  "schema": "BGXAI_R11_TARGET_BOUND_SOURCE_V2",
+  "source_only": true,
+  "install_authorized": false,
+  "paths": {
+    "BGXAI_R11_ACTION_TARGET_CANDIDATE_RO.lua": {
+      "size": 2589,
+      "sha256": "93a8560b842fcb4fb5abd711d0ea167275990100727f1204c148286129b55df0"
+    },
+    "BGXAI_R11_TARGET_BOUND_CHECKPOINT_RU.md": {
+      "size": 5029,
+      "sha256": "7ade099fa03d1691de464f4f1991a4d813ed47eb711ad1cfb60180d27d0df0bf"
+    },
+    "BGXAI_R11_TARGET_BOUND_HIT_CANDIDATE_V2.lua": {
+      "size": 7312,
+      "sha256": "7a65abcdb12c9235e3836c0956a6ce42f7fa7ac3dbf51d7cb20c2a71d8165e32"
+    },
+    "BGXAI_WEAPON_R11_EEEX_SELECTED_HIT_PROBE.lua": {
+      "size": 4920,
+      "sha256": "36d795d8f769d463fece9fecd56662c25ece7c9a220807672716f72fe0c00f08"
+    },
+    "test_r11_target_bound_v2.lua": {
+      "size": 5923,
+      "sha256": "55a13856e75aea1082536823b9df1401820342cc12a7da4bbce8bda833ec3a8c"
+    }
+  }
+}
