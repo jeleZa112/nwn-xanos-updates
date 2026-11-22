@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "6b26d44770a14aeb63277e17e14e91796bcce56c",
+  "commit": "1db5a1337d24297be492a43bd481ba14f53268de",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "30b248b6d043580eeec32e243ecc529b51fa6299724a0f448b81c88060e0c1ed",
+  "script_sha256": "b7e62b0e1fba2a6f6730508c02718da2c56211b1f98344adbb135735abfe9697",
   "script_size": 79943,
-  "description": "BGXAI ONEFILE read-only option 160: pinned EEex R11 static compatibility scan. Legacy menus 1-159 exact-preserved; EET, EPS, V6 and R1-R4 untouched. No R11 deploy or weapon dispatch; runtime API still unverified."
+  "description": "BGXAI ONEFILE menu 160 V3 READ ONLY: optional missing B3AttackInfo is diagnostic core-static success with R11 API still unverified. Legacy 1–159 unchanged, EPS/V6 and all game files untouched; no R11 install or weapon dispatch."
 }
