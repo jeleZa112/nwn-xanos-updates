@@ -78,5 +78,21 @@ test('failed hook does not throw and has no orders',function()
  dofile(folder..'M_BGXW4.lua');assert(BGXWeaponActiveR4.registered==false)
  assert(BGXWeaponActiveR4.ordersSent==0)
 end)
+test('all 68 raw stat fields serialize including dart sling and mod extra',function()
+ dofile(folder..'M_BGXW4.lua');local e=example()
+ e.stats.m_nProficiencyDart=2;e.stats.m_nProficiencySling=3
+ e.stats.m_nExtraProficiency20=4
+ hooks[1](e,{m_actionID=30})
+ local s=active_lines()[1]
+ assert(s:find('"m_nProficiencyDart":2',1,true))
+ assert(s:find('"m_nProficiencySling":3',1,true))
+ assert(s:find('"m_nExtraProficiency20":4',1,true))
+end)
+test('modded missing proficiency serializes null not invented zero',function()
+ dofile(folder..'M_BGXW4.lua');local e=example()
+ e.stats.m_nExtraProficiency20=nil
+ hooks[1](e,{m_actionID=30})
+ assert(active_lines()[1]:find('"m_nExtraProficiency20":null',1,true))
+end)
 for k,v in pairs(orig) do _G[k]=v end
 print('BGXAI_R4_WRAPPER_OFFLINE_PASS '..count..'/'..count)
