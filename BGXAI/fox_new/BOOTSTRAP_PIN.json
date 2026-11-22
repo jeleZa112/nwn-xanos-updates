@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "e0f606a6b780d1eef1b77a8f5f204db927dc5a0c",
+  "commit": "997798e9ab274e57b1ae8ff0da00b5e43d4983b5",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "be239cfabfa6efe1bdd651264231d14afc7e05783b6800cf0487f0992dafe595",
-  "script_size": 79967,
-  "description": "BGXAI onefile menu 1-159 unchanged; under 159 -> 7 -> 6 R3 native current game KEY/BIFF ITM+SPL+2DA read-only extraction from previous R2 actual gear. Source-only sync, no WeiDU install or game edits. Existing R1.1/R2 observers, V6/EPS, saves not replaced."
+  "script_sha256": "ba6f8cf6f130a6fdc7ce4d7f48cad2e33492f0b3fe48ed301599afcc8cf04973",
+  "script_size": 79971,
+  "description": "BGXAI onefile main menu 1-159 retained. In existing 159->7 R1/R2/R3 choices preserved; added R4 active derived stats observer preflight 7, opt-in guarded install 8, status 9, collect 10 and last-only rollback 11. SHA-guarded source sync; R4 NOT installed until separate typed consent, never issues orders; V6/EPS and saves unchanged."
 }
