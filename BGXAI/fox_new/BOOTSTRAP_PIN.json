@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "dec88235c0231feca2238aa1e59025b6a6b78ac5",
+  "commit": "7c4e3cdae47f7ecd4bf25b3e216f617ecfa21002",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "7f3baca4f34ed800069d2f6d6201fe68d93572c815f70cbed069ee983a8749cf",
-  "script_size": 79529,
-  "description": "BGXAI onefile menu162: consent-gated R13 fix for 8-char M_BGXD13.lua Lua resource, status/preflight READ ONLY default. Old R13 preserved; installer via WeiDU only with typed user authorization, source and backup SHA verified. Menus 1-161 unchanged, no game modifications by pin."
+  "script_sha256": "7380e82cec9f7e67728e0cfcb6eb448c5223d71bf17aae14cfdb0474bd9f69e2",
+  "script_size": 79535,
+  "description": "BGXAI onefile menu162 now has choice 5: readonly InfinityLoader console capture to external Documents/BGXAI_LIVE_REPORTS, no Lua reinstallation or game change. Old menus 1-162 and guarded installs unchanged; 54/54 Windows tests PASS."
 }
