@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 104
+SELF_VERSION = 105
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -6610,6 +6610,469 @@ def v104_selftest():
     return True
 
 
+
+# BG EET RU v105: read-only preflight, explicitly authorized observer install + exact rollback.
+# This does not attribute any event to a visible combat log row.
+V105_ENTRY = '51_V105_WEAPON_OBSERVER_BRIDGE.json'
+V105_SCHEMA = 'BG_EET_RU_V105_WEAPON_OBSERVER_BRIDGE'
+V105_STATE = WORKDIR/'BG_EET_RU_V105_WEAPON_OBSERVER_STATE.json'
+V105_INSTALL_APPROVAL = 'INSTALL_BG_EET_RU_V105_WEAPON_OBSERVER'
+V105_ROLLBACK_APPROVAL = 'ROLLBACK_BG_EET_RU_V105_WEAPON_OBSERVER'
+V105_OBSERVER_MODULE = 'BG_EET_RU_WeaponObserver.lua'
+V105_EVENT_STAGE = WORKDIR/'BG_EET_RU_V105_WEAPON_EVENTS.tsv'
+V105_STATUS_STAGE = WORKDIR/'BG_EET_RU_V105_WEAPON_STATUS.tsv'
+V105_EEEX_SPRITE_SHA = '4813ae620f0b472903848018d66488805db7ba2012e065019f4ea5f2a6afab28'
+V105_EEEX_PATCH_SHA = 'e301b46770477cf29e3d39d6591a5a9fba4f3aeafa03c3dbfa75f7ef6bc13b7f'
+V105_OBSERVER_SOURCE = r"""-- BG_EET_RU WEAPON EVENT OBSERVER V2: SOURCE ONLY, NOT INSTALLED.
+-- Purpose: discover *available* context fields at base-weapon-damage events.
+-- This is not an attack-log annotator, not a miss observer, and not a damage modifier.
+-- Do not load this file or call Start without separate explicit installation approval.
+-- No game/log/save writes, no disk writes, and no action/AI modification.
+
+BG_EET_RU_WEAPON_EVENT_OBSERVER_V1 = {
+    enabled = false,
+    registered = false,
+    max_events = 64,
+    events = {},
+    total_seen = 0,
+    total_recorded = 0,
+}
+
+local function bounded_field_record(context)
+    local fields = {}
+    local observed = 0
+    if type(context) ~= 'table' then return fields end
+    for key, value in pairs(context) do
+        if type(key) == 'string' and #key <= 80 then
+            observed = observed + 1
+            if observed > 80 then break end
+            local kind = type(value)
+            local entry = { value_type = kind }
+            if kind == 'number' and value == value and math.abs(value) < 1000000000 then
+                entry.primitive = value
+            elseif kind == 'boolean' then
+                entry.primitive = value
+            elseif kind == 'string' then
+                entry.primitive = value:sub(1, 120)
+            end
+            -- Never dereference or stringify userdata (may be CItem/CGameSprite).
+            fields[key] = entry
+        end
+    end
+    return fields
+end
+
+function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage(context)
+    local st = BG_EET_RU_WEAPON_EVENT_OBSERVER_V1
+    if not st.enabled then return end
+    st.total_seen = st.total_seen + 1
+    local record = {
+        kind = 'base_weapon_damage',
+        ordinal = st.total_seen,
+        fields = bounded_field_record(context),
+        -- Actual weapon, ammo, target, and attack-to-log correlation are UNKNOWN.
+        weapon_id_verified = false,
+        ammo_id_verified = false,
+        attack_log_row_correlated = false,
+    }
+    st.events[#st.events + 1] = record
+    if #st.events > st.max_events then table.remove(st.events, 1) end
+    st.total_recorded = st.total_recorded + 1
+    -- No context mutations. No combat state modifications. No return value.
+end
+
+function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()
+    local st = BG_EET_RU_WEAPON_EVENT_OBSERVER_V1
+    if st.registered then st.enabled = true; return true, 'ALREADY_REGISTERED' end
+    if type(EEex_Sprite_AddAlterBaseWeaponDamageListener) ~= 'function' then
+        return false, 'EEEX_DAMAGE_LISTENER_UNAVAILABLE'
+    end
+    EEex_Sprite_AddAlterBaseWeaponDamageListener(
+        BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage
+    )
+    st.registered = true
+    st.enabled = true
+    return true, 'LISTENER_REGISTERED'
+end
+
+function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Stop()
+    -- EEex listener-registration API has no verified removal API in this build.
+    -- Disable recording rather than pretending to detach the registered callback.
+    BG_EET_RU_WEAPON_EVENT_OBSERVER_V1.enabled = false
+end
+
+function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Status()
+    local st = BG_EET_RU_WEAPON_EVENT_OBSERVER_V1
+    return {
+        enabled = st.enabled,
+        registered = st.registered,
+        total_seen = st.total_seen,
+        total_recorded = st.total_recorded,
+        buffered_events = #st.events,
+        observed_hit_or_damage_only = true,
+        misses_proven = false,
+        launcher_ammo_pair_proven = false,
+        log_row_attribution_proven = false,
+    }
+end
+
+
+-- V2 source extension: bounded external evidence, only after authorized installation.
+-- The configured report paths are generated from the single updater and are outside the game.
+local BG_EET_RU_V105_EXPORT_FILE = __V105_EVENTS_PATH__
+local BG_EET_RU_V105_STATUS_FILE = __V105_STATUS_PATH__
+local function BG_EET_RU_V105_SaveLine(path, line)
+    if type(io) ~= "table" or type(io.open) ~= "function" then return false end
+    return pcall(function()
+        local f = io.open(path, "ab")
+        if not f then error("EXTERNAL_FILE_NOT_WRITABLE") end
+        f:write(line, "\n")
+        f:close()
+    end)
+end
+local function BG_EET_RU_V105_Sanitize(v)
+    local s = tostring(v)
+    s = s:gsub("[\t\r\n\\]", "_")
+    return s:sub(1, 92)
+end
+local BG_EET_RU_V105_OriginalDamage = BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage
+function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage(context)
+    BG_EET_RU_V105_OriginalDamage(context)
+    local state = BG_EET_RU_WEAPON_EVENT_OBSERVER_V1
+    if not state.enabled or state.total_recorded > state.max_events then return end
+    local event = state.events[#state.events]
+    if not event then return end
+    local line = "EVENT\t" .. tostring(event.ordinal)
+    local names = {}
+    for name in pairs(event.fields) do
+        names[#names+1] = name
+    end
+    table.sort(names)
+    for _, key in ipairs(names) do
+        local field = event.fields[key]
+        local value = ""
+        if field.primitive ~= nil then value = BG_EET_RU_V105_Sanitize(field.primitive) end
+        line = line .. "\t" .. BG_EET_RU_V105_Sanitize(key) .. ":" ..
+                      BG_EET_RU_V105_Sanitize(field.value_type) .. ":" .. value
+        if #line > 3000 then break end
+    end
+    BG_EET_RU_V105_SaveLine(BG_EET_RU_V105_EXPORT_FILE, line)
+end
+
+local BG_EET_RU_V105_OriginalStart = BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start
+function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()
+    local ok, reason = BG_EET_RU_V105_OriginalStart()
+    BG_EET_RU_V105_SaveLine(BG_EET_RU_V105_STATUS_FILE,
+        "START\t" .. tostring(ok) .. "\t" .. BG_EET_RU_V105_Sanitize(reason))
+    return ok, reason
+end
+BG_EET_RU_V105_SaveLine(BG_EET_RU_V105_STATUS_FILE, "SOURCE_LOADED")
+"""
+
+V105_MAIN_ANCHOR = b'\tEEex_Active = true'
+V105_MAIN_INJECT = b'''\t-- BG EET RU V105 weapon observer, explicit opt-in; errors fail closed.
+\tpcall(function()
+\t\tEEex_DoFile("BG_EET_RU_WeaponObserver")
+\t\tif type(BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start) == "function" then
+\t\t\tBG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()
+\t\tend
+\tend)
+'''
+
+def v105_source_module():
+    if V105_OBSERVER_SOURCE.count('__V105_EVENTS_PATH__')!=1 or V105_OBSERVER_SOURCE.count('__V105_STATUS_PATH__')!=1:
+        raise RuntimeError('V105_OBSERVER_SOURCE_MARKERS_CHANGED')
+    source=V105_OBSERVER_SOURCE.replace('__V105_EVENTS_PATH__',json.dumps(str(V105_EVENT_STAGE)))
+    source=source.replace('__V105_STATUS_PATH__',json.dumps(str(V105_STATUS_STAGE)))
+    if '__V105_' in source:raise RuntimeError('V105_UNRESOLVED_SOURCE_MARKER')
+    return source.encode('utf8')
+
+def v105_transform_main(original):
+    if not isinstance(original,bytes) or len(original)>300_000:
+        raise RuntimeError('V105_BAD_EEEX_MAIN_SOURCE')
+    if original.count(V105_MAIN_ANCHOR)!=1 or original.count(b'EEex_DoFile(fileName)')!=1:
+        raise RuntimeError('V105_EEEX_MAIN_ANCHOR_MISSING_OR_DUPLICATE')
+    if b'BG_EET_RU_WeaponObserver' in original:
+        raise RuntimeError('V105_MODULE_ALREADY_IN_MAIN')
+    eol=b'\r\n' if b'\r\n' in original else b'\n'
+    injection=V105_MAIN_INJECT.replace(b'\n',eol)
+    out=original.replace(V105_MAIN_ANCHOR,injection+V105_MAIN_ANCHOR,1)
+    if out.replace(injection,b'',1)!=original or out.count(injection)!=1:
+        raise RuntimeError('V105_MAIN_ROLLBACK_REVERSIBILITY_FAILED')
+    if out.count(b'EEex_DoFile("BG_EET_RU_WeaponObserver")')!=1:
+        raise RuntimeError('V105_MAIN_MODULE_LOAD_UNIQUE_GATE_FAILED')
+    return out
+
+def v105_get_state():
+    if not V105_STATE.is_file():return None
+    if V105_STATE.is_symlink() or V105_STATE.stat().st_size>20000:
+        raise RuntimeError('V105_STATE_UNSAFE')
+    data=json.loads(V105_STATE.read_text('utf8'))
+    if data.get('schema')!=V105_SCHEMA or data.get('phase') not in ('PREPARED','INSTALLED','ROLLED_BACK'):
+        raise RuntimeError('V105_STATE_UNKNOWN')
+    return data
+
+def v105_put_state(data):
+    if data.get('schema')!=V105_SCHEMA:raise RuntimeError('V105_BAD_STATE_SCHEMA')
+    safe_external(Path(DEFAULT_GAME),V105_STATE)
+    V105_STATE.parent.mkdir(parents=True,exist_ok=True)
+    stage=V105_STATE.with_name(V105_STATE.name+'.stage')
+    if stage.exists():raise RuntimeError('V105_STATE_STAGE_COLLISION')
+    try:
+        with stage.open('x',encoding='utf8') as stream:
+            json.dump(data,stream,ensure_ascii=False,indent=2)
+        os.replace(stage,V105_STATE)
+    finally:
+        if stage.exists():stage.unlink()
+
+def v105_preflight(game,installed=False):
+    game=Path(game)
+    v85=v85_state_read()
+    if not v85 or v85.get('phase')!='INSTALLED':
+        raise RuntimeError('V105_V85_NOT_INSTALLED')
+    v85_check_live_state(game,v85)
+    if not v101_state_read() or v101_state_read().get('phase')!='INSTALLED':
+        raise RuntimeError('V105_V101_BASELINE_MISSING')
+    root=game/'EEex_scripts'
+    main=root/'EEex_Main.lua'
+    module=root/V105_OBSERVER_MODULE
+    sprite=root/'EEex_Sprite.lua'
+    patch=root/'EEex_Sprite_Patch.lua'
+    for p in (root,main,sprite,patch):
+        if not p.exists() or p.is_symlink() or (p!=root and not p.is_file()):
+            raise RuntimeError('V105_REQUIRED_EEEX_FILE_MISSING_OR_UNSAFE:'+p.name)
+    if not root.is_dir():raise RuntimeError('V105_EEEX_DIR_NOT_REGULAR')
+    if digest(sprite.read_bytes())!=V105_EEEX_SPRITE_SHA or digest(patch.read_bytes())!=V105_EEEX_PATCH_SHA:
+        raise RuntimeError('V105_EEEX_SOURCE_SHA_CHANGED_SINCE_V104')
+    if sprite.stat().st_size>200000 or patch.stat().st_size>200000:
+        raise RuntimeError('V105_EEEX_MODULE_SIZE_UNEXPECTED')
+    if module.is_symlink():raise RuntimeError('V105_OBSERVER_MODULE_SYMLINK')
+    prior=main.read_bytes()
+    if installed:
+        return {'main':main,'module':module,'existing_main':prior}
+    if module.exists():raise RuntimeError('V105_OBSERVER_MODULE_NAME_OCCUPIED')
+    replacement=v105_transform_main(prior)
+    payload=v105_source_module()
+    return {'main':main,'module':module,'original_main':prior,
+            'candidate_main':replacement,'module_bytes':payload,
+            'original_main_sha256':digest(prior),'candidate_main_sha256':digest(replacement),
+            'module_sha256':digest(payload)}
+
+def v105_report_runtime():
+    output={}
+    for key,path in [('startup_status',V105_STATUS_STAGE),('events',V105_EVENT_STAGE)]:
+        if path.is_symlink():
+            output[key]={'state':'SYMLINK_REJECTED'};continue
+        if not path.exists():
+            output[key]={'state':'NOT_YET_RECORDED'};continue
+        if not path.is_file() or path.stat().st_size>262144:
+            output[key]={'state':'UNSAFE_SIZE_OR_TYPE'};continue
+        raw=path.read_bytes()
+        if len(raw)>262144:output[key]={'state':'OVERSIZED'};continue
+        lines=raw.decode('utf8','replace').splitlines()
+        if len(lines)>1024:
+            output[key]={'state':'TOO_MANY_LINES','count':len(lines)};continue
+        if key=='events':
+            event_records=[]
+            for line in lines:
+                parts=line.split('\t')
+                if len(parts)<2 or parts[0]!='EVENT' or not parts[1].isdecimal():
+                    continue
+                event_records.append({'event_index':int(parts[1]),'field_samples':parts[2:82]})
+            output[key]={'state':'CAPTURED' if event_records else 'EMPTY',
+                         'record_count':len(event_records),'records':event_records[-128:],
+                         'note':'Field names/types and primitive values; no trusted item identity yet'}
+        else:
+            output[key]={'state':'CAPTURED','lines':lines[-64:]}
+    return output
+
+def v105_zip_report(game,report_path,report):
+    safe_external(Path(game),Path(report_path))
+    if not Path(report_path).is_file():raise RuntimeError('V105_PRIOR_ZIP_MISSING')
+    with zipfile.ZipFile(report_path) as z:
+        if z.testzip() is not None or len(z.namelist())!=len(set(z.namelist())):
+            raise RuntimeError('V105_PRIOR_ZIP_INVALID')
+        old=json.loads(z.read(V105_ENTRY)) if V105_ENTRY in z.namelist() else None
+    if old==report:return
+    with tempfile.NamedTemporaryFile(dir=str(Path(report_path).parent),prefix='.v105_',suffix='.zip',delete=False) as temp:
+        stage=Path(temp.name)
+    try:
+        with zipfile.ZipFile(report_path) as src,zipfile.ZipFile(stage,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=7) as dst:
+            for info in src.infolist():
+                if info.filename!=V105_ENTRY:dst.writestr(info,src.read(info))
+            dst.writestr(V105_ENTRY,json.dumps(report,ensure_ascii=False,indent=2).encode('utf8'))
+        with zipfile.ZipFile(stage) as z:
+            if z.testzip() is not None or z.namelist().count(V105_ENTRY)!=1:
+                raise RuntimeError('V105_REPORT_VERIFY_FAILED')
+        os.replace(stage,report_path)
+    finally:
+        if stage.exists():stage.unlink()
+
+def v105_run(game,report_path,mode='status'):
+    report={'schema':V105_SCHEMA,'version':SELF_VERSION,'mode':mode,
+            'status':'V105_SOURCE_ONLY_HOLD','game_files_written':0,
+            'BGXAI_changed':False,'BG_Voice_RU_changed':False,
+            'exe_db_tlk_saves_changed':False,'runtime_verified':False,'errors':[]}
+    try:
+        if mode not in ('status','install','rollback'):
+            raise RuntimeError('V105_INVALID_MODE')
+        safe_external(game,report_path)
+        st=v105_get_state()
+        if st and st['phase']=='PREPARED':
+            raise RuntimeError('V105_PREPARED_RECOVERY_HOLD')
+        if st and st['phase']=='INSTALLED':
+            files=v105_preflight(game,installed=True)
+            if (digest(files['existing_main'])!=st.get('candidate_main_sha256') or
+                not files['module'].is_file() or
+                digest(files['module'].read_bytes())!=st.get('module_sha256')):
+                raise RuntimeError('V105_INSTALLED_FILE_INTEGRITY_HOLD')
+            report['status']='V105_INSTALLED_RUNTIME_TEST_REQUIRED'
+            if mode=='rollback':
+                closed,why=v71_processes_closed()
+                if not closed:raise RuntimeError('V105_CLOSE_GAME_BEFORE_ROLLBACK:'+why)
+                backup=Path(st['backup_main']);safe_external(game,backup)
+                if backup.is_symlink() or not backup.is_file() or digest(backup.read_bytes())!=st['original_main_sha256']:
+                    raise RuntimeError('V105_BACKUP_MISSING_OR_CHANGED')
+                if not v85_read_input_approval(V105_ROLLBACK_APPROVAL):
+                    report['status']='V105_ROLLBACK_NOT_AUTHORIZED'
+                else:
+                    original=backup.read_bytes()
+                    stage=files['main'].with_name('EEex_Main.lua.v105restore')
+                    if stage.exists():raise RuntimeError('V105_ROLLBACK_STAGE_EXISTS')
+                    try:
+                        with stage.open('xb') as out:out.write(original)
+                        if digest(stage.read_bytes())!=st['original_main_sha256']:
+                            raise RuntimeError('V105_RESTORE_STAGE_SHA')
+                        if digest(files['main'].read_bytes())!=st['candidate_main_sha256']:
+                            raise RuntimeError('V105_MAIN_CHANGED_DURING_ROLLBACK')
+                        os.replace(stage,files['main'])
+                        if digest(files['main'].read_bytes())!=st['original_main_sha256']:
+                            raise RuntimeError('V105_MAIN_RESTORE_BAD_SHA')
+                        if digest(files['module'].read_bytes())!=st['module_sha256']:
+                            raise RuntimeError('V105_MODULE_CHANGED_DURING_ROLLBACK')
+                        files['module'].unlink()
+                        v105_put_state({**st,'phase':'ROLLED_BACK','rolled_back_utc':now()})
+                        report['status']='V105_ROLLED_BACK_TO_ORIGINAL_EEEX_MAIN'
+                        report['game_files_written']=2
+                    finally:
+                        if stage.exists():stage.unlink()
+        elif mode=='rollback':
+            report['status']='V105_NOT_INSTALLED'
+        else:
+            data=v105_preflight(game)
+            report.update({'status':'V105_GUARDED_OBSERVER_PREFLIGHT_PASS_NOT_INSTALLED',
+                           'original_main_sha256':data['original_main_sha256'],
+                           'candidate_main_sha256':data['candidate_main_sha256'],
+                           'observer_sha256':data['module_sha256'],
+                           'main_bytes':len(data['original_main']),
+                           'observer_bytes':len(data['module_bytes']),
+                           'scope':'EEex Main module bridge + new dedicated observer module; no M_BGERU edit'})
+            if mode=='install':
+                closed,why=v71_processes_closed()
+                if not closed:raise RuntimeError('V105_CLOSE_GAME_BEFORE_INSTALL:'+why)
+                if not v85_read_input_approval(V105_INSTALL_APPROVAL):
+                    report['status']='V105_INSTALL_NOT_AUTHORIZED'
+                else:
+                    refreshed=v105_preflight(game)
+                    for key in ('original_main_sha256','candidate_main_sha256','module_sha256'):
+                        if refreshed[key]!=data[key]:raise RuntimeError('V105_SOURCE_CHANGED_DURING_APPROVAL')
+                    closed,why=v71_processes_closed()
+                    if not closed:raise RuntimeError('V105_GAME_STARTED_DURING_APPROVAL:'+why)
+                    backup_dir=WORKDIR/'SAFE_BACKUPS'
+                    safe_external(game,backup_dir)
+                    backup_dir.mkdir(parents=True,exist_ok=True)
+                    backup=backup_dir/('EEex_Main_V105_PRE_'+data['original_main_sha256'][:16]+'.bak')
+                    if backup.exists():
+                        if backup.is_symlink() or digest(backup.read_bytes())!=data['original_main_sha256']:
+                            raise RuntimeError('V105_BACKUP_NAME_COLLISION')
+                    else:
+                        with backup.open('xb') as out:out.write(data['original_main'])
+                    if digest(backup.read_bytes())!=data['original_main_sha256']:
+                        raise RuntimeError('V105_BACKUP_VERIFY_FAILED')
+                    state={'schema':V105_SCHEMA,'phase':'PREPARED',
+                           'original_main_sha256':data['original_main_sha256'],
+                           'candidate_main_sha256':data['candidate_main_sha256'],
+                           'module_sha256':data['module_sha256'],'backup_main':str(backup),
+                           'created_utc':now()}
+                    stage=data['main'].with_name('EEex_Main.lua.v105stage')
+                    if stage.exists():raise RuntimeError('V105_MAIN_STAGE_COLLISION')
+                    try:
+                        with data['module'].open('xb') as out:out.write(data['module_bytes'])
+                        if digest(data['module'].read_bytes())!=data['module_sha256']:
+                            raise RuntimeError('V105_MODULE_SHA_VERIFY')
+                        with stage.open('xb') as out:out.write(data['candidate_main'])
+                        if digest(stage.read_bytes())!=data['candidate_main_sha256']:
+                            raise RuntimeError('V105_MAIN_STAGE_SHA_VERIFY')
+                        v105_put_state(state)
+                        if digest(data['main'].read_bytes())!=data['original_main_sha256']:
+                            raise RuntimeError('V105_MAIN_CHANGED_BEFORE_SWAP')
+                        os.replace(stage,data['main'])
+                        if digest(data['main'].read_bytes())!=data['candidate_main_sha256']:
+                            raise RuntimeError('V105_MAIN_INSTALL_HASH_FAILED')
+                        v105_put_state({**state,'phase':'INSTALLED','installed_utc':now()})
+                        report['status']='V105_INSTALLED_RUNTIME_TEST_REQUIRED'
+                        report['game_files_written']=2
+                    except Exception:
+                        if data['main'].is_file() and digest(data['main'].read_bytes())==data['candidate_main_sha256']:
+                            restore=data['main'].with_name('EEex_Main.lua.v105failedrestore')
+                            if not restore.exists():
+                                with restore.open('xb') as out:out.write(data['original_main'])
+                                if digest(restore.read_bytes())==data['original_main_sha256']:
+                                    os.replace(restore,data['main'])
+                        if data['module'].is_file() and digest(data['module'].read_bytes())==data['module_sha256']:
+                            data['module'].unlink()
+                        if v105_get_state() and v105_get_state()['phase']=='PREPARED':
+                            v105_put_state({**state,'phase':'ROLLED_BACK','failed_utc':now()})
+                        raise
+                    finally:
+                        if stage.exists():stage.unlink()
+        if mode=='status' and st and st['phase']=='INSTALLED':
+            closed,_=v71_processes_closed()
+            if closed:report['runtime_capture']=v105_report_runtime()
+            else:report['runtime_capture']={'state':'GAME_RUNNING_CAPTURE_DEFERRED'}
+    except (OSError,RuntimeError,ValueError,KeyError,TypeError,UnicodeError,zipfile.BadZipFile) as exc:
+        report['status']='V105_SAFE_STOP'
+        report['errors'].append({'type':type(exc).__name__,'message':str(exc)[:240]})
+    try:v105_zip_report(game,report_path,report)
+    except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
+        print('v105 ZIP SAFE_STOP:',type(exc).__name__,str(exc)[:210]);return 2
+    print('v105:',report['status'],'— изменений в игре:',report['game_files_written'])
+    print('Единый ZIP:',report_path)
+    return 2 if report['status']=='V105_SAFE_STOP' else 0
+
+def v105_selftest():
+    assert 'function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()' in V105_OBSERVER_SOURCE
+    assert b'BG_EET_RU_WeaponObserver' in V105_MAIN_INJECT
+    fake=(b'EEex_Main_Private_StartupFiles = {}\n'
+          b'for _, fileName in ipairs(EEex_Main_Private_StartupFiles) do\n'
+          b'  EEex_DoFile(fileName)\nend\n\tEEex_Active = true\n')
+    for eol in (b'\n',b'\r\n'):
+        original=fake.replace(b'\n',eol)
+        candidate=v105_transform_main(original)
+        inject=V105_MAIN_INJECT.replace(b'\n',eol)
+        assert candidate.replace(inject,b'',1)==original
+        assert candidate.count(b'EEex_DoFile("BG_EET_RU_WeaponObserver")')==1
+        try:v105_transform_main(candidate)
+        except RuntimeError:pass
+        else:raise AssertionError('V105_ALREADY_MODIFIED_NOT_REJECTED')
+    payload=v105_source_module()
+    assert b'__V105_EVENTS_PATH__' not in payload and b'__V105_STATUS_PATH__' not in payload
+    assert str(V105_EVENT_STAGE).encode('utf8')[:2] in payload
+    with tempfile.TemporaryDirectory(prefix='BG_EET_RU_V105_ZIP_TEST_') as td:
+        game=Path(td)/'game';game.mkdir()
+        report=Path(td)/'report.zip'
+        with zipfile.ZipFile(report,'w') as z:z.writestr('old.json','{"ok":true}')
+        rec={'schema':V105_SCHEMA,'status':'SOURCE_ONLY_TEST'}
+        v105_zip_report(game,report,rec)
+        sha=digest(report.read_bytes())
+        v105_zip_report(game,report,rec)
+        assert digest(report.read_bytes())==sha
+        with zipfile.ZipFile(report) as z:
+            assert z.read('old.json')==b'{"ok":true}' and z.namelist().count(V105_ENTRY)==1
+    return True
+
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description='BG_EET_RU one-file visible-only read-only auto-updater')
     p.add_argument('--game',default=DEFAULT_GAME)
@@ -6618,6 +7081,9 @@ def main(argv=None):
     p.add_argument('--selftest',action='store_true')
     p.add_argument('--weapon-source-audit',action='store_true',help='v103 READ ONLY inspect local EEex weapon/ammo source capabilities; no hooks or game edits')
     p.add_argument('--weapon-context-audit',action='store_true',help='v104 READ ONLY inspect local attack/hit/launcher Lua signatures')
+    p.add_argument('--weapon-observer-status',action='store_true',help='v105 read only guarded pilot preflight and optional captured evidence')
+    p.add_argument('--install-v105-weapon-observer',action='store_true',help='v105 optional explicitly authorized guarded pilot installation')
+    p.add_argument('--rollback-v105-weapon-observer',action='store_true',help='v105 optional explicitly authorized exact pilot rollback')
     p.add_argument('--install-v85-combat-format',action='store_true',help='optional signed v85 Lua replacement; exact typed approval required')
     p.add_argument('--rollback-v85-combat-format',action='store_true',help='optional signed restore to v74; exact typed approval required')
     p.add_argument('--install-v88-journal-ui',action='store_true',help='optional guarded UI.MENU two-mode pilot; exact approval required')
@@ -6733,6 +7199,7 @@ def main(argv=None):
                 args.upgrade_v102_roll_labels,args.rollback_v102_roll_labels,
                 args.weapon_source_audit,
                 args.weapon_context_audit,
+                args.weapon_observer_status,args.install_v105_weapon_observer,args.rollback_v105_weapon_observer,
                 args.fix_leui_reverse,args.rollback_leui_reverse,args.combat_rollback)):
         ui_v102=v102_state_read()
         if ui_v102 and ui_v102['phase'] in ('INSTALLED','PREPARED'):
@@ -6740,7 +7207,9 @@ def main(argv=None):
             if rc:return rc
             rc=v103_run(game,WORKDIR/REPORT_NAME)
             if rc:return rc
-            return v104_run(game,WORKDIR/REPORT_NAME)
+            rc=v104_run(game,WORKDIR/REPORT_NAME)
+            if rc:return rc
+            return v105_run(game,WORKDIR/REPORT_NAME)
         ui_v101=v101_state_read()
         if ui_v101 and ui_v101['phase'] in ('INSTALLED','PREPARED'):
             rc=v101_run(game,WORKDIR/REPORT_NAME)
@@ -6749,7 +7218,9 @@ def main(argv=None):
             if rc:return rc
             rc=v103_run(game,WORKDIR/REPORT_NAME)
             if rc:return rc
-            return v104_run(game,WORKDIR/REPORT_NAME)
+            rc=v104_run(game,WORKDIR/REPORT_NAME)
+            if rc:return rc
+            return v105_run(game,WORKDIR/REPORT_NAME)
         ui_v100=v100_state_read()
         if ui_v100 and ui_v100['phase'] in ('INSTALLED','PREPARED'):
             rc=v100_run(game,WORKDIR/REPORT_NAME)
@@ -6798,6 +7269,11 @@ def main(argv=None):
             rc=v90_run(game,WORKDIR/REPORT_NAME)
             if rc:return rc
             return v91_run(game,WORKDIR/REPORT_NAME)
+    if args.weapon_observer_status or args.install_v105_weapon_observer or args.rollback_v105_weapon_observer:
+        if args.install_v105_weapon_observer and args.rollback_v105_weapon_observer:
+            print('V105_STOP: incompatible install and rollback');return 2
+        mode='install' if args.install_v105_weapon_observer else 'rollback' if args.rollback_v105_weapon_observer else 'status'
+        return v105_run(game,WORKDIR/REPORT_NAME,mode)
     if args.weapon_source_audit or args.weapon_context_audit:
         rc=v103_run(game,WORKDIR/REPORT_NAME)
         if rc:return rc
@@ -9834,6 +10310,7 @@ def selftest():
     assert v102_selftest() and callable(v102_run)
     assert v103_selftest() and callable(v103_run)
     assert v104_selftest() and callable(v104_run)
+    assert v105_selftest() and callable(v105_run)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
