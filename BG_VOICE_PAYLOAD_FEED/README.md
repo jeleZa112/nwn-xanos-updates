@@ -34,3 +34,15 @@
 `OH85856=V65`, `OH80404=V60`, `OH89888=BOTH_BAD`.
 
 **Ограничение:** GitHub пока хранит *индекс*, а не ZIP-файлы. Windows CMD не может скачать их только по Library-пути. Для прямого автоматического скачивания на Windows основной чат должен опубликовать проверенные ZIP в доступном download-хранилище и добавить соответствующие HTTPS URL с хешами в манифест. До этого автоматизирован только **поиск и обмен между чатами**, не Windows-загрузка.
+
+## Production continuation after V74: 613 + 24
+
+After the main updater confirmed V70 420/420 staged and V70/QA_NEXT12 12/12 ready, additional data is published **without new updater or per-version manual ZIP transfer**:
+
+- [Rolling source and tests](./rolling/README_RU.md)
+- [SHA manifest](./rolling/MANIFEST.json)
+- [613 stage-only selections](./rolling/VOICE_BACKED_613_STAGE_ONLY.csv)
+- [24 independent voice A/B jobs](./rolling/NEXT24_VOICE_AB_SHA_GATED.csv)
+- [Single imported worker](./rolling/BGVOICE_ROLLING_CONTINUATION.py)
+
+Only the **main voice/video chat** may integrate with the existing one `BG_VOICE_UPDATE.cmd`, after verifying the pinned SHA256 values from [manifest.json](./manifest.json) and Windows preflight. Read-only source, independent staging/QA directories, existing one report ZIP, fail closed on missing WAV or hash mismatch, continue all safe other jobs. No automatic game install or artistic approval. **Actual Windows staging for these 613 has not been run.**
