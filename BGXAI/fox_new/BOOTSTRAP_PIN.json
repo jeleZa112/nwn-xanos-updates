@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "997798e9ab274e57b1ae8ff0da00b5e43d4983b5",
+  "commit": "93a70b0ed5bad9bc39e127ebcc052f439314a26f",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "ba6f8cf6f130a6fdc7ce4d7f48cad2e33492f0b3fe48ed301599afcc8cf04973",
-  "script_size": 79971,
-  "description": "BGXAI onefile main menu 1-159 retained. In existing 159->7 R1/R2/R3 choices preserved; added R4 active derived stats observer preflight 7, opt-in guarded install 8, status 9, collect 10 and last-only rollback 11. SHA-guarded source sync; R4 NOT installed until separate typed consent, never issues orders; V6/EPS and saves unchanged."
+  "script_sha256": "96bbc0f8ebb15be902535e63ae5afe0da81629f6dd93749a8a502683b679e8c8",
+  "script_size": 79984,
+  "description": "BGXAI onefile R4 source-only 159->7 option 8 guarded install after typed approval. R4 reads 68 raw current stats including 46 weapon proficiency fields; detects selected combat THAC0 STR APR changes from potential divine buffs, druid forms, haste, never assumes fighter APR or fighter proficiencies or auto-dispatch. Existing menu and R1 R2 R3,V6 EPS unchanged; R4 not live deployed."
 }
