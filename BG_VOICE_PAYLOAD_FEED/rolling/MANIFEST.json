@@ -21,7 +21,7 @@
   "prior_staged": 420,
   "game_install_authorized": false,
   "human_approval_count": 0,
-  "tests": "SOURCE_AND_PROVENANCE_ONLY_NO_LIVE_GPU_OR_WINDOWS",
+  "tests": "FULL_613_24_SYNTHETIC_NOT_REAL_WINDOWS",
   "files": {
     "VOICE_BACKED_613_STAGE_ONLY.csv": {
       "sha256": "ea2cf88bacf3da34ef2a6f6bc3c52647d68f223bc4bff4b20cbd1b45618dd5f1",
@@ -37,5 +37,11 @@
     "OH80404": "V60_APPROVED",
     "OH89888": "BOTH_BAD_HOLD",
     "KORGAN57": "HISTORICAL_CHOICE_CONFLICT_NO_AUTO_SWITCH"
-  }
+  },
+  "worker_revision": "R2_ATOMIC_NO_REPLACE_AUTO_CONTINUE",
+  "auto_continue_after_safe_pass": true,
+  "windows_runtime_pass": false,
+  "source_worker_sha256": "0b71aaf23daa37d451ed1cbaf391031370b464f83d98348d826cda356bf7f755",
+  "full_test": "SELFTEST_FULL_613_24_R2.py PASS in Linux offline synthetic test, not Windows runtime",
+  "full_test_sha256": "a276d24c3c0794f1775b04acfdf527d6763d123fa7ee5a6d1cc0d738805c183e"
 }
