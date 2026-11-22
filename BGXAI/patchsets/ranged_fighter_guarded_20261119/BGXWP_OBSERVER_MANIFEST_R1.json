@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
-  "version": "0.3.80-BGXW2-ITM-RO-V1",
+  "version": "0.3.81-R4-RO",
   "files": [
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXWP_OBSERVER_GUARDED.py",
@@ -18,8 +18,8 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXW2_OBSERVER_GUARDED.py",
       "dest": "BGXW2_OBSERVER_GUARDED.py",
-      "size": 19614,
-      "sha256": "c4c979ad430a1e5768639c8fe29613d1ee93e3110dbbb06a0c9ad94cc76e14be"
+      "size": 33236,
+      "sha256": "b227504887aacea56fa6d2f29d67b07fa51b2a3468f42d49e3e7d0dc3a691aaf"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BGXW2.lua",
@@ -32,6 +32,12 @@
       "dest": "BGXAI_WEAPON_NATIVE_ITM_R3_RO.py",
       "size": 18641,
       "sha256": "ed87a7a6618826c6d3901d2579a39bf280fcaeb09cd18b7b6ee159b9ebfcc74a"
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BGXW4.lua",
+      "dest": "M_BGXW4.lua",
+      "size": 9843,
+      "sha256": "0d24779ee6cf7071c611c3b3d509ddb71f97e18eb95a6c5839e1a8441ee3f3e8"
     }
   ]
 }
