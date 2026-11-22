@@ -18,17 +18,22 @@
 
 `BGXAI_WEAPON_R12_SELECTED_HIT_CROSSCHECK.lua` проверяет строгое совпадение actor, targetActor, session, snapshotId, sequence, selectedSlot, targetFingerprint. Сверяет кандидатный процент R11 с интервалом R10 **только выбранного оружия**. Если несовпадение — HOLD и диагностика; если совпадение — `SELECTED_ONLY_CONSISTENCY_UNAUTHENTICATED`. Совпадение нельзя интерпретировать как native proof, разрешение ранжирования или переключения; иммунитет проверяется отдельно от шанса попадания. Исторический APR альтернативных слотов не преобразуется в актуальный.
 
+## Дополнительно: кандидат цели из уже существующего R4 listener
+
+`BGXAI_R11_ACTION_TARGET_CANDIDATE_RO.lua` — чистый вспомогательный модуль для события `EEex_Action_AddSpriteStartedActionListener(sprite,action)`. Из `action.m_acteeID.m_Instance` пытается разрешить `EEex_GameObject_Get`, проверить `m_id` и `isSprite(true)`, после чего возвращает **только числовые ID и `TARGET_CANDIDATE_HOLD`**. Не утверждает, что это враг или атака, не экспортирует указатель, не добавляет listener в игру, не вызывает R11 на этапе разрешения цели. Обработчик и конкретные поля проверены по `Bubb13/EEex/.../EEex_Action.lua`. Фактическая установленная EEex ещё не проверена.
+
 ## Тесты
 
 - R11 `test_r11.lua`: 27/27 PASS (моки; проверены изменение слота/ability/item во время вызова, ошибки API, неверные значения, no action).
 - R12 `test_r12.lua`: 22/22 PASS (моки; контекст, target, иммунитет, несовпадение с диапазоном, фальшивое подтверждение).
+- Target candidate `test_r11_action_target.lua`: 18/18 PASS (моки, подмена id и action type, target pointer, no hook).
 - R10 regression `test_r10.lua`: 40/40 PASS; `test_r10_evidence.py`: 12/12 PASS.
-- Всего **101/101 локальных тестов**; Windows EET LIVE R11/R12 — **НЕТ**.
+- Всего **119/119 локальных тестов**; Windows EET LIVE R11/R12 — **НЕТ**.
 
 ## Статус (не смешивать)
 
 CODE: R11/R12 созданы и опубликованы как SOURCE ONLY.
-TEST: офлайн PASS 101/101 со связанными регрессиями.
+TEST: офлайн PASS 119/119 со связанными регрессиями.
 DEPLOY: нет, пользовательскую EET не меняли.
 LIVE: нет, кандидатный API не запускался в игре.
 
