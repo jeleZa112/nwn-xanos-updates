@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 91,
-  "sha256": "df754e3776d7d6b85f3cca56f84ea566052cfb633d943d0a742c55c0248e15dc",
-  "mode": "READ_ONLY_DEFAULT_GUARDED_V90_UI_PARSER_FIX",
+  "version": 92,
+  "sha256": "e7703420e38d5fb52bba00d76ba52ad22b8f1dbf1c57f2e9305dfece9b36e5a9",
+  "mode": "READ_ONLY_DEFAULT_EXPLICIT_V91_TO_V92_UI_MARKER_FIX",
   "game_writes_allowed": false,
-  "note": "v91: fixed v90 live brief mode rendering no-op on colored combat messages. Python source and real Lua 5.4 isolated tests: correct 8-hex color-tag stripping inside parsed text, trailing color reset preservation, verified d20 arithmetic, fallback exact original on unrecognized strings. UI.MENU only, exactly one guarded Lua helper replacement, unchanged button/drag/combatLog/v85 hooks; reversibility byte-for-byte checked. Default existing updater READ ONLY: V91_PARSER_PREFLIGHT_PASS_NOT_INSTALLED and one existing ZIP report 38_V91_JOURNAL_BRIEF_PARSER_FIX.json. Optional --upgrade-v91-journal-parser requires game and InfinityLoader closed, exact typed UPGRADE_BG_EET_RU_V91_JOURNAL_PARSER, verified SHA-pinned v90 source, verified external backup and safe atomic replacement. Optional --rollback-v91-journal-parser returns only to v90 UI with exact typed ROLLBACK_BG_EET_RU_V91_JOURNAL_PARSER. GitHub Actions isolated full selftest 44988213957 PASS. Real Windows preflight and runtime content transformation not yet user verified."
+  "note": "v92 fixes verified live UI brief-mode parser failure due to trailing ^- marker after 'промах'/'попадание'. User runtime screenshot shows BGRAW len=76 and tailhex ends 5E2D. Real Lua 5.4 tests passed: mixed ^0xXXXXXXXX prefix and ^- suffix, hit, miss, embedded color markers, malformed arithmetic and untouched unsupported messages. Exact v91 helper-only UI.MENU swap, unchanged v90 button/drag/combatLog and v85 44 hooks. Default existing updater READ ONLY, writes only 39_V92_JOURNAL_COLOR_RESET_FIX.json in canonical ZIP. --upgrade-v92-journal-marker requires game and InfinityLoader closed, exact typed UPGRADE_BG_EET_RU_V92_JOURNAL_MARKER, live SHA checks, verified external backup and atomic UI.MENU swap; --rollback-v92-journal-marker returns only to v91 UI with typed ROLLBACK_BG_EET_RU_V92_JOURNAL_MARKER. GitHub Actions isolated full selftest run 45027360482 PASS. Windows preflight and gameplay verification PENDING."
 }
