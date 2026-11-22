@@ -1,0 +1,74 @@
+{
+  "schema": "BGVOICE_INDEPENDENT_WAVLM_SELECTION_V1",
+  "created_on": "2026-11-23",
+  "scope": "SELECTION_FIRST_SPEAKER_ONLY_NO_TTS_NO_GAME_INSTALL",
+  "model": "microsoft/wavlm-base-plus-sv",
+  "revision": "feb593a6c23c1cc3d9510425c29b0a14d2b07b1e",
+  "registry_sound_ids": 7206,
+  "expected_ru_wavs_sha": 14412,
+  "historic_human_locks": 58,
+  "historic_human_pilot": {
+    "STABLE": 7,
+    "PER_LINE": 13
+  },
+  "full_run_gate": "PILOT_20_BALANCED_ACCURACY_0.70_PLUS_STABLE_RECALL_0.60_PLUS_PERLINE_0.70",
+  "first_real_windows_gpu_test_completed": false,
+  "test_status": "OFFLINE_SYNTHETIC_PASS; REAL_INFERENCE_NOT_RUN",
+  "modifies_game": false,
+  "modifies_master_ru_wavs": false,
+  "modifies_main_updater": false,
+  "files": {
+    "BG_VOICE_GPU_SELECT.cmd": {
+      "sha256": "9aa1d667f23963f1a2de6041343cf621c83052f3726d270a482452e1760cf737",
+      "bytes": 937
+    },
+    "BGVOICE_GPU_BOOTSTRAP.py": {
+      "sha256": "4f0be688c6c7cb1c2d71c6f6c2c0acf07804f6b2f5be91d5ab45d3d3bd594b37",
+      "bytes": 4602
+    },
+    "BGVOICE_GPU_SELECTION.py": {
+      "sha256": "b2edf5c5923a258be50423541a1e8e63b8dc3de529faf245fd6c0c3d06a4b43b",
+      "bytes": 23740
+    },
+    "V58_EN_RECOVERY.py": {
+      "sha256": "01d5f1c242ae4f0c03f87350be4fb2fff33641e76150369eb9fdd0479f5f019d",
+      "bytes": 11536
+    },
+    "SELFTEST_GPU_SELECTION.py": {
+      "sha256": "35000f3910beafe27b76746a2c84d66eacdbfd11b4d092cca6b347e0c9c521ad",
+      "bytes": 6272
+    },
+    "README_RU.md": {
+      "sha256": "2ddbe029139f29ccdf018a89fb0564ef05dfbd4b3a3c967cc347c8459ac8def2",
+      "bytes": 9185
+    },
+    "START_HERE.txt": {
+      "sha256": "e08901099d60223c8d81c8e008090e0b58c921f8162d4cba35c64184c0dabc0d",
+      "bytes": 544
+    },
+    "DATA/SOURCE_7206.csv": {
+      "sha256": "c70728586e0c8d212edeb92e6876fe01bf3968da1a1e7ad261da8d86021129d4",
+      "bytes": 9088859
+    },
+    "DATA/RETROSPECTIVE_HUMAN_COMPARISON.csv": {
+      "sha256": "0982d56b9dc8014b7b7567402fc26fcfab5f3eaf903f8be11fee4707b996cae1",
+      "bytes": 3431
+    },
+    "DATA/HUMAN_LOCKS_58_WINDOWS.csv": {
+      "sha256": "6d817278284c0ac3c79daaea32ac11cc6ce0e3ac134f0f50571954d59cd158b1",
+      "bytes": 11903
+    },
+    "SELFTEST_OUTPUT.txt": {
+      "sha256": "c9954907a4be2dae640c52ba0f6e910982675905fb20a24651b88fa233b0c12c",
+      "bytes": 2813
+    },
+    "NO_CUDA_TEST_OUTPUT.txt": {
+      "sha256": "1b9347f61a4fd6932f9710fe90d07fabf80f5e7db99febf0e45c2e538f256ef5",
+      "bytes": 296
+    },
+    "BOOTSTRAP_OFFLINE_TEST.txt": {
+      "sha256": "1d10dc20b33d3ea64890eaaaacf4d69001ae5b3124d202e9034413755d0d33a7",
+      "bytes": 93
+    }
+  }
+}
