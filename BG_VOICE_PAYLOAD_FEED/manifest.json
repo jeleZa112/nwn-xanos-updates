@@ -7,9 +7,9 @@
   "updater_name": "BG_VOICE_UPDATE.cmd",
   "latest_payload_version": 74,
   "state": {
-    "version": 78,
+    "version": 79,
     "library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_PROJECT_STATE.md",
-    "verification": "V78 uploaded after source/tested independent WavLM GPU selector package was added to Library"
+    "verification": "Real WavLM 20-line failure audited; RU anchor V2 staged and synthetic-tested, actual pilot pending"
   },
   "package_transport": "chatgpt_shared_library",
   "windows_auto_download_enabled": false,
