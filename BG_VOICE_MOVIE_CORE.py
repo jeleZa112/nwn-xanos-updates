@@ -1,4 +1,4 @@
-# BG Voice RU movie 1.3: preserve 3 restored pilots and reconcile 19 still missing voice groups.
+# BG Voice RU movie 1.4: EN source cues for 19 voice-missing groups, preserving all prior audio.
 # One permanent CMD, one common report, no TTS and no game writes.
 from __future__ import annotations
 import csv
@@ -7,12 +7,15 @@ import io
 import json
 import os
 import shutil
+import subprocess
+import struct
+import wave
 import tempfile
 import zipfile
 from collections import Counter
 from pathlib import Path
 
-MOVIE_CORE_VERSION = '1.3.0'
+MOVIE_CORE_VERSION = '1.4.0'
 SCRIPT_JSON_SHA256 = '87d18d68ce2be6236e2bdb468dc0275c7f5f257714643b5cf9013c48f87a9ee4'
 MOVIE_SEGMENTS = {'INTRO15F': 16, 'SODCIN01': 18, 'IWINTRO': 29}
 PILOT_KNOWN = {'INTRO15F_G01','SODCIN01_G02','IWINTRO_G06'}
@@ -304,8 +307,221 @@ def _reconcile_common_report(root=None):
     outcome=_merge_main_report(new,work)
     return outcome+': '+str(len(recovered))+' SHA-verified pilots, '+str(len(remaining))+' voice-missing'
 
+
+MOVIE_FULL_AUDIO_SEC={'INTRO15F':171.636,'SODCIN01':97.822,'IWINTRO':186.183}
+EN_CUES_ROOT='VIDEO/EN_REFERENCE_19/'
+
+
+def _source_stem_candidates(movie, base=None):
+    if movie not in MOVIE_FULL_AUDIO_SEC:raise ValueError('UNEXPECTED_MOVIE')
+    home=Path.home(); downloads=home/'Downloads'
+    roots=[]
+    if base is not None: roots.append(Path(base))
+    if os.environ.get('BG_VOICE_EN_DNR_ROOT'):
+        roots.insert(0, Path(os.environ['BG_VOICE_EN_DNR_ROOT']))
+    roots.extend([
+        downloads/'BG_VOICE_RU_MOVIES_BATCH_V1',
+        downloads/'BG_VOICE_RU_MOVIES_BATCH_V1'/'BG_VOICE_RU_MOVIES_BATCH_V1',
+        home/'Documents'/'BG_VOICE_RU'/'FULL_PRODUCTION'/'BG_VOICE_RU_MOVIES_BATCH_V1',
+        Path('C:/BG_VOICE_RU_MASTER')/'BG_VOICE_RU_MOVIES_BATCH_V1',
+    ])
+    try:
+        roots.extend(p for p in sorted(downloads.iterdir()) if p.is_dir() and
+                     p.name.upper().startswith('BG_VOICE_RU_MOVIES_BATCH') and len(roots)<18)
+    except OSError:pass
+    seen=set()
+    for root in roots:
+        for candidate in (root/'RESULTS'/movie/'FULL'/'SPEECH_EN.wav',
+                          root/'BG_VOICE_RU_MOVIES_BATCH_V1'/'RESULTS'/movie/'FULL'/'SPEECH_EN.wav'):
+            key=str(candidate).casefold()
+            if key not in seen:
+                seen.add(key)
+                if candidate.is_file():yield candidate
+
+
+def _ffmpeg_bin():
+    exe=shutil.which('ffmpeg')
+    if exe:return exe
+    try:
+        from imageio_ffmpeg import get_ffmpeg_exe
+        candidate=get_ffmpeg_exe()
+        if candidate and Path(candidate).is_file():return candidate
+    except (ImportError, OSError, RuntimeError):pass
+    for path in (Path.home()/'Downloads'/'ffmpeg'/'bin'/'ffmpeg.exe',
+                 Path('C:/ffmpeg/bin/ffmpeg.exe')):
+        if path.is_file():return str(path)
+    return None
+
+
+def _source_duration(source):
+    try:
+        with wave.open(str(source),'rb') as w:
+            return w.getnframes()/w.getframerate()
+    except (wave.Error, EOFError, OSError):
+        pass
+    # RIFF chunk size can establish the duration even when Python's wave
+    # decoder refuses IEEE_FLOAT32 or WAVE_FORMAT_EXTENSIBLE. No audio decoded.
+    try:
+        with open(source,'rb') as f:
+            size=f.seek(0,2); f.seek(0)
+            if size>=44 and f.read(4)==b'RIFF' and f.read(4) and f.read(4)==b'WAVE':
+                rate=None;align=None;data_bytes=None
+                while f.tell()+8<=size and f.tell()<1024*1024:
+                    hdr=f.read(8)
+                    if len(hdr)!=8:break
+                    key,n=struct.unpack('<4sI',hdr)
+                    if n>size-f.tell():break
+                    if key==b'fmt ' and n>=16:
+                        fields=f.read(16)
+                        _,_,rate,_,align,_=struct.unpack('<HHIIHH',fields)
+                        f.seek(n-16,1)
+                    elif key==b'data':
+                        data_bytes=n
+                        f.seek(n,1)
+                    else:f.seek(n,1)
+                    if n%2:f.seek(1,1)
+                    if rate and align and data_bytes is not None:
+                        duration=data_bytes/(rate*align)
+                        if 0<duration<300:return duration
+    except (OSError,ValueError,struct.error):pass
+    ffprobe=shutil.which('ffprobe')
+    if not ffprobe:return None
+    try:
+        out=subprocess.run([ffprobe,'-v','error','-show_entries','format=duration',
+                            '-of','default=noprint_wrappers=1:nokey=1',str(source)],
+                           capture_output=True,text=True,timeout=12,check=True)
+        val=float(out.stdout.strip())
+        return val if 0<val<300 else None
+    except (OSError,ValueError,subprocess.CalledProcessError,subprocess.TimeoutExpired):return None
+
+
+def _file_sha256(path):
+    obj=hashlib.sha256()
+    with open(path,'rb') as stream:
+        for chunk in iter(lambda:stream.read(1024*1024),b''):
+            obj.update(chunk)
+    return obj.hexdigest()
+
+
+def _extract_english_window(source,start,end,ffmpeg=None):
+    duration=end-start
+    if not 0<duration<=42:raise ValueError('INVALID_TIME_RANGE_HOLD')
+    if ffmpeg:
+        try:
+            result=subprocess.run([ffmpeg,'-hide_banner','-nostdin','-loglevel','error',
+                   '-i',str(source),'-ss',f'{start:.3f}','-t',f'{duration:.3f}',
+                   '-map','0:a:0','-vn','-ac','1','-ar','16000',
+                   '-c:a','pcm_s16le','-f','s16le','pipe:1'],
+                   capture_output=True,timeout=35,check=True)
+            raw=result.stdout
+            if len(raw)>2*1024*1024:raise ValueError('CLIP_OVERSIZE_HOLD')
+            if abs((len(raw)//2)/16000-duration)>0.3:raise ValueError('CLIP_DURATION_HOLD')
+            buf=io.BytesIO()
+            with wave.open(buf,'wb') as output:
+                output.setnchannels(1);output.setsampwidth(2);output.setframerate(16000)
+                output.writeframes(raw)
+            return buf.getvalue(),'FFMPEG_PCM16_16KHZ_MONO'
+        except (OSError,subprocess.CalledProcessError,subprocess.TimeoutExpired,EOFError,wave.Error):
+            pass
+    # PCM16 fallback: preserve original sample rate/channels, do not silently
+    # pretend resampling or infer pitch/identity. Bounded to avoid giant ZIPs.
+    with wave.open(str(source),'rb') as w:
+        if w.getcomptype()!='NONE' or w.getsampwidth()!=2 or w.getnchannels() not in (1,2):
+            raise ValueError('NO_DECODER_FOR_SOURCE_FORMAT_HOLD')
+        hz=w.getframerate();channels=w.getnchannels()
+        frames=round(duration*hz)
+        if frames*channels*2>9*1024*1024:raise ValueError('FALLBACK_CLIP_TOO_LARGE_HOLD')
+        w.setpos(round(start*hz)); raw=w.readframes(frames)
+        if len(raw)<int(frames*channels*2*.98):raise ValueError('CLIP_TRUNCATED_HOLD')
+        buf=io.BytesIO()
+        with wave.open(buf,'wb') as out:
+            out.setnchannels(channels);out.setsampwidth(2);out.setframerate(hz);out.writeframes(raw)
+        return buf.getvalue(),'NATIVE_PCM16_NO_RESAMPLE'
+
+
+def _prepare_english_reference_cues(root=None,source_root=None):
+    work=Path(root) if root else Path(os.environ.get('BG_VOICE_FULL_PRODUCTION_ROOT') or
+                        Path.home()/'Documents'/'BG_VOICE_RU'/'FULL_PRODUCTION')
+    main=work/'SEND_TO_CHATGPT_BG_VOICE_RU.zip'
+    if not main.is_file():return 'COMMON_REPORT_MISSING_HOLD'
+    with zipfile.ZipFile(main) as z:
+        if z.testzip() is not None:raise ValueError('BAD_COMMON_REPORT_CRC')
+        summary=json.loads(z.read(ROOT+'RECONCILED_STATUS.json'))
+        if summary.get('source_extracted_json_sha256')!=SCRIPT_JSON_SHA256 or summary.get('russian_wav_not_yet_identified') not in range(19,23):
+            raise ValueError('SOURCE_OR_COVERAGE_GATE_HOLD')
+        rows=list(csv.DictReader(io.StringIO(z.read(ROOT+'19_MISSING_RUSSIAN_WAV.csv').decode('utf-8-sig'))))
+        if len(rows)!=summary['russian_wav_not_yet_identified'] or len({r['id'] for r in rows})!=len(rows):
+            raise ValueError('INVALID_MISSING_QUEUE')
+    # This source is derived from the game's old English audio by CDX23: it
+    # is useful for review, NOT definitive proof of transcription or acting.
+    ffmpeg=_ffmpeg_bin(); sources={};source_status={};clips={};results=[]
+    for movie in MOVIE_FULL_AUDIO_SEC:
+        selected=None;seen=[]
+        for p in _source_stem_candidates(movie,source_root):
+            try:
+                if p.stat().st_size>500*1024*1024:continue
+                duration=_source_duration(p)
+                if duration is None or abs(duration-MOVIE_FULL_AUDIO_SEC[movie])>2.0:
+                    seen.append('SOURCE_DURATION_MISMATCH_HOLD');continue
+                selected=p; sources[movie]=p;source_status[movie]={
+                    'state':'DNR_STEM_FOUND_LENGTH_MATCH','duration_s':round(duration,3),
+                    'source_sha256':_file_sha256(p),
+                    'path_local_not_exported':str(p),
+                    'source_kind':'CDX23_DERIVED_SPEECH_EN_NOT_ORIGINAL_TRANSCRIPTION_PROOF'}
+                break
+            except (OSError,ValueError,wave.Error):continue
+        if selected is None:
+            source_status[movie]={'state':seen[0] if seen else 'FULL_DNR_SPEECH_EN_NOT_FOUND_HOLD',
+                                  'original_english_audio_not_verified':True}
+    for row in rows:
+        sid=row['id'];movie=row['movie'];start=float(row['english_window_start_s']);end=float(row['english_window_end_s'])
+        entry={'id':sid,'movie':movie,'source_window_start_s':start,'source_window_end_s':end,
+               'russian_draft_status':'NOT_APPROVED','english_ASR_status':'UNVERIFIED',
+               'exact_speech_onset_verified':False,'game_install_allowed':False}
+        source=sources.get(movie)
+        if source is None:
+            entry['status']='HOLD_NO_FULL_DNR_EN_SOURCE'
+        elif start<0 or end>source_status[movie]['duration_s']+0.05 or end<=start:
+            entry['status']='HOLD_ASR_TIME_OUTSIDE_SOURCE'
+        else:
+            try:
+                data,method=_extract_english_window(source,start,end,ffmpeg)
+                name=EN_CUES_ROOT+sid+'_EN_DNR_ASR_WINDOW.wav'
+                clips[name]=data
+                entry.update({'status':'TECHNICAL_EN_CUE_READY_NOT_LINGUISTICALLY_VERIFIED',
+                              'cue_member':name,'cue_sha256':hashlib.sha256(data).hexdigest(),
+                              'export_format':method})
+            except (OSError,ValueError,wave.Error,EOFError) as exc:
+                entry['status']='HOLD_'+type(exc).__name__
+                entry['hold_detail']=str(exc)[:100]
+        results.append(entry)
+    count=sum(row['status']=='TECHNICAL_EN_CUE_READY_NOT_LINGUISTICALLY_VERIFIED' for row in results)
+    status={'schema':'BGVOICE_MOVIE_19_EN_DNR_SOURCE_PREVIEW_1_4',
+            'source_script_sha256':SCRIPT_JSON_SHA256,
+            'groups_with_ru_wav_absent':len(rows),'english_cues_prepared':count,
+            'english_cues_hold':len(rows)-count,
+            'source_stems':source_status,
+            'correct_source_English_words_verified':False,
+            'speaker_identity_verified_by_human':False,
+            'original_EN_dnr_bleed_or_artifacts_possible':True,
+            'asr_windows_not_speech_precise':True,
+            'existing_approved_ru_wav_modified':False,
+            'voice_synthesis':False,'game_write':False,
+            'next':'Compare EN cues with ASR and Russian drafts; repair confirmed text before synthesizing missing Russian voices'}
+    keys=list(results[0].keys())
+    for row in results:
+        for k in row:
+            if k not in keys:keys.append(k)
+    additions={EN_CUES_ROOT+'STATUS.json':_json(status),
+               EN_CUES_ROOT+'CUE_INDEX.csv':_csv(results,keys),**clips}
+    with zipfile.ZipFile(main) as z:
+        if len(z.namelist())==len(set(z.namelist())) and all(
+                k in z.namelist() and z.read(k)==v for k,v in additions.items()):
+            return 'EN_CUES_CURRENT: '+str(count)+' of '+str(len(rows))
+    return _merge_main_report(additions,work)+': '+str(count)+' of '+str(len(rows))
+
 def selftest():
-    assert MOVIE_CORE_VERSION=='1.3.0' and sum(MOVIE_SEGMENTS.values())==63
+    assert MOVIE_CORE_VERSION=='1.4.0' and sum(MOVIE_SEGMENTS.values())==63
     assert len(PILOT_KNOWN)==3 and _csv([{'id':'A'}],['id']).endswith(b'A\r\n')
     assert set(PILOT_SHA256)==PILOT_KNOWN and all(len(sha)==64 for sha in PILOT_SHA256.values())
     assert len(PILOT_SHA256)==3
@@ -367,6 +583,10 @@ def run(host):
         print('MOVIE_COVERAGE_RECONCILED:',_reconcile_common_report(),flush=True)
     except Exception as exc:
         print('MOVIE_RECONCILIATION_HOLD:',type(exc).__name__,str(exc)[:160],flush=True)
+    try:
+        print('MOVIE_EN_REFERENCE_CUES:',_prepare_english_reference_cues(),flush=True)
+    except Exception as exc:
+        print('MOVIE_EN_REFERENCE_HOLD:',type(exc).__name__,str(exc)[:160],flush=True)
     print('MOVIE_CHANNEL_REPORT:',report,flush=True)
     return 0
 
