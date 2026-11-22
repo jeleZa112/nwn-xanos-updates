@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 103,
-  "sha256": "e6adc26bd6dbca20ae0da2068314cd1ce08bc5f4da0b58d7cbd371c4e910f41d",
-  "mode": "READ_ONLY_DEFAULT_V103_WEAPON_AMMO_EEEX_SOURCE_AUDIT",
+  "version": 104,
+  "sha256": "caa118f051e12cc0ccc767c6da9f89263a516fc91e33c3231ffa846ecdbde359",
+  "mode": "READ_ONLY_DEFAULT_V104_WEAPON_CONTEXT_SIGNATURE_AUDIT",
   "game_writes_allowed": false,
-  "note": "V103 adds source-only capability audit of installed EEex modules for eventual exact weapon+ammo names in visible combat journal. Default updater after installed v101/v102 status and optional --weapon-source-audit writes only member 49_V103_WEAPON_AMMO_SOURCE_AUDIT.json in existing external SEND_TO_CHATGPT_BG_EET_RU.zip. Checks limited local EEex source locations, API signals, SHA256 and sizes, with no game modifications, no hook registration, no BGXAI or BG Voice RU changes. Does NOT determine live active attack weapon or ammo and must not claim runtime correlation. Official EEex upstream supports EEex_Sprite_GetLauncher and selected slot/ability structure, but installed EEex APIs must be verified. CI isolated selftest/source-only+archive idempotence PASS run 45050401999; preview native test run 45050267120 SUCCESS. After V103 audit, separate runtime observer would require explicit user approval and live safety checks. V102 gameplay status remains unverified; no automatic install."
+  "note": "V104 source-only extension: inspect exact local EEex_Sprite.lua and EEex_Sprite_Patch.lua function/hook signatures for launcher API, hit-context weapon+weaponAbility and base-weapon-damage callback. The optional B3AttackInfo UI component's absence is not a blocker. Requires unique native -1/-2 swing hook labels to avoid false HOLD on repeated generic call name. Never claims per-attack ammo or misses are identified; no hooks installed, no game changes. Existing single updater appends 50_V104_EEEX_ATTACK_CONTEXT_EVIDENCE.json to original SEND_TO_CHATGPT_BG_EET_RU.zip after V103. No V102 install required. Preview native CI PASS 45051153336, final main-source after exact anchors correction CI PASS 45051289301. Exact installed Windows and runtime gameplay not verified. Separate explicit authorization required before any eventual live observer or UI change; BGXAI, BG Voice RU, save, TLK, EXE unchanged."
 }
