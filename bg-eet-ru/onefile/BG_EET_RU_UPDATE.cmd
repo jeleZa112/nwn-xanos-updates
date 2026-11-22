@@ -5945,7 +5945,7 @@ def v101_selftest():
         assert patched.count(b'BG_EET_RU_JOURNAL_TOGGLE')==previous.count(b'BG_EET_RU_JOURNAL_TOGGLE')
         assert patched.replace(V101_HELPER.replace('\n',eol).encode('utf8'),
                                V100_HELPER.replace('\n',eol).encode('utf8'),1)==previous
-        assert len(patched)>len(previous)
+        assert len(patched)==len(previous) # v101 changes palette bytes only
         assert V101_HELPER.replace('\n',eol).encode('utf8')+b'`' in patched
         assert b'end'+eol.encode('ascii')+b'`' in patched and b'end`' not in patched
     raw=(V100_HELPER.encode('utf8')+b'`'+V88_RENDER_NEW+V90_DRAG+b'BG_EET_RU_JOURNAL_TOGGLE')
