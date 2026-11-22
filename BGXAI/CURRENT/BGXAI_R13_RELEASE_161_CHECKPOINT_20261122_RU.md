@@ -32,3 +32,7 @@ R13 получает 8 необработанных защитных стато�
 ## Не изменять
 
 BG Voice RU, BG_EET_RU, R1/R2/R4, EPS18.4, V6, WeiDU.log и игровые сохранения. R13 источник не выдаёт синтетические прогнозы за LIVE. Правило автоматического продолжения после успешного PASS — постоянно.
+
+## Публикация единого обновлятора
+
+Меню 161 опубликовано в основном канале: release commit `c65b2c8142d2498ca277734c2d27fd6451ae0454`, PIN promotion `669449c21a967149e84259fd91eb17670e1823ba`. SHA256 нового `BGXAI_SYNC.ps1`: `5740c40cb876b69e664a930b32f089a3431b4a9218537ce9d95b9997095ee2b5`, размер 79610. GitHub Actions Windows: https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45045387527 — 10/10 menu, 26/26 installer, PowerShell 5.1 и 7 AST PASS. R13 **не установлен**; нет LIVE R13. Потребуется `BGXAI_UPDATE.cmd → 161 → 2` и полный вывод. НЕ выбирать 3, пока не согласовано.
