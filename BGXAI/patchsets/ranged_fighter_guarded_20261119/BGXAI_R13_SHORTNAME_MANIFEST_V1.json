@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
-  "version": "0.3.86-R13-SHORTNAME-RO",
+  "version": "0.3.87-R13-CONSOLE-CAPTURE-RO",
   "files": [
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_R13_SHORTNAME_GUARDED.py",
       "dest": "BGXAI_R13_SHORTNAME_GUARDED.py",
-      "size": 13347,
-      "sha256": "21096246bbfe5647c6441ff34e22b2b50d6ae3e1f030536167041d76531d8b92"
+      "size": 16539,
+      "sha256": "dda4eaac2e5b55d1e5fb80812e078455af15fd50e622004fc631d6b2f1afeb71"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BGXD13.lua",

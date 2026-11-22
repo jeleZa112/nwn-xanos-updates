@@ -1,0 +1,30 @@
+{
+  "BGXAI_R13_SHORTNAME_GUARDED.py": {
+    "bytes": 16539,
+    "sha256": "dda4eaac2e5b55d1e5fb80812e078455af15fd50e622004fc631d6b2f1afeb71"
+  },
+  "M_BGXD13.lua": {
+    "bytes": 12478,
+    "sha256": "c0fb928001d5fb042a935302270df73130bed9576d331b2e4b41f27ee0244511"
+  },
+  "BGXAI_R13_SHORTNAME_MANIFEST_V1.json": {
+    "bytes": 613,
+    "sha256": "f971e4cbc953698e51423879835d4d332fc8eb2f58cd9105b1db6cd63397ad8f"
+  },
+  "test_capture_ro.py": {
+    "bytes": 6733,
+    "sha256": "1bf830cd8778b23216d79be99d49f8b4b645fbd0a6e54db819e390bd336afd28"
+  },
+  "test_shortname_guarded.py": {
+    "bytes": 10313,
+    "sha256": "6a7bf016eacff379a7dbe57a4c974fd179930c4766e11bff870e2318fbf3480a"
+  },
+  "test_updater_capture.py": {
+    "bytes": 2668,
+    "sha256": "e18b155f46729365e33d08b5c03d2bb8939efcde5cb2fdea95b5b8d7966c81fe"
+  },
+  "README_RU.md": {
+    "bytes": 3006,
+    "sha256": "a90b902403272b081cd1eaf60658553dc1846a04917065c2c0e0e4c74f542724"
+  }
+}
