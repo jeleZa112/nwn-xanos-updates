@@ -1,3 +1,13 @@
+# 22.11.2026 — BGXAI WEAPON R3 LIVE CONFIRMED; STATIC BRIDGE CODE READY, SWITCH HOLD
+
+Real user current-game R3 file BGXAI_WEAPON_NATIVE_ITM_R3.json, 33454 bytes SHA256 7ae7555f81b14a784e7866472f14483b02c2d6b707ab6169225e8fec32507304. Status ITM_NATIVE_ALL_ITEMS_RAW_READ, sourceKind CURRENT_GAME, gameModified=false, all 5 ITM found, SW1H04.SPL found, WSPATCK.2DA inside Default.bif and CLSWPBON.2DA inside override. R1/R2 10 paired actions actor 139135050, APR raw for staff/ammo/sword 1/2/7 (normal encoding 1/2/1.5, NOT 7 attacks). BOW05 equip opcode1 param1=2 param2=1 is FLAT APR=2, not +2 extra. SW1H04 has on-hit opcode146 probabilityRaw=1 casting SW1H04.SPL; that spell includes opcode112 remove SW1H04, opcode122 create MISC56_ Broken Weapon (potential iron-crisis breakage, gameplay trigger not proven). Do not treat linked spell as positive damage.
+
+New SOURCE-ONLY R3 static bridge in BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_R3_STATIC_BRIDGE_RO.py and test_weapon_r3_static_bridge_ro.py; joins R3 with actual R1R2 into 4 guarded candidate descriptions of static damage, APR, launcher+ammo types, shield incompatibilities and item loss risks. 28/28 offline Python regression PASS; never sends game orders. Output Library /BALDURS_GATE_EET_AI/DIAGNOSTICS/BGXAI_WEAPON_R3_STATIC_CANDIDATES_20261122.json; priorityAvailable=false, dispatchAuthorized=false. NEXT real functional work = validate actor class/kit/proficiency and active derived stats per weapon, launcher/ammo engine pair, target resistance and manual/EPS safe action boundary before any switch. Game V6/EPS/R1/R2 not modified. DO NOT repeat old 158, R1/R2 installs/capture, or R3 159-7-6.
+
+Authoritative checkpoint: BGXAI/CURRENT/BGXAI_WEAPON_R3_LIVE_STATIC_PRIORITY_CHECKPOINT_20261122_RU.md (Library + GitHub). All below is historical.
+
+---
+
 # 21.11.2026 — АКТУАЛЬНО: R3 NATIVE ITM/SPL/2DA SOURCE+PIN READY, LIVE R3 НЕТ
 
 **CODE/TEST:** Прочитан сохранённый архив пользователя `BG_EET_AUDIT_01_MAGIC.zip` (5 804 ITM). Найдены `SW1H04.ITM` 1d8/дистанция 1/speed 5, с opcode146 на `SW1H04.SPL` (опкоды 318,112,122,139), и `STAF01.ITM` 1d6/дистанция 2/speed4; архив не содержит `BOW05.ITM`, `AROW01.ITM`, `SHLD03A.ITM`. В старом архиве `CLSWPBON.2DA` 77 строк, `FIGHTER:GETS_PROF_APR=1`; это НЕ текущая game runtime. Написан `BGXAI_WEAPON_NATIVE_ITM_R3_RO.py` (только чтение `chitin.key`/BIFF, ITM, SPL, 2DA, без выбора оружия), 30/30 локальных unit PASS; R2 guarded menu+collector 35/35 PASS = 65/65 OFFLINE. **DEPLOY/LIVE R3:** НЕ ПРОВЕРЕН НА WINDOWS, игра не менялась. R1.1/R2 уже установлены и LIVE подтверждены, не повторять.
