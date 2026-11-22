@@ -1,0 +1,28 @@
+{
+  "date": "2026-11-22",
+  "defaultInstallerUpdated": false,
+  "files": {
+    "BGXAI_EEEX_R11_STATIC_COMPAT_RO.py": "654490f79aed91e8d38130ff2c02963bf577a496468433768adccbc6aa1d4b3a",
+    "BGXAI_R12_TARGET_BOUND_V2_CHECKPOINT_20261122_RU.md": "0d289914743102d2660f894c2037f40c9a993b5eb11da4f84b9ae33b6d398f16",
+    "BGXAI_WEAPON_R12_TARGET_BOUND_CROSSCHECK_V2.lua": "b9a6704561ef5c71dbc537b30cf7294b2ea0150cc984fcdd00ec3b91edbaa5ed",
+    "README_RU.md": "8e1261701a67b95ff31b0685074158b3c3311e677efdd3c28659bb6424a32a29",
+    "dependencies/BGXAI_R11_ACTION_TARGET_CANDIDATE_RO.lua": "93a8560b842fcb4fb5abd711d0ea167275990100727f1204c148286129b55df0",
+    "dependencies/BGXAI_R11_TARGET_BOUND_HIT_CANDIDATE_V2.lua": "7a65abcdb12c9235e3836c0956a6ce42f7fa7ac3dbf51d7cb20c2a71d8165e32",
+    "dependencies/BGXAI_WEAPON_R10_INTERVAL_RANKER.lua": "74d7202132191f11ebe9be9351cdca7a15818fe49282e76bea1e41814e2f43e3",
+    "dependencies/BGXAI_WEAPON_R11_EEEX_SELECTED_HIT_PROBE.lua": "36d795d8f769d463fece9fecd56662c25ece7c9a220807672716f72fe0c00f08",
+    "dependencies/BGXAI_WEAPON_R12_SELECTED_HIT_CROSSCHECK.lua": "0deec0387aa0632effa5981d4ec8ccd7776ef660b435214d56e363ff839d34bb",
+    "dependencies/BGXAI_WEAPON_R9_CONTEXT_LEDGER.lua": "223fdc9c57ebcb950bfb9d5ac1f2896c32f1432649b499b77baad3f18027b366",
+    "project_reference/00_AUTO_CONTINUE_READ_FIRST.md": "9b6f8bc91c2a9997b7a307395b5874360fcfb68d31aae9d2bf179695645c740d",
+    "test_eeex_static_compat_ro.py": "08919763efa91a5362c0ce4f60369294b190f80aa3c5362324d8ffc5f64758f1",
+    "test_r12_target_bound_v2.lua": "668eef3170fcb7e79977677ab55c42a7a386c9d5e44d56a2b160d540c03acae9"
+  },
+  "gameModified": false,
+  "schema": "BGXAI_R12_TARGET_BOUND_INTEGRATION_SOURCE_ONLY",
+  "status": "SOURCE_ONLY_OFFLINE_PASS_NOT_DEPLOYED",
+  "tests": {
+    "newR12BridgeLua": 35,
+    "priorRegression": 145,
+    "staticEEexReadOnlyPython": 13
+  },
+  "weaponSwitchAuthorized": false
+}
