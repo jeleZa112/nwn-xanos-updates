@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 102
+SELF_VERSION = 103
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -6256,12 +6256,217 @@ def v102_selftest():
     return True
 
 
+
+# BG_EET_RU v103 — read-only evidence about EEex weapon/ammo capabilities.
+# This does not register callbacks or claim per-attack weapon/ammo attribution.
+V103_ENTRY = '49_V103_WEAPON_AMMO_SOURCE_AUDIT.json'
+V103_SCHEMA = 'BG_EET_RU_V103_WEAPON_AMMO_SOURCE_AUDIT'
+V103_MODULES = {
+    'sprite': (
+        ('EEex_scripts/EEex_Sprite.lua', 'EEex/EEex_scripts/EEex_Sprite.lua',
+         'override/EEex_Sprite.lua'),
+        {
+            'launcher_api': 'function EEex_Sprite_GetLauncher(',
+            'damage_listener_registration': 'function EEex_Sprite_AddAlterBaseWeaponDamageListener(',
+            'damage_listener_dispatch': 'function EEex_Sprite_LuaHook_AlterBaseWeaponDamage(',
+            'block_hit_listener': 'function EEex_Sprite_AddBlockWeaponHitListener(',
+        },
+    ),
+    'sprite_patch': (
+        ('EEex_scripts/EEex_Sprite_Patch.lua', 'EEex/EEex_scripts/EEex_Sprite_Patch.lua',
+         'override/EEex_Sprite_Patch.lua'),
+        {
+            'damage_hook_patch': 'callAlterBaseWeaponDamageHook(',
+            'swing_damage_symbol': 'CGameSprite::Swing()-CGameSprite::Damage()',
+        },
+    ),
+    'attack_info': (
+        ('EEex_scripts/B3AttackInfo.lua', 'EEex/EEex_scripts/B3AttackInfo.lua',
+         'override/B3AttackInfo.lua'),
+        {
+            'selected_weapon_slot': 'm_selectedWeapon',
+            'selected_weapon_ability': 'm_selectedWeaponAbility',
+            'selected_item_lookup': 'm_items:get(',
+        },
+    ),
+    'bgeru_combat_lua': (
+        ('override/M_BGERU.lua', 'EEex_scripts/M_BGERU.lua'),
+        {
+            'bgeru_marker': 'BG_EET_RU',
+        },
+    ),
+    'loader_db': (
+        ('InfinityLoader.db',),
+        {},
+    ),
+}
+
+def v103_source_probe(game):
+    game=Path(game).resolve()
+    findings={}
+    for label,(candidates,signals) in V103_MODULES.items():
+        rows=[]
+        for rel in candidates:
+            path=game.joinpath(*rel.split('/'))
+            resolved=path.resolve()
+            if not resolved.is_relative_to(game):
+                rows.append({'relative':rel,'state':'OUTSIDE_GAME_REJECTED'})
+                continue
+            if path.is_symlink():
+                rows.append({'relative':rel,'state':'SYMLINK_REJECTED'})
+                continue
+            if not path.exists():
+                continue
+            if not path.is_file():
+                rows.append({'relative':rel,'state':'NOT_REGULAR_FILE'})
+                continue
+            size=path.stat().st_size
+            if size>4_000_000:
+                rows.append({'relative':rel,'state':'OVERSIZED_REJECTED','bytes':size})
+                continue
+            raw=path.read_bytes()
+            if len(raw)>4_000_000:
+                rows.append({'relative':rel,'state':'OVERSIZED_REJECTED','bytes':len(raw)})
+                continue
+            content=raw.decode('utf-8-sig','replace') if signals else ''
+            rows.append({
+                'relative':rel,
+                'state':'STATIC_FILE_PRESENT',
+                'bytes':len(raw),
+                'sha256':digest(raw),
+                'signals':{key:(content.count(token)>0) for key,token in signals.items()},
+            })
+        findings[label]={'candidates_checked':list(candidates),'files':rows}
+    return findings
+
+def v103_source_summary(findings):
+    def matched(label,key):
+        return any(x.get('state')=='STATIC_FILE_PRESENT'
+                   and x.get('signals',{}).get(key) is True
+                   for x in findings[label]['files'])
+    has_launcher=matched('sprite','launcher_api')
+    has_damage=matched('sprite','damage_listener_registration')
+    has_slot=matched('attack_info','selected_weapon_slot') and matched('attack_info','selected_weapon_ability')
+    source_capabilities=has_launcher and has_damage and has_slot
+    return {
+        'status': ('V103_STATIC_CAPABILITIES_FOUND_EVENT_CORRELATION_REQUIRED'
+                   if source_capabilities else 'V103_SOURCE_CAPABILITIES_INCOMPLETE_HOLD'),
+        'launcher_api_present_in_local_source':has_launcher,
+        'weapon_damage_listener_in_local_source':has_damage,
+        'selected_slot_and_ability_in_local_source':has_slot,
+        'attack_weapon_ammo_pair_measured':False,
+        'loaded_in_running_game_verified':False,
+        'runtime_hooks_installed_by_this_step':False,
+        'event_correlation': 'NOT_MEASURED',
+        'limitation': ('File existence does not prove EEex loaded that module, and an equipped item at '
+                       'an arbitrary time is not proof of which weapon/ammo produced a specific hit.'),
+        'next_gate': ('Determine non-mutating runtime event and per-attack correlation on the exact '
+                      'installed EEex build; seek separate consent before any runtime observer.'),
+    }
+
+def v103_zip_report(game,report_path,report):
+    safe_external(Path(game),Path(report_path))
+    report_path=Path(report_path)
+    if not report_path.is_file():
+        raise RuntimeError('V103_CANONICAL_ZIP_MISSING')
+    with zipfile.ZipFile(report_path) as src:
+        if src.testzip() is not None or len(src.namelist()) != len(set(src.namelist())):
+            raise RuntimeError('V103_PRIOR_ZIP_INVALID')
+        old=json.loads(src.read(V103_ENTRY)) if V103_ENTRY in src.namelist() else None
+    if old==report:
+        return False
+    with tempfile.NamedTemporaryFile(dir=str(report_path.parent),
+                                     prefix='.v103_',suffix='.zip',delete=False) as out:
+        tmp=Path(out.name)
+    try:
+        with zipfile.ZipFile(report_path,'r') as src, \
+             zipfile.ZipFile(tmp,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=7) as dst:
+            for info in src.infolist():
+                if info.filename!=V103_ENTRY:
+                    dst.writestr(info,src.read(info))
+            dst.writestr(V103_ENTRY,json.dumps(report,ensure_ascii=False,indent=2).encode('utf8'))
+        with zipfile.ZipFile(tmp,'r') as verify:
+            if verify.testzip() is not None or verify.namelist().count(V103_ENTRY)!=1:
+                raise RuntimeError('V103_REPORT_VERIFY_FAILED')
+        os.replace(tmp,report_path)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+    return True
+
+def v103_run(game,report_path):
+    game,report_path=Path(game),Path(report_path)
+    report={'schema':V103_SCHEMA,'updater_version':SELF_VERSION,
+            'operation':'READ_ONLY_STATIC_EEEX_CAPABILITY_AUDIT',
+            'game_files_written':0,'save_files_written':False,
+            'modifications_to_BGXAI':False,'modifications_to_BG_Voice_RU':False,
+            'runtime_hook_installed':False,'report_location':'EXTERNAL_SINGLE_ZIP',
+            'official_eeex_source_reference':
+                'https://github.com/Bubb13/EEex/tree/master/EEex/copy/EEex_scripts',
+            'warnings':['STATIC_ONLY_NOT_GAMEPLAY_VERIFIED']}
+    try:
+        safe_external(game,report_path)
+        found=v103_source_probe(game)
+        report['sources']=found
+        report['capabilities']=v103_source_summary(found)
+        report['status']=report['capabilities']['status']
+    except (OSError,RuntimeError,ValueError,UnicodeError) as exc:
+        report['status']='V103_SAFE_STOP'
+        report['error']={'type':type(exc).__name__,'message':str(exc)[:200]}
+    try:
+        v103_zip_report(game,report_path,report)
+    except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
+        print('v103: ZIP SAFE_STOP',type(exc).__name__,str(exc)[:200])
+        return 2
+    print('v103:',report['status'],'— изменений в игре: 0')
+    print('Единый ZIP:',report_path)
+    return 2 if report['status']=='V103_SAFE_STOP' else 0
+
+def v103_selftest():
+    assert V103_ENTRY.startswith('49_')
+    assert 'EEex_Sprite_GetLauncher' in V103_MODULES['sprite'][1]['launcher_api']
+    with tempfile.TemporaryDirectory(prefix='BG_EET_RU_V103_TEST_') as root:
+        base=Path(root)
+        game=base/'game'
+        game.mkdir()
+        outside=base/'reports.zip'
+        with zipfile.ZipFile(outside,'w') as out:
+            out.writestr('00_PRESERVED.json','{"test":true}')
+        initial=v103_source_probe(game)
+        assert v103_source_summary(initial)['status']=='V103_SOURCE_CAPABILITIES_INCOMPLETE_HOLD'
+        root_scripts=game/'EEex_scripts'
+        root_scripts.mkdir()
+        (root_scripts/'EEex_Sprite.lua').write_text(
+            'function EEex_Sprite_GetLauncher()\nend\n'
+            'function EEex_Sprite_AddAlterBaseWeaponDamageListener()\nend\n',encoding='utf8')
+        (root_scripts/'B3AttackInfo.lua').write_text(
+            'sprite.m_equipment.m_selectedWeapon\nsprite.m_equipment.m_selectedWeaponAbility\n',
+            encoding='utf8')
+        findings=v103_source_probe(game)
+        status=v103_source_summary(findings)
+        assert status['status']=='V103_STATIC_CAPABILITIES_FOUND_EVENT_CORRELATION_REQUIRED'
+        assert status['loaded_in_running_game_verified'] is False
+        report={'schema':V103_SCHEMA,'status':status['status'],'sources':findings}
+        assert v103_zip_report(game,outside,report) is True
+        with zipfile.ZipFile(outside) as check:
+            assert check.testzip() is None
+            assert check.namelist().count(V103_ENTRY)==1
+            assert check.read('00_PRESERVED.json')==b'{"test":true}'
+        before=digest(outside.read_bytes())
+        assert v103_zip_report(game,outside,report) is False
+        assert digest(outside.read_bytes())==before
+        (root_scripts/'EEex_Sprite.lua').write_text('-- no functions',encoding='utf8')
+        assert v103_source_summary(v103_source_probe(game))['status']=='V103_SOURCE_CAPABILITIES_INCOMPLETE_HOLD'
+    return True
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description='BG_EET_RU one-file visible-only read-only auto-updater')
     p.add_argument('--game',default=DEFAULT_GAME)
     p.add_argument('--offline',action='store_true',help='no GitHub update check')
     p.add_argument('--force',action='store_true',help='ignore result cache, repeat audit')
     p.add_argument('--selftest',action='store_true')
+    p.add_argument('--weapon-source-audit',action='store_true',help='v103 READ ONLY inspect local EEex weapon/ammo source capabilities; no hooks or game edits')
     p.add_argument('--install-v85-combat-format',action='store_true',help='optional signed v85 Lua replacement; exact typed approval required')
     p.add_argument('--rollback-v85-combat-format',action='store_true',help='optional signed restore to v74; exact typed approval required')
     p.add_argument('--install-v88-journal-ui',action='store_true',help='optional guarded UI.MENU two-mode pilot; exact approval required')
@@ -6375,15 +6580,20 @@ def main(argv=None):
                 args.upgrade_v100_combat_colors,args.rollback_v100_combat_colors,
                 args.upgrade_v101_abgr_colors,args.rollback_v101_abgr_colors,
                 args.upgrade_v102_roll_labels,args.rollback_v102_roll_labels,
+                args.weapon_source_audit,
                 args.fix_leui_reverse,args.rollback_leui_reverse,args.combat_rollback)):
         ui_v102=v102_state_read()
         if ui_v102 and ui_v102['phase'] in ('INSTALLED','PREPARED'):
-            return v102_run(game,WORKDIR/REPORT_NAME)
+            rc=v102_run(game,WORKDIR/REPORT_NAME)
+            if rc:return rc
+            return v103_run(game,WORKDIR/REPORT_NAME)
         ui_v101=v101_state_read()
         if ui_v101 and ui_v101['phase'] in ('INSTALLED','PREPARED'):
             rc=v101_run(game,WORKDIR/REPORT_NAME)
             if rc:return rc
-            return v102_run(game,WORKDIR/REPORT_NAME)
+            rc=v102_run(game,WORKDIR/REPORT_NAME)
+            if rc:return rc
+            return v103_run(game,WORKDIR/REPORT_NAME)
         ui_v100=v100_state_read()
         if ui_v100 and ui_v100['phase'] in ('INSTALLED','PREPARED'):
             rc=v100_run(game,WORKDIR/REPORT_NAME)
@@ -6432,6 +6642,8 @@ def main(argv=None):
             rc=v90_run(game,WORKDIR/REPORT_NAME)
             if rc:return rc
             return v91_run(game,WORKDIR/REPORT_NAME)
+    if args.weapon_source_audit:
+        return v103_run(game,WORKDIR/REPORT_NAME)
     # v83: player-observed text is processed directly; do not re-run expensive historical audits.
     if args.seen_strref or args.seen_text:
         return v83_run(game,WORKDIR/REPORT_NAME,additional_strrefs=args.seen_strref,additional_texts=args.seen_text)
@@ -9462,6 +9674,7 @@ def selftest():
     assert v100_selftest() and callable(v100_run)
     assert v101_selftest() and callable(v101_run)
     assert v102_selftest() and callable(v102_run)
+    assert v103_selftest() and callable(v103_run)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
