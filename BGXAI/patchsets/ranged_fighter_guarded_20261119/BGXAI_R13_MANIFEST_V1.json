@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.84-R13-TARGET-RO",
+  "files": [
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_R13_GUARDED.py",
+      "dest": "BGXAI_R13_GUARDED.py",
+      "size": 12189,
+      "sha256": "10799a110f435a48c37fbd6c257a53d21b4d7897581ac7796f4599b624712e05"
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BGXTDEF13.lua",
+      "dest": "M_BGXTDEF13.lua",
+      "size": 12217,
+      "sha256": "eb764346f0c523790658320938a2739d873dbbdb59a93479e4f47e1f0edac2f3"
+    }
+  ]
+}
