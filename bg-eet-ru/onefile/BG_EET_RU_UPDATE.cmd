@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 99
+SELF_VERSION = 100
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -5384,6 +5384,294 @@ def v99_selftest():
 
 
 
+# BG EET RU v100 — color accents for BRIEF combat results.
+# No changes to combatLog, UI button, v85 hooks, saves, exe or TLK.
+V100_ENTRY = '46_V100_COMBAT_COLORS.json'
+V100_SCHEMA = 'BG_EET_RU_V100_COMBAT_COLORS'
+V100_STATE = WORKDIR/'BG_EET_RU_V100_COMBAT_COLORS_STATE.json'
+V100_INSTALL_APPROVAL = 'UPGRADE_BG_EET_RU_V100_COMBAT_COLORS'
+V100_ROLLBACK_APPROVAL = 'ROLLBACK_BG_EET_RU_V100_COMBAT_COLORS'
+
+V100_COLOR_LUA = "\n-- BG EET RU v100: accents for BRIEF-only combat output; preserve original text and colors.\nlocal BG_EET_RU_V100_BaseLogView = BG_EET_RU_LogView\nlocal BG_EET_RU_V100_COLORS = {\n  hit='^0xFF35C46E', miss='^0xFFE15A5A', damage='^0xFFD6A548', critical='^0xFFFFCC3D'\n}\nlocal function BG_EET_RU_V100_Accent(core, frompos, topos, code)\n    local before = core:sub(1,frompos-1)\n    local last_reset = 0\n    for p in before:gmatch('()%^%-') do last_reset=p end\n    local last_color, active = 0, nil\n    for p,c in before:gmatch('()(%^0x%x%x%x%x%x%x%x%x)') do last_color=p;active=c end\n    local restore = (active and last_color>last_reset) and active or '^-'\n    return before .. code .. core:sub(frompos,topos) .. restore .. core:sub(topos+1)\nend\nfunction BG_EET_RU_LogView(original)\n    local shown = BG_EET_RU_V100_BaseLogView(original)\n    if BG_EET_RU_LOG_MODE ~= 1 or type(shown) ~= 'string' or #shown > 2048 then return shown end\n    local core, suffix = BG_EET_RU_V93_SplitTailCodes(shown)\n    local visible = core:gsub('%^0x%x%x%x%x%x%x%x%x',''):gsub('%^%-','')\n    if visible:find('%^') then return shown end\n    if visible:find('d20:',1,true) and visible:find(' — ',1,true) then\n        for label,shade in pairs({['ПОПАДАНИЕ']=BG_EET_RU_V100_COLORS.hit,['ПРОМАХ']=BG_EET_RU_V100_COLORS.miss}) do\n            if core:sub(-#label)==label then\n                local p=#core-#label+1\n                return BG_EET_RU_V100_Accent(core,p,#core,shade) .. suffix\n            end\n        end\n    end\n    if visible:find('КРИТИЧЕСКИЙ УДАР',1,true) then\n        local label='КРИТИЧЕСКИЙ УДАР'\n        if core:sub(-#label)==label then\n            return BG_EET_RU_V100_Accent(core,#core-#label+1,#core,BG_EET_RU_V100_COLORS.critical) .. suffix\n        end\n    end\n    if visible:find('урона',1,true) and visible:find(' ед.',1,true) and\n       (visible:find('источник:',1,true) or visible:find('от противника:',1,true)) then\n        local p,q=core:find('%d+%s+ед%.')\n        if p and q and p>1 and core:find(':',1,true) then\n            return BG_EET_RU_V100_Accent(core,p,q,BG_EET_RU_V100_COLORS.damage) .. suffix\n        end\n    end\n    return shown\nend\n"
+if not V99_HELPER.endswith('\n') or not V100_COLOR_LUA.endswith('\n'):
+    raise RuntimeError('V100_HELPER_EOL_REQUIRED')
+V100_HELPER = V99_HELPER + V100_COLOR_LUA
+
+
+def v100_transform_installed_ui(original):
+    if not isinstance(original, bytes) or len(original)>4_000_000:
+        raise RuntimeError('V100_BAD_UI_BYTES')
+    if not V100_HELPER.startswith('\n') or not V100_HELPER.endswith('\n'):
+        raise RuntimeError('V100_HELPER_FINAL_EOL_MISSING')
+    old_variants=[V99_HELPER.encode('utf8'),V99_HELPER.replace('\n','\r\n').encode('utf8')]
+    exact=[x for x in old_variants if original.count(x)==1]
+    if len(exact)!=1 or any(original.count(x)>1 for x in old_variants):
+        raise RuntimeError('V100_V99_HELPER_NOT_EXACT')
+    previous=exact[0]
+    if original.count(previous+b'`')!=1:
+        raise RuntimeError('V100_V99_MENU_DELIMITER_NOT_EXACT')
+    eol='\r\n' if b'\r\n' in previous else '\n'
+    replacement=V100_HELPER.replace('\n',eol).encode('utf8')
+    if replacement in original or b'BG EET RU v100: accents for BRIEF-only combat output' in original:
+        raise RuntimeError('V100_DUPLICATE_HELPER')
+    if original.count(V88_RENDER_NEW)!=1 or original.count(V90_DRAG)!=1:
+        raise RuntimeError('V100_V90_UI_BINDING_CHANGED')
+    result=original.replace(previous,replacement,1)
+    if result.count(replacement+b'`')!=1 or b'end`' in result:
+        raise RuntimeError('V100_MENU_EOL_UNSAFE')
+    if result.replace(replacement,previous,1)!=original:
+        raise RuntimeError('V100_NOT_BYTE_EXACT_REVERSIBLE')
+    for token in (V88_RENDER_NEW,V90_DRAG,b'BG_EET_RU_JOURNAL_TOGGLE',b'combatLog'):
+        if result.count(token)!=original.count(token):
+            raise RuntimeError('V100_UNRELATED_UI_TOKEN_CHANGED')
+    if not 0<len(result)-len(original)<8500:
+        raise RuntimeError('V100_UNEXPECTED_SIZE_DELTA')
+    return result
+
+
+def v100_state_read(path=V100_STATE):
+    path=Path(path)
+    if not path.exists():return None
+    if path.is_symlink() or not path.is_file():raise RuntimeError('V100_BAD_STATE_FILE')
+    record=json.loads(path.read_text(encoding='utf8'))
+    if (record.get('schema')!=V100_SCHEMA or record.get('phase') not in ('PREPARED','INSTALLED','ROLLED_BACK') or
+        not all(isinstance(record.get(k),str) and re.fullmatch('[0-9a-f]{64}',record[k])
+                for k in ('old_sha256','new_sha256'))):
+        raise RuntimeError('V100_INVALID_STATE')
+    return record
+
+
+def v100_state_write(record,path=V100_STATE):
+    path=Path(path)
+    if path.exists() and path.is_symlink():raise RuntimeError('V100_STATE_SYMLINK')
+    path.parent.mkdir(parents=True,exist_ok=True)
+    stage=path.with_suffix('.v100tmp')
+    if stage.exists():raise RuntimeError('V100_STALE_STATE_TEMP')
+    try:
+        with stage.open('x',encoding='utf8') as out:
+            json.dump(record,out,ensure_ascii=False,indent=2)
+        os.replace(stage,path)
+    finally:
+        if stage.exists():stage.unlink()
+
+
+def v100_zip_report(game,report_path,report):
+    safe_external(game,report_path)
+    report_path=Path(report_path)
+    if not report_path.is_file():raise RuntimeError('V100_PRIOR_REPORT_MISSING')
+    with zipfile.ZipFile(report_path) as z:
+        if z.testzip() is not None or len(z.namelist())!=len(set(z.namelist())):
+            raise RuntimeError('V100_PRIOR_ZIP_CRC_OR_DUPLICATES')
+        old=json.loads(z.read(V100_ENTRY)) if V100_ENTRY in z.namelist() else None
+    if old==report:return
+    with tempfile.NamedTemporaryFile(dir=str(report_path.parent),prefix='.v100_',suffix='.zip',delete=False) as f:
+        stage=Path(f.name)
+    try:
+        with zipfile.ZipFile(report_path) as src,zipfile.ZipFile(stage,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=7) as dst:
+            for info in src.infolist():
+                if info.filename!=V100_ENTRY:dst.writestr(info,src.read(info))
+            dst.writestr(V100_ENTRY,json.dumps(report,ensure_ascii=False,indent=2).encode('utf8'))
+        with zipfile.ZipFile(stage) as check:
+            if check.testzip() is not None or check.namelist().count(V100_ENTRY)!=1:
+                raise RuntimeError('V100_REPORT_VERIFY_FAIL')
+        os.replace(stage,report_path)
+    finally:
+        if stage.exists():stage.unlink()
+
+
+def v100_run(game,report_path,mode='status'):
+    game,report_path=Path(game),Path(report_path)
+    report={'schema':V100_SCHEMA,'updater_version':SELF_VERSION,'mode':mode,
+            'status':'V100_READ_ONLY_HOLD','game_files_written':0,'save_files_written':False,
+            'v85_changed':False,'gameplay_verified':False,'errors':[],
+            'scope':'Add BRIEF-only red/green/gold/critical color to result label or damage count; preserve original actor colors, FULL, combatLog, v85'}
+    try:
+        safe_external(game,report_path)
+        if mode not in ('status','upgrade','rollback'):raise RuntimeError('V100_BAD_MODE')
+        prev_v93=v93_state_read()
+        if prev_v93 and prev_v93['phase'] in ('INSTALLED','PREPARED'):
+            raise RuntimeError('V100_V93_ROLLBACK_REQUIRED')
+        v85=v85_state_read()
+        lua=game/'override'/V71_SHORT_SCRIPT
+        if not v85 or v85.get('phase')!='INSTALLED' or not lua.is_file() or lua.is_symlink() or digest(lua.read_bytes())!=v85.get('candidate_sha256'):
+            raise RuntimeError('V100_V85_LUA_INTEGRITY_HOLD')
+        v99=v99_state_read()
+        if not v99 or v99.get('phase')!='INSTALLED':raise RuntimeError('V100_V99_NOT_INSTALLED')
+        ui=game/'override'/'UI.MENU'
+        if not ui.is_file() or ui.is_symlink():raise RuntimeError('V100_UI_MISSING_OR_SYMLINK')
+        content=ui.read_bytes();current=digest(content)
+        record=v100_state_read()
+        if record and record['phase'] in ('PREPARED','INSTALLED'):
+            if record['old_sha256']!=v99['new_sha256']:
+                raise RuntimeError('V100_V99_PRIOR_SHA_MISMATCH')
+            if record['phase']=='PREPARED':
+                report['status']='V100_PREPARED_RECOVERY_HOLD'
+                if current not in (record['old_sha256'],record['new_sha256']):
+                    raise RuntimeError('V100_UNKNOWN_PENDING_UI_SHA')
+            elif current!=record['new_sha256']:
+                raise RuntimeError('V100_INSTALLED_UI_SHA_CHANGED')
+            elif mode=='rollback':
+                closed,why=v71_processes_closed()
+                if not closed:raise RuntimeError('V100_CLOSE_GAME_AND_LOADER:'+why)
+                backup=Path(record['backup']);safe_external(game,backup)
+                if not backup.is_file() or backup.is_symlink() or digest(backup.read_bytes())!=record['old_sha256']:
+                    raise RuntimeError('V100_BACKUP_INTEGRITY_HOLD')
+                if not v85_read_input_approval(V100_ROLLBACK_APPROVAL):
+                    report['status']='V100_ROLLBACK_NOT_AUTHORIZED'
+                else:
+                    stage=ui.with_name('UI.MENU.v100restore')
+                    if stage.exists():raise RuntimeError('V100_RESTORE_STAGE_COLLISION')
+                    try:
+                        with stage.open('xb') as out:out.write(backup.read_bytes())
+                        if digest(stage.read_bytes())!=record['old_sha256']:
+                            raise RuntimeError('V100_RESTORE_VERIFY_FAILED')
+                        if digest(ui.read_bytes())!=record['new_sha256']:
+                            raise RuntimeError('V100_UI_CHANGED_DURING_ROLLBACK')
+                        os.replace(stage,ui)
+                        if digest(ui.read_bytes())!=record['old_sha256']:
+                            raise RuntimeError('V100_RESTORE_SHA_MISMATCH')
+                    finally:
+                        if stage.exists():stage.unlink()
+                    v100_state_write({**record,'phase':'ROLLED_BACK','rolled_back_utc':now()})
+                    report['status']='V100_ROLLED_BACK_TO_V99_UI';report['game_files_written']=1
+            else:
+                report['status']='V100_INSTALLED_GAMEPLAY_TEST_REQUIRED'
+        elif mode=='rollback':
+            report['status']='V100_NOT_INSTALLED'
+        else:
+            if record and record['phase']!='ROLLED_BACK':raise RuntimeError('V100_UNKNOWN_PENDING_STATE')
+            if current!=v99['new_sha256']:raise RuntimeError('V100_CURRENT_V99_SHA_MISMATCH')
+            # Prove that current v99 is exactly the signed derivation of its backed up v90 UI.
+            source_v91=Path(v99['backup']);safe_external(game,source_v91)
+            if not source_v91.is_file() or source_v91.is_symlink() or digest(source_v91.read_bytes())!=v99['old_sha256']:
+                raise RuntimeError('V100_V99_BACKUP_INTEGRITY_HOLD')
+            if v99_transform_installed_ui(source_v91.read_bytes())!=content:
+                raise RuntimeError('V100_NOT_EXACT_V99_UI_SOURCE')
+            candidate=v100_transform_installed_ui(content)
+            report.update({'status':'V100_COLORS_PREFLIGHT_PASS_NOT_INSTALLED',
+                           'current_v99_sha256':current,'candidate_v100_sha256':digest(candidate),
+                           'candidate_bytes':len(candidate),
+                           'evidence':'User request 20261122 combat journal colors; on-screen v98 brief outcomes and damage are unaccented',
+                           'runtime_verified':False})
+            if mode=='upgrade':
+                closed,why=v71_processes_closed()
+                if not closed:raise RuntimeError('V100_CLOSE_GAME_AND_LOADER:'+why)
+                if not v85_read_input_approval(V100_INSTALL_APPROVAL):
+                    report['status']='V100_INSTALL_NOT_AUTHORIZED'
+                else:
+                    if digest(ui.read_bytes())!=current or digest(lua.read_bytes())!=v85['candidate_sha256']:
+                        raise RuntimeError('V100_FILES_CHANGED_DURING_APPROVAL')
+                    closed,why=v71_processes_closed()
+                    if not closed:raise RuntimeError('V100_GAME_STARTED_DURING_APPROVAL:'+why)
+                    directory=WORKDIR/'SAFE_BACKUPS';safe_external(game,directory)
+                    directory.mkdir(parents=True,exist_ok=True)
+                    backup=directory/('UI.MENU_V100_PRE_'+current[:16]+'.bak')
+                    if backup.exists():
+                        if backup.is_symlink() or digest(backup.read_bytes())!=current:
+                            raise RuntimeError('V100_BACKUP_NAME_COLLISION')
+                    else:
+                        with backup.open('xb') as out:out.write(content)
+                    if digest(backup.read_bytes())!=current:
+                        raise RuntimeError('V100_BACKUP_VERIFY_FAILED')
+                    stage=ui.with_name('UI.MENU.v100stage')
+                    if stage.exists():raise RuntimeError('V100_UI_STAGE_COLLISION')
+                    state={'schema':V100_SCHEMA,'phase':'PREPARED','created_utc':now(),
+                           'old_sha256':current,'new_sha256':digest(candidate),'backup':str(backup)}
+                    try:
+                        with stage.open('xb') as out:out.write(candidate)
+                        if digest(stage.read_bytes())!=state['new_sha256']:
+                            raise RuntimeError('V100_STAGE_VERIFY_FAIL')
+                        v100_state_write(state)
+                        if digest(ui.read_bytes())!=current:
+                            raise RuntimeError('V100_UI_CHANGED_BEFORE_SWAP')
+                        os.replace(stage,ui)
+                        if digest(ui.read_bytes())!=state['new_sha256']:
+                            raise RuntimeError('V100_INSTALLED_SHA_MISMATCH')
+                        v100_state_write({**state,'phase':'INSTALLED','installed_utc':now()})
+                    except Exception:
+                        if ui.is_file() and digest(ui.read_bytes())==state['new_sha256']:
+                            restore=ui.with_name('UI.MENU.v100failedrestore')
+                            if not restore.exists():
+                                with restore.open('xb') as out:out.write(content)
+                                if digest(restore.read_bytes())==current:
+                                    os.replace(restore,ui)
+                                    v100_state_write({**state,'phase':'ROLLED_BACK','failed_utc':now()})
+                        raise
+                    finally:
+                        if stage.exists():stage.unlink()
+                    report['status']='V100_INSTALLED_GAMEPLAY_TEST_REQUIRED';report['game_files_written']=1
+    except (OSError,RuntimeError,ValueError,KeyError,UnicodeError,TypeError) as exc:
+        report['status']='V100_SAFE_STOP'
+        report['errors'].append({'type':type(exc).__name__,'message':str(exc)[:240]})
+    try:v100_zip_report(game,report_path,report)
+    except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
+        print('v100: ZIP SAFE_STOP',type(exc).__name__,str(exc)[:200]);return 2
+    print('v100:',report['status'],'— изменений в игре:',report['game_files_written'])
+    print('Единый ZIP:',report_path)
+    return 2 if report['status']=='V100_SAFE_STOP' else 0
+
+
+def v100_selftest():
+    assert '%^%-' in V100_HELPER and "suffix = remainder:sub(i,j) .. suffix" in V100_HELPER
+    assert V100_HELPER.startswith('\n') and V100_HELPER.endswith('\n')
+    assert 'local function BG_EET_RU_V93_BriefRoll' in V100_HELPER
+    assert V100_COLOR_LUA.count('function BG_EET_RU_LogView(original)')==1
+    assert "BG_EET_RU_V100_COLORS" in V100_HELPER
+    assert "BG_EET_RU_V100_Accent" in V100_HELPER
+    assert "local restore = (active and last_color>last_reset)" in V100_HELPER
+    assert "['ПОПАДАНИЕ']=BG_EET_RU_V100_COLORS.hit" in V100_COLOR_LUA
+    assert "BG_EET_RU_V100_COLORS.damage" in V100_COLOR_LUA
+    assert "indices[#prefix + #amount]" in V100_HELPER
+    assert "return shown:sub(1,insertion) .. ' ед.' .. shown:sub(insertion+1)" in V100_HELPER
+    assert "pos = pos + 11" in V100_HELPER
+    assert "if BG_EET_RU_LOG_MODE ~= 1" in V100_COLOR_LUA
+    assert "local visible_prefix = prefix:gsub" in V100_HELPER
+    assert "if body:find('%^') then return original end" in V100_HELPER
+    assert "if remainder:find('%^%x')" not in V100_HELPER
+    assert 'if #stack ~= 1 or count < 1 or hidden < 1' in V100_HELPER
+    assert 'if not BG_EET_RU_V93_FIELDS[label]' in V100_HELPER
+    assert '%^0x%x%x%x%x%x%x%x%x' in V100_HELPER
+    assert 'if n + adjust ~= t then return original end' in V100_HELPER
+    assert "if BG_EET_RU_LOG_MODE ~= 1" in V100_HELPER
+    assert 'return original end' in V100_HELPER
+    assert '%%' not in V100_HELPER
+    for eol in ('\n','\r\n'):
+        previous=(b'header\r\nother\n' + V99_HELPER.replace('\n',eol).encode('utf8') +
+                  b'`\nmenu\nrender ' + V88_RENDER_NEW + b'\n' + V90_DRAG +
+                  b'\nBG_EET_RU_JOURNAL_TOGGLE\n')
+        patched=v100_transform_installed_ui(previous)
+        assert patched.count(V88_RENDER_NEW)==1 and patched.count(V90_DRAG)==1
+        assert patched.count(b'BG_EET_RU_JOURNAL_TOGGLE')==previous.count(b'BG_EET_RU_JOURNAL_TOGGLE')
+        assert patched.replace(V100_HELPER.replace('\n',eol).encode('utf8'),
+                               V99_HELPER.replace('\n',eol).encode('utf8'),1)==previous
+        assert len(patched)>len(previous)
+        assert V100_HELPER.replace('\n',eol).encode('utf8')+b'`' in patched
+        assert b'end'+eol.encode('ascii')+b'`' in patched and b'end`' not in patched
+    raw=(V99_HELPER.encode('utf8')+b'`'+V88_RENDER_NEW+V90_DRAG+b'BG_EET_RU_JOURNAL_TOGGLE')
+    for bad in (raw+V99_HELPER.encode('utf8'),raw.replace(V90_DRAG,b''),v100_transform_installed_ui(raw)):
+        try:v100_transform_installed_ui(bad)
+        except RuntimeError:pass
+        else:raise AssertionError('V100_UNSAFE_TRANSFORM_ACCEPTED')
+    with tempfile.TemporaryDirectory(prefix='BG_EET_RU_V100_TEST_') as d:
+        p=Path(d)/'state.json'
+        assert v100_state_read(p) is None
+        record={'schema':V100_SCHEMA,'phase':'PREPARED','old_sha256':'a'*64,'new_sha256':'b'*64}
+        v100_state_write(record,p)
+        assert v100_state_read(p)==record
+        v100_state_write({**record,'phase':'INSTALLED'},p)
+        assert v100_state_read(p)['phase']=='INSTALLED'
+        v100_state_write({**record,'phase':'ROLLED_BACK'},p)
+        assert v100_state_read(p)['phase']=='ROLLED_BACK'
+    return True
+
+
+
+
+
+
+
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description='BG_EET_RU one-file visible-only read-only auto-updater')
     p.add_argument('--game',default=DEFAULT_GAME)
@@ -5412,6 +5700,8 @@ def main(argv=None):
     p.add_argument('--rollback-v98-damage-colors',action='store_true',help='optional exact v98 rollback to v97; explicit approval')
     p.add_argument('--upgrade-v99-damage-compact',action='store_true',help='optional v98-to-v99 BRIEF damage display compact; typed approval')
     p.add_argument('--rollback-v99-damage-compact',action='store_true',help='optional exact rollback v99 to v98; typed approval')
+    p.add_argument('--upgrade-v100-combat-colors',action='store_true',help='optional v99-to-v100 brief combat colors; typed approval')
+    p.add_argument('--rollback-v100-combat-colors',action='store_true',help='optional exact v100 rollback to v99; typed approval')
     p.add_argument('--seen-strref',action='append',type=int,default=[],help='v83: player-reported displayed StrRef, repeatable')
     p.add_argument('--seen-text',action='append',default=[],help='v83: player-reported exact displayed text, repeatable')
     p.add_argument('--no-open',action='store_true',help='do not open output folder')
@@ -5494,10 +5784,16 @@ def main(argv=None):
                 args.upgrade_v97_damage_grammar,args.rollback_v97_damage_grammar,
                 args.upgrade_v98_damage_colors,args.rollback_v98_damage_colors,
                 args.upgrade_v99_damage_compact,args.rollback_v99_damage_compact,
+                args.upgrade_v100_combat_colors,args.rollback_v100_combat_colors,
                 args.fix_leui_reverse,args.rollback_leui_reverse,args.combat_rollback)):
+        ui_v100=v100_state_read()
+        if ui_v100 and ui_v100['phase'] in ('INSTALLED','PREPARED'):
+            return v100_run(game,WORKDIR/REPORT_NAME)
         ui_v99=v99_state_read()
         if ui_v99 and ui_v99['phase'] in ('INSTALLED','PREPARED'):
-            return v99_run(game,WORKDIR/REPORT_NAME)
+            rc=v99_run(game,WORKDIR/REPORT_NAME)
+            if rc:return rc
+            return v100_run(game,WORKDIR/REPORT_NAME)
         ui_v98=v98_state_read()
         if ui_v98 and ui_v98['phase'] in ('INSTALLED','PREPARED'):
             rc=v98_run(game,WORKDIR/REPORT_NAME)
@@ -5539,12 +5835,25 @@ def main(argv=None):
     # v83: player-observed text is processed directly; do not re-run expensive historical audits.
     if args.seen_strref or args.seen_text:
         return v83_run(game,WORKDIR/REPORT_NAME,additional_strrefs=args.seen_strref,additional_texts=args.seen_text)
+    if args.upgrade_v100_combat_colors or args.rollback_v100_combat_colors:
+        if args.upgrade_v100_combat_colors and args.rollback_v100_combat_colors:
+            print('V100_STOP: conflicting actions')
+            return 2
+        return v100_run(game,WORKDIR/REPORT_NAME,mode=('upgrade' if args.upgrade_v100_combat_colors else 'rollback'))
     if args.upgrade_v99_damage_compact or args.rollback_v99_damage_compact:
+        state=v100_state_read()
+        if state and state['phase'] in ('INSTALLED','PREPARED'):
+            print('V100_STOP: rollback v100 before changing v99')
+            return 2
         if args.upgrade_v99_damage_compact and args.rollback_v99_damage_compact:
             print('V99_STOP: conflicting actions')
             return 2
         return v99_run(game,WORKDIR/REPORT_NAME,mode=('upgrade' if args.upgrade_v99_damage_compact else 'rollback'))
     if args.upgrade_v98_damage_colors or args.rollback_v98_damage_colors:
+        state=v100_state_read()
+        if state and state['phase'] in ('INSTALLED','PREPARED'):
+            print('V100_STOP: rollback v100 before older UI changes')
+            return 2
         state=v99_state_read()
         if state and state['phase'] in ('INSTALLED','PREPARED'):
             print('V99_STOP: rollback v99 before changing v98')
@@ -5554,6 +5863,10 @@ def main(argv=None):
             return 2
         return v98_run(game,WORKDIR/REPORT_NAME,mode=('upgrade' if args.upgrade_v98_damage_colors else 'rollback'))
     if args.upgrade_v97_damage_grammar or args.rollback_v97_damage_grammar:
+        state=v100_state_read()
+        if state and state['phase'] in ('INSTALLED','PREPARED'):
+            print('V100_STOP: rollback v100 before older UI changes')
+            return 2
         state=v99_state_read()
         if state and state['phase'] in ('INSTALLED','PREPARED'):
             print('V99_STOP: rollback v99 before modifying older UI')
@@ -5567,6 +5880,10 @@ def main(argv=None):
             return 2
         return v97_run(game,WORKDIR/REPORT_NAME,mode=('upgrade' if args.upgrade_v97_damage_grammar else 'rollback'))
     if args.upgrade_v96_journal_colors or args.rollback_v96_journal_colors:
+        state=v100_state_read()
+        if state and state['phase'] in ('INSTALLED','PREPARED'):
+            print('V100_STOP: rollback v100 before older UI changes')
+            return 2
         state=v99_state_read()
         if state and state['phase'] in ('INSTALLED','PREPARED'):
             print('V99_STOP: rollback v99 before modifying older UI')
@@ -5584,6 +5901,10 @@ def main(argv=None):
             return 2
         return v96_run(game,WORKDIR/REPORT_NAME,mode=('upgrade' if args.upgrade_v96_journal_colors else 'rollback'))
     if args.upgrade_v95_journal_zeros or args.rollback_v95_journal_zeros:
+        state=v100_state_read()
+        if state and state['phase'] in ('INSTALLED','PREPARED'):
+            print('V100_STOP: rollback v100 before older UI changes')
+            return 2
         state=v99_state_read()
         if state and state['phase'] in ('INSTALLED','PREPARED'):
             print('V99_STOP: rollback v99 before modifying older UI')
@@ -5605,6 +5926,10 @@ def main(argv=None):
             return 2
         return v95_run(game,WORKDIR/REPORT_NAME,mode=('upgrade' if args.upgrade_v95_journal_zeros else 'rollback'))
     if args.upgrade_v93_journal_zeros or args.rollback_v93_journal_zeros:
+        state=v100_state_read()
+        if state and state['phase'] in ('INSTALLED','PREPARED'):
+            print('V100_STOP: rollback v100 before older UI changes')
+            return 2
         state=v99_state_read()
         if state and state['phase'] in ('INSTALLED','PREPARED'):
             print('V99_STOP: rollback v99 before modifying older UI')
@@ -5630,6 +5955,10 @@ def main(argv=None):
             return 2
         return v93_run(game,WORKDIR/REPORT_NAME,mode='rollback')
     if args.upgrade_v92_journal_marker or args.rollback_v92_journal_marker:
+        state=v100_state_read()
+        if state and state['phase'] in ('INSTALLED','PREPARED'):
+            print('V100_STOP: rollback v100 before older UI changes')
+            return 2
         state=v99_state_read()
         if state and state['phase'] in ('INSTALLED','PREPARED'):
             print('V99_STOP: rollback v99 before modifying older UI')
@@ -8484,6 +8813,7 @@ def selftest():
     assert v97_selftest() and callable(v97_run)
     assert v98_selftest() and callable(v98_run)
     assert v99_selftest() and callable(v99_run)
+    assert v100_selftest() and callable(v100_run)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
