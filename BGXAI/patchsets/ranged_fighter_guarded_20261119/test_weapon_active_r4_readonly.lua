@@ -14,6 +14,7 @@ local function mock()
   m_nProficiencyQuarterStaff=0,m_nProficiencySwordAndShield=0,
   m_nProficiency2Handed=0,m_nProficiencySingleWeapon=0,m_nProficiency2Weapon=0}
  local s={m_id=139135050,m_equipment={m_selectedWeapon=12,m_selectedWeaponAbility=0}}
+ for _,name in ipairs(R.fields) do if stats[name]==nil then stats[name]=0 end end
  return s,{m_actionID=30},stats
 end
 local function snapshot() local s,a,stats=mock();return R.observe(s,a,2,function() return stats end) end
@@ -37,4 +38,102 @@ test('out-of-range field dropped not clamped to false value 0',function()local s
 test('bad selected weapon holds rather than ranking',function()local s,a,stats=mock();s.m_equipment=nil;local v=R.observe(s,a,2,function()return stats end);equal(v.status,'HOLD_APR_OR_SELECTED_SLOT_MISSING')end)
 test('missing class level remains missing only',function()local s,a,stats=mock();stats.m_nLevel1=nil;local v=R.observe(s,a,2,function()return stats end);equal(v.fields.m_nLevel1,false);equal(v.allBuffsObserved,false)end)
 test('no game mutation on snapshots',function()local s,a,stats=mock();R.observe(s,a,2,function()return stats end);equal(s.m_equipment.m_selectedWeapon,12);equal(a.m_actionID,30);equal(stats.m_nNumberOfAttacks,2)end)
+test('complete 89-134 raw proficiency coverage, no duplicate fields',function()
+ equal(#R.fields,68)
+ local unique={};for _,name in ipairs(R.fields) do assert(not unique[name]);unique[name]=true end
+ for id=89,134 do assert(type(R.proficiencyFieldById[id])=='string');assert(unique[R.proficiencyFieldById[id]]) end
+ equal(R.proficiencyFieldById[89],'m_nProficiencyBastardSword')
+ equal(R.proficiencyFieldById[115],'m_nProficiencyClub')
+ equal(R.proficiencyFieldById[116],'m_nExtraProficiency2')
+ equal(R.proficiencyFieldById[134],'m_nExtraProficiency20')
+end)
+test('dart and sling and axe raw proficiency resolved by item ID',function()
+ local v=snapshot()
+ local ids={[92]='m_nProficiencyAxe',[106]='m_nProficiencyDart',[107]='m_nProficiencySling'}
+ for k,field in pairs(ids) do
+  local res=R.lookupProficiencyForItem(v,{proficiencyIdRaw=k})
+  equal(res.status,'RAW_STANDARD_PROFICIENCY_ID_MATCH');equal(res.field,field)
+  equal(res.dispatchAuthorized,false);equal(res.actorProficiencyRankVerified,false)
+ end
+end)
+test('modded proficiency extra slot observed but no claimed name',function()
+ local v=snapshot();v.fields.m_nExtraProficiency8=3
+ local res=R.lookupProficiencyForItem(v,{proficiencyIdRaw=122})
+ equal(res.rawValue,3);equal(res.status,'HOLD_MODDED_WPROF_NAME_UNVERIFIED')
+ equal(res.installedWPROFMappingVerified,false)
+end)
+test('unknown WPROF ID cannot be silently treated as zero pips',function()
+ local res=R.lookupProficiencyForItem(snapshot(),{proficiencyIdRaw=149})
+ equal(res.status,'HOLD_PROFICIENCY_FOR_ITEM_UNVERIFIED')
+ equal(res.reason,'ITEM_PROFICIENCY_OUTSIDE_AUDITED_IDS')
+end)
+test('unreadable proficiency is not zero',function()
+ local v=snapshot();v.fields.m_nProficiencySling=false
+ local res=R.lookupProficiencyForItem(v,{proficiencyIdRaw=107})
+ equal(res.reason,'ACTOR_PROFICIENCY_FIELD_UNREADABLE')
+end)
+test('arrow ammunition ID 0 is not weapon proficiency',function()
+ local res=R.lookupProficiencyForItem(snapshot(),{proficiencyIdRaw=0})
+ equal(res.status,'HOLD_PROFICIENCY_FOR_ITEM_UNVERIFIED')
+end)
+test('axe raw change invalidates cached advice without current action abort',function()
+ local a=snapshot();local b=snapshot();b.fields.m_nProficiencyAxe=2
+ local c=R.compare(a,b)
+ equal(c.status,'INVALIDATE_CACHED_WEAPON_ADVICE_KEEP_ACTION')
+ equal(c.dispatchAuthorized,false);equal(c.currentActionPreserved,nil)
+end)
+test('all raw proficiencies still cannot prove other slot APR or dispatch',function()
+ local v=snapshot()
+ equal(v.presentCount,68);equal(v.missingCount,0)
+ equal(v.alternateSlotAPRVerified,false);equal(v.dispatchAuthorized,false)
+end)
+test('Holy Power-like THAC0 STR 18/00 does not grant fighter APR or proficiencies',function()
+ local a=snapshot();local b=snapshot();a.fields.m_nLevel1=9;b.fields.m_nLevel1=9
+ a.fields.m_nTHAC0=16;b.fields.m_nTHAC0=12
+ b.fields.m_nSTR=18;b.fields.m_nSTRExtra=100
+ local r=R.auditTemporaryCombatShift(a,b)
+ equal(r.status,'CURRENT_SELECTED_COMBAT_SHIFT_RECALCULATE_KEEP_ACTION')
+ equal(r.beforeAPRRaw,2);equal(r.afterAPRRaw,2)
+ equal(r.fighterAPRNotInferred,true);equal(r.fighterProficienciesGranted,false)
+ equal(r.spellIdentityVerified,false);equal(r.currentActionPreserved,true)
+ equal(r.dispatchAuthorized,false);equal(r.ordersSent,0)
+end)
+test('Holy Power-like effect expiration refreshes advice without an action',function()
+ local a=snapshot();local b=snapshot()
+ a.fields.m_nTHAC0=12;b.fields.m_nTHAC0=16
+ a.fields.m_nSTR=18;a.fields.m_nSTRExtra=100
+ local r=R.auditTemporaryCombatShift(a,b)
+ equal(r.status,'CURRENT_SELECTED_COMBAT_SHIFT_RECALCULATE_KEEP_ACTION')
+ equal(r.currentActionPreserved,true);equal(r.dispatchAuthorized,false)
+end)
+test('druid form or haste APR change is not fighter class promotion',function()
+ local a=snapshot();local b=snapshot();b.fields.m_nNumberOfAttacks=7
+ b.fields.m_bImprovedHaste=1
+ local r=R.auditTemporaryCombatShift(a,b)
+ equal(r.afterAPRRaw,7)
+ equal(r.fighterAPRNotInferred,true);equal(r.status,'CURRENT_SELECTED_COMBAT_SHIFT_RECALCULATE_KEEP_ACTION')
+end)
+test('druid transformation selection change requires fresh equipment audit',function()
+ local a=snapshot();local b=snapshot();b.selectedWeaponRaw=35;b.fields.m_nTHAC0=2
+ local r=R.auditTemporaryCombatShift(a,b)
+ equal(r.status,'HOLD_SELECTION_CHANGED_REAUDIT_ALL_WEAPONS')
+ equal(r.dispatchAuthorized,false)
+end)
+test('unknown buff field does not pretend that unchanged means buff-free',function()
+ local a=snapshot();local b=snapshot()
+ local r=R.auditTemporaryCombatShift(a,b)
+ equal(r.status,'NO_OBSERVED_SHIFT_BUFFS_STILL_NOT_EXHAUSTIVE')
+ equal(r.allBuffsObserved,false)
+end)
+test('new unreadable active THAC0 forces hold not fighter approximation',function()
+ local a=snapshot();local b=snapshot();b.fields.m_nTHAC0=false
+ local r=R.auditTemporaryCombatShift(a,b)
+ equal(r.status,'HOLD_CURRENT_COMBAT_STAT_UNREADABLE')
+ equal(r.fighterAPRNotInferred,true)
+end)
+test('weapon proficiency changes are never mistaken for spell buffs',function()
+ local a=snapshot();local b=snapshot();b.fields.m_nProficiencyLongSword=3
+ local r=R.auditTemporaryCombatShift(a,b)
+ equal(r.status,'HOLD_PROFICIENCY_CHANGED_REAUDIT_WEAPON')
+end)
 print('BGXAI_R4_CORE_OFFLINE_PASS '..n..'/'..n)
