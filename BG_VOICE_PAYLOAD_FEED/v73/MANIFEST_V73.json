@@ -1,0 +1,22 @@
+{
+  "schema": "BGVOICE_V73_CALIBRATION_PAYLOAD_V1",
+  "created": "2026-11-22",
+  "main_updater_only": true,
+  "game_install_ready": false,
+  "source_v70_calibration_sha256": "1b172b3905638da78cad4e0d69da8277deeb4086109adeb12fc1a01c32ab0519",
+  "source_v70_calibration_rows": 96,
+  "lane_counts": {
+    "PROVISIONAL_BULK_STAGE_SHA_GATED": 32,
+    "ACTING_REVIEW_298": 24,
+    "SPEECH_CONTENT_REVIEW_171": 24,
+    "ACOUSTIC_OR_DURATION_REVIEW": 16
+  },
+  "batches": 6,
+  "rows_per_batch": 16,
+  "human_locks": {
+    "OH85856": "V65",
+    "OH80404": "V60",
+    "OH89888": "BOTH_BAD"
+  },
+  "note": "Imported by main updater. No game or source writes. No quality approvals."
+}
