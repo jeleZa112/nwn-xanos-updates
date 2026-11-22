@@ -518,3 +518,40 @@ jobs:
               finally: lua.lua_close(L)
           print('V102_NATIVE_BRIEF_ROLL_PASS: nozero, zeros, unknown syntax, prefix color, FULL, idempotence, LF/CRLF, exact reverse')
           PY
+
+      - name: V103 source-only EEex weapon ammo audit (no game changes)
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,tempfile,zipfile,hashlib
+          from pathlib import Path
+          p=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
+          ns={'__name__':'v103_ci','__file__':str(p)}
+          exec(compile(p.read_text(encoding='utf8').split('\n',1)[1],str(p),'exec'),ns)
+          assert ns['v103_selftest']()
+          with tempfile.TemporaryDirectory() as d:
+              base=Path(d)
+              game=base/'game';game.mkdir()
+              module=game/'EEex_scripts';module.mkdir()
+              (module/'EEex_Sprite.lua').write_text('function EEex_Sprite_GetLauncher()\nend\nfunction EEex_Sprite_AddAlterBaseWeaponDamageListener()\nend\n',encoding='utf8')
+              (module/'B3AttackInfo.lua').write_text('m_selectedWeapon\nm_selectedWeaponAbility\n',encoding='utf8')
+              z=base/'SEND_TO_CHATGPT_BG_EET_RU.zip'
+              with zipfile.ZipFile(z,'w') as w:w.writestr('original.txt','original preserved')
+              old=hashlib.sha256((module/'EEex_Sprite.lua').read_bytes()).hexdigest()
+              assert ns['v103_run'](game,z)==0
+              assert hashlib.sha256((module/'EEex_Sprite.lua').read_bytes()).hexdigest()==old
+              with zipfile.ZipFile(z) as report:
+                  assert report.read('original.txt')==b'original preserved'
+                  entry=json.loads(report.read(ns['V103_ENTRY']))
+                  assert entry['status']=='V103_STATIC_CAPABILITIES_FOUND_EVENT_CORRELATION_REQUIRED'
+                  assert entry['game_files_written']==0 and entry['runtime_hook_installed'] is False
+                  assert entry['capabilities']['attack_weapon_ammo_pair_measured'] is False
+              assert ns['v103_run'](game,z)==0
+              assert len(zipfile.ZipFile(z).namelist())==2
+              (module/'B3AttackInfo.lua').unlink()
+              assert ns['v103_run'](game,z)==0
+              with zipfile.ZipFile(z) as report:
+                  entry=json.loads(report.read(ns['V103_ENTRY']))
+                  assert entry['status']=='V103_SOURCE_CAPABILITIES_INCOMPLETE_HOLD'
+          print('V103_STATIC_AUDIT_PASS: no engine writes, preservation, idempotence, source-loss HOLD')
+          PY
