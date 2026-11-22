@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 94,
-  "sha256": "e5c86af00339b714025500dfd68506a347b243f3efa1bfe3fc42ed9442e03ddc",
-  "mode": "READ_ONLY_DEFAULT_V93_INSTALL_WITHDRAWN_V92_PRESERVED",
+  "version": 95,
+  "sha256": "9b0a164d83ee9838d855d97fc304fe71f738f30f786c543e6e9bbb0f8459cd16",
+  "mode": "READ_ONLY_DEFAULT_V95_SAFE_EOL_BRIEF_ZERO_FILTER",
   "game_writes_allowed": false,
-  "note": "EMERGENCY SAFETY RELEASE: v93 UI.MENU caused game menu Lua syntax error and blank output. User successfully rolled back v93 to v92 with V93_ROLLED_BACK_TO_V92_UI. This v94 source explicitly blocks --upgrade-v93-journal-zeros and marks v93 preflight as disabled, while preserving --rollback-v93-journal-zeros when previously installed. No automatic game writes. v92 gameplay-proven brief miss display remains installed after rollback. GitHub Actions full source selftest run 45033184738 success. Do not install v93 again. Future candidate must prove full UI.MENU chunk compiles, not only Lua helper."
+  "note": "v95 fixes v93 missing newline before the UI.MENU backtick. Uploaded live v92 UI.MENU SHA256 b18cb241e5f7311d886a0c76781065c56e91e479f11febe228a4e9338cd3c2bb validated offline; full embedded Lua 5.4 chunk compiles, EOL LF/CRLF & native CI compiled; GitHub Actions 45034334973 PASS. Default invocation is READ ONLY, writes no game files; generates 41_V95_JOURNAL_ZERO_FILTER_SAFE_EOL.json in existing one ZIP. Historical v93 INSTALL stays disabled, rollback available. Optional v95 install changes ONLY BG_EET_RU_LogView helper in existing UI.MENU after exact v92-state, SHA and delimiter checks, closed game and InfinityLoader, verified external backup and typed UPGRADE_BG_EET_RU_V95_JOURNAL_ZEROS_SAFE_EOL. Optional --rollback-v95-journal-zeros with typed ROLLBACK_BG_EET_RU_V95_JOURNAL_ZEROS_SAFE_EOL restores v92 byte-exact. BGXAI, BG Voice RU, v85 Lua 44 hooks, game saves, TLK, exe unchanged. No Windows v95 preflight or gameplay verification yet."
 }
