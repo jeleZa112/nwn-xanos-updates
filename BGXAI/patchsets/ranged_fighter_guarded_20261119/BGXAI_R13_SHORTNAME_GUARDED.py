@@ -238,16 +238,70 @@ def rollback(root:Path,token:str)->dict:
     return {'status':'BGXTD14_ROLLBACK_LAST_ONLY_VERIFIED','weaponSwitchAuthorized':False,
       'gameplayResourcesModified':True,'originalR13Preserved':True}
 
+
+# Diagnostic only: capture the engine's existing Infinity_Log/print output.
+# BG:EE normally does not open io/os libraries in its UI Lua state.  The
+# original R13 observer already falls back to console output in that case.
+# This Python-side capture does not modify or inject anything into the game.
+def capture_console(root:Path)->dict:
+    game(root);sources();baseline(root);processes()
+    if not NEW_LAST.match(weidu_last(root)):
+        raise ValueError('SHORTNAME_FIX_NOT_LAST_WEIDU_CAPTURE_STOP')
+    if sha(regular(root,MODULE))!=SOURCE_SHA:
+        raise ValueError('R13_SHORTNAME_MODULE_SHA_DRIFT_CAPTURE_STOP')
+    proof_file=regular(root,PROOF)
+    if not proof_file.is_file():
+        raise ValueError('R13_SHORTNAME_PROOF_MISSING_CAPTURE_STOP')
+    proof=json.loads(proof_file.read_text(encoding='utf-8'))
+    if (proof.get('sourceSha256')!=SOURCE_SHA or
+        proof.get('status')!='BGXTD14_SHORTNAME_INSTALLED_AWAITING_LIVE_TEST'):
+        raise ValueError('R13_SHORTNAME_PROOF_UNVERIFIED_CAPTURE_STOP')
+    game_exe=regular(root,'InfinityLoader.exe')
+    if not game_exe.is_file() or not 1024<game_exe.stat().st_size<70_000_000:
+        raise ValueError('INFINITYLOADER_UNAVAILABLE')
+    with game_exe.open('rb') as fh:
+        if fh.read(2)!=b'MZ':
+            raise ValueError('INFINITYLOADER_PE_HEADER_INVALID')
+    home=os.environ.get('USERPROFILE')
+    if not home:
+        raise ValueError('USERPROFILE_UNAVAILABLE')
+    docs=Path(home)/'Documents'
+    reports=docs/'BGXAI_LIVE_REPORTS'
+    if alias(docs) or alias(reports):
+        raise ValueError('CONSOLE_REPORT_DIR_REPARSE_STOP')
+    reports.mkdir(parents=True,exist_ok=True)
+    name='BGXAI_R13_CONSOLE_'+datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')+'.log'
+    dest=reports/name
+    if dest.exists() or alias(dest):
+        raise ValueError('CONSOLE_REPORT_ALREADY_EXISTS')
+    # Keep stdout/stderr attached to a regular Windows file until game exit.
+    # No shell, no installer, no plugins; the only child is the user's normal
+    # InfinityLoader.exe. This captures Lua print/Infinity_Log and startup errors.
+    with dest.open('xb') as handle:
+        process=subprocess.Popen([str(game_exe)],cwd=root,stdin=subprocess.DEVNULL,
+            stdout=handle,stderr=subprocess.STDOUT,close_fds=True)
+        exit_code=process.wait()
+        handle.flush()
+    size=dest.stat().st_size
+    # Never silently claim success from a blank log. The user can send it and
+    # we can distinguish missing hook, failed writer, and missing API.
+    status='BGXTD14_CONSOLE_CAPTURE_CREATED' if size else 'BGXTD14_CONSOLE_CAPTURE_EMPTY_HOLD'
+    return {'schema':'BGXAI_R13_CONSOLE_CAPTURE_RO_V1','status':status,
+       'consoleLog':str(dest),'consoleBytes':size,
+       'gameExitCode':exit_code,'gameModifiedByCapture':False,
+       'r13LuaReinstalled':False,'weaponSwitchAuthorized':False,
+       'next':'ATTACH_CONSOLE_LOG_NO_COMBAT_NEEDED'}
+
 def main()->int:
     ap=argparse.ArgumentParser()
     ap.add_argument('--game',default=str(GAME))
-    ap.add_argument('--mode',choices=('menu','status','preflight','install','rollback'),default='menu')
+    ap.add_argument('--mode',choices=('menu','status','preflight','install','rollback','capture'),default='menu')
     args=ap.parse_args();root=Path(args.game)
     try:
         if args.mode=='menu':
-            print('BGXTD14 8-char Lua fix: 1=status (RO), 2=preflight (RO), 3=install (typed), 4=rollback (typed), 0=exit')
+            print('BGXTD14 8-char Lua fix: 1=status (RO), 2=preflight (RO), 3=install (typed), 4=rollback (typed), 5=capture InfinityLoader console (RO), 0=exit')
             option=input('Choice [2]: ').strip() or '2'
-            args.mode={'1':'status','2':'preflight','3':'install','4':'rollback','0':'exit'}.get(option,'INVALID')
+            args.mode={'1':'status','2':'preflight','3':'install','4':'rollback','5':'capture','0':'exit'}.get(option,'INVALID')
         if args.mode=='exit':print('No game changes.');return 0
         if args.mode=='status':out=status(root)
         elif args.mode=='preflight':out=preflight(root)
@@ -255,6 +309,9 @@ def main()->int:
             print('This installs ONLY override/M_BGXD13.lua, preserving the original R13 component.')
             token=input('Type '+INSTALL_TOKEN+' exactly; ENTER cancels: ').strip()
             out=install(root,token)
+        elif args.mode=='capture':
+            print('Launch InfinityLoader. Main menu only is enough; exit game normally. Console log will be saved outside EET.')
+            out=capture_console(root)
         elif args.mode=='rollback':
             print('Uninstall ONLY the last BGXTD14 WeiDU component, preserving R13.')
             token=input('Type '+ROLLBACK_TOKEN+' exactly; ENTER cancels: ').strip()
