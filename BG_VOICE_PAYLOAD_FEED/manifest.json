@@ -100,7 +100,7 @@
   "shared_chat_consumer_instruction": "Read manifest; fetch matching Library ZIP autonomously; verify ZIP SHA256; import into ONE existing updater. Do not ask user to forward every version.",
   "rolling_continuation": {
     "schema": "BGVOICE_ROLLING_SECOND_PASS_V1",
-    "status": "BLOCKED_UNTIL_VOICE_SELECTION_7206_COMPLETED_AND_HISTORICAL_LOCKS_RECONCILED",
+    "status": "PAUSED_BY_SELECTION_FIRST_PRIORITY_DO_NOT_EXECUTE_REPAIR_BEFORE_7206_VOICE_CHOICE",
     "library_archive": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_ROLLING_SAFE_R2.zip",
     "sha256_archive": "b0e1717f958149c63fb86e73a606addf3a5edac8fd18c4d945bb22c6a3621003",
     "archive_bytes": 46467,
@@ -179,6 +179,16 @@
       "FX_REPAIR"
     ],
     "machine_selection_not_equal_game_approval": true,
-    "main_updater_must_enforce_gate": true
+    "main_updater_must_enforce_gate": true,
+    "voice_choice_user_approvals_including_prior_special_wavs": 21,
+    "unapproved_voice_first_proposals": 1733,
+    "unresolved_voice_holds": 5452,
+    "source_registry_library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_SELECTION_FIRST_MASTER.zip",
+    "source_registry_zip_sha256": "c70b88c35d96cba061249c134e3f612fa5a7a305614a86b654af27db0946dec9",
+    "source_registry_zip_bytes": 3313277,
+    "guidance_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/selection_first/README_RU.md",
+    "retrospective_voice_score_agreement": "9_of_15_user_preferences; 5_of_7_with_3plus_anchors",
+    "stress_and_retake_before_selection_forbidden": true,
+    "guidance": "Read user decisions and full voice-first register, finish comparing Stable/Per_line with English acting and same-character anchors. No stress/repair jobs yet."
   }
 }
