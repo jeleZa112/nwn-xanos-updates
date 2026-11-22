@@ -17,6 +17,70 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y -qq liblua5.4-0
       - name: Full onefile selftest including V105 exact SHA, reversible Main patch and single ZIP
         run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
+      - name: Synthetic guarded install/status/rollback in isolated fake game (no real game)
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import tempfile,zipfile,json
+          source=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
+          ns={'__name__':'v105_synthetic','__file__':str(source)}
+          exec(compile(source.read_text('utf8').split('\n',1)[1],str(source),'exec'),ns)
+          with tempfile.TemporaryDirectory() as tmp:
+              root=Path(tmp)
+              game=root/'GAME';game.mkdir()
+              scripts=game/'EEex_scripts';scripts.mkdir()
+              main=scripts/'EEex_Main.lua'
+              original=(b'EEex_Main_Private_StartupFiles = {}\n'
+                        b'for _, fileName in ipairs(EEex_Main_Private_StartupFiles) do\n'
+                        b' EEex_DoFile(fileName)\nend\n'
+                        b'\tEEex_Active = true\n')
+              main.write_bytes(original)
+              (scripts/'EEex_Sprite.lua').write_bytes(b'fixture EEex sprite')
+              (scripts/'EEex_Sprite_Patch.lua').write_bytes(b'fixture EEex patch')
+              work=root/'WORK';work.mkdir()
+              report=work/'SEND_TO_CHATGPT_BG_EET_RU.zip'
+              with zipfile.ZipFile(report,'w') as z:z.writestr('preserve.txt','keep it')
+              ns.update({
+                  'WORKDIR':work,
+                  'V105_STATE':work/'v105_state.json',
+                  'V105_EVENT_STAGE':work/'observer_events.tsv',
+                  'V105_STATUS_STAGE':work/'observer_status.tsv',
+                  'V105_EEEX_SPRITE_SHA':ns['digest']((scripts/'EEex_Sprite.lua').read_bytes()),
+                  'V105_EEEX_PATCH_SHA':ns['digest']((scripts/'EEex_Sprite_Patch.lua').read_bytes()),
+                  'v85_state_read':lambda: {'phase':'INSTALLED'},
+                  'v85_check_live_state':lambda *args: 'mock-sha-verified',
+                  'v101_state_read':lambda: {'phase':'INSTALLED'},
+                  'v71_processes_closed':lambda: (True,'CLOSED'),
+                  'v85_read_input_approval':lambda phrase: phrase in (
+                      ns['V105_INSTALL_APPROVAL'],ns['V105_ROLLBACK_APPROVAL']),
+              })
+              old_main_sha=ns['digest'](original)
+              assert ns['v105_run'](game,report)==0
+              assert main.read_bytes()==original
+              assert not (scripts/ns['V105_OBSERVER_MODULE']).exists()
+              with zipfile.ZipFile(report) as z:
+                  preflight=json.loads(z.read(ns['V105_ENTRY']))
+                  assert preflight['status']=='V105_GUARDED_OBSERVER_PREFLIGHT_PASS_NOT_INSTALLED'
+              assert ns['v105_run'](game,report,mode='install')==0
+              assert ns['v105_get_state']()['phase']=='INSTALLED'
+              assert main.read_bytes()!=original and (scripts/ns['V105_OBSERVER_MODULE']).exists()
+              assert ns['v105_run'](game,report)==0
+              (work/'observer_events.tsv').write_text('EVENT\t1\tcriticalDamage:number:2\tweapon:userdata:\n',encoding='utf8')
+              (work/'observer_status.tsv').write_text('SOURCE_LOADED\nSTART\ttrue\tLISTENER_REGISTERED\n',encoding='utf8')
+              assert ns['v105_run'](game,report)==0
+              with zipfile.ZipFile(report) as z:
+                  result=json.loads(z.read(ns['V105_ENTRY']))
+                  assert result['runtime_capture']['events']['record_count']==1
+                  assert result['runtime_capture']['events']['records'][0]['event_index']==1
+                  assert z.read('preserve.txt')==b'keep it'
+              assert ns['v105_run'](game,report,mode='rollback')==0
+              assert ns['v105_get_state']()['phase']=='ROLLED_BACK'
+              assert ns['digest'](main.read_bytes())==old_main_sha
+              assert not (scripts/ns['V105_OBSERVER_MODULE']).exists()
+              assert ns['v105_run'](game,report)==0
+          print('V105_SYNTHETIC_INSTALL_ROLLBACK_PASS: exact source, external backup, one ZIP, no real game')
+          PY
       - name: Verify Lua observer V2 semantics, no state mutation and bounded external export
         shell: bash
         run: |
