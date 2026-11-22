@@ -9,11 +9,48 @@ on:
 jobs:
   isolated-source-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Install native Lua 5.4 compiler runtime
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq liblua5.4-0
       - name: Run all existing isolated updater selftests
         run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
+      - name: Compile exact V95 injected Lua chunk and verify menu delimiter
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import ctypes
+          path=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
+          source=path.read_text(encoding='utf8').split('\n',1)[1]
+          ns={'__name__':'ci_native_lua','__file__':str(path)}
+          exec(compile(source,str(path),'exec'),ns)
+          lib=ctypes.CDLL('liblua5.4.so.0')
+          lib.luaL_newstate.restype=ctypes.c_void_p
+          lib.luaL_loadbufferx.argtypes=[ctypes.c_void_p,ctypes.c_char_p,ctypes.c_size_t,ctypes.c_char_p,ctypes.c_char_p]
+          lib.luaL_loadbufferx.restype=ctypes.c_int
+          lib.lua_close.argtypes=[ctypes.c_void_p]
+          assert ns['V95_HELPER'].startswith('\n') and ns['V95_HELPER'].endswith('\n')
+          assert not ns['V93_HELPER'].endswith('\n')
+          for eol in ('\n','\r\n'):
+              v92=ns['V92_HELPER'].replace('\n',eol).encode('utf8')
+              original=(b'`\nworldMessageBoxText = ""\nfunction clean(str)\n return str\nend' +
+                        v92 + b'`\nmenu\nrender ' + ns['V88_RENDER_NEW'] +
+                        b'\n' + ns['V90_DRAG'] + b'\nBG_EET_RU_JOURNAL_TOGGLE\n')
+              candidate=ns['v95_transform_installed_ui'](original)
+              v95=ns['V95_HELPER'].replace('\n',eol).encode('utf8')
+              assert candidate.count(v95+b'`')==1
+              assert b'end'+eol.encode()+b'`' in candidate
+              assert b'end`' not in candidate
+              assert candidate.replace(v95,v92,1)==original
+              chunk=candidate.split(b'`',2)[1]
+              L=lib.luaL_newstate()
+              status=lib.luaL_loadbufferx(L,chunk,len(chunk),b'menu',None)
+              lib.lua_close(L)
+              assert status==0,(eol,status)
+          print('NATIVE_LUA54_UI_MENU_CANDIDATE_PASS LF CRLF, exact delimiter, reversible')
+          PY
