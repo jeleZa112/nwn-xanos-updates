@@ -367,7 +367,7 @@ def collect_checked(root:Path)->dict:
 # R4 is a separate passive observer component; R2 (and everything before it)
 # is immutable. This section adds optional commands to the EXISTING onefile menu.
 R4_SOURCE=Path(__file__).with_name('M_BGXW4.lua')
-R4_SHA='0d24779ee6cf7071c611c3b3d509ddb71f97e18eb95a6c5839e1a8441ee3f3e8'
+R4_SHA='79f57787be045732352582d531ce69f2485504947204bf553fa8a04a95c6595e'
 R4_MODULE='override/M_BGXW4.lua'
 R4_STAGE='BGXW4/staged/M_BGXW4.lua'
 R4_TP2='BGXW4/setup-BGXW4.tp2'
@@ -507,15 +507,76 @@ R4_LOG='BGXAI_WEAPON_ACTIVE_RAW_R4.jsonl'
 R4_SCHEMA='BGXAI_WEAPON_ACTIVE_R4'
 R4_PREFIX='[BGXW4] '
 R4_FIELDS={
- 'm_nNumberOfAttacks','m_nTHAC0','m_nLevel1','m_nLevel2','m_nLevel3','m_nKit',
- 'm_nSTR','m_nSTRExtra','m_nDEX','m_nDamageBonus',
- 'm_nMeleeTHAC0Bonus','m_nMeleeDamageBonus','m_nMissileTHAC0Bonus','m_nMissileDamageBonus',
- 'm_nHitBonus','m_bImprovedHaste','m_nLuck','m_nLevelDrain',
- 'm_THAC0BonusRight','m_THAC0BonusLeft','m_DamageBonusRight','m_DamageBonusLeft',
- 'm_nProficiencyLongSword','m_nProficiencyShortBow','m_nProficiencyQuarterStaff',
- 'm_nProficiencySwordAndShield','m_nProficiency2Handed','m_nProficiencySingleWeapon',
- 'm_nProficiency2Weapon'
+ 'm_nNumberOfAttacks',
+ 'm_nTHAC0',
+ 'm_nLevel1',
+ 'm_nLevel2',
+ 'm_nLevel3',
+ 'm_nKit',
+ 'm_nSTR',
+ 'm_nSTRExtra',
+ 'm_nDEX',
+ 'm_nDamageBonus',
+ 'm_nMeleeTHAC0Bonus',
+ 'm_nMeleeDamageBonus',
+ 'm_nMissileTHAC0Bonus',
+ 'm_nMissileDamageBonus',
+ 'm_nHitBonus',
+ 'm_bImprovedHaste',
+ 'm_nLuck',
+ 'm_nLevelDrain',
+ 'm_THAC0BonusRight',
+ 'm_THAC0BonusLeft',
+ 'm_DamageBonusRight',
+ 'm_DamageBonusLeft',
+ 'm_nProficiencyBastardSword',
+ 'm_nProficiencyLongSword',
+ 'm_nProficiencyShortSword',
+ 'm_nProficiencyAxe',
+ 'm_nProficiencyTwoHandedSword',
+ 'm_nProficiencyKatana',
+ 'm_nProficiencyScimitarWakisashiNinjaTo',
+ 'm_nProficiencyDagger',
+ 'm_nProficiencyWarhammer',
+ 'm_nProficiencySpear',
+ 'm_nProficiencyHalberd',
+ 'm_nProficiencyFlailMorningStar',
+ 'm_nProficiencyMace',
+ 'm_nProficiencyQuarterStaff',
+ 'm_nProficiencyCrossbow',
+ 'm_nProficiencyLongBow',
+ 'm_nProficiencyShortBow',
+ 'm_nProficiencyDart',
+ 'm_nProficiencySling',
+ 'm_nProficiencyBlackjack',
+ 'm_nProficiencyGun',
+ 'm_nProficiencyMartialArts',
+ 'm_nProficiency2Handed',
+ 'm_nProficiencySwordAndShield',
+ 'm_nProficiencySingleWeapon',
+ 'm_nProficiency2Weapon',
+ 'm_nProficiencyClub',
+ 'm_nExtraProficiency2',
+ 'm_nExtraProficiency3',
+ 'm_nExtraProficiency4',
+ 'm_nExtraProficiency5',
+ 'm_nExtraProficiency6',
+ 'm_nExtraProficiency7',
+ 'm_nExtraProficiency8',
+ 'm_nExtraProficiency9',
+ 'm_nExtraProficiency10',
+ 'm_nExtraProficiency11',
+ 'm_nExtraProficiency12',
+ 'm_nExtraProficiency13',
+ 'm_nExtraProficiency14',
+ 'm_nExtraProficiency15',
+ 'm_nExtraProficiency16',
+ 'm_nExtraProficiency17',
+ 'm_nExtraProficiency18',
+ 'm_nExtraProficiency19',
+ 'm_nExtraProficiency20',
 }
+
 
 def r4_valid_active(item:dict)->bool:
     if item.get('schema')!=R4_SCHEMA or item.get('type')!='ACTIVE':return False
