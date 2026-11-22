@@ -18,7 +18,9 @@ import zipfile
 from collections import Counter
 from pathlib import Path
 
-MOVIE_CORE_VERSION = '1.10.0'
+MOVIE_CORE_VERSION = '1.11.0'
+MOVIE_LITERARY_PROSODY_FEED_SHA256 = 'cf395ab877b53cc05caf46c30eb2444350a4d0731674d5768ca933e8e673f9ae'
+MOVIE_LITERARY_HOLD_REASON = 'HOLD_LITERARY_TEXT_FIRST_37_NO_GPU'
 SCRIPT_JSON_SHA256 = '87d18d68ce2be6236e2bdb468dc0275c7f5f257714643b5cf9013c48f87a9ee4'
 MOVIE_SEGMENTS = {'INTRO15F': 16, 'SODCIN01': 18, 'IWINTRO': 29}
 PILOT_KNOWN = {'INTRO15F_G01','SODCIN01_G02','IWINTRO_G06'}
@@ -744,6 +746,7 @@ def _ru_worker_run(stage,tasks):
         return 'WORKER_OSERROR_HOLD'
 
 def _produce_movie_ru_drafts(root=None,run_worker=True):
+    raise RuntimeError("HOLD_LITERARY_TEXT_FIRST_37_NO_GPU: original subtitles and EN source not verified")
     work=Path(root) if root else Path(os.environ.get('BG_VOICE_FULL_PRODUCTION_ROOT') or
                               Path.home()/'Documents'/'BG_VOICE_RU'/'FULL_PRODUCTION')
     main=work/'SEND_TO_CHATGPT_BG_VOICE_RU.zip'
@@ -1009,6 +1012,7 @@ def _stress7_validate_and_stage(main, work):
     return stage,jobs
 
 def _produce_movie_ru_stress7(root=None,run_worker=True):
+    raise RuntimeError("HOLD_LITERARY_TEXT_FIRST_37_NO_GPU: original subtitles and EN source not verified")
     work=Path(root) if root else Path(os.environ.get('BG_VOICE_FULL_PRODUCTION_ROOT') or
                                  Path.home()/'Documents'/'BG_VOICE_RU'/'FULL_PRODUCTION')
     main=work/'SEND_TO_CHATGPT_BG_VOICE_RU.zip'
@@ -1060,7 +1064,7 @@ def _produce_movie_ru_stress7(root=None,run_worker=True):
 
 
 def selftest():
-    assert MOVIE_CORE_VERSION=='1.10.0' and sum(MOVIE_SEGMENTS.values())==63
+    assert MOVIE_CORE_VERSION=='1.11.0' and sum(MOVIE_SEGMENTS.values())==63
     assert len(MOVIE_RU_RETAKE7_PHONETIC)==7 and all('+' in t for t in MOVIE_RU_RETAKE7_PHONETIC.values())
     assert len(PILOT_KNOWN)==3 and _csv([{'id':'A'}],['id']).endswith(b'A\r\n')
     assert set(PILOT_SHA256)==PILOT_KNOWN and all(len(sha)==64 for sha in PILOT_SHA256.values())
@@ -1068,6 +1072,7 @@ def selftest():
     assert len(MOVIE_RU_DRAFT10_IDS)==10 and len(set(MOVIE_RU_DRAFT10_IDS))==10
     assert 'CERND46' not in MOVIE_RU_DRAFT10_IDS
     assert len(RU10_HUMAN_DECISIONS)==10 and sum(x[0]=='REWORK_STRESS' for x in RU10_HUMAN_DECISIONS.values())==7
+    assert len(MOVIE_LITERARY_PROSODY_FEED_SHA256)==64 and MOVIE_LITERARY_HOLD_REASON.endswith('NO_GPU')
     compile(MOVIE_RU_INLINE_WORKER,'<movie_worker>','exec')
     print('MOVIE_CHANNEL_SELFTEST_PASS')
     return 0
@@ -1132,7 +1137,7 @@ def run(host):
     except Exception as exc:
         print('MOVIE_EN_REFERENCE_HOLD:',type(exc).__name__,str(exc)[:160],flush=True)
     try:
-        print('MOVIE_RU_CANDIDATE_PRODUCTION:',_produce_movie_ru_drafts(),flush=True)
+        print('MOVIE_RU_CANDIDATE_PRODUCTION:',MOVIE_LITERARY_HOLD_REASON,flush=True)
     except Exception as exc:
         print('MOVIE_RU_PRODUCTION_HOLD:',type(exc).__name__,str(exc)[:200],flush=True)
     try:
@@ -1140,7 +1145,7 @@ def run(host):
     except Exception as exc:
         print('MOVIE_RU10_HUMAN_DECISIONS_HOLD:',type(exc).__name__,str(exc)[:180],flush=True)
     try:
-        print('MOVIE_RU_STRESS7_RETAKES:',_produce_movie_ru_stress7(),flush=True)
+        print('MOVIE_RU_STRESS7_RETAKES:',MOVIE_LITERARY_HOLD_REASON,flush=True)
     except Exception as exc:
         print('MOVIE_RU_STRESS7_HOLD:',type(exc).__name__,str(exc)[:160],flush=True)
     print('MOVIE_CHANNEL_REPORT:',report,flush=True)
