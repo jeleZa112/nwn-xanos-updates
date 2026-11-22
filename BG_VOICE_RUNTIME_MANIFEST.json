@@ -12,9 +12,9 @@
     "sha256": "91dff141f645a2e117868938a6820ce61476ceb8b91789398895d721035f878a"
   },
   "v70_core": {
-    "version": "1.0.0",
+    "version": "1.1.0",
     "path": "BG_VOICE_V70_CORE.py",
-    "commit": "41a5a65c9292a3f5d3f1505d92dbf0d1e67bd334",
-    "sha256": "eb1960b3b7c3ecca3c9053ebbe867462e667e4b92d4a735230d03cce90ba8dd5"
+    "commit": "328c8460eaa306555f8f74029ba86d74a74886b9",
+    "sha256": "c3246f08d8c556541ea9ebe7d00e54a14ce1a1ce16d55eea85dac018b5ec546a"
   }
 }
