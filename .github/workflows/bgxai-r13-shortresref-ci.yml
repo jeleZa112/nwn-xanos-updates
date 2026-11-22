@@ -1,0 +1,72 @@
+name: BGXAI R13 short 8-char Lua resref - guarded Windows CI
+
+on:
+  push:
+    branches: [bgxai-r13-shortresref-candidate]
+    paths:
+      - 'BGXAI/BUILD/R13_SHORTNAME_REPAIR_SOURCE_ONLY/**'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_R13_SHORTNAME_*'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BGXD13.lua'
+      - '.github/workflows/bgxai-r13-shortresref-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows_preflight:
+    runs-on: windows-latest
+    steps:
+      - name: Disable Git CRLF conversion for pinned file bytes
+        shell: pwsh
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify onefile menus 1-162 and exact old 1-161 restoration
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python BGXAI/BUILD/R13_SHORTNAME_REPAIR_SOURCE_ONLY/test_menu162.py
+          if($LASTEXITCODE -ne 0){throw 'BGXAI_R13_SHORTNAME_MENU_TEST_FAILED'}
+      - name: Guarded SHA backup consent and last-only rollback tests
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python BGXAI/BUILD/R13_SHORTNAME_REPAIR_SOURCE_ONLY/test_shortname_guarded.py
+          if($LASTEXITCODE -ne 0){throw 'BGXAI_R13_SHORTNAME_GUARDS_FAILED'}
+      - name: Native Windows PowerShell 5.1 AST pinned SHA and byte size
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $path='BGXAI/BUILD/R13_SHORTNAME_REPAIR_SOURCE_ONLY/BGXAI_SYNC_162_CANDIDATE.ps1'
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $path).Path,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -ne 0){throw ('R13_SHORTNAME_PS51_PARSE_FAILED '+(($errors|ForEach-Object {$_.Message}) -join '; '))}
+          $b=[IO.File]::ReadAllBytes((Resolve-Path $path).Path)
+          if($b.Length -gt 80000){throw 'R13_SHORTNAME_PIN_EXCEEDS_LIMIT'}
+          $hash=([BitConverter]::ToString([Security.Cryptography.SHA256]::Create().ComputeHash($b))).Replace('-','').ToLowerInvariant()
+          Write-Host ('BGXAI_R13_SHORTNAME_PIN_BYTES='+$b.Length)
+          Write-Host ('BGXAI_R13_SHORTNAME_PIN_SHA256='+$hash)
+          Write-Host 'BGXAI_R13_SHORTNAME_WINDOWS_PS51_AST_PASS'
+      - name: PowerShell 7 AST
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $p='BGXAI/BUILD/R13_SHORTNAME_REPAIR_SOURCE_ONLY/BGXAI_SYNC_162_CANDIDATE.ps1'
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p).Path,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -ne 0){throw 'R13_SHORTNAME_PS7_PARSE_FAILED'}
+          Write-Host 'BGXAI_R13_SHORTNAME_PS7_AST_PASS'
+  lua_smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lua 5.4 isolated smoke (SESSION READY singleton without game)
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.4
+          cd BGXAI/BUILD/R13_SHORTNAME_REPAIR_SOURCE_ONLY
+          lua5.4 test_shortname_runtime.lua
