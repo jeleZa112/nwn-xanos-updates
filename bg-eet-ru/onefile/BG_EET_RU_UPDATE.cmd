@@ -6623,7 +6623,7 @@ V105_EVENT_STAGE = WORKDIR/'BG_EET_RU_V105_WEAPON_EVENTS.tsv'
 V105_STATUS_STAGE = WORKDIR/'BG_EET_RU_V105_WEAPON_STATUS.tsv'
 V105_EEEX_SPRITE_SHA = '4813ae620f0b472903848018d66488805db7ba2012e065019f4ea5f2a6afab28'
 V105_EEEX_PATCH_SHA = 'e301b46770477cf29e3d39d6591a5a9fba4f3aeafa03c3dbfa75f7ef6bc13b7f'
-V105_OBSERVER_SOURCE = """-- BG_EET_RU WEAPON EVENT OBSERVER V2: SOURCE ONLY, NOT INSTALLED.
+V105_OBSERVER_SOURCE = r"""-- BG_EET_RU WEAPON EVENT OBSERVER V2: SOURCE ONLY, NOT INSTALLED.
 -- Purpose: discover *available* context fields at base-weapon-damage events.
 -- This is not an attack-log annotator, not a miss observer, and not a damage modifier.
 -- Do not load this file or call Start without separate explicit installation approval.
@@ -7057,7 +7057,7 @@ def v105_selftest():
         else:raise AssertionError('V105_ALREADY_MODIFIED_NOT_REJECTED')
     payload=v105_source_module()
     assert b'__V105_EVENTS_PATH__' not in payload and b'__V105_STATUS_PATH__' not in payload
-    assert str(V105_EVENT_STAGE).encode('ascii')[:2] in payload
+    assert str(V105_EVENT_STAGE).encode('utf8')[:2] in payload
     with tempfile.TemporaryDirectory(prefix='BG_EET_RU_V105_ZIP_TEST_') as td:
         game=Path(td)/'game';game.mkdir()
         report=Path(td)/'report.zip'
