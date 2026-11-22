@@ -274,7 +274,7 @@
       },
       "gate": "12+ evaluable, at least 4 Stable and 6 Per_line, recall stable >=0.60 and PerLine >=0.70, balanced accuracy >=0.70",
       "model_code_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/selection_first/gpu_pilot_v1/BGVOICE_GPU_SELECTION.py",
-      "actual_user_gpu_inference": "NOT_RUN",
+      "actual_user_gpu_inference": "REAL_20_WAVLM_PILOT_COMPLETED",
       "source_game_modified": false,
       "stress_checks_run": false,
       "voice_retake_run": false,
@@ -294,9 +294,49 @@
       "fixed_bootstrap_sha256": "6038fe7183dada3100006406965c8bfc29f60d8a7c0bd7f12245149e6984db75",
       "fix_source_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/selection_first/gpu_pilot_v1/BGVOICE_GPU_BOOTSTRAP.py",
       "fix_regression_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/selection_first/gpu_pilot_v1/SELFTEST_BOOTSTRAP_LAUNCH_FIX1.py",
-      "original_wav_modified": false
+      "original_wav_modified": false,
+      "real_20_report_library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_GPU_WAVLM_REAL_PILOT_20261123.zip",
+      "real_20_report_sha256": "9e99033d46a978e9f98c904fad5327b928bddafa2fbc17b1176c92c115c50b27",
+      "real_20_status": "HOLD_CALIBRATION",
+      "real_20_results": {
+        "total": 20,
+        "human_stable": 7,
+        "human_perline": 13,
+        "proposals": 12,
+        "correct": 8,
+        "incorrect": 4,
+        "hold": 8,
+        "stable_recall": 0.4,
+        "perline_recall": 0.8571428571428571,
+        "balanced_accuracy": 0.6285714285714286,
+        "en_ref_issues": 0,
+        "full_inference_run": false
+      },
+      "wrong_four_ids": [
+        "KHALD11",
+        "OH80417",
+        "OH81363",
+        "OH96047"
+      ],
+      "no_wav_changes": true
     },
-    "current_production_next_action": "RUN_FIXED_SELECTOR_FROM_NEW_EXTRACTED_DIR; REUSE_EXISTING_CUDA_VENV_AND_CACHE; READ_REAL_WAVLM_PILOT_RESULTS",
-    "repairs_blocked_before_voice_selection": true
+    "current_production_next_action": "RUN_RU_ANCHOR_V2_ON_EXISTING_GPU_VENV_REUSE_WAVLM_CACHE; CHECK_SEPARATE_STABLE_AND_PERLINE_CORRECTNESS; DO_NOT_RELEASE",
+    "repairs_blocked_before_voice_selection": true,
+    "ru_anchor_v2": {
+      "stage": "EXPLORATORY_PILOT_READY_ON_WINDOWS_NOT_REAL_RUN",
+      "model": "microsoft/wavlm-base-plus-sv",
+      "model_reuses_previous_download": true,
+      "source_sha_registry_rows": 7206,
+      "protected_human_rows": 58,
+      "pack_library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_ANCHOR_V2_20261123.zip",
+      "pack_sha256": "ca739d5e1457b7cccd0d874231f89d87b2eee53a4603aa230c137ba963803835",
+      "based_on_actual_report_sha256": "9e99033d46a978e9f98c904fad5327b928bddafa2fbc17b1176c92c115c50b27",
+      "method": "leave-target-out RU pseudoanchors from equal-weight Stable and Per_line, exclude 58 human locks, do NOT use known labels during reference construction",
+      "safety": "EXPLORATORY_ONLY; NO_HUMAN_APPROVAL; NO_STRESS; NO_TTS; NO_GAME_INSTALL",
+      "testing": "SYNTHETIC_20_7STABLE_13PERLINE_AND_FULL_7206_WITH_58_LOCKS_AND_ZIP_CRC_PASS",
+      "real_gpu_test": "NOT_RUN",
+      "source_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/selection_first/ru_anchor_v2/BGVOICE_RU_ANCHOR_V2.py",
+      "expected_output": "C:\\Users\\Drevo\\Documents\\BG_VOICE_RU\\VOICE_SELECTION_GPU\\BG_VOICE_RU_ANCHOR_V2_REPORT.zip"
+    }
   }
 }
