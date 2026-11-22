@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 99,
-  "sha256": "9f5609245ea8eed81872556bf2d031eefe49aafe8f2cdb7853104d847a40b5c7",
-  "mode": "READ_ONLY_DEFAULT_V99_BRIEF_DAMAGE_SOURCE_COMPACT",
+  "version": 100,
+  "sha256": "933d598f4787e72e183a1b56de31b75ded71baf51635e93c8875f3e37ea60dba",
+  "mode": "READ_ONLY_DEFAULT_V100_COMBAT_RESULT_COLOR_ACCENTS",
   "game_writes_allowed": false,
-  "note": "v99 continues proven v98 damage-units grammar and compresses BRIEF mode damage source only, reducing wrap of attacker names: 'Больной гибберлинг: 6 ед. метательного урона (источник: Халид)'. Keeps attacker in nominative form, original color tokens and damage amount/type; FULL mode, d20, zero-modifier filter, button, drag, combatLog, v85 44 hooks unaffected. Native Lua5.4 v99 CI success (45041699139): 72 variations, 3 modes/idempotence, control marks, full-menu code compile LF/CRLF, exact byte-reversal to v98. Default single updater READ ONLY, one ZIP report entry 45_V99_DAMAGE_SOURCE_COMPACT.json; no automatic game writes. Optional --upgrade-v99-damage-compact needs installed v98, SHA verification, closed game/InfinityLoader, external verified backup, typed UPGRADE_BG_EET_RU_V99_DAMAGE_SOURCE_COMPACT. --rollback-v99-damage-compact with typed ROLLBACK_BG_EET_RU_V99_DAMAGE_SOURCE_COMPACT restores exact v98 UI. Windows preflight and gameplay not yet verified."
+  "note": "v100 adds color accents ONLY in BRIEF-mode UI log display after proven v99 parser: ПОПАДАНИЕ green ^0xFF35C46E, ПРОМАХ red ^0xFFE15A5A, damage amount + ед. muted gold ^0xFFD6A548 and exact label КРИТИЧЕСКИЙ УДАР yellow ^0xFFFFCC3D. Preserves actor's pre-existing colors and restores the prior display color after the highlight; unknown lines and FULL mode unchanged. Native Lua5.4 output test, idempotence and exact UI.MENU LF/CRLF reversal PASS GitHub Actions 45043139134, including all older tests. Default single updater is READ ONLY, no automatic game writes; report 46_V100_COMBAT_COLORS.json goes into existing SEND_TO_CHATGPT_BG_EET_RU.zip. Optional --upgrade-v100-combat-colors requires installed v99, SHA-verified UI.MENU and v85, game/InfinityLoader closed, verified external backup and typed UPGRADE_BG_EET_RU_V100_COMBAT_COLORS. --rollback-v100-combat-colors with typed ROLLBACK_BG_EET_RU_V100_COMBAT_COLORS restores exact v99 UI.MENU. v99 gameplay and v100 Windows/runtime checks remain unverified. No changes to savegames, EXE, TLK, v85 44 hooks, BGXAI or BG Voice RU."
 }
