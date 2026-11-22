@@ -1,4 +1,4 @@
-# BG Voice RU movie 1.5: offline IEEE FLOAT32 source-cue fallback for 19 voice-missing groups.
+# BG Voice RU movie 1.6: guarded GPU creation of 10 missing DRAFT RU voice candidates.
 # One permanent CMD, one common report, no TTS and no game writes.
 from __future__ import annotations
 import csv
@@ -18,7 +18,7 @@ import zipfile
 from collections import Counter
 from pathlib import Path
 
-MOVIE_CORE_VERSION = '1.5.0'
+MOVIE_CORE_VERSION = '1.6.0'
 SCRIPT_JSON_SHA256 = '87d18d68ce2be6236e2bdb468dc0275c7f5f257714643b5cf9013c48f87a9ee4'
 MOVIE_SEGMENTS = {'INTRO15F': 16, 'SODCIN01': 18, 'IWINTRO': 29}
 PILOT_KNOWN = {'INTRO15F_G01','SODCIN01_G02','IWINTRO_G06'}
@@ -619,11 +619,187 @@ def _prepare_english_reference_cues(root=None,source_root=None):
             return 'EN_CUES_CURRENT: '+str(count)+' of '+str(len(rows))
     return _merge_main_report(additions,work)+': '+str(count)+' of '+str(len(rows))
 
+
+# BEGIN: SHA-guarded video Russian candidate production (no installation).
+MOVIE_RU_PRODUCT_ROOT = 'VIDEO/RU_CANDIDATES_10/'
+MOVIE_SHTORM_MODEL_ROOT = Path('C:/BG_VOICE_RU_MASTER/08_VOXCPM2_ALL_CHARACTERS/EXPERIMENTAL_MODELS/Shtorm-VoxCPM2-RU_481ce51')
+MOVIE_SHTORM_MODEL_SHA256 = '5c61cb1e9090a852c0f282a6bdd1be31f0c79ad94849f6376f8e6ea312f8d3b1'
+MOVIE_SHTORM_VENV = Path.home()/'Downloads'/'BG_VOICE_RU_KELDORN_EMOTION_CLONING_PILOT_V1'/'BG_VOICE_RU_KELDORN_CLONE_PILOT'/'.venv'/'Scripts'/'python.exe'
+MOVIE_RU_DRAFT10_IDS = ('SODCIN01_G08','SODCIN01_G10','IWINTRO_G02','IWINTRO_G03','IWINTRO_G07',
+                        'IWINTRO_G08','IWINTRO_G11','IWINTRO_G13','IWINTRO_G16','IWINTRO_G19')
+MOVIE_RU_TEXT_EDITS = {
+    'IWINTRO_G02':'Похоже, это одно из тех поручений, которые давали мне дядюшка Освальд и сам Изелор.',
+}
+MOVIE_RU_REVIEW_NOTES = {
+ 'SODCIN01_G08':'Shining Lady title/localized name UNVERIFIED',
+ 'SODCIN01_G10':'Baal/Sarevok names: check user glossary; no auto approval',
+ 'IWINTRO_G02':'Editor-proposed grammar fix, Iselore spelling NOT verified',
+ 'IWINTRO_G03':'Iselore spelling NOT verified; only a rehearsal candidate',
+ 'IWINTRO_G07':'1310 DR and Bryn Shander pronunciation pending',
+ 'IWINTRO_G08':'Chimera pronunciation/emotion pending',
+ 'IWINTRO_G11':'Luskan name pronunciation pending',
+ 'IWINTRO_G13':'EN ASR wording With lean work unverified',
+ 'IWINTRO_G16':'English and Russian meaning plausible, acting not verified',
+ 'IWINTRO_G19':'Question intonation and English syntax to verify against original',
+}
+MOVIE_RU_INLINE_WORKER = "from __future__ import annotations\nimport hashlib,json,os,sys,time,wave,traceback\nfrom pathlib import Path\n\ndef digest(path):\n h=hashlib.sha256()\n with open(path,'rb') as f:\n  for b in iter(lambda:f.read(1024*1024),b''):h.update(b)\n return h.hexdigest()\n\ndef atomic_json(dst,obj):\n tmp=dst.with_suffix('.pending')\n if tmp.exists():raise RuntimeError('EXISTING_PENDING_JSON_HOLD')\n tmp.write_text(json.dumps(obj,ensure_ascii=False,indent=2,sort_keys=True),encoding='utf-8')\n os.replace(tmp,dst)\n\ndef main():\n config=Path(sys.argv[1]).resolve()\n jobs=json.loads(config.read_text(encoding='utf-8'))\n root=config.parent.resolve()\n if jobs['schema']!='BGVOICE_MOVIE_RU_BATCH_1_6' or jobs['root']!=str(root):raise ValueError('BAD_WORK_ROOT')\n model_root=Path(jobs['model_root'])\n model_file=model_root/'model.safetensors'\n if not model_file.is_file() or model_file.stat().st_size!=4580080624:raise RuntimeError('MODEL_NOT_VERIFIED_FILE_SIZE_HOLD')\n # Actual SHA check, no trust in filenames or model-size alone.\n if digest(model_file)!=jobs['model_sha256']:raise RuntimeError('MODEL_SHA256_MISMATCH_HOLD')\n import torch,numpy as np,soundfile as sf\n from voxcpm import VoxCPM\n if not torch.cuda.is_available():raise RuntimeError('CUDA_NOT_AVAILABLE_HOLD')\n if torch.cuda.mem_get_info(0)[0]<3*1024**3:raise RuntimeError('GPU_FREE_MEMORY_LOW_HOLD')\n todo=[]\n for x in jobs['tasks']:\n  sid=x['id']\n  if not sid.replace('_','').isalnum() or x['state']!='DRAFT_NOT_APPROVED':raise ValueError('JOB_INVALID_ID_OR_STATE')\n  inp=(root/'EN_REF'/f'{sid}.wav').resolve()\n  output=(root/'RU_WAV'/f'{sid}__SHTORM_MOVIE_DRAFT.wav').resolve()\n  side=output.with_suffix('.json')\n  if root not in inp.parents or root not in output.parents:raise ValueError('JOB_OUTSIDE_STAGE')\n  try:\n   if digest(inp)!=x['source_sha256']:\n    print('MOVIE_RU_INPUT_SHA_HOLD_CONTINUE',sid,flush=True);continue\n  except OSError:\n   print('MOVIE_RU_INPUT_MISSING_HOLD_CONTINUE',sid,flush=True);continue\n  if output.exists() and side.exists():\n   try:\n    m=json.loads(side.read_text(encoding='utf-8'))\n    if m.get('fingerprint')==x['fingerprint'] and m.get('sha256')==digest(output):\n     print('MOVIE_RU_REUSE_SHA_VERIFIED',sid,flush=True);continue\n   except Exception:pass\n   print('MOVIE_RU_EXISTING_CONFLICT_HOLD',sid,flush=True);continue\n  if output.exists() or side.exists():\n   print('MOVIE_RU_PARTIAL_EXISTING_HOLD',sid,flush=True);continue\n  todo.append((x,inp,output,side))\n if not todo:return 0\n model=VoxCPM.from_pretrained(str(model_root),device='cuda:0',optimize=False,load_denoiser=False)\n for x,inp,out,side in todo:\n  sid=x['id'];tmp=out.with_suffix('.tmp.wav')\n  try:\n   if tmp.exists():raise RuntimeError('EXISTING_TEMP_CONFLICT')\n   torch.manual_seed(x['seed'])\n   with torch.inference_mode():\n    a=model.generate(text=x['tts_text'],reference_wav_path=str(inp),cfg_value=2.0,\n                     inference_timesteps=12,normalize=False,denoise=False)\n   rate=int(model.tts_model.sample_rate)\n   a=np.asarray(a,dtype=np.float32).reshape(-1)\n   if not 8000<=rate<=96000 or not np.isfinite(a).all() or not 0.4<len(a)/rate<90:\n    raise ValueError('INVALID_GENERATED_WAV')\n   rms=float(np.sqrt(np.mean(a.astype(np.float64)**2)))\n   if rms<0.001:raise ValueError('NEAR_SILENCE_HOLD')\n   peak=float(np.max(np.abs(a)))\n   if peak>0.98:a=a*(0.98/peak)\n   sf.write(str(tmp),a,rate,subtype='PCM_16')\n   with wave.open(str(tmp),'rb') as chk:\n    if chk.getnchannels()!=1 or chk.getsampwidth()!=2 or chk.getnframes()/chk.getframerate()>90:\n     raise ValueError('GENERATED_WAV_FORMAT_HOLD')\n   os.replace(tmp,out)\n   atomic_json(side,{'schema':'BGVOICE_MOVIE_RU_CANDIDATE_1_6','id':sid,'fingerprint':x['fingerprint'],\n                'sha256':digest(out),'original_english_source_sha256':x['source_sha256'],\n                'seconds':round(len(a)/rate,3),'status':'NEW_RU_CANDIDATE_NOT_APPROVED',\n                'game_install_allowed':False,'translation_verified':False,\n                'speaking_style_verified_by_human':False,'stress_verified_by_human':False})\n   print('MOVIE_RU_CREATED',sid,round(len(a)/rate,2),'s',flush=True)\n  except Exception as e:\n   print('MOVIE_RU_HOLD_CONTINUE',sid,type(e).__name__,str(e)[:120],flush=True)\n  finally:\n   if tmp.exists():tmp.unlink()\n   try:torch.cuda.empty_cache()\n   except Exception:pass\n return 0\nif __name__=='__main__':sys.exit(main())\n"
+
+def _ru_candidate_paths(work):
+    stage=work/'VIDEO_RU_CANDIDATES_10'
+    return stage,stage/'EN_REF',stage/'RU_WAV'
+
+def _make_ru_candidate_jobs(main,work):
+    with zipfile.ZipFile(main) as z:
+        if z.testzip() is not None:raise ValueError('BAD_REPORT_CRC_RU_GEN')
+        s=json.loads(z.read(ROOT+'RECONCILED_STATUS.json'))
+        if s.get('source_extracted_json_sha256')!=SCRIPT_JSON_SHA256 or s.get('russian_wav_not_yet_identified')!=19:
+            raise ValueError('EXPECTED_19_MISSING_RU_NOT_CONFIRMED')
+        cues=json.loads(z.read(EN_CUES_ROOT+'STATUS.json'))
+        if cues.get('groups_with_ru_wav_absent')!=19:raise ValueError('MISSING_EN_STATUS_INVALID')
+        cue_list=list(csv.DictReader(io.StringIO(z.read(EN_CUES_ROOT+'CUE_INDEX.csv').decode('utf-8-sig'))))
+        rows=list(csv.DictReader(io.StringIO(z.read(ROOT+'19_MISSING_RUSSIAN_WAV.csv').decode('utf-8-sig'))))
+        if len(rows)!=19 or len(set(x['id'] for x in rows))!=19:raise ValueError('INVALID_19_QUEUE')
+        if set(MOVIE_RU_DRAFT10_IDS)-{r['id'] for r in rows}:raise ValueError('DRAFT10_NOT_MISSING_ANYMORE')
+        cue_by_id={r['id']:r for r in cue_list}
+        if len(cue_by_id)!=len(cue_list):raise ValueError('CUE_DUPLICATE_IDS')
+        stage,refs,ru=_ru_candidate_paths(work)
+        refs.mkdir(parents=True,exist_ok=True);ru.mkdir(parents=True,exist_ok=True)
+        stage=stage.resolve();tasks=[];holds=[]
+        for row in rows:
+            sid=row['id']
+            if sid not in MOVIE_RU_DRAFT10_IDS:
+                holds.append({'id':sid,'reason':'SOURCE_NAME_OR_TIMING_HOLD','no_synthesis':True})
+                continue
+            cue=cue_by_id.get(sid)
+            if not cue or cue.get('status')!='TECHNICAL_EN_CUE_READY_NOT_LINGUISTICALLY_VERIFIED':
+                holds.append({'id':sid,'reason':'EN_AUDIO_CUE_NOT_READY','no_synthesis':True});continue
+            name=cue.get('cue_member')
+            if name!=EN_CUES_ROOT+sid+'_EN_DNR_ASR_WINDOW.wav' or name not in z.namelist():
+                holds.append({'id':sid,'reason':'EN_REFERENCE_NAME_MISMATCH','no_synthesis':True});continue
+            data=z.read(name)
+            digest=hashlib.sha256(data).hexdigest()
+            if digest!=cue['cue_sha256'] or len(data)>9*1024*1024 or data[:4]!=b'RIFF' or data[8:12]!=b'WAVE':
+                holds.append({'id':sid,'reason':'EN_REFERENCE_BYTES_NOT_SHA_VERIFIED','no_synthesis':True});continue
+            with wave.open(io.BytesIO(data),'rb') as refwav:
+                dur=refwav.getnframes()/refwav.getframerate()
+                expected_window=float(row['english_window_end_s'])-float(row['english_window_start_s'])
+                if (refwav.getcomptype()!='NONE' or not 2<dur<42 or abs(dur-expected_window)>0.35):
+                    holds.append({'id':sid,'reason':'EN_REFERENCE_WAV_WINDOW_MISMATCH','no_synthesis':True});continue
+            dest=refs/(sid+'.wav')
+            if dest.exists():
+                if _file_sha256(dest)!=digest:
+                    holds.append({'id':sid,'reason':'EN_REFERENCE_EXISTING_CONFLICT','no_synthesis':True});continue
+            else:
+                tmp=dest.with_suffix('.tmp')
+                if tmp.exists():
+                    holds.append({'id':sid,'reason':'EN_REFERENCE_TEMP_CONFLICT','no_synthesis':True});continue
+                tmp.write_bytes(data);os.replace(tmp,dest)
+            text=row.get('russian_draft_NOT_APPROVED','')
+            if not text or not isinstance(text,str):
+                holds.append({'id':sid,'reason':'NO_RUSSIAN_DRAFT','no_synthesis':True});continue
+            original=text
+            text=MOVIE_RU_TEXT_EDITS.get(sid,text)
+            # Candidate only. Names and accent must be confirmed by listening, never accepted automatically.
+            fingerprint=hashlib.sha256(json.dumps({'id':sid,'text':text,'input':digest,
+                   'model':MOVIE_SHTORM_MODEL_SHA256,'steps':12,'cfg':2.0,'algorithm':'SHTORM_10_DRAFT_1_6'},
+                    ensure_ascii=False,sort_keys=True).encode('utf-8')).hexdigest()
+            seed=int(hashlib.sha256(('BGVOICE_MOVIE_1_6_'+sid).encode()).hexdigest()[:8],16)
+            tasks.append({'id':sid,'movie':row['movie'],'state':'DRAFT_NOT_APPROVED',
+                'tts_text':text,'draft_original_UNCHANGED':original,'source_sha256':digest,
+                'fingerprint':fingerprint,'seed':seed,'note':MOVIE_RU_REVIEW_NOTES[sid],
+                'translation_status':'NOT_APPROVED','english_audio_status':'ASR_WINDOW_NOT_HUMAN_VERIFIED'})
+    return stage,tasks,holds
+
+def _movie_ru_worker_python():
+    if os.name=='nt' and MOVIE_SHTORM_VENV.is_file():return str(MOVIE_SHTORM_VENV)
+    # No implicit system-python TTS installation; test override is explicit and non-production.
+    if os.environ.get('BG_VOICE_MOVIE_RU_TEST_PYTHON')=='1':return sys.executable
+    return None
+
+def _ru_worker_run(stage,tasks):
+    if not tasks:return 'NO_READY_EN_CUES'
+    if not MOVIE_SHTORM_MODEL_ROOT.is_dir():return 'HOLD_SHTORM_MODEL_NOT_FOUND'
+    python_exe=_movie_ru_worker_python()
+    if python_exe is None:return 'HOLD_EXISTING_VOXCMP_VENV_NOT_FOUND'
+    data={'schema':'BGVOICE_MOVIE_RU_BATCH_1_6','root':str(stage),
+         'model_root':str(MOVIE_SHTORM_MODEL_ROOT),'model_sha256':MOVIE_SHTORM_MODEL_SHA256,
+         'tasks':tasks}
+    todo=stage/'batch_jobs.json'
+    temp=stage/'batch_jobs.pending'
+    if temp.exists():return 'HOLD_PREVIOUS_PENDING_JOBS'
+    try:
+        temp.write_text(json.dumps(data,ensure_ascii=False,sort_keys=True,indent=2),encoding='utf-8')
+        os.replace(temp,todo)
+        run=subprocess.run([python_exe,'-u','-c',MOVIE_RU_INLINE_WORKER,str(todo)],
+                           stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,
+                           timeout=2400,env={**os.environ,'HF_HUB_OFFLINE':'1','TRANSFORMERS_OFFLINE':'1',
+                                             'HF_DATASETS_OFFLINE':'1','HF_HUB_DISABLE_TELEMETRY':'1'})
+        print((run.stdout or '')[-14000:],flush=True)
+        return 'WORKER_OK' if run.returncode==0 else 'WORKER_HOLD_EXIT_'+str(run.returncode)
+    except subprocess.TimeoutExpired as exc:
+        print('MOVIE_RU_WORKER_TIMEOUT_HOLD',str(exc)[:140],flush=True)
+        return 'WORKER_TIMEOUT_HOLD'
+    except OSError as exc:
+        print('MOVIE_RU_WORKER_OSERROR_HOLD',str(exc)[:140],flush=True)
+        return 'WORKER_OSERROR_HOLD'
+
+def _produce_movie_ru_drafts(root=None,run_worker=True):
+    work=Path(root) if root else Path(os.environ.get('BG_VOICE_FULL_PRODUCTION_ROOT') or
+                              Path.home()/'Documents'/'BG_VOICE_RU'/'FULL_PRODUCTION')
+    main=work/'SEND_TO_CHATGPT_BG_VOICE_RU.zip'
+    if not main.is_file():return 'HOLD_COMMON_REPORT_MISSING'
+    stage,tasks,holds=_make_ru_candidate_jobs(main,work)
+    worker_status=_ru_worker_run(stage,tasks) if run_worker else 'LOCAL_PREFLIGHT_ONLY_NO_GPU'
+    created={};states=[]
+    stage_root,_,outdir=_ru_candidate_paths(work)
+    for t in tasks:
+        sid=t['id'];wav=outdir/(sid+'__SHTORM_MOVIE_DRAFT.wav');side=wav.with_suffix('.json')
+        state={'id':sid,'movie':t['movie'],'tts_text_NOT_APPROVED':t['tts_text'],
+               'source_english_sha256':t['source_sha256'],'fingerprint':t['fingerprint'],
+               'user_approved':False,'game_install_allowed':False,'note':t['note']}
+        if wav.is_file() and side.is_file():
+            try:
+                met=json.loads(side.read_text(encoding='utf-8'))
+                if met.get('fingerprint')==t['fingerprint'] and _file_sha256(wav)==met.get('sha256') and wav.stat().st_size<9*1024*1024:
+                    with wave.open(str(wav),'rb') as check:
+                        if check.getnchannels()!=1 or check.getsampwidth()!=2 or check.getnframes()/check.getframerate()>90:
+                            raise ValueError('INVALID_WAV')
+                    state['status']='GENERATED_NOT_APPROVED';state['candidate_sha256']=met['sha256']
+                    created[MOVIE_RU_PRODUCT_ROOT+'WAV/'+sid+'.wav']=wav.read_bytes()
+                else:state['status']='HOLD_CANDIDATE_SHA_OR_FINGERPRINT'
+            except (OSError,ValueError,KeyError,wave.Error,json.JSONDecodeError):
+                state['status']='HOLD_CANDIDATE_INVALID'
+        elif wav.exists() or side.exists():state['status']='HOLD_PARTIAL_STAGING'
+        else:state['status']='HOLD_NO_GENERATED_CANDIDATE'
+        states.append(state)
+    status={'schema':'BG_VOICE_MOVIE_RU_CANDIDATES_1_6','version':MOVIE_CORE_VERSION,
+       'target_draft_groups':10,'ready_english_reference_count':len(tasks),
+       'candidate_generated':len(created),'candidate_missing_or_hold':10-len(created),
+       'other_source_name_timing_hold_count':len(holds),
+       'worker_status':worker_status,'manual_translation_approval':False,
+       'manual_voice_stress_acting_approval':False,'game_write':False,
+       'all_user_selected_wav_unchanged':True,
+       'next':'Listen with EN cue and correct stress/acting/translation; finish remaining 9 source/name/timing holds; no incomplete film mix'}
+    additions={MOVIE_RU_PRODUCT_ROOT+'STATUS.json':_json(status),
+               MOVIE_RU_PRODUCT_ROOT+'TASKS.json':_json(states),
+               MOVIE_RU_PRODUCT_ROOT+'SOURCE_NAME_TIMING_HOLDS.json':_json(holds),**created}
+    with zipfile.ZipFile(main) as z:
+        if z.testzip() is not None:raise ValueError('CORRUPT_PREEXISTING_MAIN')
+        already=all(k in z.namelist() and z.read(k)==v for k,v in additions.items())
+    if already:return 'CURRENT '+str(len(created))+'/10 candidates; '+str(len(holds))+' holds'
+    result=_merge_main_report(additions,work)
+    return result+' '+str(len(created))+'/10 candidate drafts; '+str(len(holds))+' source holds'
+# END: SHA-guarded video Russian candidate production.
+
+
 def selftest():
-    assert MOVIE_CORE_VERSION=='1.5.0' and sum(MOVIE_SEGMENTS.values())==63
+    assert MOVIE_CORE_VERSION=='1.6.0' and sum(MOVIE_SEGMENTS.values())==63
     assert len(PILOT_KNOWN)==3 and _csv([{'id':'A'}],['id']).endswith(b'A\r\n')
     assert set(PILOT_SHA256)==PILOT_KNOWN and all(len(sha)==64 for sha in PILOT_SHA256.values())
     assert len(PILOT_SHA256)==3
+    assert len(MOVIE_RU_DRAFT10_IDS)==10 and len(set(MOVIE_RU_DRAFT10_IDS))==10
+    assert 'CERND46' not in MOVIE_RU_DRAFT10_IDS
+    compile(MOVIE_RU_INLINE_WORKER,'<movie_worker>','exec')
     print('MOVIE_CHANNEL_SELFTEST_PASS')
     return 0
 
@@ -686,6 +862,10 @@ def run(host):
         print('MOVIE_EN_REFERENCE_CUES:',_prepare_english_reference_cues(),flush=True)
     except Exception as exc:
         print('MOVIE_EN_REFERENCE_HOLD:',type(exc).__name__,str(exc)[:160],flush=True)
+    try:
+        print('MOVIE_RU_CANDIDATE_PRODUCTION:',_produce_movie_ru_drafts(),flush=True)
+    except Exception as exc:
+        print('MOVIE_RU_PRODUCTION_HOLD:',type(exc).__name__,str(exc)[:200],flush=True)
     print('MOVIE_CHANNEL_REPORT:',report,flush=True)
     return 0
 
