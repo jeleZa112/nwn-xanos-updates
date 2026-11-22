@@ -1,0 +1,69 @@
+name: BG EET RU weapon event source-only prototype
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/weapon-identity/BG_EET_RU_WEAPON_EVENT_OBSERVER_V1.lua'
+      - '.github/workflows/bg-eet-ru-weapon-observer-source-only.yml'
+  workflow_dispatch:
+jobs:
+  native-lua-source-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua 5.4 runtime for isolated tests
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq liblua5.4-0
+      - name: Compile and test observer with stub EEex listener
+        shell: bash
+        run: |
+          python - <<'PY'
+          import ctypes, hashlib
+          from pathlib import Path
+          source=Path('bg-eet-ru/weapon-identity/BG_EET_RU_WEAPON_EVENT_OBSERVER_V1.lua').read_bytes()
+          assert hashlib.sha256(source).hexdigest()=='cd7dcf4ad862eed985471e866e8e41db241ec6a7dbc18d47f94f232c662f1448'
+          lua=ctypes.CDLL('liblua5.4.so.0')
+          lua.luaL_newstate.restype=ctypes.c_void_p
+          lua.luaL_openlibs.argtypes=[ctypes.c_void_p]
+          lua.luaL_loadbufferx.argtypes=[ctypes.c_void_p,ctypes.c_char_p,ctypes.c_size_t,ctypes.c_char_p,ctypes.c_char_p]
+          lua.luaL_loadbufferx.restype=ctypes.c_int
+          lua.lua_pcallk.argtypes=[ctypes.c_void_p,ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.c_longlong,ctypes.c_void_p]
+          lua.lua_pcallk.restype=ctypes.c_int
+          lua.lua_close.argtypes=[ctypes.c_void_p]
+          test=r"""
+          local st=BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Status()
+          assert(not st.enabled and not st.registered and st.buffered_events==0)
+          local ok, why=BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()
+          assert(not ok and why=='EEEX_DAMAGE_LISTENER_UNAVAILABLE')
+          local callbacks={}
+          function EEex_Sprite_AddAlterBaseWeaponDamageListener(cb) callbacks[#callbacks+1]=cb end
+          ok, why=BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()
+          assert(ok and why=='LISTENER_REGISTERED' and #callbacks==1)
+          local original={curWeaponIn={}, pLauncher={}, criticalDamage=3, target=true}
+          assert(callbacks[1](original)==nil)
+          assert(original.criticalDamage==3 and original.target==true)
+          local record=BG_EET_RU_WEAPON_EVENT_OBSERVER_V1.events[1]
+          assert(record.fields.curWeaponIn.value_type=='table')
+          assert(record.fields.criticalDamage.primitive==3)
+          assert(record.weapon_id_verified==false and record.ammo_id_verified==false)
+          BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Stop()
+          callbacks[1]({ignored=true})
+          assert(BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Status().total_recorded==1)
+          ok,why=BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()
+          assert(ok and why=='ALREADY_REGISTERED' and #callbacks==1)
+          for i=1,100 do callbacks[1]({n=i}) end
+          assert(#BG_EET_RU_WEAPON_EVENT_OBSERVER_V1.events==64)
+          assert(BG_EET_RU_WEAPON_EVENT_OBSERVER_V1.events[1].ordinal==38)
+          st=BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Status()
+          assert(not st.misses_proven and not st.launcher_ammo_pair_proven)
+          assert(not st.log_row_attribution_proven)
+          """
+          code=source+b'\n'+test.encode('utf8')
+          L=lua.luaL_newstate()
+          lua.luaL_openlibs(L)
+          try:
+            assert lua.luaL_loadbufferx(L,code,len(code),b'isolated',None)==0,'Lua compile failed'
+            assert lua.lua_pcallk(L,0,0,0,0,None)==0,'Lua runtime test failed'
+          finally:lua.lua_close(L)
+          print('SOURCE_ONLY_LUA54_PASS: no default hook, registration guards, bounded event schema, stop/restart, no combat modification')
+          PY
