@@ -1,0 +1,61 @@
+name: BGXAI weapon160 V3 optional Attack Info read-only, Windows 5.1
+
+on:
+  push:
+    branches: [bgxai-weapon160-optional-attack-info-v3]
+    paths:
+      - 'BGXAI/BUILD/WEAPON_160_SOURCE_ONLY/**'
+      - 'BGXAI/BUILD/EEEX_R11_STATIC_COMPAT_V3_SOURCE_ONLY/**'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_EEEX_R11_STATIC_COMPAT_RO_V3.py'
+      - '.github/workflows/bgxai-weapon160-optional-v3.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows_source_only:
+    runs-on: windows-latest
+    steps:
+      - name: Keep exact LF line endings
+        shell: pwsh
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Exact V2 to V3 updater difference and all 1-159 actions
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python BGXAI/BUILD/WEAPON_160_SOURCE_ONLY/test_weapon160_optional_v3.py
+          if($LASTEXITCODE -ne 0){throw 'BGXAI160_V3_DIFF_OR_LEGACY_FAILED'}
+      - name: 34 fail-closed optional EEex module scenarios
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python BGXAI/BUILD/EEEX_R11_STATIC_COMPAT_V3_SOURCE_ONLY/test_static_v3.py
+          if($LASTEXITCODE -ne 0){throw 'BGXAI160_V3_COMPAT_TEST_FAILED'}
+      - name: Native Windows PowerShell 5.1 parse and exact source SHA
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $p='BGXAI/BUILD/WEAPON_160_SOURCE_ONLY/BGXAI_SYNC_160_OPTIONAL_V3_CANDIDATE.ps1'
+          $tokens=$null
+          $errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p).Path,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count){throw ('BGXAI160_V3_PS51_AST_FAILED '+(($errors|ForEach-Object {$_.Message}) -join '; '))}
+          $bytes=[IO.File]::ReadAllBytes((Resolve-Path $p).Path)
+          $sha=([BitConverter]::ToString([Security.Cryptography.SHA256]::Create().ComputeHash($bytes))).Replace('-','').ToLowerInvariant()
+          if($bytes.Length -ne 79943){throw 'BGXAI160_V3_SIZE_CHANGED'}
+          Write-Host ('BGXAI160_V3_PIN_BYTES='+$bytes.Length)
+          Write-Host ('BGXAI160_V3_PIN_SHA256='+$sha)
+          Write-Host 'BGXAI160_V3_WINDOWS_PS51_AST_PASS'
+      - name: Native PowerShell 7 parse
+        shell: pwsh
+        run: |
+          $p='BGXAI/BUILD/WEAPON_160_SOURCE_ONLY/BGXAI_SYNC_160_OPTIONAL_V3_CANDIDATE.ps1'
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p).Path,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count){throw 'BGXAI160_V3_POWERSHELL7_AST_FAILED'}
+          Write-Host 'BGXAI160_V3_WINDOWS_AST_PASS'
