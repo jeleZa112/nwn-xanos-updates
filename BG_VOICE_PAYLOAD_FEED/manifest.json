@@ -234,6 +234,31 @@
       "independent_new_speaker_model_run": false,
       "en_3to5_anchor_acoustic_test_run": false
     },
-    "warning": "The two ECAPA score views are NOT independent; no new trained speaker/acting model has run. All 652 were previously held by V5, and require real acoustic EN/acting comparison before voice selection. No retakes/stress/game install."
+    "warning": "The two ECAPA score views are NOT independent; no new trained speaker/acting model has run. All 652 were previously held by V5, and require real acoustic EN/acting comparison before voice selection. No retakes/stress/game install.",
+    "last_actual_windows_report": {
+      "date": "2026-11-23",
+      "library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_AUTO_RESULTS_REAL_WINDOWS_20261123.zip",
+      "sha256": "c33339c556ae8b74987afb4677ddd2a33576b72702f6ed654bf0b864ffc22664",
+      "sound_ids": 7206,
+      "audio_verified_logged": 14412,
+      "source_errors": 0,
+      "historic_protected": 58,
+      "model_low": 4183,
+      "model_medium": 20,
+      "model_very_low": 2945,
+      "default_stable_on_tie": 1563,
+      "retrospective_human_results": "13_of_20_but_auto_predicted_PER_LINE_on_ALL_20",
+      "independent_model_inference": false,
+      "final_selection_complete": false
+    },
+    "verified_safety_gate": {
+      "library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_SELECTION_REAL_RUN_AUDITED_20261123.zip",
+      "sha256": "29aa96b0544cfe3486a083445d58aaad169a018dca58ee35d0ad4efed743ba5a",
+      "validation": "READ_ONLY_7206_COVERAGE_58_LOCKS_AND_RISK_CLASSIFICATION_PASS",
+      "human_choice_overrides": 0,
+      "approved_game_wavs": 0
+    },
+    "diagnostics_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/selection_first/REAL_WINDOWS_AUTOSELECT_QA_20261123.md",
+    "required_next_step": "INDEPENDENT_ACTOR_AND_SPEAKER_ACOUSTIC_MODEL_ON_REAL_WAV_EN_REFERENCES_NOT_ANOTHER_ECAPA_WEIGHT_TWEAK"
   }
 }
