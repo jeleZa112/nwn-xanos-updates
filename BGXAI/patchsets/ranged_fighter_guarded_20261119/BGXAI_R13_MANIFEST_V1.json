@@ -1,19 +1,19 @@
 {
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
-  "version": "0.3.84-R13-TARGET-RO",
+  "version": "0.3.85-R13-TARGET-MISSILE-RO",
   "files": [
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_R13_GUARDED.py",
       "dest": "BGXAI_R13_GUARDED.py",
       "size": 12189,
-      "sha256": "10799a110f435a48c37fbd6c257a53d21b4d7897581ac7796f4599b624712e05"
+      "sha256": "b93737256d70c84574c499879018e2780f6843a6495c052746648320ca1cb61e"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BGXTDEF13.lua",
       "dest": "M_BGXTDEF13.lua",
-      "size": 12217,
-      "sha256": "eb764346f0c523790658320938a2739d873dbbdb59a93479e4f47e1f0edac2f3"
+      "size": 12238,
+      "sha256": "5c77a460d6b429cec6f9f81e7bf6883ee1f59474cfb95778091ab769302ef414"
     }
   ]
 }

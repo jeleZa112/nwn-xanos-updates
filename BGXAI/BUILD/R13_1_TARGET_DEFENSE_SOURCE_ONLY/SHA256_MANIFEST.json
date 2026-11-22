@@ -1,0 +1,46 @@
+{
+  "schema": "BGXAI_R13_1_SOURCE_ONLY_MANIFEST",
+  "version": "0.3.85-R13-TARGET-MISSILE-RO",
+  "files": {
+    "BGXAI_R13_GUARDED.py": {
+      "bytes": 12189,
+      "sha256": "b93737256d70c84574c499879018e2780f6843a6495c052746648320ca1cb61e"
+    },
+    "BGXAI_R13_MANIFEST_V1.json": {
+      "bytes": 598,
+      "sha256": "1dfa4415fd56abd5edc4f302d9928e485de41705d2efe1ae784c6dd4abef7391"
+    },
+    "BGXAI_R13_TARGET_DEFENSE_OBSERVER.lua": {
+      "bytes": 6789,
+      "sha256": "6da955a85903dd1469e7f7e42708c07b7d85cfdac6f1af255bf5dfb70fc07c49"
+    },
+    "CHECKPOINT_RU.md": {
+      "bytes": 2277,
+      "sha256": "7fbf9a73cf43f0340e89c09f5845e277285258038061d2ef347f5d764b0d3e27"
+    },
+    "M_BGXTDEF13.lua": {
+      "bytes": 12238,
+      "sha256": "5c77a460d6b429cec6f9f81e7bf6883ee1f59474cfb95778091ab769302ef414"
+    },
+    "README_RU.md": {
+      "bytes": 2357,
+      "sha256": "0274d9f3c32801739c043c7279e47c8e8f2d00da8b9c124f55ba1d3cfb56568e"
+    },
+    "test_r13.lua": {
+      "bytes": 8855,
+      "sha256": "864df3b4061d8354972e5dc0b6cd1e51236ebb5923c9d61bd72245bf59a8f84b"
+    },
+    "test_r13_guarded.py": {
+      "bytes": 7658,
+      "sha256": "1c5e7618084a581c12ea9eb686386f1fe84dd5d8da35694b227e8f5ef771e110"
+    },
+    "test_r13_missile_regression.py": {
+      "bytes": 1298,
+      "sha256": "3b7d8e32953ad022994f75b1e613486a8cdb6f8710423855ca0e1fb8678b25b5"
+    },
+    "test_r13_runtime.lua": {
+      "bytes": 4555,
+      "sha256": "6ce4d4102bf3a8b9795bfe9ea458dde06a0f59c5b08738cb0ea40293290bf12d"
+    }
+  }
+}
