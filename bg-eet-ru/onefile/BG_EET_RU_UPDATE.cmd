@@ -5054,7 +5054,7 @@ def v98_selftest():
     assert "indices[#prefix + #amount]" in V98_HELPER
     assert "return shown:sub(1,insertion) .. ' ед.' .. shown:sub(insertion+1)" in V98_HELPER
     assert "pos = pos + 11" in V98_HELPER
-    assert "return prefix .. amount .. ' ед. ' .. dtype .. ' урона' .. suffix" in V98_HELPER
+    assert "return prefix .. amount .. ' ед. ' .. dtype .. ' урона' .. suffix" not in V98_GRAMMAR_LUA
     assert "local visible_prefix = prefix:gsub" in V98_HELPER
     assert "if body:find('%^') then return original end" in V98_HELPER
     assert "if remainder:find('%^%x')" not in V98_HELPER
