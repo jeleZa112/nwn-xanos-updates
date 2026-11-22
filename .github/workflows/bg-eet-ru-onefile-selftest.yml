@@ -566,7 +566,7 @@ jobs:
           exec(compile(p.read_text('utf-8').split('\n',1)[1],str(p),'exec'),ns)
           assert ns['v104_selftest']()
           assert ns['V104_ENTRY']=='50_V104_EEEX_ATTACK_CONTEXT_EVIDENCE.json'
-          assert ns['SELF_VERSION']==104
+          assert ns['SELF_VERSION']>=104 # legacy v104 test remains valid under newer onefile versions
           assert ns['V104_ANCHORS']['EEex_scripts/EEex_Sprite.lua']['block_hit_callback'].endswith('(attackingSprite, targetSprite, weapon, weaponAbility)')
           print('V104_READONLY_SIGNATURE_TEST_PASS: absent optional B3 is not blocking, exact callbacks, ZIP rollback-safe, no game writes')
           PY
