@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "0811abcf0903c621b408997481ada0ee2009d9a9",
+  "commit": "6b26d44770a14aeb63277e17e14e91796bcce56c",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "96bbc0f8ebb15be902535e63ae5afe0da81629f6dd93749a8a502683b679e8c8",
-  "script_size": 79984,
-  "description": "BGXAI onefile R4 source-only 159->7 option 8 guarded install after typed approval. R4 reads 68 raw current stats including 46 weapon proficiency fields; detects selected combat THAC0 STR APR changes from potential divine buffs, druid forms, haste, never assumes fighter APR or fighter proficiencies or auto-dispatch. Existing menu and R1 R2 R3,V6 EPS unchanged; R4 not live deployed."
+  "script_sha256": "30b248b6d043580eeec32e243ecc529b51fa6299724a0f448b81c88060e0c1ed",
+  "script_size": 79943,
+  "description": "BGXAI ONEFILE read-only option 160: pinned EEex R11 static compatibility scan. Legacy menus 1-159 exact-preserved; EET, EPS, V6 and R1-R4 untouched. No R11 deploy or weapon dispatch; runtime API still unverified."
 }
