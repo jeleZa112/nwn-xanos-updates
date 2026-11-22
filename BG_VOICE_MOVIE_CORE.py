@@ -12,7 +12,7 @@ import zipfile
 from collections import Counter
 from pathlib import Path
 
-MOVIE_CORE_VERSION = '1.1.0'
+MOVIE_CORE_VERSION = '1.2.0'
 SCRIPT_JSON_SHA256 = '87d18d68ce2be6236e2bdb468dc0275c7f5f257714643b5cf9013c48f87a9ee4'
 MOVIE_SEGMENTS = {'INTRO15F': 16, 'SODCIN01': 18, 'IWINTRO': 29}
 PILOT_KNOWN = {'INTRO15F_G01','SODCIN01_G02','IWINTRO_G06'}
@@ -105,9 +105,119 @@ def _merge_main_report(replacements,root=None):
         if os.path.exists(tmp):os.unlink(tmp)
 
 
+# These three clips were approved by the user on 2026-11-21.
+# A filename, transcript, approximate timetag or speaker similarity is NEVER proof.
+PILOT_SHA256 = {
+    'INTRO15F_G01': '502f0ed76e0b46c884416768fff0da13cdb31a05bc150b6e760132525a13ed52',
+    'SODCIN01_G02': '7c5b747e0ae3a2c778b5d6890d14a46bb493960d0e2398a2fc59170c9b4756ff',
+    'IWINTRO_G06': 'd240ed50fa1a2ba7b0138e570b786d12347c909c7ea7fa9ef17d825051dc813b',
+}
+PILOT_ROOT = 'VIDEO/PILOTS/'
+
+
+def _pilot_roots(base=None):
+    if base is not None:
+        return [Path(base)]
+    home = Path.home()
+    roots = [home/'Documents'/'BG_VOICE_RU'/'FULL_PRODUCTION',
+             home/'Downloads', Path('C:/BG_VOICE_RU_MASTER')]
+    env = os.environ.get('BG_VOICE_MOVIE_PILOT_SCAN_ROOT')
+    if env:
+        roots.insert(0, Path(env))
+    # Dedup, never broaden to all of C:\ or user home.
+    result=[]; seen=set()
+    for p in roots:
+        norm=str(p).casefold()
+        if norm not in seen and p.is_dir():
+            seen.add(norm); result.append(p)
+    return result
+
+
+def _pilot_candidates(roots):
+    skip={'russian_wav_two_versions','.git','.venv','venv','site-packages',
+          'node_modules','__pycache__','backups','game','games'}
+    visited=0; wavs=0; archives=0
+    for root in roots:
+        for current, folders, files in os.walk(root, followlinks=False):
+            visited+=1
+            depth=len(Path(current).relative_to(root).parts)
+            if visited>8000:break
+            folders[:]=sorted(d for d in folders if d.casefold() not in skip and
+                              not d.startswith('.') and depth < 5)
+            for name in sorted(files):
+                p=Path(current)/name
+                upper=name.upper()
+                if upper.endswith('.ZIP') and archives < 100 and any(
+                        keyword in upper for keyword in ('NEXT3','NARRATOR','MOVIE','INTRO','FULL_SCRIPT')):
+                    archives+=1; yield p,'ZIP'
+                elif upper.endswith('.WAV') and wavs < 6000 and (
+                        any(keyword in upper for keyword in ('INTRO15F','SODCIN01','IWINTRO','NARRATOR'))
+                        or 'APPROVED' in str(p.parent).upper()):
+                    wavs+=1; yield p,'WAV'
+
+
+def _recover_pilots(roots=None, accepted=None):
+    expected=dict(PILOT_SHA256 if accepted is None else accepted)
+    found={}; attempted=0; zip_errors=0; file_errors=0
+    for p,kind in _pilot_candidates(_pilot_roots(roots)):
+        if len(found)==len(expected):break
+        try:
+            if kind=='WAV':
+                if p.stat().st_size>16*1024*1024:continue
+                attempted+=1
+                data=p.read_bytes()
+                if not (data[:4]==b'RIFF' and data[8:12]==b'WAVE'):continue
+                digest=hashlib.sha256(data).hexdigest()
+                for sid,sha in expected.items():
+                    if sid not in found and digest==sha:
+                        found[sid]=(data,'VERIFIED_WAV_SHA','WAV_FILE')
+            else:
+                if p.stat().st_size>120*1024*1024:continue
+                with zipfile.ZipFile(p) as archive:
+                    # Avoid extracting archive paths; in-memory exact SHA checks only.
+                    entries=archive.infolist()
+                    if len(entries)>2000:continue
+                    for info in entries:
+                        if len(found)==len(expected):break
+                        if not (info.filename.lower().endswith('.wav') and 100<=info.file_size<=16*1024*1024):continue
+                        attempted+=1
+                        data=archive.read(info)
+                        if not (data[:4]==b'RIFF' and data[8:12]==b'WAVE'):continue
+                        digest=hashlib.sha256(data).hexdigest()
+                        for sid,sha in expected.items():
+                            if sid not in found and digest==sha:
+                                found[sid]=(data,'VERIFIED_ZIP_MEMBER_SHA','ARCHIVE_MEMBER')
+        except (OSError,zipfile.BadZipFile,RuntimeError,ValueError,EOFError) as exc:
+            if kind=='ZIP':zip_errors+=1
+            else:file_errors+=1
+            continue
+    additions={}
+    results={}
+    for sid,sha in expected.items():
+        if sid in found:
+            content,signal,provenance=found[sid]
+            assert hashlib.sha256(content).hexdigest()==sha
+            additions[PILOT_ROOT+sid+'__LOCKED_APPROVED.wav']=content
+            results[sid]={'status':signal,'sha256':sha,'source_provenance':provenance,
+                          'report_entry':PILOT_ROOT+sid+'__LOCKED_APPROVED.wav',
+                          'approved_user_choice_preserved':True,'game_install_allowed':False}
+        else:
+            results[sid]={'status':'HOLD_APPROVED_PILOT_NOT_FOUND','sha256':sha,
+                          'do_not_regenerate_approved_audio':True,'game_install_allowed':False}
+    status={'schema':'BGVOICE_MOVIE_APPROVED_PILOT_RECOVERY_1_2',
+            'verified_sha_wav_count':len(found),'total_approved_pilots':len(expected),
+            'searched_candidate_files_or_members':attempted,
+            'zip_read_errors_held':zip_errors,'wav_read_errors_held':file_errors,
+            'original_wavs_modified':False,'game_write':False,'voice_synthesis':False,
+            'human_decisions_preserved':True,'items':results}
+    additions[PILOT_ROOT+'RECOVERY_STATUS.json']=_json(status)
+    return additions,status
+
+
 def selftest():
-    assert MOVIE_CORE_VERSION=='1.1.0' and sum(MOVIE_SEGMENTS.values())==63
+    assert MOVIE_CORE_VERSION=='1.2.0' and sum(MOVIE_SEGMENTS.values())==63
     assert len(PILOT_KNOWN)==3 and _csv([{'id':'A'}],['id']).endswith(b'A\r\n')
+    assert set(PILOT_SHA256)==PILOT_KNOWN and all(len(sha)==64 for sha in PILOT_SHA256.values())
     print('MOVIE_CHANNEL_SELFTEST_PASS')
     return 0
 
@@ -154,6 +264,14 @@ def run(host):
     if main_files:
         try:print('MOVIE_CHANNEL_COMMON_REPORT:',_merge_main_report(main_files),flush=True)
         except Exception as exc:print('MOVIE_CHANNEL_COMMON_REPORT_HOLD:',type(exc).__name__,str(exc)[:150],flush=True)
+    # SHA-exact recovery is independent of text ASR accuracy and can proceed while
+    # translations remain on HOLD. No audio is synthesized or installed.
+    try:
+        additions, pilot_status = _recover_pilots()
+        print('MOVIE_PILOTS:', pilot_status['verified_sha_wav_count'],'of 3 SHA-verified; no resynthesis',flush=True)
+        print('MOVIE_PILOTS_COMMON_REPORT:',_merge_main_report(additions),flush=True)
+    except Exception as exc:
+        print('MOVIE_PILOTS_RECOVERY_HOLD:',type(exc).__name__,str(exc)[:150],flush=True)
     print('MOVIE_CHANNEL_REPORT:',report,flush=True)
     return 0
 
