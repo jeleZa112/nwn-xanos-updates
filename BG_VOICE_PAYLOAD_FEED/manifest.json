@@ -7,9 +7,9 @@
   "updater_name": "BG_VOICE_UPDATE.cmd",
   "latest_payload_version": 74,
   "state": {
-    "version": 76,
+    "version": 77,
     "library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_PROJECT_STATE.md",
-    "verification": "Policy and rolling R2 state upload follows GitHub index"
+    "verification": "State version 77 uploaded 2026-11-22 after selection R2 calibration"
   },
   "package_transport": "chatgpt_shared_library",
   "windows_auto_download_enabled": false,
@@ -225,9 +225,14 @@
         "per_line": 20,
         "bias_direction_conflict": 20
       },
-      "old_ecapa_human_agreement": "13_of_20",
-      "normalization_human_agreement": "8_of_20",
-      "source_voice_bias": "4361_of_5360_uncalibrated_old_pairs_prefer_per_line"
+      "old_ecapa_human_agreement": "13_of_20_retrospective",
+      "normalization_human_agreement": "8_of_20_retrospective_worse_not_improvement",
+      "source_voice_bias": "4361_of_5360_uncalibrated_old_pairs_prefer_per_line",
+      "prior_v5_for_all_652": "ALL_PREVIOUS_HOLD_589_VOICE_ONLY_56_AMBIGUOUS_5_ASR_LOW_2_CONFLICT",
+      "manual_prefs_never_overwritten": true,
+      "v58_original_pair_both_bad_is_not_v65_repair_rejection": true,
+      "independent_new_speaker_model_run": false,
+      "en_3to5_anchor_acoustic_test_run": false
     },
     "warning": "The two ECAPA score views are NOT independent; no new trained speaker/acting model has run. All 652 were previously held by V5, and require real acoustic EN/acting comparison before voice selection. No retakes/stress/game install."
   }
