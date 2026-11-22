@@ -14,7 +14,7 @@ def ready():return {'schema':mod.R4_SCHEMA,'type':'READY','hookRegistered':True}
 def example(seq=1,apr=2):
  return {'schema':mod.R4_SCHEMA,'type':'ACTIVE','seq':seq,
   'actor':139135050,'partyIndex':2,'actionRaw':30,'selectedWeaponRaw':12,
-  'selectedAbilityRaw':0,'presentCount':29,'missingCount':0,
+  'selectedAbilityRaw':0,'presentCount':len(mod.R4_FIELDS),'missingCount':0,
   'status':'RAW_CURRENT_SELECTED_STATS_OBSERVED_NOT_COMPLETE_EFFECTS',
   'statsRaw':{key:apr if key=='m_nNumberOfAttacks' else 0 for key in mod.R4_FIELDS},
   **{k:False for k in ('allBuffsObserved','allEffectsObserved','alternateSlotAPRVerified',
@@ -114,7 +114,20 @@ class GuardedR4(unittest.TestCase):
    with patch.object(mod,'last',return_value='~NEW_MOD/SETUP-NEW.TP2~ #0 #0'):
     with self.assertRaisesRegex(ValueError,'R4_NOT_LAST_WEIDU'):
      mod.r4_rollback(Path('/safe'))
- def test_active_field_count_exact(self):self.assertEqual(len(mod.R4_FIELDS),29)
+ def test_active_field_count_exact(self):self.assertEqual(len(mod.R4_FIELDS),68)
+ def test_all_known_and_extra_weapon_fields_present(self):
+  self.assertIn('m_nProficiencyDart',mod.R4_FIELDS)
+  self.assertIn('m_nProficiencySling',mod.R4_FIELDS)
+  self.assertIn('m_nProficiencyAxe',mod.R4_FIELDS)
+  self.assertIn('m_nProficiencyCrossbow',mod.R4_FIELDS)
+  self.assertIn('m_nExtraProficiency2',mod.R4_FIELDS)
+  self.assertIn('m_nExtraProficiency20',mod.R4_FIELDS)
+ def test_missing_extra_mod_proficiency_rejected(self):
+  e=example();e['statsRaw'].pop('m_nExtraProficiency19')
+  self.assertFalse(mod.r4_valid_active(e))
+ def test_unknown_nonstandard_extra_field_rejected(self):
+  e=example();e['statsRaw']['m_nExtraProficiency21']=0
+  self.assertFalse(mod.r4_valid_active(e))
  def test_valid_active_sample(self):self.assertTrue(mod.r4_valid_active(example()))
  def test_apr7_valid_raw_not_seven_attacks_claim(self):self.assertTrue(mod.r4_valid_active(example(apr=7)))
  def test_forged_dispatch_rejected(self):
