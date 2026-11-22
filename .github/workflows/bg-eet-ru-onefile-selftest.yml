@@ -255,3 +255,72 @@ jobs:
                   lua.lua_close(L)
           print('V98_NATIVE_INLINE_COLOR_PASS: v97 repro, 5 colors, 24 num/type, full, d20, rollback, LF CRLF')
           PY
+      - name: Native Lua v99 brief damage source compaction and UI rollback
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import ctypes,json
+          path=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
+          ns={'__name__':'ci_native_v99','__file__':str(path)}
+          exec(compile(path.read_text(encoding='utf8').split('\n',1)[1],str(path),'exec'),ns)
+          lua=ctypes.CDLL('liblua5.4.so.0')
+          lua.luaL_newstate.restype=ctypes.c_void_p
+          lua.luaL_openlibs.argtypes=[ctypes.c_void_p]
+          lua.luaL_loadbufferx.argtypes=[ctypes.c_void_p,ctypes.c_char_p,ctypes.c_size_t,ctypes.c_char_p,ctypes.c_char_p]
+          lua.luaL_loadbufferx.restype=ctypes.c_int
+          lua.lua_pcallk.argtypes=[ctypes.c_void_p,ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.c_longlong,ctypes.c_void_p]
+          lua.lua_pcallk.restype=ctypes.c_int
+          lua.lua_tolstring.argtypes=[ctypes.c_void_p,ctypes.c_int,ctypes.POINTER(ctypes.c_size_t)]
+          lua.lua_tolstring.restype=ctypes.c_void_p
+          lua.lua_close.argtypes=[ctypes.c_void_p]
+          def run(helper,s,mode=1):
+              code=(helper+'\nBG_EET_RU_LOG_MODE='+str(mode)+'\nreturn BG_EET_RU_LogView('+json.dumps(s,ensure_ascii=False)+')').encode('utf8')
+              L=lua.luaL_newstate()
+              lua.luaL_openlibs(L)
+              try:
+                  assert lua.luaL_loadbufferx(L,code,len(code),b'v99',None)==0
+                  assert lua.lua_pcallk(L,0,1,0,0,None)==0
+                  n=ctypes.c_size_t()
+                  p=lua.lua_tolstring(L,-1,ctypes.byref(n))
+                  return ctypes.string_at(p,n.value).decode('utf8')
+              finally:lua.lua_close(L)
+          original='^0xFF112233Больной гибберлинг:^- получает 6 ед. метательного урона от противника: Халид^-'
+          expected='^0xFF112233Больной гибберлинг:^- 6 ед. метательного урона (источник: Халид)^-'
+          assert run(ns['V98_HELPER'],original)==original
+          assert run(ns['V99_HELPER'],original)==expected
+          assert run(ns['V99_HELPER'],expected)==expected
+          assert run(ns['V99_HELPER'],original,0)==original
+          for amount in (0,1,2,5,6,21,100,1000000):
+              for kind in ('метательного','рубящего','дробящего'):
+                  for color in ('','^0xFFFFFFFF','^-'):
+                      old=f'Халид:{color} получает {amount} ед. {kind} урона от противника: Длинное имя противника^-'
+                      new=f'Халид:{color} {amount} ед. {kind} урона (источник: Длинное имя противника)^-'
+                      assert run(ns['V99_HELPER'],old)==new
+                      assert run(ns['V99_HELPER'],new)==new
+                      assert run(ns['V99_HELPER'],old,0)==old
+          for unknown in ('Больной гибберлинг: получает 5 метательного урона от противника: Халид',
+                          'Больной гибберлинг: получает 5 ед. огненного урона от противника: Халид',
+                          'Больной гибберлинг: получает 5 ед. метательного урона от Халида',
+                          'Больной гибберлинг: получает 5 ед. метательного урона от противника: Халид^UNKNOWN'):
+              assert run(ns['V99_HELPER'],unknown)==unknown
+          hit='Халид: бросок атаки 16 - 1 = 15 : попадание^-'
+          roll='^0xFFAABBCCХалид: Бросок: 16 +Удача: 0 +Правая рука: -1 (+Владение оружием: -2 +Ловкость: 1)^-'
+          for msg in (hit,roll):
+              assert run(ns['V99_HELPER'],msg)==run(ns['V98_HELPER'],msg)
+          for eol in ('\n','\r\n'):
+              old=ns['V98_HELPER'].replace('\n',eol).encode('utf8')
+              full=(b'`\nfunction clean(str)\n return str\nend'+old+
+                    b'`\nmenu\nrender '+ns['V88_RENDER_NEW']+
+                    b'\n'+ns['V90_DRAG']+b'\nBG_EET_RU_JOURNAL_TOGGLE\n')
+              new=ns['v99_transform_installed_ui'](full)
+              patch=ns['V99_HELPER'].replace('\n',eol).encode('utf8')
+              assert new.count(patch+b'`')==1
+              assert new.replace(patch,old,1)==full
+              assert b'end'+eol.encode('ascii')+b'`' in new
+              chunk=new.split(b'`',2)[1]
+              L=lua.luaL_newstate()
+              try: assert lua.luaL_loadbufferx(L,chunk,len(chunk),b'menu',None)==0
+              finally:lua.lua_close(L)
+          print('V99_NATIVE_DAMAGE_SOURCE_PASS: 72 variants, modes, idempotence, full Lua and byte-exact rollback')
+          PY
