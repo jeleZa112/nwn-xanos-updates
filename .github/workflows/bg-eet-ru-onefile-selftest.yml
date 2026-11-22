@@ -555,3 +555,18 @@ jobs:
                   assert entry['status']=='V103_SOURCE_CAPABILITIES_INCOMPLETE_HOLD'
           print('V103_STATIC_AUDIT_PASS: no engine writes, preservation, idempotence, source-loss HOLD')
           PY
+
+      - name: V104 EEex attack context signatures READ ONLY with optional addon absent
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
+          ns={'__name__':'v104_ci','__file__':str(p)}
+          exec(compile(p.read_text('utf-8').split('\n',1)[1],str(p),'exec'),ns)
+          assert ns['v104_selftest']()
+          assert ns['V104_ENTRY']=='50_V104_EEEX_ATTACK_CONTEXT_EVIDENCE.json'
+          assert ns['SELF_VERSION']==104
+          assert ns['V104_ANCHORS']['EEex_scripts/EEex_Sprite.lua']['block_hit_callback'].endswith('(attackingSprite, targetSprite, weapon, weaponAbility)')
+          print('V104_READONLY_SIGNATURE_TEST_PASS: absent optional B3 is not blocking, exact callbacks, ZIP rollback-safe, no game writes')
+          PY
