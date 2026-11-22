@@ -39,6 +39,10 @@ jobs:
           [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $script).Path,[ref]$tokens,[ref]$errors)|Out-Null
           if($errors.Count -ne 0){throw ('BGXAI_160_PS_AST_FAILED: '+(($errors|ForEach-Object {$_.Message}) -join '; '))}
           Write-Host 'BGXAI_160_WINDOWS_POWERSHELL_AST_PASS'
+          $b=[IO.File]::ReadAllBytes((Resolve-Path $script).Path)
+          $h=([BitConverter]::ToString([Security.Cryptography.SHA256]::HashData($b))).Replace('-','').ToLowerInvariant()
+          Write-Host ('BGXAI_160_PINNED_SCRIPT_BYTES='+$b.Length)
+          Write-Host ('BGXAI_160_PINNED_SCRIPT_SHA256='+$h)
       - name: Offline EEex V2 scanner regression (never touches game)
         shell: pwsh
         run: |
