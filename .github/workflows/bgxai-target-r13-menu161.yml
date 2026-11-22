@@ -1,0 +1,60 @@
+name: BGXAI R13 passive target observer - menu161 Windows native CI
+
+on:
+  push:
+    branches: [bgxai-target-r13-guarded-candidate]
+    paths:
+      - 'BGXAI/BUILD/R13_TARGET_DEFENSE_SOURCE_ONLY/**'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_R13_*'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BGXTDEF13.lua'
+      - '.github/workflows/bgxai-target-r13-menu161.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  win_source_only:
+    runs-on: windows-latest
+    steps:
+      - name: Disable CRLF drift in pinned source
+        shell: pwsh
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Exact original 1-160 handlers, menu161 and manifest checksum
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python BGXAI/BUILD/R13_TARGET_DEFENSE_SOURCE_ONLY/test_menu161.py
+          if($LASTEXITCODE -ne 0){throw 'BGXAI_R13_UPDATER_INVARIANTS_FAILED'}
+      - name: 26 guarded installer offline tests (no game access)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python BGXAI/BUILD/R13_TARGET_DEFENSE_SOURCE_ONLY/test_r13_guarded.py
+          if($LASTEXITCODE -ne 0){throw 'BGXAI_R13_GUARDED_TESTS_FAILED'}
+      - name: Native Windows PowerShell 5.1 parse and SHA256
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $file='BGXAI/BUILD/R13_TARGET_DEFENSE_SOURCE_ONLY/BGXAI_SYNC_161_CANDIDATE.ps1'
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file).Path,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count){throw ('BGXAI_R13_PS51_AST_ERROR '+(($errors|ForEach-Object {$_.Message}) -join '; '))}
+          $bytes=[IO.File]::ReadAllBytes((Resolve-Path $file).Path)
+          $sha=([BitConverter]::ToString([Security.Cryptography.SHA256]::Create().ComputeHash($bytes))).Replace('-','').ToLowerInvariant()
+          if($bytes.Length -gt 80000){throw 'BGXAI_R13_SCRIPT_EXCEEDS_PIN_LIMIT'}
+          Write-Host ('BGXAI_R13_SCRIPT_SIZE='+$bytes.Length)
+          Write-Host ('BGXAI_R13_SCRIPT_SHA256='+$sha)
+          Write-Host 'BGXAI_R13_WINPS51_AST_PASS'
+      - name: PowerShell 7 parser
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path 'BGXAI/BUILD/R13_TARGET_DEFENSE_SOURCE_ONLY/BGXAI_SYNC_161_CANDIDATE.ps1').Path,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count){throw 'BGXAI_R13_PS7_AST_ERROR'}
+          Write-Host 'BGXAI_R13_POWERSHELL7_AST_PASS'
