@@ -15,6 +15,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install native Lua
         run: sudo apt-get update -qq && sudo apt-get install -y -qq liblua5.4-0
+      - name: Full onefile selftest including V105 exact SHA, reversible Main patch and single ZIP
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
       - name: Verify Lua observer V2 semantics, no state mutation and bounded external export
         shell: bash
         run: |
