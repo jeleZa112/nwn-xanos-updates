@@ -18,7 +18,7 @@ import zipfile
 from collections import Counter
 from pathlib import Path
 
-MOVIE_CORE_VERSION = '1.6.0'
+MOVIE_CORE_VERSION = '1.7.0'
 SCRIPT_JSON_SHA256 = '87d18d68ce2be6236e2bdb468dc0275c7f5f257714643b5cf9013c48f87a9ee4'
 MOVIE_SEGMENTS = {'INTRO15F': 16, 'SODCIN01': 18, 'IWINTRO': 29}
 PILOT_KNOWN = {'INTRO15F_G01','SODCIN01_G02','IWINTRO_G06'}
@@ -792,13 +792,103 @@ def _produce_movie_ru_drafts(root=None,run_worker=True):
 # END: SHA-guarded video Russian candidate production.
 
 
+# === MOVIE_RU10_HUMAN_DECISIONS_20261122_BEGIN (no game writes) ===
+RU10_REVIEW_CSV_SHA256 = '66ed31310f77d2079b4232ed2e631298990e39b761f23a0ef0642dd584d6698b'
+RU10_HUMAN_DECISIONS = {'SODCIN01_G08': ('UNREVIEWED', '4087c728c760c6a348889151b01681827cb804594a3338813298785b458d6c15', '251508dd215328d7b17fd93e6c3170b5622f62adb50c7f04b4ae87031d1fe445'), 'SODCIN01_G10': ('REWORK_STRESS', '926806e8da3473ca26235584b82db09f1e15f3cdebe1d20cdecf643693e003c9', '4a64b3faa2b87c6648b368f8ec98058e8c3cd96f29be19fea6295094965a10e8'), 'IWINTRO_G02': ('UNREVIEWED', '45e2e9c1f032ce9fa56f237c9b3d18a53947891070bd7b556365d5613ea1385d', '4a80c69e43b738c4787c732306f6002a46d76ad9412d6fb897807a1b825ce72d'), 'IWINTRO_G03': ('REWORK_STRESS', 'b1da0688abe4e2fe18451b290be3cc55a0c83c4a6c8b0c0864a6aefb862aa4d2', '11e72fb316d5ef87d6059cd27e9aa0b127b4cca4a93135a2cad14ab0ed8f0e74'), 'IWINTRO_G07': ('REWORK_STRESS', 'ec78e5ff20f8cfa0ab3ddace754298a71f792a95e38d40a519a242ed7c567319', 'b30ca41b2e5f2d6949bfd037c895d390b36e23918bd0a12e7305b6a7e8751402'), 'IWINTRO_G08': ('REWORK_STRESS', '391623e82023c250596d5abd5ccca5575df832bddf9b88a1da5a49976ebeb74d', '1a982712abc4450b90343ba1dabe906f52291f58fd8b36e35f9453637f864143'), 'IWINTRO_G11': ('REWORK_STRESS', '7138ce01ef99cd73d56e1681d3e9c33900cc9a33deaf3e03c6c39f3a62b741fd', 'd7d55657bdb647ee80a9763d5a8de1aadb905aecde801d101f597806cd35670d'), 'IWINTRO_G13': ('UNREVIEWED', 'c37256cff68fc864f8b2c1473045f1448851feeb3996afd35d00f8cdba5ce4ed', '278f303e533a8aaad2447bd249a83efa39ad9ca08a4617cd56ccbb99000e72c5'), 'IWINTRO_G16': ('REWORK_STRESS', '239bfa50fa8735c7e3747525dfc2e1dae61a0436ca79977fad5352bc7507e6a3', '1fec82703c4fd1daf86170bac36d5fd17fdf60cd7ee7b78534a6dc1d0ddf5056'), 'IWINTRO_G19': ('REWORK_STRESS', '4fb972c1b9b416ba2984e801972d6f0e2c43c74932cc4077f23127d8d9f3c316', 'fe230453427ed45048263d41577ca92c5977147f54dec52d375f70d4c6a384cb')}
+RU10_DECISION_PREFIX = 'VIDEO/RU10_HUMAN_DECISIONS/'
+RU10_ALLOWED = {'REWORK_STRESS', 'UNREVIEWED'}
+
+
+def _merge_ru10_human_decisions(root=None):
+    """Persist exact user rejection/hold states without modifying any voice WAV.
+
+    The user has not marked the incorrect syllable. Therefore no stress guess or
+    retake is authorized. The values are a frozen source candidate SHA, not a
+    blanket rejection of all future attempts for the Sound ID.
+    """
+    work = Path(root) if root else Path(os.environ.get('BG_VOICE_FULL_PRODUCTION_ROOT') or
+                        Path.home()/'Documents'/'BG_VOICE_RU'/'FULL_PRODUCTION')
+    main=work/'SEND_TO_CHATGPT_BG_VOICE_RU.zip'
+    if not main.is_file():return 'HOLD_NO_COMMON_REPORT'
+    with zipfile.ZipFile(main) as z:
+        if z.testzip() is not None:raise ValueError('RU10_REPORT_CRC_HOLD')
+        names=z.namelist()
+        if len(names)!=len(set(names)):raise ValueError('RU10_DUPLICATE_REPORT_ENTRIES_HOLD')
+        task_path='VIDEO/RU_CANDIDATES_10/TASKS.json'
+        if task_path not in names:raise ValueError('RU10_SOURCE_TASKS_MISSING_HOLD')
+        tasks=json.loads(z.read(task_path))
+        if len(tasks)!=10 or len({t['id'] for t in tasks})!=10:
+            raise ValueError('RU10_TASK_REGISTRY_NOT_10_HOLD')
+        by_id={t['id']:t for t in tasks}
+        if set(by_id)!=set(RU10_HUMAN_DECISIONS):
+            raise ValueError('RU10_SOUND_IDS_CHANGED_HOLD')
+        rows=[]
+        for sid,(decision,expected_ru,expected_en) in sorted(RU10_HUMAN_DECISIONS.items()):
+            if decision not in RU10_ALLOWED:raise ValueError('RU10_UNKNOWN_DECISION_HOLD')
+            task=by_id[sid]
+            wavpath='VIDEO/RU_CANDIDATES_10/WAV/'+sid+'.wav'
+            enpath='VIDEO/EN_REFERENCE_19/'+sid+'_EN_DNR_ASR_WINDOW.wav'
+            if wavpath not in names or enpath not in names:
+                raise ValueError('RU10_SOURCE_WAV_MISSING_'+sid)
+            if (hashlib.sha256(z.read(wavpath)).hexdigest()!=expected_ru or
+                hashlib.sha256(z.read(enpath)).hexdigest()!=expected_en or
+                task['candidate_sha256']!=expected_ru or
+                task['source_english_sha256']!=expected_en):
+                raise ValueError('RU10_SOURCE_SHA_MISMATCH_'+sid)
+            rows.append({
+                 'sound_id':sid, 'human_decision':decision,
+                 'effective_status':('REWORK_STRESS_TARGET_UNKNOWN_HOLD'
+                                     if decision=='REWORK_STRESS' else 'AWAITING_HUMAN_REVIEW'),
+                 'source_ru_candidate_sha256':expected_ru,
+                 'source_english_cue_sha256':expected_en,
+                 'russian_draft_not_approved':task['tts_text_NOT_APPROVED'],
+                 'problem_word': 'NOT_SPECIFIED_BY_USER' if decision=='REWORK_STRESS' else '',
+                 'original_game_and_selected_audio_unchanged':'YES',
+                 'auto_approved':'NO', 'game_install':'NO'})
+        # Prevent superseding later user feedback silently if any future runner writes
+        # to this exact immutable decisions area.
+        current=RU10_DECISION_PREFIX+'INPUT_FROZEN_SHA.json'
+        prior=json.loads(z.read(current)) if current in names else None
+        if prior and prior.get('user_input_sha256')!=RU10_REVIEW_CSV_SHA256:
+            raise ValueError('RU10_HUMAN_DECISION_VERSION_CONFLICT_HOLD')
+    fields=list(rows[0])
+    decisions_frozen={'schema':'BGVOICE_MOVIE_RU10_REVIEW_20261122',
+       'user_input_sha256':RU10_REVIEW_CSV_SHA256,
+       'source_report':'SEND_TO_CHATGPT_BG_VOICE_RU(9).zip',
+       'count':10,'rework_stress':7,'unreviewed':3,'human_approved':0,
+       'effect':'FROZEN_CANDIDATE_SPECIFIC_NOT_GLOBAL_SOUND_ID',
+       'no_automatic_retake':True,'game_write':False}
+    report={'schema':'BGVOICE_MOVIE_RU10_HUMAN_GATE_1_7',
+       'source_user_csv_sha256':RU10_REVIEW_CSV_SHA256,
+       'total':10,'rework_stress':7,'unreviewed':3,'human_approved':0,
+       'ready_to_game':0,
+       'new_russian_wave_generation':False,'game_write':False,
+       'approved_movie_wavs_unchanged':True,
+       'remaining_unvoiced_source_qa_hold_groups':9,
+       'next':'Identify precise word/stress in 7 rejected candidates, correct in phonetic text with original EN and glossary; do not blindly regenerate; 3 unreviewed remain unapproved; finish 9 source QA holds'}
+    replacements={
+       RU10_DECISION_PREFIX+'INPUT_FROZEN_SHA.json':_json(decisions_frozen),
+       RU10_DECISION_PREFIX+'STATUS.json':_json(report),
+       RU10_DECISION_PREFIX+'ALL_10.csv':_csv(rows,fields),
+       RU10_DECISION_PREFIX+'STRESS_REWORK_7.csv':_csv([r for r in rows if r['human_decision']=='REWORK_STRESS'],fields),
+       RU10_DECISION_PREFIX+'UNREVIEWED_3.csv':_csv([r for r in rows if r['human_decision']=='UNREVIEWED'],fields)}
+    with zipfile.ZipFile(main) as z:
+        if all(k in z.namelist() and z.read(k)==v for k,v in replacements.items()):
+            return 'RU10_HUMAN_FEEDBACK_CURRENT_7_REWORK_3_UNREVIEWED'
+    return _merge_main_report(replacements,work)+'_RU10_HUMAN_FEEDBACK_LOCKED'
+
+# === MOVIE_RU10_HUMAN_DECISIONS_20261122_END ===
+
+
+
 def selftest():
-    assert MOVIE_CORE_VERSION=='1.6.0' and sum(MOVIE_SEGMENTS.values())==63
+    assert MOVIE_CORE_VERSION=='1.7.0' and sum(MOVIE_SEGMENTS.values())==63
     assert len(PILOT_KNOWN)==3 and _csv([{'id':'A'}],['id']).endswith(b'A\r\n')
     assert set(PILOT_SHA256)==PILOT_KNOWN and all(len(sha)==64 for sha in PILOT_SHA256.values())
     assert len(PILOT_SHA256)==3
     assert len(MOVIE_RU_DRAFT10_IDS)==10 and len(set(MOVIE_RU_DRAFT10_IDS))==10
     assert 'CERND46' not in MOVIE_RU_DRAFT10_IDS
+    assert len(RU10_HUMAN_DECISIONS)==10 and sum(x[0]=='REWORK_STRESS' for x in RU10_HUMAN_DECISIONS.values())==7
     compile(MOVIE_RU_INLINE_WORKER,'<movie_worker>','exec')
     print('MOVIE_CHANNEL_SELFTEST_PASS')
     return 0
@@ -866,6 +956,10 @@ def run(host):
         print('MOVIE_RU_CANDIDATE_PRODUCTION:',_produce_movie_ru_drafts(),flush=True)
     except Exception as exc:
         print('MOVIE_RU_PRODUCTION_HOLD:',type(exc).__name__,str(exc)[:200],flush=True)
+    try:
+        print('MOVIE_RU10_HUMAN_DECISIONS:',_merge_ru10_human_decisions(),flush=True)
+    except Exception as exc:
+        print('MOVIE_RU10_HUMAN_DECISIONS_HOLD:',type(exc).__name__,str(exc)[:180],flush=True)
     print('MOVIE_CHANNEL_REPORT:',report,flush=True)
     return 0
 
