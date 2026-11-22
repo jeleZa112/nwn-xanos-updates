@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 89,
-  "sha256": "0d9927e216aa789bc3cf9d63dcb5d2a9d919a168eb1fa685b72ad1ee7c350a5d",
-  "mode": "READ_ONLY_DEFAULT_OPTIONAL_EXPLICIT_UI_PILOT",
+  "version": 90,
+  "sha256": "4b5055882501e86467c2b45d9dec148bb8a7bb0026a9c13cc309d250b3d7a93d",
+  "mode": "READ_ONLY_DEFAULT_OPTIONAL_V88_TO_V90_UI_REHOME",
   "game_writes_allowed": false,
-  "note": "v89 fixes v88 V88_MIXED_LINE_ENDINGS_HOLD from uploaded actual user report by operating on original UI.MENU bytes and preserving mixed CRLF/LF verbatim. Only three guarded target injections; exact byte-for-byte reverse proof before any optional install. Synthetic LF, CRLF, two mixed-EOL fixtures pass; GitHub Actions isolated full selftest run 44909429360 PASS. Existing default updater remains READ ONLY and writes only the existing 36_V88_COMBAT_JOURNAL_UI_PILOT.json in canonical ZIP. UI game modifications require the same --install-v88-journal-ui flag and separately typed consent with closed game/loader, verified backup, SHA checks and rollback. Working installed v85 Lua and 44 hooks unchanged. Actual Windows preflight and runtime gameplay still not verified."
+  "note": "v90 moves the already-installed v88 journal toggle outside combatLog list and messagesHandleY overlays and follows dragMessagesY, preserving all original combat-log data and v85 Lua. Default run READ ONLY, caches status to existing 37_V90_JOURNAL_BUTTON_REPOSITION.json in single ZIP. --upgrade-v90-journal-ui requires exact typed UPGRADE_BG_EET_RU_V90_JOURNAL_UI, closed game and loader, pre-existing v88 SHA and original backup, exact candidate cross-check, external v88-version backup, atomic UI.MENU-only swap. --rollback-v90-journal-ui requires ROLLBACK_BG_EET_RU_V90_JOURNAL_UI and restores pre-v88 ORIGINAL UI.MENU with v88 state update. Synthetic LF CRLF mixed EOL tests and full one-file source selftest GitHub Actions 44986043999 PASS. Live clickable behavior UNPROVEN until player screenshot/test."
 }
