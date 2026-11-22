@@ -1,0 +1,67 @@
+{
+  "schema": "BG_VOICE_RU_SHARED_PAYLOAD_FEED_V1",
+  "project": "BG_VOICE_RU",
+  "updated_utc": "2026-11-22",
+  "owner_scope": "voice_payloads_only",
+  "updater_owner": "main_voice_video_chat",
+  "updater_name": "BG_VOICE_UPDATE.cmd",
+  "latest_payload_version": 71,
+  "state": {
+    "version": 71,
+    "library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_PROJECT_STATE.md",
+    "verification": "Library state version 71"
+  },
+  "package_transport": "chatgpt_shared_library",
+  "windows_auto_download_enabled": false,
+  "note": "Public GitHub feed indexes packages stored in shared ChatGPT Library. ZIP bytes are not hosted by this GitHub branch. Windows updater must not attempt to download the ZIPs from nonexistent GitHub asset URLs.",
+  "packages": [
+    {
+      "version": 69,
+      "kind": "acting_fx_experiment",
+      "name": "BG_VOICE_RU_V69_SEPARATE_PAYLOAD_20261122.zip",
+      "library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_V69_SEPARATE_PAYLOAD_20261122.zip",
+      "bytes": 5216261,
+      "sha256": "3787c73602b8d459e59c7e1492680059a3eb5b13260860b273eb597c540b3ff8",
+      "status": "library_ready_not_installed",
+      "for_game_install": false
+    },
+    {
+      "version": 70,
+      "kind": "bulk_selection_worker",
+      "name": "BG_VOICE_RU_V70_BULK_SELECTION_PAYLOAD_20261122.zip",
+      "library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_V70_BULK_SELECTION_PAYLOAD_20261122.zip",
+      "bytes": 4117028,
+      "sha256": "3b0fee22a12eef8aaebb5450b8c482f6d6e575a85b60185c214f41c34288de94",
+      "status": "library_ready_host_integration_unverified",
+      "candidates": 420,
+      "total_lines": 7206,
+      "for_game_install": false
+    },
+    {
+      "version": 71,
+      "kind": "shtorm_targeted_batch",
+      "name": "BG_VOICE_RU_V71_CASE_STRESS_BATCH_20261122.zip",
+      "library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_V71_CASE_STRESS_BATCH_20261122.zip",
+      "bytes": 69512,
+      "sha256": "0ff464df423f425998f07943e22b99d1b65d894f95d38c6c5fbab8b3b8cae7da",
+      "status": "library_ready_host_integration_unverified",
+      "jobs": 33,
+      "for_game_install": false
+    }
+  ],
+  "human_locks": {
+    "OH85856": "V65_APPROVED_DO_NOT_REPLACE",
+    "OH80404": "V60_APPROVED_DO_NOT_REPLACE",
+    "OH89888": "BOTH_BAD_HOLD_ACTING_FX"
+  },
+  "policies": [
+    "ONE_UPDATER_ONLY",
+    "NO_UNAPPROVED_GAME_INSTALL",
+    "SHA256_COMPARE_BEFORE_IMPORT",
+    "PRESERVE_ALL_HUMAN_LOCKS",
+    "READ_ONLY_STAGING_FIRST",
+    "ERROR_QUEUE_AND_RESUME",
+    "DO_NOT_RESTART_FINISHED_QA",
+    "VOICE_UPDATER_OWNER_MUST_APPROVE_INTEGRATION"
+  ]
+}
