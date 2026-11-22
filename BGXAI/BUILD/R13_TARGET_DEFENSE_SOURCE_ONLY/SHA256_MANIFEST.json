@@ -1,22 +1,50 @@
 {
-  "schema": "BGXAI_R13_SOURCE_ONLY_MANIFEST_V1",
+  "schema": "BGXAI_R13_SOURCE_ONLY_MANIFEST_V2",
   "status": "SOURCE_ONLY_NOT_INSTALLED",
   "files": {
     "BGXAI_R13_CHECKPOINT_20261122_RU.md": {
       "sha256": "33465ae31d2fbe471e99c32b9e8dd9756b92566b00a754f7eb4a417d490e2b42",
       "size": 3352
     },
+    "BGXAI_R13_GUARDED.py": {
+      "sha256": "10799a110f435a48c37fbd6c257a53d21b4d7897581ac7796f4599b624712e05",
+      "size": 12189
+    },
+    "BGXAI_R13_MANIFEST_V1.json": {
+      "sha256": "56a2edd8f4b2926ba666ce9d7abcb44caf6489905f1ed06413aa33faa9b61374",
+      "size": 590
+    },
+    "BGXAI_R13_RELEASE_161_CHECKPOINT_20261122_RU.md": {
+      "sha256": "22f2e2a9cdc5ae3aeca6f3ffdb956d149ab6d3de8b74398babe9645bc92841be",
+      "size": 3270
+    },
     "BGXAI_R13_TARGET_DEFENSE_OBSERVER.lua": {
       "sha256": "0002dfb06b4eb84ae514f464f21cd4a5219d4f7e31d8e0e6295265b71c306bb8",
       "size": 6768
     },
+    "M_BGXTDEF13.lua": {
+      "sha256": "eb764346f0c523790658320938a2739d873dbbdb59a93479e4f47e1f0edac2f3",
+      "size": 12217
+    },
     "README_RU.md": {
-      "sha256": "b98c2e248a45bc0c5e4bbb42e5e4a4b304319f1f2790616ebd5d979e1e30914e",
-      "size": 3704
+      "sha256": "102e4e66674f66932f0f431923de145ee81bb8bc322bde4f51607e4af4122f4f",
+      "size": 5684
+    },
+    "test_menu161.py": {
+      "sha256": "6c85d809e04478ee1c5212f15227d52ac17faf4ac01c821295a902e46c9417bc",
+      "size": 4235
     },
     "test_r13.lua": {
       "sha256": "d96010c0d272ac646fd39fb10890da3a5e2f080346c429eac5362e8b95ab6b45",
       "size": 7912
+    },
+    "test_r13_guarded.py": {
+      "sha256": "1c5e7618084a581c12ea9eb686386f1fe84dd5d8da35694b227e8f5ef771e110",
+      "size": 7658
+    },
+    "test_r13_runtime.lua": {
+      "sha256": "61134c3dbb65de47ff400709b78e2b889e2745580ab8a22e9127a977efe70e0c",
+      "size": 4078
     }
   }
 }

@@ -11,9 +11,9 @@ $pinnedFile=Join-Path $cacheDir 'head.txt'
 if(!(Test-Path -LiteralPath $pinnedFile -PathType Leaf)){Write-Host 'STOP: pinned GitHub commit missing';exit 2}
 $commitId=[IO.File]::ReadAllText($pinnedFile).Trim()
 if($commitId -notmatch '^[a-fA-F0-9]{40}$'){Write-Host 'STOP: invalid pinned GitHub commit';exit 2}
-$remoteRoot='BGXAI/fox_new/'
+$xrr='BGXAI/fox_new/'
 $b41=@{
-id='041';version='0.3.11';manifest=$remoteRoot+'release_041/manifest.json';prefix=$remoteRoot+'release_041/';
+id='041';version='0.3.11';manifest=$xrr+'release_041/manifest.json';prefix=$xrr+'release_041/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_041';installer='BGXAI41_INSTALL.py';
 names=@('BGXAI41_INSTALL.py','README_RU.md','SOURCE_MANIFEST.json','build_assets.py',
 'setup-BGX41.tp2','BGX41/icon.tra','BGX41/toggle_icon.baf',
@@ -22,129 +22,129 @@ names=@('BGXAI41_INSTALL.py','README_RU.md','SOURCE_MANIFEST.json','build_assets
 'tests/test_runtime_semantics_041.py','tests/test_source_041.py')
 }
 $b40=@{
-id='040';version='0.3.10';manifest=$remoteRoot+'release_040/manifest.json';prefix=$remoteRoot+'release_040/';
+id='040';version='0.3.10';manifest=$xrr+'release_040/manifest.json';prefix=$xrr+'release_040/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_040';installer='BGXAI40_INSTALL.py';
 names=@('BGXAI40_INSTALL.py','setup-BGX40.tp2','BGX40/toggle_feedback.baf','BGX40/lang/ru_ru/feedback.tra','SOURCE_MANIFEST.json','README_RU.txt','tests/test_feedback_040.py')
 }
 $release039=@{
-id='039';version='0.3.9';manifest=$remoteRoot+'release_039/manifest.json';prefix=$remoteRoot+'release_039/';
+id='039';version='0.3.9';manifest=$xrr+'release_039/manifest.json';prefix=$xrr+'release_039/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_039';installer='BGXAI39_INSTALL.py';
 names=@('BGXAI39_INSTALL.py','setup-BGX39.tp2','BGX39/team_guard_fallback.baf','SOURCE_MANIFEST.json','README_RU.txt','tests/test_team_guard_039.py')
 }
 $b42=@{
-id='042B';version='0.3.12-042B';manifest=$remoteRoot+'release_042b/manifest.json';prefix=$remoteRoot+'release_042b/';
+id='042B';version='0.3.12-042B';manifest=$xrr+'release_042b/manifest.json';prefix=$xrr+'release_042b/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_042b';installer='BGXAI42_INSTALL.py';
 names=@('BGXAI42_INSTALL.py','build_042b_preview.py','guard_source_042a.py',
 'setup-BGX42.tp2','SOURCE_MANIFEST.json','README_RU.md',
 'BGX42/tests/test_installer_042b.py','BGX42/tests/test_recovery_gate.py')
 }
-$release043p=@{
-id='043P';version='0.3.14-043-PROBE';manifest=$remoteRoot+'release_043p/manifest.json';prefix=$remoteRoot+'release_043p/';
+$x43=@{
+id='043P';version='0.3.14-043-PROBE';manifest=$xrr+'release_043p/manifest.json';prefix=$xrr+'release_043p/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_043p';installer='BGXAI43_PROBE_INSTALL.py';
 names=@('BGXAI43_PROBE_INSTALL.py','BGX43/setup-BGX43.tp2','BGX43/M_BGX43Probe.lua',
 'BGX43/tests/test_installer_043.py','README_RU.md','eeex_bridge_043.py',
 'intercept_policy.py','test_eeex_bridge_043.py','SOURCE_MANIFEST.json')
 }
 $release044=@{
-id='044';version='0.3.15-044-DIAG';manifest=$remoteRoot+'release_044/manifest.json';prefix=$remoteRoot+'release_044/';
+id='044';version='0.3.15-044-DIAG';manifest=$xrr+'release_044/manifest.json';prefix=$xrr+'release_044/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_044';installer='BGXAI44_INSTALL.py';
 names=@('BGXAI44_INSTALL.py','BGX44/setup-BGX44.tp2','BGX44/M_BGX44Diag.lua',
 'README_RU.md','BGX44/tests/test_installer_044.py',
 'BGX44/tests/test_lua_044.py','SOURCE_MANIFEST.json')
 }
 $release045=@{
-id='045';version='0.3.16b-045-RESREF-FIX';manifest=$remoteRoot+'release_045b/manifest.json';prefix=$remoteRoot+'release_045b/';
+id='045';version='0.3.16b-045-RESREF-FIX';manifest=$xrr+'release_045b/manifest.json';prefix=$xrr+'release_045b/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_045';installer='BGXAI45_INSTALL.py';
 names=@('BGXAI45_INSTALL.py','BGX45/setup-BGX45.tp2','BGX45/M_BX43.lua',
 'BGX45/M_BX44.lua','README_RU.md','BGX45/tests/test_installer_045.py',
 'BGX45/tests/test_lua_045.py','SOURCE_MANIFEST.json')
 }
 $release046=@{
-id='046';version='0.3.17-046-ATTACK-FILTER';manifest=$remoteRoot+'release_046/manifest.json';prefix=$remoteRoot+'release_046/';
+id='046';version='0.3.17-046-ATTACK-FILTER';manifest=$xrr+'release_046/manifest.json';prefix=$xrr+'release_046/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_046';installer='BGXAI46_INSTALL.py';
 names=@('BGXAI46_INSTALL.py','BGX46/setup-BGX46.tp2','BGX46/M_BX43.lua',
 'BGX46/tests/test_installer_046.py','BGX46/tests/test_lua_046.py',
 'README_RU.md','SOURCE_MANIFEST.json')
 }
 $release047=@{
-id='047';version='0.3.18-047-RESOLVED-TARGET';manifest=$remoteRoot+'release_047/manifest.json';prefix=$remoteRoot+'release_047/';
+id='047';version='0.3.18-047-RESOLVED-TARGET';manifest=$xrr+'release_047/manifest.json';prefix=$xrr+'release_047/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_047';installer='BGXAI47_INSTALL.py';
 names=@('BGXAI47_INSTALL.py','BGX47/setup-BGX47.tp2','BGX47/M_BX43.lua',
 'BGX47/tests/test_installer_047.py','BGX47/tests/test_lua_047.py',
 'README_RU.md','SOURCE_MANIFEST.json')
 }
 $release048=@{
-id='048';version='0.3.19-048-CONFIRMED-HIT';manifest=$remoteRoot+'release_048/manifest.json';prefix=$remoteRoot+'release_048/';
+id='048';version='0.3.19-048-CONFIRMED-HIT';manifest=$xrr+'release_048/manifest.json';prefix=$xrr+'release_048/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_048';installer='BGXAI48_INSTALL.py';
 names=@('BGXAI48_INSTALL.py','BGX48/setup-BGX48.tp2','BGX48/M_BX43.lua',
 'BGX48/tests/test_installer_048.py','BGX48/tests/test_lua_048.py',
 'README_RU.md','SOURCE_MANIFEST.json')
 }
 $release049=@{
-id='049';version='0.3.20-049-GUARD-ADVISORY';manifest=$remoteRoot+'release_049/manifest.json';prefix=$remoteRoot+'release_049/';
+id='049';version='0.3.20-049-GUARD-ADVISORY';manifest=$xrr+'release_049/manifest.json';prefix=$xrr+'release_049/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_049';installer='BGXAI49_INSTALL.py';
 names=@('BGXAI49_INSTALL.py','BGX49/setup-BGX49.tp2','BGX49/M_BX43.lua',
 'BGX49/tests/test_installer_049.py','BGX49/tests/test_lua_049.py',
 'README_RU.md','SOURCE_MANIFEST.json')
 }
 $release054=@{
-id='054';version='0.3.21-054-WEIDU-READONLY';manifest=$remoteRoot+'release_054/manifest.json';prefix=$remoteRoot+'release_054/';
+id='054';version='0.3.21-054-WEIDU-READONLY';manifest=$xrr+'release_054/manifest.json';prefix=$xrr+'release_054/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_054';installer='compile_guard_054.py';
 names=@('compile_guard_054.py','verify_053_baseline.py','BGX52_guard_receiver_PREVIEW.baf',
 'test_compile_054.py','README_RU.md','SOURCE_MANIFEST.json')
 }
-$release056=@{
+$x56=@{
 id='056';version='0.3.22-056-ACTIVE-GUARD-OPTIN';
-manifest=$remoteRoot+'experimental_056_active_guard/manifest.json';prefix=$remoteRoot+'experimental_056_active_guard/';
+manifest=$xrr+'experimental_056_active_guard/manifest.json';prefix=$xrr+'experimental_056_active_guard/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_056';installer='BGXAI56_INSTALL.py';
 names=@('BGX56/M_BX43.lua','BGX56/BGX56_RECEIVER.baf','BGX56/setup-BGX56.tp2','BGXAI56_BUILDER.py','BGXAI56_INSTALL.py','README_RU.md','tests/test_056.py','tests/test_lua_056.py','ci_weidu_056.py','ids/trigger.ids','ids/action.ids','ids/object.ids','ids/modal.ids','SOURCE_MANIFEST.json')
 }
 $b60=@{
 id='060';version='0.3.26-060-READONLY-COMPILE';
-manifest=$remoteRoot+'experimental_060_direct_response_source_only/manifest.json';
-prefix=$remoteRoot+'experimental_060_direct_response_source_only/';
+manifest=$xrr+'experimental_060_direct_response_source_only/manifest.json';
+prefix=$xrr+'experimental_060_direct_response_source_only/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_060';installer='BGXAI60_INSTALL.py';
 names=@('BGX60_RECEIVER.baf','generate_baf.py','BGXAI60_BUILDER.py','BGXAI60_INSTALL.py','test_060.py','test_060_install.py','README_RU.md')
 }
-$release061=@{
+$x61=@{
 id='061';version='0.3.27-061-RESCUE-APPROACH';
-manifest=$remoteRoot+'experimental_061_rescue_approach_source_only/manifest.json';
-prefix=$remoteRoot+'experimental_061_rescue_approach_source_only/';
+manifest=$xrr+'experimental_061_rescue_approach_source_only/manifest.json';
+prefix=$xrr+'experimental_061_rescue_approach_source_only/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_061';installer='BGXAI61_INSTALL.py';
 names=@('BGX61_RECEIVER.baf','generate_baf.py','BGXAI61_BUILDER.py','BGXAI61_INSTALL.py','test_061.py','test_061_install.py','README_RU.md')
 }
 $release064=@{
 id='064';version='0.3.29-064-061-SAME-AREA-GUARD-SOURCE';
-manifest=$remoteRoot+'experimental_064_same_area_061_source_only/manifest.json';
-prefix=$remoteRoot+'experimental_064_same_area_061_source_only/';
+manifest=$xrr+'experimental_064_same_area_061_source_only/manifest.json';
+prefix=$xrr+'experimental_064_same_area_061_source_only/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_064';installer='BGXAI64_PREFLIGHT_READONLY.py';
 names=@('M_BX43_064_CANDIDATE.lua','BGX64_BRIDGE_PREPARE_NATIVE.lua','BGXAI64_PATCH.py','BGXAI64_PREFLIGHT_READONLY.py','README_RU.md','lua64_harness.py','test_064_native.py','test_064_patch.py','test_064_preflight.py','SOURCE_MANIFEST.json')
 }
-$release064g=@{
+$x64=@{
 id='064G';version='0.3.30-064-GUARDED-WEIDU-CANDIDATE';
-manifest=$remoteRoot+'experimental_064_guarded_weidu_source_only/manifest.json';
-prefix=$remoteRoot+'experimental_064_guarded_weidu_source_only/';
+manifest=$xrr+'experimental_064_guarded_weidu_source_only/manifest.json';
+prefix=$xrr+'experimental_064_guarded_weidu_source_only/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_064_guarded';installer='BGXAI64_INSTALL_SOURCE_ONLY.py';
 names=@('M_BX43_064_CANDIDATE.lua','M_BX43_061_BASELINE_READONLY.lua','BGX64_BRIDGE_PREPARE_NATIVE.lua','BGXAI64_PATCH.py','BGXAI64_PREFLIGHT_READONLY.py','BGXAI64_INSTALL_SOURCE_ONLY.py','test_064_install_mock.py','test_064_patch.py','test_064_preflight.py','README_RU.md')
 }
-$release066=@{
+$x66=@{
 id='066';version='0.3.32-066-MULTI-FRONTLINE-GUARDED';
-manifest=$remoteRoot+'experimental_066_multi_guard_guarded/manifest.json';
-prefix=$remoteRoot+'experimental_066_multi_guard_guarded/';
+manifest=$xrr+'experimental_066_multi_guard_guarded/manifest.json';
+prefix=$xrr+'experimental_066_multi_guard_guarded/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_066_guarded';installer='BGXAI66_INSTALL.py';
 names=@('BGX66_TEAM_BRIDGE.lua','M_BX43_064_BASELINE_READONLY.lua','M_BX43_066_CANDIDATE.lua','build_066.py','BGXAI66_INSTALL.py','BGXAI64_INSTALL_SOURCE_ONLY.py','BGXAI64_PATCH.py','BGXAI64_PREFLIGHT_READONLY.py','M_BX43_061_BASELINE_READONLY.lua','M_BX43_064_CANDIDATE.lua','test_066_native.py','test_066_install_mock.py','lua65_harness.py','README_RU.md')
 }
-$release066s=@{
+$x6s=@{
 id='066S';version='0.3.34-066S-CASTER-GUARDED';
-manifest=$remoteRoot+'experimental_066s_guarded_install_candidate/manifest_updater.json';
-prefix=$remoteRoot+'experimental_066s_guarded_install_candidate/';
+manifest=$xrr+'experimental_066s_guarded_install_candidate/manifest_updater.json';
+prefix=$xrr+'experimental_066s_guarded_install_candidate/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_066s_guarded';installer='BGXAI66S_INSTALL.py';
 names=@('BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf','BGX66_CASTER_SUPPORT.lua','BGXAI64_INSTALL_SOURCE_ONLY.py','BGXAI64_PATCH.py','BGXAI64_PREFLIGHT_READONLY.py','BGXAI66S_BCS_PATCH.py','BGXAI66S_INSTALL.py','M_BX43_061_BASELINE_READONLY.lua','M_BX43_064_CANDIDATE.lua','M_BX43_066S_CASTER_CANDIDATE.lua','M_BX43_066_BASELINE_READONLY.lua','M_BX43_066_CANDIDATE.lua','README_RELEASE_RU.md','README_RU.md','build_066.py','build_066s.py','ci_weidu_066s.py','generate_receiver.py','ids/action.ids','ids/modal.ids','ids/object.ids','ids/spell.ids','ids/trigger.ids','lua65_harness.py','native_066_fixture.py','test_066s_caster_native.py','test_066s_installer_mock.py','verify_066s.py','verify_release.py')
 }
-$release067=@{
+$x67=@{
 id='067';version='0.3.35-067-EARLY-GUARD-GUARDED';
-manifest=$remoteRoot+'experimental_067_early_guard_guarded/manifest_updater.json';
-prefix=$remoteRoot+'experimental_067_early_guard_guarded/';
+manifest=$xrr+'experimental_067_early_guard_guarded/manifest_updater.json';
+prefix=$xrr+'experimental_067_early_guard_guarded/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_067_early_guard';installer='BGXAI67_INSTALL.py';
 names=@('BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf','BGX66_CASTER_SUPPORT.lua','BGX67_EARLY_GUARD.baf','BGX67_PREHIT_GUARD.lua','BGXAI64_INSTALL_SOURCE_ONLY.py','BGXAI64_PATCH.py','BGXAI64_PREFLIGHT_READONLY.py','BGXAI66S_BCS_PATCH.py','BGXAI66S_INSTALL.py','BGXAI67_BCS_PATCH.py','BGXAI67_INSTALL.py','M_BX43_064_CANDIDATE.lua','M_BX43_066S_CASTER_CANDIDATE.lua','M_BX43_066_BASELINE_READONLY.lua','M_BX43_066_CANDIDATE.lua','M_BX43_067_EARLY_CANDIDATE.lua','README_RU.md','build_066.py','build_066s.py','build_067.py','ci_weidu_067.py','generate_067_baf.py','generate_receiver.py','ids/action.ids','ids/modal.ids','ids/object.ids','ids/spell.ids','ids/trigger.ids','lua65_harness.py','native_066_fixture.py','test_066s_installer_mock.py','test_067_bcs.py','test_067_install_mock.py','test_067_native.py')
 }
@@ -209,6 +209,7 @@ names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INS
 }
 $wr=@{id='WRO';version='0.3.77-WEAPON-NATIVE-READONLY';manifest=($rg.prefix+'BGXAI_WEAPON_NATIVE_PREFLIGHT_MANIFEST_V1.json');prefix=$rg.prefix;localPath=Join-Path $GameRoot 'BGXAI_DEV\weapon_native_ro';names=@('BGXAI_WEAPON_GAME_PREFLIGHT_RO.py','BGXAI_WEAPON_GAME_PREFLIGHT_V1.baf')}
 $wp=@{id='WP';version='0.3.82-R4-ALLPROF-BUFF-RO';manifest=($rg.prefix+'BGXWP_OBSERVER_MANIFEST_R1.json');prefix=$rg.prefix;localPath=Join-Path $GameRoot 'BGXAI_DEV\weapon_runtime_ro';names=@('BGXWP_OBSERVER_GUARDED.py','M_BGXWP.lua','BGXW2_OBSERVER_GUARDED.py','M_BGXW2.lua','BGXAI_WEAPON_NATIVE_ITM_R3_RO.py','M_BGXW4.lua')}
+$td13=@{id='TD13';version='0.3.84-R13-TARGET-RO';manifest=($rg.prefix+'BGXAI_R13_MANIFEST_V1.json');prefix=$rg.prefix;localPath=Join-Path $GameRoot 'BGXAI_DEV\weapon_target_r13';names=@('BGXAI_R13_GUARDED.py','M_BGXTDEF13.lua')}
 $v2install=Join-Path $rg.localPath 'BGXRANGED_V2_GUARDED_INSTALL.py'
 $ff=Join-Path $rg.localPath 'BGX_FRIENDLY_RETALIATION_GUARDED.py'
 $rr=$rg.localPath
@@ -436,7 +437,7 @@ Write-Host ('060 staged BCS SHA matches installed: '+((HashFile $stage) -ceq $ac
 Write-Host ('Installed BCS SHA256: '+$actualBCS)
 }
 function Test061ReadOnly {
-$spec=$release061
+$spec=$x61
 $list=VerifiedManifest $spec
 foreach($name in $spec.names){
 $dest=Join-Path $spec.localPath $name
@@ -450,10 +451,10 @@ Write-Host 'BGXAI 061 - preflight PASS; installed 060 unchanged.'
 }
 function Run061Guarded([string]$mode) {
 if($mode -cne 'install' -and $mode -cne 'rollback'){throw 'BGXAI061 unknown mode blocked'}
-SyncRelease $release061
-$list=VerifiedManifest $release061
-foreach($name in $release061.names){
-$dest=Join-Path $release061.localPath $name
+SyncRelease $x61
+$list=VerifiedManifest $x61
+foreach($name in $x61.names){
+$dest=Join-Path $x61.localPath $name
 AssertNotReparse $dest
 if((HashFile $dest) -cne $list[$name].sha){throw ('BGXAI061 source SHA mismatch: '+$name)}
 }
@@ -462,12 +463,12 @@ Write-Host 'BGXAI061: guarded BCS+Lua via WeiDU.'
 Write-Host 'Close game/loader; SHA backup required.'
 $confirmation=Read-Host ('Type '+$token+' exactly to authorize or ENTER to cancel')
 if($confirmation -cne $token){Write-Host '061 cancelled.';return}
-& py -3 (Join-Path $release061.localPath 'BGXAI61_INSTALL.py') $mode '--yes' '--confirm' 'BGXAI_061_EXPERIMENTAL'
+& py -3 (Join-Path $x61.localPath 'BGXAI61_INSTALL.py') $mode '--yes' '--confirm' 'BGXAI_061_EXPERIMENTAL'
 if($LASTEXITCODE -ne 0){throw ('BGXAI 061 '+$mode+' STOP code '+$LASTEXITCODE+'. Do not retry blindly.')}
 Write-Host ('BGXAI 061 '+$mode+' completed, inspect status 68.')
 }
 function Verify064GuardedSource {
-$spec=$release064g
+$spec=$x64
 $list=VerifiedManifest $spec
 foreach($name in $spec.names){
 $dest=Join-Path $spec.localPath $name
@@ -476,27 +477,27 @@ if((HashFile $dest) -cne $list[$name].sha){throw ('BGXAI064G source SHA mismatch
 }
 }
 function Test064GuardedReadOnly {
-SyncRelease $release064g
+SyncRelease $x64
 Verify064GuardedSource
 Write-Host '064 guarded preflight (RO).'
-& py -3 (Join-Path $release064g.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') preflight
+& py -3 (Join-Path $x64.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') preflight
 if($LASTEXITCODE -ne 0){throw ('BGXAI064 guarded PRECHECK STOP '+$LASTEXITCODE)}
 Write-Host 'BGXAI064 guarded preflight PASS. Installed 061 remains unchanged.'
 }
 function Status064GuardedReadOnly {
-SyncRelease $release064g
+SyncRelease $x64
 Verify064GuardedSource
-& py -3 (Join-Path $release064g.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') status
+& py -3 (Join-Path $x64.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') status
 if($LASTEXITCODE -ne 0){throw ('BGXAI064 guarded STATUS STOP '+$LASTEXITCODE)}
 }
 function Run064Guarded([string]$mode) {
 if($mode -cne 'install' -and $mode -cne 'rollback'){throw 'BGXAI064 illegal mode'}
-SyncRelease $release064g
+SyncRelease $x64
 Verify064GuardedSource
 if($mode -ceq 'install'){
-& py -3 (Join-Path $release064g.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') preflight
+& py -3 (Join-Path $x64.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') preflight
 }else{
-& py -3 (Join-Path $release064g.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') status
+& py -3 (Join-Path $x64.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') status
 }
 if($LASTEXITCODE -ne 0){throw ('BGXAI064 pre-authorization CHECK FAILED '+$LASTEXITCODE)}
 $token=if($mode -ceq 'install'){'INSTALL_BGXAI_064'}else{'ROLLBACK_BGXAI_064'}
@@ -504,12 +505,12 @@ Write-Host '064: verified backup; Lua changes via WeiDU.'
 Write-Host 'Close game/loader; BCS and EPS unchanged.'
 $confirmation=Read-Host ('Type '+$token+' exactly to authorize or ENTER to cancel')
 if($confirmation -cne $token){Write-Host '064 cancelled; game unchanged.';return}
-& py -3 (Join-Path $release064g.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') $mode '--yes' '--confirm' $token
+& py -3 (Join-Path $x64.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') $mode '--yes' '--confirm' $token
 if($LASTEXITCODE -ne 0){throw ('BGXAI064 '+$mode+' STOP code '+$LASTEXITCODE+'; do NOT retry blindly')}
 Write-Host ('BGXAI064 '+$mode+' completed; check guarded read-only STATUS menu 75.')
 }
 function Verify066Source {
-$spec=$release066
+$spec=$x66
 $checked=VerifiedManifest $spec
 foreach($name in $spec.names){
 $dest=Join-Path $spec.localPath $name
@@ -518,7 +519,7 @@ if((HashFile $dest) -cne $checked[$name].sha){throw ('BGXAI066 source SHA mismat
 }
 }
 function Verify066SGuardedSource {
-$spec=$release066s
+$spec=$x6s
 $items=VerifiedManifest $spec
 foreach($name in $spec.names){
 $file=Join-Path $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
@@ -527,35 +528,35 @@ if((HashFile $file) -cne $items[$name].sha){throw ('BGXAI066S source SHA mismatc
 }
 }
 function Test066SReadOnly {
-SyncRelease $release066s
+SyncRelease $x6s
 Verify066SGuardedSource
 Write-Host '066S native preflight READ ONLY.'
-& py -3 (Join-Path $release066s.localPath 'BGXAI66S_INSTALL.py') preflight
+& py -3 (Join-Path $x6s.localPath 'BGXAI66S_INSTALL.py') preflight
 if($LASTEXITCODE -ne 0){throw ('BGXAI066S REAL EET IDS preflight STOP '+$LASTEXITCODE)}
 Write-Host 'BGXAI066S PRECHECK PASS. Existing 064 remains installed.'
 }
 function Status066SReadOnly {
-SyncRelease $release066s
+SyncRelease $x6s
 Verify066SGuardedSource
-& py -3 (Join-Path $release066s.localPath 'BGXAI66S_INSTALL.py') status
+& py -3 (Join-Path $x6s.localPath 'BGXAI66S_INSTALL.py') status
 if($LASTEXITCODE -ne 0){throw ('BGXAI066S status STOP '+$LASTEXITCODE)}
 }
 function Run066SGuarded([string]$mode) {
 if($mode -cne 'install' -and $mode -cne 'rollback'){throw 'BGXAI066S unsupported mode'}
-SyncRelease $release066s
+SyncRelease $x6s
 Verify066SGuardedSource
 $token=if($mode -ceq 'install'){'INSTALL_BGXAI_066S'}else{'ROLLBACK_BGXAI_066S'}
 Write-Host '066S: pinned scripts, verified backup.'
 Write-Host 'Close game/loader. No auto-retry.'
 $confirmation=Read-Host ('Type '+$token+' exactly to authorize, or ENTER to cancel')
 if($confirmation -cne $token){Write-Host '066S cancelled.';return}
-& py -3 (Join-Path $release066s.localPath 'BGXAI66S_INSTALL.py') $mode '--yes' '--confirm' $token
+& py -3 (Join-Path $x6s.localPath 'BGXAI66S_INSTALL.py') $mode '--yes' '--confirm' $token
 if($LASTEXITCODE -ne 0){throw ('BGXAI066S '+$mode+' STOP '+$LASTEXITCODE+'. DO NOT AUTO-RETRY')}
 Write-Host 'BGXAI066S action completed. Verify via menu 85.'
 }
 
 function Verify067GuardedSource {
-$spec=$release067
+$spec=$x67
 $items=VerifiedManifest $spec
 foreach($name in $spec.names){
 $file=Join-Path $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
@@ -564,29 +565,29 @@ if((HashFile $file) -cne $items[$name].sha){throw ('BGXAI067 source SHA mismatch
 }
 }
 function Test067ReadOnly {
-SyncRelease $release067
+SyncRelease $x67
 Verify067GuardedSource
 Write-Host '067 prehit guard preflight READ ONLY.'
-& py -3 (Join-Path $release067.localPath 'BGXAI67_INSTALL.py') preflight
+& py -3 (Join-Path $x67.localPath 'BGXAI67_INSTALL.py') preflight
 if($LASTEXITCODE -ne 0){throw ('BGXAI067 REAL EET preflight STOP '+$LASTEXITCODE)}
 Write-Host 'BGXAI067 PRECHECK PASS. Existing 066S remains installed.'
 }
 function Status067ReadOnly {
-SyncRelease $release067
+SyncRelease $x67
 Verify067GuardedSource
-& py -3 (Join-Path $release067.localPath 'BGXAI67_INSTALL.py') status
+& py -3 (Join-Path $x67.localPath 'BGXAI67_INSTALL.py') status
 if($LASTEXITCODE -ne 0){throw ('BGXAI067 status STOP '+$LASTEXITCODE)}
 }
 function Run067Guarded([string]$mode) {
 if($mode -cne 'install' -and $mode -cne 'rollback'){throw 'BGXAI067 unsupported mode'}
-SyncRelease $release067
+SyncRelease $x67
 Verify067GuardedSource
 $token=if($mode -ceq 'install'){'INSTALL_BGXAI_067'}else{'ROLLBACK_BGXAI_067'}
 Write-Host 'BGXAI067 guarded Lua/BCS; 066S baseline required.'
 Write-Host 'CLOSE BALDUR + INFINITYLOADER. No retry after a failure.'
 $confirmation=Read-Host ('Type '+$token+' exactly to authorize, or ENTER to cancel')
 if($confirmation -cne $token){Write-Host 'BGXAI067 CANCELLED. Game unchanged.';return}
-& py -3 (Join-Path $release067.localPath 'BGXAI67_INSTALL.py') $mode '--yes' '--confirm' $token
+& py -3 (Join-Path $x67.localPath 'BGXAI67_INSTALL.py') $mode '--yes' '--confirm' $token
 if($LASTEXITCODE -ne 0){throw ('BGXAI067 '+$mode+' STOP '+$LASTEXITCODE+'. DO NOT AUTO-RETRY')}
 Write-Host 'BGXAI067 action completed. Read-only status via menu 90.'
 }
@@ -706,27 +707,27 @@ $parsedTokens=$null
 $parseErrors=$null
 [System.Management.Automation.Language.Parser]::ParseFile($PSCommandPath,[ref]$parsedTokens,[ref]$parseErrors) | Out-Null
 if($parseErrors.Count -gt 0){throw ('BGXAI066 parser STOP: '+(($parseErrors | ForEach-Object {$_.Message}) -join '; '))}
-SyncRelease $release066
+SyncRelease $x66
 Verify066Source
 Write-Host '066 preflight READ ONLY.'
-& py -3 (Join-Path $release066.localPath 'BGXAI66_INSTALL.py') preflight
+& py -3 (Join-Path $x66.localPath 'BGXAI66_INSTALL.py') preflight
 if($LASTEXITCODE -ne 0){throw ('BGXAI066 preflight STOP '+$LASTEXITCODE)}
 Write-Host '066 preflight PASS. 064 unchanged.'
 }
 function Status066GuardedReadOnly {
-SyncRelease $release066
+SyncRelease $x66
 Verify066Source
-& py -3 (Join-Path $release066.localPath 'BGXAI66_INSTALL.py') status
+& py -3 (Join-Path $x66.localPath 'BGXAI66_INSTALL.py') status
 if($LASTEXITCODE -ne 0){throw ('BGXAI066 status STOP '+$LASTEXITCODE)}
 }
 function Run066Guarded([string]$mode) {
 if($mode -cne 'install' -and $mode -cne 'rollback'){throw 'BGXAI066 illegal mode'}
-SyncRelease $release066
+SyncRelease $x66
 Verify066Source
 if($mode -ceq 'install'){
-& py -3 (Join-Path $release066.localPath 'BGXAI66_INSTALL.py') preflight
+& py -3 (Join-Path $x66.localPath 'BGXAI66_INSTALL.py') preflight
 }else{
-& py -3 (Join-Path $release066.localPath 'BGXAI66_INSTALL.py') status
+& py -3 (Join-Path $x66.localPath 'BGXAI66_INSTALL.py') status
 }
 if($LASTEXITCODE -ne 0){throw ('BGXAI066 pre-authorization STOP '+$LASTEXITCODE)}
 $token=if($mode -ceq 'install'){'INSTALL_BGXAI_066'}else{'ROLLBACK_BGXAI_066'}
@@ -734,7 +735,7 @@ Write-Host '066 updates M_BX43 with verified backup.'
 Write-Host 'Close game/loader/WeiDU; exact baseline needed.'
 $confirmation=Read-Host ('Type '+$token+' exactly to authorize or ENTER to cancel')
 if($confirmation -cne $token){Write-Host '066 cancelled.';return}
-& py -3 (Join-Path $release066.localPath 'BGXAI66_INSTALL.py') $mode '--yes' '--confirm' $token
+& py -3 (Join-Path $x66.localPath 'BGXAI66_INSTALL.py') $mode '--yes' '--confirm' $token
 if($LASTEXITCODE -ne 0){throw ('BGXAI066 '+$mode+' STOP '+$LASTEXITCODE+'; do NOT retry automatically')}
 Write-Host 'BGXAI066 action complete. Check status with option 80.'
 }
@@ -1179,6 +1180,7 @@ Write-Host @'
 158 - Weapon V3 native preflight READ ONLY
 159 - Weapon EEex R1 passive observer (guarded)
 160 - Weapon EEex R11 static compat READ ONLY
+161 - Target defense R13 (READ ONLY preflight / guarded pilot)
  0 - Exit [default]
 '@
 $choice=Read-Host 'Choice [0]'
@@ -1204,10 +1206,10 @@ switch($choice){
 '16' {RunRelease $b42 '--status';break}
 '17' {SyncRelease $b42;RunRelease $b42 '--uninstall';break}
 '18' {Test043PReadOnly;break}
-'19' {SyncRelease $release043p;break}
-'20' {SyncRelease $release043p;RunRelease $release043p '--install';break}
-'21' {RunRelease $release043p '--status';break}
-'22' {SyncRelease $release043p;RunRelease $release043p '--uninstall';break}
+'19' {SyncRelease $x43;break}
+'20' {SyncRelease $x43;RunRelease $x43 '--install';break}
+'21' {RunRelease $x43 '--status';break}
+'22' {SyncRelease $x43;RunRelease $x43 '--uninstall';break}
 '23' {Test044ReadOnly;break}
 '24' {SyncRelease $release044;break}
 '25' {SyncRelease $release044;RunRelease $release044 '--install';break}
@@ -1240,39 +1242,39 @@ switch($choice){
 '52' {SyncRelease $release049;RunRelease $release049 '--uninstall';break}
 '53' {SyncRelease $release054;break}
 '54' {SyncRelease $release054;RunRelease $release054 '--compile-readonly';break}
-'55' {SyncRelease $release056;RunRelease $release056 '--precheck';break}
-'56' {SyncRelease $release056;break}
-'57' {SyncRelease $release056;RunRelease $release056 '--install';break}
-'58' {RunRelease $release056 '--status';break}
-'59' {SyncRelease $release056;RunRelease $release056 '--uninstall';break}
+'55' {SyncRelease $x56;RunRelease $x56 '--precheck';break}
+'56' {SyncRelease $x56;break}
+'57' {SyncRelease $x56;RunRelease $x56 '--install';break}
+'58' {RunRelease $x56 '--status';break}
+'59' {SyncRelease $x56;RunRelease $x56 '--uninstall';break}
 '60' {SyncRelease $b60;break}
 '61' {SyncRelease $b60;Test060ReadOnly;break}
 '62' {Run060Guarded 'install';break}
 '63' {Status060ReadOnly;break}
 '64' {Run060Guarded 'rollback';break}
-'65' {SyncRelease $release061;break}
-'66' {SyncRelease $release061;Test061ReadOnly;break}
+'65' {SyncRelease $x61;break}
+'66' {SyncRelease $x61;Test061ReadOnly;break}
 '67' {Run061Guarded 'install';break}
 '68' {Status061ReadOnly;break}
 '69' {Run061Guarded 'rollback';break}
 '70' {SyncRelease $release064;break}
 '71' {SyncRelease $release064;Test064ReadOnly;break}
-'72' {SyncRelease $release064g;break}
+'72' {SyncRelease $x64;break}
 '73' {Test064GuardedReadOnly;break}
 '74' {Run064Guarded 'install';break}
 '75' {Status064GuardedReadOnly;break}
 '76' {Run064Guarded 'rollback';break}
-'77' {SyncRelease $release066;break}
+'77' {SyncRelease $x66;break}
 '78' {Test066GuardedReadOnly;break}
 '79' {throw 'BGXAI 066 deprecated: frontline-only regression; use tested BGXAI066S 83/84 instead.'}
 '80' {Status066GuardedReadOnly;break}
 '81' {Run066Guarded 'rollback';break}
-'82' {SyncRelease $release066s;break}
+'82' {SyncRelease $x6s;break}
 '83' {Test066SReadOnly;break}
 '84' {Run066SGuarded 'install';break}
 '85' {Status066SReadOnly;break}
 '86' {Run066SGuarded 'rollback';break}
-'87' {SyncRelease $release067;break}
+'87' {SyncRelease $x67;break}
 '88' {Test067ReadOnly;break}
 '89' {Run067Guarded 'install';break}
 '90' {Status067ReadOnly;break}
@@ -1346,6 +1348,7 @@ switch($choice){
 '158' {SyncRelease $wr;& py -3 (Join-Path $wr.localPath 'BGXAI_WEAPON_GAME_PREFLIGHT_RO.py') --game $GameRoot;if($LASTEXITCODE){throw '158 STOP'};break}
 '159' {SyncRelease $wp;& py -3 (Join-Path $wp.localPath 'BGXWP_OBSERVER_GUARDED.py') --game $GameRoot;if($LASTEXITCODE){throw '159 STOP'};break}
 '160' {$r='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_EEEX_R11_STATIC_COMPAT_RO_V3.py';$b=Get-PinnedBytes $r;if($b.Length -ne 8301 -or (HashBytes $b) -cne '4bf4e2a981a6602da02ba53dc3e5601fd69bb2f408c64d880c208f1a19bf83f4'){throw '160 SHA STOP'};$f=Join-Path $cacheDir ('eeex_ro_'+[guid]::NewGuid().ToString('N')+'.py');AssertNotReparse $cacheDir;try{$h=[IO.File]::Open($f,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);try{$h.Write($b,0,$b.Length)}finally{$h.Dispose()};if((HashFile $f) -cne '4bf4e2a981a6602da02ba53dc3e5601fd69bb2f408c64d880c208f1a19bf83f4'){throw '160 CACHE STOP'};& py -3 $f --game $GameRoot;if($LASTEXITCODE){throw '160 STOP'}}finally{if(Test-Path -LiteralPath $f){Remove-Item -LiteralPath $f -Force}};break}
+'161' {SyncRelease $td13;& py -3 (Join-Path $td13.localPath 'BGXAI_R13_GUARDED.py') --game $GameRoot;if($LASTEXITCODE){throw '161 STOP'};break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0
