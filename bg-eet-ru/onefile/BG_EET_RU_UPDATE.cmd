@@ -6770,15 +6770,14 @@ BG_EET_RU_V105_SaveLine(BG_EET_RU_V105_STATUS_FILE, "SOURCE_LOADED")
 """
 
 V105_MAIN_ANCHOR = b'\tEEex_Active = true'
-V105_MAIN_INJECT = b'''\\t-- BG EET RU V105 weapon observer, explicit opt-in; errors fail closed.
-\\tpcall(function()
-\\t\\tEEex_DoFile("BG_EET_RU_WeaponObserver")
-\\t\\tif type(BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start) == "function" then
-\\t\\t\\tBG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()
-\\t\\tend
-\\tend)
+V105_MAIN_INJECT = b'''\t-- BG EET RU V105 weapon observer, explicit opt-in; errors fail closed.
+\tpcall(function()
+\t\tEEex_DoFile("BG_EET_RU_WeaponObserver")
+\t\tif type(BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start) == "function" then
+\t\t\tBG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()
+\t\tend
+\tend)
 '''
-V105_MAIN_INJECT = V105_MAIN_INJECT.replace(b'\\\\t',b'\t')
 
 def v105_source_module():
     if V105_OBSERVER_SOURCE.count('__V105_EVENTS_PATH__')!=1 or V105_OBSERVER_SOURCE.count('__V105_STATUS_PATH__')!=1:
@@ -7044,10 +7043,9 @@ def v105_run(game,report_path,mode='status'):
 def v105_selftest():
     assert 'function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()' in V105_OBSERVER_SOURCE
     assert b'BG_EET_RU_WeaponObserver' in V105_MAIN_INJECT
-    fake=(b'EEex_Main_Private_StartupFiles = {}\\n'
-          b'for _, fileName in ipairs(EEex_Main_Private_StartupFiles) do\\n'
-          b'  EEex_DoFile(fileName)\\nend\\n\\tEEex_Active = true\\n')
-    fake=fake.replace(b'\\\\n',b'\n').replace(b'\\\\t',b'\t')
+    fake=(b'EEex_Main_Private_StartupFiles = {}\n'
+          b'for _, fileName in ipairs(EEex_Main_Private_StartupFiles) do\n'
+          b'  EEex_DoFile(fileName)\nend\n\tEEex_Active = true\n')
     for eol in (b'\n',b'\r\n'):
         original=fake.replace(b'\n',eol)
         candidate=v105_transform_main(original)
