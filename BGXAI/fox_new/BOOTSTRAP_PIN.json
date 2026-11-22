@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "c65b2c8142d2498ca277734c2d27fd6451ae0454",
+  "commit": "f97c57b95e5725962ba509dfea61850e225e8e47",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "5740c40cb876b69e664a930b32f089a3431b4a9218537ce9d95b9997095ee2b5",
-  "script_size": 79610,
-  "description": "BGXAI onefile menu161: SHA-pinned passive target-defense R13 guarded pilot, default READ-ONLY preflight, exact separate typed approval to install. Preserves old 1–160, no R13 deploy by pin, no weapon switch."
+  "script_sha256": "574d1027eeb69ad54bf3995019358bb5a115a7bb53752d68dfb0b3fd4aca17a4",
+  "script_size": 79618,
+  "description": "BGXAI onefile R13.1 menu161: selected-target raw defense includes 9 fields with m_nResistMissile; status/preflight read only, install requires typed consent. Previous 1-161 handlers preserved. Game and EPS unchanged by promotion."
 }
