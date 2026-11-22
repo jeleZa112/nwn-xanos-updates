@@ -1,0 +1,154 @@
+{
+  "schema": "BGXAI_WEAPON_R4_R3_LIVE_EVIDENCE_V1",
+  "status": "SELECTED_HISTORICAL_APR_AND_ITEM_IDENTITY_OBSERVED_PRIORITY_HOLD",
+  "source": "SAME_CONSOLE_SESSION_R1_R2_R4_PLUS_PRIOR_NATIVE_R3",
+  "correlation": {
+    "r1Events": 16,
+    "r2Events": 16,
+    "r4Events": 16,
+    "eventTriplesMatched": 16
+  },
+  "actors": [
+    {
+      "actorId": 139266124,
+      "partyIndex": 2,
+      "events": 16,
+      "sampledRawFingerprintChanged": false,
+      "sampledRawFingerprintIsExhaustiveBuffProof": false,
+      "selections": [
+        {
+          "sequence": 15,
+          "r4Line": 372,
+          "partyIndex": 2,
+          "selectedWeaponRaw": 12,
+          "weaponResRef": "BOW05",
+          "ammunitionResRef": "AROW01",
+          "selectionResolution": "AMMO_SELECTED_UNIQUE_BOW_CANDIDATE_NOT_ENGINE_LAUNCHER_PROOF",
+          "aprRaw": 2,
+          "aprDecodedIfStandard": 2,
+          "baseWeaponTHAC0Raw": 20,
+          "rightHandTHAC0BonusRaw": -1,
+          "proficiencyIdRaw": 105,
+          "proficiencyField": "m_nProficiencyShortBow",
+          "proficiencyRaw": 0,
+          "staticItemAbilityDamageMeanBeforeEffects": 3.5,
+          "nativeAbilityAttackTypeRaw": 4,
+          "ammoCountRaw": 19,
+          "nativeAbilityHitEffectOpcodesRaw": [],
+          "nativeEquippedEffectOpcodesRaw": [
+            319,
+            7,
+            7,
+            7,
+            1
+          ],
+          "hasUnvaluedOnHitEffects": false,
+          "nativeItemContainsUnverifiedEquippedEffects": true,
+          "staticBaseDamageTimesSelectedAPR_NotDPS": 7.0,
+          "executable": false,
+          "dispatchAuthorized": false,
+          "allEffectsAndBuffsVerified": false,
+          "otherSlotAPRProjected": false,
+          "targetHitChanceVerified": false,
+          "activeShieldBenefitVerified": false
+        },
+        {
+          "sequence": 16,
+          "r4Line": 382,
+          "partyIndex": 2,
+          "selectedWeaponRaw": 35,
+          "weaponResRef": "SW1H04",
+          "ammunitionResRef": null,
+          "selectionResolution": "SELECTED_QUICKSLOT_RESREF_RAW_NOT_VERIFIED_USABLE",
+          "aprRaw": 7,
+          "aprDecodedIfStandard": 1.5,
+          "baseWeaponTHAC0Raw": 20,
+          "rightHandTHAC0BonusRaw": 1,
+          "proficiencyIdRaw": 90,
+          "proficiencyField": "m_nProficiencyLongSword",
+          "proficiencyRaw": 2,
+          "staticItemAbilityDamageMeanBeforeEffects": 4.5,
+          "nativeAbilityAttackTypeRaw": 1,
+          "nativeAbilityHitEffectOpcodesRaw": [
+            146
+          ],
+          "nativeEquippedEffectOpcodesRaw": [
+            7,
+            7,
+            7
+          ],
+          "hasUnvaluedOnHitEffects": true,
+          "nativeItemContainsUnverifiedEquippedEffects": true,
+          "staticBaseDamageTimesSelectedAPR_NotDPS": 6.75,
+          "executable": false,
+          "dispatchAuthorized": false,
+          "allEffectsAndBuffsVerified": false,
+          "otherSlotAPRProjected": false,
+          "targetHitChanceVerified": false,
+          "activeShieldBenefitVerified": false
+        },
+        {
+          "sequence": 10,
+          "r4Line": 337,
+          "partyIndex": 2,
+          "selectedWeaponRaw": 38,
+          "weaponResRef": "STAF01",
+          "ammunitionResRef": null,
+          "selectionResolution": "SELECTED_QUICKSLOT_RESREF_RAW_NOT_VERIFIED_USABLE",
+          "aprRaw": 1,
+          "aprDecodedIfStandard": 1,
+          "baseWeaponTHAC0Raw": 20,
+          "rightHandTHAC0BonusRaw": -2,
+          "proficiencyIdRaw": 102,
+          "proficiencyField": "m_nProficiencyQuarterStaff",
+          "proficiencyRaw": 0,
+          "staticItemAbilityDamageMeanBeforeEffects": 3.5,
+          "nativeAbilityAttackTypeRaw": 1,
+          "nativeAbilityHitEffectOpcodesRaw": [],
+          "nativeEquippedEffectOpcodesRaw": [
+            7,
+            7,
+            7,
+            7,
+            7
+          ],
+          "hasUnvaluedOnHitEffects": false,
+          "nativeItemContainsUnverifiedEquippedEffects": true,
+          "staticBaseDamageTimesSelectedAPR_NotDPS": 3.5,
+          "executable": false,
+          "dispatchAuthorized": false,
+          "allEffectsAndBuffsVerified": false,
+          "otherSlotAPRProjected": false,
+          "targetHitChanceVerified": false,
+          "activeShieldBenefitVerified": false
+        }
+      ]
+    }
+  ],
+  "rankingGate": {
+    "status": "HOLD_COMPLETE_EFFECTIVE_SCENE_REQUIRED",
+    "missing": [
+      "AUDITED_TARGET_AC_AND_PROTECTIONS",
+      "CURRENT_ALL_BUFFS_AND_EFFECTS_FINGERPRINT",
+      "ALTERNATE_SLOT_ACTIVE_EFFECTIVE_APR_AND_THAC0",
+      "WEAPON_AND_AMMO_EFFECTS_COMPLETE",
+      "EQUIPMENT_USABILITY_AND_DAMAGE_TYPES",
+      "MANUAL_AND_EPS_ACTION_QUEUE_ORIGIN",
+      "IN_RANGE_AND_SAFE_AOE_PATH"
+    ],
+    "cannotInferFromHistoricalSelectedAPRs": true,
+    "sourceOnlyCurrentActionPreserved": true,
+    "weaponSwitchAuthorized": false
+  },
+  "executable": false,
+  "dispatchAuthorized": false,
+  "weaponSwitchAuthorized": false,
+  "actionsIssued": 0,
+  "gameModified": false,
+  "priorityRecommendation": null,
+  "inputSHA256": {
+    "console": "174cec7f72f9f1c3aed717484bb3606832aa0cbfca1ad6d6d9bc3cd4583199db",
+    "nativeR3": "7ae7555f81b14a784e7866472f14483b02c2d6b707ab6169225e8fec32507304",
+    "r4LuaContract": "2b618df53566b75f651ae75ce737496e4b24cb18fd754be7eb7c245ccfbbcc40"
+  }
+}
