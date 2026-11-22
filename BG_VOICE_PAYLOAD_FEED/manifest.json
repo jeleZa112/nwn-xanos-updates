@@ -278,12 +278,25 @@
       "source_game_modified": false,
       "stress_checks_run": false,
       "voice_retake_run": false,
-      "test": "OFFLINE_SYNTHETIC_FULL_7206_AND_58_LOCKS_PASS; NO_CUDA_NEGATIVE_TEST_PASS",
+      "test": "SYNTHETIC_GPU_READY_POSITIVE_LAUNCH_PASS; NO_GPU_HOLD_PASS; FILE_HASH_AND_ZIP_CRC_PASS; REAL_WAVLM_PILOT_NOT_YET_RUN",
       "source_code_readback_verified": true,
       "zip_integrity_verified": true,
-      "human_locked_source_sha_verified": 58
+      "human_locked_source_sha_verified": 58,
+      "status": "CUDA_AND_IMPORTS_PASS_ON_WINDOWS; BOOTSTRAP_TYPEERROR_FIXED_NOT_YET_GPU_INFERENCE",
+      "original_bootstrap_bug": "TypeError log() takes 1 positional argument but 2 were given at CUDA_READY",
+      "observed_user_bootstrap_status": "CUDA_AND_IMPORTS_PASS",
+      "observed_gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "observed_torch": "2.7.1+cu128",
+      "selected_cuda_python": "C:\\Users\\Drevo\\Downloads\\BG_VOICE_RU_KELDORN_EMOTION_CLONING_PILOT_V1\\BG_VOICE_RU_KELDORN_CLONE_PILOT\\.venv\\Scripts\\python.exe",
+      "fixed_archive_library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_GPU_SELECT_FIX1_20261123.zip",
+      "fixed_archive_sha256": "8832a82b44706adf2e4b672238e48a4d3c8f170a318243a5e2bbc70f2205a516",
+      "fixed_archive_bytes": 1962858,
+      "fixed_bootstrap_sha256": "6038fe7183dada3100006406965c8bfc29f60d8a7c0bd7f12245149e6984db75",
+      "fix_source_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/selection_first/gpu_pilot_v1/BGVOICE_GPU_BOOTSTRAP.py",
+      "fix_regression_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/selection_first/gpu_pilot_v1/SELFTEST_BOOTSTRAP_LAUNCH_FIX1.py",
+      "original_wav_modified": false
     },
-    "current_production_next_action": "ONE_WINDOWS_GPU_SELECTOR_START_THEN_READ_REAL_WAVLM_CALIBRATION_REPORT",
+    "current_production_next_action": "RUN_FIXED_SELECTOR_FROM_NEW_EXTRACTED_DIR; REUSE_EXISTING_CUDA_VENV_AND_CACHE; READ_REAL_WAVLM_PILOT_RESULTS",
     "repairs_blocked_before_voice_selection": true
   }
 }
