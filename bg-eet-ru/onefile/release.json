@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 90,
-  "sha256": "4b5055882501e86467c2b45d9dec148bb8a7bb0026a9c13cc309d250b3d7a93d",
-  "mode": "READ_ONLY_DEFAULT_OPTIONAL_V88_TO_V90_UI_REHOME",
+  "version": 91,
+  "sha256": "df754e3776d7d6b85f3cca56f84ea566052cfb633d943d0a742c55c0248e15dc",
+  "mode": "READ_ONLY_DEFAULT_GUARDED_V90_UI_PARSER_FIX",
   "game_writes_allowed": false,
-  "note": "v90 moves the already-installed v88 journal toggle outside combatLog list and messagesHandleY overlays and follows dragMessagesY, preserving all original combat-log data and v85 Lua. Default run READ ONLY, caches status to existing 37_V90_JOURNAL_BUTTON_REPOSITION.json in single ZIP. --upgrade-v90-journal-ui requires exact typed UPGRADE_BG_EET_RU_V90_JOURNAL_UI, closed game and loader, pre-existing v88 SHA and original backup, exact candidate cross-check, external v88-version backup, atomic UI.MENU-only swap. --rollback-v90-journal-ui requires ROLLBACK_BG_EET_RU_V90_JOURNAL_UI and restores pre-v88 ORIGINAL UI.MENU with v88 state update. Synthetic LF CRLF mixed EOL tests and full one-file source selftest GitHub Actions 44986043999 PASS. Live clickable behavior UNPROVEN until player screenshot/test."
+  "note": "v91: fixed v90 live brief mode rendering no-op on colored combat messages. Python source and real Lua 5.4 isolated tests: correct 8-hex color-tag stripping inside parsed text, trailing color reset preservation, verified d20 arithmetic, fallback exact original on unrecognized strings. UI.MENU only, exactly one guarded Lua helper replacement, unchanged button/drag/combatLog/v85 hooks; reversibility byte-for-byte checked. Default existing updater READ ONLY: V91_PARSER_PREFLIGHT_PASS_NOT_INSTALLED and one existing ZIP report 38_V91_JOURNAL_BRIEF_PARSER_FIX.json. Optional --upgrade-v91-journal-parser requires game and InfinityLoader closed, exact typed UPGRADE_BG_EET_RU_V91_JOURNAL_PARSER, verified SHA-pinned v90 source, verified external backup and safe atomic replacement. Optional --rollback-v91-journal-parser returns only to v90 UI with exact typed ROLLBACK_BG_EET_RU_V91_JOURNAL_PARSER. GitHub Actions isolated full selftest 44988213957 PASS. Real Windows preflight and runtime content transformation not yet user verified."
 }
