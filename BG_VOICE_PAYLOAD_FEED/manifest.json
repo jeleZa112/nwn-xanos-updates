@@ -205,6 +205,30 @@
       "v17_human_voice_preferences": 8,
       "asr_vs_ecapa_conflicts": 87
     },
-    "automatic_voice_approvals_from_model_fusion": 0
+    "automatic_voice_approvals_from_model_fusion": 0,
+    "selection_stage": "R2_EVIDENCE_ARBITRATION_SOURCE_AND_REGISTRY_READY_READONLY",
+    "current_selection_engine": "SELECTION_FIRST_R2",
+    "candidate_audio_selected_finally": 0,
+    "r2_library_archive": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_SELECTION_R2_CALIBRATED_20261122.zip",
+    "r2_zip_bytes": 2149664,
+    "r2_zip_sha256": "c845feca997db4fd3832ec40c9b7a5cd200cf747dc105655690cdb83cecc48c2",
+    "r2_source_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/selection_first/r2/BGVOICE_SELECTION_R2.py",
+    "r2_summary_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/selection_first/r2/SUMMARY.json",
+    "r2_source_sha256": "97a00602d898daccb658a87865e3a619be367ccf3b96f8a87853eebbfce05058",
+    "r2_data": {
+      "sound_ids": 7206,
+      "guarded_prior_decisions": 41,
+      "review_hypotheses_not_approved": 652,
+      "unresolved_nonhuman": 6513,
+      "calibration_strata_60": {
+        "stable": 20,
+        "per_line": 20,
+        "bias_direction_conflict": 20
+      },
+      "old_ecapa_human_agreement": "13_of_20",
+      "normalization_human_agreement": "8_of_20",
+      "source_voice_bias": "4361_of_5360_uncalibrated_old_pairs_prefer_per_line"
+    },
+    "warning": "The two ECAPA score views are NOT independent; no new trained speaker/acting model has run. All 652 were previously held by V5, and require real acoustic EN/acting comparison before voice selection. No retakes/stress/game install."
   }
 }
