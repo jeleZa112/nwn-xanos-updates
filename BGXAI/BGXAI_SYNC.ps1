@@ -12,7 +12,7 @@ if(!(Test-Path -LiteralPath $pinnedFile -PathType Leaf)){Write-Host 'STOP: pinne
 $commitId=[IO.File]::ReadAllText($pinnedFile).Trim()
 if($commitId -notmatch '^[a-fA-F0-9]{40}$'){Write-Host 'STOP: invalid pinned GitHub commit';exit 2}
 $remoteRoot='BGXAI/fox_new/'
-$release041=@{
+$b41=@{
 id='041';version='0.3.11';manifest=$remoteRoot+'release_041/manifest.json';prefix=$remoteRoot+'release_041/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_041';installer='BGXAI41_INSTALL.py';
 names=@('BGXAI41_INSTALL.py','README_RU.md','SOURCE_MANIFEST.json','build_assets.py',
@@ -21,7 +21,7 @@ names=@('BGXAI41_INSTALL.py','README_RU.md','SOURCE_MANIFEST.json','build_assets
 'tests/test_attack_parser_041.py','tests/test_attack_ru.py','tests/test_installer_041.py',
 'tests/test_runtime_semantics_041.py','tests/test_source_041.py')
 }
-$release040=@{
+$b40=@{
 id='040';version='0.3.10';manifest=$remoteRoot+'release_040/manifest.json';prefix=$remoteRoot+'release_040/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_040';installer='BGXAI40_INSTALL.py';
 names=@('BGXAI40_INSTALL.py','setup-BGX40.tp2','BGX40/toggle_feedback.baf','BGX40/lang/ru_ru/feedback.tra','SOURCE_MANIFEST.json','README_RU.txt','tests/test_feedback_040.py')
@@ -31,7 +31,7 @@ id='039';version='0.3.9';manifest=$remoteRoot+'release_039/manifest.json';prefix
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_039';installer='BGXAI39_INSTALL.py';
 names=@('BGXAI39_INSTALL.py','setup-BGX39.tp2','BGX39/team_guard_fallback.baf','SOURCE_MANIFEST.json','README_RU.txt','tests/test_team_guard_039.py')
 }
-$release042b=@{
+$b42=@{
 id='042B';version='0.3.12-042B';manifest=$remoteRoot+'release_042b/manifest.json';prefix=$remoteRoot+'release_042b/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_042b';installer='BGXAI42_INSTALL.py';
 names=@('BGXAI42_INSTALL.py','build_042b_preview.py','guard_source_042a.py',
@@ -99,7 +99,7 @@ manifest=$remoteRoot+'experimental_056_active_guard/manifest.json';prefix=$remot
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_056';installer='BGXAI56_INSTALL.py';
 names=@('BGX56/M_BX43.lua','BGX56/BGX56_RECEIVER.baf','BGX56/setup-BGX56.tp2','BGXAI56_BUILDER.py','BGXAI56_INSTALL.py','README_RU.md','tests/test_056.py','tests/test_lua_056.py','ci_weidu_056.py','ids/trigger.ids','ids/action.ids','ids/object.ids','ids/modal.ids','SOURCE_MANIFEST.json')
 }
-$release060=@{
+$b60=@{
 id='060';version='0.3.26-060-READONLY-COMPILE';
 manifest=$remoteRoot+'experimental_060_direct_response_source_only/manifest.json';
 prefix=$remoteRoot+'experimental_060_direct_response_source_only/';
@@ -193,25 +193,25 @@ prefix='BGXAI/patchsets/priest_auto_priority_guard_source_20261117/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\priest_auto_priority_verified';installer='BGXP5_INSTALL.py';
 names=@('BGXPR_LAST_PRIORITY.baf','BGXP2_LAST_PRIORITY.baf','BGXP2_BCS_PATCH.py','BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py','BGXP5_BCS_PREFLIGHT_READ_ONLY.py','BGXP5_INSTALL.py','test_bgxp5_source.py','test_bgxp5_bcs_preflight.py','test_bgxp5_installer_mock.py','README_RU.md','SHA256_FILES.json')
 }
-$releaseAOE=@{
+$ao=@{
 id='AOE117';version='0.3.50-BGX122-IDS-HYPHEN';
 manifest='BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/manifest_updater.json';
 prefix='BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\aoe_readonly_verified';installer='BGXAI_AOE_AUDIT.py';
 names=@('BGXAI_AOE_AUDIT.py','test_aoe_audit.py','BGXAI_TEST6_SAFE_COPY.py','test_safe_copy.py','BGX119_TRACE.py','BGX120_ENTANGLE_GUARD.py','test_guard120.py','BGX121_POLICY.py','BGX121_READONLY.py','test_121.py','BGX122_PROJECTILES_READONLY.py','test_122.py','README_RU.md')
 }
-$releaseRanged=@{
+$rg=@{
 id='BGXRANGED';version='0.3.76-V6-GUARDED-PILOT';
 manifest='BGXAI/patchsets/ranged_fighter_guarded_20261119/manifest_updater.json';
 prefix='BGXAI/patchsets/ranged_fighter_guarded_20261119/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\ranged_fighter_verified';installer='BGXRANGED_PREFLIGHT.py';
 names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INSTALL.py','BGXRANGED_V2_MELEE_HANDOFF.baf','BGXRANGED_V2_PREFLIGHT.py','BGXRANGED_V2_GUARDED_INSTALL.py','BGXRANGED_V3_MELEE_HANDOFF.baf','BGXRANGED_V3_PREFLIGHT.py','BGXRANGED_V3_GUARDED_INSTALL.py','BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py','BGXRANGED_V4_NO_FRIEND_ATTACK.baf','BGX_FRIENDLY_PROTECT_ISOLATION.py','BGXAI_SAVE_SCRIPT_AUDIT_READONLY.py','BGX_FRIENDLY_RETALIATION_GUARDED.py','BGX_COMBAT_LOG_READONLY_AUDIT.py','M_BXFR.lua','BGX_FRIEND_TRACE_GUARDED.py','BGX_FRIEND_TRACE_REPORT.py','M_BXFR_CONSOLE_V2.lua','BGXFTRACE_V2_GUARDED.py','BGXFTRACE_CONSOLE_CAPTURE.py','M_BXFR_MOTION_V3.lua','BGXFTRACE_V3_GUARDED.py','BGXF_WTASIGHT_ENEMY_GUARD_SOURCE_ONLY.py','BGXFENEMY_WTASIGHT_GUARDED.py','BGXAI_WEAPON_SAVED_SNAPSHOT_READONLY.py','BGXAI_WEAPON_CHOICE_ADVISORY_V1.js','BGXAI_WEAPON_TRAITS_ADVISORY_V1.js','BGXRANGED_V5_ANTICIPATORY_CLOSE_SOURCE_ONLY.baf','BGXRANGED_V5_NATIVE_CANDIDATE_READONLY.py','BGXRANGED_V5_GUARDED_INSTALL.py','BGXRANGED_V6_DPLAYER_CLOSE_GUARD_SOURCE_ONLY.baf','BGXRANGED_V6_DPLAYER_NATIVE_READONLY.py','BGXRANGED_V6_GUARDED_INSTALL.py')
 }
-$releaseWeaponRO=@{id='WRO';version='0.3.77-WEAPON-NATIVE-READONLY';manifest=($releaseRanged.prefix+'BGXAI_WEAPON_NATIVE_PREFLIGHT_MANIFEST_V1.json');prefix=$releaseRanged.prefix;localPath=Join-Path $GameRoot 'BGXAI_DEV\weapon_native_ro';names=@('BGXAI_WEAPON_GAME_PREFLIGHT_RO.py','BGXAI_WEAPON_GAME_PREFLIGHT_V1.baf')}
-$wp=@{id='WP';version='0.3.82-R4-ALLPROF-BUFF-RO';manifest=($releaseRanged.prefix+'BGXWP_OBSERVER_MANIFEST_R1.json');prefix=$releaseRanged.prefix;localPath=Join-Path $GameRoot 'BGXAI_DEV\weapon_runtime_ro';names=@('BGXWP_OBSERVER_GUARDED.py','M_BGXWP.lua','BGXW2_OBSERVER_GUARDED.py','M_BGXW2.lua','BGXAI_WEAPON_NATIVE_ITM_R3_RO.py','M_BGXW4.lua')}
-$v2install=Join-Path $releaseRanged.localPath 'BGXRANGED_V2_GUARDED_INSTALL.py'
-$ff=Join-Path $releaseRanged.localPath 'BGX_FRIENDLY_RETALIATION_GUARDED.py'
-$rr=$releaseRanged.localPath
+$wr=@{id='WRO';version='0.3.77-WEAPON-NATIVE-READONLY';manifest=($rg.prefix+'BGXAI_WEAPON_NATIVE_PREFLIGHT_MANIFEST_V1.json');prefix=$rg.prefix;localPath=Join-Path $GameRoot 'BGXAI_DEV\weapon_native_ro';names=@('BGXAI_WEAPON_GAME_PREFLIGHT_RO.py','BGXAI_WEAPON_GAME_PREFLIGHT_V1.baf')}
+$wp=@{id='WP';version='0.3.82-R4-ALLPROF-BUFF-RO';manifest=($rg.prefix+'BGXWP_OBSERVER_MANIFEST_R1.json');prefix=$rg.prefix;localPath=Join-Path $GameRoot 'BGXAI_DEV\weapon_runtime_ro';names=@('BGXWP_OBSERVER_GUARDED.py','M_BGXWP.lua','BGXW2_OBSERVER_GUARDED.py','M_BGXW2.lua','BGXAI_WEAPON_NATIVE_ITM_R3_RO.py','M_BGXW4.lua')}
+$v2install=Join-Path $rg.localPath 'BGXRANGED_V2_GUARDED_INSTALL.py'
+$ff=Join-Path $rg.localPath 'BGX_FRIENDLY_RETALIATION_GUARDED.py'
+$rr=$rg.localPath
 $trace=Join-Path $rr 'BGX_FRIEND_TRACE_GUARDED.py'
 $fix=Join-Path $rr 'BGXFTRACE_V2_GUARDED.py'
 $cap=Join-Path $rr 'BGXFTRACE_CONSOLE_CAPTURE.py'
@@ -391,10 +391,10 @@ if($LASTEXITCODE -ne 0){throw ('BGXAI '+$spec.id+' installer returned code '+$LA
 }
 function Run060Guarded([string]$mode) {
 if($mode -cne 'install' -and $mode -cne 'rollback'){throw 'BGXAI060 unsafe operation blocked'}
-SyncRelease $release060
-$files=VerifiedManifest $release060
-foreach($name in $release060.names){
-$dest=Join-Path $release060.localPath $name
+SyncRelease $b60
+$files=VerifiedManifest $b60
+foreach($name in $b60.names){
+$dest=Join-Path $b60.localPath $name
 AssertNotReparse $dest
 if((HashFile $dest) -cne $files[$name].sha){throw ('BGXAI060 source SHA mismatch: '+$name)}
 }
@@ -403,7 +403,7 @@ Write-Host '060 EXPERIMENTAL: WeiDU game edit.'
 Write-Host 'Close game/loader; SHA backup required.'
 $confirmation=Read-Host ('Type '+$token+' exactly to authorize or press ENTER to cancel')
 if($confirmation -cne $token){Write-Host '060 cancelled; no game change.';return}
-& py -3 (Join-Path $release060.localPath 'BGXAI60_INSTALL.py') $mode '--yes' '--confirm' 'BGXAI_060_EXPERIMENTAL'
+& py -3 (Join-Path $b60.localPath 'BGXAI60_INSTALL.py') $mode '--yes' '--confirm' 'BGXAI_060_EXPERIMENTAL'
 if($LASTEXITCODE -ne 0){throw ('BGXAI060 '+$mode+' STOP code '+$LASTEXITCODE+'. No automatic retry. Save output for review.')}
 Write-Host ('BGXAI060 '+$mode+' completed; inspect WeiDU status and game behavior.')
 }
@@ -628,24 +628,24 @@ Write-Host ('BGXAI IDLE '+$mode+' completed. Use menu 95 for status.')
 }
 
 function BGXAOEReadOnly {
-SyncRelease $releaseAOE
-$checked=VerifiedManifest $releaseAOE
-foreach($name in $releaseAOE.names) {
-$file=Join-Path $releaseAOE.localPath $name
+SyncRelease $ao
+$checked=VerifiedManifest $ao
+foreach($name in $ao.names) {
+$file=Join-Path $ao.localPath $name
 AssertNotReparse $file
 if((HashFile $file) -cne $checked[$name].sha){throw ('AOE117 source SHA mismatch: '+$name)}
 }
 Write-Host 'AOE117 READ ONLY.'
-& py -3 (Join-Path $releaseAOE.localPath $releaseAOE.installer) '--game' $GameRoot
+& py -3 (Join-Path $ao.localPath $ao.installer) '--game' $GameRoot
 if($LASTEXITCODE -ne 0){throw ('AOE117 READ-ONLY STOP '+$LASTEXITCODE)}
 Write-Host 'AOE117 report ready.'
 }
 function BGXTest6Safe {
-SyncRelease $releaseAOE
+SyncRelease $ao
 $token='CREATE_BGXAI_TEST6_NO_PRIEST1'
 Write-Host '118 NEW TEST SAVE ONLY; game unchanged.'
 if((Read-Host ('Type '+$token+' to authorize, ENTER cancels')) -cne $token){Write-Host 'Cancelled';return}
-& py -3 (Join-Path $releaseAOE.localPath 'BGXAI_TEST6_SAFE_COPY.py') --game-root $GameRoot --yes --confirm $token
+& py -3 (Join-Path $ao.localPath 'BGXAI_TEST6_SAFE_COPY.py') --game-root $GameRoot --yes --confirm $token
 if($LASTEXITCODE -ne 0){throw ('BGXAI 118 SAFE COPY STOP '+$LASTEXITCODE)}
 }
 function BGXOneFileLastWeiDU {
@@ -788,7 +788,7 @@ Write-Host ('Live BCS SHA: '+$bhash)
 Write-Host ('Live Lua SHA: '+$lhash)
 }
 function Test060ReadOnly {
-$spec=$release060
+$spec=$b60
 $list=VerifiedManifest $spec
 foreach($name in $spec.names){
 $dest=Join-Path $spec.localPath $name
@@ -1178,6 +1178,7 @@ Write-Host @'
 157 - V6 DPLAYER guard pilot (guarded menu)
 158 - Weapon V3 native preflight READ ONLY
 159 - Weapon EEex R1 passive observer (guarded)
+160 - Weapon EEex R11 static compat READ ONLY
  0 - Exit [default]
 '@
 $choice=Read-Host 'Choice [0]'
@@ -1185,23 +1186,23 @@ if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
 if($choice -eq '0'){Write-Host 'No changes.';exit 0}
 try {
 switch($choice){
-'1' {SyncRelease $release040;break}
-'2' {RunRelease $release040 '--status';break}
-'3' {SyncRelease $release040;RunRelease $release040 '--install';break}
-'4' {RunRelease $release040 '--uninstall';break}
+'1' {SyncRelease $b40;break}
+'2' {RunRelease $b40 '--status';break}
+'3' {SyncRelease $b40;RunRelease $b40 '--install';break}
+'4' {RunRelease $b40 '--uninstall';break}
 '5' {RunRelease $release039 '--status';break}
 '6' {RunRelease $release039 '--uninstall';break}
 '7' {Test041ReadOnly;break}
-'8' {SyncRelease $release041;break}
-'9' {RunRelease $release041 '--status';break}
-'10' {SyncRelease $release041;RunRelease $release041 '--install';break}
-'11' {RunRelease $release041 '--uninstall';break}
+'8' {SyncRelease $b41;break}
+'9' {RunRelease $b41 '--status';break}
+'10' {SyncRelease $b41;RunRelease $b41 '--install';break}
+'11' {RunRelease $b41 '--uninstall';break}
 '12' {Test042EPSReadOnly;break}
 '13' {Test042BReadOnly;break}
-'14' {SyncRelease $release042b;break}
-'15' {SyncRelease $release042b;RunRelease $release042b '--install';break}
-'16' {RunRelease $release042b '--status';break}
-'17' {SyncRelease $release042b;RunRelease $release042b '--uninstall';break}
+'14' {SyncRelease $b42;break}
+'15' {SyncRelease $b42;RunRelease $b42 '--install';break}
+'16' {RunRelease $b42 '--status';break}
+'17' {SyncRelease $b42;RunRelease $b42 '--uninstall';break}
 '18' {Test043PReadOnly;break}
 '19' {SyncRelease $release043p;break}
 '20' {SyncRelease $release043p;RunRelease $release043p '--install';break}
@@ -1244,8 +1245,8 @@ switch($choice){
 '57' {SyncRelease $release056;RunRelease $release056 '--install';break}
 '58' {RunRelease $release056 '--status';break}
 '59' {SyncRelease $release056;RunRelease $release056 '--uninstall';break}
-'60' {SyncRelease $release060;break}
-'61' {SyncRelease $release060;Test060ReadOnly;break}
+'60' {SyncRelease $b60;break}
+'61' {SyncRelease $b60;Test060ReadOnly;break}
 '62' {Run060Guarded 'install';break}
 '63' {Status060ReadOnly;break}
 '64' {Run060Guarded 'rollback';break}
@@ -1303,47 +1304,48 @@ switch($choice){
 '116' {BGXOneFileManaged $releaseBGXP5 'rollback' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
 '117' {BGXAOEReadOnly;break}
 '118' {BGXTest6Safe;break}
-'119' {SyncRelease $releaseAOE;& py -3 (Join-Path $releaseAOE.localPath 'BGX119_TRACE.py');if($LASTEXITCODE){throw '119 STOP'};break}
-'120' {SyncRelease $releaseAOE;& py -3 (Join-Path $releaseAOE.localPath 'BGX120_ENTANGLE_GUARD.py');if($LASTEXITCODE){throw '120 STOP'};break}
-'121' {SyncRelease $releaseAOE;& py -3 (Join-Path $releaseAOE.localPath 'BGX121_READONLY.py');if($LASTEXITCODE){throw '121 STOP'};break}
-'122' {SyncRelease $releaseAOE;& py -3 (Join-Path $releaseAOE.localPath 'BGX122_PROJECTILES_READONLY.py');if($LASTEXITCODE){throw '122 STOP'};break}
-'123' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_PREFLIGHT.py') --mode preflight --game $GameRoot;if($LASTEXITCODE){throw '123 STOP'};break}
-'124' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_GUARDED_INSTALL.py') install --game $GameRoot;if($LASTEXITCODE){throw '124 STOP'};break}
-'125' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_GUARDED_INSTALL.py') status --game $GameRoot;if($LASTEXITCODE){throw '125 STOP'};break}
-'126' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_GUARDED_INSTALL.py') rollback --game $GameRoot;if($LASTEXITCODE){throw '126 STOP'};break}
-'127' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_V2_PREFLIGHT.py') --game $GameRoot;if($LASTEXITCODE){throw '127 STOP'};break}
-'128' {SyncRelease $releaseRanged;& py -3 $v2install install --game $GameRoot;if($LASTEXITCODE){throw '128 STOP'};& py -3 $v2install status --game $GameRoot;if($LASTEXITCODE){throw '128 VERIFY STOP'};break}
-'129' {SyncRelease $releaseRanged;& py -3 $v2install status --game $GameRoot;if($LASTEXITCODE){throw '129 STOP'};break}
-'130' {SyncRelease $releaseRanged;& py -3 $v2install rollback --game $GameRoot;if($LASTEXITCODE){throw '130 STOP'};break}
-'131' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_V3_PREFLIGHT.py') --game $GameRoot;if($LASTEXITCODE){throw '131 STOP'};break}
-'132' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_V3_GUARDED_INSTALL.py') install --game $GameRoot;if($LASTEXITCODE){throw '132 STOP'};break}
-'133' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_V3_GUARDED_INSTALL.py') status --game $GameRoot;if($LASTEXITCODE){throw '133 STOP'};break}
-'134' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_V3_GUARDED_INSTALL.py') rollback --game $GameRoot;if($LASTEXITCODE){throw '134 STOP'};break}
-'135' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py') --game $GameRoot;if($LASTEXITCODE){throw '135 STOP'};break}
-'136' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGX_FRIENDLY_PROTECT_ISOLATION.py') install --game $GameRoot;if($LASTEXITCODE){throw '136 STOP'};break}
-'137' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGX_FRIENDLY_PROTECT_ISOLATION.py') status --game $GameRoot;if($LASTEXITCODE){throw '137 STOP'};break}
-'138' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGX_FRIENDLY_PROTECT_ISOLATION.py') rollback --game $GameRoot;if($LASTEXITCODE){throw '138 STOP'};break}
-'139' {SyncRelease $releaseRanged;& py -3 $ff install --game $GameRoot;if($LASTEXITCODE){throw '139 STOP'};break}
-'140' {SyncRelease $releaseRanged;& py -3 $ff status --game $GameRoot;if($LASTEXITCODE){throw '140 STOP'};break}
-'141' {SyncRelease $releaseRanged;& py -3 $ff rollback --game $GameRoot;if($LASTEXITCODE){throw '141 STOP'};break}
-'142' {SyncRelease $releaseRanged;& py -3 $trace install --game $GameRoot;if($LASTEXITCODE){throw '142 STOP'};break}
-'143' {SyncRelease $releaseRanged;& py -3 $trace status --game $GameRoot;if($LASTEXITCODE){throw '143 STOP'};break}
-'144' {SyncRelease $releaseRanged;& py -3 $trace rollback --game $GameRoot;if($LASTEXITCODE){throw '144 STOP'};break}
-'145' {SyncRelease $releaseRanged;& py -3 $fix install;if($LASTEXITCODE){throw '145 STOP'};break}
-'146' {SyncRelease $releaseRanged;& py -3 $cap;if($LASTEXITCODE){throw '146 STOP'};break}
-'147' {SyncRelease $releaseRanged;& py -3 $fix status;if($LASTEXITCODE){throw '147 STOP'};break}
-'148' {SyncRelease $releaseRanged;& py -3 $fix rollback;if($LASTEXITCODE){throw '148 STOP'};break}
-'149' {SyncRelease $releaseRanged;& py -3 $motion install;if($LASTEXITCODE){throw '149 STOP'};break}
-'150' {SyncRelease $releaseRanged;& py -3 $motion status;if($LASTEXITCODE){throw '150 STOP'};break}
-'151' {SyncRelease $releaseRanged;& py -3 $motion rollback;if($LASTEXITCODE){throw '151 STOP'};break}
-'152' {SyncRelease $releaseRanged;& py -3 $enemy preflight --game $GameRoot;if($LASTEXITCODE){throw '152 STOP'};break}
-'153' {SyncRelease $releaseRanged;& py -3 $enemy install --game $GameRoot;if($LASTEXITCODE){throw '153 STOP'};break}
-'154' {SyncRelease $releaseRanged;& py -3 $enemy status --game $GameRoot;if($LASTEXITCODE){throw '154 STOP'};break}
-'155' {SyncRelease $releaseRanged;& py -3 $enemy rollback --game $GameRoot;if($LASTEXITCODE){throw '155 STOP'};break}
-'156' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_V5_GUARDED_INSTALL.py') --game $GameRoot;if($LASTEXITCODE){throw '156 STOP'};break}
-'157' {SyncRelease $releaseRanged;& py -3 (Join-Path $rr 'BGXRANGED_V6_GUARDED_INSTALL.py') --game $GameRoot;if($LASTEXITCODE){throw '157 STOP'};break}
-'158' {SyncRelease $releaseWeaponRO;& py -3 (Join-Path $releaseWeaponRO.localPath 'BGXAI_WEAPON_GAME_PREFLIGHT_RO.py') --game $GameRoot;if($LASTEXITCODE){throw '158 STOP'};break}
+'119' {SyncRelease $ao;& py -3 (Join-Path $ao.localPath 'BGX119_TRACE.py');if($LASTEXITCODE){throw '119 STOP'};break}
+'120' {SyncRelease $ao;& py -3 (Join-Path $ao.localPath 'BGX120_ENTANGLE_GUARD.py');if($LASTEXITCODE){throw '120 STOP'};break}
+'121' {SyncRelease $ao;& py -3 (Join-Path $ao.localPath 'BGX121_READONLY.py');if($LASTEXITCODE){throw '121 STOP'};break}
+'122' {SyncRelease $ao;& py -3 (Join-Path $ao.localPath 'BGX122_PROJECTILES_READONLY.py');if($LASTEXITCODE){throw '122 STOP'};break}
+'123' {SyncRelease $rg;& py -3 (Join-Path $rr 'BGXRANGED_PREFLIGHT.py') --mode preflight --game $GameRoot;if($LASTEXITCODE){throw '123 STOP'};break}
+'124' {SyncRelease $rg;& py -3 (Join-Path $rr 'BGXRANGED_GUARDED_INSTALL.py') install --game $GameRoot;if($LASTEXITCODE){throw '124 STOP'};break}
+'125' {SyncRelease $rg;& py -3 (Join-Path $rr 'BGXRANGED_GUARDED_INSTALL.py') status --game $GameRoot;if($LASTEXITCODE){throw '125 STOP'};break}
+'126' {SyncRelease $rg;& py -3 (Join-Path $rr 'BGXRANGED_GUARDED_INSTALL.py') rollback --game $GameRoot;if($LASTEXITCODE){throw '126 STOP'};break}
+'127' {SyncRelease $rg;& py -3 (Join-Path $rr 'BGXRANGED_V2_PREFLIGHT.py') --game $GameRoot;if($LASTEXITCODE){throw '127 STOP'};break}
+'128' {SyncRelease $rg;& py -3 $v2install install --game $GameRoot;if($LASTEXITCODE){throw '128 STOP'};& py -3 $v2install status --game $GameRoot;if($LASTEXITCODE){throw '128 VERIFY STOP'};break}
+'129' {SyncRelease $rg;& py -3 $v2install status --game $GameRoot;if($LASTEXITCODE){throw '129 STOP'};break}
+'130' {SyncRelease $rg;& py -3 $v2install rollback --game $GameRoot;if($LASTEXITCODE){throw '130 STOP'};break}
+'131' {SyncRelease $rg;& py -3 (Join-Path $rr 'BGXRANGED_V3_PREFLIGHT.py') --game $GameRoot;if($LASTEXITCODE){throw '131 STOP'};break}
+'132' {SyncRelease $rg;& py -3 (Join-Path $rr 'BGXRANGED_V3_GUARDED_INSTALL.py') install --game $GameRoot;if($LASTEXITCODE){throw '132 STOP'};break}
+'133' {SyncRelease $rg;& py -3 (Join-Path $rr 'BGXRANGED_V3_GUARDED_INSTALL.py') status --game $GameRoot;if($LASTEXITCODE){throw '133 STOP'};break}
+'134' {SyncRelease $rg;& py -3 (Join-Path $rr 'BGXRANGED_V3_GUARDED_INSTALL.py') rollback --game $GameRoot;if($LASTEXITCODE){throw '134 STOP'};break}
+'135' {SyncRelease $rg;& py -3 (Join-Path $rr 'BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py') --game $GameRoot;if($LASTEXITCODE){throw '135 STOP'};break}
+'136' {SyncRelease $rg;& py -3 (Join-Path $rr 'BGX_FRIENDLY_PROTECT_ISOLATION.py') install --game $GameRoot;if($LASTEXITCODE){throw '136 STOP'};break}
+'137' {SyncRelease $rg;& py -3 (Join-Path $rr 'BGX_FRIENDLY_PROTECT_ISOLATION.py') status --game $GameRoot;if($LASTEXITCODE){throw '137 STOP'};break}
+'138' {SyncRelease $rg;& py -3 (Join-Path $rr 'BGX_FRIENDLY_PROTECT_ISOLATION.py') rollback --game $GameRoot;if($LASTEXITCODE){throw '138 STOP'};break}
+'139' {SyncRelease $rg;& py -3 $ff install --game $GameRoot;if($LASTEXITCODE){throw '139 STOP'};break}
+'140' {SyncRelease $rg;& py -3 $ff status --game $GameRoot;if($LASTEXITCODE){throw '140 STOP'};break}
+'141' {SyncRelease $rg;& py -3 $ff rollback --game $GameRoot;if($LASTEXITCODE){throw '141 STOP'};break}
+'142' {SyncRelease $rg;& py -3 $trace install --game $GameRoot;if($LASTEXITCODE){throw '142 STOP'};break}
+'143' {SyncRelease $rg;& py -3 $trace status --game $GameRoot;if($LASTEXITCODE){throw '143 STOP'};break}
+'144' {SyncRelease $rg;& py -3 $trace rollback --game $GameRoot;if($LASTEXITCODE){throw '144 STOP'};break}
+'145' {SyncRelease $rg;& py -3 $fix install;if($LASTEXITCODE){throw '145 STOP'};break}
+'146' {SyncRelease $rg;& py -3 $cap;if($LASTEXITCODE){throw '146 STOP'};break}
+'147' {SyncRelease $rg;& py -3 $fix status;if($LASTEXITCODE){throw '147 STOP'};break}
+'148' {SyncRelease $rg;& py -3 $fix rollback;if($LASTEXITCODE){throw '148 STOP'};break}
+'149' {SyncRelease $rg;& py -3 $motion install;if($LASTEXITCODE){throw '149 STOP'};break}
+'150' {SyncRelease $rg;& py -3 $motion status;if($LASTEXITCODE){throw '150 STOP'};break}
+'151' {SyncRelease $rg;& py -3 $motion rollback;if($LASTEXITCODE){throw '151 STOP'};break}
+'152' {SyncRelease $rg;& py -3 $enemy preflight --game $GameRoot;if($LASTEXITCODE){throw '152 STOP'};break}
+'153' {SyncRelease $rg;& py -3 $enemy install --game $GameRoot;if($LASTEXITCODE){throw '153 STOP'};break}
+'154' {SyncRelease $rg;& py -3 $enemy status --game $GameRoot;if($LASTEXITCODE){throw '154 STOP'};break}
+'155' {SyncRelease $rg;& py -3 $enemy rollback --game $GameRoot;if($LASTEXITCODE){throw '155 STOP'};break}
+'156' {SyncRelease $rg;& py -3 (Join-Path $rr 'BGXRANGED_V5_GUARDED_INSTALL.py') --game $GameRoot;if($LASTEXITCODE){throw '156 STOP'};break}
+'157' {SyncRelease $rg;& py -3 (Join-Path $rr 'BGXRANGED_V6_GUARDED_INSTALL.py') --game $GameRoot;if($LASTEXITCODE){throw '157 STOP'};break}
+'158' {SyncRelease $wr;& py -3 (Join-Path $wr.localPath 'BGXAI_WEAPON_GAME_PREFLIGHT_RO.py') --game $GameRoot;if($LASTEXITCODE){throw '158 STOP'};break}
 '159' {SyncRelease $wp;& py -3 (Join-Path $wp.localPath 'BGXWP_OBSERVER_GUARDED.py') --game $GameRoot;if($LASTEXITCODE){throw '159 STOP'};break}
+'160' {$r='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_EEEX_R11_STATIC_COMPAT_RO_V2.py';$b=Get-PinnedBytes $r;if($b.Length -ne 6044 -or (HashBytes $b) -cne '0b05e83a6a34bfc2b97be87d8b06761719b43ddaab39593a3863bf1f2317e316'){throw '160 SHA STOP'};$f=Join-Path $cacheDir ('eeex_ro_'+[guid]::NewGuid().ToString('N')+'.py');AssertNotReparse $cacheDir;try{$h=[IO.File]::Open($f,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);try{$h.Write($b,0,$b.Length)}finally{$h.Dispose()};if((HashFile $f) -cne '0b05e83a6a34bfc2b97be87d8b06761719b43ddaab39593a3863bf1f2317e316'){throw '160 CACHE STOP'};& py -3 $f --game $GameRoot;if($LASTEXITCODE){throw '160 STOP'}}finally{if(Test-Path -LiteralPath $f){Remove-Item -LiteralPath $f -Force}};break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0
