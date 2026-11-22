@@ -100,7 +100,7 @@
   "shared_chat_consumer_instruction": "Read manifest; fetch matching Library ZIP autonomously; verify ZIP SHA256; import into ONE existing updater. Do not ask user to forward every version.",
   "rolling_continuation": {
     "schema": "BGVOICE_ROLLING_SECOND_PASS_V1",
-    "status": "BLOCKED_HISTORICAL_DECISION_CONFLICTS_DO_NOT_INTEGRATE_R2",
+    "status": "BLOCKED_UNTIL_VOICE_SELECTION_7206_COMPLETED_AND_HISTORICAL_LOCKS_RECONCILED",
     "library_archive": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_ROLLING_SAFE_R2.zip",
     "sha256_archive": "b0e1717f958149c63fb86e73a606addf3a5edac8fd18c4d945bb22c6a3621003",
     "archive_bytes": 46467,
@@ -156,5 +156,29 @@
     "requires_user_plus": false,
     "background_execution_without_scheduler": false
   },
-  "rolling_continuation_integrity_note": "Do not run 613/24 R2 on Windows until known pilot defects and historic review locks are enforced. Source-only tests are not production PASS."
+  "rolling_continuation_integrity_note": "Do not run 613/24 R2 on Windows until known pilot defects and historic review locks are enforced. Source-only tests are not production PASS.",
+  "primary_objective": {
+    "name": "VOICE_SELECTION_7206_FIRST",
+    "priority": 0,
+    "established": "2026-11-15",
+    "reconfirmed": "2026-11-18",
+    "source": "BG_VOICE_RU_SELECTION_FIRST_CHECKPOINT_20261115.md",
+    "required_order": [
+      "FAST_AUDIO_INTEGRITY_BOTH_VARIANTS",
+      "SELECT_BEST_STABLE_VS_PER_LINE_FOR_7206_BY_CHARACTER_IDENTITY_ACTING_CONTEXT_CONTENT",
+      "LOCK_CHOICE_OR_HOLD_WITH_EVIDENCE",
+      "ONLY_AFTER_SELECTION_AUDIT_STRESS_OF_SELECTED",
+      "ONLY_AFTER_STRESS_CHECK_TARGETED_RETAKE",
+      "SEPARATE_GAME_INSTALL_AUTHORIZATION"
+    ],
+    "selection_register_7206_complete": false,
+    "prohibit_premature": [
+      "RETAKE",
+      "STRESS_REPAIR",
+      "CAPS_REGEN",
+      "FX_REPAIR"
+    ],
+    "machine_selection_not_equal_game_approval": true,
+    "main_updater_must_enforce_gate": true
+  }
 }
