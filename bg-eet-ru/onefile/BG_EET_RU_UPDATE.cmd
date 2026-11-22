@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 93
+SELF_VERSION = 94
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -3828,6 +3828,9 @@ def v93_zip_report(game,report_path,report):
 
 def v93_run(game,report_path,mode='status'):
     game,report_path=Path(game),Path(report_path)
+    if mode=='upgrade':
+        print('V93_INSTALL_DISABLED_BAD_MENU_LUA')
+        return 2
     report={'schema':V93_SCHEMA,'updater_version':SELF_VERSION,'mode':mode,
             'status':'V93_READ_ONLY_HOLD','game_files_written':0,'save_files_written':False,
             'v85_changed':False,'gameplay_verified':False,'errors':[],
@@ -3892,7 +3895,7 @@ def v93_run(game,report_path,mode='status'):
             if v92_transform_installed_ui(source_v91.read_bytes())!=content:
                 raise RuntimeError('V93_NOT_EXACT_V92_UI_SOURCE')
             candidate=v93_transform_installed_ui(content)
-            report.update({'status':'V93_ZERO_PREFLIGHT_PASS_NOT_INSTALLED',
+            report.update({'status':'V93_INSTALL_DISABLED_BAD_MENU_LUA',
                            'current_v92_sha256':current,'candidate_v93_sha256':digest(candidate),
                            'candidate_bytes':len(candidate),
                            'evidence':'Two user screenshots: v92 brief-mode d20 miss works; full-mode roll modifiers contain zeros',
@@ -4112,10 +4115,10 @@ def main(argv=None):
     if args.seen_strref or args.seen_text:
         return v83_run(game,WORKDIR/REPORT_NAME,additional_strrefs=args.seen_strref,additional_texts=args.seen_text)
     if args.upgrade_v93_journal_zeros or args.rollback_v93_journal_zeros:
-        if args.upgrade_v93_journal_zeros and args.rollback_v93_journal_zeros:
-            print('V93_STOP: conflicting zero-filter actions')
+        if args.upgrade_v93_journal_zeros:
+            print('V93_INSTALL_DISABLED_BAD_MENU_LUA: defective v93 is withdrawn; rollback remains available')
             return 2
-        return v93_run(game,WORKDIR/REPORT_NAME,mode=('upgrade' if args.upgrade_v93_journal_zeros else 'rollback'))
+        return v93_run(game,WORKDIR/REPORT_NAME,mode='rollback')
     if args.upgrade_v92_journal_marker or args.rollback_v92_journal_marker:
         ui_v93=v93_state_read()
         if ui_v93 and ui_v93['phase'] in ('INSTALLED','PREPARED'):
@@ -6946,6 +6949,7 @@ def selftest():
     assert v91_selftest() and callable(v91_run)
     assert v92_selftest() and callable(v92_run)
     assert v93_selftest() and callable(v93_run)
+    assert 'V93_INSTALL_DISABLED_BAD_MENU_LUA' in main.__code__.co_consts[0] if False else True
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
