@@ -206,7 +206,7 @@
       "asr_vs_ecapa_conflicts": 87
     },
     "automatic_voice_approvals_from_model_fusion": 0,
-    "selection_stage": "R2_EVIDENCE_ARBITRATION_SOURCE_AND_REGISTRY_READY_READONLY",
+    "selection_stage": "WAVLM_INDEPENDENT_GPU_PILOT_READY_TO_RUN_ON_WINDOWS",
     "current_selection_engine": "SELECTION_FIRST_R2",
     "candidate_audio_selected_finally": 0,
     "r2_library_archive": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_SELECTION_R2_CALIBRATED_20261122.zip",
@@ -259,6 +259,28 @@
       "approved_game_wavs": 0
     },
     "diagnostics_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/selection_first/REAL_WINDOWS_AUTOSELECT_QA_20261123.md",
-    "required_next_step": "INDEPENDENT_ACTOR_AND_SPEAKER_ACOUSTIC_MODEL_ON_REAL_WAV_EN_REFERENCES_NOT_ANOTHER_ECAPA_WEIGHT_TWEAK"
+    "required_next_step": "INDEPENDENT_ACTOR_AND_SPEAKER_ACOUSTIC_MODEL_ON_REAL_WAV_EN_REFERENCES_NOT_ANOTHER_ECAPA_WEIGHT_TWEAK",
+    "independent_gpu_selector": {
+      "name": "BG_VOICE_GPU_SELECT_V1_20261123.zip",
+      "library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_GPU_SELECT_V1_20261123.zip",
+      "sha256": "2c55a06428813c3c09f04f74f520e3fd9fd0b470ab3c3580b7f8504e79d2fd02",
+      "bytes": 1935932,
+      "model": "microsoft/wavlm-base-plus-sv",
+      "model_revision": "feb593a6c23c1cc3d9510425c29b0a14d2b07b1e",
+      "protected_user_rows": 58,
+      "human_pilot": {
+        "stable": 7,
+        "per_line": 13
+      },
+      "gate": "12+ evaluable, at least 4 Stable and 6 Per_line, recall stable >=0.60 and PerLine >=0.70, balanced accuracy >=0.70",
+      "model_code_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/selection_first/gpu_pilot_v1/BGVOICE_GPU_SELECTION.py",
+      "actual_user_gpu_inference": "NOT_RUN",
+      "source_game_modified": false,
+      "stress_checks_run": false,
+      "voice_retake_run": false,
+      "test": "OFFLINE_SYNTHETIC_FULL_7206_AND_58_LOCKS_PASS; NO_CUDA_NEGATIVE_TEST_PASS"
+    },
+    "current_production_next_action": "ONE_WINDOWS_GPU_SELECTOR_START_THEN_READ_REAL_WAVLM_CALIBRATION_REPORT",
+    "repairs_blocked_before_voice_selection": true
   }
 }
