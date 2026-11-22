@@ -30,7 +30,7 @@ def sha(data:bytes)->str:return hashlib.sha256(data).hexdigest()
 
 def _safe_bytes(path: Path, expected: str, max_bytes=16*1024*1024):
     if not HEX.fullmatch(expected): raise ValueError('INVALID_EXPECTED_SHA')
-    if path.is_symlink(): raise ValueError('SOURCE_SYMLINK_FORBIDDEN')
+    if path.is_symlink() or path.parent.is_symlink(): raise ValueError('SOURCE_SYMLINK_FORBIDDEN')
     if not path.is_file(): raise FileNotFoundError('SOURCE_ABSENT')
     if path.stat().st_size>max_bytes:raise ValueError('SOURCE_TOO_LARGE')
     b=path.read_bytes()
@@ -51,9 +51,12 @@ def _write_once(target:Path,data:bytes):
     try:
         with os.fdopen(fd,'wb') as f:f.write(data);f.flush();os.fsync(f.fileno())
         if sha(Path(temp).read_bytes())!=sha(data):raise ValueError('COPY_SHA_MISMATCH')
-        # With a concurrent caller, refuse any existing destination rather than overwrite.
-        if target.exists():raise ValueError('CONCURRENT_STAGE_TARGET_EXISTS')
-        os.rename(temp,target)
+        # Atomic create-if-absent on NTFS/POSIX. os.rename may replace destination
+        # in a race on POSIX; hard-link creation NEVER overwrites a path.
+        try:
+            os.link(temp, target)
+        except FileExistsError:
+            raise ValueError('CONCURRENT_STAGE_TARGET_EXISTS_NO_OVERWRITE')
         return 'STAGED_NOT_APPROVED'
     finally:
         if os.path.exists(temp):os.unlink(temp)
@@ -61,6 +64,7 @@ def _write_once(target:Path,data:bytes):
 
 def _report_atomic(target:Path,blob:bytes):
     target.parent.mkdir(parents=True,exist_ok=True)
+    if target.parent.is_symlink() or target.is_symlink():raise ValueError('REPORT_SYMLINK_FORBIDDEN')
     fd,temp=tempfile.mkstemp(prefix='.bgvoice_report_',suffix='.partial',dir=target.parent)
     try:
         with os.fdopen(fd,'wb') as f:f.write(blob);f.flush();os.fsync(f.fileno())
