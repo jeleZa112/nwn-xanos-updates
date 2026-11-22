@@ -18,7 +18,7 @@ import zipfile
 from collections import Counter
 from pathlib import Path
 
-MOVIE_CORE_VERSION = '1.8.0'
+MOVIE_CORE_VERSION = '1.9.0'
 SCRIPT_JSON_SHA256 = '87d18d68ce2be6236e2bdb468dc0275c7f5f257714643b5cf9013c48f87a9ee4'
 MOVIE_SEGMENTS = {'INTRO15F': 16, 'SODCIN01': 18, 'IWINTRO': 29}
 PILOT_KNOWN = {'INTRO15F_G01','SODCIN01_G02','IWINTRO_G06'}
@@ -925,8 +925,143 @@ def _merge_ru10_human_decisions(root=None):
 
 
 
+
+# === BGVOICE VIDEO REWORK_STRESS 7: SAFE PHONETIC RETAKE CANDIDATES, NOT FINAL ===
+# The user marked seven exact old WAVs REWORK_STRESS but did not name the mis-stressed word.
+# Never claim stress is fixed or overwrite old/source files. Prior successful movie takes
+# used Shtorm's historical "+" accent notation, e.g. "Сарев+ок" and "Ба+алу".
+# The plus prompts below mark conservative, commonly unambiguous Russian stressed vowels.
+# Proper names with no independent accent audit are left unmarked.
+MOVIE_RU_RETAKE7_ROOT = 'VIDEO/RU_STRESS_RETAKES_7/'
+MOVIE_RU_RETAKE7_STAGE = 'VIDEO_RU_STRESS_RETAKES_7'
+MOVIE_RU_RETAKE7_PHONETIC = {
+    'SODCIN01_G10':'Друг+ие ш+епчут, б+удто он+а — ещ+ё одн+о дит+я Ба+ала, ид+ущее по стоп+ам Сарев+ока.',
+    'IWINTRO_G03':'Когд+а Изелор покид+ал з+емли у Вн+утреннего м+оря и отправл+ялся к Хребт+у М+ира, он обещ+ал сво+им собр+атьям-дру+идам присл+ать ученик+а себ+е на см+ену.',
+    'IWINTRO_G07':'Шёл т+ысяча тр+иста дес+ятый год по Летоисчисл+ению Дол+ин. Разв+едчики из Брин-Шандера, крупн+ейшего из Дес+яти Город+ов, вперв+ые зам+етили отр+яды г+облинов.',
+    'IWINTRO_G08':'За сч+итанные н+едели из Хребт+а М+ира хл+ынули п+олчища г+облинов. Над +этой волн+ой см+ерти р+еяло зн+амя с чудов+ищными голов+ами Хим+еры.',
+    'IWINTRO_G11':'У Лускана хват+ало с+обственных бед, но, опас+аясь посл+едствий, городск+ие капит+аны прид+умали прост+ой план.',
+    'IWINTRO_G16':'Погруж+ённые в мечт+ы, он+и не замеч+али п+олчищ г+облинов и +орков, поджид+авших их в зас+аде.',
+    'IWINTRO_G19':'Мн+огие задав+ались вопр+осом, и я ч+асто д+умала о том же: что м+огут сд+елать немн+огие пр+отив столь многочисл+енного враг+а в так+их стр+ашных обсто+ятельствах?',
+}
+
+def _stress7_validate_and_stage(main, work):
+    stage=work/MOVIE_RU_RETAKE7_STAGE
+    with zipfile.ZipFile(main) as z:
+        if z.testzip() is not None:raise ValueError('MAIN_REPORT_ZIP_CRC_HOLD')
+        status=json.loads(z.read('VIDEO/RU10_HUMAN_DECISIONS/STATUS.json'))
+        if status.get('human_voice_approved')!=3 or status.get('rework_stress')!=7:
+            raise ValueError('HUMAN_3_ACCEPTED_7_REWORK_NOT_RECORDED')
+        rework=list(csv.DictReader(io.StringIO(z.read('VIDEO/RU10_HUMAN_DECISIONS/STRESS_REWORK_7.csv').decode('utf-8-sig'))))
+        accept=list(csv.DictReader(io.StringIO(z.read('VIDEO/RU10_HUMAN_DECISIONS/ACCEPTED_3.csv').decode('utf-8-sig'))))
+        if len(rework)!=7 or len(accept)!=3 or {r['sound_id'] for r in rework}!=set(MOVIE_RU_RETAKE7_PHONETIC):
+            raise ValueError('STRESS7_ID_SET_DIFFERS_FROM_HUMAN_FEEDBACK')
+        for row in accept:
+            sid=row['sound_id'];key='VIDEO/RU_CANDIDATES_10/WAV/'+sid+'.wav'
+            if hashlib.sha256(z.read(key)).hexdigest()!=row['source_ru_candidate_sha256']:
+                raise ValueError('ACCEPTED_RU_WAV_SHA_MISMATCH_'+sid)
+        jobs=[];data_to_stage={}
+        for row in rework:
+            sid=row['sound_id']
+            if row['human_decision']!='REWORK_STRESS' or row['human_voice_accepted']!='NO':
+                raise ValueError('RETAKE_NOT_HUMAN_REJECTED_'+sid)
+            old_ru='VIDEO/RU_CANDIDATES_10/WAV/'+sid+'.wav'
+            en=EN_CUES_ROOT+sid+'_EN_DNR_ASR_WINDOW.wav'
+            ru_buf=z.read(old_ru);en_buf=z.read(en)
+            old_sha=hashlib.sha256(ru_buf).hexdigest()
+            en_sha=hashlib.sha256(en_buf).hexdigest()
+            if old_sha!=row['source_ru_candidate_sha256'] or en_sha!=row['source_english_cue_sha256']:
+                raise ValueError('PREVIOUS_RU_OR_EN_SHA_CHANGED_'+sid)
+            text=row['russian_draft_not_separately_approved']
+            accent=MOVIE_RU_RETAKE7_PHONETIC[sid]
+            if accent.replace('+','')!=text:
+                raise ValueError('PHONETIC_STRIPPED_TEXT_NOT_IDENTICAL_'+sid)
+            if not accent.count('+')>=5 or len(text)>500:
+                raise ValueError('INSUFFICIENT_PHONETIC_MARKS_'+sid)
+            with wave.open(io.BytesIO(en_buf),'rb') as wav:
+                if wav.getcomptype()!='NONE' or wav.getnframes()==0 or not 2<wav.getnframes()/wav.getframerate()<42:
+                    raise ValueError('INVALID_EN_CUE_'+sid)
+            fingerprint=hashlib.sha256(json.dumps({'schema':'MOVIE_PHONETIC_RETAKE7_V1','id':sid,
+                       'phonetic':accent,'en_sha256':en_sha,'previous_ru_sha256':old_sha,
+                       'model_sha256':MOVIE_SHTORM_MODEL_SHA256,'steps':12,'cfg':2.0},
+                       ensure_ascii=False,sort_keys=True).encode('utf-8')).hexdigest()
+            jobs.append({'id':sid,'movie':sid.split('_')[0], 'state':'DRAFT_NOT_APPROVED',
+                 'tts_text':accent,'source_sha256':en_sha,'previous_ru_sha256':old_sha,
+                 'phonetic_prompt_not_verified':accent,'source_plain_ru_text':text,
+                 'fingerprint':fingerprint,
+                 'seed':int(hashlib.sha256(('BGVOICE_MOVIE_RETAKE7_V1_'+sid).encode()).hexdigest()[:8],16),
+                 'human_original_rework_reason':'REWORK_STRESS_WORD_NOT_SPECIFIED',
+                 'machine_improved_stress_NOT_VERIFIED':True,
+                 'game_install_allowed':False})
+            data_to_stage[sid]=en_buf
+    # Validate all seven before any staging changes.
+    if len(jobs)!=7:raise ValueError('STRESS7_JOB_COUNT_NOT_SEVEN')
+    refs=stage/'EN_REF';outdir=stage/'RU_WAV'
+    refs.mkdir(parents=True,exist_ok=True);outdir.mkdir(parents=True,exist_ok=True)
+    for t in jobs:
+        sid=t['id'];dst=refs/(sid+'.wav');buf=data_to_stage[sid]
+        if dst.exists():
+            if _file_sha256(dst)!=t['source_sha256']:
+                raise ValueError('EXISTING_STAGE_EN_SHA_CONFLICT_'+sid)
+        else:
+            tmp=dst.with_suffix('.pending')
+            if tmp.exists():raise ValueError('PREEXISTING_EN_TEMP_'+sid)
+            tmp.write_bytes(buf);os.replace(tmp,dst)
+    return stage,jobs
+
+def _produce_movie_ru_stress7(root=None,run_worker=True):
+    work=Path(root) if root else Path(os.environ.get('BG_VOICE_FULL_PRODUCTION_ROOT') or
+                                 Path.home()/'Documents'/'BG_VOICE_RU'/'FULL_PRODUCTION')
+    main=work/'SEND_TO_CHATGPT_BG_VOICE_RU.zip'
+    if not main.is_file():return 'HOLD_COMMON_REPORT_MISSING'
+    stage,jobs=_stress7_validate_and_stage(main,work)
+    worker_status=_ru_worker_run(stage,jobs) if run_worker else 'SOURCE_PREFLIGHT_ONLY_NO_GPU'
+    generated={};states=[];wav_root=stage/'RU_WAV'
+    for t in jobs:
+        sid=t['id'];out=wav_root/(sid+'__SHTORM_MOVIE_DRAFT.wav');side=out.with_suffix('.json')
+        state={k:t[k] for k in ('id','movie','previous_ru_sha256','source_sha256','fingerprint',
+                                  'source_plain_ru_text','phonetic_prompt_not_verified')}
+        state['status']='HOLD_NO_RETAKE_YET'
+        state['human_original_rework_reason']='REWORK_STRESS_WORD_NOT_SPECIFIED'
+        state['game_install_allowed']=False
+        if out.is_file() and side.is_file():
+            try:
+                meta=json.loads(side.read_text(encoding='utf-8'))
+                raw=out.read_bytes()
+                if (meta.get('fingerprint')!=t['fingerprint'] or meta.get('sha256')!=hashlib.sha256(raw).hexdigest()
+                    or meta.get('original_english_source_sha256')!=t['source_sha256']
+                    or len(raw)>9*1024*1024):
+                    raise ValueError('RETAKE_SHA_OR_SOURCE_MISMATCH')
+                with wave.open(io.BytesIO(raw),'rb') as wav:
+                    if (wav.getnchannels()!=1 or wav.getsampwidth()!=2 or not 0.4<wav.getnframes()/wav.getframerate()<90):
+                        raise ValueError('RETAKE_WAV_FORMAT')
+                generated[MOVIE_RU_RETAKE7_ROOT+'WAV/'+sid+'.wav']=raw
+                state.update({'status':'GENERATED_RETAKE_NOT_USER_APPROVED',
+                              'new_candidate_sha256':hashlib.sha256(raw).hexdigest()})
+            except (OSError,ValueError,wave.Error,json.JSONDecodeError,KeyError):
+                state['status']='HOLD_RETAKE_SHA_OR_AUDIO_INVALID'
+        elif out.exists() or side.exists():
+            state['status']='HOLD_PARTIAL_RETAKE_OUTPUT'
+        states.append(state)
+    addition={MOVIE_RU_RETAKE7_ROOT+'TASKS.json':_json(states),
+              MOVIE_RU_RETAKE7_ROOT+'STATUS.json':_json({
+                'schema':'BGVOICE_MOVIE_RETAKE_STRESS7_V1','movie_code_version':MOVIE_CORE_VERSION,
+                'jobs':7,'generated_retake_candidates':len(generated),'hold_or_not_yet_created':7-len(generated),
+                'worker':worker_status,'previous_bad_wav_preserved':True,
+                'previous_three_accepted_unchanged':True,
+                'human_acceptance_of_retake':0,'wrong_stress_word_specified_by_user':False,
+                'phonetic_marks_are_pronunciation_hypothesis_not_manual_approval':True,
+                'movie_mix_or_game_install':False}),**generated}
+    with zipfile.ZipFile(main) as z:
+        current=set(z.namelist())
+        if all(key in current and z.read(key)==val for key,val in addition.items()):
+            return 'RETAKE7_REPORT_ALREADY_CURRENT:'+str(len(generated))+'/7'
+    return _merge_main_report(addition,work)+':'+str(len(generated))+'/7_RETAKE_CANDIDATES'
+# === END BGVOICE VIDEO STRESS7 RETAKE CANDIDATES ===
+
+
 def selftest():
-    assert MOVIE_CORE_VERSION=='1.8.0' and sum(MOVIE_SEGMENTS.values())==63
+    assert MOVIE_CORE_VERSION=='1.9.0' and sum(MOVIE_SEGMENTS.values())==63
+    assert len(MOVIE_RU_RETAKE7_PHONETIC)==7 and all('+' in t for t in MOVIE_RU_RETAKE7_PHONETIC.values())
     assert len(PILOT_KNOWN)==3 and _csv([{'id':'A'}],['id']).endswith(b'A\r\n')
     assert set(PILOT_SHA256)==PILOT_KNOWN and all(len(sha)==64 for sha in PILOT_SHA256.values())
     assert len(PILOT_SHA256)==3
@@ -998,3 +1133,18 @@ def run(host):
         print('MOVIE_EN_REFERENCE_HOLD:',type(exc).__name__,str(exc)[:160],flush=True)
     try:
         print('MOVIE_RU_CANDIDATE_PRODUCTION:',_produce_movie_ru_drafts(),flush=True)
+    except Exception as exc:
+        print('MOVIE_RU_PRODUCTION_HOLD:',type(exc).__name__,str(exc)[:200],flush=True)
+    try:
+        print('MOVIE_RU10_HUMAN_DECISIONS:',_merge_ru10_human_decisions(),flush=True)
+    except Exception as exc:
+        print('MOVIE_RU10_HUMAN_DECISIONS_HOLD:',type(exc).__name__,str(exc)[:180],flush=True)
+    try:
+        print('MOVIE_RU_STRESS7_RETAKES:',_produce_movie_ru_stress7(),flush=True)
+    except Exception as exc:
+        print('MOVIE_RU_STRESS7_HOLD:',type(exc).__name__,str(exc)[:160],flush=True)
+    print('MOVIE_CHANNEL_REPORT:',report,flush=True)
+    return 0
+
+
+if __name__=='__main__':raise SystemExit(selftest())
