@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "1db5a1337d24297be492a43bd481ba14f53268de",
+  "commit": "c65b2c8142d2498ca277734c2d27fd6451ae0454",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "b7e62b0e1fba2a6f6730508c02718da2c56211b1f98344adbb135735abfe9697",
-  "script_size": 79943,
-  "description": "BGXAI ONEFILE menu 160 V3 READ ONLY: optional missing B3AttackInfo is diagnostic core-static success with R11 API still unverified. Legacy 1–159 unchanged, EPS/V6 and all game files untouched; no R11 install or weapon dispatch."
+  "script_sha256": "5740c40cb876b69e664a930b32f089a3431b4a9218537ce9d95b9997095ee2b5",
+  "script_size": 79610,
+  "description": "BGXAI onefile menu161: SHA-pinned passive target-defense R13 guarded pilot, default READ-ONLY preflight, exact separate typed approval to install. Preserves old 1–160, no R13 deploy by pin, no weapon switch."
 }
