@@ -45,42 +45,42 @@ names=@('BGXAI43_PROBE_INSTALL.py','BGX43/setup-BGX43.tp2','BGX43/M_BGX43Probe.l
 'BGX43/tests/test_installer_043.py','README_RU.md','eeex_bridge_043.py',
 'intercept_policy.py','test_eeex_bridge_043.py','SOURCE_MANIFEST.json')
 }
-$release044=@{
+$t44=@{
 id='044';version='0.3.15-044-DIAG';manifest=$xrr+'release_044/manifest.json';prefix=$xrr+'release_044/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_044';installer='BGXAI44_INSTALL.py';
 names=@('BGXAI44_INSTALL.py','BGX44/setup-BGX44.tp2','BGX44/M_BGX44Diag.lua',
 'README_RU.md','BGX44/tests/test_installer_044.py',
 'BGX44/tests/test_lua_044.py','SOURCE_MANIFEST.json')
 }
-$release045=@{
+$t45=@{
 id='045';version='0.3.16b-045-RESREF-FIX';manifest=$xrr+'release_045b/manifest.json';prefix=$xrr+'release_045b/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_045';installer='BGXAI45_INSTALL.py';
 names=@('BGXAI45_INSTALL.py','BGX45/setup-BGX45.tp2','BGX45/M_BX43.lua',
 'BGX45/M_BX44.lua','README_RU.md','BGX45/tests/test_installer_045.py',
 'BGX45/tests/test_lua_045.py','SOURCE_MANIFEST.json')
 }
-$release046=@{
+$t46=@{
 id='046';version='0.3.17-046-ATTACK-FILTER';manifest=$xrr+'release_046/manifest.json';prefix=$xrr+'release_046/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_046';installer='BGXAI46_INSTALL.py';
 names=@('BGXAI46_INSTALL.py','BGX46/setup-BGX46.tp2','BGX46/M_BX43.lua',
 'BGX46/tests/test_installer_046.py','BGX46/tests/test_lua_046.py',
 'README_RU.md','SOURCE_MANIFEST.json')
 }
-$release047=@{
+$t47=@{
 id='047';version='0.3.18-047-RESOLVED-TARGET';manifest=$xrr+'release_047/manifest.json';prefix=$xrr+'release_047/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_047';installer='BGXAI47_INSTALL.py';
 names=@('BGXAI47_INSTALL.py','BGX47/setup-BGX47.tp2','BGX47/M_BX43.lua',
 'BGX47/tests/test_installer_047.py','BGX47/tests/test_lua_047.py',
 'README_RU.md','SOURCE_MANIFEST.json')
 }
-$release048=@{
+$t48=@{
 id='048';version='0.3.19-048-CONFIRMED-HIT';manifest=$xrr+'release_048/manifest.json';prefix=$xrr+'release_048/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_048';installer='BGXAI48_INSTALL.py';
 names=@('BGXAI48_INSTALL.py','BGX48/setup-BGX48.tp2','BGX48/M_BX43.lua',
 'BGX48/tests/test_installer_048.py','BGX48/tests/test_lua_048.py',
 'README_RU.md','SOURCE_MANIFEST.json')
 }
-$release049=@{
+$t49=@{
 id='049';version='0.3.20-049-GUARD-ADVISORY';manifest=$xrr+'release_049/manifest.json';prefix=$xrr+'release_049/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_049';installer='BGXAI49_INSTALL.py';
 names=@('BGXAI49_INSTALL.py','BGX49/setup-BGX49.tp2','BGX49/M_BX43.lua',
@@ -149,7 +149,7 @@ localPath=Join-Path $GameRoot 'BGXAI_DEV\experimental_067_early_guard';installer
 names=@('BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf','BGX66_CASTER_SUPPORT.lua','BGX67_EARLY_GUARD.baf','BGX67_PREHIT_GUARD.lua','BGXAI64_INSTALL_SOURCE_ONLY.py','BGXAI64_PATCH.py','BGXAI64_PREFLIGHT_READONLY.py','BGXAI66S_BCS_PATCH.py','BGXAI66S_INSTALL.py','BGXAI67_BCS_PATCH.py','BGXAI67_INSTALL.py','M_BX43_064_CANDIDATE.lua','M_BX43_066S_CASTER_CANDIDATE.lua','M_BX43_066_BASELINE_READONLY.lua','M_BX43_066_CANDIDATE.lua','M_BX43_067_EARLY_CANDIDATE.lua','README_RU.md','build_066.py','build_066s.py','build_067.py','ci_weidu_067.py','generate_067_baf.py','generate_receiver.py','ids/action.ids','ids/modal.ids','ids/object.ids','ids/spell.ids','ids/trigger.ids','lua65_harness.py','native_066_fixture.py','test_066s_installer_mock.py','test_067_bcs.py','test_067_install_mock.py','test_067_native.py')
 }
 
-$releaseIdle=@{
+$xidle=@{
 id='IDLE';version='0.3.36-066S-IDLE-GUARD-PILOT';
 manifest='BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/manifest_updater.json';
 prefix='BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/';
@@ -158,35 +158,35 @@ installer='BGXAI_IDLE_GUARD_INSTALL_SOURCE_ONLY.py';
 names=@('066S_idle_guard_minimal.diff','BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf','BGX66_CASTER_SUPPORT.lua','BGXAI_IDLE_GUARD_INSTALL_SOURCE_ONLY.py','M_BX43_066S_IDLE_GUARD_CANDIDATE.lua','M_BX43_066S_VERIFIED_ORIGINAL.lua','M_BX43_066_BASELINE_READONLY.lua','README_INSTALLER_RU.md','README_RU.md','TEST_PROTOCOL_RU.md','lua65_harness.py','manifest_install_sha256.json','native_066_fixture.py','parse.lua','run_tests.py','test_066s_caster_native.py','test_guarded_installer.py','test_idle_guard.py','verify_install_release.py')
 }
 
-$releaseBGXPR=@{
+$xpr=@{
 id='BGXPR';version='0.3.37-BGXPR-ONEFILE';
 manifest='BGXAI/patchsets/priest_modes_eps_first_installable_20261116/manifest_updater.json';
 prefix='BGXAI/patchsets/priest_modes_eps_first_installable_20261116/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\priest_modes_verified';installer='BGXPR_INSTALL.py';
 names=@('M_BX43_066S_CASTER_CANDIDATE.lua','M_BX43_066S_GUARD_TEAM_CANDIDATE.lua','M_BX43_066S_PRIEST_MODES.lua','M_BX43_BGXTEAM_PRIEST_MODES.lua','BGXPR_LAST_PRIORITY.baf','BGXPR_BCS_PATCH.py','BGXPR_INSTALL.py','parse.lua','SHA256_FILES.json')
 }
-$releaseBGXTEAM=@{
+$xteam=@{
 id='BGXTEAM';version='0.3.38-BGXTEAM-ONEFILE';
 manifest='BGXAI/patchsets/team_f_guard_066s_installable_pilot_20261116/manifest_updater.json';
 prefix='BGXAI/patchsets/team_f_guard_066s_installable_pilot_20261116/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\team_guard_verified';installer='BGXAI_TEAM_GUARD_INSTALL.py';
 names=@('BGXAI_TEAM_GUARD_INSTALL.py','M_BX43_066S_VERIFIED_ORIGINAL.lua','M_BX43_066S_GUARD_TEAM_CANDIDATE.lua')
 }
-$releaseBGXP2=@{
+$xp2=@{
 id='BGXP2';version='0.3.39-BGXP2-COMBAT-PRIEST';
 manifest='BGXAI/patchsets/priest_combat_eps_first_20261116/manifest_updater.json';
 prefix='BGXAI/patchsets/priest_combat_eps_first_20261116/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\priest_combat_verified';installer='BGXP2_INSTALL.py';
 names=@('BGXP2_LAST_PRIORITY.baf','BGXP2_BCS_PATCH.py','BGXP2_INSTALL.py','README_RU.md','PLAYTEST_RU.md','test_bgxp2.py','SHA256_FILES.json')
 }
-$releaseBGXP3=@{
+$xp3=@{
 id='BGXP3';version='0.3.40-BGXP3-AUTO-BUFFER';
 manifest='BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/manifest_updater.json';
 prefix='BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/';
 localPath=Join-Path $GameRoot 'BGXAI_DEV\priest_auto_buffer_verified';installer='BGXP3_INSTALL.py';
 names=@('BGXP2_LAST_PRIORITY.baf','BGXP2_BCS_PATCH.py','BGXP3_AUTO_ATTACK_BUFFER_SOURCE_ONLY.py','BGXP3_BCS_PREFLIGHT_SOURCE_ONLY.py','BGXP3_INSTALL.py','README_RU.md','test_bgxp3_auto_attack_buffer.py','test_bgxp3_bcs_preflight.py','SHA256_FILES.json')
 }
-$releaseBGXP5=@{
+$xp5=@{
 id='BGXP5';version='0.3.41-BGXP5-AUTO-PRIORITY-GUARD';
 manifest='BGXAI/patchsets/priest_auto_priority_guard_source_20261117/manifest_updater.json';
 prefix='BGXAI/patchsets/priest_auto_priority_guard_source_20261117/';
@@ -210,6 +210,7 @@ names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INS
 $wr=@{id='WRO';version='0.3.77-WEAPON-NATIVE-READONLY';manifest=($rg.prefix+'BGXAI_WEAPON_NATIVE_PREFLIGHT_MANIFEST_V1.json');prefix=$rg.prefix;localPath=Join-Path $GameRoot 'BGXAI_DEV\weapon_native_ro';names=@('BGXAI_WEAPON_GAME_PREFLIGHT_RO.py','BGXAI_WEAPON_GAME_PREFLIGHT_V1.baf')}
 $wp=@{id='WP';version='0.3.82-R4-ALLPROF-BUFF-RO';manifest=($rg.prefix+'BGXWP_OBSERVER_MANIFEST_R1.json');prefix=$rg.prefix;localPath=Join-Path $GameRoot 'BGXAI_DEV\weapon_runtime_ro';names=@('BGXWP_OBSERVER_GUARDED.py','M_BGXWP.lua','BGXW2_OBSERVER_GUARDED.py','M_BGXW2.lua','BGXAI_WEAPON_NATIVE_ITM_R3_RO.py','M_BGXW4.lua')}
 $td13=@{id='TD13';version='0.3.85-R13-TARGET-MISSILE-RO';manifest=($rg.prefix+'BGXAI_R13_MANIFEST_V1.json');prefix=$rg.prefix;localPath=Join-Path $GameRoot 'BGXAI_DEV\weapon_target_r13';names=@('BGXAI_R13_GUARDED.py','M_BGXTDEF13.lua')}
+$td14=@{id='TD14';version='0.3.86-R13-SHORTNAME-RO';manifest=($rg.prefix+'BGXAI_R13_SHORTNAME_MANIFEST_V1.json');prefix=$rg.prefix;localPath=Join-Path $GameRoot 'BGXAI_DEV\weapon_target_r13_shortfix';names=@('BGXAI_R13_SHORTNAME_GUARDED.py','M_BGXD13.lua')}
 $v2install=Join-Path $rg.localPath 'BGXRANGED_V2_GUARDED_INSTALL.py'
 $ff=Join-Path $rg.localPath 'BGX_FRIENDLY_RETALIATION_GUARDED.py'
 $rr=$rg.localPath
@@ -594,7 +595,7 @@ Write-Host 'BGXAI067 action completed. Read-only status via menu 90.'
 
 
 function VerifyIdleGuardSource {
-$spec=$releaseIdle
+$spec=$xidle
 $items=VerifiedManifest $spec
 foreach($name in $spec.names){
 $file=Join-Path $spec.localPath $name
@@ -604,17 +605,17 @@ if((HashFile $file) -cne $items[$name].sha){throw ('BGXAI IDLE source SHA mismat
 }
 function CheckIdleGuardReadOnly([string]$mode) {
 if($mode -cne 'preflight' -and $mode -cne 'status'){throw 'BGXAI IDLE read-only mode invalid'}
-SyncRelease $releaseIdle
+SyncRelease $xidle
 VerifyIdleGuardSource
 Write-Host ('BGXAI 066S idle guard '+$mode+': READ ONLY, no override/WeiDU changes.')
-& py -3 (Join-Path $releaseIdle.localPath 'BGXAI_IDLE_GUARD_INSTALL_SOURCE_ONLY.py') $mode '--game-root' $GameRoot
+& py -3 (Join-Path $xidle.localPath 'BGXAI_IDLE_GUARD_INSTALL_SOURCE_ONLY.py') $mode '--game-root' $GameRoot
 if($LASTEXITCODE -ne 0){throw ('BGXAI IDLE '+$mode+' STOP '+$LASTEXITCODE)}
 }
 function RunIdleGuardGuarded([string]$mode) {
 if($mode -cne 'install' -and $mode -cne 'rollback'){throw 'BGXAI IDLE guarded mode invalid'}
-SyncRelease $releaseIdle
+SyncRelease $xidle
 VerifyIdleGuardSource
-$installer=Join-Path $releaseIdle.localPath 'BGXAI_IDLE_GUARD_INSTALL_SOURCE_ONLY.py'
+$installer=Join-Path $xidle.localPath 'BGXAI_IDLE_GUARD_INSTALL_SOURCE_ONLY.py'
 $check=if($mode -ceq 'install'){'preflight'}else{'status'}
 & py -3 $installer $check '--game-root' $GameRoot
 if($LASTEXITCODE -ne 0){throw ('BGXAI IDLE pre-authorization STOP '+$LASTEXITCODE)}
@@ -1181,6 +1182,7 @@ Write-Host @'
 159 - Weapon EEex R1 passive observer (guarded)
 160 - Weapon EEex R11 static compat READ ONLY
 161 - Target defense R13 (READ ONLY preflight / guarded pilot)
+162 - Fix R13 Lua 8-char name (READ ONLY default / guarded)
  0 - Exit [default]
 '@
 $choice=Read-Host 'Choice [0]'
@@ -1211,35 +1213,35 @@ switch($choice){
 '21' {RunRelease $x43 '--status';break}
 '22' {SyncRelease $x43;RunRelease $x43 '--uninstall';break}
 '23' {Test044ReadOnly;break}
-'24' {SyncRelease $release044;break}
-'25' {SyncRelease $release044;RunRelease $release044 '--install';break}
-'26' {RunRelease $release044 '--status';break}
-'27' {SyncRelease $release044;RunRelease $release044 '--uninstall';break}
+'24' {SyncRelease $t44;break}
+'25' {SyncRelease $t44;RunRelease $t44 '--install';break}
+'26' {RunRelease $t44 '--status';break}
+'27' {SyncRelease $t44;RunRelease $t44 '--uninstall';break}
 '28' {Test045ReadOnly;break}
-'29' {SyncRelease $release045;break}
-'30' {SyncRelease $release045;RunRelease $release045 '--install';break}
-'31' {RunRelease $release045 '--status';break}
-'32' {SyncRelease $release045;RunRelease $release045 '--uninstall';break}
+'29' {SyncRelease $t45;break}
+'30' {SyncRelease $t45;RunRelease $t45 '--install';break}
+'31' {RunRelease $t45 '--status';break}
+'32' {SyncRelease $t45;RunRelease $t45 '--uninstall';break}
 '33' {Test046ReadOnly;break}
-'34' {SyncRelease $release046;break}
-'35' {SyncRelease $release046;RunRelease $release046 '--install';break}
-'36' {RunRelease $release046 '--status';break}
-'37' {SyncRelease $release046;RunRelease $release046 '--uninstall';break}
+'34' {SyncRelease $t46;break}
+'35' {SyncRelease $t46;RunRelease $t46 '--install';break}
+'36' {RunRelease $t46 '--status';break}
+'37' {SyncRelease $t46;RunRelease $t46 '--uninstall';break}
 '38' {Test047ReadOnly;break}
-'39' {SyncRelease $release047;break}
-'40' {SyncRelease $release047;RunRelease $release047 '--install';break}
-'41' {RunRelease $release047 '--status';break}
-'42' {SyncRelease $release047;RunRelease $release047 '--uninstall';break}
+'39' {SyncRelease $t47;break}
+'40' {SyncRelease $t47;RunRelease $t47 '--install';break}
+'41' {RunRelease $t47 '--status';break}
+'42' {SyncRelease $t47;RunRelease $t47 '--uninstall';break}
 '43' {Test048ReadOnly;break}
-'44' {SyncRelease $release048;break}
-'45' {SyncRelease $release048;RunRelease $release048 '--install';break}
-'46' {RunRelease $release048 '--status';break}
-'47' {SyncRelease $release048;RunRelease $release048 '--uninstall';break}
+'44' {SyncRelease $t48;break}
+'45' {SyncRelease $t48;RunRelease $t48 '--install';break}
+'46' {RunRelease $t48 '--status';break}
+'47' {SyncRelease $t48;RunRelease $t48 '--uninstall';break}
 '48' {Test049ReadOnly;break}
-'49' {SyncRelease $release049;break}
-'50' {SyncRelease $release049;RunRelease $release049 '--install';break}
-'51' {RunRelease $release049 '--status';break}
-'52' {SyncRelease $release049;RunRelease $release049 '--uninstall';break}
+'49' {SyncRelease $t49;break}
+'50' {SyncRelease $t49;RunRelease $t49 '--install';break}
+'51' {RunRelease $t49 '--status';break}
+'52' {SyncRelease $t49;RunRelease $t49 '--uninstall';break}
 '53' {SyncRelease $release054;break}
 '54' {SyncRelease $release054;RunRelease $release054 '--compile-readonly';break}
 '55' {SyncRelease $x56;RunRelease $x56 '--precheck';break}
@@ -1279,31 +1281,31 @@ switch($choice){
 '89' {Run067Guarded 'install';break}
 '90' {Status067ReadOnly;break}
 '91' {Run067Guarded 'rollback';break}
-'92' {SyncRelease $releaseIdle;break}
+'92' {SyncRelease $xidle;break}
 '93' {CheckIdleGuardReadOnly 'preflight';break}
 '94' {RunIdleGuardGuarded 'install';break}
 '95' {CheckIdleGuardReadOnly 'status';break}
 '96' {RunIdleGuardGuarded 'rollback';break}
-'97' {BGXOneFileManaged $releaseBGXPR 'status' 'INSTALL_BGXPRIEST_MODES' 'ROLLBACK_BGXPRIEST_MODES';break}
-'98' {BGXOneFileManaged $releaseBGXPR 'preflight' 'INSTALL_BGXPRIEST_MODES' 'ROLLBACK_BGXPRIEST_MODES';break}
-'99' {BGXOneFileManaged $releaseBGXPR 'install' 'INSTALL_BGXPRIEST_MODES' 'ROLLBACK_BGXPRIEST_MODES';break}
-'100' {BGXOneFileManaged $releaseBGXPR 'rollback' 'INSTALL_BGXPRIEST_MODES' 'ROLLBACK_BGXPRIEST_MODES';break}
-'101' {BGXOneFileManaged $releaseBGXTEAM 'status' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
-'102' {BGXOneFileManaged $releaseBGXTEAM 'preflight' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
-'103' {BGXOneFileManaged $releaseBGXTEAM 'install' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
-'104' {BGXOneFileManaged $releaseBGXTEAM 'rollback' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
-'105' {BGXOneFileManaged $releaseBGXP2 'status' 'INSTALL_BGXP2_COMBAT_PRIEST' 'ROLLBACK_BGXP2_COMBAT_PRIEST';break}
-'106' {BGXOneFileManaged $releaseBGXP2 'preflight' 'INSTALL_BGXP2_COMBAT_PRIEST' 'ROLLBACK_BGXP2_COMBAT_PRIEST';break}
-'107' {BGXOneFileManaged $releaseBGXP2 'install' 'INSTALL_BGXP2_COMBAT_PRIEST' 'ROLLBACK_BGXP2_COMBAT_PRIEST';break}
-'108' {BGXOneFileManaged $releaseBGXP2 'rollback' 'INSTALL_BGXP2_COMBAT_PRIEST' 'ROLLBACK_BGXP2_COMBAT_PRIEST';break}
-'109' {BGXOneFileManaged $releaseBGXP3 'status' 'INSTALL_BGXP3_AUTO_BUFFER' 'ROLLBACK_BGXP3_AUTO_BUFFER';break}
-'110' {BGXOneFileManaged $releaseBGXP3 'preflight' 'INSTALL_BGXP3_AUTO_BUFFER' 'ROLLBACK_BGXP3_AUTO_BUFFER';break}
-'111' {BGXOneFileManaged $releaseBGXP3 'install' 'INSTALL_BGXP3_AUTO_BUFFER' 'ROLLBACK_BGXP3_AUTO_BUFFER';break}
-'112' {BGXOneFileManaged $releaseBGXP3 'rollback' 'INSTALL_BGXP3_AUTO_BUFFER' 'ROLLBACK_BGXP3_AUTO_BUFFER';break}
-'113' {BGXOneFileManaged $releaseBGXP5 'status' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
-'114' {BGXOneFileManaged $releaseBGXP5 'preflight' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
-'115' {BGXOneFileManaged $releaseBGXP5 'install' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
-'116' {BGXOneFileManaged $releaseBGXP5 'rollback' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
+'97' {BGXOneFileManaged $xpr 'status' 'INSTALL_BGXPRIEST_MODES' 'ROLLBACK_BGXPRIEST_MODES';break}
+'98' {BGXOneFileManaged $xpr 'preflight' 'INSTALL_BGXPRIEST_MODES' 'ROLLBACK_BGXPRIEST_MODES';break}
+'99' {BGXOneFileManaged $xpr 'install' 'INSTALL_BGXPRIEST_MODES' 'ROLLBACK_BGXPRIEST_MODES';break}
+'100' {BGXOneFileManaged $xpr 'rollback' 'INSTALL_BGXPRIEST_MODES' 'ROLLBACK_BGXPRIEST_MODES';break}
+'101' {BGXOneFileManaged $xteam 'status' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
+'102' {BGXOneFileManaged $xteam 'preflight' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
+'103' {BGXOneFileManaged $xteam 'install' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
+'104' {BGXOneFileManaged $xteam 'rollback' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
+'105' {BGXOneFileManaged $xp2 'status' 'INSTALL_BGXP2_COMBAT_PRIEST' 'ROLLBACK_BGXP2_COMBAT_PRIEST';break}
+'106' {BGXOneFileManaged $xp2 'preflight' 'INSTALL_BGXP2_COMBAT_PRIEST' 'ROLLBACK_BGXP2_COMBAT_PRIEST';break}
+'107' {BGXOneFileManaged $xp2 'install' 'INSTALL_BGXP2_COMBAT_PRIEST' 'ROLLBACK_BGXP2_COMBAT_PRIEST';break}
+'108' {BGXOneFileManaged $xp2 'rollback' 'INSTALL_BGXP2_COMBAT_PRIEST' 'ROLLBACK_BGXP2_COMBAT_PRIEST';break}
+'109' {BGXOneFileManaged $xp3 'status' 'INSTALL_BGXP3_AUTO_BUFFER' 'ROLLBACK_BGXP3_AUTO_BUFFER';break}
+'110' {BGXOneFileManaged $xp3 'preflight' 'INSTALL_BGXP3_AUTO_BUFFER' 'ROLLBACK_BGXP3_AUTO_BUFFER';break}
+'111' {BGXOneFileManaged $xp3 'install' 'INSTALL_BGXP3_AUTO_BUFFER' 'ROLLBACK_BGXP3_AUTO_BUFFER';break}
+'112' {BGXOneFileManaged $xp3 'rollback' 'INSTALL_BGXP3_AUTO_BUFFER' 'ROLLBACK_BGXP3_AUTO_BUFFER';break}
+'113' {BGXOneFileManaged $xp5 'status' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
+'114' {BGXOneFileManaged $xp5 'preflight' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
+'115' {BGXOneFileManaged $xp5 'install' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
+'116' {BGXOneFileManaged $xp5 'rollback' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
 '117' {BGXAOEReadOnly;break}
 '118' {BGXTest6Safe;break}
 '119' {SyncRelease $ao;& py -3 (Join-Path $ao.localPath 'BGX119_TRACE.py');if($LASTEXITCODE){throw '119 STOP'};break}
@@ -1349,6 +1351,7 @@ switch($choice){
 '159' {SyncRelease $wp;& py -3 (Join-Path $wp.localPath 'BGXWP_OBSERVER_GUARDED.py') --game $GameRoot;if($LASTEXITCODE){throw '159 STOP'};break}
 '160' {$r='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_EEEX_R11_STATIC_COMPAT_RO_V3.py';$b=Get-PinnedBytes $r;if($b.Length -ne 8301 -or (HashBytes $b) -cne '4bf4e2a981a6602da02ba53dc3e5601fd69bb2f408c64d880c208f1a19bf83f4'){throw '160 SHA STOP'};$f=Join-Path $cacheDir ('eeex_ro_'+[guid]::NewGuid().ToString('N')+'.py');AssertNotReparse $cacheDir;try{$h=[IO.File]::Open($f,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);try{$h.Write($b,0,$b.Length)}finally{$h.Dispose()};if((HashFile $f) -cne '4bf4e2a981a6602da02ba53dc3e5601fd69bb2f408c64d880c208f1a19bf83f4'){throw '160 CACHE STOP'};& py -3 $f --game $GameRoot;if($LASTEXITCODE){throw '160 STOP'}}finally{if(Test-Path -LiteralPath $f){Remove-Item -LiteralPath $f -Force}};break}
 '161' {SyncRelease $td13;& py -3 (Join-Path $td13.localPath 'BGXAI_R13_GUARDED.py') --game $GameRoot;if($LASTEXITCODE){throw '161 STOP'};break}
+'162' {SyncRelease $td14;& py -3 (Join-Path $td14.localPath 'BGXAI_R13_SHORTNAME_GUARDED.py') --game $GameRoot;if($LASTEXITCODE){throw '162 STOP'};break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0
