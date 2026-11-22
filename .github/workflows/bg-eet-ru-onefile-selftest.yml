@@ -455,3 +455,66 @@ jobs:
               finally:lua.lua_close(L)
           print('V101_NATIVE_PALETTE_PASS: BGEE AABBGGRR RGB conversions, Lua 5.4, idempotence, FULL, LF CRLF and exact rollback')
           PY
+
+      - name: Native Lua v102 nonzero modifier labels, FULL preservation and exact rollback
+        shell: bash
+        run: |
+          python - <<'PY'
+          import ctypes,json
+          from pathlib import Path
+          path=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
+          ns={'__name__':'ci_native_v102','__file__':str(path)}
+          exec(compile(path.read_text(encoding='utf8').split('\n',1)[1],str(path),'exec'),ns)
+          lua=ctypes.CDLL('liblua5.4.so.0')
+          lua.luaL_newstate.restype=ctypes.c_void_p
+          lua.luaL_openlibs.argtypes=[ctypes.c_void_p]
+          lua.luaL_loadbufferx.argtypes=[ctypes.c_void_p,ctypes.c_char_p,ctypes.c_size_t,ctypes.c_char_p,ctypes.c_char_p]
+          lua.luaL_loadbufferx.restype=ctypes.c_int
+          lua.lua_pcallk.argtypes=[ctypes.c_void_p,ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.c_longlong,ctypes.c_void_p]
+          lua.lua_pcallk.restype=ctypes.c_int
+          lua.lua_tolstring.argtypes=[ctypes.c_void_p,ctypes.c_int,ctypes.POINTER(ctypes.c_size_t)]
+          lua.lua_tolstring.restype=ctypes.c_void_p
+          lua.lua_close.argtypes=[ctypes.c_void_p]
+          def run(helper,line,mode=1):
+              code=(helper+'\nBG_EET_RU_LOG_MODE='+str(mode)+'\nreturn BG_EET_RU_LogView('+json.dumps(line,ensure_ascii=False)+')').encode('utf8')
+              L=lua.luaL_newstate();lua.luaL_openlibs(L)
+              try:
+                  assert lua.luaL_loadbufferx(L,code,len(code),b'v102',None)==0,'Lua compile failed'
+                  assert lua.lua_pcallk(L,0,1,0,0,None)==0,'Lua runtime error'
+                  n=ctypes.c_size_t()
+                  p=lua.lua_tolstring(L,-1,ctypes.byref(n))
+                  return ctypes.string_at(p,n.value).decode('utf8')
+              finally: lua.lua_close(L)
+          old='Халид: Бросок: 16 +Правая рука: -1 (+Владение оружием: -2 +Ловкость: 1)^-'
+          new='Халид: Бросок: 16 +Пр. рука: -1 (+Влад. оружием: -2 +Ловк.: 1)^-'
+          assert run(ns['V101_HELPER'],old)==old, 'v101 reference changed'
+          assert run(ns['V102_HELPER'],old)==new, 'nonzero abbreviation regression'
+          assert run(ns['V102_HELPER'],new)==new, 'not idempotent'
+          assert run(ns['V102_HELPER'],old,0)==old, 'full mode changed'
+          color='^0xFF55CCFFХалид^-: Бросок: 16 +Правая рука: -1 (+Владение оружием: -2 +Ловкость: 1)^-'
+          assert run(ns['V102_HELPER'],color)==color.replace('Правая рука','Пр. рука').replace('Владение оружием','Влад. оружием').replace('Ловкость','Ловк.')
+          zero='Халид: Бросок: 16 +Удача: 0 +Правая рука: -1^-'
+          assert run(ns['V102_HELPER'],zero)=='Халид: Бросок: 16 +Пр. рука: -1^-'
+          for bad in (
+              'Халид: Бросок: 16 +Неизвестный бонус: -1^-',
+              'Халид: Бросок: 16 +Правая рука: -1 (+Ловкость: 1^-',
+              'Халид: Бросок: 16 +Правая рука: -1 ^BAD^-',
+              'Халид: Бросок: 16 +Удача: 2^-',
+              'Халид: бросок атаки 16 - 1 = 15 : попадание^-',
+              'Больной гибберлинг: 5 ед. метательного урона (источник: Халид)^-',
+          ):
+              assert run(ns['V102_HELPER'],bad)==run(ns['V101_HELPER'],bad),(bad,'old behavior drift')
+          for eol in ('\n','\r\n'):
+              prev=ns['V101_HELPER'].replace('\n',eol).encode()
+              tick=bytes([96])
+              raw=b'header\n'+tick+prev+tick+b'\nmenu\nrender '+ns['V88_RENDER_NEW']+b'\n'+ns['V90_DRAG']+b'\nBG_EET_RU_JOURNAL_TOGGLE\n'
+              candidate=ns['v102_transform_installed_ui'](raw)
+              fresh=ns['V102_HELPER'].replace('\n',eol).encode()
+              assert candidate.count(fresh+tick)==1
+              assert candidate.replace(fresh,prev,1)==raw, 'not exact rollback'
+              chunk=candidate.split(tick,2)[1]
+              L=lua.luaL_newstate()
+              try: assert lua.luaL_loadbufferx(L,chunk,len(chunk),b'menu',None)==0,'invalid full menu Lua'
+              finally: lua.lua_close(L)
+          print('V102_NATIVE_BRIEF_ROLL_PASS: nozero, zeros, unknown syntax, prefix color, FULL, idempotence, LF/CRLF, exact reverse')
+          PY
