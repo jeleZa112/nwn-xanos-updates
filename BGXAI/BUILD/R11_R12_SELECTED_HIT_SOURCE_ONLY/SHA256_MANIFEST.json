@@ -1,0 +1,30 @@
+{
+  "schema": "BGXAI_R11_R12_SOURCE_ONLY_V1",
+  "files": {
+    "BGXAI_AUTO_CONTINUE_RULE_20261122_RU.md": {
+      "bytes": 6497,
+      "sha256": "755f46b774b80759b13d16bfc95790df28f94116536ab6aadefaf1de62c134b9"
+    },
+    "test_r12.lua": {
+      "bytes": 5725,
+      "sha256": "c8e438ab1dffc310688cd7b93bfdaee34acc261aaaa85ac5160dc92fb9ac8a80"
+    },
+    "BGXAI_WEAPON_R11_R12_CHECKPOINT_20261122_RU.md": {
+      "bytes": 6167,
+      "sha256": "b183003eb8417eb027d74460871663ced99c0bc104b87fdf8603508f8f7e8dbe"
+    },
+    "BGXAI_WEAPON_R12_SELECTED_HIT_CROSSCHECK.lua": {
+      "bytes": 5054,
+      "sha256": "0deec0387aa0632effa5981d4ec8ccd7776ef660b435214d56e363ff839d34bb"
+    },
+    "BGXAI_WEAPON_R11_EEEX_SELECTED_HIT_PROBE.lua": {
+      "bytes": 4920,
+      "sha256": "36d795d8f769d463fece9fecd56662c25ece7c9a220807672716f72fe0c00f08"
+    },
+    "test_r11.lua": {
+      "bytes": 6402,
+      "sha256": "a0731b9892d60e77789d840d5e3c14f0458a6c7ee6d217f8fcc32831706fc1af"
+    }
+  },
+  "game_modified": false
+}
