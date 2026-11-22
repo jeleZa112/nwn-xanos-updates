@@ -1,0 +1,15 @@
+{
+  "schema": "BGVOICE_AUTO_CONTINUE_POLICY_R1",
+  "effective_date": "2026-11-22",
+  "priority": "mandatory_project_workflow",
+  "on_safe_pass": "CONTINUE_NEXT_SAFE_ACTION_IN_SAME_ACTIVE_TURN",
+  "pause_only_for": ["REQUIRES_USER_APPROVAL_OR_HEARING", "NO_LOCAL_WINDOWS_RUNTIME_ACCESS", "DESTRUCTIVE_OR_GAME_INSTALL_STEP", "SECURITY_VALIDATION_FAILURE", "NO_SAFE_AVAILABLE_WORK_IN_SESSION"],
+  "prohibited": ["REQUEST_PLUS_FOR_SAFE_STEP", "MANUAL_ZIP_RELAY_BETWEEN_CHATS", "MULTIPLE_UPDATERS", "REPEAT_PRIOR_PASS_FOR_NO_REASON", "CLAIM_SYNTHETIC_PASS_AS_WINDOWS_PASS", "CLAIM_BACKGROUND_EXECUTION_WITHOUT_AUTOMATION"],
+  "single_updater": "BG_VOICE_UPDATE.cmd",
+  "single_report": "SEND_TO_CHATGPT_BG_VOICE_RU.zip",
+  "shared_library": "/BG_VOICE_RU/CURRENT/",
+  "other_chat_updater_ownership": "preserve",
+  "human_lock": {"OH85856":"V65_APPROVED", "OH80404":"V60_APPROVED", "OH89888":"BOTH_BAD_HOLD", "KORGAN57":"HISTORICAL_CONFLICT_HOLD"},
+  "source_read_only": true,
+  "game_install_authorized": false
+}
