@@ -4,5 +4,11 @@
   "path": "BG_VOICE_CORE.py",
   "commit": "93b62e5d67a5d73e5a2da32c1fbc5f08915871c6",
   "sha256": "01ea0618d4446ea353538ba4c0dae0e389e4d3ce96380a7239b065bc0ebdfe0a",
-  "notes": "--review-only --limit 16: offline, no inference, rank 7155 unprotected pairs from validated QA report; create real Stable/Per_line/EN WAV audition packet and technical PCM flags inside the existing ONE report ZIP. No user-choice edits, no original-WAV writes. Manual and IMOEN75 protected. ZIP rebuilt atomically and CRC verified; tests include idempotence. Does not claim to judge emotional acting automatically."
+  "notes": "--review-only --limit 16: offline, no inference, rank 7155 unprotected pairs from validated QA report; create real Stable/Per_line/EN WAV audition packet and technical PCM flags inside the existing ONE report ZIP. No user-choice edits, no original-WAV writes. Manual and IMOEN75 protected. ZIP rebuilt atomically and CRC verified; tests include idempotence. Does not claim to judge emotional acting automatically.",
+  "movie_core": {
+    "version": "1.0.0",
+    "path": "BG_VOICE_MOVIE_CORE.py",
+    "commit": "91b206f20b9bfe61e08f1f45ffbc2b4d143a8f6d",
+    "sha256": "91dff141f645a2e117868938a6820ce61476ceb8b91789398895d721035f878a"
+  }
 }
