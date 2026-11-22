@@ -1,4 +1,4 @@
-# BG Voice RU movie 1.1: recover SHA-matched extracted 37-group text into an actionable 22-group queue.
+# BG Voice RU movie 1.3: preserve 3 restored pilots and reconcile 19 still missing voice groups.
 # One permanent CMD, one common report, no TTS and no game writes.
 from __future__ import annotations
 import csv
@@ -12,7 +12,7 @@ import zipfile
 from collections import Counter
 from pathlib import Path
 
-MOVIE_CORE_VERSION = '1.2.0'
+MOVIE_CORE_VERSION = '1.3.0'
 SCRIPT_JSON_SHA256 = '87d18d68ce2be6236e2bdb468dc0275c7f5f257714643b5cf9013c48f87a9ee4'
 MOVIE_SEGMENTS = {'INTRO15F': 16, 'SODCIN01': 18, 'IWINTRO': 29}
 PILOT_KNOWN = {'INTRO15F_G01','SODCIN01_G02','IWINTRO_G06'}
@@ -156,10 +156,29 @@ def _pilot_candidates(roots):
                     wavs+=1; yield p,'WAV'
 
 
-def _recover_pilots(roots=None, accepted=None):
+def _recover_pilots(roots=None, accepted=None, common_report=None):
     expected=dict(PILOT_SHA256 if accepted is None else accepted)
     found={}; attempted=0; zip_errors=0; file_errors=0
+    # Read back previously SHA-verified voice clips from the one existing report.
+    # A moved/deleted historical ZIP must NEVER make an approved clip disappear.
+    existing = Path(common_report) if common_report is not None else (
+        Path(os.environ.get('BG_VOICE_FULL_PRODUCTION_ROOT') or
+             Path.home()/'Documents'/'BG_VOICE_RU'/'FULL_PRODUCTION')/'SEND_TO_CHATGPT_BG_VOICE_RU.zip')
+    if existing.is_file():
+        try:
+            with zipfile.ZipFile(existing) as archive:
+                names=set(archive.namelist())
+                for sid,sha in expected.items():
+                    name=PILOT_ROOT+sid+'__LOCKED_APPROVED.wav'
+                    if name not in names or archive.getinfo(name).file_size>16*1024*1024:
+                        continue
+                    data=archive.read(name)
+                    if data[:4]==b'RIFF' and data[8:12]==b'WAVE' and hashlib.sha256(data).hexdigest()==sha:
+                        found[sid]=(data,'VERIFIED_EXISTING_REPORT_SHA','COMMON_REPORT')
+        except (OSError,zipfile.BadZipFile,RuntimeError,ValueError,EOFError,KeyError):
+            zip_errors+=1
     for p,kind in _pilot_candidates(_pilot_roots(roots)):
+
         if len(found)==len(expected):break
         try:
             if kind=='WAV':
@@ -204,7 +223,7 @@ def _recover_pilots(roots=None, accepted=None):
         else:
             results[sid]={'status':'HOLD_APPROVED_PILOT_NOT_FOUND','sha256':sha,
                           'do_not_regenerate_approved_audio':True,'game_install_allowed':False}
-    status={'schema':'BGVOICE_MOVIE_APPROVED_PILOT_RECOVERY_1_2',
+    status={'schema':'BGVOICE_MOVIE_APPROVED_PILOT_RECOVERY_1_3',
             'verified_sha_wav_count':len(found),'total_approved_pilots':len(expected),
             'searched_candidate_files_or_members':attempted,
             'zip_read_errors_held':zip_errors,'wav_read_errors_held':file_errors,
@@ -214,10 +233,82 @@ def _recover_pilots(roots=None, accepted=None):
     return additions,status
 
 
+
+# The 22-row file is a source/timing QA queue, not a count of missing WAV after
+# approved pilot recovery. Reconciliation works entirely on the ONE ZIP.
+def _reconcile_common_report(root=None):
+    work=Path(root) if root else Path(os.environ.get('BG_VOICE_FULL_PRODUCTION_ROOT') or
+                              Path.home()/'Documents'/'BG_VOICE_RU'/'FULL_PRODUCTION')
+    main=work/'SEND_TO_CHATGPT_BG_VOICE_RU.zip'
+    if not main.is_file():return 'COMMON_REPORT_NOT_FOUND_HOLD'
+    with zipfile.ZipFile(main) as archive:
+        if archive.testzip() is not None:raise ValueError('COMMON_REPORT_CRC_HOLD')
+        movie=json.loads(archive.read(ROOT+'STATUS.json'))
+        if (movie.get('source_extracted_json_sha256')!=SCRIPT_JSON_SHA256 or
+            movie.get('source_group_total')!=37 or movie.get('pending_group_count')!=22):
+            raise ValueError('MOVIE_SOURCE_GATE_NOT_SATISFIED')
+        entries=list(csv.DictReader(io.StringIO(archive.read(ROOT+'22_PENDING_EN_RU_QA.csv').decode('utf-8-sig'))))
+        if len(entries)!=22 or len({r['id'] for r in entries})!=22 or not PILOT_KNOWN.issubset({r['id'] for r in entries}):
+            raise ValueError('PENDING_QUEUE_INVALID')
+        recovered=[]; pilot_items={}
+        for sid,sha in PILOT_SHA256.items():
+            name=PILOT_ROOT+sid+'__LOCKED_APPROVED.wav'
+            if name in archive.namelist():
+                if archive.getinfo(name).file_size>16*1024*1024:raise ValueError('PILOT_ENTRY_OVERSIZE')
+                data=archive.read(name)
+                if data[:4]==b'RIFF' and data[8:12]==b'WAVE' and hashlib.sha256(data).hexdigest()==sha:
+                    recovered.append(sid)
+                    pilot_items[sid]={'status':'SHA_VERIFIED_LOCKED', 'sha256':sha, 'source':name}
+                else:
+                    pilot_items[sid]={'status':'HOLD_HASH_MISMATCH','sha256':sha}
+            else:
+                pilot_items[sid]={'status':'HOLD_MISSING','sha256':sha}
+        selected=movie.get('selected_wav_count')
+        if selected!=15:raise ValueError('SELECTED_BASELINE_NOT_15')
+        recovered_set=set(recovered)
+        remaining=[r for r in entries if r['id'] not in recovered_set]
+        if len(remaining)!=22-len(recovered_set):raise ValueError('RECONCILIATION_COUNT_MISMATCH')
+        expected_groups={'INTRO15F':7,'SODCIN01':11,'IWINTRO':19}
+        remaining_counts=Counter(r['movie'] for r in remaining)
+        status={
+            'schema':'BGVOICE_MOVIE_RECONCILED_COVERAGE_1_3',
+            'movie_module_version':MOVIE_CORE_VERSION,
+            'source_extracted_json_sha256':SCRIPT_JSON_SHA256,
+            'full_original_archive_SHA_verified':movie.get('original_2026_11_21_zip_sha_verified',False),
+            'movie_group_counts':expected_groups,
+            'total_script_groups':37,
+            'selected_previously':15,
+            'selected_prior_wavs_all_physically_in_report':False,
+            'approved_pilot_wavs_SHA_verified_in_report':len(recovered),
+            'russian_wav_identified_total':15+len(recovered),
+            'russian_wav_not_yet_identified':len(remaining),
+            'english_asr_segments_draft':63,
+            'english_original_speech_audio_verified':False,
+            'russian_translation_human_approved_for_all_groups':False,
+            'speech_timing_verified':False,
+            'pending_source_or_timing_QA_groups':22,
+            'new_audio_generation_allowed_without_source_QA':False,
+            'game_write':False,
+            'voice_synthesis':False,
+            'protected_pilots':pilot_items,
+            'remaining_by_movie':dict(remaining_counts),
+            'next':'Verify English source and Russian draft for remaining 19 groups; do not regenerate 3 recovered approved clips.'}
+    keys=list(entries[0].keys())
+    # Source statuses of recovered pilots are preserved in the 22-row QA list,
+    # because exact English source, timing and text still require independent QA.
+    new={ROOT+'19_MISSING_RUSSIAN_WAV.csv':_csv(remaining,keys),
+         ROOT+'RECONCILED_STATUS.json':_json(status)}
+    with zipfile.ZipFile(main) as check:
+        if all(k in check.namelist() and check.read(k)==v for k,v in new.items()):
+            return 'RECONCILIATION_CURRENT: '+str(len(recovered))+' SHA-verified pilots, '+str(len(remaining))+' voice-missing'
+    outcome=_merge_main_report(new,work)
+    return outcome+': '+str(len(recovered))+' SHA-verified pilots, '+str(len(remaining))+' voice-missing'
+
 def selftest():
-    assert MOVIE_CORE_VERSION=='1.2.0' and sum(MOVIE_SEGMENTS.values())==63
+    assert MOVIE_CORE_VERSION=='1.3.0' and sum(MOVIE_SEGMENTS.values())==63
     assert len(PILOT_KNOWN)==3 and _csv([{'id':'A'}],['id']).endswith(b'A\r\n')
     assert set(PILOT_SHA256)==PILOT_KNOWN and all(len(sha)==64 for sha in PILOT_SHA256.values())
+    assert len(PILOT_SHA256)==3
     print('MOVIE_CHANNEL_SELFTEST_PASS')
     return 0
 
@@ -272,6 +363,10 @@ def run(host):
         print('MOVIE_PILOTS_COMMON_REPORT:',_merge_main_report(additions),flush=True)
     except Exception as exc:
         print('MOVIE_PILOTS_RECOVERY_HOLD:',type(exc).__name__,str(exc)[:150],flush=True)
+    try:
+        print('MOVIE_COVERAGE_RECONCILED:',_reconcile_common_report(),flush=True)
+    except Exception as exc:
+        print('MOVIE_RECONCILIATION_HOLD:',type(exc).__name__,str(exc)[:160],flush=True)
     print('MOVIE_CHANNEL_REPORT:',report,flush=True)
     return 0
 
