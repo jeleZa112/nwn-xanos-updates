@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 102,
-  "sha256": "563d9b47b3e3f5eb0e5748ebfbfff1136fc571f3c6073b12fc7a5a92221682af",
-  "mode": "READ_ONLY_DEFAULT_V102_BRIEF_ROLL_LABELS",
+  "version": 103,
+  "sha256": "e6adc26bd6dbca20ae0da2068314cd1ce08bc5f4da0b58d7cbd371c4e910f41d",
+  "mode": "READ_ONLY_DEFAULT_V103_WEAPON_AMMO_EEEX_SOURCE_AUDIT",
   "game_writes_allowed": false,
-  "note": "v102: conservatively abbreviate only known nonzero modifier labels on 'Бросок:' rows in BRIEF journal; preserve signed amounts, grouping, colored speaker prefixes, trailing controls, full log, original combatLog, V101 ABGR colors, v85 44 hooks, BGXAI, BG Voice RU and saves. Unknown/malformed rows unchanged. Published source isolated CI plus native Lua 5.4 v102 tests PASS (workflow run 45047434597), exact LF/CRLF UI transform and byte-exact revert PASS. Existing v101 installed remains unchanged. Default single updater READ ONLY, report 48_V102_ROLL_MODIFIER_LABELS.json in same ZIP; optional --upgrade-v102-roll-labels requires installed v101 exact SHA, closed game/InfinityLoader, external SHA backup and typed UPGRADE_BG_EET_RU_V102_ROLL_LABELS. Optional --rollback-v102-roll-labels with typed ROLLBACK_BG_EET_RU_V102_ROLL_LABELS restores v101. Windows preflight and v102 live gameplay not verified."
+  "note": "V103 adds source-only capability audit of installed EEex modules for eventual exact weapon+ammo names in visible combat journal. Default updater after installed v101/v102 status and optional --weapon-source-audit writes only member 49_V103_WEAPON_AMMO_SOURCE_AUDIT.json in existing external SEND_TO_CHATGPT_BG_EET_RU.zip. Checks limited local EEex source locations, API signals, SHA256 and sizes, with no game modifications, no hook registration, no BGXAI or BG Voice RU changes. Does NOT determine live active attack weapon or ammo and must not claim runtime correlation. Official EEex upstream supports EEex_Sprite_GetLauncher and selected slot/ability structure, but installed EEex APIs must be verified. CI isolated selftest/source-only+archive idempotence PASS run 45050401999; preview native test run 45050267120 SUCCESS. After V103 audit, separate runtime observer would require explicit user approval and live safety checks. V102 gameplay status remains unverified; no automatic install."
 }
