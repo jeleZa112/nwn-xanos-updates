@@ -6,7 +6,7 @@ OUT=Path.home()/'Documents'/'BG_VOICE_RU'/'VOICE_SELECTION_GPU'
 OUT.mkdir(parents=True,exist_ok=True)
 ROOT=Path(__file__).resolve().parent
 
-def log(msg):print(msg,flush=True)
+def log(*parts): print(*parts, flush=True)  # Supports both one and multiple log arguments
 
 def candidates():
     home=Path.home()
