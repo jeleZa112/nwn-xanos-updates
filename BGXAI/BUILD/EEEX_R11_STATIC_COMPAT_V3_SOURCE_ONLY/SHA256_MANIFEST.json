@@ -1,0 +1,19 @@
+{
+  "schema": "BGXAI_SOURCE_ONLY_MANIFEST_V1",
+  "version": "EEEX_STATIC_COMPAT_V3_OPTIONAL_ATTACK_INFO",
+  "offlineTests": 34,
+  "files": {
+    "BGXAI_EEEX_R11_STATIC_COMPAT_RO_V3.py": {
+      "sha256": "4bf4e2a981a6602da02ba53dc3e5601fd69bb2f408c64d880c208f1a19bf83f4",
+      "bytes": 8301
+    },
+    "test_static_v3.py": {
+      "sha256": "4608d42525bafae0c28257285d74b3118c58dafe990b4427111fec98d8265bbb",
+      "bytes": 10452
+    },
+    "README_RU.md": {
+      "sha256": "a6ecfa6040df48c826f992d3184e354f0ddeaf5ea6d7b4d1b0de16f10c4149a2",
+      "bytes": 2854
+    }
+  }
+}
