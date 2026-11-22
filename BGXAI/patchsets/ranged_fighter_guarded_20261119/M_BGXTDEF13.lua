@@ -6,7 +6,8 @@ local M={version='BGXAI_R13_TARGET_DEFENSE_OBSERVER_V1',installed=false}
 local DEF={
  'm_nArmorClass','m_nACCrushingMod','m_nACMissileMod',
  'm_nACPiercingMod','m_nACSlashingMod',
- 'm_nResistCrushing','m_nResistPiercing','m_nResistSlashing'
+ 'm_nResistCrushing','m_nResistPiercing','m_nResistSlashing',
+ 'm_nResistMissile'
 }
 M.fields=DEF
 local function int(x,lo,hi)
