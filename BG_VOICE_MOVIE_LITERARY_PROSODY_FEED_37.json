@@ -1,0 +1,490 @@
+{
+  "schema": "BGVOICE_MOVIE_LITERARY_PROSODY_FEED_V1",
+  "source_full_json_sha256": "5ef87f3aa9b5ab7b4a328b8de69192edb07020ae859fe0c32662d89330d1b1eb",
+  "status": "READ_ONLY_SOURCE_FIRST_NOT_APPROVED_FOR_TTS",
+  "production_gate": {
+    "all_rows_require_original_source_QA": true,
+    "approved_subtitle_comparison_required_for_intro_and_sod": true,
+    "two_unreliable_EN_ASR_HOLD": [
+      "IWINTRO_G09",
+      "IWINTRO_G10"
+    ],
+    "speech_emotion_model_executed": false,
+    "Russian_stress_models_executed": false,
+    "TTS_executed": false,
+    "game_write": false
+  },
+  "lines": [
+    {
+      "id": "INTRO15F_G01",
+      "movie": "INTRO15F",
+      "ru_literary_from_english_proposed": "Твои детство и юность прошли в Кэндлкипе — крепости-библиотеке, где тебя растил и оберегал приёмный отец Горион.",
+      "ru_text_sha256_utf8": "ee16df9375d62459b517ab71275ea70daaeaccecd43b7327785a077da99dad07",
+      "voice_style_category": "warm_reflective",
+      "voxcpm2_style_control_instruction": "Warm reflective narration, calm, measured pace, subtle nostalgia, natural pauses",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "HOLD_ORIGINAL_APPROVED_SUBTITLE_COMPARE",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "INTRO15F_G02",
+      "movie": "INTRO15F",
+      "ru_literary_from_english_proposed": "Рядом с тобой росла Имоуэн, близкая тебе по духу. Тайна её происхождения была ничуть не меньше твоей.",
+      "ru_text_sha256_utf8": "0226a794eed94a1ebf659790a0cff2963d707a924bf8643a18c2610c8a828249",
+      "voice_style_category": "tender_mystery",
+      "voxcpm2_style_control_instruction": "Gentle reflective narration with a subtle undertone of mystery",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "HOLD_ORIGINAL_APPROVED_SUBTITLE_COMPARE",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "INTRO15F_G03",
+      "movie": "INTRO15F",
+      "ru_literary_from_english_proposed": "После гибели Гориона правда наконец открылась: убийца твоего приёмного отца, Саревок, оказался твоим братом.",
+      "ru_text_sha256_utf8": "cc0d9a6893dec34875b006ed2e635d7d3de61ab089cd71adfb83c3d7bd393f7a",
+      "voice_style_category": "grief_revelation",
+      "voxcpm2_style_control_instruction": "Grave narration, subdued sorrow turning into a weighty revelation, measured pace",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "HOLD_ORIGINAL_APPROVED_SUBTITLE_COMPARE",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "INTRO15F_G04",
+      "movie": "INTRO15F",
+      "ru_literary_from_english_proposed": "Вы с Саревоком появились на свет в Смутное время — эпоху, когда боги обрели плоть и были вынуждены странствовать среди смертных. Один из них предвидел свою гибель. Ещё до катаклизма он оставил после себя множество смертных детей, чья жизненная сила должна была послужить его возрождению. Этим богом был Баал, Повелитель Убийств. И ты — его дитя.",
+      "ru_text_sha256_utf8": "3fae8aa7d3d9492c5eb17202eee14b96b155a58e4df730edde65b089c74777bb",
+      "voice_style_category": "solemn_mythic",
+      "voxcpm2_style_control_instruction": "Solemn dark historical narration, resonant and deliberate, restrained dramatic emphasis",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [
+        "Сму́тное",
+        "сме́ртных",
+        "возрожде́нию"
+      ],
+      "source_status": "HOLD_ORIGINAL_APPROVED_SUBTITLE_COMPARE",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "INTRO15F_G05",
+      "movie": "INTRO15F",
+      "ru_literary_from_english_proposed": "Саревок хотел развязать кровавую войну, чтобы доказать своё право стать новым Повелителем Убийств. Но ты сразил брата, и его доля скверны вернулась к Баалу.",
+      "ru_text_sha256_utf8": "3e4f7b2f2c373f422974c05f52e4fc10451c4518dd8e23ee4c7bd39f085293b2",
+      "voice_style_category": "ominous_defiance",
+      "voxcpm2_style_control_instruction": "Grim, controlled intensity, then firm finality, unhurried delivery",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "HOLD_ORIGINAL_APPROVED_SUBTITLE_COMPARE",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "INTRO15F_G06",
+      "movie": "INTRO15F",
+      "ru_literary_from_english_proposed": "Тебя провозгласили героем Врат Балдура. И всё же некоторые подозревали, что в тебе течёт та же кровь, что и в Саревоке. Вскоре ты покинул город — при обстоятельствах куда более мрачных, чем кто-либо мог себе представить.",
+      "ru_text_sha256_utf8": "6207e1d73fecce74cc079a10ee41b812b9d5915d2c259c0b6cc5cfb3c6995696",
+      "voice_style_category": "dark_foreboding",
+      "voxcpm2_style_control_instruction": "Grand but restrained opening, becoming ominous and wary, continuous narration",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "HOLD_ORIGINAL_APPROVED_SUBTITLE_COMPARE",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "INTRO15F_G07",
+      "movie": "INTRO15F",
+      "ru_literary_from_english_proposed": "Они пришли, когда ты отдыхал. Фигуры, окутанные туманом, помрачили твои мысли, стирая грань между сном и явью. Ни злобы, ни ненависти, ни намёка на старые счёты. Лишь внезапный плен — и предвестие грядущих ужасов.",
+      "ru_text_sha256_utf8": "f9066f7d54e833d6a13bd4fa595dbde5a8550155a8cfd2790623fef2a372ab5a",
+      "voice_style_category": "hushed_dread",
+      "voxcpm2_style_control_instruction": "Hushed unsettling narration, slow suspense, quiet dread, no exaggerated whisper",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [
+        "наме́ка"
+      ],
+      "source_status": "HOLD_ORIGINAL_APPROVED_SUBTITLE_COMPARE",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "SODCIN01_G01",
+      "movie": "SODCIN01",
+      "ru_literary_from_english_proposed": "Всего несколько недель назад зловещий Саревок едва не обрёк Врата Балдура на гибель.",
+      "ru_text_sha256_utf8": "b2325862459046dff34bcc53266243baa3005c2299ad2a3c0da4fbf5d63e31fe",
+      "voice_style_category": "urgent_recap",
+      "voxcpm2_style_control_instruction": "Grave documentary narration, precise diction with subdued urgency",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "HOLD_ORIGINAL_APPROVED_SUBTITLE_COMPARE",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "SODCIN01_G02",
+      "movie": "SODCIN01",
+      "ru_literary_from_english_proposed": "Ты, как и он, — дитя Баала, погибшего бога убийств.",
+      "ru_text_sha256_utf8": "80f8a24896a90e82e675a30fe5db6fe1efb5e4a3c970fc82574246267e061e36",
+      "voice_style_category": "fateful_reveal",
+      "voxcpm2_style_control_instruction": "Measured solemn revelation, controlled gravitas",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "HOLD_ORIGINAL_APPROVED_SUBTITLE_COMPARE",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "SODCIN01_G03",
+      "movie": "SODCIN01",
+      "ru_literary_from_english_proposed": "Баал предвидел собственную смерть и оставил после себя смертных детей, надеясь однажды возродиться через них.",
+      "ru_text_sha256_utf8": "14001d2e179813a376c7c1905a6924879b59c5812f7d077ca787902b3148f4e0",
+      "voice_style_category": "mythic_exposition",
+      "voxcpm2_style_control_instruction": "Somber mythic exposition, steady and unhurried",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "HOLD_ORIGINAL_APPROVED_SUBTITLE_COMPARE",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "SODCIN01_G04",
+      "movie": "SODCIN01",
+      "ru_literary_from_english_proposed": "Саревок намеревался стать новым Повелителем Убийств. Но ты разрушил его замыслы и сразил своего единокровного брата.",
+      "ru_text_sha256_utf8": "48954aff9fa142588335f86554d194d319b9e59220a530cc153f19a533b5edda",
+      "voice_style_category": "resolved_victory",
+      "voxcpm2_style_control_instruction": "Firm retrospective narration, mounting tension and decisive release",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "HOLD_ORIGINAL_APPROVED_SUBTITLE_COMPARE",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "SODCIN01_G05",
+      "movie": "SODCIN01",
+      "ru_literary_from_english_proposed": "После его смерти тебя стали называть героем Врат Балдура.",
+      "ru_text_sha256_utf8": "ac14014ecd2cf5bb79837439fd52acc8cc38ec42229c9b1effe9b6035592155f",
+      "voice_style_category": "measured_recognition",
+      "voxcpm2_style_control_instruction": "Quiet recognition, calm and dignified",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "HOLD_ORIGINAL_APPROVED_SUBTITLE_COMPARE",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "SODCIN01_G06",
+      "movie": "SODCIN01",
+      "ru_literary_from_english_proposed": "Теперь над городом нависла новая угроза: огромное войско, выступившее в священный поход, повергло Побережье Мечей в смятение.",
+      "ru_text_sha256_utf8": "6466e98c64ea64454be149a73976cd4a4bad764031a15ce525057f3e3d555776",
+      "voice_style_category": "mounting_threat",
+      "voxcpm2_style_control_instruction": "Ominous narration with gradually increasing urgency, clear measured pace",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "HOLD_ORIGINAL_APPROVED_SUBTITLE_COMPARE",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "SODCIN01_G07",
+      "movie": "SODCIN01",
+      "ru_literary_from_english_proposed": "О предводительнице похода, воительнице Каэлар Аргент, способной вести за собой целые армии, известно на удивление мало.",
+      "ru_text_sha256_utf8": "d0bcfe8e5f93f30f2b1284afc7df9cfe4a0154ab55d20b88c6511ce8c4af3b62",
+      "voice_style_category": "intrigue",
+      "voxcpm2_style_control_instruction": "Restrained intrigue and skeptical curiosity, clear natural narration",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "HOLD_ORIGINAL_APPROVED_SUBTITLE_COMPARE",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "SODCIN01_G08",
+      "movie": "SODCIN01",
+      "ru_literary_from_english_proposed": "Её последователи почитают её как Сияющую Госпожу. Но её прошлое и подлинные цели по-прежнему окутаны тайной.",
+      "ru_text_sha256_utf8": "5ce4fb9611b34a645d8bf1afb44eba87dae54acfbececbf8012632c148293059",
+      "voice_style_category": "mysterious_doubt",
+      "voxcpm2_style_control_instruction": "Mystery, restrained reverence turning to wary uncertainty",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [
+        "про́шлое",
+        "по-пре́жнему"
+      ],
+      "source_status": "HOLD_ORIGINAL_APPROVED_SUBTITLE_COMPARE__EXISTING_VOICE_ACCEPTED_TEXT_NOT_APPROVED",
+      "user_accepted_voice_take_preserve_sha": true,
+      "tts_allowed": false
+    },
+    {
+      "id": "SODCIN01_G09",
+      "movie": "SODCIN01",
+      "ru_literary_from_english_proposed": "Одни называют её посланницей богов — героиней, которой суждено сокрушить зло, чего бы это ни стоило.",
+      "ru_text_sha256_utf8": "cd1290eebc1f541154fddaec4aba9299e276b3d9ed8aac0f22a83726247a3560",
+      "voice_style_category": "rumor_reverence",
+      "voxcpm2_style_control_instruction": "Report of reverent rumors with careful skeptical distance",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "HOLD_ORIGINAL_APPROVED_SUBTITLE_COMPARE",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "SODCIN01_G10",
+      "movie": "SODCIN01",
+      "ru_literary_from_english_proposed": "Другие шепчутся, будто она — ещё одно дитя Баала, решившее пойти по стопам Саревока.",
+      "ru_text_sha256_utf8": "8c220aff08a89513c51355bd2b85409640a0944fabd39ece55343e0c96efbfdd",
+      "voice_style_category": "hushed_suspicion",
+      "voxcpm2_style_control_instruction": "Quiet suspicion, conspiratorial but clearly spoken, restrained dramatic pace",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "HOLD_ORIGINAL_APPROVED_SUBTITLE_COMPARE",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "SODCIN01_G11",
+      "movie": "SODCIN01",
+      "ru_literary_from_english_proposed": "Но одно ясно наверняка: пока Каэлар Аргент не остановлена, Побережью Мечей не видать покоя.",
+      "ru_text_sha256_utf8": "6ef39dccb7353b32f4168df811d30fa113321bef8ee1d1325dd766317645f5b8",
+      "voice_style_category": "grave_resolve",
+      "voxcpm2_style_control_instruction": "Firm grave conclusion, resolute tone, deliberate final cadence",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "HOLD_ORIGINAL_APPROVED_SUBTITLE_COMPARE",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "IWINTRO_G01",
+      "movie": "IWINTRO",
+      "ru_literary_from_english_proposed": "Мне самой ещё предстоит понять, почему я покинула уютный Кулдахар и отправилась в Дипингдейл — туда, где родился Изелор.",
+      "ru_text_sha256_utf8": "befa956d3b349fbe8f5e4f04b8e9499c139c4228e2097960723346e494a84cbb",
+      "voice_style_category": "personal_reflection",
+      "voxcpm2_style_control_instruction": "Thoughtful first-person female memoir, intimate and contemplative, gentle pacing",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "LITERARY_DRAFT_READY_FOR_SOURCE_AND_TLK_QA",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "IWINTRO_G02",
+      "movie": "IWINTRO",
+      "ru_literary_from_english_proposed": "Впрочем, мне уже доводилось исполнять подобные поручения — по просьбе дядюшки Освальда и самого Изелора.",
+      "ru_text_sha256_utf8": "1c8343c1f9cbe6cf54467736d8e47587b0a05ece2adc0df4e8fd425bdf3ea5d2",
+      "voice_style_category": "fond_memory",
+      "voxcpm2_style_control_instruction": "Soft nostalgic recollection, mild warmth without theatrical cheer",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "LITERARY_DRAFT_READY_FOR_SOURCE_AND_TLK_QA__EXISTING_VOICE_ACCEPTED_TEXT_NOT_APPROVED",
+      "user_accepted_voice_take_preserve_sha": true,
+      "tts_allowed": false
+    },
+    {
+      "id": "IWINTRO_G03",
+      "movie": "IWINTRO",
+      "ru_literary_from_english_proposed": "Когда Изелор оставил земли у Внутреннего моря и отправился к Хребту Мира, он пообещал своим собратьям-друидам прислать ученика себе на смену.",
+      "ru_text_sha256_utf8": "1806667ed3f174a3792f1d20cc028cd7fbee106f2ac7fff047a5d28636a65d00",
+      "voice_style_category": "druidic_history",
+      "voxcpm2_style_control_instruction": "Patient historical recounting, sincere respectful tone, even pacing",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "LITERARY_DRAFT_READY_FOR_SOURCE_AND_TLK_QA",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "IWINTRO_G04",
+      "movie": "IWINTRO",
+      "ru_literary_from_english_proposed": "Я убеждала себя, что именно поэтому и отправилась в путь.",
+      "ru_text_sha256_utf8": "a1e7dd1ca4e3808cab6a161dcd84a20d95db4ae6d55c992295456dac58ec0887",
+      "voice_style_category": "self_doubt",
+      "voxcpm2_style_control_instruction": "Quiet introspection with subtle self-questioning, gentle pace",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "LITERARY_DRAFT_READY_FOR_SOURCE_AND_TLK_QA",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "IWINTRO_G05",
+      "movie": "IWINTRO",
+      "ru_literary_from_english_proposed": "Но теперь, сидя у тёплого очага в Мирабаре, я понимаю то, что Изелор, должно быть, знал с самого начала.",
+      "ru_text_sha256_utf8": "faa1aac241e66db5d7f49c1e03f60d0c7c1f31eba0e74d7233ebb59d4fabbd13",
+      "voice_style_category": "retrospective_realization",
+      "voxcpm2_style_control_instruction": "Warm recollection darkening into a thoughtful realization",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "LITERARY_DRAFT_READY_FOR_SOURCE_AND_TLK_QA",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "IWINTRO_G06",
+      "movie": "IWINTRO",
+      "ru_literary_from_english_proposed": "Я помню всё так ясно, словно это случилось вчера. Началось же всё много лет назад.",
+      "ru_text_sha256_utf8": "5b8ef978d1bb49ce014d5c64890f3a04de1072b6bd243c8a105387bb42a65862",
+      "voice_style_category": "flashback_transition",
+      "voxcpm2_style_control_instruction": "Clear intimate recollection, storytelling transition, unhurried",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "LITERARY_DRAFT_READY_FOR_SOURCE_AND_TLK_QA",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "IWINTRO_G07",
+      "movie": "IWINTRO",
+      "ru_literary_from_english_proposed": "Шёл тысяча триста десятый год по летоисчислению Долин. Дозорные Брин-Шандера, крупнейшего из Десяти Городов, впервые заметили отряды гоблинов.",
+      "ru_text_sha256_utf8": "783b2ea2976389f5605e20b6a194851448a58ab5f32a065810261da3fb362a5f",
+      "voice_style_category": "historical_unease",
+      "voxcpm2_style_control_instruction": "Chronicle-like calm narration with a subtle rising concern",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [
+        "ты́сяча",
+        "три́ста",
+        "деся́тый",
+        "летоисчисле́нию"
+      ],
+      "source_status": "LITERARY_DRAFT_READY_FOR_SOURCE_AND_TLK_QA",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "IWINTRO_G08",
+      "movie": "IWINTRO",
+      "ru_literary_from_english_proposed": "Не прошло и нескольких недель, как с Хребта Мира хлынула нескончаемая орда гоблинов. Над этой волной смерти развевалось знамя с чудовищными головами Химеры.",
+      "ru_text_sha256_utf8": "ec5461524086379a1633224e1b7afea1583af7c78435323651b393db80d81bc2",
+      "voice_style_category": "rising_dread",
+      "voxcpm2_style_control_instruction": "Growing dread and awe at a massive invasion, controlled intensity",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [
+        "не́скольких",
+        "голова́ми"
+      ],
+      "source_status": "LITERARY_DRAFT_READY_FOR_SOURCE_AND_TLK_QA",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "IWINTRO_G09",
+      "movie": "IWINTRO",
+      "ru_literary_from_english_proposed": "Ополчение Десяти Городов могло остаться единственной защитой долины, если бы судьба не распорядилась иначе.",
+      "ru_text_sha256_utf8": "6352d4c02dae2713fca5797ef66c823f82118f6e2a3ac8e7eee1fb193aa72527",
+      "voice_style_category": "perilous_fate",
+      "voxcpm2_style_control_instruction": "Grave foreboding, measured and clear; source transcript unresolved",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "HOLD_CORRUPTED_EN_ASR",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "IWINTRO_G10",
+      "movie": "IWINTRO",
+      "ru_literary_from_english_proposed": "Но Ульбрек Диннсмор, правитель Таргоса, убедил совет отправить гонцов на юг — в портовые города Лускан и Невервинтер.",
+      "ru_text_sha256_utf8": "79b2545fd21528836b823ac62d520b22aa336e7989ae2ade2a914470d4a88656",
+      "voice_style_category": "political_decision",
+      "voxcpm2_style_control_instruction": "Restrained pragmatic recounting, an important decision, steady pace",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "HOLD_CORRUPTED_EN_ASR",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "IWINTRO_G11",
+      "movie": "IWINTRO",
+      "ru_literary_from_english_proposed": "У Лускана и без того хватало собственных бед. Но, опасаясь последствий, его капитаны придумали нехитрый выход.",
+      "ru_text_sha256_utf8": "a5e203036832c2efef42c8c485d90e8020576737babb27309cb08b5e86a1bf93",
+      "voice_style_category": "dry_irony",
+      "voxcpm2_style_control_instruction": "Subtle dry irony, wry and measured historical narration",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "LITERARY_DRAFT_READY_FOR_SOURCE_AND_TLK_QA",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "IWINTRO_G12",
+      "movie": "IWINTRO",
+      "ru_literary_from_english_proposed": "По всему городу расклеили объявления, сулившие богатство и славу.",
+      "ru_text_sha256_utf8": "a2dc19fb79a9868cf0ade94a9e8e4525bea08cc799f662ba9470cd08db31d407",
+      "voice_style_category": "sardonic_promise",
+      "voxcpm2_style_control_instruction": "Subtle wry amusement at promises of wealth and fame",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "LITERARY_DRAFT_READY_FOR_SOURCE_AND_TLK_QA",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "IWINTRO_G13",
+      "movie": "IWINTRO",
+      "ru_literary_from_english_proposed": "В северном порту работы почти не было, и многие наёмники и головорезы соблазнились возможностью отплыть на кораблях ещё дальше на север.",
+      "ru_text_sha256_utf8": "155adf080eddac7d144c841586c71754542cea6318d8def48f947ecaa42697cf",
+      "voice_style_category": "weary_opportunity",
+      "voxcpm2_style_control_instruction": "Matter-of-fact, faintly wry, pace lifts with the prospect of adventure",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [
+        "порту́"
+      ],
+      "source_status": "LITERARY_DRAFT_READY_FOR_SOURCE_AND_TLK_QA__EXISTING_VOICE_ACCEPTED_TEXT_NOT_APPROVED",
+      "user_accepted_voice_take_preserve_sha": true,
+      "tts_allowed": false
+    },
+    {
+      "id": "IWINTRO_G14",
+      "movie": "IWINTRO",
+      "ru_literary_from_english_proposed": "Их корабли медленно пробирались сквозь Море Движущегося Льда, а затем вошли в устье реки Шаэнгарн.",
+      "ru_text_sha256_utf8": "03ba7cbf4a5679705f6e7380683c0aa6473e2140ffe19b68a50f67a760873847",
+      "voice_style_category": "journey_foreboding",
+      "voxcpm2_style_control_instruction": "Slow atmospheric travelogue with a subtle foreboding undertone",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "LITERARY_DRAFT_READY_FOR_SOURCE_AND_TLK_QA",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "IWINTRO_G15",
+      "movie": "IWINTRO",
+      "ru_literary_from_english_proposed": "Они хвастались тем, какие подвиги совершат и какие замки купят.",
+      "ru_text_sha256_utf8": "c3a10c4a140e1d55af461f0a70d02e3bdf6e0def650ee0acd61458be2e12fcfd",
+      "voice_style_category": "bitter_irony",
+      "voxcpm2_style_control_instruction": "Faint bitter irony, gentle sarcasm, a shadow of coming danger",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [
+        "по́двиги",
+        "за́мки"
+      ],
+      "source_status": "LITERARY_DRAFT_READY_FOR_SOURCE_AND_TLK_QA",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "IWINTRO_G16",
+      "movie": "IWINTRO",
+      "ru_literary_from_english_proposed": "Грёзы о будущей славе застили им глаза: они не замечали полчищ гоблинов и орков, поджидавших их в засаде.",
+      "ru_text_sha256_utf8": "181fb2288ed08741790392a4c8c31a36c095ef32a2606da5fa34c0383a3dc766",
+      "voice_style_category": "ambush_tension",
+      "voxcpm2_style_control_instruction": "Ominous warning, sudden tension, slowing toward the ambush",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "LITERARY_DRAFT_READY_FOR_SOURCE_AND_TLK_QA",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "IWINTRO_G17",
+      "movie": "IWINTRO",
+      "ru_literary_from_english_proposed": "Лишь немногим кораблям удалось уцелеть.",
+      "ru_text_sha256_utf8": "e170e6ff2698ea54010fcf6a8f38f1a810bbddff7888e0f81e2edd3326c3a265",
+      "voice_style_category": "understated_tragedy",
+      "voxcpm2_style_control_instruction": "Understated grief and shock, short heavy line, pause afterward",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [
+        "уцеле́ть"
+      ],
+      "source_status": "LITERARY_DRAFT_READY_FOR_SOURCE_AND_TLK_QA",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "IWINTRO_G18",
+      "movie": "IWINTRO",
+      "ru_literary_from_english_proposed": "Те, кому удалось подняться выше по реке, увидели, как пылает Бремен. Один из Десяти Городов уже пал.",
+      "ru_text_sha256_utf8": "073c6740194e5503be09bc04fffad3069bc71c38333b25e4a9ab1eb3b7c486f8",
+      "voice_style_category": "war_aftermath",
+      "voxcpm2_style_control_instruction": "Somber grief and dismay, solemn finality",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [],
+      "source_status": "LITERARY_DRAFT_READY_FOR_SOURCE_AND_TLK_QA",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    },
+    {
+      "id": "IWINTRO_G19",
+      "movie": "IWINTRO",
+      "ru_literary_from_english_proposed": "Тогда многие задавались вопросом — и я часто спрашивала себя о том же: что может горстка людей против несметного врага, когда всё вокруг охвачено бедой?",
+      "ru_text_sha256_utf8": "fdd26406903f5acfec1401a638c1d0e38d0db06bf978474b3d97affcbded0732",
+      "voice_style_category": "reflective_hope_vs_despair",
+      "voxcpm2_style_control_instruction": "Personal sorrow and thoughtful doubt, intimate reflective question, restrained emotion",
+      "manual_stress_anchors_CONTEXTUAL_NOT_MODEL_CHECKED": [
+        "го́рстка",
+        "несме́тного"
+      ],
+      "source_status": "LITERARY_DRAFT_READY_FOR_SOURCE_AND_TLK_QA",
+      "user_accepted_voice_take_preserve_sha": false,
+      "tts_allowed": false
+    }
+  ]
+}
