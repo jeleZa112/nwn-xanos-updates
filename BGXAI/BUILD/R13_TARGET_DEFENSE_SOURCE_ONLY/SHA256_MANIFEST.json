@@ -1,0 +1,22 @@
+{
+  "schema": "BGXAI_R13_SOURCE_ONLY_MANIFEST_V1",
+  "status": "SOURCE_ONLY_NOT_INSTALLED",
+  "files": {
+    "BGXAI_R13_CHECKPOINT_20261122_RU.md": {
+      "sha256": "33465ae31d2fbe471e99c32b9e8dd9756b92566b00a754f7eb4a417d490e2b42",
+      "size": 3352
+    },
+    "BGXAI_R13_TARGET_DEFENSE_OBSERVER.lua": {
+      "sha256": "0002dfb06b4eb84ae514f464f21cd4a5219d4f7e31d8e0e6295265b71c306bb8",
+      "size": 6768
+    },
+    "README_RU.md": {
+      "sha256": "b98c2e248a45bc0c5e4bbb42e5e4a4b304319f1f2790616ebd5d979e1e30914e",
+      "size": 3704
+    },
+    "test_r13.lua": {
+      "sha256": "d96010c0d272ac646fd39fb10890da3a5e2f080346c429eac5362e8b95ab6b45",
+      "size": 7912
+    }
+  }
+}
