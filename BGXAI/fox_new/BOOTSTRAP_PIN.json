@@ -2,7 +2,7 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "93a70b0ed5bad9bc39e127ebcc052f439314a26f",
+  "commit": "0811abcf0903c621b408997481ada0ee2009d9a9",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
   "script_sha256": "96bbc0f8ebb15be902535e63ae5afe0da81629f6dd93749a8a502683b679e8c8",
   "script_size": 79984,
