@@ -1,0 +1,48 @@
+name: BGXAI weapon menu 160 candidate - Windows native parse and regression
+
+on:
+  push:
+    branches: [bgxai-weapon160-static-ro-candidate]
+    paths:
+      - 'BGXAI/BUILD/WEAPON_160_SOURCE_ONLY/**'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_EEEX_R11_STATIC_COMPAT_RO_V2.py'
+      - '.github/workflows/bgxai-weapon160-static-ro-candidate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows_source_only:
+    runs-on: windows-latest
+    steps:
+      - name: Preserve exact LF bytes for pinned script comparisons
+        shell: pwsh
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check old 1..159 options and menu 160 read-only source pin
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python BGXAI/BUILD/WEAPON_160_SOURCE_ONLY/test_weapon160_updater.py
+          if($LASTEXITCODE -ne 0){throw 'BGXAI_160_REGRESSION_FAILED'}
+      - name: Native PowerShell AST parse of the staged onefile updater
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $script='BGXAI/BUILD/WEAPON_160_SOURCE_ONLY/BGXAI_SYNC_160_CANDIDATE.ps1'
+          $tokens=$null
+          $errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $script).Path,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -ne 0){throw ('BGXAI_160_PS_AST_FAILED: '+(($errors|ForEach-Object {$_.Message}) -join '; '))}
+          Write-Host 'BGXAI_160_WINDOWS_POWERSHELL_AST_PASS'
+      - name: Offline EEex V2 scanner regression (never touches game)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python BGXAI/BUILD/EEEX_R11_STATIC_COMPAT_V2_SOURCE_ONLY/test_static_v2.py
+          if($LASTEXITCODE -ne 0){throw 'BGXAI_160_EEEX_STATIC_TEST_FAILED'}
+          Write-Host 'BGXAI_160_SOURCE_ONLY_TESTS_PASS'
