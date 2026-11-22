@@ -54,3 +54,65 @@ jobs:
               assert status==0,(eol,status)
           print('NATIVE_LUA54_UI_MENU_CANDIDATE_PASS LF CRLF, exact delimiter, reversible')
           PY
+      - name: Native Lua 5.4 v96 colored-prefix behavior and full menu syntax
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import ctypes,json
+          path=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
+          ns={'__name__':'ci_native_lua_v96','__file__':str(path)}
+          exec(compile(path.read_text(encoding='utf8').split('\n',1)[1],str(path),'exec'),ns)
+          lib=ctypes.CDLL('liblua5.4.so.0')
+          lib.luaL_newstate.restype=ctypes.c_void_p
+          lib.luaL_openlibs.argtypes=[ctypes.c_void_p]
+          lib.luaL_loadbufferx.argtypes=[ctypes.c_void_p,ctypes.c_char_p,ctypes.c_size_t,ctypes.c_char_p,ctypes.c_char_p]
+          lib.luaL_loadbufferx.restype=ctypes.c_int
+          lib.lua_pcallk.argtypes=[ctypes.c_void_p,ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.c_longlong,ctypes.c_void_p]
+          lib.lua_pcallk.restype=ctypes.c_int
+          lib.lua_tolstring.argtypes=[ctypes.c_void_p,ctypes.c_int,ctypes.POINTER(ctypes.c_size_t)]
+          lib.lua_tolstring.restype=ctypes.c_void_p
+          lib.lua_close.argtypes=[ctypes.c_void_p]
+          def run_helper(helper,s,mode=1):
+              text=helper+'\nBG_EET_RU_LOG_MODE = '+str(mode)+'\nreturn BG_EET_RU_LogView('+json.dumps(s,ensure_ascii=False)+')'
+              chunk=text.encode('utf8')
+              p=lib.luaL_newstate()
+              lib.luaL_openlibs(p)
+              try:
+                  assert lib.luaL_loadbufferx(p,chunk,len(chunk),b'menu_test',None)==0
+                  assert lib.lua_pcallk(p,0,1,0,0,None)==0
+                  n=ctypes.c_size_t()
+                  a=lib.lua_tolstring(p,-1,ctypes.byref(n))
+                  return ctypes.string_at(a,n.value).decode('utf8')
+              finally:
+                  lib.lua_close(p)
+          source='^0xFFAABBCCХалид^0xFFFFFFFF: Бросок: 12 +Удача: 0 +Правая рука: -1^-'
+          expected='^0xFFAABBCCХалид^0xFFFFFFFF: Бросок: 12 +Правая рука: -1^-'
+          assert run_helper(ns['V95_HELPER'],source)==source,'old regression should reproduce'
+          assert run_helper(ns['V96_HELPER'],source)==expected
+          assert run_helper(ns['V96_HELPER'],source,0)==source
+          damage='^0xFFAABBCCХалид: Бросок: 5 +Модификатор урона: 0 +Бонус руки: 0 (+Дальний бой: 0 +Эффекты: 0) +Атака по возможности: 0 *Удар в спину: 0 +Берсерк: 0 +Сила: 0 +Избранный враг: 0 +Особый бонус: 0^-'
+          assert run_helper(ns['V96_HELPER'],damage)=='^0xFFAABBCCХалид: Бросок: 5^-'
+          inline='^0xFFAABBCCХалид: Бросок: 12 ^0xFFFFFFFF+Удача: 0^-'
+          assert run_helper(ns['V96_HELPER'],inline)==inline
+          hit='^0xFFAABBCCХалид: бросок атаки 12 - 1 = 11 : попадание^-'
+          assert run_helper(ns['V96_HELPER'],hit)=='^0xFFAABBCCХалид: d20: 12 - 1 = 11 — ПОПАДАНИЕ^-'
+          for eol in ('\n','\r\n'):
+              prior=ns['V95_HELPER'].replace('\n',eol).encode('utf8')
+              source_ui=(b'`\nfunction clean(str)\n return str\nend'+prior+
+                        b'`\nmenu\nrender '+ns['V88_RENDER_NEW']+
+                        b'\n'+ns['V90_DRAG']+b'\nBG_EET_RU_JOURNAL_TOGGLE\n')
+              candidate=ns['v96_transform_installed_ui'](source_ui)
+              replacement=ns['V96_HELPER'].replace('\n',eol).encode('utf8')
+              assert candidate.count(replacement+b'`')==1
+              assert b'end'+eol.encode('ascii')+b'`' in candidate
+              assert b'end`' not in candidate
+              assert candidate.replace(replacement,prior,1)==source_ui
+              chunk=candidate.split(b'`',2)[1]
+              p=lib.luaL_newstate()
+              try:
+                  assert lib.luaL_loadbufferx(p,chunk,len(chunk),b'menu',None)==0
+              finally:
+                  lib.lua_close(p)
+          print('V96_NATIVE_COLORED_PREFIX_PASS: regression, damage, d20, full mode, markup, LF CRLF full Lua')
+          PY
