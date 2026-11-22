@@ -6949,7 +6949,6 @@ def selftest():
     assert v91_selftest() and callable(v91_run)
     assert v92_selftest() and callable(v92_run)
     assert v93_selftest() and callable(v93_run)
-    assert 'V93_INSTALL_DISABLED_BAD_MENU_LUA' in main.__code__.co_consts[0] if False else True
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
