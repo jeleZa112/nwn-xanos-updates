@@ -7,9 +7,9 @@
   "updater_name": "BG_VOICE_UPDATE.cmd",
   "latest_payload_version": 74,
   "state": {
-    "version": 74,
+    "version": 75,
     "library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_PROJECT_STATE.md",
-    "verification": "Library state version 74"
+    "verification": "Rolling continuation appended; Library state sync pending"
   },
   "package_transport": "chatgpt_shared_library",
   "windows_auto_download_enabled": false,
@@ -97,5 +97,32 @@
     "DO_NOT_RESTART_FINISHED_QA",
     "VOICE_UPDATER_OWNER_MUST_APPROVE_INTEGRATION"
   ],
-  "shared_chat_consumer_instruction": "Read manifest; fetch matching Library ZIP autonomously; verify ZIP SHA256; import into ONE existing updater. Do not ask user to forward every version."
+  "shared_chat_consumer_instruction": "Read manifest; fetch matching Library ZIP autonomously; verify ZIP SHA256; import into ONE existing updater. Do not ask user to forward every version.",
+  "rolling_continuation": {
+    "schema": "BGVOICE_ROLLING_SECOND_PASS_V1",
+    "status": "SOURCE_READY_TESTED_NOT_EXECUTED_ON_WINDOWS",
+    "library_archive": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_ROLLING_CONTINUATION.zip",
+    "sha256_archive": "1d57bbd52e1b2acd8e1b21eacb8abaf470f06b08b43c7ca87abbf570b8ffde60",
+    "archive_bytes": 44972,
+    "python_module_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/rolling/BGVOICE_ROLLING_CONTINUATION.py",
+    "stage_proposals_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/rolling/VOICE_BACKED_613_STAGE_ONLY.csv",
+    "ab_queue_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/rolling/NEXT24_VOICE_AB_SHA_GATED.csv",
+    "manifest_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/rolling/MANIFEST.json",
+    "stage_proposals_sha256": "ea2cf88bacf3da34ef2a6f6bc3c52647d68f223bc4bff4b20cbd1b45618dd5f1",
+    "ab_queue_sha256": "9cb4dff41113d35304acffd1b6177cd503b84bd9edc8cdd245fae562b506c2f3",
+    "source_module_sha256": "9ac54e2ff1d21f78c5bdf5493e5ac36e4776ea824d0767b008e72bfeb11556c5",
+    "staging_proposals": 613,
+    "voice_groups": 111,
+    "modes": {
+      "PER_LINE": 590,
+      "STABLE": 23
+    },
+    "ab24_proposals": 24,
+    "overlap_with_existing_420": 0,
+    "overlap_with_ready_ab12": 0,
+    "game_install_authorized": false,
+    "human_approval_count": 0,
+    "test_result": "PASS synthetic: 2 staged, 2 reused on rerun, corrupt staged HOLD, 1 AB ready + 23 missing HOLD, originals unchanged",
+    "updater_owner": "main_voice_video_chat_ONLY"
+  }
 }
