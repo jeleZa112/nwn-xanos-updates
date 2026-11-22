@@ -1,0 +1,67 @@
+{
+  "schema": "BGVOICE_RU_SAME_CHARACTER_ANCHOR_PILOT_V2",
+  "created_on": "2026-11-23",
+  "registry_sound_ids": 7206,
+  "expected_ru_wav_pairs": 7206,
+  "locked_rows": 58,
+  "historic_human_picks": {
+    "STABLE": 7,
+    "PER_LINE": 13
+  },
+  "source_actual_windows_report_sha256": "9e99033d46a978e9f98c904fad5327b928bddafa2fbc17b1176c92c115c50b27",
+  "model": "microsoft/wavlm-base-plus-sv",
+  "model_revision": "feb593a6c23c1cc3d9510425c29b0a14d2b07b1e",
+  "source_wav_changes": false,
+  "game_changes": false,
+  "updater_changes": false,
+  "acting_model_run": false,
+  "real_v2_gpu_inference": "NOT_RUN",
+  "pilot_gate": "12+ decided, stable>=4 recall>=.60, perline>=6 recall>=.70, balanced>=.70, accuracy>.65",
+  "algorithm_warning": "Unapproved paired RU pseudoanchors are not verified quality or voice acting",
+  "files": {
+    "BGVOICE_GPU_BOOTSTRAP.py": {
+      "bytes": 4657,
+      "sha256": "13b34baea426ec386830609ecdf9b7dbcccbf85a77c3039940204ce874aa494a"
+    },
+    "BGVOICE_GPU_SELECTION.py": {
+      "bytes": 23740,
+      "sha256": "b2edf5c5923a258be50423541a1e8e63b8dc3de529faf245fd6c0c3d06a4b43b"
+    },
+    "BGVOICE_RU_ANCHOR_V2.py": {
+      "bytes": 13981,
+      "sha256": "abd45624eceb322b00c008965fb66041524eaed12b34fe353ac28f7945fa79e3"
+    },
+    "BG_VOICE_RU_ANCHOR_V2.cmd": {
+      "bytes": 886,
+      "sha256": "c8502bae74d8da6dd30cb32200efda4c02c6515c52d6753efcc8c32d62bab31d"
+    },
+    "DATA/HUMAN_LOCKS_58_WINDOWS.csv": {
+      "bytes": 11903,
+      "sha256": "6d817278284c0ac3c79daaea32ac11cc6ce0e3ac134f0f50571954d59cd158b1"
+    },
+    "DATA/RETROSPECTIVE_HUMAN_COMPARISON.csv": {
+      "bytes": 3431,
+      "sha256": "0982d56b9dc8014b7b7567402fc26fcfab5f3eaf903f8be11fee4707b996cae1"
+    },
+    "DATA/SOURCE_7206.csv": {
+      "bytes": 9088859,
+      "sha256": "c70728586e0c8d212edeb92e6876fe01bf3968da1a1e7ad261da8d86021129d4"
+    },
+    "README_RU.md": {
+      "bytes": 7516,
+      "sha256": "e551f8e264c79a54a7c5c1d726e757b433c9f26ed129fd2b162a929f6a85a910"
+    },
+    "SELFTEST_RU_ANCHOR_V2.py": {
+      "bytes": 5504,
+      "sha256": "d8cff5b68382950dc589147ed75e857bd6e8af28d65ac8427e1d842c5ad90305"
+    },
+    "V58_EN_RECOVERY.py": {
+      "bytes": 11536,
+      "sha256": "01d5f1c242ae4f0c03f87350be4fb2fff33641e76150369eb9fdd0479f5f019d"
+    },
+    "WAVLM_REAL_GPU_PILOT_AUDIT_RU.md": {
+      "bytes": 2809,
+      "sha256": "2c9affaf4428f4de5cd5e0fb109784e2768f5d26b7693b098870440341309c57"
+    }
+  }
+}
