@@ -6,10 +6,10 @@
   "sha256": "01ea0618d4446ea353538ba4c0dae0e389e4d3ce96380a7239b065bc0ebdfe0a",
   "notes": "--review-only --limit 16: offline, no inference, rank 7155 unprotected pairs from validated QA report; create real Stable/Per_line/EN WAV audition packet and technical PCM flags inside the existing ONE report ZIP. No user-choice edits, no original-WAV writes. Manual and IMOEN75 protected. ZIP rebuilt atomically and CRC verified; tests include idempotence. Does not claim to judge emotional acting automatically.",
   "movie_core": {
-    "version": "1.6.0",
+    "version": "1.7.0",
     "path": "BG_VOICE_MOVIE_CORE.py",
-    "commit": "daa6fed0123eef0fa5d8ef082202b976a8c75c8a",
-    "sha256": "0173e1895c98b40f8325cd00252418eb02f15a3ec7cffba18ee2d26a93b16026"
+    "commit": "5ae95dd395938708c544980ef36b0bb60d2b34dd",
+    "sha256": "d2055cc5ce60f7cef8d442cc825dfbb913dac3cfa9931ddebc4c7da7f3b9c537"
   },
   "v70_core": {
     "version": "1.2.0",
