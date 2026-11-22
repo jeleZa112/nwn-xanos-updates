@@ -97,4 +97,23 @@ class Tests(unittest.TestCase):
         for k in ('install','switch','select_weapon','execute','dispatch'):
             self.assertFalse(hasattr(bridge,k))
 
+    def test_iron_crisis_breakage_chain_detected_as_risk_not_damage(self):
+        c=self.runaudit()['candidates'][0]
+        risk=c['potentialItemLossRisks'][0]
+        self.assertEqual((risk['removeItemRaw'],risk['createItemRaw']),('SW1H04','MISC56_'))
+        self.assertEqual(risk['triggerProbability1Raw'],1)
+        self.assertFalse(risk['activationAndTargetConditionsVerified'])
+        self.assertEqual(risk['numericalDamageContributionCounted'],0)
+    def test_other_weapons_have_no_weapon_loss_chain(self):
+        a=self.runaudit()['candidates']
+        self.assertEqual(a[1]['potentialItemLossRisks'],[])
+        self.assertEqual(a[3]['potentialItemLossRisks'],[])
+    def test_linked_spell_missing_causes_hold(self):
+        self.r['linkedSpells'].pop('SW1H04')
+        self.bad()
+    def test_breakage_not_assumed_when_resource_does_not_replace(self):
+        e=self.r['linkedSpells']['SW1H04']['spell']['abilities'][0]['effects'][2]
+        e['resourceRaw']='OTHER'
+        self.assertEqual(self.runaudit()['candidates'][0]['potentialItemLossRisks'],[])
+
 if __name__=='__main__':unittest.main(verbosity=2)
