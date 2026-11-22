@@ -325,3 +325,68 @@ jobs:
               finally:lua.lua_close(L)
           print('V99_NATIVE_DAMAGE_SOURCE_PASS: 72 variants, modes, idempotence, full Lua and byte-exact rollback')
           PY
+      - name: Native Lua v100 combat color accents and full UI rollback
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import ctypes,json
+          path=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
+          ns={'__name__':'ci_v100_native_lua','__file__':str(path)}
+          exec(compile(path.read_text(encoding='utf8').split('\n',1)[1],str(path),'exec'),ns)
+          lua=ctypes.CDLL('liblua5.4.so.0')
+          lua.luaL_newstate.restype=ctypes.c_void_p
+          lua.luaL_openlibs.argtypes=[ctypes.c_void_p]
+          lua.luaL_loadbufferx.argtypes=[ctypes.c_void_p,ctypes.c_char_p,ctypes.c_size_t,ctypes.c_char_p,ctypes.c_char_p]
+          lua.luaL_loadbufferx.restype=ctypes.c_int
+          lua.lua_pcallk.argtypes=[ctypes.c_void_p,ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.c_longlong,ctypes.c_void_p]
+          lua.lua_pcallk.restype=ctypes.c_int
+          lua.lua_tolstring.argtypes=[ctypes.c_void_p,ctypes.c_int,ctypes.POINTER(ctypes.c_size_t)]
+          lua.lua_tolstring.restype=ctypes.c_void_p
+          lua.lua_close.argtypes=[ctypes.c_void_p]
+          def run(helper,message,mode=1):
+              code=(helper+'\nBG_EET_RU_LOG_MODE='+str(mode)+'\nreturn BG_EET_RU_LogView('+json.dumps(message,ensure_ascii=False)+')').encode('utf8')
+              L=lua.luaL_newstate()
+              lua.luaL_openlibs(L)
+              try:
+                  assert lua.luaL_loadbufferx(L,code,len(code),b'colors',None)==0,'invalid Lua'
+                  assert lua.lua_pcallk(L,0,1,0,0,None)==0,'runtime'
+                  count=ctypes.c_size_t()
+                  p=lua.lua_tolstring(L,-1,ctypes.byref(count))
+                  return ctypes.string_at(p,count.value).decode('utf8')
+              finally: lua.lua_close(L)
+          tests=[
+              ('Халид: бросок атаки 16 - 1 = 15 : попадание^-','^0xFF35C46EПОПАДАНИЕ^-','hit'),
+              ('Халид: бросок атаки 2 - 1 = 1 : промах^-','^0xFFE15A5AПРОМАХ^-','miss'),
+              ('^0xFFAA4400Халид: бросок атаки 16 - 1 = 15 : попадание^-','^0xFF35C46EПОПАДАНИЕ^0xFFAA4400','hit_existing_speaker_color'),
+              ('^0xFF55CCFFБольной гибберлинг:^- получает 6 метательного урона от противника: Халид^-','^0xFFD6A5486 ед.^-','damage'),
+              ('Халид: КРИТИЧЕСКИЙ УДАР^-','^0xFFFFCC3DКРИТИЧЕСКИЙ УДАР^-','crit'),
+          ]
+          for original,needle,label in tests:
+              previous=run(ns['V99_HELPER'],original)
+              colored=run(ns['V100_HELPER'],original)
+              assert needle in colored,(label,colored)
+              assert colored != previous,(label,'no color')
+              assert run(ns['V100_HELPER'],original,0)==original,(label,'full modified')
+              assert run(ns['V100_HELPER'],colored)==colored,(label,'nonidempotent')
+              assert colored.replace('^0xFF35C46E','').replace('^0xFFE15A5A','').replace('^0xFFD6A548','').replace('^0xFFFFCC3D','').replace('^0xFFAA4400','^0xFFAA4400'),(label,'result error')
+          for msg in ('Халид: атакует цель: Больной гибберлинг^-',
+                      'Больной гибберлинг: получает 6 огненного урона от противника: Халид^-',
+                      'Халид: Бросок: 16 +Правая рука: -1^-'):
+              assert run(ns['V100_HELPER'],msg)==run(ns['V99_HELPER'],msg)
+          for eol in ('\n','\r\n'):
+              previous=ns['V99_HELPER'].replace('\n',eol).encode('utf8')
+              source=(b'`\nfunction clean(str)\n return str\nend'+previous+
+                      b'`\nmenu\nrender '+ns['V88_RENDER_NEW']+
+                      b'\n'+ns['V90_DRAG']+b'\nBG_EET_RU_JOURNAL_TOGGLE\n')
+              result=ns['v100_transform_installed_ui'](source)
+              new=ns['V100_HELPER'].replace('\n',eol).encode('utf8')
+              assert result.count(new+b'`')==1
+              assert result.replace(new,previous,1)==source
+              assert b'end'+eol.encode('ascii')+b'`' in result
+              chunk=result.split(b'`',2)[1]
+              L=lua.luaL_newstate()
+              try: assert lua.luaL_loadbufferx(L,chunk,len(chunk),b'menu',None)==0
+              finally:lua.lua_close(L)
+          print('V100_NATIVE_COLORS_PASS: hit, miss, damage, crit, names, full, idempotence, LF/CRLF and rollback')
+          PY
