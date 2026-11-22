@@ -1,4 +1,4 @@
-# BG Voice RU movie 1.4: EN source cues for 19 voice-missing groups, preserving all prior audio.
+# BG Voice RU movie 1.5: offline IEEE FLOAT32 source-cue fallback for 19 voice-missing groups.
 # One permanent CMD, one common report, no TTS and no game writes.
 from __future__ import annotations
 import csv
@@ -9,13 +9,16 @@ import os
 import shutil
 import subprocess
 import struct
+import sys
+import math
+from array import array
 import wave
 import tempfile
 import zipfile
 from collections import Counter
 from pathlib import Path
 
-MOVIE_CORE_VERSION = '1.4.0'
+MOVIE_CORE_VERSION = '1.5.0'
 SCRIPT_JSON_SHA256 = '87d18d68ce2be6236e2bdb468dc0275c7f5f257714643b5cf9013c48f87a9ee4'
 MOVIE_SEGMENTS = {'INTRO15F': 16, 'SODCIN01': 18, 'IWINTRO': 29}
 PILOT_KNOWN = {'INTRO15F_G01','SODCIN01_G02','IWINTRO_G06'}
@@ -403,6 +406,96 @@ def _file_sha256(path):
     return obj.hexdigest()
 
 
+def _native_float32_to_pcm16_window(source, start, end):
+    """Read a bounded RIFF WAVE_FLOAT32 section without ffmpeg or numpy.
+
+    Preserve the exact input rate and channel count: no resampling, spectral
+    denoising, time-stretch, pitch shift, or writes to the original source.
+    Supports fmt 3 and WAVE_FORMAT_EXTENSIBLE IEEE-FLOAT GUID, excluding
+    compressed audio, truncated blocks and malformed or oversized chunks.
+    """
+    source=Path(source)
+    duration=end-start
+    if not 0<duration<=42:raise ValueError('INVALID_TIME_RANGE_HOLD')
+    # Standard IEEE FLOAT32 in WAVE_FORMAT_EXTENSIBLE uses this exact GUID.
+    ieee_guid=bytes.fromhex('0300000000001000800000aa00389b71')
+    with source.open('rb') as f:
+        file_size=f.seek(0,2)
+        f.seek(0)
+        if file_size<44 or f.read(4)!=b'RIFF':raise ValueError('NO_RIFF_HOLD')
+        declared=struct.unpack('<I',f.read(4))[0]
+        if f.read(4)!=b'WAVE' or declared+8>file_size:
+            raise ValueError('BAD_WAVE_SIZE_HOLD')
+        info=None; data=None
+        # Real wav stems have fmt near the header; impose bounded header scan.
+        while f.tell()+8<=file_size and f.tell()<1024*1024:
+            head=f.read(8)
+            if len(head)<8:break
+            chunk,n=struct.unpack('<4sI',head)
+            offset=f.tell()
+            if n>file_size-offset:raise ValueError('TRUNCATED_RIFF_CHUNK_HOLD')
+            if chunk==b'fmt ':
+                if not 16<=n<=512:raise ValueError('BAD_WAVE_FMT_SIZE_HOLD')
+                fmt=f.read(n)
+                tag,channels,rate,avg,align,bits=struct.unpack_from('<HHIIHH',fmt)
+                if tag==0xfffe:
+                    if len(fmt)<40 or struct.unpack_from('<H',fmt,16)[0]<22 or fmt[24:40]!=ieee_guid:
+                        raise ValueError('NOT_IEEE_FLOAT_EXTENSIBLE_HOLD')
+                elif tag!=3:
+                    raise ValueError('NOT_IEEE_FLOAT32_HOLD')
+                if bits!=32 or channels not in (1,2) or not 8000<=rate<=192000 or align!=channels*4 or avg!=rate*align:
+                    raise ValueError('INVALID_FLOAT_FMT_HOLD')
+                info={'channels':channels,'rate':rate,'align':align}
+            elif chunk==b'data':
+                data=(offset,n)
+            f.seek(offset+n+(n&1))
+            if info is not None and data is not None:break
+        if info is None or data is None:raise ValueError('MISSING_WAVE_FMT_OR_DATA_HOLD')
+        channels=info['channels'];rate=info['rate'];align=info['align']
+        if data[1]%align:raise ValueError('TRUNCATED_FRAME_HOLD')
+        total_frames=data[1]//align
+        first=round(start*rate);frames=round(duration*rate)
+        if first<0 or frames<1 or first+frames>total_frames+2:
+            raise ValueError('FLOAT_WINDOW_OUT_OF_RANGE_HOLD')
+        first=min(first,total_frames);frames=min(frames,total_frames-first)
+        if frames<rate*duration*.98:raise ValueError('FLOAT_WINDOW_TRUNCATED_HOLD')
+        if frames*channels*2>9*1024*1024:raise ValueError('FLOAT_WINDOW_OVERSIZE_HOLD')
+        f.seek(data[0]+first*align)
+        # First pass: find an amplitude-safe, globally uniform gain for this
+        # cue.  No local per-block gain pumping or dynamic compression.
+        peak=0.0;read_frames=0
+        while read_frames<frames:
+            take=min(32768,frames-read_frames)
+            raw=f.read(take*align)
+            if len(raw)!=take*align:raise ValueError('FLOAT_WINDOW_TRUNCATED_HOLD')
+            values=array('f');values.frombytes(raw)
+            if sys.byteorder!='little':values.byteswap()
+            for val in values:
+                if not math.isfinite(val):raise ValueError('FLOAT_NAN_INF_HOLD')
+                if abs(val)>peak:peak=abs(val)
+            read_frames+=take
+        gain=min(1.0,0.98/peak) if peak else 1.0
+        f.seek(data[0]+first*align)
+        buffer=io.BytesIO()
+        with wave.open(buffer,'wb') as output:
+            output.setnchannels(channels);output.setframerate(rate);output.setsampwidth(2)
+            written=0
+            while written<frames:
+                take=min(32768,frames-written)
+                raw=f.read(take*align)
+                if len(raw)!=take*align:raise ValueError('FLOAT_WINDOW_TRUNCATED_HOLD')
+                values=array('f');values.frombytes(raw)
+                if sys.byteorder!='little':values.byteswap()
+                pcm=array('h')
+                pcm.extend(max(-32768,min(32767,round(v*gain*32767))) for v in values)
+                if sys.byteorder!='little':pcm.byteswap()
+                output.writeframesraw(pcm.tobytes())
+                written+=take
+        method=('NATIVE_FLOAT32_PCM16_PRESERVE_RATE_CHANNELS'
+                if gain==1.0 else f'NATIVE_FLOAT32_PCM16_UNIFORM_GAIN_{gain:.6f}')
+        return buffer.getvalue(),method
+
+
 def _extract_english_window(source,start,end,ffmpeg=None):
     duration=end-start
     if not 0<duration<=42:raise ValueError('INVALID_TIME_RANGE_HOLD')
@@ -423,8 +516,14 @@ def _extract_english_window(source,start,end,ffmpeg=None):
             return buf.getvalue(),'FFMPEG_PCM16_16KHZ_MONO'
         except (OSError,subprocess.CalledProcessError,subprocess.TimeoutExpired,EOFError,wave.Error):
             pass
-    # PCM16 fallback: preserve original sample rate/channels, do not silently
-    # pretend resampling or infer pitch/identity. Bounded to avoid giant ZIPs.
+    # Standard-library PCM16 and FLOAT32 fallbacks: no dependency on ffmpeg.
+    try:
+        return _native_float32_to_pcm16_window(source,start,end)
+    except ValueError as err:
+        # Non-FLOAT32 PCM16 is an expected second candidate. Any invalid float
+        # audio remains on HOLD instead of masking source corruption.
+        if str(err) not in ('NOT_IEEE_FLOAT32_HOLD','NOT_IEEE_FLOAT_EXTENSIBLE_HOLD'):
+            raise
     with wave.open(str(source),'rb') as w:
         if w.getcomptype()!='NONE' or w.getsampwidth()!=2 or w.getnchannels() not in (1,2):
             raise ValueError('NO_DECODER_FOR_SOURCE_FORMAT_HOLD')
@@ -521,7 +620,7 @@ def _prepare_english_reference_cues(root=None,source_root=None):
     return _merge_main_report(additions,work)+': '+str(count)+' of '+str(len(rows))
 
 def selftest():
-    assert MOVIE_CORE_VERSION=='1.4.0' and sum(MOVIE_SEGMENTS.values())==63
+    assert MOVIE_CORE_VERSION=='1.5.0' and sum(MOVIE_SEGMENTS.values())==63
     assert len(PILOT_KNOWN)==3 and _csv([{'id':'A'}],['id']).endswith(b'A\r\n')
     assert set(PILOT_SHA256)==PILOT_KNOWN and all(len(sha)==64 for sha in PILOT_SHA256.values())
     assert len(PILOT_SHA256)==3
