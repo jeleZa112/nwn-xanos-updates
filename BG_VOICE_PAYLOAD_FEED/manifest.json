@@ -7,9 +7,9 @@
   "updater_name": "BG_VOICE_UPDATE.cmd",
   "latest_payload_version": 74,
   "state": {
-    "version": 77,
+    "version": 78,
     "library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_PROJECT_STATE.md",
-    "verification": "State version 77 uploaded 2026-11-22 after selection R2 calibration"
+    "verification": "V78 uploaded after source/tested independent WavLM GPU selector package was added to Library"
   },
   "package_transport": "chatgpt_shared_library",
   "windows_auto_download_enabled": false,
@@ -278,7 +278,10 @@
       "source_game_modified": false,
       "stress_checks_run": false,
       "voice_retake_run": false,
-      "test": "OFFLINE_SYNTHETIC_FULL_7206_AND_58_LOCKS_PASS; NO_CUDA_NEGATIVE_TEST_PASS"
+      "test": "OFFLINE_SYNTHETIC_FULL_7206_AND_58_LOCKS_PASS; NO_CUDA_NEGATIVE_TEST_PASS",
+      "source_code_readback_verified": true,
+      "zip_integrity_verified": true,
+      "human_locked_source_sha_verified": 58
     },
     "current_production_next_action": "ONE_WINDOWS_GPU_SELECTOR_START_THEN_READ_REAL_WAVLM_CALIBRATION_REPORT",
     "repairs_blocked_before_voice_selection": true
