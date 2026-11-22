@@ -6,15 +6,23 @@
   "sha256": "01ea0618d4446ea353538ba4c0dae0e389e4d3ce96380a7239b065bc0ebdfe0a",
   "notes": "--review-only --limit 16: offline, no inference, rank 7155 unprotected pairs from validated QA report; create real Stable/Per_line/EN WAV audition packet and technical PCM flags inside the existing ONE report ZIP. No user-choice edits, no original-WAV writes. Manual and IMOEN75 protected. ZIP rebuilt atomically and CRC verified; tests include idempotence. Does not claim to judge emotional acting automatically.",
   "movie_core": {
-    "version": "1.10.0",
+    "version": "1.11.0",
     "path": "BG_VOICE_MOVIE_CORE.py",
-    "commit": "260af8debd8a2dbb34b15a6f5d376c0860358756",
-    "sha256": "36948065f0b27cbd0fc5628c151770df0e0110ef3b7cf5c1ef63c255797086ef"
+    "commit": "55806ec57029c35075cfd2c4981a5e8e9d3817c8",
+    "sha256": "5c3a7a7e9b5df4f7e58cbcd535b97fd3fae43fef3e436d75210d3274509f95d5"
   },
   "v70_core": {
     "version": "1.2.0",
     "path": "BG_VOICE_V70_CORE.py",
     "commit": "a06f3b0f445ee0aab3a791ab9c08252f8e1c0d02",
     "sha256": "6bd4ef5542f87fc250407b8a9dff003922f93d643ec7096a646baa1a9d24a3cf"
+  },
+  "movie_literary_prosody": {
+    "version": "37_V1_READONLY",
+    "path": "BG_VOICE_MOVIE_LITERARY_PROSODY_FEED_37.json",
+    "commit": "b66a6a507fbe29a7406472f48b2d764475e348ff",
+    "sha256": "cf395ab877b53cc05caf46c30eb2444350a4d0731674d5768ca933e8e673f9ae",
+    "tts_allowed": false,
+    "english_ser_and_russian_stress_inference_completed": false
   }
 }
