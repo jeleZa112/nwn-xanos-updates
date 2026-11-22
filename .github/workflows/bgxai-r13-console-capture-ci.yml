@@ -1,0 +1,62 @@
+name: BGXAI R13 console capture without game changes - Windows CI
+
+on:
+  push:
+    branches: [bgxai-r13-console-capture-ro]
+    paths:
+      - 'BGXAI/BUILD/R13_CONSOLE_CAPTURE_RO/**'
+      - 'BGXAI/BGXAI_SYNC.ps1'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_R13_SHORTNAME_*'
+      - '.github/workflows/bgxai-r13-console-capture-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source_only_windows:
+    runs-on: windows-latest
+    steps:
+      - name: Preserve LF bytes for pinned script and SHA comparison
+        shell: pwsh
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Offline 49 tests of old installer guards and console capture
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          Push-Location 'BGXAI/BUILD/R13_CONSOLE_CAPTURE_RO'
+          python -m unittest -v test_capture_ro.py test_shortname_guarded.py
+          $exitCode=$LASTEXITCODE
+          Pop-Location
+          if($exitCode -ne 0){throw 'BGXAI_R13_CAPTURE_GUARD_TEST_FAILURE'}
+      - name: Exact old menu 1-162 preserved and pinned manifest source hashes
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python 'BGXAI/BUILD/R13_CONSOLE_CAPTURE_RO/test_updater_capture.py'
+          if($LASTEXITCODE -ne 0){throw 'BGXAI_R13_CAPTURE_UPDATER_INVARIANT_FAILURE'}
+      - name: Native Windows PowerShell 5.1 AST, exact SHA256 and 80k budget
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $p='BGXAI/BGXAI_SYNC.ps1'
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p).Path,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count){throw ('BGXAI_R13_CAPTURE_PS51_AST_FAILED '+(($errors|ForEach-Object {$_.Message}) -join '; '))}
+          $b=[IO.File]::ReadAllBytes((Resolve-Path $p).Path)
+          if($b.Length -gt 80000){throw 'BGXAI_R13_CAPTURE_SCRIPT_SIZE_STOP'}
+          $sha=([BitConverter]::ToString([Security.Cryptography.SHA256]::Create().ComputeHash($b))).Replace('-','').ToLowerInvariant()
+          Write-Host ('BGXAI_R13_CAPTURE_PIN_BYTES='+$b.Length)
+          Write-Host ('BGXAI_R13_CAPTURE_PIN_SHA256='+$sha)
+          Write-Host 'BGXAI_R13_CAPTURE_WINPS51_AST_PASS'
+      - name: PowerShell 7 AST
+        shell: pwsh
+        run: |
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path 'BGXAI/BGXAI_SYNC.ps1').Path,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count){throw 'BGXAI_R13_CAPTURE_PS7_AST_FAILED'}
+          Write-Host 'BGXAI_R13_CAPTURE_WINPS7_AST_PASS'
