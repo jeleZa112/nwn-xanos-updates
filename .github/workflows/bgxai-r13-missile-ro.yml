@@ -1,0 +1,85 @@
+name: BGXAI R13.1 missile target defense - Windows guarded candidate
+
+on:
+  push:
+    branches: [bgxai-r13-missile-ro-candidate]
+    paths:
+      - 'BGXAI/BUILD/R13_1_TARGET_DEFENSE_SOURCE_ONLY/**'
+      - 'BGXAI/BGXAI_SYNC.ps1'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_R13_*'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BGXTDEF13.lua'
+      - '.github/workflows/bgxai-r13-missile-ro.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows_source_only:
+    runs-on: windows-latest
+    steps:
+      - name: Disable line-ending conversion
+        shell: pwsh
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify exact retained 1-161 handlers / solely release version changed
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $old=[IO.File]::ReadAllText('BGXAI/BUILD/R13_TARGET_DEFENSE_SOURCE_ONLY/BGXAI_SYNC_161_CANDIDATE.ps1')
+          $new=[IO.File]::ReadAllText('BGXAI/BGXAI_SYNC.ps1')
+          $oldValue="version='0.3.84-R13-TARGET-RO'"
+          $newValue="version='0.3.85-R13-TARGET-MISSILE-RO'"
+          if($old -cnotmatch [regex]::Escape($oldValue) -or $new -cnotmatch [regex]::Escape($newValue)){throw 'R13_VERSION_MARKERS_MISSING'}
+          if($new.Replace($newValue,$oldValue) -cne $old){throw 'LEGACY_1_161_MODIFIED'}
+          $handlers=[regex]::Matches($new,"(?m)^'(\d+)' \{") | ForEach-Object {[int]$_.Groups[1].Value}
+          if(@($handlers).Count -ne 161){throw 'MENU_HANDLER_COUNT_MISMATCH'}
+          for($i=1;$i -le 161;$i++){if($handlers[$i-1] -ne $i){throw ('MENU_HANDLER_CHANGED_'+$i)}}
+          Write-Host 'BGXAI_R13_MISSILE_ALL_161_HANDLERS_EXACT_PASS'
+      - name: 26 legacy guards and 4 new missile regression tests
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          Push-Location BGXAI/BUILD/R13_1_TARGET_DEFENSE_SOURCE_ONLY
+          python -m unittest -v test_r13_guarded.py test_r13_missile_regression.py
+          $exitCode=$LASTEXITCODE
+          Pop-Location
+          if($exitCode -ne 0){throw 'R13_MISSILE_PY_TEST_FAILED'}
+      - name: Installed-source manifest exact SHA and count
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $dir='BGXAI/patchsets/ranged_fighter_guarded_20261119'
+          $m=Get-Content (Join-Path $dir 'BGXAI_R13_MANIFEST_V1.json') -Raw | ConvertFrom-Json
+          if($m.version -cne '0.3.85-R13-TARGET-MISSILE-RO' -or @($m.files).Count -ne 2){throw 'R13_MANIFEST_INVALID'}
+          foreach($f in $m.files){
+            $p=Join-Path $dir $f.dest
+            $b=[IO.File]::ReadAllBytes((Resolve-Path $p).Path)
+            $sha=([BitConverter]::ToString([Security.Cryptography.SHA256]::HashData($b))).Replace('-','').ToLowerInvariant()
+            if($b.Length -ne [int]$f.size -or $sha -cne [string]$f.sha256){throw ('R13_SOURCE_HASH_MISMATCH '+$f.dest)}
+          }
+          Write-Host 'BGXAI_R13_MISSILE_MANIFEST_EXACT_PASS'
+      - name: Windows PowerShell 5.1 native AST and new pinned SHA256
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $p='BGXAI/BGXAI_SYNC.ps1'
+          $tok=$null;$err=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p).Path,[ref]$tok,[ref]$err)|Out-Null
+          if($err.Count){throw ('R13_MISSILE_WINPS51_AST_FAILED '+(($err|ForEach-Object {$_.Message}) -join '; '))}
+          $b=[IO.File]::ReadAllBytes((Resolve-Path $p).Path)
+          $sha=([BitConverter]::ToString([Security.Cryptography.SHA256]::Create().ComputeHash($b))).Replace('-','').ToLowerInvariant()
+          if($b.Length -gt 80000){throw 'BGXAI_PIN_SIZE_EXCEEDED'}
+          Write-Host ('BGXAI_R13_1_PIN_SIZE='+$b.Length)
+          Write-Host ('BGXAI_R13_1_PIN_SHA256='+$sha)
+          Write-Host 'BGXAI_R13_MISSILE_WINPS51_AST_PASS'
+      - name: PowerShell 7 AST
+        shell: pwsh
+        run: |
+          $tok=$null;$err=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path 'BGXAI/BGXAI_SYNC.ps1').Path,[ref]$tok,[ref]$err)|Out-Null
+          if($err.Count){throw 'R13_MISSILE_PS7_AST_FAILED'}
+          Write-Host 'BGXAI_R13_MISSILE_PS7_AST_PASS'
