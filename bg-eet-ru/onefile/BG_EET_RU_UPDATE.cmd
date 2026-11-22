@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 103
+SELF_VERSION = 104
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -6460,6 +6460,156 @@ def v103_selftest():
     return True
 
 
+
+# BG_EET_RU V104: precise local EEex attack-context signatures, READ ONLY.
+# V103 B3AttackInfo absence is NON-BLOCKING: B3 is an optional attack-info component.
+# This is NOT a runtime event listener and cannot establish per-attack ammo attribution.
+V104_ENTRY = '50_V104_EEEX_ATTACK_CONTEXT_EVIDENCE.json'
+V104_SCHEMA = 'BG_EET_RU_V104_EEEX_ATTACK_CONTEXT_EVIDENCE'
+V104_ANCHORS = {
+    'EEex_scripts/EEex_Sprite.lua': {
+        'launcher': 'function EEex_Sprite_GetLauncher(sprite, curAbility)',
+        'block_hit_callback': 'function EEex_Sprite_LuaHook_CheckBlockWeaponHit(attackingSprite, targetSprite, weapon, weaponAbility)',
+        'damage_callback': 'function EEex_Sprite_LuaHook_AlterBaseWeaponDamage(context)',
+        'damage_listener_add': 'function EEex_Sprite_AddAlterBaseWeaponDamageListener(listener)',
+    },
+    'EEex_scripts/EEex_Sprite_Patch.lua': {
+        'damage_hook': 'callAlterBaseWeaponDamageHook(',
+        'swing_symbol': 'Hook-CGameSprite::Swing()-CGameSprite::Damage()',
+    },
+}
+V104_OPTIONAL_COMPONENT = 'EEex_scripts/B3AttackInfo.lua'
+
+def v104_inspect_local_eeex(game):
+    game=Path(game).resolve()
+    modules={}
+    for relative,anchors in V104_ANCHORS.items():
+        path=game.joinpath(*relative.split('/'))
+        record={'relative':relative,'state':'NOT_FOUND','anchors':{}}
+        if not path.resolve().is_relative_to(game) or path.is_symlink():
+            record['state']='UNSAFE_PATH_HOLD'
+        elif path.exists() and path.is_file() and path.stat().st_size<=4000000:
+            raw=path.read_bytes()
+            if len(raw)<=4000000:
+                lines=raw.decode('utf-8-sig','replace').splitlines()
+                record.update({'state':'STATIC_SOURCE_PRESENT','bytes':len(raw),'sha256':digest(raw)})
+                for key,token in anchors.items():
+                    hits=[i for i,line in enumerate(lines) if token in line]
+                    excerpt=''
+                    if len(hits)==1:
+                        i=hits[0]
+                        excerpt='\n'.join(lines[max(0,i-1):min(len(lines),i+9)])[:1800]
+                    record['anchors'][key]={'count':len(hits),
+                         'line':hits[0]+1 if len(hits)==1 else None,
+                         'excerpt':excerpt}
+            else:record['state']='OVERSIZE_HOLD'
+        elif path.exists():
+            record['state']='NONREGULAR_OR_OVERSIZE_HOLD'
+        modules[relative]=record
+    opt=game.joinpath(*V104_OPTIONAL_COMPONENT.split('/'))
+    optional={'relative':V104_OPTIONAL_COMPONENT,
+              'present':opt.is_file() and not opt.is_symlink(),
+              'required_for_equipment_fields':False,
+              'note':'Optional AttackInfo UI feature; absence does not disable sprite weapon API'}
+    return {'modules':modules,'optional_attack_info':optional}
+
+def v104_interpret_evidence(found):
+    mods=found['modules']
+    complete=all(record['state']=='STATIC_SOURCE_PRESENT'
+        and all(anchor['count']==1 for anchor in record['anchors'].values())
+        for record in mods.values())
+    return {
+        'status':('V104_LOCAL_EEEX_SIGNATURES_PRESENT_RUNTIME_HOLD' if complete
+                  else 'V104_SIGNATURE_MISMATCH_HOLD'),
+        'evidence_level':'STATIC_SOURCE_ONLY',
+        'optional_B3AttackInfo_absent_is_blocker':False,
+        'can_distinguish_launcher_and_weapon_at_runtime':'POTENTIAL_NOT_PROVEN',
+        'current_equipped_slot_is_per_attack_evidence':False,
+        'weapon_and_ammo_identified_per_attack':False,
+        'on_miss_event_supported_by_damage_hook':False,
+        'attribution_to_specific_combat_log_row':False,
+        'actual_loaded_eeex_hook_verified':False,
+        'safe_next_stage':('Obtain explicit approval for a separately guarded, non-mutating '
+                           'runtime observer on this exact game; verify hit/miss and '
+                           'launcher/ammo pairing before changing journal display.'),
+        'game_files_written':0,
+    }
+
+def v104_zip_report(game,report_path,report):
+    safe_external(Path(game),Path(report_path))
+    report_path=Path(report_path)
+    if not report_path.is_file():raise RuntimeError('V104_CANONICAL_ZIP_NOT_FOUND')
+    with zipfile.ZipFile(report_path) as z:
+        if z.testzip() is not None or len(z.namelist())!=len(set(z.namelist())):
+            raise RuntimeError('V104_PRIOR_ZIP_INVALID')
+        previous=json.loads(z.read(V104_ENTRY)) if V104_ENTRY in z.namelist() else None
+    if previous==report:return False
+    with tempfile.NamedTemporaryFile(dir=str(report_path.parent),
+                                     prefix='.v104_',suffix='.zip',delete=False) as out:
+        tmp=Path(out.name)
+    try:
+        with zipfile.ZipFile(report_path) as src, \
+             zipfile.ZipFile(tmp,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=7) as dst:
+            for info in src.infolist():
+                if info.filename!=V104_ENTRY:dst.writestr(info,src.read(info))
+            dst.writestr(V104_ENTRY,json.dumps(report,ensure_ascii=False,indent=2).encode('utf8'))
+        with zipfile.ZipFile(tmp) as z:
+            if z.testzip() is not None or z.namelist().count(V104_ENTRY)!=1:
+                raise RuntimeError('V104_REPORT_CRC_OR_DUPLICATE')
+        os.replace(tmp,report_path)
+    finally:
+        if tmp.exists():tmp.unlink()
+    return True
+
+def v104_run(game,report_path):
+    report={'schema':V104_SCHEMA,'updater_version':SELF_VERSION,
+            'mode':'READ_ONLY','game_files_written':0,'save_files_written':False,
+            'EEex_hook_installed':False,'BGXAI_modified':False,'BG_Voice_RU_modified':False}
+    try:
+        result=v104_inspect_local_eeex(game)
+        report['local_evidence']=result
+        report['assessment']=v104_interpret_evidence(result)
+        report['status']=report['assessment']['status']
+    except (OSError,RuntimeError,ValueError,TypeError,UnicodeError) as exc:
+        report['status']='V104_SAFE_STOP'
+        report['error']={'type':type(exc).__name__,'message':str(exc)[:200]}
+    try:v104_zip_report(game,report_path,report)
+    except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
+        print('v104: ZIP SAFE_STOP',type(exc).__name__,str(exc)[:200]);return 2
+    print('v104:',report['status'],'— изменений в игре: 0')
+    print('Единый ZIP:',report_path)
+    return 2 if report['status']=='V104_SAFE_STOP' else 0
+
+def v104_selftest():
+    with tempfile.TemporaryDirectory(prefix='BG_EET_RU_V104_TEST_') as folder:
+        root=Path(folder)
+        game=root/'game';game.mkdir()
+        report=root/'report.zip'
+        with zipfile.ZipFile(report,'w') as z:z.writestr('old.txt','keep')
+        test=v104_inspect_local_eeex(game)
+        assert v104_interpret_evidence(test)['status']=='V104_SIGNATURE_MISMATCH_HOLD'
+        src=game/'EEex_scripts';src.mkdir()
+        for rel,anchors in V104_ANCHORS.items():
+            p=game.joinpath(*rel.split('/'))
+            p.write_text('\n'.join(anchors.values())+'\n',encoding='utf-8')
+        evidence=v104_inspect_local_eeex(game)
+        interpreted=v104_interpret_evidence(evidence)
+        assert interpreted['status']=='V104_LOCAL_EEEX_SIGNATURES_PRESENT_RUNTIME_HOLD'
+        assert interpreted['weapon_and_ammo_identified_per_attack'] is False
+        assert evidence['optional_attack_info']['present'] is False
+        assert interpreted['optional_B3AttackInfo_absent_is_blocker'] is False
+        assert v104_run(game,report)==0
+        before=digest(report.read_bytes())
+        assert v104_run(game,report)==0 and digest(report.read_bytes())==before
+        with zipfile.ZipFile(report) as z:
+            assert z.namelist().count(V104_ENTRY)==1
+            assert z.read('old.txt')==b'keep'
+        with (src/'EEex_Sprite.lua').open('a',encoding='utf-8') as fp:
+            fp.write(list(V104_ANCHORS['EEex_scripts/EEex_Sprite.lua'].values())[0]+'\n')
+        assert v104_interpret_evidence(v104_inspect_local_eeex(game))['status']=='V104_SIGNATURE_MISMATCH_HOLD'
+    return True
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description='BG_EET_RU one-file visible-only read-only auto-updater')
     p.add_argument('--game',default=DEFAULT_GAME)
@@ -6467,6 +6617,7 @@ def main(argv=None):
     p.add_argument('--force',action='store_true',help='ignore result cache, repeat audit')
     p.add_argument('--selftest',action='store_true')
     p.add_argument('--weapon-source-audit',action='store_true',help='v103 READ ONLY inspect local EEex weapon/ammo source capabilities; no hooks or game edits')
+    p.add_argument('--weapon-context-audit',action='store_true',help='v104 READ ONLY inspect local attack/hit/launcher Lua signatures')
     p.add_argument('--install-v85-combat-format',action='store_true',help='optional signed v85 Lua replacement; exact typed approval required')
     p.add_argument('--rollback-v85-combat-format',action='store_true',help='optional signed restore to v74; exact typed approval required')
     p.add_argument('--install-v88-journal-ui',action='store_true',help='optional guarded UI.MENU two-mode pilot; exact approval required')
@@ -6581,19 +6732,24 @@ def main(argv=None):
                 args.upgrade_v101_abgr_colors,args.rollback_v101_abgr_colors,
                 args.upgrade_v102_roll_labels,args.rollback_v102_roll_labels,
                 args.weapon_source_audit,
+                args.weapon_context_audit,
                 args.fix_leui_reverse,args.rollback_leui_reverse,args.combat_rollback)):
         ui_v102=v102_state_read()
         if ui_v102 and ui_v102['phase'] in ('INSTALLED','PREPARED'):
             rc=v102_run(game,WORKDIR/REPORT_NAME)
             if rc:return rc
-            return v103_run(game,WORKDIR/REPORT_NAME)
+            rc=v103_run(game,WORKDIR/REPORT_NAME)
+            if rc:return rc
+            return v104_run(game,WORKDIR/REPORT_NAME)
         ui_v101=v101_state_read()
         if ui_v101 and ui_v101['phase'] in ('INSTALLED','PREPARED'):
             rc=v101_run(game,WORKDIR/REPORT_NAME)
             if rc:return rc
             rc=v102_run(game,WORKDIR/REPORT_NAME)
             if rc:return rc
-            return v103_run(game,WORKDIR/REPORT_NAME)
+            rc=v103_run(game,WORKDIR/REPORT_NAME)
+            if rc:return rc
+            return v104_run(game,WORKDIR/REPORT_NAME)
         ui_v100=v100_state_read()
         if ui_v100 and ui_v100['phase'] in ('INSTALLED','PREPARED'):
             rc=v100_run(game,WORKDIR/REPORT_NAME)
@@ -6642,8 +6798,10 @@ def main(argv=None):
             rc=v90_run(game,WORKDIR/REPORT_NAME)
             if rc:return rc
             return v91_run(game,WORKDIR/REPORT_NAME)
-    if args.weapon_source_audit:
-        return v103_run(game,WORKDIR/REPORT_NAME)
+    if args.weapon_source_audit or args.weapon_context_audit:
+        rc=v103_run(game,WORKDIR/REPORT_NAME)
+        if rc:return rc
+        return v104_run(game,WORKDIR/REPORT_NAME)
     # v83: player-observed text is processed directly; do not re-run expensive historical audits.
     if args.seen_strref or args.seen_text:
         return v83_run(game,WORKDIR/REPORT_NAME,additional_strrefs=args.seen_strref,additional_texts=args.seen_text)
@@ -9675,6 +9833,7 @@ def selftest():
     assert v101_selftest() and callable(v101_run)
     assert v102_selftest() and callable(v102_run)
     assert v103_selftest() and callable(v103_run)
+    assert v104_selftest() and callable(v104_run)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
