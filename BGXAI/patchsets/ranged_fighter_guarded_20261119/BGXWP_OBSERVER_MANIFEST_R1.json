@@ -19,7 +19,7 @@
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXW2_OBSERVER_GUARDED.py",
       "dest": "BGXW2_OBSERVER_GUARDED.py",
       "size": 34313,
-      "sha256": "17314f3e1890762ef5bf5c664892beefc44b3dbd3a9dbb12a98964e6ff1b6c"
+      "sha256": "17314f3e1890762ef5bf5f5c664892beefc44b3dbd3a9dbb12a98964e6ff1b6c"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BGXW2.lua",
