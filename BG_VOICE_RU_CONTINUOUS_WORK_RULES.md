@@ -42,3 +42,13 @@ V70: 7206 ID, 14412 исходных русских WAV; 420 в техничес
 - **Одна CUDA-модель, один GPU вызов `model.generate` в один момент времени**. Ограниченные очереди: до одного EN prefetch и одного RU postprocess. RTX 4060 Laptop 8 GB: без второй модели, без неконтролируемого GPU-параллелизма, preflight свободной памяти.
 - Не менять голоса, тексты, английские источники, seed, CFG, шаги синтеза, эмоции, качество, ручные решения и SHA утверждённых WAV. HOLD одной реплики не останавливает остальные, checkpoint/idempotent, без установки в игру.
 - Встроено в **Movie Core 1.10.0** (source SHA256 `36948065f0b27cbd0fc5628c151770df0e0110ef3b7cf5c1ef63c255797086ef`), один существующий CMD и один общий ZIP. Тесты только с mock CUDA; **производительность и стабильность на реальной RTX 4060 ещё не подтверждены**. Не требовать отдельных запусков исключительно ради теста конвейера.
+
+
+## CINEMATIC TEXT FIRST — 2026-11-23
+
+- Stop production of movie RU TTS from **DRAFT_NOT_APPROVED** and **EN_ASR_UNVERIFIED**. Movie Core 1.6 and 1.9 used an ASR-based Russian draft whose literary quality and context had not been approved: do not repeat this mistake even if technical WAV QA passes.
+- For INTRO15F and SODCIN01, **recover and compare the previously user-approved Russian subtitle texts before any new voice generation**. Per 2026-11-19 project state, user chose to retain existing Shadow of Amn Russian translation unchanged and approved SoD subtitles. The actual subtitle lines are not in the current 37-group script; do not infer them from ASR or overwrite them.
+- For IWINTRO, verify original English transcript, names in game's localization, narrative continuity, and **natural literary Russian** before Shtorm. Never generate the ASR-broken IWINTRO_G09/G10; treat INTRO15F_G06+G07 as one contiguous sentence.
+- SHA-lock accepted voice takes SODCIN01_G08, IWINTRO_G02, IWINTRO_G13; their good voice is not approval of their current Russian wording. Retain 7 REWORK_STRESS decisions, old WAV and approved narrator identity. Do not alter game, movies, English/master WAV or other projects.
+- Read Library /BG_VOICE_RU/CURRENT/BG_VOICE_RU_MOVIES_37_LITERARY_QA_SOURCE_FIRST_20261123.csv and .../BG_VOICE_RU_CINEMATIC_TEXT_FIRST_RULE_20261123.md for the source-first editorial queue. All 17 newly suggested prose changes are editorial DRAFTS, not automatic replacements or permissions to synthesize.
+- Next productive task is **exact subtitle-source reconciliation plus English/source-confirmed literary script**, not another test CMD or mass stress retakes.
