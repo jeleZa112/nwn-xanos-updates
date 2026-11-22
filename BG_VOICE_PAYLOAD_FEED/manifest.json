@@ -189,6 +189,22 @@
     "guidance_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/selection_first/README_RU.md",
     "retrospective_voice_score_agreement": "9_of_15_user_preferences; 5_of_7_with_3plus_anchors",
     "stress_and_retake_before_selection_forbidden": true,
-    "guidance": "Read user decisions and full voice-first register, finish comparing Stable/Per_line with English acting and same-character anchors. No stress/repair jobs yet."
+    "guidance": "Read user decisions and full voice-first register, finish comparing Stable/Per_line with English acting and same-character anchors. No stress/repair jobs yet.",
+    "evidence_status": "MODEL_EVIDENCE_FUSION_READ_ONLY_VALIDATED_NOT_FINAL_SELECTION",
+    "evidence_library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_SELECTION_MODEL_EVIDENCE_FUSED.zip",
+    "evidence_sha256": "c00169c4c5e3196865445e9f1ca3b42b80f675e5aeda812cd88df73c8d5f9b2c",
+    "evidence_bytes": 3022501,
+    "evidence_readme_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/selection_first/MODEL_EVIDENCE_FUSION_README.md",
+    "supersedes_incomplete_v5_only_master": true,
+    "model_coverage": {
+      "v9_emotion_pairs": 6907,
+      "v7_vad_pairs": 120,
+      "v13_zipformer_pairs": 247,
+      "v3_english_SER_records": 20,
+      "v17_human_sha_confirmed": 12,
+      "v17_human_voice_preferences": 8,
+      "asr_vs_ecapa_conflicts": 87
+    },
+    "automatic_voice_approvals_from_model_fusion": 0
   }
 }
