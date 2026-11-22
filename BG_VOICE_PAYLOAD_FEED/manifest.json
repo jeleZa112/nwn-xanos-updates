@@ -100,7 +100,7 @@
   "shared_chat_consumer_instruction": "Read manifest; fetch matching Library ZIP autonomously; verify ZIP SHA256; import into ONE existing updater. Do not ask user to forward every version.",
   "rolling_continuation": {
     "schema": "BGVOICE_ROLLING_SECOND_PASS_V1",
-    "status": "R2_SOURCE_READY_FULL_SYNTHETIC_PASS_NOT_WINDOWS_EXECUTED",
+    "status": "BLOCKED_HISTORICAL_DECISION_CONFLICTS_DO_NOT_INTEGRATE_R2",
     "library_archive": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_ROLLING_SAFE_R2.zip",
     "sha256_archive": "b0e1717f958149c63fb86e73a606addf3a5edac8fd18c4d945bb22c6a3621003",
     "archive_bytes": 46467,
@@ -130,7 +130,21 @@
     "selftest_sha256": "a276d24c3c0794f1775b04acfdf527d6763d123fa7ee5a6d1cc0d738805c183e",
     "no_overwrite_atomic": true,
     "auto_continue_safe_pass": true,
-    "test_code_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/rolling/SELFTEST_FULL_613_24_R2.py"
+    "test_code_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/rolling/SELFTEST_FULL_613_24_R2.py",
+    "correctness_blockers": [
+      {
+        "sound_id": "VICONI58",
+        "queue": "613",
+        "problem": "KNOWN_PILOT20_PRONUNCIATION_OR_STRESS_REWORK",
+        "required_action": "HOLD_OUT_OF_AUTO_STAGE"
+      },
+      {
+        "sound_id": "KAGAN05",
+        "queue": "24 A/B",
+        "problem": "KNOWN_PILOT20_PRONUNCIATION_OR_STRESS_REWORK",
+        "required_action": "HOLD_OUT_OF_BLIND_AB_PENDING_EN_AND_HUMAN_NOTES"
+      }
+    ]
   },
   "required_project_policy": {
     "version": "R1",
@@ -141,5 +155,6 @@
     "on_safe_pass": "CONTINUE_NEXT_SAFE_ACTION_IN_SAME_ACTIVE_TURN",
     "requires_user_plus": false,
     "background_execution_without_scheduler": false
-  }
+  },
+  "rolling_continuation_integrity_note": "Do not run 613/24 R2 on Windows until known pilot defects and historic review locks are enforced. Source-only tests are not production PASS."
 }
