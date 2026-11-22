@@ -5,11 +5,11 @@
   "owner_scope": "voice_payloads_only",
   "updater_owner": "main_voice_video_chat",
   "updater_name": "BG_VOICE_UPDATE.cmd",
-  "latest_payload_version": 73,
+  "latest_payload_version": 74,
   "state": {
-    "version": 73,
+    "version": 74,
     "library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_PROJECT_STATE.md",
-    "verification": "Library state version 73 after checkpoint sync"
+    "verification": "Library state version 74"
   },
   "package_transport": "chatgpt_shared_library",
   "windows_auto_download_enabled": false,
@@ -63,6 +63,23 @@
       "batch_size": 16,
       "stage_only": true,
       "for_game_install": false
+    },
+    {
+      "version": 74,
+      "kind": "cross_model_voice_conflict_audit",
+      "name": "BG_VOICE_RU_V74_VOICE_CONFLICT_AUDIT_20261122.zip",
+      "library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_V74_VOICE_CONFLICT_AUDIT_20261122.zip",
+      "bytes": 23637,
+      "sha256": "2dafb0557256b5502922d5bf21d576b7444415b2bb8d0f3f73fbccdca1aa52ba",
+      "status": "analysis_ready_no_windows_execution_needed",
+      "v70_candidates": 420,
+      "old_voice_scores_both": 368,
+      "alt_score_higher": 138,
+      "high_conflict_ge_0_10": 41,
+      "missing_voice_scores": 52,
+      "next_audit": 24,
+      "for_game_install": false,
+      "game_approval_count": 0
     }
   ],
   "human_locks": {
