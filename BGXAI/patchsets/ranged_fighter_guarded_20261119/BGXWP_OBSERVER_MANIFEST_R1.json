@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
-  "version": "0.3.81-R4-RO",
+  "version": "0.3.82-R4-ALLPROF-BUFF-RO",
   "files": [
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXWP_OBSERVER_GUARDED.py",
@@ -18,8 +18,8 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXW2_OBSERVER_GUARDED.py",
       "dest": "BGXW2_OBSERVER_GUARDED.py",
-      "size": 33236,
-      "sha256": "b227504887aacea56fa6d2f29d67b07fa51b2a3468f42d49e3e7d0dc3a691aaf"
+      "size": 34313,
+      "sha256": "17314f3e1890762ef5bf5c664892beefc44b3dbd3a9dbb12a98964e6ff1b6c"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BGXW2.lua",
@@ -36,8 +36,8 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/M_BGXW4.lua",
       "dest": "M_BGXW4.lua",
-      "size": 9843,
-      "sha256": "0d24779ee6cf7071c611c3b3d509ddb71f97e18eb95a6c5839e1a8441ee3f3e8"
+      "size": 15500,
+      "sha256": "79f57787be045732352582d531ce69f2485504947204bf553fa8a04a95c6595e"
     }
   ]
 }
