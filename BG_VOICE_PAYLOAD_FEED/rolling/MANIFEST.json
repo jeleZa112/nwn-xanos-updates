@@ -1,0 +1,41 @@
+{
+  "schema": "BGVOICE_ROLLING_SECOND_PASS_V1",
+  "basis": "V55+V57+V70+V74",
+  "staging_count": 613,
+  "character_groups": 111,
+  "additional_ab": 24,
+  "prior_ab_in_main_updater": [
+    "AERIE01",
+    "ALORA14",
+    "CERND46",
+    "CORAN37",
+    "OH91797",
+    "CEFALD18",
+    "HAER2501",
+    "OH87140",
+    "IMOEN09",
+    "JAHEIR59",
+    "JANJAN08",
+    "KAGAN20"
+  ],
+  "prior_staged": 420,
+  "game_install_authorized": false,
+  "human_approval_count": 0,
+  "tests": "SOURCE_AND_PROVENANCE_ONLY_NO_LIVE_GPU_OR_WINDOWS",
+  "files": {
+    "VOICE_BACKED_613_STAGE_ONLY.csv": {
+      "sha256": "ea2cf88bacf3da34ef2a6f6bc3c52647d68f223bc4bff4b20cbd1b45618dd5f1",
+      "bytes": 94125
+    },
+    "NEXT24_VOICE_AB_SHA_GATED.csv": {
+      "sha256": "9cb4dff41113d35304acffd1b6177cd503b84bd9edc8cdd245fae562b506c2f3",
+      "bytes": 6705
+    }
+  },
+  "protections": {
+    "OH85856": "V65_APPROVED",
+    "OH80404": "V60_APPROVED",
+    "OH89888": "BOTH_BAD_HOLD",
+    "KORGAN57": "HISTORICAL_CHOICE_CONFLICT_NO_AUTO_SWITCH"
+  }
+}
