@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 92
+SELF_VERSION = 93
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -3740,6 +3740,260 @@ def v92_selftest():
     return True
 
 
+# BG EET RU v93 — fix the live ^- suffix in short combat-log outcome rows.
+# No changes to combatLog, UI button, v85 hooks, saves, exe or TLK.
+V93_ENTRY = '40_V93_JOURNAL_ZERO_FILTER.json'
+V93_SCHEMA = 'BG_EET_RU_V93_JOURNAL_ZERO_FILTER'
+V93_STATE = WORKDIR/'BG_EET_RU_V93_LOG_ZERO_STATE.json'
+V93_INSTALL_APPROVAL = 'UPGRADE_BG_EET_RU_V93_JOURNAL_ZEROS'
+V93_ROLLBACK_APPROVAL = 'ROLLBACK_BG_EET_RU_V93_JOURNAL_ZEROS'
+
+V93_HELPER = "\n-- BG_EET_RU v93: display-only zero-filter; unchanged full log and engine records.\n-- Same UI.MENU display helper: full view never modified; only two known kinds of combat rows.\n-- Unknown syntax, unbalanced grouping or inline colors => return original unchanged.\nBG_EET_RU_LOG_MODE = 0\n\nlocal BG_EET_RU_V93_FIELDS = {\n  ['Удача']=true, ['Особый КБ']=true, ['Модификатор попадания']=true,\n  ['Атака по возможности']=true, ['Берсерк']=true,\n  ['Левая рука']=true, ['Правая рука']=true,\n  ['Бонус оружия']=true, ['Стрелковое оружие']=true,\n  ['Владение оружием']=true, ['Ловкость']=true, ['Дальний бой']=true,\n  ['Сила']=true, ['Добавочная сила']=true, ['Бонус ближнего боя']=true,\n  ['Расовый бонус']=true, ['Эффекты']=true,\n  ['Невидимость']=true, ['Невидимая цель']=true, ['Дистанция']=true,\n  ['Избранный враг']=true, ['Особая цель']=true, ['Защита']=true,\n  ['Модификатор урона']=true, ['Бонус руки']=true, ['Удар в спину']=true,\n  ['Особый бонус']=true, ['Минимальный урон']=true\n}\n\nlocal function BG_EET_RU_V93_SplitTailCodes(text)\n    local remainder, suffix = text, ''\n    for _=1,4 do\n        local i,j = remainder:find('%^%-%s*$')\n        if not i then i,j = remainder:find('%^0x%x%x%x%x%x%x%x%x%s*$') end\n        if not i then break end\n        suffix = remainder:sub(i,j) .. suffix\n        remainder = remainder:sub(1,i-1)\n    end\n    return remainder, suffix\nend\n\nlocal function BG_EET_RU_V93_BriefRoll(original)\n    local remainder, suffix = BG_EET_RU_V93_SplitTailCodes(original)\n    -- Nonterminal control markup must be preserved exactly; do not rewrite such rows.\n    if remainder:find('%^%x') or remainder:find('%^%-') then return original end\n    local p = remainder:find('Бросок:', 1, true)\n    if not p then return original end\n    local prefix = remainder:sub(1, p-1)\n    -- Guard against non-combat 'Бросок:' phrases. Limit to a character's log line.\n    if not prefix:match(':%s*$') then return original end\n    local roll, rest = remainder:sub(p):match('^Бросок:%s*(%d+)(.*)$')\n    if not roll or #rest > 6000 then return original end\n    local base = tonumber(roll)\n    if not base or base < 0 or base > 200 then return original end\n    local root = { items={} }\n    local stack = { root }\n    local pos, count, hidden = 1, 0, 0\n    while pos <= #rest do\n        local ch = rest:sub(pos,pos)\n        if ch:match('%s') then\n            pos = pos + 1\n        elseif ch == '(' then\n            if #stack >= 4 then return original end\n            local group = {items={}, group=true}\n            local parent = stack[#stack]\n            parent.items[#parent.items+1] = group\n            stack[#stack+1] = group\n            pos = pos + 1\n        elseif ch == ')' then\n            if #stack == 1 then return original end\n            stack[#stack] = nil\n            pos = pos + 1\n        elseif ch == '+' or ch == '*' then\n            local mark, label, num, nextpos = rest:sub(pos):match('^([+*])([^:]+):%s*([+-]?%d+)()')\n            if not mark then return original end\n            label = label:match('^%s*(.-)%s*$')\n            if not BG_EET_RU_V93_FIELDS[label] or #label>64 then return original end\n            local value = tonumber(num)\n            if not value or value < -100000 or value > 100000 then return original end\n            count = count + 1\n            if count > 48 then return original end\n            if value == 0 then\n                hidden = hidden + 1\n            else\n                local parent = stack[#stack]\n                parent.items[#parent.items+1] = mark .. label .. ': ' .. num\n            end\n            pos = pos + nextpos - 1\n        else\n            return original\n        end\n    end\n    if #stack ~= 1 or count < 1 or hidden < 1 then return original end\n    local function render(group)\n        local parts = {}\n        for _,item in ipairs(group.items) do\n            if type(item)=='table' then\n                local inner = render(item)\n                if inner ~= '' then parts[#parts+1] = '(' .. inner .. ')' end\n            else\n                parts[#parts+1] = item\n            end\n        end\n        return table.concat(parts, ' ')\n    end\n    local compact = render(root)\n    if compact ~= '' then compact = ' ' .. compact end\n    return prefix .. 'Бросок: ' .. roll .. compact .. suffix\nend\n\nfunction BG_EET_RU_LogView(original)\n    if BG_EET_RU_LOG_MODE ~= 1 or type(original) ~= 'string' then return original end\n    local p = original:find('бросок атаки', 1, true)\n    if not p then return BG_EET_RU_V93_BriefRoll(original) end\n    -- Preserve v92 exact attack-outcome handling unchanged.\n    local prefix = original:sub(1, p-1)\n    local tail = original:sub(p)\n    local remainder, suffix = BG_EET_RU_V93_SplitTailCodes(tail)\n    local visible = remainder:gsub('%^0x%x%x%x%x%x%x%x%x', ''):gsub('%^%-', '')\n    local d20, sign, bonus, total, decision = visible:match('^бросок атаки%s+(%d+)%s*([+%-])%s*(%d+)%s*=%s*(-?%d+)%s*:%s*(.-)%s*$')\n    if not d20 then return original end\n    local n, b, t = tonumber(d20), tonumber(bonus), tonumber(total)\n    if not n or not b or not t or n < 1 or n > 20 then return original end\n    local adjust = (sign == '-') and -b or b\n    if n + adjust ~= t then return original end\n    local label\n    if decision:match('^%s*промах%s*$') then label='ПРОМАХ'\n    elseif decision:match('^%s*попадание%s*$') then label='ПОПАДАНИЕ'\n    else return original end\n    return prefix .. 'd20: ' .. d20 .. ' ' .. sign .. ' ' .. bonus .. ' = ' .. total .. ' — ' .. label .. suffix\nend"
+
+
+def v93_transform_installed_ui(original):
+    if not isinstance(original, bytes) or len(original)>4_000_000:
+        raise RuntimeError('V93_BAD_UI_BYTES')
+    old_variants=[V92_HELPER.encode('utf8'),V92_HELPER.replace('\n','\r\n').encode('utf8')]
+    exact=[x for x in old_variants if original.count(x)==1]
+    if len(exact)!=1 or any(original.count(x)>1 for x in old_variants):
+        raise RuntimeError('V93_V92_HELPER_NOT_EXACT')
+    previous=exact[0]
+    eol='\r\n' if b'\r\n' in previous else '\n'
+    replacement=V93_HELPER.replace('\n',eol).encode('utf8')
+    if replacement in original or b'BG_EET_RU v93: display-only' in original:
+        raise RuntimeError('V93_DUPLICATE_HELPER')
+    if original.count(V88_RENDER_NEW)!=1 or original.count(V90_DRAG)!=1:
+        raise RuntimeError('V93_V90_UI_BINDING_CHANGED')
+    result=original.replace(previous,replacement,1)
+    if result.replace(replacement,previous,1)!=original:
+        raise RuntimeError('V93_NOT_BYTE_EXACT_REVERSIBLE')
+    for token in (V88_RENDER_NEW,V90_DRAG,b'BG_EET_RU_JOURNAL_TOGGLE',b'combatLog'):
+        if result.count(token)!=original.count(token):
+            raise RuntimeError('V93_UNRELATED_UI_TOKEN_CHANGED')
+    if not 0<len(result)-len(original)<8500:
+        raise RuntimeError('V93_UNEXPECTED_SIZE_DELTA')
+    return result
+
+
+def v93_state_read(path=V93_STATE):
+    path=Path(path)
+    if not path.exists():return None
+    if path.is_symlink() or not path.is_file():raise RuntimeError('V93_BAD_STATE_FILE')
+    record=json.loads(path.read_text(encoding='utf8'))
+    if (record.get('schema')!=V93_SCHEMA or record.get('phase') not in ('PREPARED','INSTALLED','ROLLED_BACK') or
+        not all(isinstance(record.get(k),str) and re.fullmatch('[0-9a-f]{64}',record[k])
+                for k in ('old_sha256','new_sha256'))):
+        raise RuntimeError('V93_INVALID_STATE')
+    return record
+
+
+def v93_state_write(record,path=V93_STATE):
+    path=Path(path)
+    if path.exists() and path.is_symlink():raise RuntimeError('V93_STATE_SYMLINK')
+    path.parent.mkdir(parents=True,exist_ok=True)
+    stage=path.with_suffix('.v93tmp')
+    if stage.exists():raise RuntimeError('V93_STALE_STATE_TEMP')
+    try:
+        with stage.open('x',encoding='utf8') as out:
+            json.dump(record,out,ensure_ascii=False,indent=2)
+        os.replace(stage,path)
+    finally:
+        if stage.exists():stage.unlink()
+
+
+def v93_zip_report(game,report_path,report):
+    safe_external(game,report_path)
+    report_path=Path(report_path)
+    if not report_path.is_file():raise RuntimeError('V93_PRIOR_REPORT_MISSING')
+    with zipfile.ZipFile(report_path) as z:
+        if z.testzip() is not None or len(z.namelist())!=len(set(z.namelist())):
+            raise RuntimeError('V93_PRIOR_ZIP_CRC_OR_DUPLICATES')
+        old=json.loads(z.read(V93_ENTRY)) if V93_ENTRY in z.namelist() else None
+    if old==report:return
+    with tempfile.NamedTemporaryFile(dir=str(report_path.parent),prefix='.v93_',suffix='.zip',delete=False) as f:
+        stage=Path(f.name)
+    try:
+        with zipfile.ZipFile(report_path) as src,zipfile.ZipFile(stage,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=7) as dst:
+            for info in src.infolist():
+                if info.filename!=V93_ENTRY:dst.writestr(info,src.read(info))
+            dst.writestr(V93_ENTRY,json.dumps(report,ensure_ascii=False,indent=2).encode('utf8'))
+        with zipfile.ZipFile(stage) as check:
+            if check.testzip() is not None or check.namelist().count(V93_ENTRY)!=1:
+                raise RuntimeError('V93_REPORT_VERIFY_FAIL')
+        os.replace(stage,report_path)
+    finally:
+        if stage.exists():stage.unlink()
+
+
+def v93_run(game,report_path,mode='status'):
+    game,report_path=Path(game),Path(report_path)
+    report={'schema':V93_SCHEMA,'updater_version':SELF_VERSION,'mode':mode,
+            'status':'V93_READ_ONLY_HOLD','game_files_written':0,'save_files_written':False,
+            'v85_changed':False,'gameplay_verified':False,'errors':[],
+            'scope':'Replace v92 UI.MENU display helper only; compact known zero modifiers in BRIEF mode, preserve FULL mode, combatLog, toggle and v85'}
+    try:
+        safe_external(game,report_path)
+        if mode not in ('status','upgrade','rollback'):raise RuntimeError('V93_BAD_MODE')
+        v85=v85_state_read()
+        lua=game/'override'/V71_SHORT_SCRIPT
+        if not v85 or v85.get('phase')!='INSTALLED' or not lua.is_file() or lua.is_symlink() or digest(lua.read_bytes())!=v85.get('candidate_sha256'):
+            raise RuntimeError('V93_V85_LUA_INTEGRITY_HOLD')
+        v92=v92_state_read()
+        if not v92 or v92.get('phase')!='INSTALLED':raise RuntimeError('V93_V92_NOT_INSTALLED')
+        ui=game/'override'/'UI.MENU'
+        if not ui.is_file() or ui.is_symlink():raise RuntimeError('V93_UI_MISSING_OR_SYMLINK')
+        content=ui.read_bytes();current=digest(content)
+        record=v93_state_read()
+        if record and record['phase'] in ('PREPARED','INSTALLED'):
+            if record['old_sha256']!=v92['new_sha256']:
+                raise RuntimeError('V93_V92_PRIOR_SHA_MISMATCH')
+            if record['phase']=='PREPARED':
+                report['status']='V93_PREPARED_RECOVERY_HOLD'
+                if current not in (record['old_sha256'],record['new_sha256']):
+                    raise RuntimeError('V93_UNKNOWN_PENDING_UI_SHA')
+            elif current!=record['new_sha256']:
+                raise RuntimeError('V93_INSTALLED_UI_SHA_CHANGED')
+            elif mode=='rollback':
+                closed,why=v71_processes_closed()
+                if not closed:raise RuntimeError('V93_CLOSE_GAME_AND_LOADER:'+why)
+                backup=Path(record['backup']);safe_external(game,backup)
+                if not backup.is_file() or backup.is_symlink() or digest(backup.read_bytes())!=record['old_sha256']:
+                    raise RuntimeError('V93_BACKUP_INTEGRITY_HOLD')
+                if not v85_read_input_approval(V93_ROLLBACK_APPROVAL):
+                    report['status']='V93_ROLLBACK_NOT_AUTHORIZED'
+                else:
+                    stage=ui.with_name('UI.MENU.v93restore')
+                    if stage.exists():raise RuntimeError('V93_RESTORE_STAGE_COLLISION')
+                    try:
+                        with stage.open('xb') as out:out.write(backup.read_bytes())
+                        if digest(stage.read_bytes())!=record['old_sha256']:
+                            raise RuntimeError('V93_RESTORE_VERIFY_FAILED')
+                        if digest(ui.read_bytes())!=record['new_sha256']:
+                            raise RuntimeError('V93_UI_CHANGED_DURING_ROLLBACK')
+                        os.replace(stage,ui)
+                        if digest(ui.read_bytes())!=record['old_sha256']:
+                            raise RuntimeError('V93_RESTORE_SHA_MISMATCH')
+                    finally:
+                        if stage.exists():stage.unlink()
+                    v93_state_write({**record,'phase':'ROLLED_BACK','rolled_back_utc':now()})
+                    report['status']='V93_ROLLED_BACK_TO_V92_UI';report['game_files_written']=1
+            else:
+                report['status']='V93_INSTALLED_GAMEPLAY_TEST_REQUIRED'
+        elif mode=='rollback':
+            report['status']='V93_NOT_INSTALLED'
+        else:
+            if record and record['phase']!='ROLLED_BACK':raise RuntimeError('V93_UNKNOWN_PENDING_STATE')
+            if current!=v92['new_sha256']:raise RuntimeError('V93_CURRENT_V92_SHA_MISMATCH')
+            # Prove that current v92 is exactly the signed derivation of its backed up v90 UI.
+            source_v91=Path(v92['backup']);safe_external(game,source_v91)
+            if not source_v91.is_file() or source_v91.is_symlink() or digest(source_v91.read_bytes())!=v92['old_sha256']:
+                raise RuntimeError('V93_V92_BACKUP_INTEGRITY_HOLD')
+            if v92_transform_installed_ui(source_v91.read_bytes())!=content:
+                raise RuntimeError('V93_NOT_EXACT_V92_UI_SOURCE')
+            candidate=v93_transform_installed_ui(content)
+            report.update({'status':'V93_ZERO_PREFLIGHT_PASS_NOT_INSTALLED',
+                           'current_v92_sha256':current,'candidate_v93_sha256':digest(candidate),
+                           'candidate_bytes':len(candidate),
+                           'evidence':'Two user screenshots: v92 brief-mode d20 miss works; full-mode roll modifiers contain zeros',
+                           'runtime_verified':False})
+            if mode=='upgrade':
+                closed,why=v71_processes_closed()
+                if not closed:raise RuntimeError('V93_CLOSE_GAME_AND_LOADER:'+why)
+                if not v85_read_input_approval(V93_INSTALL_APPROVAL):
+                    report['status']='V93_INSTALL_NOT_AUTHORIZED'
+                else:
+                    if digest(ui.read_bytes())!=current or digest(lua.read_bytes())!=v85['candidate_sha256']:
+                        raise RuntimeError('V93_FILES_CHANGED_DURING_APPROVAL')
+                    closed,why=v71_processes_closed()
+                    if not closed:raise RuntimeError('V93_GAME_STARTED_DURING_APPROVAL:'+why)
+                    directory=WORKDIR/'SAFE_BACKUPS';safe_external(game,directory)
+                    directory.mkdir(parents=True,exist_ok=True)
+                    backup=directory/('UI.MENU_V93_PRE_'+current[:16]+'.bak')
+                    if backup.exists():
+                        if backup.is_symlink() or digest(backup.read_bytes())!=current:
+                            raise RuntimeError('V93_BACKUP_NAME_COLLISION')
+                    else:
+                        with backup.open('xb') as out:out.write(content)
+                    if digest(backup.read_bytes())!=current:
+                        raise RuntimeError('V93_BACKUP_VERIFY_FAILED')
+                    stage=ui.with_name('UI.MENU.v93stage')
+                    if stage.exists():raise RuntimeError('V93_UI_STAGE_COLLISION')
+                    state={'schema':V93_SCHEMA,'phase':'PREPARED','created_utc':now(),
+                           'old_sha256':current,'new_sha256':digest(candidate),'backup':str(backup)}
+                    try:
+                        with stage.open('xb') as out:out.write(candidate)
+                        if digest(stage.read_bytes())!=state['new_sha256']:
+                            raise RuntimeError('V93_STAGE_VERIFY_FAIL')
+                        v93_state_write(state)
+                        if digest(ui.read_bytes())!=current:
+                            raise RuntimeError('V93_UI_CHANGED_BEFORE_SWAP')
+                        os.replace(stage,ui)
+                        if digest(ui.read_bytes())!=state['new_sha256']:
+                            raise RuntimeError('V93_INSTALLED_SHA_MISMATCH')
+                        v93_state_write({**state,'phase':'INSTALLED','installed_utc':now()})
+                    except Exception:
+                        if ui.is_file() and digest(ui.read_bytes())==state['new_sha256']:
+                            restore=ui.with_name('UI.MENU.v93failedrestore')
+                            if not restore.exists():
+                                with restore.open('xb') as out:out.write(content)
+                                if digest(restore.read_bytes())==current:
+                                    os.replace(restore,ui)
+                                    v93_state_write({**state,'phase':'ROLLED_BACK','failed_utc':now()})
+                        raise
+                    finally:
+                        if stage.exists():stage.unlink()
+                    report['status']='V93_INSTALLED_GAMEPLAY_TEST_REQUIRED';report['game_files_written']=1
+    except (OSError,RuntimeError,ValueError,KeyError,UnicodeError,TypeError) as exc:
+        report['status']='V93_SAFE_STOP'
+        report['errors'].append({'type':type(exc).__name__,'message':str(exc)[:240]})
+    try:v93_zip_report(game,report_path,report)
+    except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
+        print('v93: ZIP SAFE_STOP',type(exc).__name__,str(exc)[:200]);return 2
+    print('v93:',report['status'],'— изменений в игре:',report['game_files_written'])
+    print('Единый ZIP:',report_path)
+    return 2 if report['status']=='V93_SAFE_STOP' else 0
+
+
+def v93_selftest():
+    assert '%^%-' in V93_HELPER and "suffix = remainder:sub(i,j) .. suffix" in V93_HELPER
+    assert 'local function BG_EET_RU_V93_BriefRoll' in V93_HELPER
+    assert 'if #stack ~= 1 or count < 1 or hidden < 1' in V93_HELPER
+    assert 'if not BG_EET_RU_V93_FIELDS[label]' in V93_HELPER
+    assert '%^0x%x%x%x%x%x%x%x%x' in V93_HELPER
+    assert 'if n + adjust ~= t then return original end' in V93_HELPER
+    assert "if BG_EET_RU_LOG_MODE ~= 1" in V93_HELPER
+    assert 'return original end' in V93_HELPER
+    assert '%%' not in V93_HELPER
+    for eol in ('\n','\r\n'):
+        previous=(b'header\r\nother\n' + V92_HELPER.replace('\n',eol).encode('utf8') +
+                  b'\nrender ' + V88_RENDER_NEW + b'\n' + V90_DRAG +
+                  b'\nBG_EET_RU_JOURNAL_TOGGLE\n')
+        patched=v93_transform_installed_ui(previous)
+        assert patched.count(V88_RENDER_NEW)==1 and patched.count(V90_DRAG)==1
+        assert patched.count(b'BG_EET_RU_JOURNAL_TOGGLE')==previous.count(b'BG_EET_RU_JOURNAL_TOGGLE')
+        assert patched.replace(V93_HELPER.replace('\n',eol).encode('utf8'),
+                               V92_HELPER.replace('\n',eol).encode('utf8'),1)==previous
+        assert len(patched)>len(previous)
+    raw=(V92_HELPER.encode('utf8')+V88_RENDER_NEW+V90_DRAG+b'BG_EET_RU_JOURNAL_TOGGLE')
+    for bad in (raw+V92_HELPER.encode('utf8'),raw.replace(V90_DRAG,b''),v93_transform_installed_ui(raw)):
+        try:v93_transform_installed_ui(bad)
+        except RuntimeError:pass
+        else:raise AssertionError('V93_UNSAFE_TRANSFORM_ACCEPTED')
+    with tempfile.TemporaryDirectory(prefix='BG_EET_RU_V93_TEST_') as d:
+        p=Path(d)/'state.json'
+        assert v93_state_read(p) is None
+        record={'schema':V93_SCHEMA,'phase':'PREPARED','old_sha256':'a'*64,'new_sha256':'b'*64}
+        v93_state_write(record,p)
+        assert v93_state_read(p)==record
+        v93_state_write({**record,'phase':'INSTALLED'},p)
+        assert v93_state_read(p)['phase']=='INSTALLED'
+        v93_state_write({**record,'phase':'ROLLED_BACK'},p)
+        assert v93_state_read(p)['phase']=='ROLLED_BACK'
+    return True
+
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description='BG_EET_RU one-file visible-only read-only auto-updater')
     p.add_argument('--game',default=DEFAULT_GAME)
@@ -3756,6 +4010,8 @@ def main(argv=None):
     p.add_argument('--rollback-v91-journal-parser',action='store_true',help='optional exact restore to v90 UI.MENU; exact approval')
     p.add_argument('--upgrade-v92-journal-marker',action='store_true',help='optional exact UI-only ^- color marker parser fix; explicit approval')
     p.add_argument('--rollback-v92-journal-marker',action='store_true',help='optional exact revert to v91 UI.MENU; explicit approval')
+    p.add_argument('--upgrade-v93-journal-zeros',action='store_true',help='optional v92-to-v93 brief-log zero filter; exact typed approval')
+    p.add_argument('--rollback-v93-journal-zeros',action='store_true',help='optional exact v93 rollback to v92; exact typed approval')
     p.add_argument('--seen-strref',action='append',type=int,default=[],help='v83: player-reported displayed StrRef, repeatable')
     p.add_argument('--seen-text',action='append',default=[],help='v83: player-reported exact displayed text, repeatable')
     p.add_argument('--no-open',action='store_true',help='do not open output folder')
@@ -3832,10 +4088,16 @@ def main(argv=None):
                 args.upgrade_v90_journal_ui,args.rollback_v90_journal_ui,
                 args.upgrade_v91_journal_parser,args.rollback_v91_journal_parser,
                 args.upgrade_v92_journal_marker,args.rollback_v92_journal_marker,
+                args.upgrade_v93_journal_zeros,args.rollback_v93_journal_zeros,
                 args.fix_leui_reverse,args.rollback_leui_reverse,args.combat_rollback)):
+        ui_v93=v93_state_read()
+        if ui_v93 and ui_v93['phase'] in ('INSTALLED','PREPARED'):
+            return v93_run(game,WORKDIR/REPORT_NAME)
         ui_v92=v92_state_read()
         if ui_v92 and ui_v92['phase'] in ('INSTALLED','PREPARED'):
-            return v92_run(game,WORKDIR/REPORT_NAME)
+            rc=v92_run(game,WORKDIR/REPORT_NAME)
+            if rc:return rc
+            return v93_run(game,WORKDIR/REPORT_NAME)
         ui_v91=v91_state_read()
         if ui_v91 and ui_v91['phase'] in ('INSTALLED','PREPARED'):
             rc=v91_run(game,WORKDIR/REPORT_NAME)
@@ -3849,7 +4111,16 @@ def main(argv=None):
     # v83: player-observed text is processed directly; do not re-run expensive historical audits.
     if args.seen_strref or args.seen_text:
         return v83_run(game,WORKDIR/REPORT_NAME,additional_strrefs=args.seen_strref,additional_texts=args.seen_text)
+    if args.upgrade_v93_journal_zeros or args.rollback_v93_journal_zeros:
+        if args.upgrade_v93_journal_zeros and args.rollback_v93_journal_zeros:
+            print('V93_STOP: conflicting zero-filter actions')
+            return 2
+        return v93_run(game,WORKDIR/REPORT_NAME,mode=('upgrade' if args.upgrade_v93_journal_zeros else 'rollback'))
     if args.upgrade_v92_journal_marker or args.rollback_v92_journal_marker:
+        ui_v93=v93_state_read()
+        if ui_v93 and ui_v93['phase'] in ('INSTALLED','PREPARED'):
+            print('V93_STOP: rollback v93 before changing the v92 UI state')
+            return 2
         if args.upgrade_v92_journal_marker and args.rollback_v92_journal_marker:
             print('V92_STOP: conflicting parser actions')
             return 2
@@ -6674,6 +6945,7 @@ def selftest():
     assert v90_selftest() and callable(v90_run)
     assert v91_selftest() and callable(v91_run)
     assert v92_selftest() and callable(v92_run)
+    assert v93_selftest() and callable(v93_run)
     print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
     return 0
 
