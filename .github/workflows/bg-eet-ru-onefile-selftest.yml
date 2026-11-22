@@ -116,3 +116,65 @@ jobs:
                   lib.lua_close(p)
           print('V96_NATIVE_COLORED_PREFIX_PASS: regression, damage, d20, full mode, markup, LF CRLF full Lua')
           PY
+      - name: Native Lua 5.4 v97 damage grammar and rollback safety
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import ctypes,json
+          path=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
+          ns={'__name__':'ci_native_lua_v97','__file__':str(path)}
+          exec(compile(path.read_text(encoding='utf8').split('\n',1)[1],str(path),'exec'),ns)
+          lib=ctypes.CDLL('liblua5.4.so.0')
+          lib.luaL_newstate.restype=ctypes.c_void_p
+          lib.luaL_openlibs.argtypes=[ctypes.c_void_p]
+          lib.luaL_loadbufferx.argtypes=[ctypes.c_void_p,ctypes.c_char_p,ctypes.c_size_t,ctypes.c_char_p,ctypes.c_char_p]
+          lib.luaL_loadbufferx.restype=ctypes.c_int
+          lib.lua_pcallk.argtypes=[ctypes.c_void_p,ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.c_longlong,ctypes.c_void_p]
+          lib.lua_pcallk.restype=ctypes.c_int
+          lib.lua_tolstring.argtypes=[ctypes.c_void_p,ctypes.c_int,ctypes.POINTER(ctypes.c_size_t)]
+          lib.lua_tolstring.restype=ctypes.c_void_p
+          lib.lua_close.argtypes=[ctypes.c_void_p]
+          def run(helper,inp,mode=1):
+              src=(helper+'\nBG_EET_RU_LOG_MODE='+str(mode)+'\nreturn BG_EET_RU_LogView('+json.dumps(inp,ensure_ascii=False)+')').encode('utf8')
+              L=lib.luaL_newstate()
+              lib.luaL_openlibs(L)
+              try:
+                  assert lib.luaL_loadbufferx(L,src,len(src),b'test',None)==0
+                  assert lib.lua_pcallk(L,0,1,0,0,None)==0
+                  n=ctypes.c_size_t()
+                  p=lib.lua_tolstring(L,-1,ctypes.byref(n))
+                  return ctypes.string_at(p,n.value).decode('utf8')
+              finally: lib.lua_close(L)
+          for amount in (1,2,4,5,21,100):
+              for kind in ('метательного','рубящего','дробящего'):
+                  src=f'^0xFF112233Больной гибберлинг: получает {amount} {kind} урона от противника: Халид^-'
+                  dst=f'^0xFF112233Больной гибберлинг: получает {amount} ед. {kind} урона от противника: Халид^-'
+                  assert run(ns['V96_HELPER'],src)==src
+                  assert run(ns['V97_HELPER'],src)==dst
+                  assert run(ns['V97_HELPER'],src,0)==src
+                  assert run(ns['V97_HELPER'],dst)==dst
+          for bad in ('Больной гибберлинг: получает 4 огненного урона от противника: Халид',
+                      'Больной гибберлинг: получает 4 метательного урона',
+                      'Больной гибберлинг: получает 4 метательного урона от Халида',
+                      'Халид: он получает 4 метательного урона от противника: Огр'):
+              assert run(ns['V97_HELPER'],bad)==bad
+          roll='^0xFFAABBCCХалид: Бросок: 16 +Удача: 0 +Правая рука: -1 (+Владение оружием: -2 +Ловкость: 1)^-'
+          assert run(ns['V97_HELPER'],roll)==run(ns['V96_HELPER'],roll)
+          hit='Халид: бросок атаки 16 - 1 = 15 : попадание^-'
+          assert run(ns['V97_HELPER'],hit)==run(ns['V96_HELPER'],hit)
+          for eol in ('\n','\r\n'):
+              before=ns['V96_HELPER'].replace('\n',eol).encode('utf8')
+              old=(b'`\nfunction clean(str)\n return str\nend' + before +
+                   b'`\nmenu\nrender '+ns['V88_RENDER_NEW']+b'\n'+ns['V90_DRAG']+b'\nBG_EET_RU_JOURNAL_TOGGLE\n')
+              candidate=ns['v97_transform_installed_ui'](old)
+              after=ns['V97_HELPER'].replace('\n',eol).encode('utf8')
+              assert candidate.count(after+b'`')==1
+              assert candidate.replace(after,before,1)==old
+              assert b'end'+eol.encode('ascii')+b'`' in candidate
+              chunk=candidate.split(b'`',2)[1]
+              L=lib.luaL_newstate()
+              try: assert lib.luaL_loadbufferx(L,chunk,len(chunk),b'menu',None)==0
+              finally: lib.lua_close(L)
+          print('V97_NATIVE_GRAMMAR_PASS 18 types/count combinations, full mode, idempotence, delimiters, rollback')
+          PY
