@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 93,
-  "sha256": "187aeda6b6d8b92e2502e485c9334f56132bb06fac1ed5d2383bf3288db7f2a6",
-  "mode": "READ_ONLY_DEFAULT_EXPLICIT_V92_TO_V93_JOURNAL_ZERO_FILTER",
+  "version": 94,
+  "sha256": "e5c86af00339b714025500dfd68506a347b243f3efa1bfe3fc42ed9442e03ddc",
+  "mode": "READ_ONLY_DEFAULT_V93_INSTALL_WITHDRAWN_V92_PRESERVED",
   "game_writes_allowed": false,
-  "note": "v93 keeps live-proven v92 d20 outcome shortening and adds display-only compact handling of supported 'Бросок:' modifier rows in BRIEF mode: remove only zero-valued known fields, retain all nonzero values, balanced groups, trailing ^- and ^0xXXXXXXXX; unknown syntax is left untouched. FULL mode, v85 44 hooks, combatLog, button/drag and other game assets unchanged. Default one-file updater remains READ ONLY, writes only 40_V93_JOURNAL_ZERO_FILTER.json to its existing single ZIP. Optional --upgrade-v93-journal-zeros requires v92 installed, exact preflight SHA, closed game and InfinityLoader, external verified backup, atomic UI.MENU swap and typed UPGRADE_BG_EET_RU_V93_JOURNAL_ZEROS. --rollback-v93-journal-zeros with typed ROLLBACK_BG_EET_RU_V93_JOURNAL_ZEROS restores only v92. Isolated Lua5.4 tests 17/17 PASS, GitHub Actions run 45031032813 PASS; Windows preflight, actual v93 gameplay and real v92 hit are still unverified."
+  "note": "EMERGENCY SAFETY RELEASE: v93 UI.MENU caused game menu Lua syntax error and blank output. User successfully rolled back v93 to v92 with V93_ROLLED_BACK_TO_V92_UI. This v94 source explicitly blocks --upgrade-v93-journal-zeros and marks v93 preflight as disabled, while preserving --rollback-v93-journal-zeros when previously installed. No automatic game writes. v92 gameplay-proven brief miss display remains installed after rollback. GitHub Actions full source selftest run 45033184738 success. Do not install v93 again. Future candidate must prove full UI.MENU chunk compiles, not only Lua helper."
 }
