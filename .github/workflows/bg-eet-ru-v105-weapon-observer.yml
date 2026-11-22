@@ -1,0 +1,143 @@
+name: BG EET RU V105 guarded observer candidate (source only)
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/weapon-identity/BG_EET_RU_WEAPON_EVENT_OBSERVER_V2.lua'
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - '.github/workflows/bg-eet-ru-v105-weapon-observer.yml'
+  workflow_dispatch:
+jobs:
+  source-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install native Lua
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq liblua5.4-0
+      - name: Full onefile selftest including V105 exact SHA, reversible Main patch and single ZIP
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
+      - name: Synthetic guarded install/status/rollback in isolated fake game (no real game)
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import tempfile,zipfile,json
+          source=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
+          ns={'__name__':'v105_synthetic','__file__':str(source)}
+          exec(compile(source.read_text('utf8').split('\n',1)[1],str(source),'exec'),ns)
+          with tempfile.TemporaryDirectory() as tmp:
+              root=Path(tmp)
+              game=root/'GAME';game.mkdir()
+              scripts=game/'EEex_scripts';scripts.mkdir()
+              main=scripts/'EEex_Main.lua'
+              original=(b'EEex_Main_Private_StartupFiles = {}\n'
+                        b'for _, fileName in ipairs(EEex_Main_Private_StartupFiles) do\n'
+                        b' EEex_DoFile(fileName)\nend\n'
+                        b'\tEEex_Active = true\n')
+              main.write_bytes(original)
+              (scripts/'EEex_Sprite.lua').write_bytes(b'fixture EEex sprite')
+              (scripts/'EEex_Sprite_Patch.lua').write_bytes(b'fixture EEex patch')
+              work=root/'WORK';work.mkdir()
+              report=work/'SEND_TO_CHATGPT_BG_EET_RU.zip'
+              with zipfile.ZipFile(report,'w') as z:z.writestr('preserve.txt','keep it')
+              ns.update({
+                  'WORKDIR':work,
+                  'V105_STATE':work/'v105_state.json',
+                  'V105_EVENT_STAGE':work/'observer_events.tsv',
+                  'V105_STATUS_STAGE':work/'observer_status.tsv',
+                  'V105_EEEX_SPRITE_SHA':ns['digest']((scripts/'EEex_Sprite.lua').read_bytes()),
+                  'V105_EEEX_PATCH_SHA':ns['digest']((scripts/'EEex_Sprite_Patch.lua').read_bytes()),
+                  'v85_state_read':lambda: {'phase':'INSTALLED'},
+                  'v85_check_live_state':lambda *args: 'mock-sha-verified',
+                  'v101_state_read':lambda: {'phase':'INSTALLED'},
+                  'v71_processes_closed':lambda: (True,'CLOSED'),
+                  'v85_read_input_approval':lambda phrase: phrase in (
+                      ns['V105_INSTALL_APPROVAL'],ns['V105_ROLLBACK_APPROVAL']),
+              })
+              old_main_sha=ns['digest'](original)
+              assert ns['v105_run'](game,report)==0
+              assert main.read_bytes()==original
+              assert not (scripts/ns['V105_OBSERVER_MODULE']).exists()
+              with zipfile.ZipFile(report) as z:
+                  preflight=json.loads(z.read(ns['V105_ENTRY']))
+                  assert preflight['status']=='V105_GUARDED_OBSERVER_PREFLIGHT_PASS_NOT_INSTALLED'
+              assert ns['v105_run'](game,report,mode='install')==0
+              assert ns['v105_get_state']()['phase']=='INSTALLED'
+              assert main.read_bytes()!=original and (scripts/ns['V105_OBSERVER_MODULE']).exists()
+              assert ns['v105_run'](game,report)==0
+              (work/'observer_events.tsv').write_text('EVENT\t1\tcriticalDamage:number:2\tweapon:userdata:\n',encoding='utf8')
+              (work/'observer_status.tsv').write_text('SOURCE_LOADED\nSTART\ttrue\tLISTENER_REGISTERED\n',encoding='utf8')
+              assert ns['v105_run'](game,report)==0
+              with zipfile.ZipFile(report) as z:
+                  result=json.loads(z.read(ns['V105_ENTRY']))
+                  assert result['runtime_capture']['events']['record_count']==1
+                  assert result['runtime_capture']['events']['records'][0]['event_index']==1
+                  assert z.read('preserve.txt')==b'keep it'
+              assert ns['v105_run'](game,report,mode='rollback')==0
+              assert ns['v105_get_state']()['phase']=='ROLLED_BACK'
+              assert ns['digest'](main.read_bytes())==old_main_sha
+              assert not (scripts/ns['V105_OBSERVER_MODULE']).exists()
+              assert ns['v105_run'](game,report)==0
+          print('V105_SYNTHETIC_INSTALL_ROLLBACK_PASS: exact source, external backup, one ZIP, no real game')
+          PY
+      - name: Verify Lua observer V2 semantics, no state mutation and bounded external export
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import tempfile,json,ctypes
+          p=Path('bg-eet-ru/weapon-identity/BG_EET_RU_WEAPON_EVENT_OBSERVER_V2.lua')
+          original=p.read_text('utf-8')
+          lib=ctypes.CDLL('liblua5.4.so.0')
+          lib.luaL_newstate.restype=ctypes.c_void_p
+          lib.luaL_openlibs.argtypes=[ctypes.c_void_p]
+          lib.luaL_loadbufferx.argtypes=[ctypes.c_void_p,ctypes.c_char_p,ctypes.c_size_t,ctypes.c_char_p,ctypes.c_char_p]
+          lib.luaL_loadbufferx.restype=ctypes.c_int
+          lib.lua_pcallk.argtypes=[ctypes.c_void_p,ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.c_longlong,ctypes.c_void_p]
+          lib.lua_pcallk.restype=ctypes.c_int
+          lib.lua_close.argtypes=[ctypes.c_void_p]
+          test=r"""
+          assert(not BG_EET_RU_WEAPON_EVENT_OBSERVER_V1.enabled)
+          assert(not BG_EET_RU_WEAPON_EVENT_OBSERVER_V1.registered)
+          local registrations={}
+          function EEex_Sprite_AddAlterBaseWeaponDamageListener(fn)
+              registrations[#registrations+1]=fn
+          end
+          local ok,why=BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()
+          assert(ok and why=='LISTENER_REGISTERED' and #registrations==1)
+          local ctx={criticalDamage=2,weapon={},enemy=false,text='swing'}
+          assert(registrations[1](ctx)==nil)
+          assert(ctx.criticalDamage==2 and ctx.enemy==false and ctx.text=='swing')
+          for i=2,100 do registrations[1]({criticalDamage=i,weapon={}}) end
+          local s=BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Status()
+          assert(s.total_recorded==100 and s.buffered_events==64)
+          BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Stop()
+          local before=s.total_recorded
+          registrations[1]({criticalDamage=999})
+          assert(BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Status().total_recorded==before)
+          BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()
+          assert(#registrations==1)
+          assert(not s.misses_proven and not s.launcher_ammo_pair_proven and not s.log_row_attribution_proven)
+          """
+          with tempfile.TemporaryDirectory() as tmp:
+              events=Path(tmp)/'weapon_events.tsv'
+              status=Path(tmp)/'observer_status.tsv'
+              source=original.replace('__V105_EVENTS_PATH__',json.dumps(str(events))).replace('__V105_STATUS_PATH__',json.dumps(str(status)))
+              assert '__V105_' not in source
+              script=(source+'\n'+test).encode('utf8')
+              L=lib.luaL_newstate();lib.luaL_openlibs(L)
+              try:
+                  assert lib.luaL_loadbufferx(L,script,len(script),b'observer_v2',None)==0, 'Lua compile fail'
+                  assert lib.lua_pcallk(L,0,0,0,0,None)==0, 'Lua runtime test fail'
+              finally:lib.lua_close(L)
+              lines=events.read_text().splitlines()
+              assert len(lines)==64,len(lines)
+              assert lines[0].startswith('EVENT\t1\t')
+              assert 'criticalDamage:number:2' in lines[0]
+              assert lines[-1].startswith('EVENT\t64\t')
+              assert 'START\ttrue\tLISTENER_REGISTERED' in status.read_text()
+              assert 'START\ttrue\tALREADY_REGISTERED' in status.read_text()
+              assert status.read_text().count('SOURCE_LOADED')==1
+          print('V105_NATIVE_OBSERVER_PASS: Lua54 syntax, no automatic registration, bounded 64 event export, no context mutation')
+          PY
