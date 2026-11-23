@@ -241,7 +241,6 @@ def v111_selftest():
     body=b''
     for ref,val in names.items():
       data=val.encode('utf8')
-      struct.pack_into('<HII',entries,ref*26,1,0,0) if False else None
       struct.pack_into('<H',entries,ref*26,1)
       struct.pack_into('<II',entries,ref*26+18,len(body),len(data))
       body+=data
@@ -261,8 +260,8 @@ def v111_selftest():
     biff+=arrow+bow
     (game/'data'/'TEST.BIF').write_bytes(biff)
     bname=b'data\\TEST.BIF\0'
-    key=b'KEY V1  '+struct.pack('<IIII',1,2,24,64)
-    key+=struct.pack('<IIHH',len(biff),92,len(bname),0)
+    key=b'KEY V1  '+struct.pack('<IIII',1,2,24,36)
+    key+=struct.pack('<IIHH',len(biff),64,len(bname),0)
     key+=b'AROW01\0\0'+struct.pack('<HI',0x3ed,1)
     key+=b'BOW05\0\0\0'+struct.pack('<HI',0x3ed,2)
     key+=bname

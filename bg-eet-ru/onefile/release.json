@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 110,
-  "sha256": "2c73a1cbcea647f662989ba4988849872dab07129d05e9257e26f35e60e4f861",
-  "mode": "READ_ONLY_DEFAULT_V110_LEGACY_750000_BYTE_CAP_FIX",
+  "version": 111,
+  "sha256": "ddfafd1d84c27277682916b2e7080e559351e54551d742e757b77cef2ce06fb2",
+  "mode": "READ_ONLY_DEFAULT_V111_TARGETED_ACTIVE_ITM_TLK_NAMES",
   "game_writes_allowed": false,
-  "note": "V110 fixes failed auto-update of V107 to V109: old downloader hard-limits download to 750000 bytes; V109 source was 771451 bytes. V110 preserves the Python AST and all embedded Lua/data payloads while reducing Python indentation outside string literals to fit old 750000 byte cap. SHA256 validation and auto-update safeguards remain unchanged. CI checks byte cap, manifest SHA, AST identity except SELF_VERSION, and all existing selftests; guarded V108 native CItem code remains optional, NOT installed or gameplay-verified; no changes to game, UI, BGXAI, Voice or saves."
+  "note": "V111 adds read-only exact three-resref SW1H04/AROW01/BOW05 ITM resource lookup with override priority and KEY/BIFF V1 fallback, then sparse Russian ru_RU dialog.tlk/dialogf.tlk name lookup. No changes to EEex observer V108, game, saves, UI, TLK, BGXAI or BG Voice RU. Standard no-arg updater automatically performs V111 after V108 status; explicit --v111-item-audit runs only the safe inspection. Preserves 750000-byte legacy downloader cap and single updater/ZIP, synthetic tests for override priority, fallback, invalid override HOLD, missing TLK HOLD, ZIP idempotency."
 }
