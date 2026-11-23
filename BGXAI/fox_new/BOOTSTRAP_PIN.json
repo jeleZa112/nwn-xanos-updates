@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "9c7344fd818b9eabba1e48b5bce3bc7a4f3c5e67",
+  "commit": "8b09a615c7b4dde2666b278e7f95108689588752",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "2689695aea0c22f6be10e0148b70769a409dfc14cdf269f4eaf0c9de6a749e2d",
-  "script_size": 79966,
-  "description": "BGXAI R27 user LIVE observer 24/24 retained. New R28 menu165->6 native ITM/2DA read-only audit from existing real R27 log, SHA-pinned original R3. No game actions, no reinstall, one updater. Win/Linux 63 tests (one private-log skip, locally real log passed)."
+  "script_sha256": "4caa4c249af405300b80446a6e799320cb0ac5ef10ef97fc439ef0acb4ed6d26",
+  "script_size": 79937,
+  "description": "BGXAI functional V7 DPLAYER duplicate close-range AttackOneRound guard (same V6 two-block compiled SHA), guarded WeiDU overlay on last installed R27. Menu166 typed installation/last-only rollback, game remains unchanged until explicit user token. Old 165 R27 and all scripts retained. Windows/Linux source and PS 5.1 CI PASS."
 }
