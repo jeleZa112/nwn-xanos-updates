@@ -1,0 +1,24 @@
+name: BG EET RU v119 draft source-only checks
+on:
+  push:
+    branches: [bg-eet-ru-v119-readonly-draft]
+  workflow_dispatch:
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile single updater (skip Windows CMD header)
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import ast
+          script=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd').read_text(encoding='utf-8')
+          ast.parse('\n'.join(script.splitlines()[1:]))
+          print('PARSE_PASS')
+          PY
+      - name: Run source-only selftest
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
