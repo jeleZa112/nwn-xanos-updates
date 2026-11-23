@@ -1,0 +1,25 @@
+name: BG EET RU V115 archived-roll-message source safety
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/weapon-identity/V115_ROLL_MESSAGE_CHAIN_STATIC_AUDIT.py'
+      - '.github/workflows/bg-eet-ru-v115-static-roll.yml'
+  workflow_dispatch:
+jobs:
+  archived-slice-source-selftest:
+    runs-on: ubuntu-latest
+    permissions: {contents: read}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Selftest private-byte independent x64 analyzer
+        run: |
+          python -m py_compile bg-eet-ru/weapon-identity/V115_ROLL_MESSAGE_CHAIN_STATIC_AUDIT.py
+          python bg-eet-ru/weapon-identity/V115_ROLL_MESSAGE_CHAIN_STATIC_AUDIT.py --selftest --out /tmp/v115.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/v115.json'))
+          assert r['selftest']['status']=='V115_SYNTHETIC_SOURCE_ONLY_PASS'
+          assert r['selftest']['scenarios']==18
+          print('V115_SYNTHETIC_PASS')
+          PY
