@@ -259,17 +259,65 @@ def rollback(root: Path, token: str) -> dict:
             'gameplayResourcesModified':True}
 
 
+
+def capture_console(root: Path) -> dict:
+    """READ ONLY capture of the already-installed R27 observer; no game-file edits.
+
+    InfinityLoader's ordinary game stdout/stderr is redirected into a new report
+    outside the game root. The game runs normally until the player exits it.
+    """
+    state = status(root)  # checks installed WeiDU last, installed SHA and proof
+    if state['status'] != 'R27_PASSIVE_INSTALLED_AWAITING_RUNTIME_TEST':
+        raise ValueError('R27_NOT_INSTALLED_FOR_CAPTURE')
+    processes()  # refuses an existing running game / WeiDU
+    exe = regular(root, 'InfinityLoader.exe')
+    if not exe.is_file() or alias(exe) or not 1024 < exe.stat().st_size < 70000000:
+        raise ValueError('INFINITYLOADER_EXE_MISSING_OR_INVALID')
+    with exe.open('rb') as stream:
+        if stream.read(2) != b'MZ': raise ValueError('INFINITYLOADER_NOT_PE')
+    home = os.environ.get('USERPROFILE')
+    if not home: raise ValueError('USERPROFILE_MISSING')
+    documents = Path(home) / 'Documents'
+    reports = documents / 'BGXAI_LIVE_REPORTS'
+    if alias(documents) or alias(reports): raise ValueError('REPORT_DIR_REPARSE_STOP')
+    reports.mkdir(parents=True, exist_ok=True)
+    output = reports / ('BGXAI_R27_CONSOLE_' +
+                        datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ') + '.log')
+    if output.exists() or alias(output): raise ValueError('REPORT_ALREADY_EXISTS')
+    with output.open('xb') as log:
+        child = subprocess.Popen([str(exe)], cwd=root, stdin=subprocess.DEVNULL,
+                                 stdout=log, stderr=subprocess.STDOUT, close_fds=True)
+        code = child.wait()
+        log.flush()
+    # Inspect only the bounded output after exit. Do not pass unauthenticated
+    # console text into command/JSON execution; raw report remains local.
+    byte_count = output.stat().st_size
+    start_count, sample_count = 0, 0
+    with output.open('rb') as log:
+        for line in log:
+            if b'[BGXR27]' not in line: continue
+            if b'"type":"SESSION"' in line: start_count += 1
+            if b'"type":"R27_SINGLE_CALLBACK"' in line: sample_count += 1
+    good = code == 0 and start_count > 0 and sample_count > 0
+    return {'schema':'BGXAI_R27_CAPTURE_RO_V1',
+            'status':'R27_RUNTIME_LOG_PRESENT_AWAITING_REVIEW' if good
+                     else 'R27_CAPTURE_HOLD_CHECK_LOG',
+            'reportFile':str(output), 'reportBytes':byte_count,
+            'sessionMarkers':start_count, 'selectedActionSamples':sample_count,
+            'gameExitCode':code, 'gameplayResourcesModifiedByCapture':False,
+            'weaponSwitchAuthorized':False, 'dispatchAuthorized':False}
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('--game', default=str(GAME))
-    parser.add_argument('--mode', choices=['menu','status','preflight','install','rollback'], default='menu')
+    parser.add_argument('--mode', choices=['menu','status','preflight','install','rollback','capture'], default='menu')
     args = parser.parse_args()
     try:
         root = Path(args.game)
         if args.mode == 'menu':
-            print('R27 passive single-callback observer: 1=status, 2=preflight READ ONLY, 3=install typed, 4=rollback typed, 0=exit')
+            print('R27 passive single-callback observer: 1=status, 2=preflight READ ONLY, 3=install typed, 4=rollback typed, 5=start game + capture READ ONLY, 0=exit')
             answer = input('Choice [2]: ').strip() or '2'
-            args.mode = {'0':'exit', '1':'status', '2':'preflight', '3':'install', '4':'rollback'}.get(answer, 'invalid')
+            args.mode = {'0':'exit', '1':'status', '2':'preflight', '3':'install', '4':'rollback', '5':'capture'}.get(answer, 'invalid')
         if args.mode == 'exit': print('R27: no changes.'); return 0
         if args.mode == 'status': result = status(root)
         elif args.mode == 'preflight': result = preflight(root)
@@ -277,6 +325,9 @@ def main() -> int:
             print('R27 INSTALL: only passive override/M_BGXR27.lua, never weapon actions. Closes game and requires external backup.')
             token = input('Type ' + INSTALL_TOKEN + ' exactly (ENTER cancels): ').strip()
             result = install(root, token)
+        elif args.mode == 'capture':
+            print('Start InfinityLoader, load your existing test save, make 2-3 ordinary attacks, then exit game. Capture goes into Documents/BGXAI_LIVE_REPORTS.')
+            result = capture_console(root)
         elif args.mode == 'rollback':
             token = input('Type ' + ROLLBACK_TOKEN + ' exactly (ENTER cancels): ').strip()
             result = rollback(root, token)

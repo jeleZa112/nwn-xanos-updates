@@ -33,7 +33,7 @@ class GuardedTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'ROLLBACK_TOKEN_REQUIRED'):
             r27.rollback(Path('/untouched'), 'YES')
     def test_windows_only_guard(self):
-        path = Path('/tmp/no-game')
+        path=Path('/tmp/no-game')
         with mock.patch.object(r27.os,'name','posix'):
             with self.assertRaisesRegex(ValueError,'EXACT_WINDOWS_GAME_ROOT_REQUIRED'):
                 r27.game(path)
@@ -119,8 +119,75 @@ class GuardedTests(unittest.TestCase):
             self.assertEqual(hashlib.sha256(f.read_bytes()).hexdigest(),obj['sha256'])
     def test_no_hidden_deploy_from_sync(self):
         s=(D/'BGXAI_R27_GUARDED.py').read_text()
-        self.assertIn("choices=['menu','status','preflight','install','rollback']",s)
+        self.assertIn("choices=['menu','status','preflight','install','rollback','capture']",s)
         self.assertNotIn('check=True',s)
         self.assertNotIn('Invoke-WebRequest',s)
+        self.assertIn("'5':'capture'",s)
+
+
+class CaptureTests(unittest.TestCase):
+    def test_requires_installed_r27(self):
+        with mock.patch.object(r27,'status',return_value={'status':'R27_NOT_INSTALLED'}):
+            with self.assertRaisesRegex(ValueError,'R27_NOT_INSTALLED_FOR_CAPTURE'):
+                r27.capture_console(Path('unused'))
+    def test_fails_if_game_already_running(self):
+        with mock.patch.object(r27,'status',return_value={'status':'R27_PASSIVE_INSTALLED_AWAITING_RUNTIME_TEST'}),\
+             mock.patch.object(r27,'processes',side_effect=ValueError('GAME_OR_WEIDU_RUNNING')):
+            with self.assertRaisesRegex(ValueError,'GAME_OR_WEIDU_RUNNING'):
+                r27.capture_console(Path('unused'))
+    def test_requires_valid_loader_before_launch(self):
+        with tempfile.TemporaryDirectory() as td:
+            root=Path(td)
+            with mock.patch.object(r27,'status',return_value={'status':'R27_PASSIVE_INSTALLED_AWAITING_RUNTIME_TEST'}),\
+                 mock.patch.object(r27,'processes'):
+                with self.assertRaisesRegex(ValueError,'INFINITYLOADER_EXE_MISSING_OR_INVALID'):
+                    r27.capture_console(root)
+    def _simulate(self, lines, exit_code):
+        with tempfile.TemporaryDirectory() as td:
+            root=Path(td)/'game';root.mkdir()
+            (root/'InfinityLoader.exe').write_bytes(b'MZ'+b'Z'*2048)
+            home=Path(td)/'user';(home/'Documents').mkdir(parents=True)
+            launches=[]
+            class Child:
+                def wait(self):return exit_code
+            def fake_popen(args, **kwargs):
+                launches.append((args,kwargs))
+                kwargs['stdout'].write(lines)
+                return Child()
+            with mock.patch.object(r27,'status',return_value={'status':'R27_PASSIVE_INSTALLED_AWAITING_RUNTIME_TEST'}),\
+                 mock.patch.object(r27,'processes'),\
+                 mock.patch.dict(r27.os.environ,{'USERPROFILE':str(home)}),\
+                 mock.patch.object(r27.subprocess,'Popen',fake_popen):
+                result=r27.capture_console(root)
+            self.assertEqual(len(launches),1)
+            self.assertEqual(launches[0][0],[str(root/'InfinityLoader.exe')])
+            self.assertEqual(launches[0][1]['cwd'],root)
+            self.assertFalse(result['weaponSwitchAuthorized'])
+            self.assertFalse(result['gameplayResourcesModifiedByCapture'])
+            self.assertEqual(Path(result['reportFile']).read_bytes(),lines)
+            return result
+    def test_realistic_capture_has_markers(self):
+        lines=b'[BGXR27] {"type":"SESSION"}\n[BGXR27] {"type":"R27_SINGLE_CALLBACK","readOnly":true}\n'
+        r=self._simulate(lines,0)
+        self.assertEqual(r['status'],'R27_RUNTIME_LOG_PRESENT_AWAITING_REVIEW')
+        self.assertEqual(r['selectedActionSamples'],1)
+        self.assertEqual(r['sessionMarkers'],1)
+    def test_no_sample_is_hold_not_live(self):
+        r=self._simulate(b'[BGXR27] {"type":"SESSION"}\n',0)
+        self.assertEqual(r['status'],'R27_CAPTURE_HOLD_CHECK_LOG')
+        self.assertEqual(r['selectedActionSamples'],0)
+    def test_nonzero_exit_is_hold(self):
+        r=self._simulate(b'[BGXR27] {"type":"SESSION"}\n[BGXR27] {"type":"R27_SINGLE_CALLBACK"}\n',17)
+        self.assertEqual(r['status'],'R27_CAPTURE_HOLD_CHECK_LOG')
+        self.assertEqual(r['gameExitCode'],17)
+    def test_other_modules_cannot_fake_r27_sample(self):
+        r=self._simulate(b'[BGXW2] {"type":"R27_SINGLE_CALLBACK"}\n',0)
+        self.assertEqual(r['status'],'R27_CAPTURE_HOLD_CHECK_LOG')
+    def test_read_only_no_restart_rollback_side_effects(self):
+        code=(D/'BGXAI_R27_GUARDED.py').read_text()
+        body=code.split('def capture_console(',1)[1].split('def main(',1)[0]
+        for banned in ('run_weidu(', 'shutil.copy2(', 'write_text(', 'unlink(', 'SelectWeaponAbility(', 'os.system('):
+            self.assertNotIn(banned,body)
+        self.assertIn('subprocess.Popen(',body)
 
 if __name__=='__main__':unittest.main()

@@ -6,8 +6,8 @@
     {
       "source": "BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/BGXAI_R27_GUARDED.py",
       "dest": "BGXAI_R27_GUARDED.py",
-      "size": 14742,
-      "sha256": "83b0a23140ab04310e56e24ebaf32ed8b446724a65687ae987583d5cfa2c3268"
+      "size": 17713,
+      "sha256": "b5fbebda6eafe6e13cf74e9eb10e71f83d2230a70fb029795a8ace75832ebbd6"
     },
     {
       "source": "BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/M_BGXR27.lua",

@@ -30,7 +30,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: 21 offline installer/source tests including fake WeiDU
+      - name: 29 offline installer/source + read-only runtime-capture tests
         shell: bash
         run: python -m unittest discover -s BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123 -p test_r27_guarded.py -v
       - name: Verify existing one-CMD entry and no actual game modification
@@ -60,6 +60,8 @@ jobs:
           assert hashlib.sha256(lua).hexdigest()=='e5eb400c56ffb1bc23344a0cf30dcc724d8d18fc2752fabd1c2c63cdcca73735'
           assert 'INSTALL_BGXAI_R27_PASSIVE_OBSERVER' in src
           assert 'ROLLBACK_BGXAI_R27_PASSIVE_OBSERVER' in src
+          assert 'R27_RUNTIME_LOG_PRESENT_AWAITING_REVIEW' in src
+          assert "'5':'capture'" in src
           assert 'game(root); sources(); baseline(root); processes()' in src
           assert b'SelectWeaponAbility(' not in lua
           assert b'ClearActions(' not in lua
