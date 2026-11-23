@@ -1,0 +1,45 @@
+name: BGXAI R24 session-aware existing weapon pipeline - SOURCE ONLY
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R24_SESSION_ADVISORY_SOURCE_ONLY_20261123/**'
+      - '.github/workflows/bgxai-r24-session-advisory-source-only-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source_integrity:
+    name: R24 static/hash 12 tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - name: Preserve exact Git blob line endings
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test exact existing original module pins and no game dispatch
+        shell: bash
+        run: python -m unittest -v BGXAI/BUILD/R24_SESSION_ADVISORY_SOURCE_ONLY_20261123/test_r24_source_contract.py
+  pure_lua:
+    name: R24 integration 12 and existing 22+3 (Ubuntu)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Preserve exact Git blob line endings
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - name: Install Lua offline runtime
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.4
+      - name: Run new real-code pipeline and previous regression suites
+        run: |
+          lua5.4 BGXAI/BUILD/R24_SESSION_ADVISORY_SOURCE_ONLY_20261123/test_r24_session_bridge.lua
+          lua5.4 BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_noninterrupt_plan_v1.lua
+          lua5.4 BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_noninterrupt_integration_v1.lua

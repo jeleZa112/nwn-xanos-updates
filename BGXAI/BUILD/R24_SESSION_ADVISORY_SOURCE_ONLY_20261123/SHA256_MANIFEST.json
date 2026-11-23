@@ -1,0 +1,22 @@
+{
+  "schema": "BGXAI_R24_EXACT_SOURCE_NO_DISPATCH_V1",
+  "sourceOnly": true,
+  "gameModified": false,
+  "installAuthorized": false,
+  "dispatchAuthorized": false,
+  "weaponSwitchAuthorized": false,
+  "pinnedGitBlobs": {
+    "BGXAI_WEAPON_NONINTERRUPT_PLAN_V1.lua": "f72726af797f05e2330b57d5a71c05ee5a43fadd",
+    "BGXAI_WEAPON_PRIORITY_LUA_V3.lua": "caa3b136f1a27c60908a436b567cf6ae406a5cc5",
+    "BGXAI_WEAPON_EFFECTS_V4.lua": "bcf88726f8de62242f89293fb8afc706ae4e6e26",
+    "BGXAI_WEAPON_CURRENT_STATS_BRIDGE.lua": "c4903911f47293a44b0de62ee736268a19f172da",
+    "BGXAI_WEAPON_APR_PROVENANCE_V5.lua": "95a854a374a1308735b74ecf15a06543f53fe12c"
+  },
+  "files": {
+    "BGXAI_R24_SESSION_ADVISORY_BRIDGE_RO.lua": "fb04199ba75ae0443e75fd4d103037d25df6fa0a355c9dabab07de26e39a8171",
+    "test_r24_session_bridge.lua": "14f332b1732dfd27bd333921b7871ec8becbbf1c5e52709adbcd9abe2ce2c487",
+    "test_r24_source_contract.py": "3338e5506aa9d4213e1eea79c97f2f9cae815e1db1fa98e094c8a667667cb8db",
+    "README_RU.md": "aab0d5c084b17090542212c6b2fdf97bf5209c30a791416690413e65bc59b579",
+    "CHECKPOINT_RU.md": "0a59fb18f9c96011d95e36233d624d95c5bacd4d98f542d98d94cc214b147387"
+  }
+}
