@@ -7143,7 +7143,7 @@ def v106_make_candidate(original):
         raise RuntimeError('V106_MODULE_ALREADY_UPGRADED')
     candidate=original+b'\n'+V106_APPEND.encode('utf8')
     if (candidate.count(b'BG_EET_RU_V106_SOURCE_ONLY_APPEND')!=1 or
-        candidate.count(b'function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()')!=2):
+        candidate.count(b'function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()')!=original.count(b'function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()')+1):
         raise RuntimeError('V106_SOURCE_INSTRUMENTATION_NOT_UNIQUE')
     return candidate
 
@@ -7437,7 +7437,7 @@ def v106_selftest():
     assert b'[BG_EET_RU_V106]' in candidate
     assert b'weapon.baseclass_0' not in candidate
     assert b'EEex_Sprite_AddAlterBaseWeaponDamageListener' in source
-    assert candidate.count(b'EEex_Sprite_AddAlterBaseWeaponDamageListener')==1
+    assert candidate.count(b'EEex_Sprite_AddAlterBaseWeaponDamageListener')==source.count(b'EEex_Sprite_AddAlterBaseWeaponDamageListener')
     assert b'function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()' in candidate
     try:v106_make_candidate(candidate)
     except RuntimeError:pass
