@@ -1,0 +1,110 @@
+{
+  "schema": "BGXAI_R28_EFFECT_GATES_RO_V1",
+  "status": "R28_REAL_STATIC_EVIDENCE_CLASSIFIED_NO_DISPATCH",
+  "r27Callbacks": 24,
+  "actualInstalledItemCount": 4,
+  "observations": [
+    {
+      "resource": "AROW01",
+      "origin": "CURRENT_GAME_BIFF",
+      "abilityCount": 1,
+      "baseDamageMeanBeforeEffects": 3.5,
+      "rangeRaw": 100,
+      "speedRaw": 0,
+      "launcherRequiredRaw": 1,
+      "aprEffectOverridesRaw": [],
+      "flatAprEffectObserved": false,
+      "linkedSpellRefsRaw": [],
+      "linkedItemMutationOpcodesRaw": [],
+      "usabilityRestrictionOpcode319Observed": true,
+      "allActiveBuffsVerified": false,
+      "effectiveDamageVerified": false,
+      "effectiveAlternateAprVerified": false,
+      "safeToAutoSwitch": false
+    },
+    {
+      "resource": "BOW05",
+      "origin": "CURRENT_GAME_BIFF",
+      "abilityCount": 1,
+      "baseDamageMeanBeforeEffects": 0.0,
+      "rangeRaw": 75,
+      "speedRaw": 6,
+      "launcherRequiredRaw": 0,
+      "aprEffectOverridesRaw": [
+        {
+          "modifierRaw": 2,
+          "typeRaw": 1,
+          "timingRaw": 2
+        }
+      ],
+      "flatAprEffectObserved": true,
+      "linkedSpellRefsRaw": [],
+      "linkedItemMutationOpcodesRaw": [],
+      "usabilityRestrictionOpcode319Observed": true,
+      "allActiveBuffsVerified": false,
+      "effectiveDamageVerified": false,
+      "effectiveAlternateAprVerified": false,
+      "safeToAutoSwitch": false
+    },
+    {
+      "resource": "STAF01",
+      "origin": "CURRENT_GAME_OVERRIDE",
+      "abilityCount": 1,
+      "baseDamageMeanBeforeEffects": 3.5,
+      "rangeRaw": 2,
+      "speedRaw": 4,
+      "launcherRequiredRaw": 0,
+      "aprEffectOverridesRaw": [],
+      "flatAprEffectObserved": false,
+      "linkedSpellRefsRaw": [],
+      "linkedItemMutationOpcodesRaw": [],
+      "usabilityRestrictionOpcode319Observed": false,
+      "allActiveBuffsVerified": false,
+      "effectiveDamageVerified": false,
+      "effectiveAlternateAprVerified": false,
+      "safeToAutoSwitch": false
+    },
+    {
+      "resource": "SW1H04",
+      "origin": "CURRENT_GAME_OVERRIDE",
+      "abilityCount": 1,
+      "baseDamageMeanBeforeEffects": 4.5,
+      "rangeRaw": 1,
+      "speedRaw": 5,
+      "launcherRequiredRaw": 0,
+      "aprEffectOverridesRaw": [],
+      "flatAprEffectObserved": false,
+      "linkedSpellRefsRaw": [
+        "SW1H04"
+      ],
+      "linkedItemMutationOpcodesRaw": [
+        112,
+        122
+      ],
+      "usabilityRestrictionOpcode319Observed": false,
+      "allActiveBuffsVerified": false,
+      "effectiveDamageVerified": false,
+      "effectiveAlternateAprVerified": false,
+      "safeToAutoSwitch": false
+    }
+  ],
+  "criticalFindings": [
+    "BOW05_EQUIPPED_OPCODE_1_TYPE_1_FLAT_APR",
+    "SW1H04_ABILITY_OPCODE_146_LINKS_SPELL_WITH_112_122",
+    "OPCODE_319_ITEM_USABILITY_CONDITION_NOT_PROVEN"
+  ],
+  "remainingBlocks": [
+    "ALTERNATE_EFFECTIVE_APR",
+    "ACTIVE_EFFECTS_AND_TARGET",
+    "AMMO_LAUNCHER_VERIFIED",
+    "EPS_ORIGIN_AND_ACTION_QUEUE",
+    "SAFE_NONINTERRUPT_BOUNDARY"
+  ],
+  "nativeItemValuesMayBeUsedAs": "STATIC_RAW_INPUT_ONLY",
+  "mayCompareEffectiveDps": false,
+  "mayScheduleWeaponSwitch": false,
+  "installedGameModified": false,
+  "ordersSent": 0,
+  "dispatchAuthorized": false,
+  "sourceReportSha256": "166a0a970f3192622bc8d5b4fbad16ecdd0727e85f2b35228c959c89fbd56e41"
+}

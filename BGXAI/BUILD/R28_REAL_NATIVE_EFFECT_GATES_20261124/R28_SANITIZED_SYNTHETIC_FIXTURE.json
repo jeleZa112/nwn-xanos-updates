@@ -1,0 +1,373 @@
+{
+  "schema": "BGXAI_R28_NATIVE_FROM_R27_RO_V1",
+  "status": "R28_NATIVE_ITEMS_RAW_READ_AWAITING_REVIEW",
+  "fixtureSynthetic": true,
+  "captureSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "liveR27Evidence": {
+    "sourceSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "r27SessionMarkers": 1,
+    "r27ConfirmedCallbacks": 24,
+    "observedRawItemResrefs": [
+      "AROW01",
+      "BOW05",
+      "STAF01",
+      "SW1H04"
+    ],
+    "samplesSelectedOnly": [
+      {
+        "sequence": 1,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 2,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 3,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 4,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 5,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 6,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 7,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 8,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 9,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 10,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 11,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 12,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 13,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 14,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 15,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 16,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 17,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 18,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 19,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 20,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 21,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 22,
+        "selectedSlotRaw": 12,
+        "selectedAprKeyRaw": 2
+      },
+      {
+        "sequence": 23,
+        "selectedSlotRaw": 35,
+        "selectedAprKeyRaw": 7
+      },
+      {
+        "sequence": 24,
+        "selectedSlotRaw": 35,
+        "selectedAprKeyRaw": 7
+      }
+    ],
+    "gameModified": false,
+    "effectiveAlternateAPRVerified": false,
+    "manualAndEPSQueueVerified": false,
+    "weaponSwitchAuthorized": false,
+    "dispatchAuthorized": false
+  },
+  "nativeAudit": {
+    "sourceKind": "CURRENT_GAME",
+    "status": "ITM_NATIVE_ALL_ITEMS_RAW_READ",
+    "missingItemsOrLinkedSpells": [],
+    "items": {
+      "AROW01": {
+        "resource": "AROW01",
+        "provenance": {
+          "origin": "CURRENT_GAME_BIFF"
+        },
+        "item": {
+          "rawOnly": true,
+          "characterCanEquipVerified": false,
+          "engineEffectsAppliedVerified": false,
+          "abilities": [
+            {
+              "baseDamageMeanBeforeEffects": 3.5,
+              "rangeRaw": 100,
+              "speedRaw": 0,
+              "launcherRequiredRaw": 1,
+              "effects": []
+            }
+          ],
+          "equippedEffects": [
+            {
+              "opcodeRaw": 319,
+              "parameter1Raw": 11,
+              "parameter2Raw": 5,
+              "timingRaw": 2
+            }
+          ]
+        }
+      },
+      "BOW05": {
+        "resource": "BOW05",
+        "provenance": {
+          "origin": "CURRENT_GAME_BIFF"
+        },
+        "item": {
+          "rawOnly": true,
+          "characterCanEquipVerified": false,
+          "engineEffectsAppliedVerified": false,
+          "abilities": [
+            {
+              "baseDamageMeanBeforeEffects": 0.0,
+              "rangeRaw": 75,
+              "speedRaw": 6,
+              "launcherRequiredRaw": 0,
+              "effects": []
+            }
+          ],
+          "equippedEffects": [
+            {
+              "opcodeRaw": 319,
+              "parameter1Raw": 11,
+              "parameter2Raw": 5,
+              "timingRaw": 2
+            },
+            {
+              "opcodeRaw": 7,
+              "parameter1Raw": 237,
+              "parameter2Raw": 21,
+              "timingRaw": 2
+            },
+            {
+              "opcodeRaw": 7,
+              "parameter1Raw": 95,
+              "parameter2Raw": 20,
+              "timingRaw": 2
+            },
+            {
+              "opcodeRaw": 7,
+              "parameter1Raw": 13,
+              "parameter2Raw": 16,
+              "timingRaw": 2
+            },
+            {
+              "opcodeRaw": 1,
+              "parameter1Raw": 2,
+              "parameter2Raw": 1,
+              "timingRaw": 2
+            }
+          ]
+        }
+      },
+      "STAF01": {
+        "resource": "STAF01",
+        "provenance": {
+          "origin": "CURRENT_GAME_OVERRIDE"
+        },
+        "item": {
+          "rawOnly": true,
+          "characterCanEquipVerified": false,
+          "engineEffectsAppliedVerified": false,
+          "abilities": [
+            {
+              "baseDamageMeanBeforeEffects": 3.5,
+              "rangeRaw": 2,
+              "speedRaw": 4,
+              "launcherRequiredRaw": 0,
+              "effects": []
+            }
+          ],
+          "equippedEffects": [
+            {
+              "opcodeRaw": 7,
+              "parameter1Raw": 24,
+              "parameter2Raw": 20,
+              "timingRaw": 2
+            },
+            {
+              "opcodeRaw": 7,
+              "parameter1Raw": 24,
+              "parameter2Raw": 21,
+              "timingRaw": 2
+            },
+            {
+              "opcodeRaw": 7,
+              "parameter1Raw": 115,
+              "parameter2Raw": 17,
+              "timingRaw": 2
+            },
+            {
+              "opcodeRaw": 7,
+              "parameter1Raw": 24,
+              "parameter2Raw": 18,
+              "timingRaw": 2
+            },
+            {
+              "opcodeRaw": 7,
+              "parameter1Raw": 24,
+              "parameter2Raw": 16,
+              "timingRaw": 2
+            }
+          ]
+        }
+      },
+      "SW1H04": {
+        "resource": "SW1H04",
+        "provenance": {
+          "origin": "CURRENT_GAME_OVERRIDE"
+        },
+        "item": {
+          "rawOnly": true,
+          "characterCanEquipVerified": false,
+          "engineEffectsAppliedVerified": false,
+          "abilities": [
+            {
+              "baseDamageMeanBeforeEffects": 4.5,
+              "rangeRaw": 1,
+              "speedRaw": 5,
+              "launcherRequiredRaw": 0,
+              "effects": [
+                {
+                  "opcodeRaw": 146,
+                  "resourceRaw": "SW1H04"
+                }
+              ]
+            }
+          ],
+          "equippedEffects": [
+            {
+              "opcodeRaw": 7,
+              "parameter1Raw": 22,
+              "parameter2Raw": 20,
+              "timingRaw": 2
+            },
+            {
+              "opcodeRaw": 7,
+              "parameter1Raw": 248,
+              "parameter2Raw": 21,
+              "timingRaw": 2
+            },
+            {
+              "opcodeRaw": 7,
+              "parameter1Raw": 99,
+              "parameter2Raw": 16,
+              "timingRaw": 2
+            }
+          ]
+        }
+      }
+    },
+    "linkedSpells": {
+      "SW1H04": {
+        "effectCompletionVerified": false,
+        "spell": {
+          "abilities": [
+            {
+              "effects": [
+                {
+                  "opcodeRaw": 318
+                },
+                {
+                  "opcodeRaw": 112
+                },
+                {
+                  "opcodeRaw": 122
+                },
+                {
+                  "opcodeRaw": 139
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "aprtables": {
+      "WSPATCK": {
+        "table": {
+          "semanticsAndCharacterRowVerified": false
+        }
+      },
+      "CLSWPBON": {
+        "table": {
+          "semanticsAndCharacterRowVerified": false
+        }
+      }
+    }
+  },
+  "gameModified": false,
+  "ordersSent": 0,
+  "gameplayActionOriginVerified": false,
+  "manualAndEPSQueueVerified": false,
+  "effectiveAlternateAPRVerified": false,
+  "launcherAmmoPairVerified": false,
+  "weaponSwitchAuthorized": false,
+  "dispatchAuthorized": false
+}

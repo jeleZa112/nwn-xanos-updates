@@ -1,0 +1,33 @@
+name: BGXAI R28 real item effect gates SOURCE ONLY
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R28_REAL_NATIVE_EFFECT_GATES_20261124/**'
+      - '.github/workflows/bgxai-r28-real-item-effect-gates-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  effect-gates-source-only:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Disable accidental checkout CRLF
+        shell: bash
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Source-only classifier tests (synthetic fixture, no private data)
+        working-directory: BGXAI/BUILD/R28_REAL_NATIVE_EFFECT_GATES_20261124
+        run: python -m unittest discover -p 'test_effect_gates_ro.py' -v
+      - name: Verify negative permission and effects invariants
+        working-directory: BGXAI/BUILD/R28_REAL_NATIVE_EFFECT_GATES_20261124
+        run: |
+          python -c "import json; from pathlib import Path; from BGXAI_R28_EFFECT_GATES_RO import evaluate; d=json.loads(Path('R28_SANITIZED_SYNTHETIC_FIXTURE.json').read_text());r=evaluate(d);assert r['r27Callbacks']==24;assert not r['mayScheduleWeaponSwitch'];assert not r['mayCompareEffectiveDps'];assert not r['dispatchAuthorized'];assert next(x for x in r['observations'] if x['resource']=='SW1H04')['linkedItemMutationOpcodesRaw']==[112,122];print('PASS: no dispatch, no bogus APR, no hidden linked-spell mutations')"
