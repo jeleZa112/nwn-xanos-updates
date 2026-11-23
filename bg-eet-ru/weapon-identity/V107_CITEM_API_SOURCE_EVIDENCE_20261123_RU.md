@@ -29,3 +29,12 @@
 4. Только фактический LIVE RESREF может открыть следующую стадию; ammo, промахи и связь с UI-журналом проверяются отдельно. V106 захват повторять не требуется.
 
 Статусы: API SOURCE EXAMPLES = FOUND; USER BUILD BINDING / ABI = UNKNOWN; CALLBACK POINTER LIFETIME = UNKNOWN; V107 = SOURCE ONLY; V106 = LIVE TRANSPORT PASS ONLY; GAME WRITES = 0 (в рамках этого аудита).
+
+
+## Продолжение исходного аудита — прямое использование именно того же callback
+
+- В [Gibberlings3 Tweaks Anthology / overwhelming_devastating_critical.lua](https://github.com/Gibberlings3/Tweaks-Anthology/blob/7649ced6cd25865874d787ec1a9abbc67b068729/cdtweaks/luke/lua/class/overwhelming_devastating_critical.lua) найден реальный listener `EEex_Sprite_AddAlterBaseWeaponDamageListener(function(context)` с непосредственным `context.weapon.cResRef:get()` внутри callback, а также полями `context.launcher`, `context.ability`, `context.attackRoll`. Это stronger direct-callsite evidence, а не проверенный runtime пользовательской сборки.
+- В [upstream EEex_Sprite.lua](https://github.com/Bubb13/EEex/blob/a6d21abe44e20509f5d0259ccc6c7e7f9d12b285/EEex/copy/EEex_scripts/EEex_Sprite.lua) обработчик соответствует `CGameSprite::Override_Damage`; [EEex_Sprite_Patch.lua](https://github.com/Bubb13/EEex/blob/a6d21abe44e20509f5d0259ccc6c7e7f9d12b285/EEex/copy/EEex_scripts/EEex_Sprite_Patch.lua) подключает вызов из `CGameSprite::Swing`. Сигнал урона не подтверждает охват промахов.
+- Подготовлен без регистрации/установки `BG_EET_RU_V107_GUARDED_CALLBACK_SOURCE_ONLY.lua` с `enabled=false`, `native_abi_verified=false`, `explicit_native_read_consent=false` и cap=16 событий. Готов только к следующей оценке риска; **ни один флаг не выставляется автоматически**.
+- Локальный Lua 5.4 simulated test PASS на отключение нативного чтения, не изменение контекста, bounded records и статус UNKNOWN для ammo/hit/miss/log mapping. SHA256 локального Lua файла: `8557c676b0622a8dc0f746041405d3d74aff271d04d09fef45500e938fb1088f`; опубликованный Git blob `200e220ef5f31ef8a68ffcbf30a08fcc445733cd` равен локальному `git hash-object`, поэтому опубликованы в точности протестированные байты.
+- **HOLD:** факт API-примера недостаточен для доказательства crash-safety конкретной Windows/EEex установки. Изменений `release.json`, `BG_EET_RU_UPDATE.cmd` и игры не было. Пользователю не требуется запускать отдельные тесты V92–V106.
