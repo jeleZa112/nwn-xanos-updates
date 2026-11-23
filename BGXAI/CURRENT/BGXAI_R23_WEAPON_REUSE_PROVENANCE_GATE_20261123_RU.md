@@ -37,3 +37,14 @@
 Рассмотреть неинвазивный **read-only offline** способ получить точную пару weapon ability + launcher/ammo из native ITM без `item.pRes.pHeader` (и сопоставить с R3/R17), сохраняя явные `STATIC_CANDIDATE` vs `LIVE_VERIFIED`. Источник должен давать отдельный независимый сигнал, а не повторять отрицательный тест. Нельзя выдавать офлайн расчёт прогнозного APR за runtime alternate APR. Для любого нового игрового EEex hook/deploy требуется отдельное явное typed согласие после audit и backup. Без new engine evidence не разрешать переключение.
 
 Политика пользователя: автоматически продолжать полезные безопасные шаги после PASS **в этом текущем обращении**, не в фоне.
+
+## Автоматически выполненный второй безопасный этап после 15/15 PASS
+
+Без ожидания нового запроса проверены реальные существующие R3/R17 инструменты и их фактический сохранённый отчёт, **ещё 9/9 source+report assertions PASS** (не новый native тест):
+- `BGXAI_WEAPON_NATIVE_ITM_R3_RO.py`, blob `505111050fad4e5ab6560b55b82e1e436ff41d2a`, **уже** парсит ITM ability records, launcher-required field и эффекты;
+- `BGXAI_WEAPON_R3_STATIC_BRIDGE_RO.py`, blob `b6d8d009b9c0af216a378f1fd64c8f25fd4897c8`, **уже** выполняет статическую подборку по типам, возвращая `TYPE_MATCH_ONLY_NOT_ENGINE_VERIFIED`;
+- `BGXAI/BUILD/R17_ABILITY_AMMO_CONTRACT_RO_20261123/REAL_LOG_R17_ABILITY_AMMO_REPORT_RO.json`, blob `008ab6eafa81292214e298ef9dab59223f08579f`, уже содержит `BOW05` слот36 + `AROW01` слот12 как кандидатов с 3 окнами изменения количества стрел. `enginePairVerified=false`, `alternateSlotEffectiveAprVerified=false`, `currentResourceHashVerified=false`, `manualAndEpsQueueVerified=false`, `dispatchAuthorized=false`.
+
+**Второй результат PASS — НЕ создавать заново ITM-парсер, типовой matcher или ещё один estimator.** Найден уже работающий source-only путь для базовых данных предметов. Конкретный остающийся рубеж: достоверное актуальное engine событие/идентификация пары launcher/ammo и source provenance + эффектов; источники R3/R17 этого не предоставляют. `R23 SOURCE AUDIT=24/24 static assertions` (15+9), `NEW GAME CODE=NO`, `NEW GAME LIVE=NO`; 24 не означает игровые unit tests или боевую эффективность.
+
+**Автопродолжение работает в рамках данного обращения:** после первого PASS было начато исследование R3/R17, и найден существующий код. Следующий безопасный source-only шаг возможен только при новом отличительном источнике доказательств, иначе создание отчётов по кругу будет ложным прогрессом. Перед любым live native probe необходимы подтверждённая безопасность и отдельное typed пользовательское согласие; текущая игровая база не менялась.
