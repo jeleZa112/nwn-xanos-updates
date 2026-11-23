@@ -6,8 +6,8 @@ $GameRoot=(Resolve-Path -LiteralPath $GameRoot).Path
 $expectedRoot='C:\Games\BG_EET_FOXX_NEW'
 if($GameRoot.TrimEnd('\') -ine $expectedRoot) {Write-Host 'STOP: wrong game folder';exit 2}
 if(!(Test-Path -LiteralPath (Join-Path $GameRoot 'chitin.key') -PathType Leaf)) {Write-Host 'STOP: chitin.key missing';exit 2}
-$cacheDir=Join-Path $env:LOCALAPPDATA 'BGXAI_UPDATER'
-$pinnedFile=Join-Path $cacheDir 'head.txt'
+$zcd=Join-Path $env:LOCALAPPDATA 'BGXAI_UPDATER'
+$pinnedFile=Join-Path $zcd 'head.txt'
 if(!(Test-Path -LiteralPath $pinnedFile -PathType Leaf)){Write-Host 'STOP: pinned GitHub commit missing';exit 2}
 $commitId=[IO.File]::ReadAllText($pinnedFile).Trim()
 if($commitId -notmatch '^[a-fA-F0-9]{40}$'){Write-Host 'STOP: invalid pinned GitHub commit';exit 2}
@@ -211,6 +211,7 @@ $wr=@{id='WRO';version='0.3.77-WEAPON-NATIVE-READONLY';manifest=($rg.prefix+'BGX
 $wp=@{id='WP';version='0.3.82-R4-ALLPROF-BUFF-RO';manifest=($rg.prefix+'BGXWP_OBSERVER_MANIFEST_R1.json');prefix=$rg.prefix;localPath=Join-Path $GameRoot 'BGXAI_DEV\weapon_runtime_ro';names=@('BGXWP_OBSERVER_GUARDED.py','M_BGXWP.lua','BGXW2_OBSERVER_GUARDED.py','M_BGXW2.lua','BGXAI_WEAPON_NATIVE_ITM_R3_RO.py','M_BGXW4.lua')}
 $td13=@{id='TD13';version='0.3.85-R13-TARGET-MISSILE-RO';manifest=($rg.prefix+'BGXAI_R13_MANIFEST_V1.json');prefix=$rg.prefix;localPath=Join-Path $GameRoot 'BGXAI_DEV\weapon_target_r13';names=@('BGXAI_R13_GUARDED.py','M_BGXTDEF13.lua')}
 $td14=@{id='TD14';version='0.3.87-R13-CONSOLE-CAPTURE-RO';manifest=($rg.prefix+'BGXAI_R13_SHORTNAME_MANIFEST_V1.json');prefix=$rg.prefix;localPath=Join-Path $GameRoot 'BGXAI_DEV\weapon_target_r13_shortfix';names=@('BGXAI_R13_SHORTNAME_GUARDED.py','M_BGXD13.lua')}
+$td15=@{id='TD15';version='0.3.88-R13-HOLD-DIAG-RO';manifest=($rg.prefix+'BGXAI_R13_HOLD_DIAG_MANIFEST_V1.json');prefix=$rg.prefix;localPath=Join-Path $GameRoot 'BGXAI_DEV\weapon_target_r13_diag';names=@('BGXAI_R13_HOLD_DIAG_GUARDED.py','R15_M_BGXD13.lua')}
 $v2install=Join-Path $rg.localPath 'BGXRANGED_V2_GUARDED_INSTALL.py'
 $ff=Join-Path $rg.localPath 'BGX_FRIENDLY_RETALIATION_GUARDED.py'
 $rr=$rg.localPath
@@ -219,32 +220,32 @@ $fix=Join-Path $rr 'BGXFTRACE_V2_GUARDED.py'
 $cap=Join-Path $rr 'BGXFTRACE_CONSOLE_CAPTURE.py'
 $motion=Join-Path $rr 'BGXFTRACE_V3_GUARDED.py'
 $enemy=Join-Path $rr 'BGXFENEMY_WTASIGHT_GUARDED.py'
-function Get-PinnedBytes([string]$remotePath) {
-if($remotePath -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116|patchsets/priest_combat_eps_first_20261116|patchsets/priest_auto_attack_buffer_source_only_20261117|patchsets/priest_auto_priority_guard_source_20261117|patchsets/aoe_entangle_readonly_onefile_20261117|patchsets/ranged_fighter_guarded_20261119)/[A-Za-z0-9_./-]+$' -or $remotePath.Contains('..')) {
-throw ('Remote source path blocked: '+$remotePath)
+function Get-PinnedBytes([string]$zrp) {
+if($zrp -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116|patchsets/priest_combat_eps_first_20261116|patchsets/priest_auto_attack_buffer_source_only_20261117|patchsets/priest_auto_priority_guard_source_20261117|patchsets/aoe_entangle_readonly_onefile_20261117|patchsets/ranged_fighter_guarded_20261119)/[A-Za-z0-9_./-]+$' -or $zrp.Contains('..')) {
+throw ('Remote source path blocked: '+$zrp)
 }
 $urls=@(
-('https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/'+$commitId+'/'+$remotePath),
-('https://cdn.jsdelivr.net/gh/jeleZa112/nwn-xanos-updates@'+$commitId+'/'+$remotePath)
+('https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/'+$commitId+'/'+$zrp),
+('https://cdn.jsdelivr.net/gh/jeleZa112/nwn-xanos-updates@'+$commitId+'/'+$zrp)
 )
-[IO.Directory]::CreateDirectory($cacheDir) | Out-Null
-$temporaryFile=Join-Path $cacheDir ('pinned_'+[guid]::NewGuid().ToString('N')+'.tmp')
+[IO.Directory]::CreateDirectory($zcd) | Out-Null
+$ztf=Join-Path $zcd ('pinned_'+[guid]::NewGuid().ToString('N')+'.tmp')
 $failures=@()
 try {
 foreach($uri in $urls) {
 try {
-Invoke-WebRequest -Uri $uri -Headers @{'User-Agent'='BGXAI-Foxx-Onefile'} -TimeoutSec 60 -UseBasicParsing -OutFile $temporaryFile -ErrorAction Stop | Out-Null
-$rawBytes=[IO.File]::ReadAllBytes($temporaryFile)
-if($rawBytes.Length -lt 1 -or $rawBytes.Length -gt 500000) {throw ('Unexpected pinned source byte count: '+$remotePath)}
+Invoke-WebRequest -Uri $uri -Headers @{'User-Agent'='BGXAI-Foxx-Onefile'} -TimeoutSec 60 -UseBasicParsing -OutFile $ztf -ErrorAction Stop | Out-Null
+$rawBytes=[IO.File]::ReadAllBytes($ztf)
+if($rawBytes.Length -lt 1 -or $rawBytes.Length -gt 500000) {throw ('Unexpected pinned source byte count: '+$zrp)}
 return ,$rawBytes
 } catch {
 $failures+=($_.Exception.Message)
-if(Test-Path -LiteralPath $temporaryFile){Remove-Item -LiteralPath $temporaryFile -Force -ErrorAction SilentlyContinue}
+if(Test-Path -LiteralPath $ztf){Remove-Item -LiteralPath $ztf -Force -ErrorAction SilentlyContinue}
 }
 }
-throw ('Both raw source hosts failed for '+$remotePath+': '+($failures -join '; '))
+throw ('Both raw source hosts failed for '+$zrp+': '+($failures -join '; '))
 } finally {
-if(Test-Path -LiteralPath $temporaryFile){Remove-Item -LiteralPath $temporaryFile -Force -ErrorAction SilentlyContinue}
+if(Test-Path -LiteralPath $ztf){Remove-Item -LiteralPath $ztf -Force -ErrorAction SilentlyContinue}
 }
 }
 function HashBytes([byte[]]$payload) {
@@ -346,7 +347,7 @@ if((HashFile $dest) -cne $list[$name].sha){$isCurrent=$false}
 }
 if($isCurrent){Generate041Assets $spec;Write-Host ('BGXAI '+$spec.id+' verified; no changes.');return}
 $stamp=(Get-Date -Format 'yyyyMMdd_HHmmss_fff')
-$oldCopy=Join-Path $cacheDir ($spec.id+'_backup_'+$stamp)
+$oldCopy=Join-Path $zcd ($spec.id+'_backup_'+$stamp)
 foreach($name in $spec.names){
 $dest=Join-Path $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
 AssertNotReparse (Split-Path -Parent $dest)
@@ -403,8 +404,8 @@ if((HashFile $dest) -cne $files[$name].sha){throw ('BGXAI060 source SHA mismatch
 $token=if($mode -ceq 'install'){'INSTALL_BGXAI_060'}else{'ROLLBACK_BGXAI_060'}
 Write-Host '060 EXPERIMENTAL: WeiDU game edit.'
 Write-Host 'Close game/loader; SHA backup required.'
-$confirmation=Read-Host ('Type '+$token+' exactly to authorize or press ENTER to cancel')
-if($confirmation -cne $token){Write-Host '060 cancelled; no game change.';return}
+$zcf=Read-Host ('Type '+$token+' exactly to authorize or press ENTER to cancel')
+if($zcf -cne $token){Write-Host '060 cancelled; no game change.';return}
 & py -3 (Join-Path $b60.localPath 'BGXAI60_INSTALL.py') $mode '--yes' '--confirm' 'BGXAI_060_EXPERIMENTAL'
 if($LASTEXITCODE -ne 0){throw ('BGXAI060 '+$mode+' STOP code '+$LASTEXITCODE+'. No automatic retry. Save output for review.')}
 Write-Host ('BGXAI060 '+$mode+' completed; inspect WeiDU status and game behavior.')
@@ -462,8 +463,8 @@ if((HashFile $dest) -cne $list[$name].sha){throw ('BGXAI061 source SHA mismatch:
 $token=if($mode -ceq 'install'){'INSTALL_BGXAI_061'}else{'ROLLBACK_BGXAI_061'}
 Write-Host 'BGXAI061: guarded BCS+Lua via WeiDU.'
 Write-Host 'Close game/loader; SHA backup required.'
-$confirmation=Read-Host ('Type '+$token+' exactly to authorize or ENTER to cancel')
-if($confirmation -cne $token){Write-Host '061 cancelled.';return}
+$zcf=Read-Host ('Type '+$token+' exactly to authorize or ENTER to cancel')
+if($zcf -cne $token){Write-Host '061 cancelled.';return}
 & py -3 (Join-Path $x61.localPath 'BGXAI61_INSTALL.py') $mode '--yes' '--confirm' 'BGXAI_061_EXPERIMENTAL'
 if($LASTEXITCODE -ne 0){throw ('BGXAI 061 '+$mode+' STOP code '+$LASTEXITCODE+'. Do not retry blindly.')}
 Write-Host ('BGXAI 061 '+$mode+' completed, inspect status 68.')
@@ -504,8 +505,8 @@ if($LASTEXITCODE -ne 0){throw ('BGXAI064 pre-authorization CHECK FAILED '+$LASTE
 $token=if($mode -ceq 'install'){'INSTALL_BGXAI_064'}else{'ROLLBACK_BGXAI_064'}
 Write-Host '064: verified backup; Lua changes via WeiDU.'
 Write-Host 'Close game/loader; BCS and EPS unchanged.'
-$confirmation=Read-Host ('Type '+$token+' exactly to authorize or ENTER to cancel')
-if($confirmation -cne $token){Write-Host '064 cancelled; game unchanged.';return}
+$zcf=Read-Host ('Type '+$token+' exactly to authorize or ENTER to cancel')
+if($zcf -cne $token){Write-Host '064 cancelled; game unchanged.';return}
 & py -3 (Join-Path $x64.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') $mode '--yes' '--confirm' $token
 if($LASTEXITCODE -ne 0){throw ('BGXAI064 '+$mode+' STOP code '+$LASTEXITCODE+'; do NOT retry blindly')}
 Write-Host ('BGXAI064 '+$mode+' completed; check guarded read-only STATUS menu 75.')
@@ -549,8 +550,8 @@ Verify066SGuardedSource
 $token=if($mode -ceq 'install'){'INSTALL_BGXAI_066S'}else{'ROLLBACK_BGXAI_066S'}
 Write-Host '066S: pinned scripts, verified backup.'
 Write-Host 'Close game/loader. No auto-retry.'
-$confirmation=Read-Host ('Type '+$token+' exactly to authorize, or ENTER to cancel')
-if($confirmation -cne $token){Write-Host '066S cancelled.';return}
+$zcf=Read-Host ('Type '+$token+' exactly to authorize, or ENTER to cancel')
+if($zcf -cne $token){Write-Host '066S cancelled.';return}
 & py -3 (Join-Path $x6s.localPath 'BGXAI66S_INSTALL.py') $mode '--yes' '--confirm' $token
 if($LASTEXITCODE -ne 0){throw ('BGXAI066S '+$mode+' STOP '+$LASTEXITCODE+'. DO NOT AUTO-RETRY')}
 Write-Host 'BGXAI066S action completed. Verify via menu 85.'
@@ -586,8 +587,8 @@ Verify067GuardedSource
 $token=if($mode -ceq 'install'){'INSTALL_BGXAI_067'}else{'ROLLBACK_BGXAI_067'}
 Write-Host 'BGXAI067 guarded Lua/BCS; 066S baseline required.'
 Write-Host 'CLOSE BALDUR + INFINITYLOADER. No retry after a failure.'
-$confirmation=Read-Host ('Type '+$token+' exactly to authorize, or ENTER to cancel')
-if($confirmation -cne $token){Write-Host 'BGXAI067 CANCELLED. Game unchanged.';return}
+$zcf=Read-Host ('Type '+$token+' exactly to authorize, or ENTER to cancel')
+if($zcf -cne $token){Write-Host 'BGXAI067 CANCELLED. Game unchanged.';return}
 & py -3 (Join-Path $x67.localPath 'BGXAI67_INSTALL.py') $mode '--yes' '--confirm' $token
 if($LASTEXITCODE -ne 0){throw ('BGXAI067 '+$mode+' STOP '+$LASTEXITCODE+'. DO NOT AUTO-RETRY')}
 Write-Host 'BGXAI067 action completed. Read-only status via menu 90.'
@@ -615,16 +616,16 @@ function RunIdleGuardGuarded([string]$mode) {
 if($mode -cne 'install' -and $mode -cne 'rollback'){throw 'BGXAI IDLE guarded mode invalid'}
 SyncRelease $xidle
 VerifyIdleGuardSource
-$installer=Join-Path $xidle.localPath 'BGXAI_IDLE_GUARD_INSTALL_SOURCE_ONLY.py'
+$zin=Join-Path $xidle.localPath 'BGXAI_IDLE_GUARD_INSTALL_SOURCE_ONLY.py'
 $check=if($mode -ceq 'install'){'preflight'}else{'status'}
-& py -3 $installer $check '--game-root' $GameRoot
+& py -3 $zin $check '--game-root' $GameRoot
 if($LASTEXITCODE -ne 0){throw ('BGXAI IDLE pre-authorization STOP '+$LASTEXITCODE)}
 $token=if($mode -ceq 'install'){'INSTALL_BGXAI_IDLE_GUARD'}else{'ROLLBACK_BGXAI_IDLE_GUARD'}
 Write-Host 'IDLE guard changes Lua only via WeiDU.'
 Write-Host 'Close game/loader; backup+SHA required.'
 $approval=Read-Host ('Type '+$token+' exactly to authorize, or press ENTER to cancel')
 if($approval -cne $token){Write-Host 'BGXAI IDLE cancelled.';return}
-& py -3 $installer $mode '--yes' '--confirm' $token '--game-root' $GameRoot
+& py -3 $zin $mode '--yes' '--confirm' $token '--game-root' $GameRoot
 if($LASTEXITCODE -ne 0){throw ('BGXAI IDLE '+$mode+' STOP '+$LASTEXITCODE+'. NO AUTOMATIC RETRY')}
 Write-Host ('BGXAI IDLE '+$mode+' completed. Use menu 95 for status.')
 }
@@ -664,7 +665,7 @@ $file=Join-Path $spec.localPath $name
 AssertNotReparse $file
 if((HashFile $file) -cne $expected[$name].sha){throw ('BGX source SHA invalid: '+$name)}
 }
-$installer=Join-Path $spec.localPath $spec.installer
+$zin=Join-Path $spec.localPath $spec.installer
 $last=BGXOneFileLastWeiDU
 $rx=if($spec.id -ceq 'BGXPR'){'BGXPRIEST[/\\]SETUP-BGXPRIEST[.]TP2~'}elseif($spec.id -ceq 'BGXP2'){'BGXP2[/\\]SETUP-BGXP2[.]TP2~'}elseif($spec.id -ceq 'BGXP3'){'BGXP3[/\\]SETUP-BGXP3[.]TP2~'}elseif($spec.id -ceq 'BGXP5'){'BGXP5[/\\]SETUP-BGXP5[.]TP2~'}else{'BGXTEAM[/\\]SETUP-BGXTEAM[.]TP2~'}
 $installed=($last -match $rx)
@@ -685,29 +686,29 @@ if($mode -ceq 'status'){Write-Host 'BGXTEAM under BGXPR; menu 97.';return}
 throw 'BGXPR is last in WeiDU. Use menu 100 rollback first to change BGXTEAM.'
 }
 if($mode -ceq 'status' -or ($installed -and ($mode -ceq 'install' -or $mode -ceq 'preflight'))){
-& py -3 $installer status '--game-root' $GameRoot
+& py -3 $zin status '--game-root' $GameRoot
 if($LASTEXITCODE -ne 0){throw ('BGX status STOP '+$LASTEXITCODE)}
 if($installed -and $mode -cne 'status'){Write-Host 'Already installed; no reinstall.'}
 return
 }
 if($mode -ceq 'rollback' -and !$installed){throw ('BGX '+$spec.id+' not last in WeiDU; rollback blocked')}
 $pre=if($mode -ceq 'rollback'){'status'}else{'preflight'}
-& py -3 $installer $pre '--game-root' $GameRoot
+& py -3 $zin $pre '--game-root' $GameRoot
 if($LASTEXITCODE -ne 0){throw ('BGX '+$spec.id+' '+$pre+' STOP '+$LASTEXITCODE)}
 if($mode -ceq 'preflight'){Write-Host 'Preflight PASS; no game change.';return}
 $token=if($mode -ceq 'install'){$yesInstall}else{$yesRollback}
 Write-Host 'Close game/loader/WeiDU. Backup required.'
 $reply=Read-Host ('Type '+$token+' exactly to authorize, or ENTER to cancel')
 if($reply -cne $token){Write-Host 'Cancelled; game unchanged.';return}
-& py -3 $installer $mode '--yes' '--confirm' $token '--game-root' $GameRoot
+& py -3 $zin $mode '--yes' '--confirm' $token '--game-root' $GameRoot
 if($LASTEXITCODE -ne 0){throw ('BGX '+$spec.id+' '+$mode+' STOP '+$LASTEXITCODE+'. NO AUTOMATIC RETRY')}
 Write-Host ('BGX '+$spec.id+' '+$mode+' finished, verified.')
 }
 function Test066GuardedReadOnly {
 $parsedTokens=$null
-$parseErrors=$null
-[System.Management.Automation.Language.Parser]::ParseFile($PSCommandPath,[ref]$parsedTokens,[ref]$parseErrors) | Out-Null
-if($parseErrors.Count -gt 0){throw ('BGXAI066 parser STOP: '+(($parseErrors | ForEach-Object {$_.Message}) -join '; '))}
+$zpe=$null
+[System.Management.Automation.Language.Parser]::ParseFile($PSCommandPath,[ref]$parsedTokens,[ref]$zpe) | Out-Null
+if($zpe.Count -gt 0){throw ('BGXAI066 parser STOP: '+(($zpe | ForEach-Object {$_.Message}) -join '; '))}
 SyncRelease $x66
 Verify066Source
 Write-Host '066 preflight READ ONLY.'
@@ -734,17 +735,17 @@ if($LASTEXITCODE -ne 0){throw ('BGXAI066 pre-authorization STOP '+$LASTEXITCODE)
 $token=if($mode -ceq 'install'){'INSTALL_BGXAI_066'}else{'ROLLBACK_BGXAI_066'}
 Write-Host '066 updates M_BX43 with verified backup.'
 Write-Host 'Close game/loader/WeiDU; exact baseline needed.'
-$confirmation=Read-Host ('Type '+$token+' exactly to authorize or ENTER to cancel')
-if($confirmation -cne $token){Write-Host '066 cancelled.';return}
+$zcf=Read-Host ('Type '+$token+' exactly to authorize or ENTER to cancel')
+if($zcf -cne $token){Write-Host '066 cancelled.';return}
 & py -3 (Join-Path $x66.localPath 'BGXAI66_INSTALL.py') $mode '--yes' '--confirm' $token
 if($LASTEXITCODE -ne 0){throw ('BGXAI066 '+$mode+' STOP '+$LASTEXITCODE+'; do NOT retry automatically')}
 Write-Host 'BGXAI066 action complete. Check status with option 80.'
 }
 function Test064ReadOnly {
 $parsedTokens=$null
-$parseErrors=$null
-[System.Management.Automation.Language.Parser]::ParseFile($PSCommandPath,[ref]$parsedTokens,[ref]$parseErrors) | Out-Null
-if($parseErrors.Count -gt 0){throw ('BGXAI064 PowerShell parser STOP: '+(($parseErrors | ForEach-Object {$_.Message}) -join '; '))}
+$zpe=$null
+[System.Management.Automation.Language.Parser]::ParseFile($PSCommandPath,[ref]$parsedTokens,[ref]$zpe) | Out-Null
+if($zpe.Count -gt 0){throw ('BGXAI064 PowerShell parser STOP: '+(($zpe | ForEach-Object {$_.Message}) -join '; '))}
 $spec=$release064
 $list=VerifiedManifest $spec
 foreach($name in $spec.names){
@@ -1183,6 +1184,7 @@ Write-Host @'
 160 - Weapon EEex R11 static compat READ ONLY
 161 - Target defense R13 (READ ONLY preflight / guarded pilot)
 162 - Fix R13 Lua 8-char name (READ ONLY default / guarded)
+163 - R13.2 HOLD diagnostics (READ ONLY default / guarded)
  0 - Exit [default]
 '@
 $choice=Read-Host 'Choice [0]'
@@ -1349,9 +1351,10 @@ switch($choice){
 '157' {SyncRelease $rg;& py -3 (Join-Path $rr 'BGXRANGED_V6_GUARDED_INSTALL.py') --game $GameRoot;if($LASTEXITCODE){throw '157 STOP'};break}
 '158' {SyncRelease $wr;& py -3 (Join-Path $wr.localPath 'BGXAI_WEAPON_GAME_PREFLIGHT_RO.py') --game $GameRoot;if($LASTEXITCODE){throw '158 STOP'};break}
 '159' {SyncRelease $wp;& py -3 (Join-Path $wp.localPath 'BGXWP_OBSERVER_GUARDED.py') --game $GameRoot;if($LASTEXITCODE){throw '159 STOP'};break}
-'160' {$r='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_EEEX_R11_STATIC_COMPAT_RO_V3.py';$b=Get-PinnedBytes $r;if($b.Length -ne 8301 -or (HashBytes $b) -cne '4bf4e2a981a6602da02ba53dc3e5601fd69bb2f408c64d880c208f1a19bf83f4'){throw '160 SHA STOP'};$f=Join-Path $cacheDir ('eeex_ro_'+[guid]::NewGuid().ToString('N')+'.py');AssertNotReparse $cacheDir;try{$h=[IO.File]::Open($f,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);try{$h.Write($b,0,$b.Length)}finally{$h.Dispose()};if((HashFile $f) -cne '4bf4e2a981a6602da02ba53dc3e5601fd69bb2f408c64d880c208f1a19bf83f4'){throw '160 CACHE STOP'};& py -3 $f --game $GameRoot;if($LASTEXITCODE){throw '160 STOP'}}finally{if(Test-Path -LiteralPath $f){Remove-Item -LiteralPath $f -Force}};break}
+'160' {$r='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_EEEX_R11_STATIC_COMPAT_RO_V3.py';$b=Get-PinnedBytes $r;if($b.Length -ne 8301 -or (HashBytes $b) -cne '4bf4e2a981a6602da02ba53dc3e5601fd69bb2f408c64d880c208f1a19bf83f4'){throw '160 SHA STOP'};$f=Join-Path $zcd ('eeex_ro_'+[guid]::NewGuid().ToString('N')+'.py');AssertNotReparse $zcd;try{$h=[IO.File]::Open($f,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);try{$h.Write($b,0,$b.Length)}finally{$h.Dispose()};if((HashFile $f) -cne '4bf4e2a981a6602da02ba53dc3e5601fd69bb2f408c64d880c208f1a19bf83f4'){throw '160 CACHE STOP'};& py -3 $f --game $GameRoot;if($LASTEXITCODE){throw '160 STOP'}}finally{if(Test-Path -LiteralPath $f){Remove-Item -LiteralPath $f -Force}};break}
 '161' {SyncRelease $td13;& py -3 (Join-Path $td13.localPath 'BGXAI_R13_GUARDED.py') --game $GameRoot;if($LASTEXITCODE){throw '161 STOP'};break}
 '162' {SyncRelease $td14;& py -3 (Join-Path $td14.localPath 'BGXAI_R13_SHORTNAME_GUARDED.py') --game $GameRoot;if($LASTEXITCODE){throw '162 STOP'};break}
+'163' {SyncRelease $td15;& py -3 (Join-Path $td15.localPath 'BGXAI_R13_HOLD_DIAG_GUARDED.py') --game $GameRoot;if($LASTEXITCODE){throw '163 STOP'};break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0
