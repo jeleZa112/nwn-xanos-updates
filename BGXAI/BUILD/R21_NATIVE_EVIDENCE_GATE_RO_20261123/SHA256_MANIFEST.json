@@ -1,0 +1,18 @@
+{
+  "schema": "BGXAI_R21_SHA256_SOURCE_ONLY_V1",
+  "sourceOnly": true,
+  "gameModified": false,
+  "installAuthorized": false,
+  "weaponSwitchAuthorized": false,
+  "dispatchAuthorized": false,
+  "files": {
+    "BGXAI_R21_EVIDENCE_GATE_RO.py": {
+      "bytes": 6695,
+      "sha256": "f680c848093756c977d6df8b69881e115919353c1816a094743e239bed97421f"
+    },
+    "test_r21_evidence_gate_ro.py": {
+      "bytes": 7536,
+      "sha256": "053e570abb36501bcaac42fa9ac607b8255371931e21eef8596c0d00c6ca2c07"
+    }
+  }
+}
