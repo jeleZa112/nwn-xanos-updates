@@ -92,3 +92,78 @@ jobs:
           finally:l.lua_close(state)
           print('V108_SOURCE_AND_CANDIDATE_PASS: pinned V106 baseline, release SHA, bounded non-mutating observer, single listener, exact rollback SHA, NO ACTUAL WINDOWS GAME / native CItem')
           PY
+      - name: Synthetic V108 one-module install/rollback and recovery state
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib, json, tempfile, zipfile
+          from pathlib import Path
+          p=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
+          ns={'__name__':'v108_transaction_test','__file__':str(p)}
+          exec(compile(p.read_text('utf8').split('\n',1)[1],str(p),'exec'),ns)
+          with tempfile.TemporaryDirectory(prefix='BG_EET_RU_V108_SYNTH_') as td:
+              root=Path(td)
+              game=root/'game'
+              scripts=game/'EEex_scripts'
+              scripts.mkdir(parents=True)
+              work=root/'work'
+              work.mkdir()
+              ns['WORKDIR']=work
+              ns['V108_STATE']=work/'v108_state.json'
+              target=scripts/'BG_EET_RU_WeaponObserver.lua'
+              # This synthetic baseline is deliberately not pinned to Windows DLLs.
+              original=b'ORIGINAL V106 MODULE MOCK'
+              candidate=b'ORIGINAL V106 MODULE MOCK\n-- V108 INSERTED'
+              target.write_bytes(original)
+              backup_main=b'UNMODIFIED MAIN'
+              main=scripts/'EEex_Main.lua'
+              main.write_bytes(backup_main)
+              report=work/'SEND_TO_CHATGPT_BG_EET_RU.zip'
+              with zipfile.ZipFile(report,'w') as z:
+                  z.writestr('52_V106_WEAPON_CONSOLE_BRIDGE.json',b'{"status":"V106_HISTORICAL_PRESERVED"}')
+              digest=ns['digest']
+              def mock_preflight(_game,installed=False):
+                  if installed:
+                      return {'target':target,'actual_sha256':digest(target.read_bytes()),
+                              'expected_original_sha256':digest(original)}
+                  if digest(target.read_bytes())!=digest(original):
+                      raise RuntimeError('MOCK_BASELINE_CHANGED')
+                  return {'target':target,'original':original,'candidate':candidate,
+                          'original_sha256':digest(original),'candidate_sha256':digest(candidate)}
+              ns['v108_preflight']=mock_preflight
+              ns['v71_processes_closed']=lambda:(True,'CLOSED')
+              ns['v85_read_input_approval']=lambda token: token in (
+                   ns['V108_APPROVE_INSTALL'],ns['V108_APPROVE_ROLLBACK'])
+              assert ns['v108_run'](game,report,'status')==0
+              assert target.read_bytes()==original
+              assert ns['v108_run'](game,report,'install')==0
+              assert target.read_bytes()==candidate
+              assert main.read_bytes()==backup_main
+              assert ns['v108_get_state']()['phase']=='INSTALLED'
+              assert Path(ns['v108_get_state']()['backup_module']).read_bytes()==original
+              with zipfile.ZipFile(report) as z:
+                  assert z.testzip() is None
+                  assert z.read('52_V106_WEAPON_CONSOLE_BRIDGE.json')==b'{"status":"V106_HISTORICAL_PRESERVED"}'
+                  assert z.namelist().count(ns['V108_ENTRY'])==1
+              assert ns['v108_run'](game,report,'status')==0
+              assert ns['v108_run'](game,report,'rollback')==0
+              assert target.read_bytes()==original
+              assert ns['v108_get_state']()['phase']=='ROLLED_BACK'
+              assert main.read_bytes()==backup_main
+              # Crash simulation: candidate landed, but state remained PREPARED.
+              assert ns['v108_run'](game,report,'install')==0
+              installed=ns['v108_get_state']()
+              ns['v108_put_state'](game,{**installed,'phase':'PREPARED'})
+              assert ns['v108_run'](game,report,'status')==0
+              assert target.read_bytes()==candidate
+              assert ns['v108_run'](game,report,'rollback')==0
+              assert target.read_bytes()==original
+              assert ns['v108_get_state']()['phase']=='ROLLED_BACK'
+              # Tamper must NOT trigger blind overwrite.
+              assert ns['v108_run'](game,report,'install')==0
+              target.write_bytes(b'UNRECOGNIZED DRIFT')
+              assert ns['v108_run'](game,report,'rollback')==2
+              assert target.read_bytes()==b'UNRECOGNIZED DRIFT'
+              assert main.read_bytes()==backup_main
+          print('V108_SYNTHETIC_TRANSACTION_PASS: status, exact consent, backup, install, rollback, PREPARED recovery, tamper safe stop, only existing module changed; no real game')
+          PY
