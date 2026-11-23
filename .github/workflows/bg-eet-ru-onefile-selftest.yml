@@ -19,29 +19,27 @@ jobs:
           python-version: '3.11'
       - name: Install native Lua 5.4 compiler runtime
         run: sudo apt-get update -qq && sudo apt-get install -y -qq liblua5.4-0
-      - name: V112 legacy download SHA and old-function AST regression
+      - name: V116 legacy client limit, release SHA and old function regression
         run: |
           python - <<'PY'
           import ast,hashlib,json,subprocess
           from pathlib import Path
-          file=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
-          src=file.read_bytes()
-          old=subprocess.check_output(['git','show','HEAD^:bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'])
-          assert 10000<len(src)<=750000,('LEGACY_DOWNLOAD_LIMIT',len(src))
+          p=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
+          now=p.read_bytes()
+          prior=subprocess.check_output(['git','show','HEAD^:bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'])
+          assert 10000<len(now)<=750000,('LEGACY_CAP',len(now))
           m=json.loads(Path('bg-eet-ru/onefile/release.json').read_text('utf8'))
-          assert m['version']==112 and m['game_writes_allowed'] is False
-          assert hashlib.sha256(src).hexdigest()==m['sha256']
-          def funcs(b):
-              ast_body=ast.parse(b.decode('utf8').split('\n',1)[1])
-              return {x.name:ast.dump(x,include_attributes=False) for x in ast_body.body
-                      if isinstance(x,ast.FunctionDef) and x.name not in ('main','selftest')}
-          current,previous=funcs(src),funcs(old)
-          for name,body in previous.items():
-              assert current.get(name)==body,('OLD_FUNCTION_MUTATED',name)
-          assert set(current)-set(previous)=={'v112_probe_source',
-              'v112_read_zip_history','v112_build_report','v112_zip_write',
-              'v112_run','v112_selftest'},set(current)-set(previous)
-          print('V112_SOURCE_AND_SIZE_PASS',len(src))
+          assert m['version']==116 and m['game_writes_allowed'] is False
+          assert hashlib.sha256(now).hexdigest()==m['sha256']
+          def functions(s):
+              tree=ast.parse(s.decode('utf8').split('\n',1)[1])
+              return {n.name:ast.dump(n,include_attributes=False) for n in tree.body
+                      if isinstance(n,ast.FunctionDef) and n.name not in ('main','selftest')}
+          before,after=functions(prior),functions(now)
+          for name,ast_repr in before.items():
+              assert after.get(name)==ast_repr,('OLD_FUNCTION_MUTATION',name)
+          assert set(after)-set(before)=={'v116_pe_to_raw','v116_report','v116_zip','v116_run','v116_selftest'}
+          print('V116_SHA_SIZE_AND_PREVIOUS_FUNCTION_PASS',len(now))
           PY
       - name: Run all existing isolated updater selftests
         run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
