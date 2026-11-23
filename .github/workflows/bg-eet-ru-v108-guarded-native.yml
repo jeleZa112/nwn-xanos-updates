@@ -1,0 +1,89 @@
+name: BG EET RU V108 guarded native RESREF source and compatibility
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - 'bg-eet-ru/onefile/release.json'
+      - '.github/workflows/bg-eet-ru-v108-guarded-native.yml'
+  workflow_dispatch:
+jobs:
+  v108-source-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare Lua 5.4 native runtime
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq liblua5.4-0
+      - name: SHA-pinned V108 source and current release; exact V106 baseline, callback and synthetic rollback
+        shell: bash
+        run: |
+          python - <<'PY'
+          import ctypes, hashlib, json
+          from pathlib import Path
+          p=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
+          j=json.loads(Path('bg-eet-ru/onefile/release.json').read_text('utf8'))
+          assert j['version']==108 and j['game_writes_allowed'] is False
+          assert hashlib.sha256(p.read_bytes()).hexdigest()==j['sha256'],'RELEASE_SHA_PIN_FAIL'
+          ns={'__name__':'native_v108_test','__file__':str(p)}
+          exec(compile(p.read_text('utf8').split('\n',1)[1],str(p),'exec'),ns)
+          assert ns['SELF_VERSION']==108
+          assert ns['v108_selftest']()
+          exact_v106=ns['v106_make_candidate'](ns['v105_source_module']())
+          expected=ns['V108_BASIS_SHA']['EEex_scripts/BG_EET_RU_WeaponObserver.lua']
+          assert ns['digest'](exact_v106)==expected, 'LIVE_BASELINE_SHA_MISMATCH'
+          candidate=ns['v108_candidate'](exact_v106)
+          assert candidate.startswith(exact_v106)
+          assert candidate.count(b'EEex_Sprite_AddAlterBaseWeaponDamageListener') == exact_v106.count(b'EEex_Sprite_AddAlterBaseWeaponDamageListener')
+          assert b'    native_read_authorized = true,' in candidate
+          assert b'    native_read_authorized = false,' in ns['v108_pilot_source']()
+          assert ns['V107_EXPECTED_FILES']['EEex_scripts/EEex_Sprite_Patch.lua'].endswith('13b7f')
+          try:ns['v108_candidate'](b'WRONG SOURCE')
+          except RuntimeError:pass
+          else:raise AssertionError('V108_MUST_REJECT_WRONG_BASE')
+          pre=b"""\n
+          logs={}
+          function Infinity_Log(msg) logs[#logs+1]=msg end
+          registrations={}
+          function EEex_Sprite_AddAlterBaseWeaponDamageListener(listener)
+              registrations[#registrations+1]=listener
+          end
+          """
+          post=b"""\n
+          local ok, reason=BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()
+          assert(ok and #registrations==1)
+          local ctx={weapon={},launcher={},target={},attacker={},ability={},
+                     effect={},isCritical=false,isLeftHand=false,attackRoll=15}
+          for i=1,30 do assert(registrations[1](ctx)==nil) end
+          assert(ctx.attackRoll==15 and ctx.isCritical==false)
+          assert(BG_EET_RU_V108.enabled and BG_EET_RU_V108.native_read_authorized)
+          assert(BG_EET_RU_V108.emitted==8 and BG_EET_RU_V108.seen==30)
+          assert(#registrations==1)
+          local found=0
+          for _,s in ipairs(logs) do
+              if s:find('[BG_EET_RU_V108] EVENT',1,true) then
+                  found=found+1
+                  assert(s:find('ammo=UNVERIFIED',1,true))
+                  assert(s:find('hit_miss=UNVERIFIED',1,true))
+                  assert(s:find('weapon_resref=NOT_CITEM_USERDATA',1,true))
+              end
+          end
+          assert(found==8)
+          assert(BG_EET_RU_V108_Status().misses_verified==false)
+          """
+          code=pre+candidate+b'\n'+post
+          l=ctypes.CDLL('liblua5.4.so.0')
+          l.luaL_newstate.restype=ctypes.c_void_p
+          l.luaL_openlibs.argtypes=[ctypes.c_void_p]
+          l.luaL_loadbufferx.argtypes=[ctypes.c_void_p,ctypes.c_char_p,ctypes.c_size_t,ctypes.c_char_p,ctypes.c_char_p]
+          l.luaL_loadbufferx.restype=ctypes.c_int
+          l.lua_pcallk.argtypes=[ctypes.c_void_p,ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.c_longlong,ctypes.c_void_p]
+          l.lua_pcallk.restype=ctypes.c_int
+          l.lua_close.argtypes=[ctypes.c_void_p]
+          state=l.luaL_newstate();l.luaL_openlibs(state)
+          try:
+              assert l.luaL_loadbufferx(state,code,len(code),b'v108_integrated',None)==0,'LUA_COMPILE'
+              assert l.lua_pcallk(state,0,0,0,0,None)==0,'LUA_BEHAVIOR'
+          finally:l.lua_close(state)
+          print('V108_SOURCE_AND_CANDIDATE_PASS: pinned V106 baseline, release SHA, bounded non-mutating observer, single listener, exact rollback SHA, NO ACTUAL WINDOWS GAME / native CItem')
+          PY
