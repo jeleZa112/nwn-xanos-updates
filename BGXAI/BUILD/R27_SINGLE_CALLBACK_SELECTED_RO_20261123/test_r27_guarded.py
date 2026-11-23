@@ -112,14 +112,14 @@ class GuardedTests(unittest.TestCase):
         m=json.loads((D/'manifest_updater.json').read_text())
         self.assertEqual(m['schema'],1)
         self.assertEqual(m['channel'],'bgxai-fox-new-safe-source')
-        self.assertEqual({x['dest'] for x in m['files']},{'M_BGXR27.lua','BGXAI_R27_GUARDED.py'})
+        self.assertEqual({x['dest'] for x in m['files']},{'M_BGXR27.lua','BGXAI_R27_GUARDED.py','BGXAI_R28_NATIVE_FROM_R27_RO.py','BGXAI_WEAPON_NATIVE_ITM_R3_RO.py'})
         for obj in m['files']:
             f=D/obj['dest']
             self.assertEqual(f.stat().st_size,obj['size'])
             self.assertEqual(hashlib.sha256(f.read_bytes()).hexdigest(),obj['sha256'])
     def test_no_hidden_deploy_from_sync(self):
         s=(D/'BGXAI_R27_GUARDED.py').read_text()
-        self.assertIn("choices=['menu','status','preflight','install','rollback','capture']",s)
+        self.assertIn("choices=['menu','status','preflight','install','rollback','capture','native']",s)
         self.assertNotIn('check=True',s)
         self.assertNotIn('Invoke-WebRequest',s)
         self.assertIn("'5':'capture'",s)

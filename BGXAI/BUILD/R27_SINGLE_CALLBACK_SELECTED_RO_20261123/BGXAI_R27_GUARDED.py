@@ -307,17 +307,41 @@ def capture_console(root: Path) -> dict:
             'gameExitCode':code, 'gameplayResourcesModifiedByCapture':False,
             'weaponSwitchAuthorized':False, 'dispatchAuthorized':False}
 
+R28_NATIVE_BRIDGE_SHA = 'cb3b5e10ef950c097f817053d12b8ca63a760eee185bedd6b4e53f822a474794'
+
+
+def native_items_from_r27(root: Path) -> dict:
+    """READ ONLY actual installed ITM/2DA data from latest real R27 log.
+
+    Never touches the action queue, WeiDU or game resource bytes. It reuses
+    the exact R3 implementation, and checks the R28 module SHA before import.
+    """
+    installed = status(root)  # exact installed R27 SHA / WeiDU / proof
+    if installed['status'] != 'R27_PASSIVE_INSTALLED_AWAITING_RUNTIME_TEST':
+        raise ValueError('R27_NOT_INSTALLED_FOR_NATIVE')
+    from importlib import util
+    path = Path(__file__).resolve().parent / 'BGXAI_R28_NATIVE_FROM_R27_RO.py'
+    if path.is_symlink() or not path.is_file() or digest(path) != R28_NATIVE_BRIDGE_SHA:
+        raise ValueError('R28_NATIVE_SOURCE_SHA_MISMATCH')
+    spec = util.spec_from_file_location('bgxai_r28_native_verified', path)
+    if spec is None or spec.loader is None:
+        raise ValueError('R28_NATIVE_SOURCE_CANNOT_LOAD')
+    module = util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.native_audit(root,installed,processes)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('--game', default=str(GAME))
-    parser.add_argument('--mode', choices=['menu','status','preflight','install','rollback','capture'], default='menu')
+    parser.add_argument('--mode', choices=['menu','status','preflight','install','rollback','capture','native'], default='menu')
     args = parser.parse_args()
     try:
         root = Path(args.game)
         if args.mode == 'menu':
-            print('R27 passive single-callback observer: 1=status, 2=preflight READ ONLY, 3=install typed, 4=rollback typed, 5=start game + capture READ ONLY, 0=exit')
+            print('R27 passive single-callback observer: 1=status, 2=preflight READ ONLY, 3=install typed, 4=rollback typed, 5=start game + capture READ ONLY, 6=R28 native weapon ITM/2DA READ ONLY, 0=exit')
             answer = input('Choice [2]: ').strip() or '2'
-            args.mode = {'0':'exit', '1':'status', '2':'preflight', '3':'install', '4':'rollback', '5':'capture'}.get(answer, 'invalid')
+            args.mode = {'0':'exit', '1':'status', '2':'preflight', '3':'install', '4':'rollback', '5':'capture', '6':'native'}.get(answer, 'invalid')
         if args.mode == 'exit': print('R27: no changes.'); return 0
         if args.mode == 'status': result = status(root)
         elif args.mode == 'preflight': result = preflight(root)
@@ -328,6 +352,9 @@ def main() -> int:
         elif args.mode == 'capture':
             print('Start InfinityLoader, load your existing test save, make 2-3 ordinary attacks, then exit game. Capture goes into Documents/BGXAI_LIVE_REPORTS.')
             result = capture_console(root)
+        elif args.mode == 'native':
+            print('R28 READ ONLY: reuse existing R27 console and pinned R3 to inspect installed ITM/2DA; no game run, no WeiDU change.')
+            result = native_items_from_r27(root)
         elif args.mode == 'rollback':
             token = input('Type ' + ROLLBACK_TOKEN + ' exactly (ENTER cancels): ').strip()
             result = rollback(root, token)
