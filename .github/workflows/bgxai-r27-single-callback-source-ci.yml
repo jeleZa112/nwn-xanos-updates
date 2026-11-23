@@ -39,6 +39,7 @@ jobs:
           print('R27 SHA256 and no-dispatch manifest PASS')
           PY
           python BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/build_r27.py
+          python BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/build_r27_pilot.py
       - name: Source-only Python tests
         shell: bash
         run: |
@@ -50,3 +51,7 @@ jobs:
         if: runner.os == 'Linux'
         shell: bash
         run: lua5.4 BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/test_r27_single_callback.lua
+      - name: Run staged single-updater observer mock (not installed)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: lua5.4 BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/test_r27_pilot.lua

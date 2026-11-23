@@ -10,9 +10,13 @@
     "R27_EVENT_JOIN_TAIL.lua": "39abc118d43d3d9105a5c79341e61a0e4d158c5769944591ff324949bad2bc4b",
     "build_r27.py": "365997b4eeba5333a27b606dcfbef9c4878097a9b96f5153c96a57e0cb665630",
     "test_r27_single_callback.lua": "d64cc4a3c16643261d322fa29d7f69bfa12755eb875ef28d8f4ebb1146970e3e",
-    "test_r27_source.py": "4cfd9a7c5ce5ea9640c10437e23ee573d956f6197a01d6dfeddcac6895d05f7d",
-    "README_RU.md": "7d47a4480e4bb9eabd4d70f87e87b6ae383054bd23e1c6cad0e548d26d415e97",
-    "CHECKPOINT_RU.md": "6f006b76636780e536717bb07b786f4f4dfcb4c73edb035995c6c4d55a61e1c7"
+    "test_r27_source.py": "c6e7e7106d13f0087a10b267738be83021099c9cbefd360071fd818d12b50a0d",
+    "README_RU.md": "ce1ce9acbe7f0226024af57dbcdc644f99698eb1b7dacec508d60083cec17c3e",
+    "CHECKPOINT_RU.md": "7cf370237b5efcf40efcc8f7ca6d37dc146375722afcbe20b34f7544ce369bdd",
+    "R27_AUTHORIZED_PILOT_BOOTSTRAP.lua": "0f82754e491c9df7ec8b0963ee6bc13d71d3c7798db222584f2b53248c14ec37",
+    "build_r27_pilot.py": "8443533e35f515c3fab05e8eeb40c73468111dad38fd1513022ca731b95e3d00",
+    "test_r27_pilot.lua": "591cd95dda9bad1b09f8d21f068e2eca0469bc327cf62e8a69719f4d5685847c",
+    "M_BGXR27.lua": "e5eb400c56ffb1bc23344a0cf30dcc724d8d18fc2752fabd1c2c63cdcca73735"
   },
   "originSha256": {
     "R2": "7bd88866eab1d73f59b6619b2f38e26b846c0daa85a54f6c1de9e77e0730b5a0",
