@@ -1,3 +1,13 @@
+# АКТУАЛЬНЕЙШЕЕ 23.11.2026 — R23 / AUTO-CONTINUE ПОСЛЕ PASS
+
+**Обязательное действующее правило пользователя:** после любого положительного результата безопасного шага сразу выполнять следующий полезный этап в том же обращении, не ждать `+`, не завершать работу на коммите, SHA или отчёте. Подробный обновлённый протокол: `BGXAI/CURRENT/BGXAI_AUTO_CONTINUE_RULE_20261122_RU.md` (раздел от 23.11). Нет обещаний фоновой работы после завершения ответа.
+
+**В этом обращении выполнено два последовательных безопасных этапа:** R23 real-source audit `NONINTERRUPT`, `081`, `082`, `V3.preview`, `CURRENT_STATS_BRIDGE` — **15/15 STATIC PASS**; затем без ожидания нового сообщения source/report audit существующих R3 native ITM, R3 static bridge и R17 actual frozen report — **9/9 STATIC PASS**. Итого **24/24 SOURCE ASSERTIONS**, НЕ runtime tests и НЕ новые LIVE бои. Найдено, что R3 уже парсит ability/ITM, R3 static bridge уже проверяет типы launcher/ammo, а R17 уже содержит `BOW05/AROW01` кандидатскую пару с `enginePairVerified=false`. **Не делать вторые парсеры, ранкеры и guards**. SOURCE checkpoint: `BGXAI/CURRENT/BGXAI_R23_WEAPON_REUSE_PROVENANCE_GATE_20261123_RU.md`; machine verdict: `BGXAI/BUILD/R23_EXISTING_PIPELINE_SOURCE_AUDIT_20261123/R23_SOURCE_GATE_VERDICT.json`. Source status `REUSE_SOURCE_STATIC_PASS_INTEGRATION_HOLD`.
+
+**Последняя настоящая игра:** TD15/R13.2 LIVE, R20 menu164 пользовательский read-only audit DONE. R21/R22 SOURCE+CI PASS; R23 static pass. **R23 GAME DEPLOY/LIVE NO**, automatic switch OFF, `dispatchAuthorized=false`. Не повторять R3/R13/R20/164, не просить старые logs. Текущая настоящая граница — нет подтверждения native lifetime, реального launcher/ammo пары, альтернативного эффективного APR, полных effects и manual/EPS queue provenance. Не выдавать mock `verified=true` за доказательство. Модификация игры и любого EEex listener только с отдельного typed согласия после безопасного preflight и внешнего backup. Исходные EPS/healing/AoE/TD15, single updater, saves, BG Voice RU и BG_EET_RU не менять.
+
+---
+
 # АКТУАЛЬНЕЙШЕЕ 22.11.2026 — R12 TARGET-BOUND INTEGRATION V2 / 193 PASS
 
 **Правило №1:** после каждого положительного результата безопасной работы немедленно переходить к следующему доступному этапу В ТОМ ЖЕ ОБРАЩЕНИИ; не ждать `+` и не завершать на промежуточном PASS. Не обещать работу после ответа. Только реальный блокер (установка в игру требует отдельного типизированного согласия, неизвестная фактическая EEex/EPS, или опасное изменение) прекращает автоматический переход.
