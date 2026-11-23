@@ -12,11 +12,35 @@ jobs:
     timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Install native Lua 5.4 compiler runtime
         run: sudo apt-get update -qq && sudo apt-get install -y -qq liblua5.4-0
+      - name: V110 750000-byte legacy client download cap plus AST identity
+        run: |
+          python - <<'PY'
+          import ast,hashlib,json,subprocess
+          from pathlib import Path
+          file=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
+          current=file.read_bytes()
+          prior=subprocess.check_output(['git','show','HEAD^:bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'])
+          assert 10000<len(current)<=750000, ('LEGACY_DOWNLOAD_CAP',len(current))
+          assert len(prior)>750000, ('EXPECTED_PRIOR_V109_OVERSIZE',len(prior))
+          manifest=json.loads(Path('bg-eet-ru/onefile/release.json').read_text('utf8'))
+          assert manifest['version']==110 and manifest['game_writes_allowed'] is False
+          assert hashlib.sha256(current).hexdigest()==manifest['sha256']
+          def normalized_ast(raw):
+              tree=ast.parse(raw.decode('utf8').split('\n',1)[1])
+              for node in ast.walk(tree):
+                  if isinstance(node,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='SELF_VERSION' for t in node.targets):
+                      node.value=ast.Constant(value=0)
+              return ast.dump(tree,include_attributes=False)
+          assert normalized_ast(prior)==normalized_ast(current), 'AST_DIFFERENCE_BEYOND_VERSION'
+          print('V110_LEGACY_SHA_AND_AST_PASS',len(current))
+          PY
       - name: Run all existing isolated updater selftests
         run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
       - name: Compile exact V95 injected Lua chunk and verify menu delimiter

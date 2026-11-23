@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 109,
-  "sha256": "40b01c3f4f2aa2c4c7755268b4945664314b806a78963fa94e20bb159bb89f7e",
-  "mode": "READ_ONLY_DEFAULT_V109_SAFE_RESUME_V108",
+  "version": 110,
+  "sha256": "2c73a1cbcea647f662989ba4988849872dab07129d05e9257e26f35e60e4f861",
+  "mode": "READ_ONLY_DEFAULT_V110_LEGACY_750000_BYTE_CAP_FIX",
   "game_writes_allowed": false,
-  "note": "V109: preserve all V108 guarded native CItem install/rollback/capture controls without changing their exact pinned Windows game-file SHA or Lua payload. Fix default no-arg updater after V108 INSTALLED or PREPARED: bypass legacy V105 and V106 observer SHA checks and let V108 validate its exact module transaction. After V108 ROLLED_BACK, normal V105/V106 guards resume. Source-only CI test covers all three phases. Default V109 runs READ ONLY; live V108 CItem RESREF remains untested/optional and native crash risk applies only to separately typed authorized install. One updater, one ZIP; UI.MENU, TLK, saves, BGXAI and Voice unchanged."
+  "note": "V110 fixes failed auto-update of V107 to V109: old downloader hard-limits download to 750000 bytes; V109 source was 771451 bytes. V110 preserves the Python AST and all embedded Lua/data payloads while reducing Python indentation outside string literals to fit old 750000 byte cap. SHA256 validation and auto-update safeguards remain unchanged. CI checks byte cap, manifest SHA, AST identity except SELF_VERSION, and all existing selftests; guarded V108 native CItem code remains optional, NOT installed or gameplay-verified; no changes to game, UI, BGXAI, Voice or saves."
 }
