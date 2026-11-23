@@ -1,0 +1,58 @@
+{
+  "schema": "BGXAI_R25_REAL_CAPTURE_SUMMARY_RO_V1",
+  "readOnly": true,
+  "sourceOnly": true,
+  "gameModified": false,
+  "sourceCapturesNotPublished": true,
+  "results": {
+    "r2-jsonl": {
+      "status": "OFFLINE_LOG_SEGMENTS_VERIFIED_NO_RUNTIME_AUTH",
+      "sourceType": "r2-jsonl",
+      "sourceSha256": "34453819557d2cf9ee9a705807f7d44e5d8928fb177a4392b99abd0383eae466",
+      "taggedEventCount": 12,
+      "normalizedEventCount": 12,
+      "mirroredPairsRemoved": 0,
+      "recordsBySource": {
+        "BGXW2": 10
+      },
+      "sessionIdEngineAuthenticated": false,
+      "manualEpsQueueVerified": false,
+      "dispatchAuthorized": false,
+      "weaponSwitchAuthorized": false,
+      "segmentCount": 1
+    },
+    "r4-jsonl": {
+      "status": "OFFLINE_LOG_SEGMENTS_VERIFIED_NO_RUNTIME_AUTH",
+      "sourceType": "r4-jsonl",
+      "sourceSha256": "e19a25ca979bf2599e12d111e13ac6adb77f97e222fa47967f0ef565f0cc12e3",
+      "taggedEventCount": 6,
+      "normalizedEventCount": 6,
+      "mirroredPairsRemoved": 0,
+      "recordsBySource": {
+        "BGXW4": 4
+      },
+      "sessionIdEngineAuthenticated": false,
+      "manualEpsQueueVerified": false,
+      "dispatchAuthorized": false,
+      "weaponSwitchAuthorized": false,
+      "segmentCount": 1
+    },
+    "console": {
+      "status": "OFFLINE_LOG_SEGMENTS_VERIFIED_NO_RUNTIME_AUTH",
+      "sourceType": "console",
+      "sourceSha256": "174cec7f72f9f1c3aed717484bb3606832aa0cbfca1ad6d6d9bc3cd4583199db",
+      "taggedEventCount": 54,
+      "normalizedEventCount": 36,
+      "mirroredPairsRemoved": 18,
+      "recordsBySource": {
+        "BGXW2": 16,
+        "BGXW4": 16
+      },
+      "sessionIdEngineAuthenticated": false,
+      "manualEpsQueueVerified": false,
+      "dispatchAuthorized": false,
+      "weaponSwitchAuthorized": false,
+      "segmentCount": 2
+    }
+  }
+}

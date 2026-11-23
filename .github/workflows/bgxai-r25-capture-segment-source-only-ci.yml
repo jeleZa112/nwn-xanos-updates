@@ -1,0 +1,48 @@
+name: BGXAI R25 R2 R4 capture mirror/session boundary - SOURCE ONLY
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R25_CAPTURE_SEGMENT_SOURCE_ONLY_20261123/**'
+      - '.github/workflows/bgxai-r25-capture-segment-source-only-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline_tests:
+    name: R25 19 source-only synthetic tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - name: Preserve original LF bytes
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run 19 fake-data negative and positive regressions
+        shell: bash
+        run: |
+          cd BGXAI/BUILD/R25_CAPTURE_SEGMENT_SOURCE_ONLY_20261123
+          python -m unittest -v test_r25_capture_segment_ro.py
+      - name: Verify exact source file hashes and no game actions
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          d=Path('BGXAI/BUILD/R25_CAPTURE_SEGMENT_SOURCE_ONLY_20261123')
+          m=json.loads((d/'SHA256_MANIFEST.json').read_text(encoding='utf-8'))
+          assert m['sourceOnly'] is True
+          assert all(m[k] is False for k in ('gameModified','installAuthorized','weaponSwitchAuthorized','dispatchAuthorized'))
+          for n,sha in m['files'].items():
+              assert hashlib.sha256((d/n).read_bytes()).hexdigest()==sha,n
+          src=(d/'BGXAI_R25_CAPTURE_SEGMENT_RO.py').read_text(encoding='utf-8')
+          for bad in ('subprocess','winreg','ctypes','os.system','os.execute','ClearActions(', 'SelectWeaponAbility('):
+              assert bad not in src,bad
+          print('R25_PINNED_SOURCE_NO_GAME_ACTIONS_PASS')
+          PY

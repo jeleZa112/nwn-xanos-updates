@@ -1,0 +1,14 @@
+{
+  "sourceOnly": true,
+  "gameModified": false,
+  "installAuthorized": false,
+  "weaponSwitchAuthorized": false,
+  "dispatchAuthorized": false,
+  "files": {
+    "BGXAI_R25_CAPTURE_SEGMENT_RO.py": "0ceb8bb23d1ed8018c5663bf2f1c610083c41c9326c7975ca515458ed2e53f88",
+    "test_r25_capture_segment_ro.py": "056e0c1e02357c4cd0187907d35a1241fa4a134443a562d7cb864910404f429e",
+    "R25_REAL_CAPTURE_SANITIZED_VERDICT.json": "2f9e0e16b06517dae0a36c109bbdedcf460eb2b910505dc3b602f286359959b0",
+    "README_RU.md": "d53d0e8175095a2b59bc30472312add0eec15f8d303a7c91f26d92cbcc828ec6",
+    "CHECKPOINT_RU.md": "630daad92e35615b751a1b0a61897addee7435d8305d5c68d4fc0abb98039001"
+  }
+}
