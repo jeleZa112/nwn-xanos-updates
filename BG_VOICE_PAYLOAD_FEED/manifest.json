@@ -7,9 +7,9 @@
   "updater_name": "BG_VOICE_UPDATE.cmd",
   "latest_payload_version": 74,
   "state": {
-    "version": 81,
+    "version": 82,
     "library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_PROJECT_STATE.md",
-    "verification": "Actual RU Anchor V2 ZIP imported and independently audited: source scores and same-20 V1/V2 match"
+    "verification": "30 new blinded human holdout generated from canonical 7206 SHA-bound source; offline tests PASS; Windows run not yet done"
   },
   "package_transport": "chatgpt_shared_library",
   "windows_auto_download_enabled": false,
@@ -320,7 +320,7 @@
       ],
       "no_wav_changes": true
     },
-    "current_production_next_action": "READ_ONLY_GROUNDED_AUDIO_ARTIFACT_AUDIT_AND_FRESH_BALANCED_BLIND_HOLDOUT_THEN_VALIDATE_SPEAKER_AND_ACTING; NO_REPEAT_OF_V1_OR_V2_20LINE_PILOTS",
+    "current_production_next_action": "ONE_USER_WINDOWS_BLIND_30_REVIEW_AND_SINGLE_REPORT_ZIP_THEN_INDEPENDENT_EVALUATION; NO_7206_MANUAL_REVIEW",
     "repairs_blocked_before_voice_selection": true,
     "ru_anchor_v2": {
       "stage": "EXPLORATORY_PILOT_READY_ON_WINDOWS_NOT_REAL_RUN",
@@ -392,6 +392,36 @@
         "equal_sampled_peak_count": 1,
         "conclusion": "No obvious globally one-directional Stable bias from duration or sampled peak alone. Does not test spectral signature, voice quality, loudness or acting."
       }
+    },
+    "blind_holdout_r1": {
+      "status": "READY_READONLY_NOT_YET_RUN_ON_USER_WINDOWS",
+      "archive_library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_BLIND_HOLDOUT_V1_20261123.zip",
+      "archive_sha256": "190ef1bbc8312635066437eda0f91d2caf5ca42fbaf9c5841abdf0f77cb6e1bb",
+      "archive_bytes": 1963953,
+      "source_ids": 7206,
+      "source_registry_sha256": "c70728586e0c8d212edeb92e6876fe01bf3968da1a1e7ad261da8d86021129d4",
+      "excluded_human_locks": 58,
+      "excluded_previous_human_pilot": 20,
+      "excluded_prior_r2_candidates": 60,
+      "sample": 30,
+      "unique_characters": 30,
+      "major_characters": 15,
+      "strata": {
+        "acting": 8,
+        "ecapa_stable": 6,
+        "ecapa_perline": 6,
+        "tie": 6,
+        "missing_ecapa": 4
+      },
+      "randomized_blind_a_b": "15 A-STABLE and 15 A-PER_LINE; masked until 30 answered",
+      "new_model_run": false,
+      "model_version": "no model - STDlib only blind human labels",
+      "offline_tests": "7206 ids / 58 locks / leak prevention / SHA mismatch / 30 complete / sealed until complete / resume PASS",
+      "game_modified": false,
+      "voices_modified": false,
+      "stress_or_tts": false,
+      "report": "C:\\Users\\Drevo\\Documents\\BG_VOICE_RU\\VOICE_SELECTION_BLIND\\BG_VOICE_BLIND_HOLDOUT_REPORT.zip",
+      "warning": "diagnostic stratified sample, not population representative; human votes not game approvals"
     }
   }
 }
