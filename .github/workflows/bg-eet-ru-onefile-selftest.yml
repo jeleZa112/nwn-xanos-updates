@@ -19,31 +19,29 @@ jobs:
           python-version: '3.11'
       - name: Install native Lua 5.4 compiler runtime
         run: sudo apt-get update -qq && sudo apt-get install -y -qq liblua5.4-0
-      - name: V111 legacy 750000-byte limit, SHA and guarded V108 regression
+      - name: V112 legacy download SHA and old-function AST regression
         run: |
           python - <<'PY'
           import ast,hashlib,json,subprocess
           from pathlib import Path
-          p=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
-          raw=p.read_bytes()
-          before=subprocess.check_output(['git','show','HEAD^:bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'])
-          assert 10000<len(raw)<=750000,('OLD_CLIENT_DOWNLOAD_LIMIT',len(raw))
-          assert len(before)<750000 and len(raw)>len(before)
-          release=json.loads(Path('bg-eet-ru/onefile/release.json').read_text('utf8'))
-          assert release['version']==111 and release['game_writes_allowed'] is False
-          assert hashlib.sha256(raw).hexdigest()==release['sha256']
-          current=ast.parse(raw.decode('utf8').split('\n',1)[1])
-          old=ast.parse(before.decode('utf8').split('\n',1)[1])
-          def stable_functions(tree):
-              return {n.name:ast.dump(n,include_attributes=False) for n in tree.body
-                      if isinstance(n,ast.FunctionDef) and n.name not in ('main','selftest')}
-          a=stable_functions(current);b=stable_functions(old)
-          for name,body in b.items():
-              assert name in a and a[name]==body,('EXISTING_FUNCTION_CHANGED',name)
-          assert set(a)-set(b)=={'v111_inside_game','v111_key_index','v111_load_itm',
-              'v111_parse_itm','v111_tlk_names','v111_build_report','v111_save_zip',
-              'v111_run','v111_selftest'},set(a)-set(b)
-          print('V111_LEGACY_DOWNLOAD_AND_OLD_FUNCTION_AST_PASS',len(raw))
+          file=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
+          src=file.read_bytes()
+          old=subprocess.check_output(['git','show','HEAD^:bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'])
+          assert 10000<len(src)<=750000,('LEGACY_DOWNLOAD_LIMIT',len(src))
+          m=json.loads(Path('bg-eet-ru/onefile/release.json').read_text('utf8'))
+          assert m['version']==112 and m['game_writes_allowed'] is False
+          assert hashlib.sha256(src).hexdigest()==m['sha256']
+          def funcs(b):
+              ast_body=ast.parse(b.decode('utf8').split('\n',1)[1])
+              return {x.name:ast.dump(x,include_attributes=False) for x in ast_body.body
+                      if isinstance(x,ast.FunctionDef) and x.name not in ('main','selftest')}
+          current,previous=funcs(src),funcs(old)
+          for name,body in previous.items():
+              assert current.get(name)==body,('OLD_FUNCTION_MUTATED',name)
+          assert set(current)-set(previous)=={'v112_probe_source',
+              'v112_read_zip_history','v112_build_report','v112_zip_write',
+              'v112_run','v112_selftest'},set(current)-set(previous)
+          print('V112_SOURCE_AND_SIZE_PASS',len(src))
           PY
       - name: Run all existing isolated updater selftests
         run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest

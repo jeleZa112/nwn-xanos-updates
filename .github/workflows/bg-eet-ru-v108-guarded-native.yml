@@ -23,11 +23,11 @@ jobs:
           from pathlib import Path, PureWindowsPath
           p=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
           j=json.loads(Path('bg-eet-ru/onefile/release.json').read_text('utf8'))
-          assert j['version']==111 and j['game_writes_allowed'] is False
+          assert j['version']==112 and j['game_writes_allowed'] is False
           assert hashlib.sha256(p.read_bytes()).hexdigest()==j['sha256'],'RELEASE_SHA_PIN_FAIL'
           ns={'__name__':'native_v108_test','__file__':str(p)}
           exec(compile(p.read_text('utf8').split('\n',1)[1],str(p),'exec'),ns)
-          assert ns['SELF_VERSION']==111
+          assert ns['SELF_VERSION']==112
           assert ns['v108_selftest']()
           # V105 source embeds the user's absolute Windows report paths.
           # Linux Path.home() would produce different bytes/SHA and is not a valid baseline comparison.
@@ -101,7 +101,7 @@ jobs:
           path=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd').resolve()
           ns={'__name__':'v109_default_regression','__file__':str(path)}
           exec(compile(path.read_text('utf8').split('\n',1)[1],str(path),'exec'),ns)
-          assert ns['SELF_VERSION']==111
+          assert ns['SELF_VERSION']==112
           with tempfile.TemporaryDirectory(prefix='BG_EET_RU_V109_DEFAULT_') as td:
               game=Path(td)/'testgame'
               game.mkdir()
@@ -114,7 +114,7 @@ jobs:
               ns['v108_get_state']=lambda:{'phase':phase['value']}
               calls=[]
               for name in ('v101_run','v102_run','v103_run','v104_run',
-                           'v105_run','v106_run','v107_run','v108_run','v111_run'):
+                           'v105_run','v106_run','v107_run','v108_run','v111_run','v112_run'):
                   def fn(*args,name=name,**kwargs):
                       calls.append(name)
                       return 0
@@ -124,9 +124,9 @@ jobs:
                   calls.clear()
                   assert ns['main'](['--game',str(game),'--offline'])==0
                   assert calls==expected,(value,calls,expected)
-              short=['v101_run','v102_run','v103_run','v104_run','v107_run','v108_run','v111_run']
+              short=['v101_run','v102_run','v103_run','v104_run','v107_run','v108_run','v111_run','v112_run']
               full=['v101_run','v102_run','v103_run','v104_run',
-                    'v105_run','v106_run','v107_run','v108_run','v111_run']
+                    'v105_run','v106_run','v107_run','v108_run','v111_run','v112_run']
               check('INSTALLED',short)
               check('PREPARED',short)
               check('ROLLED_BACK',full)

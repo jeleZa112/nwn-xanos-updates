@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 111,
-  "sha256": "ddfafd1d84c27277682916b2e7080e559351e54551d742e757b77cef2ce06fb2",
-  "mode": "READ_ONLY_DEFAULT_V111_TARGETED_ACTIVE_ITM_TLK_NAMES",
+  "version": 112,
+  "sha256": "e469de3968e24d938fc004c936900b6af35c8fdbadad7f0a36e3b3c52798c873",
+  "mode": "READ_ONLY_DEFAULT_V112_UI_ACTION_IDENTITY_JOIN_PREFLIGHT",
   "game_writes_allowed": false,
-  "note": "V111 adds read-only exact three-resref SW1H04/AROW01/BOW05 ITM resource lookup with override priority and KEY/BIFF V1 fallback, then sparse Russian ru_RU dialog.tlk/dialogf.tlk name lookup. No changes to EEex observer V108, game, saves, UI, TLK, BGXAI or BG Voice RU. Standard no-arg updater automatically performs V111 after V108 status; explicit --v111-item-audit runs only the safe inspection. Preserves 750000-byte legacy downloader cap and single updater/ZIP, synthetic tests for override priority, fallback, invalid override HOLD, missing TLK HOLD, ZIP idempotency."
+  "note": "V112 reads installed UI combatLog binding, EEex action-start source signatures, and existing V108/V111 ZIP reports; no game writes or added native hooks. A positive static signal is not proof of per-roll weapon or journal row association. Preserves all prior logic and 750000-byte legacy download cap."
 }
