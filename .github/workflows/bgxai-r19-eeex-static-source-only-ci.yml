@@ -1,0 +1,52 @@
+name: BGXAI R19 installed EEex static API audit - source-only
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R19_INSTALLED_EEEX_STATIC_RO_20261123/**'
+      - '.github/workflows/bgxai-r19-eeex-static-source-only-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline:
+    name: R19 static audit 36 unit tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - name: Preserve source LF exactly
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run 36 synthetic tests
+        shell: bash
+        run: |
+          cd BGXAI/BUILD/R19_INSTALLED_EEEX_STATIC_RO_20261123
+          python -m unittest -v test_r19_installed_eeex_audit_ro.py
+      - name: Verify exact immutable sources, tag and fail-closed permissions
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          d=Path('BGXAI/BUILD/R19_INSTALLED_EEEX_STATIC_RO_20261123')
+          m=json.loads((d/'SHA256_MANIFEST.json').read_text(encoding='utf-8'))
+          assert m['sourceOnly'] is True
+          assert all(m[x] is False for x in ('gameModified','installAuthorized','weaponSwitchAuthorized'))
+          for name,p in m['files'].items():
+            data=(d/name).read_bytes()
+            assert hashlib.sha256(data).hexdigest()==p['sha256'] and len(data)==p['bytes'],name
+          u=json.loads((d/'UPSTREAM_EEEX_V117_CONTRACT.json').read_text(encoding='utf-8'))
+          assert u['source']=='Bubb13/EEex' and u['tag']=='v1.1.7'
+          assert all(u[x] is False for x in (
+              'priorInstalledSourceExactHashProven','gameRuntimeApiAuthenticated',
+              'itemResourceHeaderLifetimeVerified','safeToCallGetAbility',
+              'safeToCallGetLauncher','weaponSwitchAuthorized','dispatchAuthorized'))
+          print('BGXAI_R19_SHA_AND_NO_DISPATCH_PASS')
+          PY

@@ -1,0 +1,26 @@
+{
+  "schema": "BGXAI_R19_EEEX_V117_STATIC_SOURCE_CONTRACT_V1",
+  "source": "Bubb13/EEex",
+  "tag": "v1.1.7",
+  "upstreamGitBlobSha1": {
+    "EEex/copy/EEex_scripts/EEex_Resource.lua": "5ecd3c2f9e9bcc6cbd317653fc057a06d956916b",
+    "EEex/copy/EEex_scripts/EEex_Sprite.lua": "b2d8d930c47785737bd30dad08e9f35a9d859578",
+    "EEex/copy/EEex_scripts/EEex_Action.lua": "e7543274ed066b5abe3c58262105212f208d1595"
+  },
+  "resourceAbilityPath": "CItem.getAbility -> item.pRes.pHeader:getAbility(abilityIndex) -> Item_Header_st.getAbility; native header pointer lifetime not established by this source",
+  "launcherPath": "CGameSprite.getLauncher -> sprite:GetLauncher(curAbility, launcherSlot); requires valid live Item_ability_st handle",
+  "statsPath": "EEex_Sprite_GetActiveStats returns m_derivedStats or m_tempStats; not a full list of effects",
+  "listenerPath": "EEex_Action_AddSpriteStartedActionListener stores callback; R19 registers nothing",
+  "priorInstalledSourceExactHashProven": false,
+  "gameRuntimeApiAuthenticated": false,
+  "itemResourceHeaderLifetimeVerified": false,
+  "nativeAbilityHandleSafe": false,
+  "launcherReturnSafe": false,
+  "safeToCallGetAbility": false,
+  "safeToCallGetLauncher": false,
+  "fullActiveEffectsFingerprintVerified": false,
+  "manualAndEpsActionOriginVerified": false,
+  "weaponSwitchAuthorized": false,
+  "dispatchAuthorized": false,
+  "installedGameModified": false
+}
