@@ -42,7 +42,7 @@ class GuardedV7(unittest.TestCase):
           patch.object(I,"r27_status",return_value={"status":"R27_PASSIVE_INSTALLED_AWAITING_RUNTIME_TEST"}),
           patch.object(I.E,"last",side_effect=lambda _:
               r"~BGXRANGED7\SETUP-BGXRANGED7.TP2~ #0 #0" if self.live_v6
-              else r"~BGXFENEMY\SETUP-BGXFENEMY.TP2~ #0 #0"),
+              else r"~BGXR27\SETUP-BGXR27.TP2~ #0 #0"),
           patch.object(I,"running",return_value=None),
           patch.object(I,"compile_candidate",side_effect=self.fake_compile),
           patch.dict(I.os.environ,{"USERPROFILE":str(self.home)}),

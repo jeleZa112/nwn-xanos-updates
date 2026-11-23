@@ -306,7 +306,7 @@ def install(root:Path)->dict:
 def rollback(root:Path)->dict:
     running()
     if not LAST.match(weidu_last(root)):
-        raise ValueError("V6_NOT_LAST_WEIDU")
+        raise ValueError("V7_NOT_LAST_WEIDU")
     verified=status(root)
     if verified.get("status")!="BGXRANGED7_INSTALLED_VERIFIED":
         raise ValueError("V6_STATUS_NOT_VERIFIED")
