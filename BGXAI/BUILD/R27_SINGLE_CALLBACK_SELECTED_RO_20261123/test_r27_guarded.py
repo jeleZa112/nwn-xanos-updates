@@ -33,9 +33,10 @@ class GuardedTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'ROLLBACK_TOKEN_REQUIRED'):
             r27.rollback(Path('/untouched'), 'YES')
     def test_windows_only_guard(self):
+        path = Path('/tmp/no-game')
         with mock.patch.object(r27.os,'name','posix'):
             with self.assertRaisesRegex(ValueError,'EXACT_WINDOWS_GAME_ROOT_REQUIRED'):
-                r27.game(Path('/tmp/no-game'))
+                r27.game(path)
     def test_status_sentinel_no_premature_install(self):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td)
