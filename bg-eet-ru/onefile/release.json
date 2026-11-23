@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 116,
-  "sha256": "a9bd14722aeb7d6e14ab1c62850298a95fdadab97c37b015a0f3759cc833ba12",
-  "mode": "READ_ONLY_DEFAULT_V116_X64_DISPATCH_SYMBOL",
+  "version": 120,
+  "sha256": "de32ea54ab6b978c9a61fda2cd64f6597eb45f110abd53aeeda69939e6be307b",
+  "mode": "READ_ONLY_DEFAULT_ONE_PASS_FULL_SPECTRUM_COMBAT_AUDIT",
   "game_writes_allowed": false,
-  "note": "V116 confirms or holds a one-target PE64 RVA 0x204C60 against current exact Baldur.exe SHA and active InfinityLoader.db CMessageHandler::AddMessage signature. No game edits, hooks, misses or combat row correlation are claimed. One updater one external ZIP; prior V101/V108/V111/V112 preserved."
+  "note": "V120 bundles one embedded, SHA-pinned source-only bot into the SAME original CMD. One default Windows invocation reads pinned installed EXE, loader DB, vtable, dispatch callsites, EEex/Lua/UI source, historical reports and bounded private code evidence into the SAME external ZIP. Runtime hit/miss row correlation and gameplay installation remain HOLD; no game writes, hooks, TLK or saves changed. Existing V101/V108/V111/V112/V116 preserved."
 }
