@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "575de4837a8adfdb4db8bc7a8d6503619829c4b7",
+  "commit": "bdff49dfb908798c9979cfe7e42f5179dd43c6c4",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "f5b9d565de595ffea0e04c26f3194152445a26743aa47348694b883cdd9ec8e0",
-  "script_size": 79631,
-  "description": "BGXAI menu163 guarded R13.2 passive HOLD/slot10 diagnostics. Updater 79631 bytes Windows PS5.1/7 CI PASS. Menu 163 default readonly; installs only M_BGXD13.lua after typed token and last-only WeiDU backup. Old menu1-162 retained."
+  "script_sha256": "913756757e54479f3e50ddd3d5068b58826220b7988f579bacaa6787e7715fcc",
+  "script_size": 79871,
+  "description": "BGXAI R20 menu164 READ ONLY installed EEex v1.1.7 static script SHA audit and UTF8 report; preserves existing menu1-163 and TD15; WinPS5.1/PS7 Windows and cross-OS source tests PASS. No game installation, no WeiDU or auto weapon switch. Script <=80000 bytes."
 }
