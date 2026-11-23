@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "c13868bf93e7c35af71d9340ce48ad91077deb5a",
+  "commit": "9c7344fd818b9eabba1e48b5bce3bc7a4f3c5e67",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "bac78ddf83fe4b87dce2a5d3b8568ef5062fea2591460a5e893c1026d4f5be18",
-  "script_size": 79897,
-  "description": "R27 already installed passive observer. Existing menu 165 now includes 5=READ ONLY InfinityLoader console capture; no reinstall, no automatic weapon switching. SHA-pinned backend unchanged; 29/29 Windows+Linux CI source tests passed."
+  "script_sha256": "2689695aea0c22f6be10e0148b70769a409dfc14cdf269f4eaf0c9de6a749e2d",
+  "script_size": 79966,
+  "description": "BGXAI R27 user LIVE observer 24/24 retained. New R28 menu165->6 native ITM/2DA read-only audit from existing real R27 log, SHA-pinned original R3. No game actions, no reinstall, one updater. Win/Linux 63 tests (one private-log skip, locally real log passed)."
 }

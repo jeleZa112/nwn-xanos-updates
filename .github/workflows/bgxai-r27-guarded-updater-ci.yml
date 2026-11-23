@@ -50,6 +50,11 @@ jobs:
           assert b"'165' {SyncRelease $r27" in backend
           assert b"165 - R27" in backend
           assert len(backend)<80000,(len(backend),'bootstrap max')
+          pin=json.loads(Path('BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text())
+          assert pin['schema']==1 and pin['channel']=='bgxai-fox-new-onefile'
+          assert pin['script_size']==len(backend)
+          assert pin['script_sha256']==hashlib.sha256(backend).hexdigest()
+          assert len(pin['commit'])==40
           assert b"BOOTSTRAP_PIN.json" in cmd
           assert b'BGXAI/BGXAI_SYNC.ps1' in cmd
           assert hashlib.sha256(lua).hexdigest()=='e5eb400c56ffb1bc23344a0cf30dcc724d8d18fc2752fabd1c2c63cdcca73735'
