@@ -1,3 +1,17 @@
+# LATEST 2026-11-24 — R28 native ITM read-only in the SAME updater menu 165→6; PIN and Windows/Linux CI PASS
+
+**ACTIVE USER STATE:** installed R27 passive `M_BGXR27.lua`, real LIVE 24/24 callbacks PASSED. Auto-weapon switching STILL OFF. No manual/EPS action origin or safe dispatch proved. No new game/WeiDU change in R28 work. Private R27 log in Library `/BALDURS_GATE_EET_AI/DIAGNOSTICS/`, do not publish in open GitHub. Already confirmed 4 raw resrefs from live log: SW1H04, BOW05, STAF01, AROW01.
+
+**R28 REAL ADVANCE:** connected **existing R27 LIVE log to exact native R3 ITM/BIFF/2DA reader** (R3 source byte-identical SHA `ed87a7a6618826c6d3901d2579a39bf280fcaeb09cd18b7b6ee159b9ebfcc74a`). New option 165→6 reads most recent `Documents/BGXAI_LIVE_REPORTS/BGXAI_R27_CONSOLE_*.log` from user machine, strict validates event seq/session/failclosed flags, then reads current installed `override`/KEY/BIFF ITM, spells, WSPATCK/CLSWPBON. Does not launch game, install WeiDU, write game files or dispatch weapon actions. Writes ONLY a new `Documents/BGXAI_LIVE_REPORTS/BGXAI_R28_NATIVE_FROM_R27_*.json`. No 165→3,5 repeat. Source package `BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/` now includes pinned `BGXAI_R28_NATIVE_FROM_R27_RO.py`, unchanged R3, unchanged M_BGXR27.lua, source-updated guardian. Game R27 module stays same.
+
+**Release:** original `BGXAI_UPDATE.cmd` unchanged, current backend `BGXAI/BGXAI_SYNC.ps1` 79966 bytes (<80000 cap) SHA256 `2689695aea0c22f6be10e0148b70769a409dfc14cdf269f4eaf0c9de6a749e2d`. Branch `BGXAI/fox_new/BOOTSTRAP_PIN.json` immutable source commit `9c7344fd818b9eabba1e48b5bce3bc7a4f3c5e67`. Final independent Windows/Linux CI SUCCESS https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45227003439, 63 tests: 62 PASS, one private-log test skipped only in public CI but independently PASS locally using user's genuine log. CODE SOURCE/CI PASS; user-PC R28 run **NOT YET**. Checkpoint `BGXAI/CURRENT/BGXAI_R28_NATIVE_ITM_FROM_R27_CHECKPOINT_20261124_RU.md` in GitHub+Library.
+
+**NEXT ONE USER ACTION:** close game/InfinityLoader/WeiDU, run same `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`, choose **165** then **6**. Send final JSON and file shown at `reportFile`. It uses their existing R27 file; no new combat or gameplay test. If STOP/HOLD, send exact output and any report; no reinstall or manual fixes. Once received, assess **real installed** ITM abilities/launcher/ammo versus buff/APR from R27, and only then scope protected noninterrupt dispatcher. Preserve BG_EET_RU, BG Voice RU, EPS, saves.
+
+**Auto-continue rule:** continue next SAFE technical task within each active turn without user +; no fake background work or hypothetical installs. Game modifications always explicit typed consent.
+
+---
+
 # LATEST 2026-11-23 — R27 INSTALLED + REAL LIVE 24/24 PASS; NEXT AUTOWEAPON BLOCKERS
 
 **New REAL USER GAME CAPTURE was read and analyzed in this chat**: `BGXAI_R27_CONSOLE_20261123T163105828183Z.log`, 394 text lines, 245196 bytes, SHA256 `6124a7d4d1fd3e168bc7fa099397964fb2e0bc4d5d0fa840c79c005647bf223b`. Private raw copy is saved to Library `/BALDURS_GATE_EET_AI/DIAGNOSTICS/`, **NOT public GitHub**. Detailed sanitized checkpoints in GitHub + Library CURRENT: `BGXAI_R27_LIVE_CHECKPOINT_20261123_RU.md` and `BGXAI_R27_LIVE_VERDICT_20261123.json`.
