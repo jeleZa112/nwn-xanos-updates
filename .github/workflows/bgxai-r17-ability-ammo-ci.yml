@@ -1,0 +1,49 @@
+name: BGXAI R17 ability-ammo contract RO source-only
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R17_ABILITY_AMMO_CONTRACT_RO_20261123/**'
+      - '.github/workflows/bgxai-r17-ability-ammo-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline:
+    name: 30 test cases (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Source-only synthetic contracts
+        shell: bash
+        run: |
+          cd BGXAI/BUILD/R17_ABILITY_AMMO_CONTRACT_RO_20261123
+          python -m unittest -v test_r17_ability_ammo_contract_ro.py
+      - name: Validate R17 report and immutable source manifest
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json,hashlib
+          d=Path('BGXAI/BUILD/R17_ABILITY_AMMO_CONTRACT_RO_20261123')
+          m=json.loads((d/'SHA256_MANIFEST.json').read_text())
+          for n,x in m['files'].items():
+            data=(d/n).read_bytes()
+            assert hashlib.sha256(data).hexdigest()==x['sha256'] and len(data)==x['bytes'],n
+          r=json.loads((d/'REAL_LOG_R17_ABILITY_AMMO_REPORT_RO.json').read_text())
+          assert r['status']=='STATIC_ABILITY_AND_LIVE_AMMO_WINDOW_CANDIDATES_RO'
+          assert r['ammoWindowCount']==3
+          assert [x['windowQuantityDecrease'] for x in r['ammoWindows']]==[1,2,1]
+          assert all(r[k] is False for k in (
+              'nativeLauncherAmmoPairVerified','alternateSlotEffectiveAprVerified',
+              'activeEffectStateVerified','currentResourceHashVerified',
+              'weaponPriorityAuthorized','weaponSwitchAuthorized','dispatchAuthorized'))
+          print('R17_SOURCE_ONLY_CONTRACT_SHA_AND_FLAGS_PASS')
+          PY

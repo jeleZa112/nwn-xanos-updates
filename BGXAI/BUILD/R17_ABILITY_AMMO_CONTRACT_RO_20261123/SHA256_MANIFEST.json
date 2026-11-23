@@ -1,0 +1,27 @@
+{
+  "schema": "BGXAI_R17_SOURCE_ONLY_MANIFEST_V1",
+  "gameModified": false,
+  "weaponSwitchAuthorized": false,
+  "files": {
+    "BGXAI_ABILITY_AMMO_CONTRACT_R17_RO.py": {
+      "bytes": 16814,
+      "sha256": "8b89bb44a4ce82257e3b37447e8c1e3fa92acde3412152f70842496f3d0c70d9"
+    },
+    "test_r17_ability_ammo_contract_ro.py": {
+      "bytes": 13210,
+      "sha256": "997a3cd47282d126c921c536b5ece31ba1d65b23e1cec3bfa759264ba58afaae"
+    },
+    "REAL_LOG_R17_ABILITY_AMMO_REPORT_RO.json": {
+      "bytes": 11714,
+      "sha256": "cfaa3c5131528975502bbd6c276b7a2f1f8551c72d65d0c76ab1ac55af0cf4c7"
+    },
+    "README_RU.md": {
+      "bytes": 4494,
+      "sha256": "bcc567d05cf2e6f40887ba92e4e959915713bd52ca8fefe1c00d9fa5b5c572e1"
+    },
+    "CHECKPOINT_RU.md": {
+      "bytes": 3353,
+      "sha256": "bc412cd971c76a97e1d237dac92edd2ce4a97fc682b442e78a17144b30ccbfeb"
+    }
+  }
+}

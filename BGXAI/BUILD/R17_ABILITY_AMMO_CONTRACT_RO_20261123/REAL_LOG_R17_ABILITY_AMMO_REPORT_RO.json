@@ -1,0 +1,344 @@
+{
+  "activeEffectStateVerified": false,
+  "actorIdAtLiveR16": 139266124,
+  "allNineFieldsReadForOneTarget": true,
+  "allSlotGaps": {
+    "9": [
+      "R2_RESREF_IDENTITY_UNVERIFIED",
+      "R3_RESOURCE_PREVIOUS_SESSION_NOT_RECHECKED",
+      "CHARACTER_USABILITY_NOT_VERIFIED",
+      "ABILITY_SELECTION_NOT_NATIVE_AUTHENTICATED",
+      "PROFICIENCY_KIT_AND_BUFF_EFFECTS_NOT_COMPLETE",
+      "EFFECTIVE_THAC0_DAMAGE_AND_HIT_CHANCE_NOT_VERIFIED",
+      "TARGET_IMMUNITY_AND_ITEM_MAGIC_NOT_FULLY_VERIFIED",
+      "MANUAL_EPS_ACTION_QUEUE_NOT_VERIFIED",
+      "NO_CURRENT_SELECTED_APR_SAMPLE_FOR_THIS_SLOT"
+    ],
+    "12": [
+      "R2_RESREF_IDENTITY_UNVERIFIED",
+      "R3_RESOURCE_PREVIOUS_SESSION_NOT_RECHECKED",
+      "CHARACTER_USABILITY_NOT_VERIFIED",
+      "ABILITY_SELECTION_NOT_NATIVE_AUTHENTICATED",
+      "PROFICIENCY_KIT_AND_BUFF_EFFECTS_NOT_COMPLETE",
+      "EFFECTIVE_THAC0_DAMAGE_AND_HIT_CHANCE_NOT_VERIFIED",
+      "TARGET_IMMUNITY_AND_ITEM_MAGIC_NOT_FULLY_VERIFIED",
+      "MANUAL_EPS_ACTION_QUEUE_NOT_VERIFIED",
+      "LAUNCHER_AMMO_PAIR_NOT_ENGINE_VERIFIED"
+    ],
+    "35": [
+      "R2_RESREF_IDENTITY_UNVERIFIED",
+      "R3_RESOURCE_PREVIOUS_SESSION_NOT_RECHECKED",
+      "CHARACTER_USABILITY_NOT_VERIFIED",
+      "ABILITY_SELECTION_NOT_NATIVE_AUTHENTICATED",
+      "PROFICIENCY_KIT_AND_BUFF_EFFECTS_NOT_COMPLETE",
+      "EFFECTIVE_THAC0_DAMAGE_AND_HIT_CHANCE_NOT_VERIFIED",
+      "TARGET_IMMUNITY_AND_ITEM_MAGIC_NOT_FULLY_VERIFIED",
+      "MANUAL_EPS_ACTION_QUEUE_NOT_VERIFIED",
+      "ON_HIT_EFFECT_SPECIAL_AND_BREAKAGE_NOT_PRICED"
+    ],
+    "36": [
+      "R2_RESREF_IDENTITY_UNVERIFIED",
+      "R3_RESOURCE_PREVIOUS_SESSION_NOT_RECHECKED",
+      "CHARACTER_USABILITY_NOT_VERIFIED",
+      "ABILITY_SELECTION_NOT_NATIVE_AUTHENTICATED",
+      "PROFICIENCY_KIT_AND_BUFF_EFFECTS_NOT_COMPLETE",
+      "EFFECTIVE_THAC0_DAMAGE_AND_HIT_CHANCE_NOT_VERIFIED",
+      "TARGET_IMMUNITY_AND_ITEM_MAGIC_NOT_FULLY_VERIFIED",
+      "MANUAL_EPS_ACTION_QUEUE_NOT_VERIFIED",
+      "LAUNCHER_AMMO_PAIR_NOT_ENGINE_VERIFIED",
+      "TWO_HANDED_WITH_SHIELD_ACTIVE_STATE_UNKNOWN",
+      "EQUIPPED_APR_EFFECT_FLAT_OR_ADDITIVE_NOT_REAPPLIED",
+      "NO_CURRENT_SELECTED_APR_SAMPLE_FOR_THIS_SLOT"
+    ],
+    "38": [
+      "R2_RESREF_IDENTITY_UNVERIFIED",
+      "R3_RESOURCE_PREVIOUS_SESSION_NOT_RECHECKED",
+      "CHARACTER_USABILITY_NOT_VERIFIED",
+      "ABILITY_SELECTION_NOT_NATIVE_AUTHENTICATED",
+      "PROFICIENCY_KIT_AND_BUFF_EFFECTS_NOT_COMPLETE",
+      "EFFECTIVE_THAC0_DAMAGE_AND_HIT_CHANCE_NOT_VERIFIED",
+      "TARGET_IMMUNITY_AND_ITEM_MAGIC_NOT_FULLY_VERIFIED",
+      "MANUAL_EPS_ACTION_QUEUE_NOT_VERIFIED",
+      "TWO_HANDED_WITH_SHIELD_ACTIVE_STATE_UNKNOWN",
+      "NO_CURRENT_SELECTED_APR_SAMPLE_FOR_THIS_SLOT"
+    ]
+  },
+  "alternateSlotEffectiveAprVerified": false,
+  "ammoWindowCount": 3,
+  "ammoWindows": [
+    {
+      "actor": 139266124,
+      "afterAmmoQuantityRaw": 19,
+      "attackActionRaw": 3,
+      "beforeAmmoQuantityRaw": 20,
+      "bowPresentInQuickslot36Candidate": true,
+      "classification": "OBSERVED_AMMO_QUANTITY_DECREMENT_NEAR_ATTACK_RO",
+      "exactProjectilesFiredVerified": false,
+      "launcherAmmoEnginePairVerified": false,
+      "r13Sequence": 1,
+      "sameNativeEventTokenVerified": false,
+      "selectedSlot": 12,
+      "windowQuantityDecrease": 1
+    },
+    {
+      "actor": 139266124,
+      "afterAmmoQuantityRaw": 18,
+      "attackActionRaw": 3,
+      "beforeAmmoQuantityRaw": 20,
+      "bowPresentInQuickslot36Candidate": true,
+      "classification": "OBSERVED_AMMO_QUANTITY_DECREMENT_NEAR_ATTACK_RO",
+      "exactProjectilesFiredVerified": false,
+      "launcherAmmoEnginePairVerified": false,
+      "r13Sequence": 2,
+      "sameNativeEventTokenVerified": false,
+      "selectedSlot": 12,
+      "windowQuantityDecrease": 2
+    },
+    {
+      "actor": 139266124,
+      "afterAmmoQuantityRaw": 17,
+      "attackActionRaw": 3,
+      "beforeAmmoQuantityRaw": 18,
+      "bowPresentInQuickslot36Candidate": true,
+      "classification": "OBSERVED_AMMO_QUANTITY_DECREMENT_NEAR_ATTACK_RO",
+      "exactProjectilesFiredVerified": false,
+      "launcherAmmoEnginePairVerified": false,
+      "r13Sequence": 3,
+      "sameNativeEventTokenVerified": false,
+      "selectedSlot": 12,
+      "windowQuantityDecrease": 1
+    }
+  ],
+  "bowOpcode1RawKey2IsFlatCandidateNotAdditivePlus2": true,
+  "crossSessionPriorR3": true,
+  "currentResourceHashVerified": false,
+  "dispatchAuthorized": false,
+  "executable": false,
+  "gameModified": false,
+  "input": {
+    "logSha256": "cebfa573df8fc9e5180ec8cbcfc8b67a865a12c6381394d5dcd511cdf7500945",
+    "r16Schema": "BGXAI_ALTERNATE_SLOT_STATIC_EVIDENCE_RO_V1",
+    "r3Sha256": "7ae7555f81b14a784e7866472f14483b02c2d6b707ab6169225e8fec32507304"
+  },
+  "launcherAmmoStaticCompatibilityCandidate": {
+    "ammoAttackTypeRaw": 2,
+    "ammoLauncherRequiredRaw": 1,
+    "ammoRangeRaw": 100,
+    "effectiveRangeInEngineVerified": false,
+    "enginePairVerified": false,
+    "launcher": "BOW05",
+    "launcherAttackTypeRaw": 4,
+    "launcherRangeRaw": 75,
+    "launcherSlot": 36,
+    "projectile": "AROW01",
+    "projectileSlot": 12,
+    "typeMatchFromPriorR3Only": true
+  },
+  "manualAndEpsQueueVerified": false,
+  "nativeLauncherAmmoPairVerified": false,
+  "offhandShieldWithTwoHandedWeaponStateUnverified": true,
+  "r13DefenseReadLive": true,
+  "readOnly": true,
+  "sameActorAsPriorR3": false,
+  "schema": "BGXAI_ABILITY_AMMO_CONTRACT_R17_RO_V1",
+  "sourceOnly": true,
+  "status": "STATIC_ABILITY_AND_LIVE_AMMO_WINDOW_CANDIDATES_RO",
+  "swordOnHitOpcode146IsUnpricedBreakageRiskCandidate": true,
+  "targetProtectionsComplete": false,
+  "uncertainty": [
+    "CURRENT_GAME_ITEM_BYTES_NOT_RECHECKED_AFTER_R3",
+    "NO_LIVE_NATIVE_LAUNCHER_AMMO_ABILITY_IDENTITY",
+    "NO_EXACT_ARROW_PER_ATTACK_OR_KILL_DAMAGE_INFERENCE",
+    "NO_PER_SLOT_ACTIVE_EFFECT_SNAPSHOT",
+    "NO_ALTERNATE_SLOT_APR_OR_FULL_EFFECTIVE_HIT_CHANCE",
+    "NO_ITEM_319_USE_RESTRICTIONS_VALIDATION",
+    "NO_HOSTILITY_AND_IMMUNITY_COMPLETENESS",
+    "NO_MANUAL_EPS_QUEUE_FREE_BOUNDARY"
+  ],
+  "weaponPriorityAuthorized": false,
+  "weaponSlots": {
+    "9": {
+      "abilityHeaders": [],
+      "abilitySelectedInEngineVerified": false,
+      "activeEffectsVerified": false,
+      "aprEffectAdditiveDeltaAssumed": false,
+      "aprEffectKeyRaw": null,
+      "aprEffectModeRaw": null,
+      "characterUsabilityVerified": false,
+      "currentResourceBytesReverified": false,
+      "effectiveSlotAprVerified": false,
+      "equippedOpcodeNumbers": [
+        7,
+        7,
+        7,
+        0
+      ],
+      "isTwoHandedStatic": false,
+      "itemResrefRaw": "SHLD03A",
+      "manualAndEpsQueueVerified": false,
+      "priorResourceSha256": "f24085edd8bf24f79b9b09302bb719f5203d9fa175dbf352f94253ff2a48b7f1",
+      "priorityEligible": false
+    },
+    "12": {
+      "abilityHeaders": [
+        {
+          "abilityCurrentSelectionVerified": false,
+          "abilityEffectsRaw": [],
+          "abilityIndex": 0,
+          "attackTypeRaw": 2,
+          "damageBonusRaw": 0,
+          "damageTypeRaw": 4,
+          "diceCountRaw": 1,
+          "diceSidesRaw": 6,
+          "effectiveDamageVerified": false,
+          "launcherRequiredRaw": 1,
+          "onHitSpellTriggerCandidate": false,
+          "rangeRaw": 100,
+          "speedRaw": 0,
+          "thac0BonusRaw": 0
+        }
+      ],
+      "abilitySelectedInEngineVerified": false,
+      "activeEffectsVerified": false,
+      "aprEffectAdditiveDeltaAssumed": false,
+      "aprEffectKeyRaw": null,
+      "aprEffectModeRaw": null,
+      "characterUsabilityVerified": false,
+      "currentResourceBytesReverified": false,
+      "effectiveSlotAprVerified": false,
+      "equippedOpcodeNumbers": [
+        319
+      ],
+      "isTwoHandedStatic": false,
+      "itemResrefRaw": "AROW01",
+      "manualAndEpsQueueVerified": false,
+      "priorResourceSha256": "52209dceddf99fec75e20a694b42906fa3f9ea74c6cacad5d62d33eff22f9d91",
+      "priorityEligible": false
+    },
+    "35": {
+      "abilityHeaders": [
+        {
+          "abilityCurrentSelectionVerified": false,
+          "abilityEffectsRaw": [
+            {
+              "opcodeRaw": 146,
+              "probability1Raw": 1,
+              "resourceRaw": "SW1H04"
+            }
+          ],
+          "abilityIndex": 0,
+          "attackTypeRaw": 1,
+          "damageBonusRaw": 0,
+          "damageTypeRaw": 3,
+          "diceCountRaw": 1,
+          "diceSidesRaw": 8,
+          "effectiveDamageVerified": false,
+          "launcherRequiredRaw": 0,
+          "onHitSpellTriggerCandidate": true,
+          "rangeRaw": 1,
+          "speedRaw": 5,
+          "thac0BonusRaw": 0
+        }
+      ],
+      "abilitySelectedInEngineVerified": false,
+      "activeEffectsVerified": false,
+      "aprEffectAdditiveDeltaAssumed": false,
+      "aprEffectKeyRaw": null,
+      "aprEffectModeRaw": null,
+      "characterUsabilityVerified": false,
+      "currentResourceBytesReverified": false,
+      "effectiveSlotAprVerified": false,
+      "equippedOpcodeNumbers": [
+        7,
+        7,
+        7
+      ],
+      "isTwoHandedStatic": false,
+      "itemResrefRaw": "SW1H04",
+      "manualAndEpsQueueVerified": false,
+      "priorResourceSha256": "73e3de6a07afc42f50d63b74c3235c1f9efdd773e280c501b481e876647eda88",
+      "priorityEligible": false
+    },
+    "36": {
+      "abilityHeaders": [
+        {
+          "abilityCurrentSelectionVerified": false,
+          "abilityEffectsRaw": [],
+          "abilityIndex": 0,
+          "attackTypeRaw": 4,
+          "damageBonusRaw": 0,
+          "damageTypeRaw": 1,
+          "diceCountRaw": 0,
+          "diceSidesRaw": 6,
+          "effectiveDamageVerified": false,
+          "launcherRequiredRaw": 0,
+          "onHitSpellTriggerCandidate": false,
+          "rangeRaw": 75,
+          "speedRaw": 6,
+          "thac0BonusRaw": 0
+        }
+      ],
+      "abilitySelectedInEngineVerified": false,
+      "activeEffectsVerified": false,
+      "aprEffectAdditiveDeltaAssumed": false,
+      "aprEffectKeyRaw": 2,
+      "aprEffectModeRaw": 1,
+      "characterUsabilityVerified": false,
+      "currentResourceBytesReverified": false,
+      "effectiveSlotAprVerified": false,
+      "equippedOpcodeNumbers": [
+        319,
+        7,
+        7,
+        7,
+        1
+      ],
+      "isTwoHandedStatic": true,
+      "itemResrefRaw": "BOW05",
+      "manualAndEpsQueueVerified": false,
+      "priorResourceSha256": "0bfc6680b759239052dcd1882a1d2f354e7bc840e535f0b9499a5c7a3c07d797",
+      "priorityEligible": false
+    },
+    "38": {
+      "abilityHeaders": [
+        {
+          "abilityCurrentSelectionVerified": false,
+          "abilityEffectsRaw": [],
+          "abilityIndex": 0,
+          "attackTypeRaw": 1,
+          "damageBonusRaw": 0,
+          "damageTypeRaw": 2,
+          "diceCountRaw": 1,
+          "diceSidesRaw": 6,
+          "effectiveDamageVerified": false,
+          "launcherRequiredRaw": 0,
+          "onHitSpellTriggerCandidate": false,
+          "rangeRaw": 2,
+          "speedRaw": 4,
+          "thac0BonusRaw": 0
+        }
+      ],
+      "abilitySelectedInEngineVerified": false,
+      "activeEffectsVerified": false,
+      "aprEffectAdditiveDeltaAssumed": false,
+      "aprEffectKeyRaw": null,
+      "aprEffectModeRaw": null,
+      "characterUsabilityVerified": false,
+      "currentResourceBytesReverified": false,
+      "effectiveSlotAprVerified": false,
+      "equippedOpcodeNumbers": [
+        7,
+        7,
+        7,
+        7,
+        7
+      ],
+      "isTwoHandedStatic": true,
+      "itemResrefRaw": "STAF01",
+      "manualAndEpsQueueVerified": false,
+      "priorResourceSha256": "c472bdf3a561144392249d45df67ae3b4e07d0faf5d30469177c318bc6857fd3",
+      "priorityEligible": false
+    }
+  },
+  "weaponSwitchAuthorized": false
+}
