@@ -1,0 +1,31 @@
+{
+  "schema": "BGXAI_R22_SOURCE_ONLY_SHA256_V1",
+  "sourceOnly": true,
+  "gameModified": false,
+  "installAuthorized": false,
+  "dispatchAuthorized": false,
+  "weaponSwitchAuthorized": false,
+  "safeToRegisterListener": false,
+  "files": {
+    "BGXAI_R22_NATIVE_OWNER_AUDIT_RO.py": {
+      "sha256": "7658a194236eb8573463e93e0c22c22e158e954c6ac8e09eefd69cb4af2adf1f",
+      "bytes": 6016
+    },
+    "test_r22_native_owner_audit_ro.py": {
+      "sha256": "5982423c298b185e8b5ca898713dce3384e0832e475bb6d46f94243c880ba227",
+      "bytes": 6848
+    },
+    "R22_UPSTREAM_EXCERPTS_VERIFIED_20261123.json": {
+      "sha256": "bd68d43739ed402fcebe3a910b34fb4847068ef48c00370a6befc6d265d9a605",
+      "bytes": 2816
+    },
+    "R22_SOURCE_ONLY_VERDICT.json": {
+      "sha256": "d8cffb825280bd53bbb605aabbd164676db4380a2866874e710fefca301ae0e7",
+      "bytes": 1823
+    },
+    "README_RU.md": {
+      "sha256": "8fdc124adaa7bbea57aa55d6962abe17033cea3f7cb2778f6cb7780a587bedd4",
+      "bytes": 5745
+    }
+  }
+}

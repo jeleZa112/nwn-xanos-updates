@@ -1,0 +1,58 @@
+name: BGXAI R22 native ownership and on-hit ABI contract - SOURCE ONLY
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R22_NATIVE_OWNERSHIP_SOURCE_RO_20261123/**'
+      - '.github/workflows/bgxai-r22-native-ownership-source-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline:
+    name: R22 40 source-only tests and immutable SHA (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - name: Keep exact source bytes on Windows and Linux
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Source-only unit and fail-closed tests
+        shell: bash
+        run: |
+          cd BGXAI/BUILD/R22_NATIVE_OWNERSHIP_SOURCE_RO_20261123
+          python -m unittest -v test_r22_native_owner_audit_ro.py
+      - name: SHA256, provenance, permissions and frozen verdict
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib,json,sys
+          from pathlib import Path
+          d=Path('BGXAI/BUILD/R22_NATIVE_OWNERSHIP_SOURCE_RO_20261123')
+          sys.path.insert(0,str(d.resolve()))
+          from BGXAI_R22_NATIVE_OWNER_AUDIT_RO import inspect
+          m=json.loads((d/'SHA256_MANIFEST.json').read_text(encoding='utf-8'))
+          assert m['sourceOnly'] is True
+          for k in ('gameModified','installAuthorized','dispatchAuthorized','weaponSwitchAuthorized','safeToRegisterListener'):
+              assert m[k] is False,k
+          for name,entry in m['files'].items():
+              b=(d/name).read_bytes()
+              assert len(b)==entry['bytes'] and hashlib.sha256(b).hexdigest()==entry['sha256'],name
+          e=json.loads((d/'R22_UPSTREAM_EXCERPTS_VERIFIED_20261123.json').read_text(encoding='utf-8'))
+          pins={k:v['gitBlobSha1'] for k,v in e['provenance'].items()}
+          actual=inspect(e['fragments'],e['documentedSizes'],pins)
+          verdict=json.loads((d/'R22_SOURCE_ONLY_VERDICT.json').read_text(encoding='utf-8'))
+          assert actual==verdict
+          assert verdict['allSourceChecksPass'] is True
+          assert verdict['status']=='SOURCE_CHAIN_MATCHED_LIFETIME_HOLD'
+          assert verdict['dispatchAuthorized'] is False and verdict['weaponSwitchAuthorized'] is False
+          assert verdict['safeToCallGetAbility'] is False and verdict['safeToRegisterListener'] is False
+          print('BGXAI_R22_SOURCE_ONLY_SHA_AND_HOLD_PASS')
+          PY

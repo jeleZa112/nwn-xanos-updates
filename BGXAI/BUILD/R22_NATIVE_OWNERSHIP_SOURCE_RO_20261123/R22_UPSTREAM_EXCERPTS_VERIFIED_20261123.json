@@ -1,0 +1,23 @@
+{
+  "schema": "BGXAI_R22_VERIFIED_UPSTREAM_SNIPPETS_RO_V1",
+  "provenance": {
+    "resource": {"url": "https://github.com/Bubb13/EEex/blob/v1.1.7/EEex/copy/EEex_scripts/EEex_Resource.lua", "gitBlobSha1": "5ecd3c2f9e9bcc6cbd317653fc057a06d956916b"},
+    "sprite": {"url": "https://github.com/Bubb13/EEex/blob/v1.1.7/EEex/copy/EEex_scripts/EEex_Sprite.lua", "gitBlobSha1": "b2d8d930c47785737bd30dad08e9f35a9d859578"},
+    "utility": {"url": "https://github.com/Bubb13/EEex/blob/v1.1.7/EEex/copy/EEex_scripts/EEex_Utility.lua", "gitBlobSha1": "f10ed5e25ff0c03bc63507d04263f96daae60e7b"},
+    "cpp": {"url": "https://github.com/Bubb13/InfinityLoader/blob/master/EEex-Core-Shared-Files/source/EEex.cpp", "gitBlobSha1": "6646e9a4206459315d641400771e1dd109e4186a"},
+    "sprite_patch": {"url": "https://github.com/Bubb13/EEex/blob/v1.1.7/EEex/copy/EEex_scripts/EEex_Sprite_Patch.lua", "gitBlobSha1": "8a9fd16e3cb0f1657486089a998d5d47259e73ec"}
+  },
+  "documentedSizes": {"Item_Header_st": 114, "Item_ability_st": 56},
+  "sizesUrl": "https://github.com/Bubb13/EEex-Docs/blob/master/source/EE%20Game%20Structures%20(x64)/Other/index.rst",
+  "fragments": {
+    "resource": "function EEex_Resource_GetItemAbility(itemHeader, abilityIndex)\n if itemHeader.abilityCount <= abilityIndex then return end\n return EEex_PtrToUD(EEex_UDToPtr(itemHeader) + itemHeader.abilityOffset + Item_Header_st.sizeof * abilityIndex, \"Item_ability_st\")\nend\nfunction EEex_Resource_GetCItemAbility(item, abilityIndex)\n return item.pRes.pHeader:getAbility(abilityIndex)\nend",
+    "sprite": "function EEex_Sprite_Hook_CheckBlockWeaponHit(attackingSprite, targetSprite, weapon, weaponAbility)\n local listenerContext = { [\"attackingSprite\"] = attackingSprite, [\"targetSprite\"] = targetSprite, [\"weapon\"] = weapon, [\"weaponAbility\"] = weaponAbility, }\n for _, listener in ipairs(EEex_Sprite_Private_BlockWeaponHitListeners) do\n  if EEex_Utility_TryIgnore(listener, listenerContext) then\n   return true\n  end\n end\nend",
+    "utility": "function EEex_Utility_TryIgnore(func, ...)\n local result = EEex_Utility_TryCatch(func, ...)\n if not result[1] then print(result[2]); return end\n return select(2, table.unpack(result))\nend",
+    "cpp": "curWeaponIn->Demand();\n const Item_ability_st *const pWeaponAbility = curWeaponIn->GetAbility(curAttackNum);\n tolua_pushusertype(L, pWeaponAbility, \"Item_ability_st\");",
+    "sprite_patch": "false - Don't alter engine behavior\ntrue - Block base weapon damage and on-hit effects"
+  },
+  "sourceOnly": true,
+  "installedInGame": false,
+  "gameplayMethodCalls": 0,
+  "summary": "Frozen minimal observed source excerpts (not full sources); source hashes were retrieved separately through the GitHub connector. Proof does not cover native lifetime, DLL ABI or read-only callback behavior."
+}
