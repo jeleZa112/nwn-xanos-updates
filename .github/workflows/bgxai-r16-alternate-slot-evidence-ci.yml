@@ -1,0 +1,44 @@
+name: BGXAI R16 alternate-slot static evidence - source-only
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/ALTERNATE_SLOT_STATIC_EVIDENCE_RO_20261123/**'
+      - '.github/workflows/bgxai-r16-alternate-slot-evidence-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline:
+    name: Python 28 source-only tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test fail-closed static evidence mapping
+        shell: bash
+        run: |
+          cd BGXAI/BUILD/ALTERNATE_SLOT_STATIC_EVIDENCE_RO_20261123
+          python -m unittest -v test_alternate_slot_evidence_ro_v1.py test_apr_key_decoder_ro.py
+      - name: Ensure report does not authorize dispatch or alternate APR
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("BGXAI/BUILD/ALTERNATE_SLOT_STATIC_EVIDENCE_RO_20261123/REAL_LOG_ALTERNATE_SLOTS_RO_V1.json")
+          x=json.loads(p.read_text(encoding="utf-8"))
+          assert x["status"]=="PRIOR_STATIC_ITEM_FACTS_AND_CURRENT_SELECTION_AUDITED_RO"
+          assert x["candidateCount"]==5 and x["snapshots"]==15
+          assert all(x[k] is False for k in ("weaponSwitchAuthorized","dispatchAuthorized","fullLoadoutScoringAuthorized","effectiveAlternateSlotAPRVerified","launcherAmmoAssociationVerified"))
+          assert all(s["priorityEligible"] is False for s in x["slots"])
+          assert sum(len(s["selectedAprSamples"]) for s in x["slots"])==4
+          assert len(x["ammoResetCandidates"])==1
+          print("BGXAI_R16_READONLY_FLAGS_PASS")
+          PY

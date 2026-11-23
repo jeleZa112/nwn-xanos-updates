@@ -1,0 +1,397 @@
+{
+  "actorId": 139266124,
+  "ammoResetCandidates": [
+    {
+      "afterSeq": 7,
+      "ammoSlot": 12,
+      "beforeSeq": 8,
+      "meaning": "AMMO_RESTOCK_OR_RELOAD_CANDIDATE_UNVERIFIED",
+      "newCount": 20,
+      "oldCount": 19
+    }
+  ],
+  "candidateCount": 5,
+  "currentGameResourceRevalidated": false,
+  "dispatchAuthorized": false,
+  "effectiveAlternateSlotAPRVerified": false,
+  "executable": false,
+  "fullLoadoutScoringAuthorized": false,
+  "gameModified": false,
+  "input": {
+    "logSha256": "cebfa573df8fc9e5180ec8cbcfc8b67a865a12c6381394d5dcd511cdf7500945",
+    "r3Sha256": "7ae7555f81b14a784e7866472f14483b02c2d6b707ab6169225e8fec32507304",
+    "selectedLogSha256": "cebfa573df8fc9e5180ec8cbcfc8b67a865a12c6381394d5dcd511cdf7500945"
+  },
+  "launcherAmmoAssociationVerified": false,
+  "manualEpsQueueVerified": false,
+  "partyIndex": 2,
+  "previousR3ActorId": 139135050,
+  "previousR3SnapshotIsSameActorAndSession": false,
+  "readOnly": true,
+  "resourceAgeStatus": "PRIOR_GAME_SNAPSHOT_NOT_REVERIFIED_NOW",
+  "schema": "BGXAI_ALTERNATE_SLOT_STATIC_EVIDENCE_RO_V1",
+  "selectedObservationCount": 4,
+  "slots": [
+    {
+      "alternateSlotAprVerified": false,
+      "blockedBy": [
+        "R2_RESREF_IDENTITY_UNVERIFIED",
+        "R3_RESOURCE_PREVIOUS_SESSION_NOT_RECHECKED",
+        "CHARACTER_USABILITY_NOT_VERIFIED",
+        "ABILITY_SELECTION_NOT_NATIVE_AUTHENTICATED",
+        "PROFICIENCY_KIT_AND_BUFF_EFFECTS_NOT_COMPLETE",
+        "EFFECTIVE_THAC0_DAMAGE_AND_HIT_CHANCE_NOT_VERIFIED",
+        "TARGET_IMMUNITY_AND_ITEM_MAGIC_NOT_FULLY_VERIFIED",
+        "MANUAL_EPS_ACTION_QUEUE_NOT_VERIFIED",
+        "ON_HIT_EFFECT_SPECIAL_AND_BREAKAGE_NOT_PRICED"
+      ],
+      "priorityEligible": false,
+      "resrefRaw": "SW1H04",
+      "selectedAprSamples": [
+        {
+          "key": 7,
+          "notEffectiveAlternateSlotAPR": true,
+          "r13Sequence": 4,
+          "sourceEventLine": 248,
+          "value": "3/2"
+        }
+      ],
+      "slot": 35,
+      "staticItem": {
+        "abilities": [
+          {
+            "abilityIndex": 0,
+            "attackTypeRaw": 1,
+            "damageBonusRaw": 0,
+            "damageMeanBeforeEffects": 4.5,
+            "damageTypeRaw": 3,
+            "diceCountRaw": 1,
+            "diceSidesRaw": 8,
+            "effectsOpcodesRaw": [
+              146
+            ],
+            "launcherRequiredRaw": 0,
+            "rangeRaw": 1,
+            "speedRaw": 5,
+            "thac0BonusRaw": 0
+          }
+        ],
+        "abilityUsableNowVerified": false,
+        "aprEquippedOverrideRaw": [],
+        "currentResourceHashVerified": false,
+        "effectiveDamageVerified": false,
+        "enchantmentRaw": 0,
+        "equippedEffectsOpcodeRaw": [
+          7,
+          7,
+          7
+        ],
+        "fullEffectsVerified": false,
+        "hasOnHitScriptEffectCandidate": true,
+        "itemTypeRaw": 20,
+        "minStrengthRaw": 6,
+        "originAtR3Audit": "CURRENT_GAME_OVERRIDE",
+        "proficiencyIdRaw": 90,
+        "resource": "SW1H04",
+        "resourceSha256AtR3Audit": "73e3de6a07afc42f50d63b74c3235c1f9efdd773e280c501b481e876647eda88",
+        "sourceKind": "PRIOR_CURRENT_GAME_STATIC_RESOURCE_UNREVALIDATED",
+        "twoHandedFlagRaw": false
+      },
+      "status": "STATIC_ITEM_FIELDS_FROM_PRIOR_GAME_RO",
+      "usableNowVerified": false
+    },
+    {
+      "alternateSlotAprVerified": false,
+      "blockedBy": [
+        "R2_RESREF_IDENTITY_UNVERIFIED",
+        "R3_RESOURCE_PREVIOUS_SESSION_NOT_RECHECKED",
+        "CHARACTER_USABILITY_NOT_VERIFIED",
+        "ABILITY_SELECTION_NOT_NATIVE_AUTHENTICATED",
+        "PROFICIENCY_KIT_AND_BUFF_EFFECTS_NOT_COMPLETE",
+        "EFFECTIVE_THAC0_DAMAGE_AND_HIT_CHANCE_NOT_VERIFIED",
+        "TARGET_IMMUNITY_AND_ITEM_MAGIC_NOT_FULLY_VERIFIED",
+        "MANUAL_EPS_ACTION_QUEUE_NOT_VERIFIED",
+        "LAUNCHER_AMMO_PAIR_NOT_ENGINE_VERIFIED",
+        "TWO_HANDED_WITH_SHIELD_ACTIVE_STATE_UNKNOWN",
+        "EQUIPPED_APR_EFFECT_FLAT_OR_ADDITIVE_NOT_REAPPLIED",
+        "NO_CURRENT_SELECTED_APR_SAMPLE_FOR_THIS_SLOT"
+      ],
+      "priorityEligible": false,
+      "resrefRaw": "BOW05",
+      "selectedAprSamples": [],
+      "slot": 36,
+      "staticItem": {
+        "abilities": [
+          {
+            "abilityIndex": 0,
+            "attackTypeRaw": 4,
+            "damageBonusRaw": 0,
+            "damageMeanBeforeEffects": 0.0,
+            "damageTypeRaw": 1,
+            "diceCountRaw": 0,
+            "diceSidesRaw": 6,
+            "effectsOpcodesRaw": [],
+            "launcherRequiredRaw": 0,
+            "rangeRaw": 75,
+            "speedRaw": 6,
+            "thac0BonusRaw": 0
+          }
+        ],
+        "abilityUsableNowVerified": false,
+        "aprEquippedOverrideRaw": [
+          {
+            "modeRaw": 1,
+            "opcodeRaw": 1,
+            "valueRaw": 2
+          }
+        ],
+        "currentResourceHashVerified": false,
+        "effectiveDamageVerified": false,
+        "enchantmentRaw": 0,
+        "equippedEffectsOpcodeRaw": [
+          319,
+          7,
+          7,
+          7,
+          1
+        ],
+        "fullEffectsVerified": false,
+        "hasOnHitScriptEffectCandidate": false,
+        "itemTypeRaw": 15,
+        "minStrengthRaw": 3,
+        "originAtR3Audit": "CURRENT_GAME_BIFF",
+        "proficiencyIdRaw": 105,
+        "resource": "BOW05",
+        "resourceSha256AtR3Audit": "0bfc6680b759239052dcd1882a1d2f354e7bc840e535f0b9499a5c7a3c07d797",
+        "sourceKind": "PRIOR_CURRENT_GAME_STATIC_RESOURCE_UNREVALIDATED",
+        "twoHandedFlagRaw": true
+      },
+      "status": "STATIC_ITEM_FIELDS_FROM_PRIOR_GAME_RO",
+      "usableNowVerified": false
+    },
+    {
+      "priorityEligible": false,
+      "resrefRaw": null,
+      "selectedAprSamples": [],
+      "slot": 37,
+      "status": "EMPTY_AT_OBSERVED_SESSION",
+      "usableNowVerified": false
+    },
+    {
+      "alternateSlotAprVerified": false,
+      "blockedBy": [
+        "R2_RESREF_IDENTITY_UNVERIFIED",
+        "R3_RESOURCE_PREVIOUS_SESSION_NOT_RECHECKED",
+        "CHARACTER_USABILITY_NOT_VERIFIED",
+        "ABILITY_SELECTION_NOT_NATIVE_AUTHENTICATED",
+        "PROFICIENCY_KIT_AND_BUFF_EFFECTS_NOT_COMPLETE",
+        "EFFECTIVE_THAC0_DAMAGE_AND_HIT_CHANCE_NOT_VERIFIED",
+        "TARGET_IMMUNITY_AND_ITEM_MAGIC_NOT_FULLY_VERIFIED",
+        "MANUAL_EPS_ACTION_QUEUE_NOT_VERIFIED",
+        "TWO_HANDED_WITH_SHIELD_ACTIVE_STATE_UNKNOWN",
+        "NO_CURRENT_SELECTED_APR_SAMPLE_FOR_THIS_SLOT"
+      ],
+      "priorityEligible": false,
+      "resrefRaw": "STAF01",
+      "selectedAprSamples": [],
+      "slot": 38,
+      "staticItem": {
+        "abilities": [
+          {
+            "abilityIndex": 0,
+            "attackTypeRaw": 1,
+            "damageBonusRaw": 0,
+            "damageMeanBeforeEffects": 3.5,
+            "damageTypeRaw": 2,
+            "diceCountRaw": 1,
+            "diceSidesRaw": 6,
+            "effectsOpcodesRaw": [],
+            "launcherRequiredRaw": 0,
+            "rangeRaw": 2,
+            "speedRaw": 4,
+            "thac0BonusRaw": 0
+          }
+        ],
+        "abilityUsableNowVerified": false,
+        "aprEquippedOverrideRaw": [],
+        "currentResourceHashVerified": false,
+        "effectiveDamageVerified": false,
+        "enchantmentRaw": 0,
+        "equippedEffectsOpcodeRaw": [
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "fullEffectsVerified": false,
+        "hasOnHitScriptEffectCandidate": false,
+        "itemTypeRaw": 26,
+        "minStrengthRaw": 5,
+        "originAtR3Audit": "CURRENT_GAME_OVERRIDE",
+        "proficiencyIdRaw": 102,
+        "resource": "STAF01",
+        "resourceSha256AtR3Audit": "c472bdf3a561144392249d45df67ae3b4e07d0faf5d30469177c318bc6857fd3",
+        "sourceKind": "PRIOR_CURRENT_GAME_STATIC_RESOURCE_UNREVALIDATED",
+        "twoHandedFlagRaw": true
+      },
+      "status": "STATIC_ITEM_FIELDS_FROM_PRIOR_GAME_RO",
+      "usableNowVerified": false
+    },
+    {
+      "priorityEligible": false,
+      "resrefRaw": null,
+      "selectedAprSamples": [],
+      "slot": 11,
+      "status": "EMPTY_AT_OBSERVED_SESSION",
+      "usableNowVerified": false
+    },
+    {
+      "alternateSlotAprVerified": false,
+      "blockedBy": [
+        "R2_RESREF_IDENTITY_UNVERIFIED",
+        "R3_RESOURCE_PREVIOUS_SESSION_NOT_RECHECKED",
+        "CHARACTER_USABILITY_NOT_VERIFIED",
+        "ABILITY_SELECTION_NOT_NATIVE_AUTHENTICATED",
+        "PROFICIENCY_KIT_AND_BUFF_EFFECTS_NOT_COMPLETE",
+        "EFFECTIVE_THAC0_DAMAGE_AND_HIT_CHANCE_NOT_VERIFIED",
+        "TARGET_IMMUNITY_AND_ITEM_MAGIC_NOT_FULLY_VERIFIED",
+        "MANUAL_EPS_ACTION_QUEUE_NOT_VERIFIED",
+        "LAUNCHER_AMMO_PAIR_NOT_ENGINE_VERIFIED"
+      ],
+      "priorityEligible": false,
+      "resrefRaw": "AROW01",
+      "selectedAprSamples": [
+        {
+          "key": 2,
+          "notEffectiveAlternateSlotAPR": true,
+          "r13Sequence": 1,
+          "sourceEventLine": 144,
+          "value": "2"
+        },
+        {
+          "key": 2,
+          "notEffectiveAlternateSlotAPR": true,
+          "r13Sequence": 2,
+          "sourceEventLine": 211,
+          "value": "2"
+        },
+        {
+          "key": 2,
+          "notEffectiveAlternateSlotAPR": true,
+          "r13Sequence": 3,
+          "sourceEventLine": 233,
+          "value": "2"
+        }
+      ],
+      "slot": 12,
+      "staticItem": {
+        "abilities": [
+          {
+            "abilityIndex": 0,
+            "attackTypeRaw": 2,
+            "damageBonusRaw": 0,
+            "damageMeanBeforeEffects": 3.5,
+            "damageTypeRaw": 4,
+            "diceCountRaw": 1,
+            "diceSidesRaw": 6,
+            "effectsOpcodesRaw": [],
+            "launcherRequiredRaw": 1,
+            "rangeRaw": 100,
+            "speedRaw": 0,
+            "thac0BonusRaw": 0
+          }
+        ],
+        "abilityUsableNowVerified": false,
+        "aprEquippedOverrideRaw": [],
+        "currentResourceHashVerified": false,
+        "effectiveDamageVerified": false,
+        "enchantmentRaw": 0,
+        "equippedEffectsOpcodeRaw": [
+          319
+        ],
+        "fullEffectsVerified": false,
+        "hasOnHitScriptEffectCandidate": false,
+        "itemTypeRaw": 5,
+        "minStrengthRaw": 0,
+        "originAtR3Audit": "CURRENT_GAME_BIFF",
+        "proficiencyIdRaw": 0,
+        "resource": "AROW01",
+        "resourceSha256AtR3Audit": "52209dceddf99fec75e20a694b42906fa3f9ea74c6cacad5d62d33eff22f9d91",
+        "sourceKind": "PRIOR_CURRENT_GAME_STATIC_RESOURCE_UNREVALIDATED",
+        "twoHandedFlagRaw": false
+      },
+      "status": "STATIC_ITEM_FIELDS_FROM_PRIOR_GAME_RO",
+      "usableNowVerified": false
+    },
+    {
+      "priorityEligible": false,
+      "resrefRaw": null,
+      "selectedAprSamples": [],
+      "slot": 13,
+      "status": "EMPTY_AT_OBSERVED_SESSION",
+      "usableNowVerified": false
+    },
+    {
+      "priorityEligible": false,
+      "resrefRaw": null,
+      "selectedAprSamples": [],
+      "slot": 14,
+      "status": "EMPTY_AT_OBSERVED_SESSION",
+      "usableNowVerified": false
+    },
+    {
+      "alternateSlotAprVerified": false,
+      "blockedBy": [
+        "R2_RESREF_IDENTITY_UNVERIFIED",
+        "R3_RESOURCE_PREVIOUS_SESSION_NOT_RECHECKED",
+        "CHARACTER_USABILITY_NOT_VERIFIED",
+        "ABILITY_SELECTION_NOT_NATIVE_AUTHENTICATED",
+        "PROFICIENCY_KIT_AND_BUFF_EFFECTS_NOT_COMPLETE",
+        "EFFECTIVE_THAC0_DAMAGE_AND_HIT_CHANCE_NOT_VERIFIED",
+        "TARGET_IMMUNITY_AND_ITEM_MAGIC_NOT_FULLY_VERIFIED",
+        "MANUAL_EPS_ACTION_QUEUE_NOT_VERIFIED",
+        "NO_CURRENT_SELECTED_APR_SAMPLE_FOR_THIS_SLOT"
+      ],
+      "priorityEligible": false,
+      "resrefRaw": "SHLD03A",
+      "selectedAprSamples": [],
+      "slot": 9,
+      "staticItem": {
+        "abilities": [],
+        "abilityUsableNowVerified": false,
+        "aprEquippedOverrideRaw": [],
+        "currentResourceHashVerified": false,
+        "effectiveDamageVerified": false,
+        "enchantmentRaw": 0,
+        "equippedEffectsOpcodeRaw": [
+          7,
+          7,
+          7,
+          0
+        ],
+        "fullEffectsVerified": false,
+        "hasOnHitScriptEffectCandidate": false,
+        "itemTypeRaw": 12,
+        "minStrengthRaw": 12,
+        "originAtR3Audit": "CURRENT_GAME_BIFF",
+        "proficiencyIdRaw": 0,
+        "resource": "SHLD03A",
+        "resourceSha256AtR3Audit": "f24085edd8bf24f79b9b09302bb719f5203d9fa175dbf352f94253ff2a48b7f1",
+        "sourceKind": "PRIOR_CURRENT_GAME_STATIC_RESOURCE_UNREVALIDATED",
+        "twoHandedFlagRaw": false
+      },
+      "status": "STATIC_ITEM_FIELDS_FROM_PRIOR_GAME_RO",
+      "usableNowVerified": false
+    }
+  ],
+  "snapshots": 15,
+  "status": "PRIOR_STATIC_ITEM_FACTS_AND_CURRENT_SELECTION_AUDITED_RO",
+  "unverified": [
+    "SLOT_STATS_NEVER_PROJECT_FROM_SELECTED",
+    "SOURCE_R3_SCHEMA_BOUND_TO_PRIOR_ACTOR_AND_SESSION",
+    "ITEM_EFFECTS_AND_IMMUNITIES_NOT_SOLVED",
+    "NO_WEAPON_RANKING_OR_DISPATCH"
+  ],
+  "weaponSwitchAuthorized": false
+}
