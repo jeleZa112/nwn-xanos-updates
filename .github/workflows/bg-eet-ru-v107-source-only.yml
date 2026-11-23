@@ -1,0 +1,69 @@
+name: BG EET RU V107 item identity source-only
+on:
+  push:
+    branches: [bg-eet-ru-v107-item-identity-sourceonly]
+    paths:
+      - 'bg-eet-ru/weapon-identity/BG_EET_RU_V107_CITEM_IDENTITY_SOURCE_ONLY.lua'
+      - '.github/workflows/bg-eet-ru-v107-source-only.yml'
+jobs:
+  native-safe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq liblua5.4-0
+      - name: Verify disabled-by-default native read gate, classification, cap, no writes
+        shell: bash
+        run: |
+          python - <<'PY'
+          import ctypes
+          from pathlib import Path
+          f=Path('bg-eet-ru/weapon-identity/BG_EET_RU_V107_CITEM_IDENTITY_SOURCE_ONLY.lua')
+          original=f.read_bytes()
+          assert b'function BG_EET_RU_V107_Inspect(context)' in original
+          assert b'capture_native_item_refs = false' in original
+          assert b'EEex_Sprite_AddAlterBaseWeaponDamageListener' not in original
+          assert b'io.open' not in original
+          lib=ctypes.CDLL('liblua5.4.so.0')
+          lib.luaL_newstate.restype=ctypes.c_void_p
+          lib.luaL_openlibs.argtypes=[ctypes.c_void_p]
+          lib.luaL_loadbufferx.argtypes=[ctypes.c_void_p,ctypes.c_char_p,ctypes.c_size_t,ctypes.c_char_p,ctypes.c_char_p]
+          lib.luaL_loadbufferx.restype=ctypes.c_int
+          lib.lua_pcallk.argtypes=[ctypes.c_void_p,ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.c_longlong,ctypes.c_void_p]
+          lib.lua_pcallk.restype=ctypes.c_int
+          lib.lua_close.argtypes=[ctypes.c_void_p]
+          tests=r"""
+          assert(BG_EET_RU_V107.enabled==false)
+          assert(BG_EET_RU_V107.capture_native_item_refs==false)
+          assert(BG_EET_RU_V107_Inspect({attackRoll=17})==nil)
+          assert(BG_EET_RU_V107_Status().seen==0)
+          BG_EET_RU_V107.enabled=true
+          local ctx={weapon={},launcher={},ability={},attacker={},target={},
+                     attackRoll=20,isCritical=true}
+          assert(BG_EET_RU_V107_Inspect(ctx)==nil)
+          local ev=BG_EET_RU_V107.buffer[1]
+          assert(ev.weapon_type=="table" and ev.launcher_type=="table")
+          assert(ev.weapon_resref=="NATIVE_ITEM_READ_NOT_AUTHORIZED")
+          assert(ev.launcher_resref=="NATIVE_ITEM_READ_NOT_AUTHORIZED")
+          assert(ev.ammo_resref=="NOT_VERIFIED")
+          assert(ev.critical=="true" and ev.attack_roll=="20")
+          assert(ctx.attackRoll==20 and ctx.isCritical==true)
+          assert(BG_EET_RU_V107_Inspect({weapon=io.stdout,launcher=io.stderr,attackRoll=15})==nil)
+          assert(BG_EET_RU_V107.buffer[2].weapon_type=="userdata")
+          assert(BG_EET_RU_V107.buffer[2].weapon_resref=="NATIVE_ITEM_READ_NOT_AUTHORIZED")
+          for i=1,100 do BG_EET_RU_V107_Inspect({attackRoll=i}) end
+          assert(BG_EET_RU_V107_Status().buffered==32)
+          assert(BG_EET_RU_V107_Status().saved==32)
+          assert(BG_EET_RU_V107_Status().seen==102)
+          assert(BG_EET_RU_V107_Status().miss_coverage_verified==false)
+          assert(BG_EET_RU_V107_Status().ammo_identification_verified==false)
+          assert(BG_EET_RU_V107_Status().journal_row_mapping_verified==false)
+          """
+          script=original+b'\n'+tests.encode()
+          L=lib.luaL_newstate();lib.luaL_openlibs(L)
+          try:
+            assert lib.luaL_loadbufferx(L,script,len(script),b'v107',None)==0, 'Lua parse failed'
+            assert lib.lua_pcallk(L,0,0,0,0,None)==0, 'Lua behavior failed'
+          finally:lib.lua_close(L)
+          print('V107_SOURCE_ONLY_PASS: inert default, no native dereference, 32-event buffer, no mutations, no false ammo/journal claims')
+          PY
