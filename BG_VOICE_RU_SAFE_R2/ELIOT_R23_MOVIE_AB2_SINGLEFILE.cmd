@@ -1901,12 +1901,17 @@ def _eliot_movie_ab2(mode):
 
 if __name__=='__main__':
     try:
-        if '--eliot-movie-ab2-selftest' in sys.argv:
-            sys.exit(_eliot_movie_ab2('selftest'))
-        if '--eliot-movie-ab2-preflight' in sys.argv:
-            sys.exit(_eliot_movie_ab2('preflight'))
-        if '--eliot-movie-ab2' in sys.argv:
-            sys.exit(_eliot_movie_ab2('generate'))
+        if any(x in sys.argv for x in ('--eliot-movie-ab2-selftest','--eliot-movie-ab2-preflight','--eliot-movie-ab2')):
+            # R23 MUST NOT fall into the historical launcher exception handler,
+            # which writes a failure-only ZIP over the one main report.
+            try:
+                action=('selftest' if '--eliot-movie-ab2-selftest' in sys.argv else
+                        'preflight' if '--eliot-movie-ab2-preflight' in sys.argv else 'generate')
+                rc=_eliot_movie_ab2(action)
+            except Exception as error:
+                print('R23_FAIL_CLOSED_NO_REPORT_REPLACEMENT:',type(error).__name__,str(error)[:210],flush=True)
+                rc=2
+            sys.exit(rc)
         if '--eliot-r4-preflight' in sys.argv:
             sys.exit(_eliot_r4_preflight(full_model_hash='--eliot-r4-full-model-hash' in sys.argv))
         if '--oh89888-retake-selftest' in sys.argv:
