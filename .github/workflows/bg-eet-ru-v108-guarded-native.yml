@@ -20,7 +20,7 @@ jobs:
         run: |
           python - <<'PY'
           import ctypes, hashlib, json
-          from pathlib import Path
+          from pathlib import Path, PureWindowsPath
           p=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
           j=json.loads(Path('bg-eet-ru/onefile/release.json').read_text('utf8'))
           assert j['version']==108 and j['game_writes_allowed'] is False
@@ -29,7 +29,12 @@ jobs:
           exec(compile(p.read_text('utf8').split('\n',1)[1],str(p),'exec'),ns)
           assert ns['SELF_VERSION']==108
           assert ns['v108_selftest']()
+          # V105 source embeds the user's absolute Windows report paths.
+          # Linux Path.home() would produce different bytes/SHA and is not a valid baseline comparison.
+          ns['V105_EVENT_STAGE']=PureWindowsPath(r'C:\Users\Drevo\Documents\BG_EET_RU\BG_EET_RU_V105_WEAPON_EVENTS.tsv')
+          ns['V105_STATUS_STAGE']=PureWindowsPath(r'C:\Users\Drevo\Documents\BG_EET_RU\BG_EET_RU_V105_WEAPON_STATUS.tsv')
           exact_v106=ns['v106_make_candidate'](ns['v105_source_module']())
+
           expected=ns['V108_BASIS_SHA']['EEex_scripts/BG_EET_RU_WeaponObserver.lua']
           assert ns['digest'](exact_v106)==expected, 'LIVE_BASELINE_SHA_MISMATCH'
           candidate=ns['v108_candidate'](exact_v106)
