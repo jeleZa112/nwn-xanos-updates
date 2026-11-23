@@ -4,8 +4,9 @@ V107_SCHEMA = 'BG_EET_RU_V107_CITEM_STATIC_ABI_PREFLIGHT'
 V107_ENTRY = '53_V107_CITEM_STATIC_ABI_PREFLIGHT.json'
 V107_EXPECTED_FILES = {
     'EEex_scripts/EEex_Sprite.lua': '4813ae620f0b472903848018d66488805db7ba2012e065019f4ea5f2a6afab28',
-    'EEex_scripts/EEex_Sprite_Patch.lua': 'e301b46770477cf29e3d39d6591a5a9fba4f3aeafa03c3dbfa75f7ef6bc13b7',
+    'EEex_scripts/EEex_Sprite_Patch.lua': 'e301b46770477cf29e3d39d6591a5a9fba4f3aeafa03c3dbfa75f7ef6bc13b7f',
 }
+assert all(len(digest_value) == 64 for digest_value in V107_EXPECTED_FILES.values()), 'V107_SOURCE_SHA_LITERAL_LENGTH_ERROR'
 V107_PROBE_FILES = (
     'EEex.dll', 'InfinityLoader.exe', 'InfinityLoader.dll', 'EEex/EEex.dll',
     'Baldur.exe', 'EEex_scripts/EEex_Main.lua',
