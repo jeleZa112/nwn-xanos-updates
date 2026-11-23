@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "7177bff58f6f9bfe703147c29eaadb549aa4c386",
+  "commit": "c13868bf93e7c35af71d9340ce48ad91077deb5a",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
   "script_sha256": "bac78ddf83fe4b87dce2a5d3b8568ef5062fea2591460a5e893c1026d4f5be18",
   "script_size": 79897,
-  "description": "BGXAI R27 menu165 guarded passive single-callback observer, read-only preflight by default, install typed only; existing options 1-164 preserved, no automatic game install or switching. WinPS5.1, Windows/Linux Python tests and exact source hashes verified."
+  "description": "R27 already installed passive observer. Existing menu 165 now includes 5=READ ONLY InfinityLoader console capture; no reinstall, no automatic weapon switching. SHA-pinned backend unchanged; 29/29 Windows+Linux CI source tests passed."
 }
