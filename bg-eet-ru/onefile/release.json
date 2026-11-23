@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 107,
-  "sha256": "91af045538d068364f4f8057209acb64f12a7a67efd1133a9bf6a9397b971ec6",
-  "mode": "READ_ONLY_DEFAULT_V107_STATIC_EEEX_BUILD_PREFLIGHT",
+  "version": 108,
+  "sha256": "a1bc5c1641dfcc2e6fe80fc66ec51752db9fc3d28f73a75f5b46938d0f4b0244",
+  "mode": "READ_ONLY_DEFAULT_V108_NATIVE_CITEM_OPT_IN_GUARDED",
   "game_writes_allowed": false,
-  "note": "V107 extends the one existing BG_EET_RU_UPDATE.cmd with a strictly read-only fingerprint preflight of the installed EEex modules and loader. Creates or replaces 53_V107_CITEM_STATIC_ABI_PREFLIGHT.json in the existing external SEND_TO_CHATGPT_BG_EET_RU.zip after successful V106 status. No game files written by V107, no CItem userdata dereference, no live-native ABI approval, no new listener or game install. Existing explicitly typed V105/V106 install/rollback routes remain unchanged. Original V106 live transport PASS does not prove a weapon/launcher/ammo RESREF, misses or UI row mapping. New V107 status indicates native ABI HOLD pending user-side Windows fingerprint. Existing V101/UI and BGXAI/BG Voice untouched; one updater and one ZIP only. Source-only V107 guarded observer remains uninstalled and disabled. 2026-11-23 CI legacy onefile selftest PASS on source commit 59a902fc385ffeb6c08de538583438d75fcc2086; release version pin reverified with SHA256; V106 regression tests preserved."
+  "note": "v108: default updater stays READ ONLY; verified exact Windows V107 hashes are pinned for optional bounded in-callback CItem RESREF read. Only exact typed approval --install-v108-native-read may replace the ONE existing BG_EET_RU_WeaponObserver.lua, external backup, recovery/rollback. No automatic game writes, no UI/TLK change. SOURCE CItem read can crash natively despite pcall; user must approve and then capture evidence. Corrects V107 EEex_Sprite_Patch.lua 63-digit SHA typo. Source ZIP V107 verified 2026-11-23: both source SHA unchanged vs V104, no user-side game modification. New V108 release has not been installed or LIVE tested. V106 previous live event transport already passed and not repeated."
 }
