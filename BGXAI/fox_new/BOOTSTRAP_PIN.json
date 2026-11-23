@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "7c4e3cdae47f7ecd4bf25b3e216f617ecfa21002",
+  "commit": "575de4837a8adfdb4db8bc7a8d6503619829c4b7",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "7380e82cec9f7e67728e0cfcb6eb448c5223d71bf17aae14cfdb0474bd9f69e2",
-  "script_size": 79535,
-  "description": "BGXAI onefile menu162 now has choice 5: readonly InfinityLoader console capture to external Documents/BGXAI_LIVE_REPORTS, no Lua reinstallation or game change. Old menus 1-162 and guarded installs unchanged; 54/54 Windows tests PASS."
+  "script_sha256": "f5b9d565de595ffea0e04c26f3194152445a26743aa47348694b883cdd9ec8e0",
+  "script_size": 79631,
+  "description": "BGXAI menu163 guarded R13.2 passive HOLD/slot10 diagnostics. Updater 79631 bytes Windows PS5.1/7 CI PASS. Menu 163 default readonly; installs only M_BGXD13.lua after typed token and last-only WeiDU backup. Old menu1-162 retained."
 }
