@@ -13,3 +13,11 @@
 **Стадии:** R19 CODE=готово; OFFLINE TEST=PASS; INSTALLED_EEEX_AUDIT=NOT RUN; DEPLOY=NO; LIVE=NO; WEAPON_SWITCH=OFF. TD15 установлен и ранее LIVE проверен. Сохранить в `BGXAI/BUILD/R19_INSTALLED_EEEX_STATIC_RO_20261123` и `BGXAI/CURRENT`; обновить `00_AUTO_CONTINUE_READ_FIRST.md` после CI.
 
 **Следующий узкий шаг:** встроить **только статическую read-only проверку** в существующий `BGXAI_UPDATE.cmd` после безопасной регрессии, если это нужно для запуска на пользовательской машине. Не запускать подозрительный pointer-dereference и не создавать параллельный updater. Ранкер V1/V2/V5 и NONINTERRUPT уже существуют: не переделывать и не выдавать сканер за рабочее переключение оружия.
+
+## 23.11.2026 — R19 INDEPENDENT CI COMPLETE
+
+- Windows GitHub Actions: **36/36 PASS**; SHA256 and no-dispatch checks PASS.
+- Linux GitHub Actions: **36/36 PASS**; SHA256 and no-dispatch checks PASS.
+- Successful run: https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45145353551
+- Source commit: 949284619e6367f2197c700f34ddf707a6f6625f.
+- **R19 CODE/TEST PASS; installed EEex NOT SCANNED; DEPLOY NO; LIVE NO.** TD15 remains unchanged.
