@@ -29,12 +29,34 @@ return EEex_PtrToUD(EEex_UDToPtr(itemHeader) + itemHeader.abilityOffset + Item_H
 4. Запретить переключение до подтверждения ID текущего действия, способности, пары launcher/ammo, effect fingerprint, APR **альтернативных** слотов и сохранения ручной/EPS очереди.
 5. Не дублировать ранкер V1/V2/V5 и NONINTERRUPT. Не повторять прежние бои и прочитанные R3/R13 логи.
 
-## Следующий шаг пользователя и безопасная параллельная работа
-- **Пользователь:** один раз запустить существующий `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd` -> **164**; приложить `C:\Users\Drevo\Documents\BGXAI_LIVE_REPORTS\BGXAI_R20_EEEX_STATIC_*.json` либо точный STOP. Игру запускать не надо; пункт 164 только читает файлы и пишет отчёт вне игры.
-- **Разработка без новых игровых действий:** source-only сверить определения runtime `sizeof`, исследовать официальный безопасный способ получить/удержать заголовок способности без прямого `pRes.pHeader` и зафиксировать проверяемый no-dispatch контракт. При отсутствии доказательств продолжать HOLD, без пассивного native runtime pilot.
-- **R21 CODE:** только аналитический документ; **R21 OFFLINE TEST:** не запускался как новый набор; **DEPLOY/LIVE:** NO. R20 релиз/CI уже PASS, но R20 USER STATIC SCAN NOT RUN.
+## Следующее действие после фактического R20 скана
+
+Пользовательский R20/164 **уже выполнен**. Нового действия для пользователя на этом source-only этапе нет. Дальнейший R21 — только static investigation безопасной native-структуры и жизненного цикла ресурса без установки, listener или переключения оружия.
 
 ## Ссылки
 - EEex source: https://github.com/Bubb13/EEex/blob/v1.1.7/EEex/copy/EEex_scripts/EEex_Resource.lua
 - IESDP: https://iesdp.bgforge.net/file_formats/ie_formats/itm_v1.htm
 - R20: `BGXAI/CURRENT/BGXAI_R20_ONEFILE_MENU164_20261123_RU.md`
+
+## 23.11.2026 — ПРОВЕРЕНО ПОСЛЕ ПОЛУЧЕНИЯ R20 / R21 SOURCE AUDIT V2
+
+**R20 пользовательский скан выполнен, повторять пункт 164 не нужно.** Отчёт `BGXAI_R20_EEEX_STATIC_20261123T183158663.json`, 3162 байт, SHA256 `ac6fe71eb2aa7d17c8197cd34893ef47caa3ac957c8a66d4ea3c376490751cae`. Итог `UPSTREAM_V117_LF_EQUIVALENT_STATIC_ONLY`: все три файла `EEex_Resource.lua`, `EEex_Sprite.lua`, `EEex_Action.lua` present+callsites+canonical LF match, точные raw byte hash не совпали. Bootstrap Lua существует. Отчёт прямо запрещает `getAbility`, `getLauncher`, нового listener и weapon switching. Полный **санитизированный** checkpoint: `BGXAI/CURRENT/BGXAI_R20_USER_STATIC_AUDIT_PASS_20261123_RU.md`. Не публиковать неочищенные пользовательские логи.
+
+**Доказательства предполагаемого дефекта шаговой адресации стали сильнее:**
+- Официальный EEex `v1.1.7` и `v1.3.1` дают **тот же Git blob** `EEex_Resource.lua` `5ecd3c2f9e9bcc6cbd317653fc057a06d956916b`. В функции spell counterpart строка 160 корректно применяет `Spell_ability_st.sizeof * index`, а item counterpart строка 166 использует **`Item_Header_st.sizeof * index`** для возврата `Item_ability_st`.
+- Документация EEex *engine-x86 Other Structures*, именно **engine structures**, а не только IESDP файловые заголовки, показывает поля `Item_Header_st` от 0x00 до 0x71 (0x72=114 байт) и `Item_ability_st` от 0x00 до 0x37 (0x38=56 байт). Дополнительно генератор InfinityLoader `Core-Shared-Files/generate_bindings/in/packing.txt` для обеих структур задаёт packing=1. Это подтверждает ожидаемую разницу шагов **58 байт × abilityIndex**, если бинарные binding-типы пользователя соответствуют данным определениям.
+- В `EEex-Core-Shared-Files/source/EEex.cpp` upstream C++ в пути обработки атак сначала выполняет `curWeaponIn->Demand()`, затем `curWeaponIn->GetAbility(curAttackNum)`. Это показывает использование **движкового C++ GetAbility с Demand**, но **не доказывает**, что Lua wrapper `CItem.getAbility` безопасен, что ресурс держится достаточно долго, или что вызовы можно переносить в R18.
+- В документации EEex отдельно предупреждено: форматы на диске не обязательно 1:1 соответствуют структурам памяти. Поэтому **actual installed DLL/native struct ABI and pointer lifetime still UNVERIFIED**. Отчёт R20 проверял Lua-исходники, не DLL. Физический runtime crash не заявлять.
+
+**Решение:** оставляем `R18 CItem:getAbility` и `sprite:getLauncher` в HOLD без игры. Не патчить upstream/локальный EEex, не инициировать upgrade, не пробовать чтение способности даже при index 0 без lifetime-guard; `pcall` не защищает от C++ access violation. Использовать уже проверенные R4/R13 READ ONLY selected slot, selected APR, target raw как узко допустимые наблюдения, НЕ как доказательство alt APR, item effect state, launcher-pair или происхождения EPS/manual.
+
+**Следующая техническая работа без новых запросов пользователю:** исследовать возможность **подтверждённого движком** безопасного API/события с готовой валидной ability-парой, без прямой адресной арифметики и без нарушения очереди; если такого API нет — использовать только статические ITM/R3 и ограниченную выбранную телеметрию R4, статус HOLD. Запрет auto dispatch и switching до полноценного доказательства. Никаких повторов 164/бой/WeiDU.
+
+**Статус:** R20 USER STATIC PASS; R21 UPSTREAM STRIDE MISMATCH REPRODUCED AT SOURCE LEVEL; R21 NEW GAME CODE/DEPLOY/LIVE NONE; all switch authorization fields remain FALSE.
+
+Источники:
+- https://github.com/Bubb13/EEex/blob/v1.1.7/EEex/copy/EEex_scripts/EEex_Resource.lua
+- https://github.com/Bubb13/EEex/blob/v1.3.1/EEex/copy/EEex_scripts/EEex_Resource.lua
+- https://eeex-docs.readthedocs.io/en/engine-x86/EE%20Game%20Structures%20(x86)/Other/index.html
+- https://github.com/Bubb13/InfinityLoader/blob/master/Core-Shared-Files/generate_bindings/in/packing.txt
+- https://github.com/Bubb13/InfinityLoader/blob/master/EEex-Core-Shared-Files/source/EEex.cpp
