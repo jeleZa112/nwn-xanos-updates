@@ -53,6 +53,18 @@ class R27SourceTests(unittest.TestCase):
  def test_r4_no_alt(self):
   t=(input_dir()/'BGXAI_WEAPON_ACTIVE_R4_READONLY.lua').read_text()
   self.assertIn('alternateSlotAPRVerified=false',t)
+ def test_bounded_console_format_has_all_holds(self):
+  s=(ROOT/'R27_EVENT_JOIN_TAIL.lua').read_text()
+  for x in ('function R27.toConsoleJson(sample)',
+            'function R27.prepareConsolePilot(ports)',
+            "SOURCE_ONLY_LISTENER_READY_NOT_REGISTERED",
+            '"alternativeAPRVerified":false',
+            '"engineSessionVerified":false'):
+   self.assertIn(x,s)
+ def test_console_pilot_does_not_autoregister(self):
+  s=(ROOT/'R27_EVENT_JOIN_TAIL.lua').read_text()
+  self.assertNotIn('EEex_Action_AddSpriteStartedActionListener(',s)
+  self.assertNotIn('io.open(',s)
  def test_no_existing_source_modified(self):
   self.assertNotEqual(PINS[SOURCES[0][0]],PINS[SOURCES[1][0]])
 

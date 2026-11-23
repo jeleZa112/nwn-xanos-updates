@@ -68,6 +68,11 @@ function R27.observe(sprite,action,partyIndex,getActiveStats)
   actor=b.actor,partyIndex=partyIndex,actionRaw=b.action,
   selectedWeaponRaw=b.weapon,selectedAbilityRaw=b.ability,
   selectedAprKeyRaw=rawApr,r2Status=r2.status,r4Status=r4.status,
+  quickWeaponsRaw=r2.quickWeapons,quiversRaw=r2.quivers,
+  sampledStatsRaw={m_nNumberOfAttacks=rawApr,
+   m_nTHAC0=f.m_nTHAC0,m_nSTR=f.m_nSTR,
+   m_nSTRExtra=f.m_nSTRExtra,m_bImprovedHaste=f.m_bImprovedHaste,
+   m_nHitBonus=f.m_nHitBonus},
   sameLuaListenerInvocation=true,nativeEventTokenAuthenticated=false,
   engineSessionVerified=false,alternativeAPRVerified=false,
   launcherAmmoPairVerified=false,completeActiveEffectsVerified=false,
@@ -75,6 +80,86 @@ function R27.observe(sprite,action,partyIndex,getActiveStats)
   gameModified=false,ordersSent=0,localsWritten=0,
   dispatchAuthorized=false,weaponSwitchAuthorized=false,
   currentActionPreserved=true,actionQueueCleared=false}
+end
+
+-- Strict bounded JSON for the future single existing-updater diagnostic writer.
+-- No resource pointer, arbitrary object or user-supplied string is serialized.
+local function jnum(v,lo,hi)
+ if int(v,lo,hi) then return tostring(v) end
+ return 'null'
+end
+local function jstr(v)
+ if type(v)~='string' or #v<1 or #v>8 or v:find('[^%w_]') then
+  return 'null' end
+ return '"'..v:upper()..'"'
+end
+local function jslots(arr,n)
+ if type(arr)~='table' or #arr~=n then return '[]' end
+ local out={}
+ for i=1,n do
+  local v=arr[i]
+  if type(v)~='table' then return '[]' end
+  out[i]='{"slot":'..jnum(v.index,0,38)..
+    ',"resrefRaw":'..jstr(v.itemResrefRaw)..
+    ',"useCount1Raw":'..jnum(v.useCount1Raw,0,65535)..
+    ',"useCount2Raw":'..jnum(v.useCount2Raw,0,65535)..
+    ',"useCount3Raw":'..jnum(v.useCount3Raw,0,65535)..'}'
+ end
+ return '['..table.concat(out,',')..']'
+end
+local function jstats(stats)
+ local keys={'m_nNumberOfAttacks','m_nTHAC0','m_nSTR',
+  'm_nSTRExtra','m_bImprovedHaste','m_nHitBonus'}
+ local out={}
+ for _,key in ipairs(keys) do
+  local v=type(stats)=='table' and stats[key] or nil
+  out[#out+1]='"'..key..'":'..jnum(v,-2147483648,2147483647)
+ end
+ return '{'..table.concat(out,',')..'}'
+end
+function R27.toConsoleJson(sample)
+ if type(sample)~='table' or sample.schema~=R27.schema or
+   sample.readOnly~=true or sample.ordersSent~=0 or
+   sample.dispatchAuthorized~=false or sample.weaponSwitchAuthorized~=false then
+  return nil end
+ local allowed={CURRENT_SELECTED_SAME_CALLBACK_SOURCE_CANDIDATE=true,
+  HOLD_SINGLE_CALLBACK_NO_DISPATCH=true}
+ if not allowed[sample.status] then return nil end
+ local status=sample.status
+ return '{"schema":"'..R27.schema..'","type":"R27_SINGLE_CALLBACK",'..
+  '"status":"'..status..'","seq":'..jnum(sample.collectorOrdinal,1,64)..
+  ',"actor":'..jnum(sample.actor,1,2147483647)..
+  ',"partyIndex":'..jnum(sample.partyIndex,0,5)..
+  ',"actionRaw":'..jnum(sample.actionRaw,0,65535)..
+  ',"selectedWeaponRaw":'..jnum(sample.selectedWeaponRaw,0,65535)..
+  ',"selectedAbilityRaw":'..jnum(sample.selectedAbilityRaw,0,65535)..
+  ',"selectedAprKeyRaw":'..jnum(sample.selectedAprKeyRaw,0,10)..
+  ',"quickWeaponsRaw":'..jslots(sample.quickWeaponsRaw,4)..
+  ',"quiversRaw":'..jslots(sample.quiversRaw,4)..
+  ',"selectedStatsRaw":'..jstats(sample.sampledStatsRaw)..
+  ',"sameLuaListenerInvocation":'..tostring(sample.sameLuaListenerInvocation==true)..
+  ',"nativeEventTokenAuthenticated":false,"engineSessionVerified":false,'..
+  '"alternativeAPRVerified":false,"launcherAmmoPairVerified":false,'..
+  '"completeActiveEffectsVerified":false,"epsManualQueueVerified":false,'..
+  '"ordersSent":0,"localsWritten":0,"dispatchAuthorized":false,'..
+  '"weaponSwitchAuthorized":false,"readOnly":true}'
+end
+-- Makes a passive console sink but NEVER calls EEex to register it.
+function R27.prepareConsolePilot(ports)
+ if type(ports)~='table' or type(ports.portraitIndex)~='function' or
+  type(ports.getActiveStats)~='function' or
+  type(ports.emitString)~='function' then
+  return nil,'CONSOLE_PORTS_MISSING' end
+ local listener,err=R27.makeListener({
+  portraitIndex=ports.portraitIndex,getActiveStats=ports.getActiveStats,
+  emit=function(sample)
+   local line=R27.toConsoleJson(sample)
+   if line then ports.emitString('[BGXR27] '..line) end
+  end})
+ if not listener then return nil,err end
+ return {status='SOURCE_ONLY_LISTENER_READY_NOT_REGISTERED',
+   registered=false,installAuthorized=false,dispatchAuthorized=false,
+   listener=listener}
 end
 
 -- This candidate is deliberately NOT auto-registered. A separate typed

@@ -6,13 +6,13 @@
   "weaponSwitchAuthorized": false,
   "dispatchAuthorized": false,
   "files": {
-    "BGXAI_R27_SINGLE_CALLBACK_SELECTED_RO.lua": "e3cff686aac3d10aa15d1e8769ca9ffc7bd3d9e7b8cc973f738afa32f462b67f",
-    "R27_EVENT_JOIN_TAIL.lua": "7a7e5acf3b4ae99a2f6bc95ffe4f211478e01485da2899141c906fd4991c03d2",
+    "BGXAI_R27_SINGLE_CALLBACK_SELECTED_RO.lua": "cc51a664b66bfc3da893ca5fdff3940bdcfa231a8be8739e7c688d3763ae4ef7",
+    "R27_EVENT_JOIN_TAIL.lua": "39abc118d43d3d9105a5c79341e61a0e4d158c5769944591ff324949bad2bc4b",
     "build_r27.py": "365997b4eeba5333a27b606dcfbef9c4878097a9b96f5153c96a57e0cb665630",
-    "test_r27_single_callback.lua": "8bad4510518d370f06bbae4894d7560b981e97660bba3dc09825ab35ffe6acf2",
-    "test_r27_source.py": "1a5284a5af5cae1a63ae669b4ba664a83f23e685c9a89b327716181465652657",
-    "README_RU.md": "fcac876f712e7fdd02b71eb8c729f495d94a53f20768f3c9021b12aef168d57a",
-    "CHECKPOINT_RU.md": "bb4f8af893937a95381ff27e6b001c36acbc0555c5b9bda84ceba073e3cefd83"
+    "test_r27_single_callback.lua": "d64cc4a3c16643261d322fa29d7f69bfa12755eb875ef28d8f4ebb1146970e3e",
+    "test_r27_source.py": "4cfd9a7c5ce5ea9640c10437e23ee573d956f6197a01d6dfeddcac6895d05f7d",
+    "README_RU.md": "7d47a4480e4bb9eabd4d70f87e87b6ae383054bd23e1c6cad0e548d26d415e97",
+    "CHECKPOINT_RU.md": "6f006b76636780e536717bb07b786f4f4dfcb4c73edb035995c6c4d55a61e1c7"
   },
   "originSha256": {
     "R2": "7bd88866eab1d73f59b6619b2f38e26b846c0daa85a54f6c1de9e77e0730b5a0",

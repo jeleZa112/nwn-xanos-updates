@@ -2,9 +2,9 @@
 
 **Функциональный результат:** независимая исходная реализация единого source-only callback-a, композирующая подлинные существующие R2 слот-наблюдатель и R4 active-stats без копирования логики ранжирования, изменений игры или очереди EPS. R27 даёт кандидата **связанной выборки**, а не просто post-hoc совпадения двух seq в журнале; проверяет actor/action/selectedSlot/selectedAbility до/после обоих чтений.
 
-**Текущие границы:** нет runtime регистрации, storage writer и installer, все outputs non-executable, `installed=false`, `weaponSwitchAuthorized=false`, `dispatchAuthorized=false`, `ordersSent=0`. Только APR **выбранного** слота; native event ID, настоящий session ID, APR альтернатив, complete effects, launcher/ammo pairing и ручная/EPS очередь всё ещё недоказаны. Противопоказан unsafe `item:getAbility` / `EEex_Resource_Demand`.
+**Текущие границы:** нет runtime регистрации или installer; JSON-кандидат выводит одну строку через внедрённый callback, но собственный game-writer/хук отсутствует, все outputs non-executable, `installed=false`, `weaponSwitchAuthorized=false`, `dispatchAuthorized=false`, `ordersSent=0`. Только APR **выбранного** слота; native event ID, настоящий session ID, APR альтернатив, complete effects, launcher/ammo pairing и ручная/EPS очередь всё ещё недоказаны. Противопоказан unsafe `item:getAbility` / `EEex_Resource_Demand`.
 
-**Проверка:** локальные Python source/immutability tests 12/12 PASS; Lua 23/23 макетных теста — подтвердить CI; отдельный Windows/Linux CI с хэшами и исходниками. Не считать исходный PASS игровым LIVE.
+**Проверка:** локальные Python source/immutability tests 14/14 PASS; Lua модель и ограниченный JSON-вывод проверяются независимой CI (окончательные числа брать только из результата); отдельный Windows/Linux CI с хэшами и исходниками. Не считать исходный PASS игровым LIVE.
 
 **Единственный необходимый следующий физический шаг (после подлинно завершённого guarded source + runtime preflight):** отдельно согласовать типизированную установку **пассивного**, ни разу не переключающего оружие, callback-a через существующий updater. У пользователя не просить старые 158/159/164, повтор уже выполненных боёв или ручную замену игровых файлов. Не утверждать, что инсталлятор уже готов в этом source-only релизе.
 
