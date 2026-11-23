@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 108
+SELF_VERSION = 109
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -8153,9 +8153,13 @@ def main(argv=None):
             if rc:return rc
             rc=v104_run(game,WORKDIR/REPORT_NAME)
             if rc:return rc
-            rc=v105_run(game,WORKDIR/REPORT_NAME)
-            if rc:return rc
-            if not (v108_get_state() or {}).get('phase')=='INSTALLED':
+            # V105/V106 checks pin the observer to the old V106 SHA.
+            # When a guarded V108 install is INSTALLED or PREPARED, only the
+            # V108 transaction checker may validate its exact newer SHA.
+            native_phase=(v108_get_state() or {}).get('phase')
+            if native_phase not in ('INSTALLED','PREPARED'):
+                rc=v105_run(game,WORKDIR/REPORT_NAME)
+                if rc:return rc
                 rc=v106_run(game,WORKDIR/REPORT_NAME)
                 if rc:return rc
             rc=v107_run(game,WORKDIR/REPORT_NAME)
@@ -8171,9 +8175,13 @@ def main(argv=None):
             if rc:return rc
             rc=v104_run(game,WORKDIR/REPORT_NAME)
             if rc:return rc
-            rc=v105_run(game,WORKDIR/REPORT_NAME)
-            if rc:return rc
-            if not (v108_get_state() or {}).get('phase')=='INSTALLED':
+            # V105/V106 checks pin the observer to the old V106 SHA.
+            # When a guarded V108 install is INSTALLED or PREPARED, only the
+            # V108 transaction checker may validate its exact newer SHA.
+            native_phase=(v108_get_state() or {}).get('phase')
+            if native_phase not in ('INSTALLED','PREPARED'):
+                rc=v105_run(game,WORKDIR/REPORT_NAME)
+                if rc:return rc
                 rc=v106_run(game,WORKDIR/REPORT_NAME)
                 if rc:return rc
             rc=v107_run(game,WORKDIR/REPORT_NAME)
