@@ -1,0 +1,45 @@
+name: BGXAI V7 pinned onefile updater integration
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BGXAI_SYNC.ps1'
+      - 'BGXAI/fox_new/BOOTSTRAP_PIN.json'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/manifest_updater.json'
+      - '.github/workflows/bgxai-v7-onefile-integration-ci.yml'
+  workflow_dispatch:
+jobs:
+  verify:
+    strategy: {fail-fast: false, matrix: {os: [windows-latest, ubuntu-latest]}}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Pin exact sources and unique menu166
+        shell: python
+        run: |
+          from pathlib import Path
+          import json, hashlib
+          b=Path('BGXAI/BGXAI_SYNC.ps1').read_bytes()
+          print('V7_BACKEND_SHA256',hashlib.sha256(b).hexdigest(),'BYTES',len(b))
+          assert len(b) < 80000 and b.count(b"'166' {SyncRelease $rg") == 1
+          assert b"165 - R27 observer (guarded)" in b
+          assert b"166 - V7 DPLAYER close-fire fix (guarded)" in b
+          assert b"BGXRANGED_V7_GUARDED_INSTALL.py" in b
+          x=json.loads(Path('BGXAI/patchsets/ranged_fighter_guarded_20261119/manifest_updater.json').read_text())
+          assert x['version']=='0.3.90-V7-R27-DPLAYER-FUNCTIONAL'
+          for item in x['files']:
+            p=Path(item['source'])
+            raw=p.read_bytes()
+            assert len(raw)==item['size'],p
+            assert hashlib.sha256(raw).hexdigest()==item['sha256'],p
+          print('V7_RELEASE_MANIFEST_SHA_PASS',len(x['files']))
+      - name: Windows PowerShell 5.1 syntax check
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $null=$tokens=$errs=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path 'BGXAI/BGXAI_SYNC.ps1'),[ref]$tokens,[ref]$errs)|Out-Null
+          if($errs.Count){$errs | Out-String | Write-Host;exit 1}
+          Write-Host 'POWERSHELL_51_PARSE_PASS'
