@@ -1,0 +1,128 @@
+{
+  "schema": "BGXAI_R27_REAL_LIVE_CAPTURE_VERDICT_V1",
+  "date": "2026-11-23",
+  "origin": "User-supplied R27 InfinityLoader real game console; analyzed offline",
+  "rawLogFile": "BGXAI_R27_CONSOLE_20261123T163105828183Z.log",
+  "rawLogSha256": "6124a7d4d1fd3e168bc7fa099397964fb2e0bc4d5d0fa840c79c005647bf223b",
+  "rawLogLines": 394,
+  "rawLogBytes": 245196,
+  "sourceOnlyAnalysis": true,
+  "gameModifiedByAnalysis": false,
+  "R27LiveStatus": "PASS_REGISTERED_AND_EMITTED_SELECTED_STATE",
+  "r27SessionMarkers": 1,
+  "r27ActionCallbacks": 24,
+  "r27SequencesContinuousFrom1": true,
+  "r27Statuses": {
+    "CURRENT_SELECTED_SAME_CALLBACK_SOURCE_CANDIDATE": 24
+  },
+  "r27ErrorsObserved": 0,
+  "comparators": {
+    "R2": 24,
+    "R4": 24,
+    "matchedR27_R2_R4": 24,
+    "mismatches": [],
+    "fieldsCompared": [
+      "seq",
+      "actor",
+      "partyIndex",
+      "actionRaw",
+      "selectedWeaponRaw",
+      "selectedAbilityRaw",
+      "selectedAprKeyRaw vs R4 m_nNumberOfAttacks",
+      "selectedStatsRaw.m_nTHAC0 vs R4",
+      "all 4 quickWeapons slot/resref/useCount1 vs R2",
+      "all 4 quiver slot/resref/useCount1 vs R2"
+    ]
+  },
+  "selectedSlots": [
+    {
+      "slot": 12,
+      "selectedAmmoResourceRaw": "AROW01",
+      "observations": 22,
+      "selectedAprKeyRaw": 2,
+      "launcherBowResourceRawInQuickSlot36": "BOW05",
+      "launcherAmmoPairVerified": false
+    },
+    {
+      "slot": 35,
+      "selectedSwordResourceRaw": "SW1H04",
+      "observations": 2,
+      "selectedAprKeyRaw": 7,
+      "semanticAprInterpretation": "1.5 based on earlier project R4 mapping; key is engine raw field"
+    }
+  ],
+  "observedSelectionChanges": [
+    {
+      "atSequence": 23,
+      "fromSlot": 12,
+      "toSlot": 35,
+      "source": "observed selected inventory slot, not an automatic switch"
+    }
+  ],
+  "observedAmmoRawUseCount1Transitions": [
+    {
+      "beforeSeq": 6,
+      "afterSeq": 7,
+      "from": 20,
+      "to": 19
+    },
+    {
+      "beforeSeq": 7,
+      "afterSeq": 8,
+      "from": 19,
+      "to": 18
+    },
+    {
+      "beforeSeq": 9,
+      "afterSeq": 10,
+      "from": 18,
+      "to": 20
+    },
+    {
+      "beforeSeq": 12,
+      "afterSeq": 13,
+      "from": 20,
+      "to": 19
+    },
+    {
+      "beforeSeq": 14,
+      "afterSeq": 15,
+      "from": 19,
+      "to": 20
+    },
+    {
+      "beforeSeq": 18,
+      "afterSeq": 19,
+      "from": 20,
+      "to": 19
+    }
+  ],
+  "observedActionCodesRaw": {
+    "23": 17,
+    "3": 6,
+    "354": 1
+  },
+  "allR27SameLuaInvocation": true,
+  "allR27OrdersSentZero": true,
+  "allR27LocalsWrittenZero": true,
+  "allR27DispatchAuthorizedFalse": true,
+  "allR27WeaponSwitchAuthorizedFalse": true,
+  "allR27RemainingProofFlagsFalse": true,
+  "otherObservedIssue": {
+    "count": 1,
+    "message": "Error loading menu: ']' expected near 'icon'",
+    "atLine": 83,
+    "provenRelatedToR27": false
+  },
+  "proofLimits": [
+    "R27 proves live load/callback and selected-state raw observation, not hits or shots",
+    "R27 selected raw slot change proves observed switch, not automation or its origin",
+    "Launcher and ammunition linkage not engine-verified",
+    "Active effect list not exhaustively observed",
+    "APR for unselected weapon not verified",
+    "Manual vs EPS action and action queue not verified",
+    "Native engine event/session identity not verified",
+    "R27 did not authorize or dispatch weapon switch"
+  ],
+  "next": "Do not repeat user capture. Keep R27 installed, no more installs. Research safe read-only alternate APR/effects and action-origin APIs before any future switch proposal."
+}
