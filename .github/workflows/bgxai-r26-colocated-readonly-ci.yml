@@ -1,0 +1,43 @@
+name: BGXAI R26 cross-observer R2 R4 selected APR co-location - SOURCE ONLY
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R26_R2_R4_COLOCATION_RO_20261123/**'
+      - '.github/workflows/bgxai-r26-colocated-readonly-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-only-readonly:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify source SHA, pinned unmodified R25 dependency and source-only permissions
+        shell: bash
+        run: |
+          python - <<'PY'
+          import pathlib,json,hashlib
+          root=pathlib.Path('BGXAI/BUILD/R26_R2_R4_COLOCATION_RO_20261123')
+          manifest=json.loads((root/'SHA256_MANIFEST.json').read_text())
+          for k in ('sourceOnly',): assert manifest[k] is True
+          for k in ('gameModified','installAuthorized','dispatchAuthorized','weaponSwitchAuthorized'):assert manifest[k] is False
+          for n,h in manifest['pinned'].items():
+              p=pathlib.Path('BGXAI/BUILD/R25_CAPTURE_SEGMENT_SOURCE_ONLY_20261123/BGXAI_R25_CAPTURE_SEGMENT_RO.py') if n=='upstreamR25SourceSha256' else root/n
+              assert hashlib.sha256(p.read_bytes()).hexdigest()==h,(n,h)
+          code=(root/'BGXAI_R26_COLOCATED_R2_R4_RO.py').read_text()
+          for banned in ('EEex_', 'ClearActions(', 'SelectWeaponAbility(', 'os.system(', 'subprocess.', 'socket.', 'urllib.', 'requests.'):
+              assert banned not in code, banned
+          print('R26 SOURCE/HASH/PERMISSIONS PASS')
+          PY
+      - name: Run 28 positive/negative co-location regressions with original R25
+        shell: bash
+        run: |
+          python BGXAI/BUILD/R26_R2_R4_COLOCATION_RO_20261123/test_r26_colocated_r2_r4_ro.py -q

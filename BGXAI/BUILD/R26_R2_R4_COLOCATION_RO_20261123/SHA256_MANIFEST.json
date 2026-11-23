@@ -1,0 +1,14 @@
+{
+  "schema": "BGXAI_R26_SOURCE_ONLY_SHA_V1",
+  "sourceOnly": true,
+  "gameModified": false,
+  "installAuthorized": false,
+  "dispatchAuthorized": false,
+  "weaponSwitchAuthorized": false,
+  "pinned": {
+    "BGXAI_R26_COLOCATED_R2_R4_RO.py": "f0e3eb75cb3e61cc02f7a2b0c03ab8b38b881b552b5f11f41d1d5d85acb59e7c",
+    "test_r26_colocated_r2_r4_ro.py": "20bcf0792a19b3315a90d461b929aab85e84fcd5a7dad97772cd24f2856c698f",
+    "R26_REAL_CAPTURE_SANITIZED_VERDICT.json": "0d0539832a52ec602e872b0bd664fd35b4ab0df79becdf0da9cbf06e4e8dcf22",
+    "upstreamR25SourceSha256": "0ceb8bb23d1ed8018c5663bf2f1c610083c41c9326c7975ca515458ed2e53f88"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "schema": "BGXAI_R26_R2_R4_COLOCATED_RO_V1",
+  "status": "STRICT_R2_R4_COLOCATED_CANDIDATES_NO_ENGINE_EVENT_PROOF",
+  "reason": "MATCHED_ADJACENT_LUA_SOURCE_SEQUENCES_AND_SIX_SHARED_SCALARS",
+  "readOnly": true,
+  "sourceOnly": true,
+  "gameModified": false,
+  "ordersSent": 0,
+  "gameActionsAuthorized": false,
+  "dispatchAuthorized": false,
+  "weaponSwitchAuthorized": false,
+  "nativeEventAuthenticated": false,
+  "fullEffectsVerified": false,
+  "alternativeAPRVerified": false,
+  "launcherAmmoPairVerified": false,
+  "manualEpsQueueVerified": false,
+  "safeSessionIdentityVerified": false,
+  "pairedCount": 16,
+  "r25MirrorPairsRemoved": 18,
+  "selectedAprSummary": {
+    "slot_12_rawAPR_2": 5,
+    "slot_35_rawAPR_7": 1,
+    "slot_38_rawAPR_1": 10
+  },
+  "actionRawCounts": {
+    "23": 12,
+    "3": 4
+  },
+  "pairStatus": "COLOCATED_NOT_NATIVE_AUTHENTICATED",
+  "nextAction": "KEEP_CURRENT_WEAPON_NO_DISPATCH",
+  "originalUserCaptureStoredInPublicRepository": false,
+  "testedAgainstSavedRealLog": true,
+  "realLogFilenameDisclosed": false
+}
