@@ -60,3 +60,18 @@ return EEex_PtrToUD(EEex_UDToPtr(itemHeader) + itemHeader.abilityOffset + Item_H
 - https://eeex-docs.readthedocs.io/en/engine-x86/EE%20Game%20Structures%20(x86)/Other/index.html
 - https://github.com/Bubb13/InfinityLoader/blob/master/Core-Shared-Files/generate_bindings/in/packing.txt
 - https://github.com/Bubb13/InfinityLoader/blob/master/EEex-Core-Shared-Files/source/EEex.cpp
+
+
+## 23.11.2026 — безопасная альтернатива для дальнейшего source-only исследования
+
+Из **официального EEex v1.1.7**, `EEex_Sprite.lua` строки 1042–1056: `EEex_Sprite_Hook_CheckBlockWeaponHit(attackingSprite,targetSprite,weapon,weaponAbility)` формирует `listenerContext` с `attackingSprite`, `targetSprite`, `weapon`, `weaponAbility` — этот `weaponAbility` **передаётся движком на этапе проверки попадания**, поэтому в самом callback не нужен `item:getAbility(index)` и ручная адресная арифметика. Но это **не runtime proof** и не событие начала действия; оно может приходить после выбора оружия. Метод `EEex_Sprite_AddBlockWeaponHitListener` добавляет callback в реестр. В v1.1.7 **любой truthy return слушателя приводит к `return true` из CheckBlockWeaponHit**, что может отменить повреждение/эффекты. **Никогда не регистрировать такой listener без отдельного согласия, no-op contract, read-only ограничений и защищённых тестов.** Вариант для будущего: `ENGINE_SUPPLIED_ABILITY_ON_HIT_ONLY`; даже при безопасном событии он не доказывает альтернативные слоты, APR, время решения или launcher/ammo из других процессов.
+
+Приоритет исследования:
+1. Сначала использовать уже установленный источник R4/R13 (без новых native pointers) и офлайн R3/R17 контракт; запрет на dispatch.
+2. Для native альтернативы проверить жизненный цикл `weaponAbility` только **внутри** callback и факт его передачи из engine; не сохранять/логировать pointer, не обращаться за пределами вызова.
+3. Раздельно проверить `weapon` (что именно передано в слот боеприпаса), launcher/ammo и источник действия; не делать вывод о launcher из наличия оружия в quickslot.
+4. Пока указанные условия не подтверждены **`safeToRegisterListener=false`**, никакой установки, ручных/C++ вызовов, switch или нового боя.
+
+Source refs:
+- https://github.com/Bubb13/EEex/blob/v1.1.7/EEex/copy/EEex_scripts/EEex_Sprite.lua#L992-L1056
+- https://github.com/Bubb13/InfinityLoader/blob/master/EEex-Core-Shared-Files/source/EEex.cpp
