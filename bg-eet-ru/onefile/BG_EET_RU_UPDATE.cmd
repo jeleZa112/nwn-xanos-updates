@@ -8605,7 +8605,25 @@ def v119_selftest():
     game=Path(td)/'game';game.mkdir()
     (game/'Baldur.exe').write_bytes(b'not an installed EXE')
     assert v119_report(game)['hold_reason']=='PINNED_EXE_SHA_MISMATCH'
-    assert len(v119_decode_table(bytes(256),0,0x140000000,0x600000))==32
+    assert len(v119_decode_table(bytes(256),0,0x140000000,0x700000))==32
+    b=bytearray(0x7000);b[:2]=b'MZ';struct.pack_into('<I',b,0x3c,0x80)
+    b[0x80:0x84]=b'PE\x00\x00'
+    struct.pack_into('<H',b,0x84,0x8664)
+    struct.pack_into('<HH',b,0x86,2,0)
+    struct.pack_into('<H',b,0x94,0xf0)
+    struct.pack_into('<H',b,0x98,0x20b)
+    struct.pack_into('<Q',b,0x98+24,0x140000000)
+    struct.pack_into('<I',b,0x98+56,0x700000)
+    sections=0x98+0xf0
+    struct.pack_into('<IIII',b,sections+8,0x3000,0x2000,0x3000,0x400)
+    struct.pack_into('<IIII',b,sections+40+8,0x2000,0x597000,0x2000,0x3400)
+    start=v116_pe_to_raw(b,V119_RVA)
+    assert start==0x40d0
+    struct.pack_into('<Q',b,start,0x140002010)
+    slots=v119_decode_table(b,start,0x140000000,0x700000)
+    assert slots[0]['target_rva']=='0x2010'
+    assert slots[0]['status']=='POINTER_CANDIDATE_ONLY'
+    assert slots[1]['target_rva'] is None
     path=Path(td)/'report.zip'
     with zipfile.ZipFile(path,'w') as z:z.writestr('original',b'keep')
     assert v116_zip(game,path,{'status':'SYNTHETIC'},entry=V119_ENTRY)
