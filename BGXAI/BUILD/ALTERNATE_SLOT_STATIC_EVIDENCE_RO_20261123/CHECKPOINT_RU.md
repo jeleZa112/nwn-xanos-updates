@@ -21,3 +21,11 @@
 - Следующий источник неопределённости — активный native снимок альтернативной quickslot ability/usable + launcher-ammo pair + эффектов и временных бафов. Использовать ранее созданные R3, V2/V3 advisory, V5 APR audit, noninterrupt planner; без дублирования скорера. Без установки/боёв, пока адаптер не готов.
 
 Код: `BGXAI/BUILD/ALTERNATE_SLOT_STATIC_EVIDENCE_RO_20261123/`; результаты тестов и статус GitHub Actions см. в репозитории.
+
+## Независимая проверка и публикация
+
+- GitHub commit `53614b1245396994c9565a9d705c07c6a182e786` — опубликованы исходник, тесты, README, отчёт и контрольная точка; ни `BGXAI_UPDATE.cmd`, ни игровой Lua не менялись.
+- Windows CI **28/28 PASS**; Ubuntu CI **28/28 PASS**, обе задачи завершены со статусом `success`.
+- GitHub Actions https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45133051450
+- Код также размещён в Library `/BALDURS_GATE_EET_AI/BUILD/ALTERNATE_SLOT_STATIC_EVIDENCE_RO_20261123`; контрольная точка — `/BALDURS_GATE_EET_AI/CURRENT/BGXAI_R16_ALTERNATE_SLOT_STATIC_BRIDGE_20261123_RU.md`.
+- Реальный отчёт: `REAL_LOG_ALTERNATE_SLOTS_RO_V1.json`, 15 снимков R2, 5 raw ресурсов, 4 APR-снимка только выбранных слотов, один возможный reset/restock стрел. Его SHA256 `9de5dde86efa45a27a6e3f35e900bbe97a4744f5281f447bfd07bba2054afc55`.
