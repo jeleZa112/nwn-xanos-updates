@@ -1,3 +1,13 @@
+# LATEST 23.11.2026 — R27 GUARDED ONE-FILE UPDATER MENU 165 READY; GAME NOT CHANGED
+
+**READ FIRST:** R27 protected menu **165** is now published in the **existing** `BGXAI_UPDATE.cmd` backend `BGXAI/BGXAI_SYNC.ps1`, verified PIN SHA256; user does not need a new updater. `BGXAI/fox_new/BOOTSTRAP_PIN.json` commit `7177bff58f6f9bfe703147c29eaadb549aa4c386`, backend size **79897** (under old 80000 cap), sha256 `bac78ddf83fe4b87dce2a5d3b8568ef5062fea2591460a5e893c1026d4f5be18`. Installer sources `BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/BGXAI_R27_GUARDED.py` and exact `M_BGXR27.lua` pinned SHA. **Final CI 45212630451 completed SUCCESS**, Windows 21/21 and Ubuntu 21/21 fake/game-independent tests, Windows PS5.1 parser PASS; menu and pin hashes verified. Previous failed CI runs superseded; do not repeat old checks. GitHub current checkpoint `BGXAI/CURRENT/BGXAI_R27_GUARDED_ONEFILE_MENU165_20261123_RU.md` mirrored in Library `/BALDURS_GATE_EET_AI/CURRENT/`.
+
+**User physical next step (ONLY READ-ONLY):** Close game/InfinityLoader/WeiDU, launch existing `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`, select **165**, then **2** (default ENTER) for preflight. Send resulting `R27_PREFLIGHT_PASS_NO_INSTALL` or specific `R27_STOP`; do not invent result from CI or pre-approve install. If preflight PASS, **separate typed install choice 165→3** prompts `INSTALL_BGXAI_R27_PASSIVE_OBSERVER`, external verified backup and WeiDU last-only; **NOT installed yet**. Do not request old 158/159/164; do not run old 163 except needed explicitly. TD15 must be last or preflight HOLDS. Code adds only `override/M_BGXR27.lua` as an observer, max64 action samples, **NO switch/queue actions**. Existing TD15, R2/R4, EPS, BG EET RU, BG Voice RU, saves, game files untouched in this development turn. Current `CODE=PASS TEST=PASS PIN_RELEASED=YES GAME_DEPLOY=NO R27_LIVE=NO`.
+
+**Permanent AUTO-CONTINUE:** after success immediately carry out next *safe* step within active turn, no `+` / imaginary background work. Distinguish SOURCE/TEST vs DEPLOY/LIVE; game modifications only with typed consent at installation step.
+
+---
+
 # NEWEST 23.11.2026 — R27 PASS: single-callback R2+R4 passive live-pilot SOURCE ready, GAME NOT CHANGED
 
 **User goal:** deliver functioning autonomous weapon selection, not endless synthetic HOLD reports. Persistent rule: after each safe PASS continue to next useful safe step *in this turn* without `+`; game/WeiDU/updater changes need separately typed user consent. Never claim background work.
