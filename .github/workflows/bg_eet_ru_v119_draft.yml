@@ -2,6 +2,8 @@ name: BG EET RU v119 draft source-only checks
 on:
   push:
     branches: [bg-eet-ru-v119-readonly-draft]
+  pull_request:
+    branches: [bg-eet-ai]
   workflow_dispatch:
 jobs:
   selftest:
