@@ -1,0 +1,57 @@
+name: BGXAI R20 exact one-CMD pin chain - independent proof
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI_UPDATE.cmd'
+      - 'BGXAI/BGXAI_SYNC.ps1'
+      - 'BGXAI/fox_new/BOOTSTRAP_PIN.json'
+      - 'BGXAI/BUILD/R20_EEEX_STATIC_MENU_RO_20261123/test_r20_channel_pin.py'
+      - '.github/workflows/bgxai-r20-channel-pin-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  channel:
+    name: SHA-pinned one CMD and R19 static source (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - name: Preserve LF on both platforms
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify live PIN points at exactly same immutable 79871-byte script and read-only R19
+        shell: bash
+        run: |
+          python -m unittest -v BGXAI/BUILD/R20_EEEX_STATIC_MENU_RO_20261123/test_r20_channel_pin.py
+  winps51_bootstrap:
+    name: Original embedded CMD PowerShell5.1 AST and R20 script AST
+    runs-on: windows-latest
+    steps:
+      - name: Preserve exact source
+        shell: pwsh
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - name: Parse actual one CMD and updated PS1 without executing either
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $cmd=[IO.File]::ReadAllText((Resolve-Path 'BGXAI_UPDATE.cmd').Path)
+          $tag='# BEGIN_BGXAI_RAW_BOOTSTRAP_PS'
+          $at=$cmd.LastIndexOf($tag)
+          if($at -lt 0){throw 'CMD_EMBEDDED_PS_MISSING'}
+          $bootstrap=$cmd.Substring($at)
+          $tok=$null;$err=$null
+          [Management.Automation.Language.Parser]::ParseInput($bootstrap,[ref]$tok,[ref]$err)|Out-Null
+          if($err.Count){throw 'CMD_EMBEDDED_PS51_AST_FAIL'}
+          $tok=$null;$err=$null
+          [Management.Automation.Language.Parser]::ParseFile((Resolve-Path 'BGXAI/BGXAI_SYNC.ps1').Path,[ref]$tok,[ref]$err)|Out-Null
+          if($err.Count){throw 'UPDATED_PS51_AST_FAIL'}
+          Write-Host 'BGXAI_R20_SINGLE_CMD_BOOTSTRAP_AND_UPDATER_PS51_AST_PASS'
