@@ -114,7 +114,7 @@ jobs:
               ns['v108_get_state']=lambda:{'phase':phase['value']}
               calls=[]
               for name in ('v101_run','v102_run','v103_run','v104_run',
-                           'v105_run','v106_run','v107_run','v108_run'):
+                           'v105_run','v106_run','v107_run','v108_run','v111_run'):
                   def fn(*args,name=name,**kwargs):
                       calls.append(name)
                       return 0
@@ -124,9 +124,9 @@ jobs:
                   calls.clear()
                   assert ns['main'](['--game',str(game),'--offline'])==0
                   assert calls==expected,(value,calls,expected)
-              short=['v101_run','v102_run','v103_run','v104_run','v107_run','v108_run']
+              short=['v101_run','v102_run','v103_run','v104_run','v107_run','v108_run','v111_run']
               full=['v101_run','v102_run','v103_run','v104_run',
-                    'v105_run','v106_run','v107_run','v108_run']
+                    'v105_run','v106_run','v107_run','v108_run','v111_run']
               check('INSTALLED',short)
               check('PREPARED',short)
               check('ROLLED_BACK',full)
