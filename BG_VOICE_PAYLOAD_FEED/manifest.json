@@ -7,9 +7,9 @@
   "updater_name": "BG_VOICE_UPDATE.cmd",
   "latest_payload_version": 74,
   "state": {
-    "version": 79,
+    "version": 80,
     "library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_RU_PROJECT_STATE.md",
-    "verification": "Real WavLM 20-line failure audited; RU anchor V2 staged and synthetic-tested, actual pilot pending"
+    "verification": "Real RU Anchor V2 GPU pilot FAIL, 3 of 20 correct, no full 7206 infer, no game edits"
   },
   "package_transport": "chatgpt_shared_library",
   "windows_auto_download_enabled": false,
@@ -320,7 +320,7 @@
       ],
       "no_wav_changes": true
     },
-    "current_production_next_action": "RUN_RU_ANCHOR_V2_ON_EXISTING_GPU_VENV_REUSE_WAVLM_CACHE; CHECK_SEPARATE_STABLE_AND_PERLINE_CORRECTNESS; DO_NOT_RELEASE",
+    "current_production_next_action": "VALIDATE_EN_AND_RU_REFERENCE_PROVENANCE; ADD_INDEPENDENT_ACTING_CONTENT_COMPLETENESS_EVIDENCE; TEST_ON_NEW_BLIND_BALANCED_HUMAN_HOLDOUT; NO_MORE_V1_V2_PILOT_RUNS",
     "repairs_blocked_before_voice_selection": true,
     "ru_anchor_v2": {
       "stage": "EXPLORATORY_PILOT_READY_ON_WINDOWS_NOT_REAL_RUN",
@@ -334,9 +334,31 @@
       "method": "leave-target-out RU pseudoanchors from equal-weight Stable and Per_line, exclude 58 human locks, do NOT use known labels during reference construction",
       "safety": "EXPLORATORY_ONLY; NO_HUMAN_APPROVAL; NO_STRESS; NO_TTS; NO_GAME_INSTALL",
       "testing": "SYNTHETIC_20_7STABLE_13PERLINE_AND_FULL_7206_WITH_58_LOCKS_AND_ZIP_CRC_PASS",
-      "real_gpu_test": "NOT_RUN",
+      "real_gpu_test": "COMPLETE_HOLD_RU_PILOT",
       "source_url": "https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-voice-payloads/BG_VOICE_PAYLOAD_FEED/selection_first/ru_anchor_v2/BGVOICE_RU_ANCHOR_V2.py",
-      "expected_output": "C:\\Users\\Drevo\\Documents\\BG_VOICE_RU\\VOICE_SELECTION_GPU\\BG_VOICE_RU_ANCHOR_V2_REPORT.zip"
+      "expected_output": "C:\\Users\\Drevo\\Documents\\BG_VOICE_RU\\VOICE_SELECTION_GPU\\BG_VOICE_RU_ANCHOR_V2_REPORT.zip",
+      "actual_user_gpu_calls": 180,
+      "real_20_result": {
+        "rows": 20,
+        "selected": 12,
+        "stable_selected": 12,
+        "perline_selected": 0,
+        "correct": 3,
+        "wrong": 9,
+        "hold": 8,
+        "stable_recall_on_covered": 1,
+        "perline_recall_on_covered": 0,
+        "balanced_accuracy": 0.5,
+        "calibration_gate_pass": false,
+        "full_inference_run": false
+      },
+      "real_v2_source": "USER_CONSOLE_ONLY_V2_REPORT_ZIP_NOT_UPLOADED",
+      "v1_v2_consensus_decisions": 2,
+      "v1_v2_consensus_correct": 1,
+      "calibration_warning": "Repeatedly scoring the same 20 human picks is NOT an independent holdout",
+      "current_policy": "STOP_FURTHER_RU_ANCHOR_GPU_MASS; DO_NOT_INVERT_MARGINS_OR_RETUNE_SAME_20",
+      "failure_audit_library_path": "/BG_VOICE_RU/CURRENT/BG_VOICE_V2_FAILURE_AUDIT_20261123.zip",
+      "failure_audit_sha256": "4eb22049312906ac998cba660702da9189476382e69fe2a1ae265ea4adaa1d75"
     }
   }
 }
