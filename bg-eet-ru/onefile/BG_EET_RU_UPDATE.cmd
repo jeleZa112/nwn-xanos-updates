@@ -6923,7 +6923,7 @@ def v105_run(game,report_path,mode='status'):
         if st and st['phase']=='INSTALLED':
             files=v105_preflight(game,installed=True)
             v106_active=v106_get_state()
-            if mode=='rollback' and v106_active and v106_active.get('phase')=='INSTALLED':
+            if mode=='rollback' and v106_active and v106_active.get('phase') in ('PREPARED','INSTALLED'):
                 raise RuntimeError('V105_ROLLBACK_V106_FIRST_REQUIRED')
             expected_module=(v106_active['candidate_sha256'] if v106_active and v106_active.get('phase')=='INSTALLED'
                              else st.get('module_sha256'))
@@ -7302,6 +7302,38 @@ def v106_run(game,report_path,mode='status'):
         state=v106_get_state()
         if state and state.get('phase')=='PREPARED':
             report['status']='V106_PREPARED_RECOVERY_HOLD'
+            if mode=='rollback':
+                closed,why=v71_processes_closed()
+                if not closed:raise RuntimeError('V106_CLOSE_GAME_BEFORE_RECOVERY:'+why)
+                proof=v106_preflight(game,installed=True)
+                current=proof['actual_sha256']
+                if current not in (state.get('original_sha256'),state.get('candidate_sha256')):
+                    raise RuntimeError('V106_PREPARED_MODULE_UNKNOWN_SHA')
+                backup=Path(state['backup_module'])
+                safe_external(game,backup)
+                if backup.is_symlink() or not backup.is_file() or digest(backup.read_bytes())!=state['original_sha256']:
+                    raise RuntimeError('V106_PREPARED_BACKUP_NOT_VERIFIED')
+                if not v85_read_input_approval(V106_APPROVE_ROLLBACK):
+                    report['status']='V106_PREPARED_ROLLBACK_NOT_AUTHORIZED'
+                else:
+                    target=proof['target']
+                    if current==state['candidate_sha256']:
+                        stage=target.with_name(target.name+'.v106recovery')
+                        if stage.exists():raise RuntimeError('V106_RECOVERY_STAGE_COLLISION')
+                        try:
+                            with stage.open('xb') as out:out.write(backup.read_bytes())
+                            if digest(stage.read_bytes())!=state['original_sha256']:
+                                raise RuntimeError('V106_RECOVERY_STAGE_SHA')
+                            if digest(target.read_bytes())!=state['candidate_sha256']:
+                                raise RuntimeError('V106_MODULE_CHANGED_DURING_RECOVERY')
+                            os.replace(stage,target)
+                            if digest(target.read_bytes())!=state['original_sha256']:
+                                raise RuntimeError('V106_RECOVERY_VERIFY_FAILED')
+                            report['game_files_written']=1
+                        finally:
+                            if stage.exists():stage.unlink()
+                    v106_put_state(game,{**state,'phase':'ROLLED_BACK','recovered_utc':now()})
+                    report['status']='V106_PREPARED_RECOVERED_EXACT_V105_MODULE'
         elif state and state.get('phase')=='INSTALLED':
             proof=v106_preflight(game,installed=True)
             if proof['actual_sha256']!=state.get('candidate_sha256') or \
@@ -7411,9 +7443,13 @@ def v106_run(game,report_path,mode='status'):
                                 with fail.open('xb') as out:out.write(pre['original'])
                                 if digest(fail.read_bytes())==pre['original_sha256']:
                                     os.replace(fail,pre['target'])
-                        st=v106_get_state()
-                        if st and st['phase']=='PREPARED':
-                            v106_put_state(game,{**record,'phase':'ROLLED_BACK','failed_utc':now()})
+                        if (pre['target'].is_file() and
+                                digest(pre['target'].read_bytes())==pre['original_sha256']):
+                            st=v106_get_state()
+                            if st and st['phase']=='PREPARED':
+                                v106_put_state(game,{**record,'phase':'ROLLED_BACK','failed_utc':now()})
+                        # If exact V105 restoration was impossible, leave PREPARED,
+                        # and require explicit guarded --rollback-v106-weapon-console.
                         raise
                     finally:
                         if stage.exists():stage.unlink()
