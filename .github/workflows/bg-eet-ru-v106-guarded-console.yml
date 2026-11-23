@@ -1,0 +1,142 @@
+name: BG EET RU V106 guarded weapon console bridge
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - '.github/workflows/bg-eet-ru-v106-guarded-console.yml'
+  workflow_dispatch:
+jobs:
+  v106-native-and-guarded:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua 5.4 native runtime
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq liblua5.4-0
+      - name: All onefile integrated selftests, including v106
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
+      - name: Native Lua V106 observer test and isolated guarded install/rollback
+        shell: bash
+        run: |
+          python - <<'PY'
+          import ctypes,json,tempfile,zipfile,hashlib,subprocess
+          from pathlib import Path
+          from unittest.mock import patch
+          p=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
+          ns={'__name__':'v106_test','__file__':str(p)}
+          exec(compile(p.read_text('utf8').split('\n',1)[1],str(p),'exec'),ns)
+          assert ns['SELF_VERSION']==106
+          original=ns['v105_source_module']()
+          candidate=ns['v106_make_candidate'](original)
+          assert candidate.startswith(original)
+          assert candidate.count(b'EEex_Sprite_AddAlterBaseWeaponDamageListener')==original.count(b'EEex_Sprite_AddAlterBaseWeaponDamageListener')
+          lua=ctypes.CDLL('liblua5.4.so.0')
+          lua.luaL_newstate.restype=ctypes.c_void_p
+          lua.luaL_openlibs.argtypes=[ctypes.c_void_p]
+          lua.luaL_loadbufferx.argtypes=[ctypes.c_void_p,ctypes.c_char_p,ctypes.c_size_t,ctypes.c_char_p,ctypes.c_char_p]
+          lua.luaL_loadbufferx.restype=ctypes.c_int
+          lua.lua_pcallk.argtypes=[ctypes.c_void_p,ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.c_longlong,ctypes.c_void_p]
+          lua.lua_pcallk.restype=ctypes.c_int
+          lua.lua_close.argtypes=[ctypes.c_void_p]
+          preamble=b"""
+          logs={}
+          function Infinity_Log(line) logs[#logs+1]=line end
+          registrations={}
+          function EEex_Sprite_AddAlterBaseWeaponDamageListener(listener)
+              registrations[#registrations+1]=listener
+          end
+          """
+          test=r"""
+          assert(BG_EET_RU_WEAPON_EVENT_OBSERVER_V1.registered==false)
+          local ok, reason=BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()
+          assert(ok and reason=='LISTENER_REGISTERED')
+          assert(#registrations==1)
+          assert(#logs==2 and logs[1]:find('SOURCE_LOADED',1,true))
+          local ctx={weapon={},attacker={},target={},ability={},effect={},
+                     attackRoll=20,isCritical=true,isLeftHand=false}
+          assert(registrations[1](ctx)==nil)
+          assert(ctx.attackRoll==20 and ctx.isCritical and ctx.weapon~=nil)
+          assert(#logs==3 and logs[3]:find('EVENT',1,true))
+          assert(logs[3]:find('attackRoll:number:20',1,true))
+          assert(logs[3]:find('weapon:table:',1,true))
+          assert(not logs[3]:find('weapon_resref=',1,true))
+          for i=2,100 do
+            ctx.attackRoll=i
+            registrations[1](ctx)
+          end
+          assert(#logs==66)
+          assert(BG_EET_RU_WEAPON_EVENT_OBSERVER_V1.total_recorded==100)
+          assert(#BG_EET_RU_WEAPON_EVENT_OBSERVER_V1.events==64)
+          assert(#registrations==1)
+          """
+          code=preamble+candidate+b'\n'+test.encode()
+          L=lua.luaL_newstate();lua.luaL_openlibs(L)
+          try:
+              assert lua.luaL_loadbufferx(L,code,len(code),b'v106_test',None)==0,'Lua compile failure'
+              assert lua.lua_pcallk(L,0,0,0,0,None)==0,'Lua native callback failure'
+          finally:lua.lua_close(L)
+          print('V106_LUA54_PASS: exact single registration, no combat mutation, 64 bounded console events, no CItem dereference')
+          with tempfile.TemporaryDirectory() as temp:
+              root=Path(temp);game=root/'game';game.mkdir()
+              scripts=game/'EEex_scripts';scripts.mkdir()
+              module=scripts/ns['V105_OBSERVER_MODULE']
+              module.write_bytes(original)
+              main=scripts/'EEex_Main.lua';main.write_bytes(b'EEex_Main mock original, pinned')
+              (game/'InfinityLoader.exe').write_bytes(b'MZ'+b'\0'*200)
+              work=root/'work';work.mkdir()
+              report=work/'SEND_TO_CHATGPT_BG_EET_RU.zip'
+              with zipfile.ZipFile(report,'w') as z:
+                  z.writestr('V105_OLD_ENTRY.json','{"keep":true}')
+              ns.update({'WORKDIR':work,'V106_STATE':work/'v106_state.json'})
+              mock_v105={'phase':'INSTALLED','candidate_main_sha256':ns['digest'](main.read_bytes()),
+                         'module_sha256':ns['digest'](original)}
+              ns['v105_get_state']=lambda:mock_v105
+              ns['v105_preflight']=lambda *_a,**_kw:{'main':main,'module':module,
+                                                      'existing_main':main.read_bytes()}
+              ns['v71_processes_closed']=lambda:(True,'CLOSED')
+              ns['v85_read_input_approval']=lambda expected:expected in (
+                  ns['V106_APPROVE_INSTALL'],ns['V106_APPROVE_ROLLBACK'])
+              assert ns['v106_run'](game,report)==0
+              with zipfile.ZipFile(report) as z:
+                  result=json.loads(z.read(ns['V106_ENTRY']))
+                  assert result['status']=='V106_CONSOLE_BRIDGE_PREFLIGHT_PASS_NOT_INSTALLED'
+              assert module.read_bytes()==original
+              assert ns['v106_run'](game,report,'install')==0
+              assert module.read_bytes()==candidate
+              assert main.read_bytes()==b'EEex_Main mock original, pinned'
+              installed=ns['v106_get_state']()
+              assert installed['phase']=='INSTALLED'
+              assert Path(installed['backup_module']).read_bytes()==original
+              assert ns['v106_run'](game,report)==0
+              class DummyProcess:
+                  def wait(self):return 0
+              def fake_start(*args,**kwargs):
+                  assert args[0]==[str(game/'InfinityLoader.exe')]
+                  assert kwargs['cwd']==game and kwargs['stdin']==subprocess.DEVNULL
+                  assert kwargs['stderr']==subprocess.STDOUT
+                  kwargs['stdout'].write(b'ordinary console\n[BG_EET_RU_V106] SOURCE_LOADED\n[BG_EET_RU_V106] START\ttrue\tLISTENER_REGISTERED\n[BG_EET_RU_V106] EVENT\t1\tattackRoll:number:20\n')
+                  return DummyProcess()
+              with patch.object(subprocess,'Popen',side_effect=fake_start):
+                  assert ns['v106_run'](game,report,'capture')==0
+              with zipfile.ZipFile(report) as z:
+                  assert z.read('V105_OLD_ENTRY.json')==b'{"keep":true}'
+                  capture=json.loads(z.read(ns['V106_ENTRY']))
+                  assert capture['console_evidence']['status']=='V106_CONSOLE_EVENTS_CAPTURED'
+                  assert capture['console_evidence']['event_lines']==1
+                  assert capture['console_evidence']['source_loaded_lines']==1
+              assert ns['v106_run'](game,report,'rollback')==0
+              assert module.read_bytes()==original and main.read_bytes()==b'EEex_Main mock original, pinned'
+              assert ns['v106_get_state']()['phase']=='ROLLED_BACK'
+              # Crash-recovery simulation: candidate landed while phase remained PREPARED.
+              module.write_bytes(candidate)
+              ns['v106_put_state'](game,{**installed,'phase':'PREPARED'})
+              assert ns['v106_run'](game,report)==0
+              with zipfile.ZipFile(report) as z:
+                  hold=json.loads(z.read(ns['V106_ENTRY']))
+                  assert hold['status']=='V106_PREPARED_RECOVERY_HOLD'
+              assert ns['v106_run'](game,report,'rollback')==0
+              assert module.read_bytes()==original
+              assert ns['v106_get_state']()['phase']=='ROLLED_BACK'
+          print('V106_SYNTHETIC_GUARDED_PASS: read-only preflight, exact V105 backup, one-module upgrade/restore, console capture into single ZIP, no real game')
+          PY
