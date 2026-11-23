@@ -1,3 +1,15 @@
+# LATEST 2026-11-23 — R27 INSTALLED + REAL LIVE 24/24 PASS; NEXT AUTOWEAPON BLOCKERS
+
+**New REAL USER GAME CAPTURE was read and analyzed in this chat**: `BGXAI_R27_CONSOLE_20261123T163105828183Z.log`, 394 text lines, 245196 bytes, SHA256 `6124a7d4d1fd3e168bc7fa099397964fb2e0bc4d5d0fa840c79c005647bf223b`. Private raw copy is saved to Library `/BALDURS_GATE_EET_AI/DIAGNOSTICS/`, **NOT public GitHub**. Detailed sanitized checkpoints in GitHub + Library CURRENT: `BGXAI_R27_LIVE_CHECKPOINT_20261123_RU.md` and `BGXAI_R27_LIVE_VERDICT_20261123.json`.
+
+**R27 actual game LIVE OBSERVER PASS**: `[BGXR27] SESSION` once, **24 consecutive R27_SINGLE_CALLBACK events seq 1-24**, status `CURRENT_SELECTED_SAME_CALLBACK_SOURCE_CANDIDATE`, **24/24 matching independent R2.SLOTS and R4.ACTIVE** on 6 key fields plus selected APR/THAC0 and raw inventory sample, zero mismatches. Same actor observed; slots: **22 samples selected ammo 12 AROW01 raw APR key2** with BOW05 physically in quick-weapon slot36; **2 selected sword slot35 SW1H04 raw APR key7** (prior project mapping 1.5 APR), transition on seq23. Raw arrow useCount1 fluctuated 20↔19↔18 and resets; these are not proven shots because save reloading could reset them. All 24 `sameLuaListenerInvocation=true`, `ordersSent=0`, `localsWritten=0`, `dispatchAuthorized=false`, `weaponSwitchAuthorized=false`. No R27 errors. **Separate UI parser error** at line83 `Error loading menu: ']' expected near 'icon'`, cannot attribute to R27; avoid changing BG_EET_RU/UI in BGXAI.
+
+**Stage accurately**: CODE PASS, OFFLINE CI PASS, DEPLOY PASS (typed user install, backup), R27 LIVE OBSERVER PASS. **ACTUAL AUTONOMOUS WEAPON SWITCH OFF**. Not proven: alternate-slot effective APR, complete effects/buffs, native launcher↔ammo association, real unique native event/session, manual/EPS action origin, queued action state. Existing installed TD15/R27, EPS 18.4 and one updater preserved. DO NOT ask user to repeat 165→5 or earlier 163/164; next work should derive a safe proof path for effective alternate statistics + EPS queue (source-only until justified typed pilot).
+
+**Permanent auto-continue rule**: when PASS do next useful safe work in current turn, no `+`, no promise of background work. Game modifications require separate authorization.
+
+---
+
 # 2026-11-23 LATEST: R27 LIVE GAME MODULE INSTALLED; CONSOLE CAPTURE NOW MENU165 → 5, NO REINSTALL
 
 **USER GAME REPORT:** existing `BGXAI_UPDATE.cmd` → 165 → 3 → exact typed `INSTALL_BGXAI_R27_PASSIVE_OBSERVER`; authenticated user output `R27_PASSIVE_INSTALLED_AWAITING_RUNTIME_TEST`, Lua SHA256 `e5eb400c56ffb1bc23344a0cf30dcc724d8d18fc2752fabd1c2c63cdcca73735`; external verified backup `Documents/BGXAI_BACKUPS/PRE_BGXR27_*`; `dispatchAuthorized=false`, `weaponSwitchAuthorized=false`. **CODE/TEST/DEPLOY R27 PASS; GAME LIVE NOT TESTED**. Last WeiDU is now BGXR27; do not use legacy 163 capture designed for TD15-last.
