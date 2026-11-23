@@ -39,13 +39,15 @@ jobs:
           lua.lua_pcallk.argtypes=[ctypes.c_void_p,ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.c_longlong,ctypes.c_void_p]
           lua.lua_pcallk.restype=ctypes.c_int
           lua.lua_close.argtypes=[ctypes.c_void_p]
-          test=r"""
-          local logs={}
+          preamble=b"""
+          logs={}
           function Infinity_Log(line) logs[#logs+1]=line end
-          local registrations={}
+          registrations={}
           function EEex_Sprite_AddAlterBaseWeaponDamageListener(listener)
               registrations[#registrations+1]=listener
           end
+          """
+          test=r"""
           assert(BG_EET_RU_WEAPON_EVENT_OBSERVER_V1.registered==false)
           local ok, reason=BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()
           assert(ok and reason=='LISTENER_REGISTERED')
@@ -68,7 +70,7 @@ jobs:
           assert(#BG_EET_RU_WEAPON_EVENT_OBSERVER_V1.events==64)
           assert(#registrations==1)
           """
-          code=candidate+b'\n'+test.encode()
+          code=preamble+candidate+b'\n'+test.encode()
           L=lua.luaL_newstate();lua.luaL_openlibs(L)
           try:
               assert lua.luaL_loadbufferx(L,code,len(code),b'v106_test',None)==0,'Lua compile failure'
