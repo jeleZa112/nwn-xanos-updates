@@ -1,0 +1,23 @@
+# BGXAI R13.2 TD15 — real LIVE target defensive fields read PASS
+Date: 2026-11-23
+User log: `BGXAI_R13_2_CONSOLE_20261123T064924087770Z.log`; 260 lines, 132727 bytes, SHA256 `cebfa573df8fc9e5180ec8cbcfc8b67a865a12c6381394d5dcd511cdf7500945`.
+
+## Key findings (actual user log)
+- User performed two battles in one InfinityLoader capture: first killed enemy with one arrow, reloaded, fired repeatedly, switched to sword and killed enemy. The console log supports two SPRITE_IS_DEAD events at lines 153 and 260, and the UI attack-roll tap recorded critical roll20 in first fight (line152) and non-critical roll16 at end of second (line259). Do not infer exact damage or number of hits from started-action log.
+- Lua R13.2 hook genuinely ran in actual game: `[BGXTD13]` SESSION line 52 and READY hookRegistered=true line 53.
+- Four and only four R13.2 DEFENSE events, seq 1 line144, seq2 line211, seq3 line233, seq4 line248. All four status `TARGET_RAW_DEFENSE_FIELDS_CANDIDATE_ONLY`; **zero HOLD**, nine of nine raw fields non-null for all four. The same attacker actor139266124, target135137293, rawActionId3. Earlier R13/TD14 three-HOLD bug is resolved for this tested target, not for every creature/condition.
+- seq1–3: selectedSlot12 class AMMO (AROW01; bow BOW05 present in quickslot36). seq4: selectedSlot35 class WEAPON (SW1H04); **passive observer saw swap from arrow to sword**. No evidence BGXAI ordered the swap — user did it manually.
+- Nine target raw values identical throughout: m_nArmorClass=10; m_nACCrushingMod=0; m_nACMissileMod=0; m_nACPiercingMod=0; m_nACSlashingMod=0; m_nResistCrushing=0; m_nResistPiercing=0; m_nResistSlashing=0; m_nResistMissile=0. NO proof these represent full effective AC, enchantment immunity, physical resistance from item effects, damage immunity, actual miss chances or hostility.
+- BGXWP/R4 event on ranged action3 `selectedWeaponRaw=12`, `m_nNumberOfAttacks/aprRaw=2`; melee action3 `selectedWeaponRaw=35`, APR raw7. IMPORTANT Infinity Engine key APR encoding: raw 2 means 2.0 APR; raw7 means 1.5 APR, NOT 7 attacks. IESDP reference https://iesdp.bgforge.net/opcodes/bgee (opcode #1 table: keys 0-5 integer, 6=0.5, 7=1.5, 8=2.5, 9=3.5, 10=4.5). These describe currently selected actions, NOT independently validated alternate item APR or full buffs.
+- In first battle AROW01 count20 ->19; after reload 20 again; second battle count20 ->18 ->17 in observer snapshots. BGXFTRACE confirms action3 target135137293, though manual-vs-EPS action source remains UNKNOWN.
+- Unrelated UI warning remains: menu syntax error `']' expected near 'icon'` (line82) and 14 missing translated UI strings. Do not conflate with BGXAI or change BG_EET_RU/BG Voice RU.
+
+## Project safety / stages
+- TD15 **CODE PASS; OFFLINE TEST PASS; DEPLOY PASS; LIVE RUNTIME HOOK PASS; LIVE 9-field READ PASS for one hostile target**. All nine fields are candidate raw values; target full-protection / derived effect coverage NOT certified. Existing validation and fallback status preserved.
+- TD15 installed proof from user: `BGXTD15_INSTALLED_AWAITING_LIVE_TEST`, Lua source SHA256 `040a5df62c84363fd0d566c9509636efba7721439afcc90c72758da094e7f5f8`, external backup `C:\Users\Drevo\Documents\BGXAI_BACKUPS\PRE_BGXTD15_20261123T064327635691Z`. No new installation required.
+- Automatic weapon switching remains OFF; never activate from raw target AC/APR. Do not ask user to repeat the two fights or run preflight/WeiDU.
+- Next source-only development: implement isolated `APR KEY` decode with unit tests, not raw numeric comparison; then build read-only candidate per-slot weapon score that includes effective range, item/ability identity and usability, launcher+ammo, weapon damage types, STR/DEX, proficiency, temporary effects, target protections and attack initiative while preserving EPS/manual action queue. For unsupported inputs, HOLD and keep existing selection; no game writes until independently validated and explicitly authorized. Consider caching: recalc only on meaningful change; don't stall active actions.
+- The observed raw target fields being non-null does NOT mean a general-purpose enemy defense model or attack probability calculator is completed.
+
+## Source provenance and reproducibility
+One real user-supplied console session, file hash above. Prior failed HOLD file `BGXAI_R13_CONSOLE_20261123T061617028509Z.log`; prior no-combat startup file `BGXAI_R13_CONSOLE_20261122T182425946839Z.log`. Code release `575de4837a8adfdb4db8bc7a8d6503619829c4b7`, pin `476efec9855f81f41f0bbc6b77ac14579de17fc7`, CI https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45125194435.
