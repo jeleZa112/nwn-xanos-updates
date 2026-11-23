@@ -1,0 +1,21 @@
+{
+  "schema": "BGXAI_R27_SINGLE_CALLBACK_SOURCE_MANIFEST_V1",
+  "sourceOnly": true,
+  "gameModified": false,
+  "installAuthorized": false,
+  "weaponSwitchAuthorized": false,
+  "dispatchAuthorized": false,
+  "files": {
+    "BGXAI_R27_SINGLE_CALLBACK_SELECTED_RO.lua": "e3cff686aac3d10aa15d1e8769ca9ffc7bd3d9e7b8cc973f738afa32f462b67f",
+    "R27_EVENT_JOIN_TAIL.lua": "7a7e5acf3b4ae99a2f6bc95ffe4f211478e01485da2899141c906fd4991c03d2",
+    "build_r27.py": "365997b4eeba5333a27b606dcfbef9c4878097a9b96f5153c96a57e0cb665630",
+    "test_r27_single_callback.lua": "8bad4510518d370f06bbae4894d7560b981e97660bba3dc09825ab35ffe6acf2",
+    "test_r27_source.py": "1a5284a5af5cae1a63ae669b4ba664a83f23e685c9a89b327716181465652657",
+    "README_RU.md": "fcac876f712e7fdd02b71eb8c729f495d94a53f20768f3c9021b12aef168d57a",
+    "CHECKPOINT_RU.md": "bb4f8af893937a95381ff27e6b001c36acbc0555c5b9bda84ceba073e3cefd83"
+  },
+  "originSha256": {
+    "R2": "7bd88866eab1d73f59b6619b2f38e26b846c0daa85a54f6c1de9e77e0730b5a0",
+    "R4": "2b618df53566b75f651ae75ce737496e4b24cb18fd754be7eb7c245ccfbbcc40"
+  }
+}

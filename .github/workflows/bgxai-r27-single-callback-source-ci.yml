@@ -1,0 +1,52 @@
+name: BGXAI R27 one passive selected-weapon callback - SOURCE ONLY
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/**'
+      - '.github/workflows/bgxai-r27-single-callback-source-ci.yml'
+  workflow_dispatch:
+jobs:
+  source-only:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Disable CRLF conversion before checkout
+        shell: bash
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Recompose exact checked original R2/R4 and validate manifest
+        shell: bash
+        run: |
+          python - <<'PY'
+          import pathlib,hashlib,json
+          root=pathlib.Path('BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123')
+          m=json.loads((root/'SHA256_MANIFEST.json').read_text())
+          assert m['sourceOnly'] is True
+          for x in ('gameModified','installAuthorized','dispatchAuthorized','weaponSwitchAuthorized'):
+              assert m[x] is False
+          for n,h in m['files'].items():
+              got=hashlib.sha256((root/n).read_bytes()).hexdigest()
+              assert got==h,(n,h,got)
+          print('R27 SHA256 and no-dispatch manifest PASS')
+          PY
+          python BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/build_r27.py
+      - name: Source-only Python tests
+        shell: bash
+        run: |
+          python -m unittest discover -s BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123 -p test_r27_source.py -v
+      - name: Install Lua 5.4 for Ubuntu source behavior test
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lua5.4
+      - name: Run actual R2/R4 composed Lua callback mock tests
+        if: runner.os == 'Linux'
+        shell: bash
+        run: lua5.4 BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/test_r27_single_callback.lua
