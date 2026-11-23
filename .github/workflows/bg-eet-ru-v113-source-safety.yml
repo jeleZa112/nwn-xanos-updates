@@ -1,0 +1,33 @@
+name: BG EET RU V113 source-only weapon journal join safety
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/weapon-identity/V113_JOIN_SAFETY_GATE_SOURCE_ONLY.py'
+      - '.github/workflows/bg-eet-ru-v113-source-safety.yml'
+  workflow_dispatch:
+jobs:
+  v113-source-synthetic-only:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test that ambiguous weapon-to-journal joins are rejected
+        run: |
+          python -m py_compile bg-eet-ru/weapon-identity/V113_JOIN_SAFETY_GATE_SOURCE_ONLY.py
+          python bg-eet-ru/weapon-identity/V113_JOIN_SAFETY_GATE_SOURCE_ONLY.py --selftest
+      - name: Verify no installed EET hook, updater, or game mutation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('bg-eet-ru/weapon-identity/V113_JOIN_SAFETY_GATE_SOURCE_ONLY.py')
+          s=p.read_text('utf8')
+          assert 'def decide_batch(' in s
+          assert 'ENGINE_LOG_APPEND_IMMUTABLE' in s
+          assert 'VERIFIED_EACH_ROLL_INCLUDING_MISS' in s
+          assert 'NO_WEAPON_ROW_LABELS_PERMITTED_WITH_AVAILABLE_EVENTS' in s
+          assert 'EEex_Sprite_AddAlterBaseWeaponDamageListener(' not in s
+          assert 'os.replace(' not in s
+          print('V113_SOURCE_ONLY_NO_INSTALL_PASS')
+          PY
