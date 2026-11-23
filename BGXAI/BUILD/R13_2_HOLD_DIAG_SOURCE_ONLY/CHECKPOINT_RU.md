@@ -1,0 +1,3 @@
+# CURRENT — BGXAI R13.2 targeted HOLD diagnostic
+
+В предыдущем реальном бою `BGXAI_R13_CONSOLE_20261123T061617028509Z.log`: 3×DEFENSE (partyIndex 2,1,2), все HOLD, причины скрыты предыдущей схемой. Зафиксировано: action ID3, слот10 (SLOT_FIST) и слот12 (SLOT_AMMO1), R13 SESSION+READY. Не требовать повторного старого боя. Замена source-only разработана, с guarded WeiDU TD15 (только 8-символьный override/M_BGXD13.lua) и внешним backup. 20 Python mocked tests и Lua 5.4 runtime mock PASS (при локальном тесте). Состояние LIVE после обновления не подтверждено; ничто не установлено на компьютере пользователя. Любая новая установка только через точное подтверждение в единственном BGXAI_UPDATE.cmd. Сохранять R1-R4, BG_EET_RU, BG Voice RU, EPS и сохранения.

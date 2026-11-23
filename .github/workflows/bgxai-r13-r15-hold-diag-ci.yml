@@ -1,0 +1,71 @@
+name: BGXAI R13.2 passive HOLD diagnostics - Windows and Lua CI
+on:
+  push:
+    branches: [bgxai-r13-r15-hold-diagnostic-candidate]
+    paths:
+      - 'BGXAI/BUILD/R13_2_HOLD_DIAG_SOURCE_ONLY/**'
+      - 'BGXAI/BGXAI_SYNC.ps1'
+      - '.github/workflows/bgxai-r13-r15-hold-diag-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows_guarded:
+    runs-on: windows-latest
+    steps:
+      - name: Disable CRLF normalization for exact SHA
+        shell: pwsh
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: 20 safety tests (source, consent, backup, simulated WeiDU install/rollback)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          Push-Location 'BGXAI/BUILD/R13_2_HOLD_DIAG_SOURCE_ONLY'
+          python -m unittest -v test_r15_guarded.py
+          $res=$LASTEXITCODE
+          Pop-Location
+          if($res -ne 0){throw 'R15_GUARD_FAIL'}
+      - name: Verify native Windows PowerShell 5.1 AST and old menu handlers
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $f='BGXAI/BGXAI_SYNC.ps1'
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f).Path,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count){throw ('R15_PS51_PARSE_FAIL: '+(($errors|ForEach-Object{$_.Message}) -join ';'))}
+          $bytes=[IO.File]::ReadAllBytes((Resolve-Path $f).Path)
+          if($bytes.Length -gt 80000){throw 'R15_BOOTSTRAP_SIZE_TOO_BIG'}
+          $sha=([BitConverter]::ToString([Security.Cryptography.SHA256]::Create().ComputeHash($bytes))).Replace('-','').ToLowerInvariant()
+          Write-Host ('R15_BOOTSTRAP_BYTES='+$bytes.Length)
+          Write-Host ('R15_BOOTSTRAP_SHA256='+$sha)
+          $content=[IO.File]::ReadAllText((Resolve-Path $f).Path)
+          $handlers=[regex]::Matches($content,"(?m)^'(\d+)'\s*\{")
+          $ids=@($handlers|ForEach-Object {[int]$_.Groups[1].Value})
+          if($ids.Count -ne 163){throw ('R15_MENUS_COUNT_FAIL '+$ids.Count)}
+          for($i=1;$i -le 163;$i++){if($ids -notcontains $i){throw ('R15_MISSING_MENU '+$i)}}
+          if(-not $content.Contains('163 - R13.2 HOLD diagnostics')){throw 'R15_MISSING_VISIBLE_MENU'}
+          Write-Host 'R15_WINPS51_AST_MENU1_163_PASS'
+      - name: PowerShell 7 AST
+        shell: pwsh
+        run: |
+          $tok=$null;$err=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path 'BGXAI/BGXAI_SYNC.ps1').Path,[ref]$tok,[ref]$err)|Out-Null
+          if($err.Count){throw 'R15_PS7_PARSE_FAIL'}
+          Write-Host 'R15_PS7_AST_PASS'
+  lua54_runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua 5.4 runtime
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.4
+      - name: Passive HUD / fist / ammo / weapon / reason / reentrant test
+        shell: bash
+        run: |
+          cd BGXAI/BUILD/R13_2_HOLD_DIAG_SOURCE_ONLY
+          lua5.4 test_r15_runtime.lua

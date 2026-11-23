@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.88-R13-HOLD-DIAG-RO",
+  "files": [
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_R13_HOLD_DIAG_GUARDED.py",
+      "dest": "BGXAI_R13_HOLD_DIAG_GUARDED.py",
+      "size": 15623,
+      "sha256": "3c9f6b1837f92d6088b2fccf679b5985af96ddbc8509ade75e913436d75f90d0"
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/R15_M_BGXD13.lua",
+      "dest": "R15_M_BGXD13.lua",
+      "size": 14030,
+      "sha256": "040a5df62c84363fd0d566c9509636efba7721439afcc90c72758da094e7f5f8"
+    }
+  ]
+}
