@@ -1,0 +1,56 @@
+name: BGXAI R21 native evidence gate - pure offline source-only
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R21_NATIVE_EVIDENCE_GATE_RO_20261123/**'
+      - '.github/workflows/bgxai-r21-native-evidence-gate-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  safe_source:
+    name: R21 28 offline tests and immutable SHA (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - name: Disable Windows CRLF mutation before checkout
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run pure Python no-game tests
+        shell: bash
+        run: |
+          cd BGXAI/BUILD/R21_NATIVE_EVIDENCE_GATE_RO_20261123
+          python -m unittest -v test_r21_evidence_gate_ro.py
+      - name: Verify exact source hashes and authorization stays OFF
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, hashlib
+          from pathlib import Path
+          d=Path('BGXAI/BUILD/R21_NATIVE_EVIDENCE_GATE_RO_20261123')
+          m=json.loads((d/'SHA256_MANIFEST.json').read_text(encoding='utf-8'))
+          e=json.loads((d/'R21_SOURCE_EVIDENCE_V1.json').read_text(encoding='utf-8'))
+          for x in (m,e):
+              for k in ('sourceOnly','gameModified','installAuthorized','weaponSwitchAuthorized','dispatchAuthorized'):
+                  assert x[k] is (k=='sourceOnly'),k
+          for name,record in m['files'].items():
+              b=(d/name).read_bytes()
+              assert len(b)==record['bytes'],name
+              assert hashlib.sha256(b).hexdigest()==record['sha256'],name
+          for key in ('safeToCallGetAbility','safeToCallGetLauncher','safeToRegisterListener',
+                      'runtimeDllAbiVerified','nativePointerLifetimeVerified',
+                      'fullActiveEffectsFingerprintVerified','alternativeSlotAPRVerified',
+                      'manualEpsQueueBoundaryVerified'):
+              assert e[key] is False,key
+          assert e['x64DocumentedItemHeaderBytes']==114
+          assert e['x64DocumentedItemAbilityBytes']==56
+          print('BGXAI_R21_SHA_AND_NO_DISPATCH_PASS')
+          PY
