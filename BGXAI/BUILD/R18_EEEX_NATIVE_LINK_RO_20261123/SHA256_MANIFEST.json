@@ -1,0 +1,39 @@
+{
+  "schema": "BGXAI_R18_SOURCE_ONLY_SHA256_MANIFEST_V1",
+  "files": {
+    "BGXAI_R18_EEEX_ADAPTER_CANDIDATE.lua": {
+      "sha256": "81c4b5c300c1b89dc9803c3e0dfbe1d7bfe78923b7d0ebd7a1b42c990a6d5635",
+      "bytes": 3117
+    },
+    "BGXAI_R18_NATIVE_LINK_PROBE_RO.lua": {
+      "sha256": "e109121f8e39424a820e428084a73e9205ed58384f0eb3224c53225a6e163df9",
+      "bytes": 7042
+    },
+    "CHECKPOINT_RU.md": {
+      "sha256": "003f53cddb8456b2c9550bd51005c57dd613de619dd6954506bccd13e8c48d7f",
+      "bytes": 4158
+    },
+    "R18_UPSTREAM_API_CONTRACT_V1.json": {
+      "sha256": "ae5c750c036ea940947e614330c8d7e0fa55afd83e24db55b28fc83c653cf4b7",
+      "bytes": 2086
+    },
+    "README_RU.md": {
+      "sha256": "43880a5fc0d40d86981b002287dd85e9a962d3f6b85521782ead199c05661f6d",
+      "bytes": 5863
+    },
+    "test_r18_eeex_adapter_candidate.lua": {
+      "sha256": "b5bc9d7e92123d3ff350a0e5ea4d78c774163ce369215fc9751c40b8527ff5ad",
+      "bytes": 2908
+    },
+    "test_r18_native_link_probe.lua": {
+      "sha256": "42bb2f6299f51e295e61b8f86bab09e727330de3d95d814b76b22588b1b0f87e",
+      "bytes": 6833
+    },
+    "test_r18_source_contract.py": {
+      "sha256": "2e42a8fed1570f886c70024f052d148ce5b5f113c5a29298e6831b45e1b99225",
+      "bytes": 5072
+    }
+  },
+  "gameModified": false,
+  "weaponSwitchAuthorized": false
+}

@@ -1,0 +1,69 @@
+name: BGXAI R18 native EEex selected ability/launcher probe - source-only
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R18_EEEX_NATIVE_LINK_RO_20261123/**'
+      - '.github/workflows/bgxai-r18-native-link-source-only-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static_contract:
+    name: R18 Python contract, manifest, no actions (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - name: Keep LF source bytes on all runners
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Offline source-only 18 tests
+        shell: bash
+        run: |
+          cd BGXAI/BUILD/R18_EEEX_NATIVE_LINK_RO_20261123
+          python -m unittest -v test_r18_source_contract.py
+      - name: Pinned SHA256 and no unsafe capability
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          p=Path('BGXAI/BUILD/R18_EEEX_NATIVE_LINK_RO_20261123')
+          m=json.loads((p/'SHA256_MANIFEST.json').read_text(encoding='utf-8'))
+          assert m['gameModified'] is False and m['weaponSwitchAuthorized'] is False
+          for name,proof in m['files'].items():
+            data=(p/name).read_bytes()
+            assert len(data)==proof['bytes'],name
+            assert hashlib.sha256(data).hexdigest()==proof['sha256'],name
+          x=json.loads((p/'R18_UPSTREAM_API_CONTRACT_V1.json').read_text(encoding='utf-8'))
+          assert x['eeexSourceTag']=='v1.1.7'
+          assert all(x[k] is False for k in (
+              'exactInstalledEeexBytesMatched','nativeItemAbilityHandleVerifiedInUserRuntime',
+              'nativeLauncherAmmoBindingVerifiedInUserRuntime','completeEffectFingerprintVerified',
+              'nativeActionEventIdVerified','automaticRegistrationPresent',
+              'gameFileChangeAuthorized','weaponSwitchAuthorized','dispatchAuthorized'))
+          print('BGXAI_R18_MANIFEST_AND_FAIL_CLOSED_PASS')
+          PY
+  lua_mock:
+    name: R18 pure Lua core and injected EEex mock
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prevent CRLF normalization
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - name: Install offline Lua 5.4
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.4
+      - name: 28 core and 12 adapter tests; no runtime deployment
+        run: |
+          cd BGXAI/BUILD/R18_EEEX_NATIVE_LINK_RO_20261123
+          lua5.4 test_r18_native_link_probe.lua
+          lua5.4 test_r18_eeex_adapter_candidate.lua

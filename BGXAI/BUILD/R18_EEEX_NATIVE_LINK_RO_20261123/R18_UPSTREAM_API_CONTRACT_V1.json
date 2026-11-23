@@ -1,0 +1,47 @@
+{
+  "schema": "BGXAI_R18_UPSTREAM_API_CONTRACT_RO_V1",
+  "eeexSourceTag": "v1.1.7",
+  "eeexRepository": "Bubb13/EEex",
+  "upstreamDefinitions": [
+    {
+      "source": "EEex/copy/EEex_scripts/EEex_Resource.lua",
+      "gitBlobSha": "5ecd3c2f9e9bcc6cbd317653fc057a06d956916b",
+      "method": "CItem.getAbility",
+      "function": "EEex_Resource_GetCItemAbility",
+      "contract": "item:getAbility(abilityIndex) returns the native ability handle candidate"
+    },
+    {
+      "source": "EEex/copy/EEex_scripts/EEex_Sprite.lua",
+      "gitBlobSha": "b2d8d930c47785737bd30dad08e9f35a9d859578",
+      "method": "CGameSprite.getLauncher",
+      "function": "EEex_Sprite_GetLauncher",
+      "contract": "sprite:getLauncher(itemAbilityHandle) returns launcher item and inventory slot candidate"
+    },
+    {
+      "source": "EEex/copy/EEex_scripts/EEex_Sprite.lua",
+      "gitBlobSha": "b2d8d930c47785737bd30dad08e9f35a9d859578",
+      "method": "CGameSprite.getActiveStats",
+      "function": "EEex_Sprite_GetActiveStats",
+      "contract": "returns current derived stats; not all active timed effects"
+    },
+    {
+      "source": "EEex/copy/EEex_scripts/EEex_Action.lua",
+      "gitBlobSha": "e7543274ed066b5abe3c58262105212f208d1595",
+      "method": "EEex_Action_AddSpriteStartedActionListener",
+      "function": "EEex_Action_AddSpriteStartedActionListener",
+      "contract": "listener available upstream; R18 does not register one"
+    }
+  ],
+  "upstreamSourceApisInspected": true,
+  "exactInstalledEeexBytesMatched": false,
+  "nativeItemAbilityHandleVerifiedInUserRuntime": false,
+  "nativeLauncherAmmoBindingVerifiedInUserRuntime": false,
+  "activeEffectsEnumerated": false,
+  "completeEffectFingerprintVerified": false,
+  "nativeActionEventIdVerified": false,
+  "automaticRegistrationPresent": false,
+  "gameFileChangeAuthorized": false,
+  "weaponSwitchAuthorized": false,
+  "dispatchAuthorized": false,
+  "next": "Separate guarded read-only deployment would require typed consent, installed SHA review, external backup and new LIVE evidence. No deployment is requested at R18."
+}
