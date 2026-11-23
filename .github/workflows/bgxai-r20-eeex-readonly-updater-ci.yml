@@ -1,0 +1,66 @@
+name: BGXAI R20 single-updater static EEex audit menu164 - candidate
+on:
+  push:
+    branches: [bgxai-r20-eeex-static-menu-candidate, bg-eet-ai]
+    paths:
+      - 'BGXAI/BGXAI_SYNC.ps1'
+      - 'BGXAI/BUILD/R20_EEEX_STATIC_MENU_RO_20261123/**'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_R19_INSTALLED_EEEX_AUDIT_RO.py'
+      - '.github/workflows/bgxai-r20-eeex-readonly-updater-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static:
+    name: R20 old menu regression + R19 36 fixtures (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - name: Keep LF byte hashes identical
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: R20 fixed pin, 164 actions, exact original 163 handlers
+        shell: bash
+        run: |
+          python -m unittest -v BGXAI/BUILD/R20_EEEX_STATIC_MENU_RO_20261123/test_r20_updater_integrity.py
+      - name: R19 static read-only checker fixture regressions
+        shell: bash
+        run: |
+          cd BGXAI/BUILD/R19_INSTALLED_EEEX_STATIC_RO_20261123
+          python -m unittest -v test_r19_installed_eeex_audit_ro.py
+  ps51:
+    name: Windows PowerShell 5.1 AST and menu check
+    runs-on: windows-latest
+    steps:
+      - name: Configure exact source bytes
+        shell: pwsh
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - name: Parse release script with WinPS 5.1
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $p=(Resolve-Path 'BGXAI/BGXAI_SYNC.ps1').Path
+          $tok=$null;$err=$null
+          [System.Management.Automation.Language.Parser]::ParseFile($p,[ref]$tok,[ref]$err)|Out-Null
+          if($err.Count){throw ('BGXAI_R20_PS51_AST_FAIL '+(($err|ForEach-Object{$_.Message}) -join ';'))}
+          $b=[IO.File]::ReadAllBytes($p)
+          if($b.Length -ne 79871 -or $b.Length -gt 80000){throw 'BGXAI_R20_BOOTSTRAP_SIZE_STOP'}
+          $hash=([BitConverter]::ToString([Security.Cryptography.SHA256]::Create().ComputeHash($b))).Replace('-','').ToLowerInvariant()
+          Write-Host ('BGXAI_R20_SCRIPT_SHA256='+$hash)
+          Write-Host ('BGXAI_R20_SCRIPT_BYTES='+$b.Length)
+          Write-Host 'BGXAI_R20_PS51_AST_PASS'
+      - name: Parse on modern PowerShell
+        shell: pwsh
+        run: |
+          $tok=$null;$err=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path 'BGXAI/BGXAI_SYNC.ps1').Path,[ref]$tok,[ref]$err)|Out-Null
+          if($err.Count){throw 'BGXAI_R20_PS7_AST_FAIL'}
+          Write-Host 'BGXAI_R20_PS7_AST_PASS'
