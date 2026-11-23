@@ -379,7 +379,19 @@
       "confirmed_source_errors": 0,
       "confirmed_human_overrides": 0,
       "confirmed_mass_rows": 0,
-      "v2_pilot_reuse_warning": "20 historic picks used in both evaluations; not a new independent holdout"
+      "v2_pilot_reuse_warning": "20 historic picks used in both evaluations; not a new independent holdout",
+      "coarse_windows_metadata_crosscheck": {
+        "source_original_windows_audit": "/BG_VOICE_RU/CURRENT/BG_VOICE_AUTO_RESULTS_REAL_WINDOWS_20261123.zip",
+        "original_wav_source_entries_verified_in_report": 14412,
+        "paired_sound_ids": 7206,
+        "stable_longer_count": 3239,
+        "stable_shorter_count": 3336,
+        "equal_duration_count": 631,
+        "stable_higher_sampled_peak_count": 3482,
+        "stable_lower_sampled_peak_count": 3723,
+        "equal_sampled_peak_count": 1,
+        "conclusion": "No obvious globally one-directional Stable bias from duration or sampled peak alone. Does not test spectral signature, voice quality, loudness or acting."
+      }
     }
   }
 }
