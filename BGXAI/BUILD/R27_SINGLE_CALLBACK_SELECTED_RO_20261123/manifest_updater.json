@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.89-R27-PASSIVE-GUARDED",
+  "files": [
+    {
+      "source": "BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/BGXAI_R27_GUARDED.py",
+      "dest": "BGXAI_R27_GUARDED.py",
+      "size": 14742,
+      "sha256": "83b0a23140ab04310e56e24ebaf32ed8b446724a65687ae987583d5cfa2c3268"
+    },
+    {
+      "source": "BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/M_BGXR27.lua",
+      "dest": "M_BGXR27.lua",
+      "size": 28890,
+      "sha256": "e5eb400c56ffb1bc23344a0cf30dcc724d8d18fc2752fabd1c2c63cdcca73735"
+    }
+  ]
+}

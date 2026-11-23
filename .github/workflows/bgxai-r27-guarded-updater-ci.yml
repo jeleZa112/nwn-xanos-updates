@@ -1,0 +1,67 @@
+name: BGXAI R27 guarded one-file updater integration SOURCE ONLY
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/BGXAI_R27_GUARDED.py'
+      - 'BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/manifest_updater.json'
+      - 'BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/M_BGXR27.lua'
+      - 'BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/test_r27_guarded.py'
+      - 'BGXAI/BGXAI_SYNC.ps1'
+      - 'BGXAI/fox_new/BOOTSTRAP_PIN.json'
+      - '.github/workflows/bgxai-r27-guarded-updater-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  guarded-source-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - name: Ensure checkout does not rewrite pinned bytes
+        shell: bash
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: 21 offline installer/source tests including fake WeiDU
+        shell: bash
+        run: python -m unittest discover -s BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123 -p test_r27_guarded.py -v
+      - name: Verify existing one-CMD entry and no actual game modification
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib,json,re
+          root=Path('BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123')
+          src=(root/'BGXAI_R27_GUARDED.py').read_text()
+          lua=(root/'M_BGXR27.lua').read_bytes()
+          backend=Path('BGXAI/BGXAI_SYNC.ps1').read_bytes()
+          cmd=Path('BGXAI_UPDATE.cmd').read_bytes()
+          assert b"'165' {SyncRelease $r27" in backend
+          assert b"165 - R27" in backend
+          assert len(backend)<80000,(len(backend),'bootstrap max')
+          assert b"BOOTSTRAP_PIN.json" in cmd
+          assert b'BGXAI/BGXAI_SYNC.ps1' in cmd
+          assert hashlib.sha256(lua).hexdigest()=='e5eb400c56ffb1bc23344a0cf30dcc724d8d18fc2752fabd1c2c63cdcca73735'
+          assert 'INSTALL_BGXAI_R27_PASSIVE_OBSERVER' in src
+          assert 'ROLLBACK_BGXAI_R27_PASSIVE_OBSERVER' in src
+          assert 'game(root); sources(); baseline(root); processes()' in src
+          assert b'SelectWeaponAbility(' not in lua
+          assert b'ClearActions(' not in lua
+          print('R27 GUARDED ONE-ENTRY SOURCE-ONLY PASS; sync bytes',len(backend),'sha',hashlib.sha256(backend).hexdigest())
+          PY
+      - name: Windows PowerShell 5.1 syntax parse (no execution)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $tokens=$null; $errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path 'BGXAI/BGXAI_SYNC.ps1'), [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -ne 0) { $errors | Out-String | Write-Host; throw 'PowerShell parse failed' }
+          Write-Host 'R27 PS5.1 SYNTAX PASS; no execution'

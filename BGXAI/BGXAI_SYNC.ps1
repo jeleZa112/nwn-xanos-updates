@@ -213,6 +213,7 @@ $wp=@{id='WP';version='0.3.82-R4-ALLPROF-BUFF-RO';manifest=($rg.prefix+'BGXWP_OB
 $td13=@{id='TD13';version='0.3.85-R13-TARGET-MISSILE-RO';manifest=($rg.prefix+'BGXAI_R13_MANIFEST_V1.json');prefix=$rg.prefix;localPath=Join-Path $gr 'BGXAI_DEV\weapon_target_r13';names=@('BGXAI_R13_GUARDED.py','M_BGXTDEF13.lua')}
 $td14=@{id='TD14';version='0.3.87-R13-CONSOLE-CAPTURE-RO';manifest=($rg.prefix+'BGXAI_R13_SHORTNAME_MANIFEST_V1.json');prefix=$rg.prefix;localPath=Join-Path $gr 'BGXAI_DEV\weapon_target_r13_shortfix';names=@('BGXAI_R13_SHORTNAME_GUARDED.py','M_BGXD13.lua')}
 $td15=@{id='TD15';version='0.3.88-R13-HOLD-DIAG-RO';manifest=($rg.prefix+'BGXAI_R13_HOLD_DIAG_MANIFEST_V1.json');prefix=$rg.prefix;localPath=Join-Path $gr 'BGXAI_DEV\weapon_target_r13_diag';names=@('BGXAI_R13_HOLD_DIAG_GUARDED.py','R15_M_BGXD13.lua')}
+$r27=@{id='R27';version='0.3.89-R27-PASSIVE-GUARDED';manifest='BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/manifest_updater.json';prefix='BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/';localPath=Join-Path $gr 'BGXAI_DEV\weapon_r27_observer';names=@('BGXAI_R27_GUARDED.py','M_BGXR27.lua')}
 $v2install=Join-Path $rg.localPath 'BGXRANGED_V2_GUARDED_INSTALL.py'
 $ff=Join-Path $rg.localPath 'BGX_FRIENDLY_RETALIATION_GUARDED.py'
 $rr=$rg.localPath
@@ -222,7 +223,7 @@ $cap=Join-Path $rr 'BGXFTRACE_CONSOLE_CAPTURE.py'
 $motion=Join-Path $rr 'BGXFTRACE_V3_GUARDED.py'
 $enemy=Join-Path $rr 'BGXFENEMY_WTASIGHT_GUARDED.py'
 function Get-PinnedBytes([string]$zrp) {
-if($zrp -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116|patchsets/priest_combat_eps_first_20261116|patchsets/priest_auto_attack_buffer_source_only_20261117|patchsets/priest_auto_priority_guard_source_20261117|patchsets/aoe_entangle_readonly_onefile_20261117|patchsets/ranged_fighter_guarded_20261119)/[A-Za-z0-9_./-]+$' -or $zrp.Contains('..')) {
+if($zrp -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116|patchsets/priest_combat_eps_first_20261116|patchsets/priest_auto_attack_buffer_source_only_20261117|patchsets/priest_auto_priority_guard_source_20261117|patchsets/aoe_entangle_readonly_onefile_20261117|patchsets/ranged_fighter_guarded_20261119|BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123)/[A-Za-z0-9_./-]+$' -or $zrp.Contains('..')) {
 throw ('Remote source path blocked: '+$zrp)
 }
 $urls=@(
@@ -1094,75 +1095,21 @@ Write-Host ''
 Write-Host @'
  BGXAI ONE-FILE UPDATER / EET Foxx / EPS 18.4
  EPS 18.4 / EET. BGXPR status: 97.
- 1 - 040 download
- 2 - 040 status
- 3 - 040 install
- 4 - 040 rollback
- 5 - 039 status
- 6 - 039 rollback
- 7 - BGXAI 041 game precheck (READ-
- 8 - 041 download
- 9 - 041 status
- 10 - 041 install
- 11 - 041 rollback
- 12 - 042 precheck
- 13 - 042B preflight
- 14 - 042B download
- 15 - 042B install
- 16 - 042B status
- 17 - 042B rollback
- 18 - 043P EEex
- 19 - 043P sour
- 20 - install PASSIVE
- 21 - 043P stat
- 22 - Roll back BGXAI
- 23 - 044 hotke
- 24 - 044 sourc
- 25 - install PASSIVE
- 26 - 044 statu
- 27 - Roll back BGXAI
- 28 - 045 short
- 29 - 045 sourc
- 30 - install PASSIVE
- 31 - 045 statu
- 32 - Roll back BGXAI
- 33 - 046 attac
- 34 - 046 SOURC
- 35 - install PASSIVE
- 36 - 046 statu
- 37 - Roll back BGXAI
- 38 - 047 targe
- 39 - 047 SOURC
- 40 - install PASSIVE
- 41 - 047 statu
- 42 - Roll back BGXAI
- 43 - 048 weapo
- 44 - 048 SOURC
- 45 - install PASSIVE
- 46 - 048 statu
- 47 - Roll back BGXAI
- 48 - 049 guard
- 49 - 049 SOURC
- 50 - install PASSIVE
- 51 - 049 statu
- 52 - Roll back BGXAI
- 53 - 054 downl
- 54 - 054 compi
- 55 - 056 activ
- 56 - 056 ACTIV
- 57 - install BGXAI 0
- 58 - 056 activ
- 59 - Roll back BGXAI
- 60 - 060 SOURC
- 61 - 060 read-
- 62 - install BGXAI 0
- 63 - 060/056 i
- 64 - Roll back BGXAI
- 65 - 061 SOURC
- 66 - 061 REAL 
- 67 - install BGXAI 0
- 68 - 061/060 i
- 69 - Roll back BGXAI
+ 1-4  040 download/status/install/rollback
+ 5-6  039 status/rollback
+ 7-11 041 precheck/download/status/install/rollback
+ 12-17 042 precheck/preflight/download/install/status/rollback
+ 18-22 043P precheck/source/install/status/rollback
+ 23-27 044 precheck/source/install/status/rollback
+ 28-32 045 precheck/source/install/status/rollback
+ 33-37 046 precheck/source/install/status/rollback
+ 38-42 047 precheck/source/install/status/rollback
+ 43-47 048 precheck/source/install/status/rollback
+ 48-52 049 precheck/source/install/status/rollback
+ 53-54 054 download/compile
+ 55-59 056 precheck/source/install/status/rollback
+ 60-64 060 source/precheck/install/status/rollback
+ 65-69 061 source/precheck/install/status/rollback
 '@
 70..92 | ForEach-Object { Write-Host ('{0,3} - BGX' -f $_) }
 echo ' 93 - 066S precheck'
@@ -1187,6 +1134,7 @@ Write-Host @'
 162 - Fix R13 Lua 8-char name (READ ONLY default / guarded)
 163 - R13.2 HOLD diagnostics (READ ONLY default / guarded)
 164 - Installed EEex R19 static audit (READ ONLY)
+165 - R27 passive observer (status / preflight READ ONLY default / typed install / rollback)
  0 - Exit [default]
 '@
 $choice=Read-Host 'Choice [0]'
@@ -1358,6 +1306,7 @@ switch($choice){
 '162' {SyncRelease $td14;& py -3 (Join-Path $td14.localPath 'BGXAI_R13_SHORTNAME_GUARDED.py') --game $gr;if($LASTEXITCODE){throw '162 STOP'};break}
 '163' {SyncRelease $td15;& py -3 (Join-Path $td15.localPath 'BGXAI_R13_HOLD_DIAG_GUARDED.py') --game $gr;if($LASTEXITCODE){throw '163 STOP'};break}
 '164' {$p='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_R19_INSTALLED_EEEX_AUDIT_RO.py';$b=Get-PinnedBytes $p;if($b.Length -ne 11013 -or (HashBytes $b) -cne '7426faaa18c1a7bb9a8437ee0733854bed0f868a419e96593c58c7ec71451300'){throw '164 SHA STOP'};$f=Join-Path $zcd ('r19_'+[guid]::NewGuid().ToString('N')+'.py');AssertNotReparse $zcd;try{$h=[IO.File]::Open($f,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);try{$h.Write($b,0,$b.Length)}finally{$h.Dispose()};if((HashFile $f) -cne '7426faaa18c1a7bb9a8437ee0733854bed0f868a419e96593c58c7ec71451300'){throw '164 CACHE STOP'};$d=Join-Path $env:USERPROFILE 'Documents\BGXAI_LIVE_REPORTS';if(!(Test-Path -LiteralPath $d)){New-Item -ItemType Directory -Path $d|Out-Null};AssertNotReparse $d;$o=Join-Path $d ('BGXAI_R20_EEEX_STATIC_'+(Get-Date -Format 'yyyyMMddTHHmmssfff')+'.json');& py -3 $f --game $gr | Out-File -LiteralPath $o -Encoding utf8;$rc=$LASTEXITCODE;Get-Content -LiteralPath $o -Raw;Write-Host ('REPORT_FILE='+$o);if($rc -ne 0 -and $rc -ne 2){throw '164 SCAN ERROR'}}finally{if(Test-Path -LiteralPath $f){Remove-Item -LiteralPath $f -Force}};break}
+'165' {SyncRelease $r27;& py -3 (Join-Path $r27.localPath 'BGXAI_R27_GUARDED.py') --game $gr;if($LASTEXITCODE){throw '165 STOP'};break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0
