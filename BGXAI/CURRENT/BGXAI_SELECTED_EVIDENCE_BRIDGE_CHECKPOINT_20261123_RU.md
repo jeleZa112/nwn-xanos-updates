@@ -7,3 +7,9 @@
 - Тесты: **22/22 локальных PASS** (17 bridge + 5 существующий decoder). Никаких игровых файлов, WeiDU, скриптов, сохранений, EPS и BG_EET_RU/BG Voice RU не изменялось.
 - Доавтоматический режим: `CODE=YES, OFFLINE TEST=PASS, DEPLOY=NO, BRIDGE LIVE=NOT APPLICABLE, WEAPON AUTO-SWITCH=OFF`. Текущее оружие наблюдается, а APR альтернативных слотов остаётся неподтверждённым. Все выходы содержат `dispatchAuthorized=false`.
 - Далее без участия пользователя: исследовать подлинный нативный формат ITM ability и launcher+ammo для каждого слота; не добавлять ранжирование, пока неизвестны пригодность и полный набор эффектов. Сначала SOURCE_ONLY и тесты.
+
+## Независимые тесты
+- Windows GitHub CI 22/22 PASS и Ubuntu GitHub CI 22/22 PASS (всего 44 исполнения; одинаковые тесты на двух ОС).
+- CI run: https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45130836924
+- Комплексный исходник и отчёт: `BGXAI/BUILD/WEAPON_SELECTED_EVIDENCE_BRIDGE_RO_20261123/`.
+- Шаг выполнен только в CODE/TEST: никакой установки или новой версии CMD, текущий TD15 LIVE состояние не изменено.
