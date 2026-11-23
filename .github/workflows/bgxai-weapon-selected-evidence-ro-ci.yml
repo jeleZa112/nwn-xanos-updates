@@ -1,0 +1,43 @@
+name: BGXAI selected weapon evidence bridge - source-only tests
+
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/WEAPON_SELECTED_EVIDENCE_BRIDGE_RO_20261123/**'
+      - '.github/workflows/bgxai-weapon-selected-evidence-ro-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    name: Source-only unit tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run selected-weapon evidence + APR tests without game
+        shell: bash
+        run: |
+          cd BGXAI/BUILD/WEAPON_SELECTED_EVIDENCE_BRIDGE_RO_20261123
+          python -m unittest -v test_selected_evidence_bridge_ro_v1.py test_apr_key_decoder_ro.py
+      - name: Confirm no installer or engine dispatch
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path("BGXAI/BUILD/WEAPON_SELECTED_EVIDENCE_BRIDGE_RO_20261123/BGXAI_WEAPON_SELECTED_EVIDENCE_BRIDGE_RO_V1.py")
+          data=p.read_text(encoding="utf-8")
+          forbidden=("subprocess.", "os.system(", "ctypes.", "ClearActions(", "SelectWeaponAbility(", "run_weidu(", "Install_BGX")
+          assert all(token not in data for token in forbidden)
+          assert "weaponSwitchAuthorized" in data and "dispatchAuthorized" in data
+          print("BGXAI_SOURCE_ONLY_NO_GAME_COMMANDS_PASS")
+          PY
