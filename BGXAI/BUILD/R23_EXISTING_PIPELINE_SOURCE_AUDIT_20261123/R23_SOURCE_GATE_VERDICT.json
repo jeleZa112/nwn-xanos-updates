@@ -2,8 +2,8 @@
   "schema": "BGXAI_R23_EXISTING_PIPELINE_STATIC_GATE_RO_V1",
   "date": "2026-11-23",
   "sourceOnly": true,
-  "sourceChecksTotal": 15,
-  "sourceChecksPassed": 15,
+  "sourceChecksTotal": 24,
+  "sourceChecksPassed": 24,
   "checks": {
     "NONINTERRUPT_DISPATCH_OFF": true,
     "NONINTERRUPT_ORDERS_ZERO": true,
@@ -40,6 +40,24 @@
     "rankerV3": "caa3b136f1a27c60908a436b567cf6ae406a5cc5",
     "currentStatsBridge": "c4903911f47293a44b0de62ee736268a19f172da",
     "effectsV4": "bcf88726f8de62242f89293fb8afc706ae4e6e26",
-    "aprV5": "95a854a374a1308735b74ecf15a06543f53fe12c"
-  }
+    "aprV5": "95a854a374a1308735b74ecf15a06543f53fe12c",
+    "nativeItmR3": "505111050fad4e5ab6560b55b82e1e436ff41d2a",
+    "staticBridgeR3": "b6d8d009b9c0af216a378f1fd64c8f25fd4897c8",
+    "realR17Report": "008ab6eafa81292214e298ef9dab59223f08579f"
+  },
+  "additionalChecksAfterInitialPass": {
+    "R3_NATIVE_ITM_PARSER_PRESENT": true,
+    "R3_ABILITY_HEADERS_CAPTURED": true,
+    "STATIC_BRIDGE_PAIR_TYPE_MATCH_ONLY": true,
+    "R17_STATUS_STATIC_CANDIDATE_ONLY": true,
+    "R17_PAIR_NOT_ENGINE_VERIFIED": true,
+    "R17_ALTERNATE_APR_UNVERIFIED": true,
+    "R17_RESOURCE_BYTES_NOT_CURRENT": true,
+    "R17_MANUAL_EPS_UNVERIFIED": true,
+    "R17_DISPATCH_FALSE": true
+  },
+  "r3R17AlreadyParseStaticLauncherAmmo": true,
+  "r3R17EnginePairVerified": false,
+  "secondStage": "PASS_STATIC_CHECKS_EXISTING_R3_R17_REUSED_NO_NEW_DUPLICATE_PARSER",
+  "testScope": "Source regex and frozen report assertions only; NOT Lua runtime unit tests or LIVE gameplay"
 }
