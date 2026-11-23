@@ -128,5 +128,15 @@ jobs:
               assert ns['v106_run'](game,report,'rollback')==0
               assert module.read_bytes()==original and main.read_bytes()==b'EEex_Main mock original, pinned'
               assert ns['v106_get_state']()['phase']=='ROLLED_BACK'
+              # Crash-recovery simulation: candidate landed while phase remained PREPARED.
+              module.write_bytes(candidate)
+              ns['v106_put_state'](game,{**installed,'phase':'PREPARED'})
+              assert ns['v106_run'](game,report)==0
+              with zipfile.ZipFile(report) as z:
+                  hold=json.loads(z.read(ns['V106_ENTRY']))
+                  assert hold['status']=='V106_PREPARED_RECOVERY_HOLD'
+              assert ns['v106_run'](game,report,'rollback')==0
+              assert module.read_bytes()==original
+              assert ns['v106_get_state']()['phase']=='ROLLED_BACK'
           print('V106_SYNTHETIC_GUARDED_PASS: read-only preflight, exact V105 backup, one-module upgrade/restore, console capture into single ZIP, no real game')
           PY
