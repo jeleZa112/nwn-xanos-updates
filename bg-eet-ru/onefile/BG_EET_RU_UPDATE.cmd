@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 119
+SELF_VERSION = 120
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -125,7 +125,6 @@ def load_v32_components():
 
 
 def v32_resource_signature(game):
-  # Fast stat signature only for cache reuse; never treated as evidence of visibility.
   h=hashlib.sha256()
   roots=[game/'override',game/'data']
   for folder in roots:
@@ -227,8 +226,6 @@ def legacy_report(name, required_schema, game):
 
 
 def fingerprints(game: Path, v28):
-  # Fingerprints are used solely for non-destructive cache selection.
-  # Check complete TLKs, KEY, UI and target DLG/BIF. No file content stored in the ZIP.
   wanted=[('chitin.key',game/'chitin.key')]
   for name in ('dialog.tlk','dialogf.tlk'):
     wanted.append((name,v28.case_file(game,('lang','ru_RU',name))))
@@ -362,7 +359,6 @@ def write_bundle(path, status, v28report, v29report, fp, existing_log='', source
               raise RuntimeError('STOP: invalid captured DLG '+str(dlgname))
             z.writestr('09_IWD_BANTER_DLG/'+dlgname+'.DLG',blob)
         elif dlg_cache is not None:
-          # Copy only the 61 specifically captured dialogue files, never arbitrary ZIP entries.
           with zipfile.ZipFile(dlg_cache,'r') as old:
             approved=dlg_status.get('stored_dialogues',[])
             if len(approved)>100 or len(set(approved))!=len(approved):
@@ -455,7 +451,6 @@ def published_update(path, offline=False):
     safe_external(Path(DEFAULT_GAME),Path(path))
     if Path(path).resolve()!= (WORKDIR/'BG_EET_RU_UPDATE.cmd').resolve():
       return 'STOP: непостоянный путь обновлятора',False
-    # Check new script without opening the real game. Do not publish unusable code.
     pending.write_bytes(new_source)
     if sha_path(pending)!=wanted_sha:
       return 'STOP: промежуточный SHA256 не совпадает',False
@@ -466,7 +461,6 @@ def published_update(path, offline=False):
     if check.returncode!=0 or 'SELFTEST: PASS' not in check.stdout:
       detail=(check.stderr or check.stdout or 'NO_OUTPUT').strip().replace('\\r',' ').replace('\\n',' | ')
       return 'STOP: самопроверка v'+str(version)+' не пройдена (код '+str(check.returncode)+'): '+detail[-900:],False
-    # Back up current updater outside the game BEFORE atomic replacement.
     backup_dir=WORKDIR/'SAFE_BACKUPS'
     backup_dir.mkdir(parents=True,exist_ok=True)
     previous=Path(path)
@@ -481,7 +475,6 @@ def published_update(path, offline=False):
       return 'STOP: источник изменился до замены',False
     os.replace(pending,previous)
     if sha_path(previous)!=wanted_sha:
-      # Emergency restore of verified old updater, still outside the game.
       shutil.copy2(backup,previous)
       return 'STOP: контроль после обновления не пройден; прежняя версия возвращена',False
     return 'ОБНОВЛЕНО до v'+str(version)+'; новый код запускается сейчас',True
@@ -587,7 +580,6 @@ def v77_resume_after_static_v70(game, report_path, combat_only=False):
 
 
 def v77_resume_selftest():
-  # Patch only in-memory functions. Never open a game, report or user file.
   original_v74=globals()['v74_pilot']
   original_v76=globals()['v76_live_audit']
   original_v79=globals()['v79_run']
@@ -733,7 +725,6 @@ def v78_live_fix(game,report_path,mode):
       old=v76.get('ui') or {}
       if mode=='install' and (old.get('sha256')!=V78_UI_ORIGINAL_SHA or
         old.get('key_occurrences')!=5 or old.get('typo_occurrences')!=1):
-        # A previous successful install may have updated the v76 audit.
         if not (backup.is_file() and digest(backup.read_bytes())==V78_UI_ORIGINAL_SHA):
           raise ValueError('V78_LIVE_AUDIT_BASELINE_NOT_CONFIRMED')
     current=target.read_bytes()
@@ -805,7 +796,6 @@ def v78_live_fix(game,report_path,mode):
 
 
 def v78_selftest():
-  # Pure in-memory replacement test: key ID 106 and two persisted save operations stay stable.
   base='''{'LEUI_REVERSE_BUTTON_POSITIONS_LABEL','LEUI_REVERSE_BUTTON_POSITIONS_DESCRIPTION', 106, 0, 0, 0},
   LEUI_REVERSE_BUTTON_POSITIONS_LABEL = "Реверсивные кнопоки",
 reverseButtonPosition = LeUIGetOption(LeUI_uiStrings.LEUI_REVERSE_BUTTON_POSITIONS_LABEL, true)
@@ -1015,7 +1005,6 @@ def v79_run(game,report_path):
 
 
 def v79_selftest():
-  # Isolated GAM + TLK fixtures only. No installed game touched.
   import tempfile as _tmp
   game=bytearray(0x140)
   game[:8]=b'GAMEV2.0'
@@ -1028,7 +1017,6 @@ def v79_selftest():
   except ValueError:pass
   else:raise AssertionError('V79 accepted too short GAM')
   with _tmp.TemporaryDirectory(prefix='BG_EET_RU_V79_TEST_') as d:
-    # Regression for a real EET-specific save path, previously omitted in v79.
     assert any(p.name=='save' and p.parent.name=="Baldur's Gate - Enhanced Edition Trilogy"
            for p in v79_save_roots(Path(d)/'fake_game'))
     save_root=Path(d)/"Baldur's Gate - Enhanced Edition Trilogy"/'save'
@@ -1385,8 +1373,6 @@ def v82_parse_nalin(raw):
       rows.append({'transition_index':i,'flags_hex':hex(flags),'strref':ref,
              'parent_states':parent,'quest_kind_flags_hex':hex(flags&(0x40|0x80|0x100)),
              'has_parent_state':bool(parent)})
-  # Compiled action strings are another possible direct journal source; do not assume
-  # the transition journal flag covers all ways this dialogue might add journal text.
   action_offset,action_count=struct.unpack_from('<II',raw,0x28)
   v82_bounds(raw,action_offset,action_count,8,'ACTIONS')
   action_matches=[];dynamic=[]
@@ -1506,7 +1492,6 @@ def v82_selftest():
     struct.pack_into('<IIII',dlg,0x34,11,0,2,0xffffffff)
     struct.pack_into('<III',dlg,0x44,0x50,0,456)
     struct.pack_into('<III',dlg,0x64,0,0,0)
-    # actions can be zero; offset still within file
     struct.pack_into('<II',dlg,0x28,0x84,0)
     bif=b'BIFFV1  '+struct.pack('<III',1,0,20)+struct.pack('<IIIHH',0,36,len(dlg),0x3f3,0)+bytes(dlg)
     bifpath=game/'data'/'TEST.BIF';bifpath.write_bytes(bif)
@@ -1525,11 +1510,9 @@ def v82_selftest():
       paths[name]=p
     report=v82_build_report(game,tlk_paths_override=paths)
     assert report['status']=='V82_NALIN_LANGUAGE_REVIEW_HOLD' and report['language_review_count']==1,report
-    # Override must supersede BIFF, and Russian text remains separate from historical strref.
     (game/'override'/'NALIN.DLG').write_bytes(bytes(dlg))
     o,src=v82_get_live_dlg(game)
     assert o==bytes(dlg) and src['source']=='OVERRIDE'
-    # Broken live resource must not be counted as a completed audit.
     (game/'override'/'NALIN.DLG').write_bytes(b'bad')
     held=v82_build_report(game,tlk_paths_override=paths)
     assert held['status']=='V82_NALIN_SOURCE_OR_TLK_HOLD'
@@ -1771,8 +1754,6 @@ def v84_prepare_rows(rows=None):
     new = V84_FIXES[r['source_en']]
     if old == new or not old or not new:
       raise RuntimeError('V84_MISSING_EDITORIAL_CHANGE:'+r['source_en'])
-    # This revision changes *only* spaces and ':' punctuation. Preserve
-    # every letter, plus/star marker, digit, printf directive and hook.
     def letters_and_markers(value):
       return re.sub(r'[\s:]', '', value)
     if letters_and_markers(old) != letters_and_markers(new):
@@ -1782,7 +1763,6 @@ def v84_prepare_rows(rows=None):
         len(new.encode('utf8')) > 256 or
         any(x in new for x in ('\x00','\n','\r'))):
       raise RuntimeError('V84_FORMAT_SAFETY_FAILED:'+r['source_en'])
-    # Original 44 hook refs, x64 source addresses and English text stay same.
     result.append({**r,'translation_ru':new})
   return result
 
@@ -1938,8 +1918,6 @@ def v85_prepare_rows():
 def v85_lua_source(rows=None):
   if rows is None: rows = v85_prepare_rows()
   src = v74_lua_source(rows)
-  # Keep v74 runtime ABI and 44 hooks intact. Add a distinct V85 runtime marker
-  # only AFTER successful installation of ALL 44 hooks in a newly started game.
   needle = b'  BG_EET_RU_V74_HOOKED=true\n  notify("SUCCESS_34_STRINGS_44_HOOKS")'
   replacement = (b'  BG_EET_RU_V74_HOOKED=true\n'
            b'  BG_EET_RU_V85_FORMAT_ACTIVE=true\n'
@@ -2034,7 +2012,6 @@ def v85_files_and_candidate(game):
   hashes={name:digest(path.read_bytes()) for name,path in paths.items()}
   if hashes['Baldur.exe']!=base['exe_sha256'] or hashes['InfinityLoader.db']!=base['db_sha256']:
     raise RuntimeError('V85_BASE_EXE_DB_CHANGED')
-  # Manifest and actual on-disk original v74 Lua must match exactly.
   baseline=v74_lua_source(v74_manifest())
   if digest(baseline)!=base['new_lua_sha256']:
     raise RuntimeError('V85_PINNED_BASE_V74_NOT_EQUAL_INSTALL_STATE')
@@ -2152,7 +2129,6 @@ def v85_run(game,report_path,mode='status'):
             with restore.open('xb') as f:f.write(previous)
             if digest(restore.read_bytes())!=state['old_sha256']:
               raise RuntimeError('V85_RESTORE_STAGE_BAD_HASH')
-            # Atomic restore; content matches signed, earlier installed v74.
             os.replace(restore,lua)
             if digest(lua.read_bytes())!=state['old_sha256']:
               raise RuntimeError('V85_RESTORE_VERIFICATION_FAILED')
@@ -2185,7 +2161,6 @@ def v85_run(game,report_path,mode='status'):
         if not v85_read_input_approval(V85_INSTALL_APPROVAL):
           report['status']='V85_INSTALL_NOT_AUTHORIZED_NO_GAME_CHANGES'
         else:
-          # Verify current files immediately before commit, even after interactive approval.
           for name,path in paths.items():
             if digest(path.read_bytes())!=hashes[name]:
               raise RuntimeError('V85_GAME_CHANGED_DURING_APPROVAL:'+name)
@@ -2221,8 +2196,6 @@ def v85_run(game,report_path,mode='status'):
               raise RuntimeError('V85_INSTALLED_LUA_HASH_MISMATCH')
             v85_state_write({**record,'phase':'INSTALLED','installed_utc':now()})
           except Exception:
-            # If candidate landed but state commit failed, immediately restore
-            # the independently verified v74 backup, without touching any other file.
             if lua.is_file() and digest(lua.read_bytes())==digest(candidate):
               fix=lua.with_name('M_BGERU.v85failedrestore')
               if not fix.exists():
@@ -2320,7 +2293,6 @@ def v86_extract_ui_references(ui_bytes):
 
 
 def v86_parse_roll_line(line):
-  # Group outcomes using only literal evidence from screenshots, never fabricate AC / THAC0.
   m=re.fullmatch(r'\s*([^:\r\n]{1,80}):\s*бросок атаки\s*(\d{1,2})\s*([+\-])\s*(\d{1,3})\s*=\s*(-?\d{1,3})\s*:\s*(попадание|промах)\s*',line,re.I)
   if not m:return None
   actor,roll,operator,delta,total,outcome=m.groups()
@@ -2331,7 +2303,6 @@ def v86_parse_roll_line(line):
 
 
 def v86_build_modes():
-  # These are screenshots provided by the player, NOT hooked live events.
   sample=v86_parse_roll_line('Халид: бросок атаки 2 - 1 = 1 : промах')
   if sample is None:raise RuntimeError('V86_DEMO_SOURCE_PARSER_ERROR')
   return {'provenance':'MANUAL_EXAMPLE_FROM_USER_COMBAT_SCREENSHOT_NOT_LIVE_CAPTURE',
@@ -2629,8 +2600,6 @@ def v88_ui_candidate(original):
     len(re.findall(r'''\btable\s+(['"])combatLog\1''',ui))!=1 or
     len(re.findall(r'''\bfunction\s+clean\s*\(''',ui))!=1):
     raise RuntimeError('V88_UI_BINDINGS_NOT_UNIQUE')
-  # Match only a known and unique function end immediately before the Lua
-  # chunk terminator, without rewriting any original line endings.
   clean_pattern = re.compile(
     rb'''(?ms)^function clean\(str\)[ \t]*\r?\n.*?^end[ \t]*\r?\n(?=`[ \t]*\r?\nmenu[ \t]*\r?\n\{)''')
   clean_matches=list(clean_pattern.finditer(original))
@@ -2643,7 +2612,6 @@ def v88_ui_candidate(original):
     raise RuntimeError('V88_EXISTING_HELPER_COLLISION')
   staged=original[:clean.end()]+helper_bytes+original[clean.end():]
   staged=staged.replace(V88_RENDER_OLD,V88_RENDER_NEW,1)
-  # Explicit whitespace-only anchors, allowing local LF and CRLF mixtures.
   marker = re.compile(
     rb'''(?m)^[ \t]*scrollbar skipReset[ \t]*\r?\n[ \t]*\}[ \t]*\r?\n(?P<handle>[ \t]*handle[ \t]*\r?\n[ \t]*\{[ \t]*\r?\n[ \t]*name ["']messagesHandleY["'])''')
   found=list(marker.finditer(staged))
@@ -2853,14 +2821,12 @@ def v88_run(game,report_path,mode='status'):
 
 
 def v88_selftest():
-  # Unit tests for status/guarded UI transformations, not game proof.
   assert V88_RENDER_OLD not in V88_RENDER_NEW
   assert V88_RENDER_NEW.endswith(b')"')
   assert 'BG_EET_RU_LOG_MODE = 0' in V88_HELPER
   assert "original:sub(1, p-1)" in V88_HELPER
   assert 'return original' in V88_HELPER
   assert V88_BUTTON.count("action \"BG_EET_RU_LOG_MODE") == 1
-  # Synthetic UI preserves all old bytes and supports both line endings.
   fixture=('function clean(str)\n\treturn str\nend\n`\nmenu\n{\n'
        "\tname 'WORLD_MESSAGES'\n\tlist\n\t{\n\t\tname \"worldMessageBox\"\n"
        "\t\ttable \"combatLog\"\n\t\ttext lua \"clean(combatLog[rowNumber])\"\n"
@@ -2950,7 +2916,6 @@ def v90_transform_installed_ui(source):
   if source.count(V88_RENDER_NEW)!=1 or source.count(b'BG_EET_RU_LogView')<2:
     raise RuntimeError('V90_V88_HELPER_OR_RENDER_NOT_FOUND')
   without=source.replace(old_btn,b'',1)
-  # The actual LeUI drag handler controls the moving top border of the log.
   drag_pattern=re.compile(rb'(?m)^([ \t]*)adjustItemGroup\(\{"messagesHandleY"\},0,newY,0,0\)[ \t]*(\r?\n)')
   drag=list(drag_pattern.finditer(without))
   if len(drag)!=1 or b'function dragMessagesY(newY)' not in without[max(0,drag[0].start()-800):drag[0].start()]:
@@ -2958,7 +2923,6 @@ def v90_transform_installed_ui(source):
   m=drag[0]
   inserted_drag=m.group(1)+V90_DRAG+m.group(2)
   with_drag=without[:m.end()]+inserted_drag+without[m.end():]
-  # Insert AFTER the drag handle to avoid list/handle hit-testing overlays.
   anchor=re.compile(
     rb'(?m)^[ \t]*handle[ \t]*\r?\n[ \t]*\{[ \t]*\r?\n'
     rb'[ \t]*name [\'\"]messagesHandleY[\'\"][ \t]*\r?\n'
@@ -2974,7 +2938,6 @@ def v90_transform_installed_ui(source):
   new_btn=V90_BUTTON.replace('\n','\r\n' if eol==b'\r\n' else '\n').encode('utf8')
   if new_btn in with_drag:raise RuntimeError('V90_BUTTON_ALREADY_PRESENT')
   candidate=with_drag[:handle.end()]+new_btn+with_drag[handle.end():]
-  # Byte exact reversible proof: strip ONLY the two new additions.
   undone=candidate.replace(new_btn,b'',1).replace(inserted_drag,b'',1)
   if undone!=without:raise RuntimeError('V90_NOT_BYTE_EXACT_REVERSIBLE')
   if undone.count(V88_RENDER_NEW)!=1 or candidate.count(V88_RENDER_NEW)!=1:
@@ -3096,7 +3059,6 @@ def v90_run(game, report_path, mode='status'):
         old=backup.read_bytes()
         if digest(old)!=v88.get('old_sha256') or digest(old)!=V88_PINNED_UI_SHA:
           raise RuntimeError('V90_ORIGINAL_BACKUP_SHA_MISMATCH')
-        # Cross-check: installed UI is exactly what signed v89 transformer makes from original.
         if v88_ui_candidate(old)!=source:
           raise RuntimeError('V90_V88_INSTALLED_UI_NOT_EXACT_CANDIDATE')
         candidate=v90_transform_installed_ui(source)
@@ -3160,7 +3122,6 @@ def v90_run(game, report_path, mode='status'):
 
 
 def v90_selftest():
-  # Build the normal v88 sample without a real game, then relocate it.
   sample=('function dragMessagesY(newY)\n'
       '    adjustItemGroup({"messagesHandleY"},0,newY,0,0)\n'
       'end\n'
@@ -3175,7 +3136,6 @@ def v90_selftest():
       '        area 0 0 840 20\n'
       '        actionDrag\n        "\n            dragMessagesY(motionY)\n        "\n'
       '    }\n}\n`\n')
-  # Inject additional Lua marker expected by the transformer without changing any actual game.
   sample=sample.replace('function clean(str)\n', '-- prefix\nfunction clean(str)\n')
   if True:
     for kind in ('LF','CRLF','MIXED'):
@@ -3351,7 +3311,6 @@ def v91_run(game,report_path,mode='status'):
     else:
       if rec and rec['phase']!='ROLLED_BACK':raise RuntimeError('V91_UNKNOWN_PENDING_STATE')
       if live!=v90['v90_sha256']:raise RuntimeError('V91_CURRENT_V90_SHA_MISMATCH')
-      # Independently verify original v90 was derived only from approved v88 UI.
       backup=Path(v90['v88_backup']);safe_external(game,backup)
       if not backup.is_file() or backup.is_symlink() or digest(backup.read_bytes())!=v90['v88_sha256']:
         raise RuntimeError('V91_V88_BACKUP_INTEGRITY_HOLD')
@@ -3423,7 +3382,6 @@ def v91_selftest():
   assert "if n + adjust ~= t then return original end" in V91_HELPER
   assert "if BG_EET_RU_LOG_MODE ~= 1" in V91_HELPER
   assert "return original end" in V91_HELPER
-  # Exact-byte transform across mixed endings; combatLog source untouched.
   for eol in ('\n','\r\n'):
     pre=(b'head\r\nother\n' + V88_HELPER.replace('\n',eol).encode('utf8') +
        b'\nrender ' + V88_RENDER_NEW + b'\n' + V90_DRAG +
@@ -3434,7 +3392,6 @@ def v91_selftest():
     assert revised.replace(V91_HELPER.replace('\n',eol).encode('utf8'),V88_HELPER.replace('\n',eol).encode('utf8'),1)==pre
     assert len(revised)>len(pre)
     assert not (V88_HELPER.replace('\n',eol).encode('utf8') in revised)
-  # No ambiguity: already-patched, duplicate-helper, missing-anchor must fail closed.
   raw=(V88_HELPER.encode('utf8') + V88_RENDER_NEW + V90_DRAG + b'BG_EET_RU_JOURNAL_TOGGLE')
   for bad in (raw+V88_HELPER.encode('utf8'),raw.replace(V90_DRAG,b''),v91_transform_installed_ui(raw)):
     try:v91_transform_installed_ui(bad)
@@ -3597,7 +3554,6 @@ def v92_run(game,report_path,mode='status'):
     else:
       if record and record['phase']!='ROLLED_BACK':raise RuntimeError('V92_UNKNOWN_PENDING_STATE')
       if current!=v91['new_sha256']:raise RuntimeError('V92_CURRENT_V91_SHA_MISMATCH')
-      # Prove that current v91 is exactly the signed derivation of its backed up v90 UI.
       source_v90=Path(v91['backup']);safe_external(game,source_v90)
       if not source_v90.is_file() or source_v90.is_symlink() or digest(source_v90.read_bytes())!=v91['old_sha256']:
         raise RuntimeError('V92_V91_BACKUP_INTEGRITY_HOLD')
@@ -3848,7 +3804,6 @@ def v93_run(game,report_path,mode='status'):
     else:
       if record and record['phase']!='ROLLED_BACK':raise RuntimeError('V93_UNKNOWN_PENDING_STATE')
       if current!=v92['new_sha256']:raise RuntimeError('V93_CURRENT_V92_SHA_MISMATCH')
-      # Prove that current v92 is exactly the signed derivation of its backed up v90 UI.
       source_v91=Path(v92['backup']);safe_external(game,source_v91)
       if not source_v91.is_file() or source_v91.is_symlink() or digest(source_v91.read_bytes())!=v92['old_sha256']:
         raise RuntimeError('V93_V92_BACKUP_INTEGRITY_HOLD')
@@ -4109,7 +4064,6 @@ def v95_run(game,report_path,mode='status'):
     else:
       if record and record['phase']!='ROLLED_BACK':raise RuntimeError('V95_UNKNOWN_PENDING_STATE')
       if current!=v92['new_sha256']:raise RuntimeError('V95_CURRENT_V92_SHA_MISMATCH')
-      # Prove that current v92 is exactly the signed derivation of its backed up v90 UI.
       source_v91=Path(v92['backup']);safe_external(game,source_v91)
       if not source_v91.is_file() or source_v91.is_symlink() or digest(source_v91.read_bytes())!=v92['old_sha256']:
         raise RuntimeError('V95_V92_BACKUP_INTEGRITY_HOLD')
@@ -4378,7 +4332,6 @@ def v96_run(game,report_path,mode='status'):
     else:
       if record and record['phase']!='ROLLED_BACK':raise RuntimeError('V96_UNKNOWN_PENDING_STATE')
       if current!=v95['new_sha256']:raise RuntimeError('V96_CURRENT_V95_SHA_MISMATCH')
-      # Prove that current v95 is exactly the signed derivation of its backed up v90 UI.
       source_v91=Path(v95['backup']);safe_external(game,source_v91)
       if not source_v91.is_file() or source_v91.is_symlink() or digest(source_v91.read_bytes())!=v95['old_sha256']:
         raise RuntimeError('V96_V95_BACKUP_INTEGRITY_HOLD')
@@ -4650,7 +4603,6 @@ def v97_run(game,report_path,mode='status'):
     else:
       if record and record['phase']!='ROLLED_BACK':raise RuntimeError('V97_UNKNOWN_PENDING_STATE')
       if current!=v96['new_sha256']:raise RuntimeError('V97_CURRENT_V96_SHA_MISMATCH')
-      # Prove that current v96 is exactly the signed derivation of its backed up v90 UI.
       source_v91=Path(v96['backup']);safe_external(game,source_v91)
       if not source_v91.is_file() or source_v91.is_symlink() or digest(source_v91.read_bytes())!=v96['old_sha256']:
         raise RuntimeError('V97_V96_BACKUP_INTEGRITY_HOLD')
@@ -4925,7 +4877,6 @@ def v98_run(game,report_path,mode='status'):
     else:
       if record and record['phase']!='ROLLED_BACK':raise RuntimeError('V98_UNKNOWN_PENDING_STATE')
       if current!=v97['new_sha256']:raise RuntimeError('V98_CURRENT_V97_SHA_MISMATCH')
-      # Prove that current v97 is exactly the signed derivation of its backed up v90 UI.
       source_v91=Path(v97['backup']);safe_external(game,source_v91)
       if not source_v91.is_file() or source_v91.is_symlink() or digest(source_v91.read_bytes())!=v97['old_sha256']:
         raise RuntimeError('V98_V97_BACKUP_INTEGRITY_HOLD')
@@ -5204,7 +5155,6 @@ def v99_run(game,report_path,mode='status'):
     else:
       if record and record['phase']!='ROLLED_BACK':raise RuntimeError('V99_UNKNOWN_PENDING_STATE')
       if current!=v98['new_sha256']:raise RuntimeError('V99_CURRENT_V98_SHA_MISMATCH')
-      # Prove that current v98 is exactly the signed derivation of its backed up v90 UI.
       source_v91=Path(v98['backup']);safe_external(game,source_v91)
       if not source_v91.is_file() or source_v91.is_symlink() or digest(source_v91.read_bytes())!=v98['old_sha256']:
         raise RuntimeError('V99_V98_BACKUP_INTEGRITY_HOLD')
@@ -5486,7 +5436,6 @@ def v100_run(game,report_path,mode='status'):
     else:
       if record and record['phase']!='ROLLED_BACK':raise RuntimeError('V100_UNKNOWN_PENDING_STATE')
       if current!=v99['new_sha256']:raise RuntimeError('V100_CURRENT_V99_SHA_MISMATCH')
-      # Prove that current v99 is exactly the signed derivation of its backed up v90 UI.
       source_v91=Path(v99['backup']);safe_external(game,source_v91)
       if not source_v91.is_file() or source_v91.is_symlink() or digest(source_v91.read_bytes())!=v99['old_sha256']:
         raise RuntimeError('V100_V99_BACKUP_INTEGRITY_HOLD')
@@ -5781,7 +5730,6 @@ def v101_run(game,report_path,mode='status'):
     else:
       if record and record['phase']!='ROLLED_BACK':raise RuntimeError('V101_UNKNOWN_PENDING_STATE')
       if current!=v100['new_sha256']:raise RuntimeError('V101_CURRENT_V100_SHA_MISMATCH')
-      # Prove that current v100 is exactly the signed derivation of its backed up v90 UI.
       source_v91=Path(v100['backup']);safe_external(game,source_v91)
       if not source_v91.is_file() or source_v91.is_symlink() or digest(source_v91.read_bytes())!=v100['old_sha256']:
         raise RuntimeError('V101_V100_BACKUP_INTEGRITY_HOLD')
@@ -6096,7 +6044,6 @@ def v102_run(game,report_path,mode='status'):
     else:
       if record and record['phase']!='ROLLED_BACK':raise RuntimeError('V102_UNKNOWN_PENDING_STATE')
       if current!=v101['new_sha256']:raise RuntimeError('V102_CURRENT_V101_SHA_MISMATCH')
-      # Prove that current v101 is exactly the signed derivation of its backed up v90 UI.
       source_v91=Path(v101['backup']);safe_external(game,source_v91)
       if not source_v91.is_file() or source_v91.is_symlink() or digest(source_v91.read_bytes())!=v101['old_sha256']:
         raise RuntimeError('V102_V101_BACKUP_INTEGRITY_HOLD')
@@ -7379,8 +7326,6 @@ def v106_run(game,report_path,mode='status'):
               st=v106_get_state()
               if st and st['phase']=='PREPARED':
                 v106_put_state(game,{**record,'phase':'ROLLED_BACK','failed_utc':now()})
-            # If exact V105 restoration was impossible, leave PREPARED,
-            # and require explicit guarded --rollback-v106-weapon-console.
             raise
           finally:
             if stage.exists():stage.unlink()
@@ -7423,7 +7368,6 @@ def v106_selftest():
       assert z.namelist().count(V106_ENTRY)==1
     log=Path(td)/'capture.log'
     log.write_text('normal\\n[BG_EET_RU_V106] SOURCE_LOADED\\n[BG_EET_RU_V106] START\\ttrue\\tREGISTERED\\n[BG_EET_RU_V106] EVENT\\t1\\tattackRoll:number:20\\n')
-    # Use REAL lines rather than double escaped text in test fixture.
     log.write_text(log.read_text().replace('\\n','\n').replace('\\t','\t'))
     sample=v106_read_console(game,log)
     assert sample['status']=='V106_CONSOLE_EVENTS_CAPTURED'
@@ -7458,7 +7402,6 @@ def v107_probe_files(game):
       if st.st_size > 200_000_000:
         results[relative] = {'status': 'SIZE_LIMIT_HOLD', 'size_bytes': st.st_size}
         continue
-      # Read-only fingerprint; avoid retaining native pointers or loading DLL.
       with item.open('rb') as stream:
         h = hashlib.sha256()
         total = 0
@@ -7499,7 +7442,6 @@ def v107_static_report(game):
   }
   state = v106_get_state()
   if state and state.get('phase') == 'INSTALLED':
-    # Read state only; do not launch or modify game.
     result['v106_installed_state_present'] = True
     result['v106_module_state_sha256'] = state.get('candidate_sha256')
   else:
@@ -7578,7 +7520,6 @@ def v107_selftest():
     with zipfile.ZipFile(report) as z:
       assert z.testzip() is None and z.read('keep.txt') == b'preserved'
       assert z.namelist().count(V107_ENTRY) == 1
-    # A symlink never becomes a game file read.
     try:
       (game / 'EEex.dll').symlink_to(game / 'Baldur.exe')
     except (OSError, NotImplementedError):
@@ -7776,7 +7717,6 @@ def v108_run(game,report_path,mode='status'):
       raise RuntimeError('V108_BAD_MODE')
     state=v108_get_state()
     if state and state['phase']=='PREPARED':
-      # Partial transaction cannot be accepted as successful; do not guess.
       report['status']='V108_PREPARED_RECOVERY_HOLD'
       if mode=='rollback':
         closed,why=v71_processes_closed()
@@ -7869,7 +7809,6 @@ def v108_run(game,report_path,mode='status'):
             report['game_files_written']=1
             report['status']='V108_INSTALLED_NATIVE_CAPTURE_REQUIRED'
           except Exception:
-            # Never blindly overwrite an unknown SHA. Preserve PREPARED for deliberate recovery.
             current=digest(pre['target'].read_bytes()) if pre['target'].is_file() else ''
             if current==pre['candidate_sha256']:
               v108_swap_exact(pre['target'],pre['candidate_sha256'],pre['original'],pre['original_sha256'])
@@ -7907,7 +7846,6 @@ def v108_selftest():
   assert b'context.weapon' in source and b'context.launcher' in source
   assert all(len(v)==64 for v in V108_BASIS_SHA.values())
   assert len(V108_LUA_SOURCE_SHA256)==64
-  # Exact V106 source is data-derived; never let a different module pass.
   with tempfile.TemporaryDirectory(prefix='BG_EET_RU_V108_TEST_') as td:
     root=Path(td);game=root/'game';game.mkdir()
     p=root/'one.zip'
@@ -7991,7 +7929,6 @@ def v111_load_itm(game,resref,index,bif_names):
   bi=loc>>20
   fi=loc&0x3fff
   if bi>=len(bif_names) or loc&0xfc000:
-    # bits 14..19 are tileset index, invalid for ITM file resources
     raise ValueError('V111_KEY_ITM_LOCATOR_BOUNDS')
   raw_name=bif_names[bi].replace('\\','/')
   parts=raw_name.split('/')
@@ -8276,7 +8213,6 @@ def v112_read_zip_history(game,path):
         if not isinstance(samples,list) or len(samples)>32:
           raise ValueError('V112_V108_SAMPLES_UNEXPECTED')
         events=[e for e in samples if isinstance(e,str) and e.startswith(V108_PREFIX+' EVENT')]
-        # Structural facts only. No raw console lines or private user paths in report.
         fields={v:sum(1 for e in events if v in e)
                 for v in ('weapon_resref=','launcher_resref=','attacker_id=',
                           'target_id=','attack_sequence=','journal_row_id=',
@@ -8549,88 +8485,49 @@ def v116_selftest():
       assert z.namelist().count(V116_ENTRY)==1
   return True
 
-V119_ENTRY='58_V119_VTABLE_POINTERS_STATIC_READONLY.json'
-V119_RVA=0x597CD0
+FULL_AUDIT_ENTRY='58_FULL_SPECTRUM_STATIC_AUDIT.json'
+FULL_AUDIT_SHA256='62b1374b63dc1134d3edd72229c908208275c67aad1101c0432db9b0ae2d40f7'
+FULL_AUDIT_PAYLOAD='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'
+_FULL_AUDIT_CACHE=None
 
-def v119_decode_table(b,offset,base,image_size):
-  if offset<0 or offset+256>len(b):raise ValueError('V119_TABLE_TRUNCATED')
-  rows=[]
-  for i in range(32):
-    va=struct.unpack_from('<Q',b,offset+i*8)[0]
-    rva=va-base if base<=va<base+image_size else None
-    pointer=False
-    if rva is not None:
-      try:v116_pe_to_raw(b,rva);pointer=True
-      except (ValueError,struct.error):pass
-    rows.append({'slot':i,'target_rva':hex(rva) if pointer else None,
-                 'status':'POINTER_CANDIDATE_ONLY' if pointer else 'UNRESOLVED'})
-  return rows
+def full_audit_module():
+  global _FULL_AUDIT_CACHE
+  if _FULL_AUDIT_CACHE is not None:return _FULL_AUDIT_CACHE
+  raw=zlib.decompress(base64.b64decode(FULL_AUDIT_PAYLOAD))
+  if digest(raw)!=FULL_AUDIT_SHA256:raise ValueError('FULL_AUDIT_EMBEDDED_CODE_SHA_MISMATCH')
+  env={'__name__':'BG_EET_RU_ONEFILE_EMBEDDED_BOT'}
+  exec(compile(raw.decode('utf-8'),'<embedded-full-audit>','exec'),env)
+  if not callable(env.get('run')) or not callable(env.get('selftest')):
+    raise RuntimeError('FULL_AUDIT_BOT_API_MISSING')
+  _FULL_AUDIT_CACHE=env
+  return env
 
-def v119_report(game):
-  result={'schema':'BG_EET_RU_V119_VTABLE_POINTERS_STATIC_V1',
-          'status':'V119_VTABLE_STATIC_HOLD','game_files_written':0,
-          'new_hook_installed':False,'combat_log_join_verified':False,
-          'miss_weapon_identity_verified':False,'target_rva':hex(V119_RVA)}
+def full_audit_run(game,path):
   try:
-    exe=v111_inside_game(Path(game),Path(game)/'Baldur.exe')
-    if not exe.is_file() or exe.stat().st_size>16000000:raise ValueError('EXE_MISSING_OR_OVERSIZED')
-    b=exe.read_bytes();sha=digest(b);result['exe_sha256']=sha
-    if sha!=V116_EXE_SHA:raise ValueError('PINNED_EXE_SHA_MISMATCH')
-    start=v116_pe_to_raw(b,V119_RVA)
-    if v116_pe_to_raw(b,V119_RVA+255)!=start+255:raise ValueError('TABLE_CROSSES_SECTION')
-    pe=struct.unpack_from('<I',b,0x3c)[0]+24
-    base=struct.unpack_from('<Q',b,pe+24)[0]
-    size=struct.unpack_from('<I',b,pe+56)[0]
-    rows=v119_decode_table(b,start,base,size)
-    result['table_window_sha256']=digest(b[start:start+256])
-    result['entries']=rows
-    result['candidate_count']=sum(x['status']=='POINTER_CANDIDATE_ONLY' for x in rows)
-    if not result['candidate_count']:raise ValueError('NO_METHOD_POINTER_CANDIDATES')
-    result['status']='V119_VTABLE_POINTER_CANDIDATES_STATIC_ONLY'
-  except (OSError,ValueError,RuntimeError,struct.error) as ex:
-    result['hold_reason']=str(ex)[:170]
-  return result
-
-def v119_run(game,path):
-  report=v119_report(game)
-  try:changed=v116_zip(game,path,report,entry=V119_ENTRY)
-  except (OSError,ValueError,RuntimeError,zipfile.BadZipFile) as ex:
-    print('V119_SAFE_STOP',type(ex).__name__,str(ex)[:130]);return 2
-  print('V119:',report['status'],'| game writes: 0 | ZIP updated:',changed)
-  if report.get('hold_reason'):print('V119 HOLD:',report['hold_reason'])
+    report=full_audit_module()['run'](game,path)
+    changed=v116_zip(game,path,report,entry=FULL_AUDIT_ENTRY)
+  except (OSError,RuntimeError,ValueError,struct.error,zipfile.BadZipFile,AssertionError) as ex:
+    print('FULL_AUDIT_SAFE_STOP',type(ex).__name__,str(ex)[:160]);return 2
+  print('FULL_AUDIT:',report['status'],'| game writes: 0 | ZIP updated:',changed)
+  print('Full result is in the ONE existing ZIP:',path)
   return 0
 
-def v119_selftest():
-  with tempfile.TemporaryDirectory(prefix='V119_TEST_') as td:
-    game=Path(td)/'game';game.mkdir()
-    (game/'Baldur.exe').write_bytes(b'not an installed EXE')
-    assert v119_report(game)['hold_reason']=='PINNED_EXE_SHA_MISMATCH'
-    assert len(v119_decode_table(bytes(256),0,0x140000000,0x700000))==32
-    b=bytearray(0x7000);b[:2]=b'MZ';struct.pack_into('<I',b,0x3c,0x80)
-    b[0x80:0x84]=b'PE\x00\x00'
-    struct.pack_into('<H',b,0x84,0x8664)
-    struct.pack_into('<HH',b,0x86,2,0)
-    struct.pack_into('<H',b,0x94,0xf0)
-    struct.pack_into('<H',b,0x98,0x20b)
-    struct.pack_into('<Q',b,0x98+24,0x140000000)
-    struct.pack_into('<I',b,0x98+56,0x700000)
-    sections=0x98+0xf0
-    struct.pack_into('<IIII',b,sections+8,0x3000,0x2000,0x3000,0x400)
-    struct.pack_into('<IIII',b,sections+40+8,0x2000,0x597000,0x2000,0x3400)
-    start=v116_pe_to_raw(b,V119_RVA)
-    assert start==0x40d0
-    struct.pack_into('<Q',b,start,0x140002010)
-    slots=v119_decode_table(b,start,0x140000000,0x700000)
-    assert slots[0]['target_rva']=='0x2010'
-    assert slots[0]['status']=='POINTER_CANDIDATE_ONLY'
-    assert slots[1]['target_rva'] is None
-    path=Path(td)/'report.zip'
-    with zipfile.ZipFile(path,'w') as z:z.writestr('original',b'keep')
-    assert v116_zip(game,path,{'status':'SYNTHETIC'},entry=V119_ENTRY)
-    assert not v116_zip(game,path,{'status':'SYNTHETIC'},entry=V119_ENTRY)
-    with zipfile.ZipFile(path) as z:
-      assert z.read('original')==b'keep'
-      assert z.namelist().count(V119_ENTRY)==1
+def full_audit_selftest():
+  mod=full_audit_module()
+  assert mod['selftest']()
+  with tempfile.TemporaryDirectory(prefix='BG_EET_RU_FULL_AUDIT_TEST_') as td:
+    g=Path(td)/'game';g.mkdir()
+    (g/'Baldur.exe').write_bytes(b'INVALID_PE_EXE')
+    zip_path=Path(td)/'one.zip'
+    with zipfile.ZipFile(zip_path,'w') as z:z.writestr('preserve_me',b'OK')
+    result=mod['run'](g,zip_path)
+    assert result['game_files_written']==0
+    assert result['sections']['exe_message_engine']['status']=='HOLD'
+    assert v116_zip(g,zip_path,result,entry=FULL_AUDIT_ENTRY)
+    assert not v116_zip(g,zip_path,result,entry=FULL_AUDIT_ENTRY)
+    with zipfile.ZipFile(zip_path) as z:
+      assert z.read('preserve_me')==b'OK'
+      assert z.namelist().count(FULL_AUDIT_ENTRY)==1
   return True
 
 def main(argv=None):
@@ -8644,7 +8541,7 @@ def main(argv=None):
   p.add_argument('--weapon-observer-status',action='store_true',help='v105 read only guarded pilot preflight and optional captured evidence')
   p.add_argument('--install-v105-weapon-observer',action='store_true',help='v105 optional explicitly authorized guarded pilot installation')
   p.add_argument('--rollback-v105-weapon-observer',action='store_true',help='v105 optional explicitly authorized exact pilot rollback')
-  p.add_argument('--v119-vtable-static',action='store_true',help='v119 READ ONLY PE64 vtable candidates')
+  p.add_argument('--full-combat-audit',action='store_true',help='one-shot comprehensive READ ONLY EXE/EEex/UI/weapon audit')
   p.add_argument('--v116-dispatch-static',action='store_true',help='v116 READ ONLY PE64 message dispatch symbol')
   p.add_argument('--v112-correlation-preflight',action='store_true',help='v112 READ ONLY UI/EEex action source and event-id correlation gate')
   p.add_argument('--v111-item-audit',action='store_true',help='v111 read-only exact current ITM/TLK names for three LIVE RESREFs')
@@ -8703,7 +8600,6 @@ def main(argv=None):
   if not game.is_dir() or not (game/'chitin.key').is_file():
     print('STOP: папка игры неверна или chitin.key не найден:',game)
     return 2
-  # User requested one persistent location; copy this file there, never inside EET.
   WORKDIR.mkdir(parents=True,exist_ok=True)
   canonical=WORKDIR/'BG_EET_RU_UPDATE.cmd'
   original=Path(__file__).resolve()
@@ -8741,8 +8637,6 @@ def main(argv=None):
   reviewed_report=None  # v42 does not support live-game installation.
   update_note='НЕ ПРОВЕРЯЛОСЬ'
   if original != canonical and canonical.exists() and sha_path(canonical)!=sha_path(original):
-    # The existing version may be newer; the higher-version case is handled above.
-    # Different bytes with the same version is ambiguous: do not overwrite it.
     canonical_version=int(re.search(r'^SELF_VERSION = (\d+)$',canonical.read_text('utf-8')[:2500],re.M).group(1))
     if canonical_version==SELF_VERSION:
       print('STOP: одноимённая версия с разным SHA256. Не заменяю.')
@@ -8750,19 +8644,16 @@ def main(argv=None):
   update_note, activated = published_update(canonical, args.offline)
   print('Автообновление:',update_note)
   if activated:
-    # Use the newly verified version in this same launch. Bounded: new version
-    # cannot update itself unless the release manifest has an even newer version.
     import subprocess
     return subprocess.call([sys.executable,'-x',str(canonical),*sys.argv[1:]])
-  if args.v119_vtable_static:
-    return v119_run(game,WORKDIR/REPORT_NAME)
+  if args.full_combat_audit:
+    return full_audit_run(game,WORKDIR/REPORT_NAME)
   if args.v116_dispatch_static:
     return v116_run(game,WORKDIR/REPORT_NAME)
   if args.v112_correlation_preflight:
     return v112_run(game,WORKDIR/REPORT_NAME)
   if args.v111_item_audit:
     return v111_run(game,WORKDIR/REPORT_NAME)
-  # v90: after a permitted upgrade, avoid stale v88 baseline scans of UI.MENU.
   if not any((args.seen_strref,args.seen_text,args.combat_only,args.combat_status,
         args.install_v85_combat_format,args.rollback_v85_combat_format,
         args.install_v88_journal_ui,args.rollback_v88_journal_ui,
@@ -8793,9 +8684,6 @@ def main(argv=None):
       if rc:return rc
       rc=v104_run(game,WORKDIR/REPORT_NAME)
       if rc:return rc
-      # V105/V106 checks pin the observer to the old V106 SHA.
-      # When a guarded V108 install is INSTALLED or PREPARED, only the
-      # V108 transaction checker may validate its exact newer SHA.
       native_phase=(v108_get_state() or {}).get('phase')
       if native_phase not in ('INSTALLED','PREPARED'):
         rc=v105_run(game,WORKDIR/REPORT_NAME)
@@ -8811,7 +8699,7 @@ def main(argv=None):
       rc=v112_run(game,WORKDIR/REPORT_NAME)
       if rc:return rc
       rc=v116_run(game,WORKDIR/REPORT_NAME)
-      return rc if rc else v119_run(game,WORKDIR/REPORT_NAME)
+      return rc if rc else full_audit_run(game,WORKDIR/REPORT_NAME)
     ui_v101=v101_state_read()
     if ui_v101 and ui_v101['phase'] in ('INSTALLED','PREPARED'):
       rc=v101_run(game,WORKDIR/REPORT_NAME)
@@ -8822,9 +8710,6 @@ def main(argv=None):
       if rc:return rc
       rc=v104_run(game,WORKDIR/REPORT_NAME)
       if rc:return rc
-      # V105/V106 checks pin the observer to the old V106 SHA.
-      # When a guarded V108 install is INSTALLED or PREPARED, only the
-      # V108 transaction checker may validate its exact newer SHA.
       native_phase=(v108_get_state() or {}).get('phase')
       if native_phase not in ('INSTALLED','PREPARED'):
         rc=v105_run(game,WORKDIR/REPORT_NAME)
@@ -8840,7 +8725,7 @@ def main(argv=None):
       rc=v112_run(game,WORKDIR/REPORT_NAME)
       if rc:return rc
       rc=v116_run(game,WORKDIR/REPORT_NAME)
-      return rc if rc else v119_run(game,WORKDIR/REPORT_NAME)
+      return rc if rc else full_audit_run(game,WORKDIR/REPORT_NAME)
     ui_v100=v100_state_read()
     if ui_v100 and ui_v100['phase'] in ('INSTALLED','PREPARED'):
       rc=v100_run(game,WORKDIR/REPORT_NAME)
@@ -8916,7 +8801,6 @@ def main(argv=None):
     rc=v103_run(game,WORKDIR/REPORT_NAME)
     if rc:return rc
     return v104_run(game,WORKDIR/REPORT_NAME)
-  # v83: player-observed text is processed directly; do not re-run expensive historical audits.
   if args.seen_strref or args.seen_text:
     return v83_run(game,WORKDIR/REPORT_NAME,additional_strrefs=args.seen_strref,additional_texts=args.seen_text)
   if args.upgrade_v102_roll_labels or args.rollback_v102_roll_labels:
@@ -9157,7 +9041,6 @@ def main(argv=None):
       return 2
     return v85_run(game,WORKDIR/REPORT_NAME,
              mode=('install' if args.install_v85_combat_format else 'rollback'))
-  # v68: if the v67 game snapshot still matches, resume ONLY the new safe stage.
   if args.fix_leui_reverse or args.rollback_leui_reverse:
     if args.fix_leui_reverse and args.rollback_leui_reverse:
       print('V78_STOP: mutually exclusive actions')
@@ -9175,8 +9058,6 @@ def main(argv=None):
     if rc: return rc
     rc=v70_eeex_loader_diagnostic(game, WORKDIR/REPORT_NAME)
     if rc: return rc
-    # v77: cached v67 branch must still reach the v76 TLK/UI audit.
-    # Keep --combat-only restricted to combat evidence; never install implicitly.
     return v88_resume_after_cached(game, WORKDIR/REPORT_NAME, args.combat_only)
   print('BG_EET_RU v'+str(SELF_VERSION)+' — один отчёт; изменение игры только при отдельном подтверждении.')
   print('Папка:',WORKDIR)
@@ -9192,8 +9073,6 @@ def main(argv=None):
   v28report=old.get('01_V28_DLG_CONTEXT.json')
   v29report=old.get('02_V29_BP_PLACEMENT.json')
   used={};notes=[]
-  # v27 was superseded by v28; do not need to rerun v27.
-  # v29 was already run on 2026-11-16; import that evidence once where available.
   if not args.force and can_reuse(v28report,'bg-eet-ru-v28-dlg-incoming-corrected-readonly',game,fp,oldfp):
     used['v28']='CACHE'
   else:
@@ -9220,7 +9099,6 @@ def main(argv=None):
     raise RuntimeError('STOP: parser unexpectedly approved translations')
   if v29report.get('translation_approved') is not False:
     raise RuntimeError('STOP: v29 violated visible-only gate')
-  # Files can change while scanning; reject if game fingerprint changed.
   after=fingerprints(game,v28)
   if after!=fp:raise RuntimeError('STOP: игровые ресурсы изменились во время проверки; ZIP не обновлён')
   previous_source=old.get('07_TRANSLATION_SOURCE_BATCH.json')
@@ -9271,8 +9149,6 @@ def main(argv=None):
         'error':str(e)[:350],'game_files_written':False,'translation_approved':False}
       used['v33']='UNAVAILABLE'
       notes.append('v33 optional scanner unavailable: '+type(e).__name__)
-  # v35: get actual DLG bytes from this installed EET (KEY / override / BIFF),
-  # not inferred StrRefs. Preserve the result in the same single ZIP.
   dlgmod=load_v35_collector()
   previous_dlg=old.get('09_IWD_BANTER_DLG_STATUS.json')
   dlg_status=None;dlg_contents=None;dlg_cache=None
@@ -9326,13 +9202,11 @@ def main(argv=None):
       used['v35']='UNAVAILABLE'
       notes.append('v35 DLG collector: '+type(exc).__name__)
   elif isinstance(previous_dlg,dict) and previous_dlg.get('stored_dialogues'):
-    # Preserve an earlier v35 capture if the user explicitly skips the scan.
     dlg_status=previous_dlg
     dlg_cache=report_path
     used['v35']='PRESERVED_EXISTING'
   else:
     used['v35']='SKIPPED'
-  # v46: compile-preflight in a disposable game copy, not the original EET.
   p36,tra36=load_v36_preflight()
   cached36=old.get('10_BANTER_COMPILER_PREFLIGHT.json')
   v36_preflight=None
@@ -9356,8 +9230,6 @@ def main(argv=None):
                      snapshot_blobs=dlg_contents,
                      collector=dlgmod)
     used['v36']=v36_preflight.get('status','UNKNOWN')
-  # No v36 installation mode or opt-in exists yet. It cannot change game files.
-  # No game file should be modified by read-only collectors.
   if fingerprints(game,v28)!=fp:
     raise RuntimeError('STOP: game files changed during v35 audit')
   status=summary(v28report,v29report,used,fp,notes)
@@ -9702,7 +9574,6 @@ def v60_weidu_installed_components(game, report_path):
     for line_no,line in enumerate(src.splitlines(),1):
       line=line.strip().lstrip('\ufeff')
       if not line or line.startswith('//'):continue
-      # Accept optional leading paths and whitespace, but preserve actual component IDs.
       m=re.search(r'~([^~\r\n]*?\.tp2)~\s*#\s*(\d+)\s*#\s*(\d+)(?!\d)',line,re.I)
       if m:
         all_components+=1
@@ -9988,7 +9859,6 @@ V68_COMBAT_STAGE_ID = 'BG_EET_RU_V68_UNWIND_EVIDENCE_V1'
 def v68_load_combat_module():
   module = types.ModuleType('bg_eet_ru_v68_embedded_v4')
   module.__file__ = str(Path(__file__).resolve())
-  # V4 source is embedded in this same CMD; nothing else is downloaded.
   exec(compile(V68_COMBAT_SOURCE, module.__file__, 'exec'), module.__dict__)
   return module
 
@@ -10052,7 +9922,6 @@ def v68_combat_evidence(game, report_path):
     db_data = db_path.read_bytes()
     status['exe_sha256'] = digest(exe_data)
     status['loader_db_sha256'] = digest(db_data)
-    # Reuse the result on repeated runs. Existing v67 evidence stays intact.
     with zipfile.ZipFile(report_path, 'r') as z:
       try:
         cached = json.loads(z.read('19_V68_COMBAT_CODE_STATUS.json'))
@@ -10105,7 +9974,6 @@ def v68_combat_evidence(game, report_path):
     status['error'] = type(exc).__name__ + ': ' + str(exc)[:250]
     captures = {}
 
-  # Transactional rewrite of the ONE existing report ZIP. Never touch the game.
   report_path.parent.mkdir(parents=True, exist_ok=True)
   tmp = report_path.with_name(report_path.name + '.v68.tmp')
   try:
@@ -10317,7 +10185,6 @@ def v70_eeex_loader_diagnostic(game, report_path):
         entry={'path':str(path.relative_to(game)),'bytes':len(raw),'sha256':digest(raw),
           'inspection_scope':'own_BG_EET_RU_or_EEex_bootstrap_only'}
         if len(raw)<=30000:
-          # Read full script for actual diagnosis; no changes in game.
           entry['source_text']=raw.decode('utf-8-sig','replace')
         else:
           entry['source_too_large']=True
@@ -10340,7 +10207,6 @@ def v70_eeex_loader_diagnostic(game, report_path):
     with zipfile.ZipFile(report_path,'r') as z:
       try:old=json.loads(z.read('21_V70_EEEX_LOADER_SOURCE_DIAGNOSTIC.json'))
       except (KeyError,ValueError,UnicodeError):old={}
-    # Compare all relevant evidence, not merely the Loader DB checksum.
     stable=dict(result);stable.pop('status',None)
     result['snapshot_sha256']=digest(json.dumps(stable,ensure_ascii=False,sort_keys=True).encode('utf-8'))
     if old.get('schema')==V70_PROBE_SCHEMA and old.get('snapshot_sha256')==result['snapshot_sha256'] and old.get('status')==result['status']:
@@ -10388,8 +10254,6 @@ V71_CONSENT = 'INSTALL_BG_EET_RU_V71_LUCK_PILOT'
 
 
 def v71_script():
-  # Use ASCII-only Lua source with correct UTF-8 bytes for Russian text.
-  # The old partial EXE translation used UTF-8. The old Lua v2 used CP1251.
   ru = ' +Удача:%d'.encode('utf-8')
   codes = ','.join(str(x) for x in ru)
   location = str(V71_RUNTIME_MARK)
@@ -10488,7 +10352,6 @@ def v71_processes_closed():
              timeout=15,check=False)
     if p.returncode != 0: return False,'TASKLIST_FAILED'
     blob=p.stdout.decode('utf-8-sig','replace')
-    # Windows Russian tasklist may produce CP866/CP1251. Executable names are ASCII.
     names=set()
     for row in csv.reader(io.StringIO(blob)):
       if row:
@@ -10620,7 +10483,6 @@ def v71_pilot(game,report_path,mode='auto'):
             if V71_STATE_PATH.exists():raise RuntimeError('V71_STATE_ALREADY_EXISTS')
             if V71_RUNTIME_MARK.exists():raise RuntimeError('V71_MARKER_ALREADY_EXISTS_NOT_OVERWRITING')
             import time
-            # Exclusive file create; on exceptions, remove only the exact file created here.
             with lua.open('xb') as stream:stream.write(data)
             try:
               if digest(lua.read_bytes())!=digest(data):raise RuntimeError('V71_NEW_LUA_HASH_MISMATCH')
@@ -10667,8 +10529,6 @@ V72_APPROVAL = 'INSTALL_BG_EET_RU_V72_DIAGNOSTIC_ONLY'
 
 
 def v72_probe_source():
-  # The engine Lua environment can lack io/os; never depend on file I/O from game Lua.
-  # All messages are ASCII, and no EEex code hook or memory write is performed.
   return b'''-- BG EET RU V72: NO HOOK / NO MEMORY WRITES.  M_BGERU (7 chars).
 (function()
   BG_EET_RU_V72_LOADED = true
@@ -10804,7 +10664,6 @@ def v72_pilot(game,report_path,mode='auto'):
         result['lua_valid']=lua.is_file() and digest(lua.read_bytes())==existing.get('new_lua_sha256')
         result['note']='Runtime cannot be inferred from absence of io.open; look for BG_EET_RU_V72 in game output.'
     elif mode=='rollback':
-      # If V72 was not installed, fall back to original guarded V71 rollback.
       return v71_pilot(game,report_path,mode='rollback')
     elif mode=='status':
       result['status']='V72_NOT_INSTALLED_V71_PROBE_AVAILABLE'
@@ -10903,7 +10762,6 @@ V73_APPROVAL = 'INSTALL_BG_EET_RU_V73_LUCK_PILOT'
 
 
 def v73_lua_source():
-  # Emit ASCII Lua source, with exact UTF-8 bytes for the in-game format string.
   code_bytes = ','.join(str(v) for v in ' +Удача:%d'.encode('utf-8'))
   source = '''-- BG EET RU V73: one guarded +Luck:%d patch, source-only until explicit authorization.
 -- M_BGERU is seven characters; this is the only file changed by installation.
@@ -11169,14 +11027,10 @@ V74_ANCHOR_RVA = 3791683
 
 
 def v74_manifest():
-  # This is the PINNED v68 manifest already embedded in the same updater.
   module = v68_load_combat_module()
   raw = json.loads(zlib.decompress(base64.b64decode(module._EMBED)).decode('utf-8'))
   if len(raw) != 36 or sum(len(r['refs']) for r in raw) != 47:
     raise RuntimeError('V75_SOURCE_MANIFEST_COUNT_MISMATCH')
-  # V4 / V68 embeds the *raw* source schema (en, ru, offset, ins_file_offset,
-  # opcode). V68 converted that to source_en/translation_ru only in its ZIP.
-  # Normalize here before the v74 safety/format/code checks; do not re-scan.
   rows = []
   for item in raw:
     off = item['offset']
@@ -11206,7 +11060,6 @@ def v74_manifest():
 
 
 def v74_check_manifest(exe, rows):
-  # Strict offline validation of every source label and every x64 LEA instruction.
   if digest(exe) != V71_EXE_SHA:
     raise RuntimeError('V74_EXE_HASH_NOT_PINNED')
   seen = set()
@@ -11254,7 +11107,6 @@ def v74_check_manifest(exe, rows):
 
 def v74_lua_source(rows=None):
   if rows is None: rows=v74_manifest()
-  # Completely ASCII Lua; UTF-8 is assembled with string.char(<exact bytes>).
   literals=[]
   for row in rows:
     name=json.dumps(row['source_en'],ensure_ascii=True)
@@ -11469,8 +11321,6 @@ def v74_pilot(game,report_path,mode='auto'):
       if existing and existing.get('installed') is False:
         report['status']='V74_ALREADY_ROLLED_BACK_TO_V73'
       else:
-        # Other legacy pilot modes are kept intact. If no v74 is installed,
-        # do not unexpectedly remove the working v73 pilot.
         report['status']='V74_NOT_INSTALLED_NO_CHANGES'
     elif mode=='status':
       report['status']='V74_NOT_INSTALLED'
@@ -11493,7 +11343,6 @@ def v74_pilot(game,report_path,mode='auto'):
           raise RuntimeError('V74_V73_INSTALL_BASE_CHANGED')
         rows=v74_manifest()
         checks=v74_check_manifest(exe,rows)
-        # Validate the independent static proof already preserved in the one ZIP.
         with zipfile.ZipFile(report_path,'r') as z:
           st=json.loads(z.read('20_V69_INDEPENDENT_DISASSEMBLY.json'))
           if (st.get('status')!='STATIC_CODE_REFERENCES_CONFIRMED_RUNTIME_HOLD' or
@@ -11518,7 +11367,6 @@ def v74_pilot(game,report_path,mode='auto'):
           if approval!=V74_APPROVAL:
             report['status']='V74_INSTALL_NOT_AUTHORIZED_NO_CHANGES'
           else:
-            # Check again AFTER the user grants permission.
             if not v71_processes_closed()[0]:
               raise RuntimeError('V74_GAME_REOPENED_AFTER_CONSENT')
             old=lua.read_bytes()
@@ -11649,7 +11497,6 @@ def v76_tlk_selected(path):
         text=data.decode('utf-8')
         decoding='utf-8'
       except UnicodeDecodeError:
-        # Strictly report a decode problem; never replace or silently reinterpret.
         rows[str(strref)]={'strref':strref,'status':'NON_UTF8_STRING_HOLD',
                    'source_bytes_sha256':hashlib.sha256(data).hexdigest(),
                    'flags':flags,'length':length}
@@ -11827,7 +11674,6 @@ def v76_selftest():
   return True
 
 def selftest():
-  # Self-contained checks only; never read or change a real EET installation.
   p36,tra36=load_v36_preflight()
   assert p36.selftest().startswith('PASS') and tra36.count('~')==600
   dlg_mod=load_v35_collector()
@@ -11888,7 +11734,6 @@ def selftest():
   assert callable(v67_cached_dlg_graph)
   assert V64_EARLY_COMPONENTS['IWD2_EET']==[0]
   assert len(V64_EARLY_WEIDU_SHA)==64
-  # ARE V1.0 actor count is WORD; adjacent WORD at 0x5a is regions count.
   _are_test=bytearray(0x100)
   struct.pack_into('<IHH',_are_test,0x54,0xe0,2,320)
   assert struct.unpack_from('<H',_are_test,0x58)[0]==2
@@ -11938,7 +11783,7 @@ def selftest():
   assert v111_selftest() and callable(v111_run)
   assert v112_selftest() and callable(v112_run)
   assert v116_selftest() and callable(v116_run)
-  assert v119_selftest() and callable(v119_run)
+  assert full_audit_selftest() and callable(full_audit_run)
   print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
   return 0
 
