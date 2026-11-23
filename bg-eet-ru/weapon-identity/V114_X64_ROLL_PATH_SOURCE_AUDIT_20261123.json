@@ -1,0 +1,138 @@
+{
+  "schema": "BG_EET_RU_V114_X64_ATTACK_ROLL_SOURCE_RESEARCH_V1",
+  "phase": "SOURCE_ONLY_NO_GAME_CHANGE",
+  "source": {
+    "name": "Bubb13/EEex PR #136: New Engine Feature EEex_AttackOnce",
+    "url": "https://github.com/Bubb13/EEex/pull/136",
+    "pr_number": 136,
+    "pr_state_as_checked_2026_11_23": "open_unmerged",
+    "pr_head_sha": "67766626c50abcac302f98a777bff5d9587cb765",
+    "compatibility": "x64 proposed upstream PR, not installed current EEex",
+    "notes": "PR changes Attack() semantics by adding AttackOnce and can change roll/damage/ammo; never deploy it as passive logger."
+  },
+  "hook_candidates": [
+    {
+      "label": "Hook-CGameSprite::Swing()-AttackOnceHitCall-1",
+      "stage": "BEFORE_HIT_CALL",
+      "provides": [
+        "attacker_candidate_rbx",
+        "target_candidate_r15",
+        "resolved_weapon_stack_r8",
+        "weapon_ability_r9"
+      ],
+      "id_for_attack_roll": false,
+      "id_for_journal_row": false,
+      "source": "PR136: EEex_Sprite_Patch.lua checkAttackOnceShouldEndAction()"
+    },
+    {
+      "label": "Hook-CGameSprite::Swing()-AttackOnceHitCall-2",
+      "stage": "BEFORE_HIT_CALL",
+      "provides": [
+        "attacker_candidate_rbx",
+        "target_candidate_r15",
+        "resolved_weapon_stack_r8",
+        "weapon_ability_r9"
+      ],
+      "id_for_attack_roll": false,
+      "id_for_journal_row": false,
+      "source": "PR136: EEex_Sprite_Patch.lua checkAttackOnceShouldEndAction()"
+    },
+    {
+      "label": "Hook-CGameSprite::Hit()-AttackOnceBaseAttackRoll",
+      "stage": "RAW_D20",
+      "provides": [
+        "attacker_candidate_rbx",
+        "target_candidate_r14",
+        "raw_d20_di"
+      ],
+      "id_for_attack_roll": false,
+      "id_for_journal_row": false,
+      "source": "PR136: EEex_Sprite_Patch.lua HookBeforeRestoreWithLabels"
+    },
+    {
+      "label": "Hook-CGameSprite::Hit()-FormatRollCall",
+      "stage": "FORMAT_ROLL_CALL",
+      "provides": [
+        "native_last_roll_byte"
+      ],
+      "id_for_attack_roll": false,
+      "id_for_journal_row": false,
+      "source": "pinned EEex_Sprite_Patch.lua + InfinityLoader.db"
+    }
+  ],
+  "loader_signatures": {
+    "Hit()-AttackOnceBaseAttackRoll": {
+      "pattern": "488D4DD08D7801",
+      "operations_add": 7,
+      "source": "PR136 InfinityLoader.db"
+    },
+    "Hit()-FormatRollCall": {
+      "pattern": "488D4DD08D7801",
+      "operations_add": 18,
+      "source": "pinned mainline InfinityLoader.db"
+    }
+  },
+  "requirements_before_guarded_install": [
+    "x64_source_roll_site",
+    "per_roll_event_invoked_for_hit_and_miss",
+    "same_roll_weapon_launcher_snapshot",
+    "roll_event_has_stable_attacker_target",
+    "journal_append_callback_with_immutable_row_id",
+    "common_engine_generated_roll_instance_id",
+    "journal_does_not_mutate_for_capture",
+    "no_attack_behavior_change",
+    "exact_installed_build_sha_preflight",
+    "explicit_user_consent_for_native_install"
+  ],
+  "gating": {
+    "status": "V114_X64_ROLL_CALLSITE_FOUND_JOURNAL_JOIN_HOLD",
+    "proceed_to_install": false,
+    "source_review_gates": {
+      "x64_source_roll_site": true,
+      "per_roll_event_invoked_for_hit_and_miss": false,
+      "same_roll_weapon_launcher_snapshot": false,
+      "roll_event_has_stable_attacker_target": false,
+      "journal_append_callback_with_immutable_row_id": false,
+      "common_engine_generated_roll_instance_id": false,
+      "journal_does_not_mutate_for_capture": false,
+      "no_attack_behavior_change": false,
+      "exact_installed_build_sha_preflight": false,
+      "explicit_user_consent_for_native_install": false
+    },
+    "missing_gates": [
+      "per_roll_event_invoked_for_hit_and_miss",
+      "same_roll_weapon_launcher_snapshot",
+      "roll_event_has_stable_attacker_target",
+      "journal_append_callback_with_immutable_row_id",
+      "common_engine_generated_roll_instance_id",
+      "journal_does_not_mutate_for_capture",
+      "no_attack_behavior_change",
+      "exact_installed_build_sha_preflight",
+      "explicit_user_consent_for_native_install"
+    ],
+    "risk_flags": [
+      "UPSTREAM_PR_UNMERGED",
+      "ATTACKONCE_PR_CHANGES_ATTACK_SEMANTICS",
+      "RAW_D20_SITE_HAS_NO_VERIFIED_CITEM_RESREF",
+      "BEFORE_HIT_CALL_SITE_NOT_PROVEN_ONE_CALLBACK_PER_ROLL",
+      "NO_ENGINE_JOURNAL_APPEND_HOOK_VERIFIED",
+      "FORMAT_ROLL_CALL_IS_NOT_JOURNAL_APPEND",
+      "SHARED_SIGNATURE_DIFFERENT_OFFSETS_NOT_EVENT_IDENTITY",
+      "NO_GAME_BUILD_SHA_MATCH_FOR_PR136"
+    ]
+  },
+  "selftest": {
+    "status": "V114_SOURCE_CONTRACT_SELFTEST_PASS",
+    "scenario_count": 14,
+    "all_install_paths_disabled": true
+  },
+  "compatibility_status": "PR_SOURCE_PROPOSAL_NOT_CONFIRMED_AGAINST_USER_EEEX_DLL",
+  "journal_row_hook": "NOT_IDENTIFIED_IN_DOCUMENTED_EEEX_LUA_APIS",
+  "recommended_next_research": "Identify source-level combat journal append callback and prove engine-owned immutable attack-roll token shared with Hit(); do NOT install/modify a native hook based on PR136.",
+  "last_verified_live_baseline": "V112 Windows JOIN_HOLD; V108 weapon+launcher and V111 item names preserved",
+  "game_files_written": 0,
+  "updater_modified": false,
+  "new_hook_installed": false,
+  "BGXAI_changed": false,
+  "BG_Voice_RU_changed": false
+}

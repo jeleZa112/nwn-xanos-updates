@@ -1,0 +1,36 @@
+name: BG EET RU V114 x64 roll source-only audit
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/weapon-identity/V114_X64_ROLL_PATH_SOURCE_AUDIT.py'
+      - 'bg-eet-ru/weapon-identity/V114_X64_ROLL_PATH_SOURCE_AUDIT_20261123.json'
+      - '.github/workflows/bg-eet-ru-v114-source-safety.yml'
+  workflow_dispatch:
+jobs:
+  v114-evidence-no-engine-writes:
+    runs-on: ubuntu-latest
+    permissions: {contents: read}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile and selftest only, no EEex changes
+        run: |
+          python -m py_compile bg-eet-ru/weapon-identity/V114_X64_ROLL_PATH_SOURCE_AUDIT.py
+          python bg-eet-ru/weapon-identity/V114_X64_ROLL_PATH_SOURCE_AUDIT.py --selftest --report /tmp/v114.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('/tmp/v114.json').read_text('utf8'))
+          a=json.loads(Path('bg-eet-ru/weapon-identity/V114_X64_ROLL_PATH_SOURCE_AUDIT_20261123.json').read_text('utf8'))
+          assert r==a, 'CHECKED_IN_AUDIT_DRIFT'
+          assert r['gating']['status']=='V114_X64_ROLL_CALLSITE_FOUND_JOURNAL_JOIN_HOLD'
+          assert r['selftest']['scenario_count']==14
+          assert r['gating']['proceed_to_install'] is False
+          assert r['game_files_written']==0 and not r['new_hook_installed']
+          assert r['updater_modified'] is False
+          assert r['source']['pr_state_as_checked_2026_11_23']=='open_unmerged'
+          assert len(r['gating']['missing_gates'])==9
+          assert r['loader_signatures']['Hit()-FormatRollCall']['pattern']==r['loader_signatures']['Hit()-AttackOnceBaseAttackRoll']['pattern']
+          assert r['loader_signatures']['Hit()-FormatRollCall']['operations_add']-r['loader_signatures']['Hit()-AttackOnceBaseAttackRoll']['operations_add']==11
+          print('V114_OFFLINE_HOLD_AND_NO_WRITE_PASS')
+          PY
