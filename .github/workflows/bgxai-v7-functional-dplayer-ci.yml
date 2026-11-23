@@ -26,4 +26,7 @@ jobs:
           assert 'R27_LUA,R27_PROOF' in s and 'R27_LAST' in s
           assert s.count('COPY ~BGXRANGED7/staged/DPLAYER.BCS~ ~override/DPLAYER.BCS~')==1
           assert not any(k in s for k in ('ClearActions(', 'FillSlot(', 'XEquipItem('))
+          import hashlib
+          src=Path('BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXRANGED_V7_GUARDED_INSTALL.py').read_bytes()
+          print('V7_INSTALLER_SHA256', hashlib.sha256(src).hexdigest(), 'BYTES', len(src))
           print('V7 source safety PASS')
