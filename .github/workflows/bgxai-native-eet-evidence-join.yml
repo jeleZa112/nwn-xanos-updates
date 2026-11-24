@@ -1,0 +1,27 @@
+name: BGXAI native EET report evidence join SOURCE ONLY
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/WEAPON_NATIVE_EVIDENCE_JOIN_20261124/**'
+      - 'BGXAI/CURRENT/BGXAI_NATIVE_EVIDENCE_JOIN_20261124.json'
+      - '.github/workflows/bgxai-native-eet-evidence-join.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-no-game:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Native evidence contract and fail-closed mutation matrix (no game)
+        run: python BGXAI/BUILD/WEAPON_NATIVE_EVIDENCE_JOIN_20261124/test_native_evidence_join_v1.py
+      - name: Verify real report has no local paths or actionable orders
+        run: python -c "import json,pathlib; j=json.loads(pathlib.Path('BGXAI/CURRENT/BGXAI_NATIVE_EVIDENCE_JOIN_20261124.json').read_text()); assert j['installPerformed'] is False and j['dispatchAuthorized'] is False and j['weaponSwitchAuthorized'] is False and j['ordersSent']==0; print('PASS SANITIZED REAL EET NATIVE PROOF READONLY')"

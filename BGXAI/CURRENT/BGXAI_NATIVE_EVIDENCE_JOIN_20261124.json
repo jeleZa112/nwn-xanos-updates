@@ -1,0 +1,46 @@
+{
+  "schema": "BGXAI_NATIVE_EVIDENCE_JOIN_V1",
+  "status": "NATIVE_BAF_COMPILED_R27_R28_LINKED_NO_DISPATCH",
+  "verdict": "SOURCE_AND_NATIVE_COMPILE_PASS_RUNTIME_PRODUCER_NOT_READY",
+  "nativeWeiDU": {
+    "realEetCompilePass": true,
+    "compilerVersionFromLog": "25100",
+    "compiledBcsSha256": "10426a2262e79553e861d464bdcf89d82a0fc91498dfb02c430c9b1fb02ef929",
+    "compiledBcsSize": 10550,
+    "sourceBafSha256": "92b8b1d3393a286d4d69f38b9542651acb429f8ef6627051195c7a1a95c09f30",
+    "blocks": 8,
+    "watchedFilesUnchanged": true,
+    "wholeTreeNotProven": true
+  },
+  "R27": {
+    "gameCallbacksVerified": 24,
+    "selectedOnly": true,
+    "observedSelectedWeaponKinds": [
+      "BOW_OR_AMMO",
+      "SWORD"
+    ],
+    "alternateEffectiveStatsProven": false
+  },
+  "R28": {
+    "nativeItemCountVerified": 4,
+    "currentGameResourcesRead": true,
+    "buffAwareAlternateAprProven": false,
+    "launcherAmmoPairProven": false,
+    "manualEpsQueueOriginProven": false
+  },
+  "missingGates": [
+    "TRUE_ALT_SLOT_BUFF_AWARE_APR_AND_DAMAGE",
+    "VERIFIED_LAUNCHER_AMMO_PAIR_AND_TARGET_EFFECTS",
+    "INDEPENDENT_MANUAL_AND_EPS_ORDER_PROVENANCE",
+    "STABLE_SAME_TARGET_AT_DISPATCH_BOUNDARY",
+    "NATIVE_CURRENT_WEAPON_CANNOT_DAMAGE_TARGET_AT_EXECUTION",
+    "USER_TYPED_GUARDED_INSTALL_AND_WEIDU_BACKUP",
+    "GAMEPLAY_AB_TEST"
+  ],
+  "installPerformed": false,
+  "dispatchAuthorized": false,
+  "weaponSwitchAuthorized": false,
+  "ordersSent": 0,
+  "nextSafeTask": "FIND_AUDITED_ENGINE_ALT_STATS_AND_EPS_MANUAL_ORDER_ORIGIN",
+  "noRepeat": "R27_R28_AND_NATIVE_167_ALREADY_PASSED"
+}
