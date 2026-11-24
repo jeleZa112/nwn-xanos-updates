@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 127,
-  "sha256": "1cbb34cdee3d78011bc91daa3206c8381564a358ae2f44451ee6518c3e7bb012",
-  "mode": "V127_PINNED_V126_UI_ROW_OBSERVER_LOADER_FIXED",
+  "version": 128,
+  "sha256": "57cf8e75f4fbdead1d3dbebd4f4ed86201bfe581ee7f71578129af73c4ce55a3",
+  "mode": "V128_ISOLATED_SELFTEST_PRESERVE_EXISTING_V120_CACHE",
   "game_writes_allowed": false,
-  "note": "V127 hotfix for published V126: read all 16178 bytes of exact SHA-pinned passive UI observer instead of truncated 15001, define __name__ while executing sourced Python, retain 1=14 checks; 2=guarded UI-only install; 3=exact rollback; 4=console capture; 5=status. No automatic game writes. No native Hook/Hit modification. Existing V125/V126 updater auto-upgrades by immutable SHA+size+selftest. Separate typed authorization mandatory."
+  "note": "V128 repairs real Windows auto-update SAFE STOP from V127 where v121_selftest() accessed existing valid V120_EVIDENCE_PINNED.zip under user's persistent WORKDIR and failed its synthetic 'missing.zip' assertion. The test now redirects WORKDIR into TemporaryDirectory and restores it even on exception; no user cache deletion/changes. Existing one CMD and ZIP, optional explicit typed V126 UI observer install/rollback and console capture remain unchanged. Windows/Linux CI exercises real updater --selftest with occupied cache. No automatic game writes."
 }
