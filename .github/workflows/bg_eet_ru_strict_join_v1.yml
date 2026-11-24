@@ -23,6 +23,24 @@ jobs:
         shell: bash
         run: |
           python -m unittest -v test_strict_join_v1
+      - name: Source-only V129 machine-code counterexample and all adverse mutations
+        working-directory: bg-eet-ru/native-correlation
+        shell: bash
+        run: |
+          python -m unittest -v test_conditional_hit_message_v129
+      - name: Source-only V129: no game process hooks or code mutation
+        shell: python
+        run: |
+          from pathlib import Path
+          import ast
+          p=Path('bg-eet-ru/native-correlation/conditional_hit_message_v129.py')
+          text=p.read_text('utf8')
+          ast.parse(text)
+          assert '"message_callsite_is_universal_event_source":False' in text
+          assert '"native_install_allowed":False' in text
+          for bad in ('WriteProcessMemory(', 'EEex_HookBefore(', 'EEex_JITAt(', 'VirtualProtect('):
+              assert bad not in text
+          print('V129_NO_NATIVE_INSTALL_SOURCE_ONLY_PASS')
       - name: Assert no game mutation APIs or fake runtime claim
         shell: python
         run: |
