@@ -60,14 +60,32 @@ jobs:
       - name: Full onefile selftest
         shell: python
         run: |
-          import subprocess,sys
-          source='bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+          import subprocess,sys,re
+          from pathlib import Path
+          source=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
+          lines=source.read_text(encoding='utf8').splitlines(keepends=True)
+          probe=[];in_test=False
+          for i,line in enumerate(lines):
+              if line.startswith('def selftest():'):
+                  in_test=True
+                  probe.append(line)
+                  probe.append("  print('CI_SELFTEST_BEGIN',flush=True)\n")
+                  continue
+              if in_test and line.startswith('  assert '):
+                  probe.append("  print('CI_STEP_L"+str(i+1)+"',flush=True)\n")
+              if in_test and line.startswith("if __name__=='__main__':"):
+                  in_test=False
+              probe.append(line)
+          dest=Path('bg_eet_ru_ci_probe.cmd')
+          dest.write_text(''.join(probe),encoding='utf8',newline='\n')
           try:
-              result=subprocess.run([sys.executable,'-x',source,'--selftest'],
+              result=subprocess.run([sys.executable,'-u','-x',str(dest),'--selftest'],
                       capture_output=True,text=True,errors='replace',timeout=75)
-          except subprocess.TimeoutExpired:
+          except subprocess.TimeoutExpired as exc:
+              captured=exc.stdout.decode('utf8','replace') if isinstance(exc.stdout,bytes) else (exc.stdout or '')
+              print('CI_SELFTEST_TIMEOUT_LAST_STEPS',captured[-3500:])
               raise AssertionError('V121_ONEFILE_SELFTEST_75_SECOND_LIMIT_HOLD')
-          print(result.stdout[-2800:])
+          print(result.stdout[-2500:])
           if result.returncode or 'SELFTEST: PASS' not in result.stdout:
-              print(result.stderr[-2000:])
+              print(result.stderr[-2500:])
               raise AssertionError('V121_ONEFILE_SELFTEST_NOT_PASS:'+str(result.returncode))
