@@ -1,4 +1,6 @@
-# BGXAI — короткий актуальный статус на 24.11.2026
+# BGXAI — короткий актуальный статус на 25.11.2026
+
+**NEW P0 25.11 — реальная очередь действий стала доступна как SOURCE-ONLY отрицательный сигнал.** Versioned 081 V2 читает x64 `m_queuedActions.m_nCount` (две попытки, action-id stability), R27 refresh в одном listener-кандидате снимает очередь до/после raw+derived stats, NONINTERRUPT V1 при известных ожидающих действиях делает `PRESERVE_KNOWN_NONEMPTY_ACTION_QUEUE`, `scorerCalls=0` и не трогает игру. **Нуль НЕ доказывает отсутствие ручного/EPS приказа.** [CI 45447222518](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45447222518) Windows/Linux SUCCESS, 081 441 assertions, R27 77, V3 442 на трёх Lua; `CODE/TEST PASS, DEPLOY NO, LIVE NO`. Подробно: `BGXAI_QUEUE_081_R27_NONINTERRUPT_20261125_RU.md`. Следующий runtime gate — фактический binding очереди + EPS/manual arbitration, alt-slot effective APR ещё не реализован.
 
 **Эта карточка заменяет устаревший статус с утверждением, что R29 ещё не прошёл native preflight.** Обязательны: `BGXAI_CANONICAL_HANDOFF_20261124_RU.md` (приоритеты и фактическое CODE/TEST/DEPLOY/LIVE), `BGXAI_ALL_CHATS_MASTER_ARCHIVE_20261124_RU.md` (вся восстановленная история, ошибки, первичные источники), `BGXAI_COMPLETE_SOURCE_TREE_20261124.json` (1 584 оригинальных source-файла и связанные workflows).
 
