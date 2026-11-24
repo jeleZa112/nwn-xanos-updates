@@ -100,6 +100,13 @@ def build(root: Path = ROOT) -> bytes:
     "  ',\"rawInventoryDoubleReadConsistent\":'..tostring(sample.rawInventoryDoubleReadConsistent==true)..\n",
     "  ',\"rawInventoryDoubleReadConsistent\":'..tostring(sample.rawInventoryDoubleReadConsistent==true)..\n"+
     "  ',\"selectedDerivedStatsDoubleReadConsistent\":'..tostring(sample.selectedDerivedStatsDoubleReadConsistent==true)..\n")
+  # Serialize the observed R4 status, not a hard-coded untrusted claim,
+  # so the existing R6 offline reader can reject non-stable old log records.
+  tail = replacement(tail,
+    "  ',\"selectedDerivedStatsDoubleReadConsistent\":'..tostring(sample.selectedDerivedStatsDoubleReadConsistent==true)..\n",
+    "  ',\"selectedDerivedStatsDoubleReadConsistent\":'..tostring(sample.selectedDerivedStatsDoubleReadConsistent==true)..\n"+
+    "  ',\"r4Status\":'..(sample.r4Status=='RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS' and\n"+
+    "    '\"RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS\"' or 'null')..\n")
   # Compose a passive advisory module only: no bootstrap, no EEex registration.
   output = (b'-- BGXAI R27 revised SOURCE ONLY: SHA-pinned R2 identity double-read.\n'
        +b'-- NOT INSTALLED. Does not change original M_BGXR27.lua.\n'
