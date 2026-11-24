@@ -1,0 +1,15 @@
+# BGXAI R29 — narrow native bow-to-sword guarded pilot — 24.11.2026
+
+**CODE / CI PASS; NATIVE ON USER EET NOT RUN; DEPLOY NO; LIVE NO.**
+
+**Actual installed game evidence:** prior user's `BGXAI_AUTO_BATCH_RO_20261124T142906654787Z.json` read five EPS/EEex source files. EEex_Action exact SHA matches installed R27's expected baseline. Last 168 report 11-stage source PASS, gameplay HOLD; newer 168 source priority map 12-stage CI PASS. Do not ask user to rerun R27/R28/167/168.
+
+**R29 pilot actual behavior:** only when pure fighter companion (not GG), guard `BGX38_GUARD=1`, no healing slot, no EPS MO_SpellCast timer and empty action list, non-incapacitated, selected ranged weapon with CURRENT `AROW01`, and exact `SW1H04` quickslot 0 + `BOW05` quickslot 1, visible non-party hostile within range6, issue exactly `SelectWeaponAbility(SLOT_WEAPON0,0)`. No attack command, no action clearing, no spell or movement, no reverse switching. It is loadout-locked, NOT Khalid-ID-locked. Does not make full APR/alternate effective stats claims. Origin of player/EPS actions and action recovery not independently proven.
+
+**Native BCS candidate:** `BGXAI_R29_GUARDED.py` preflight checks real on-disk SHA of 7 pinned core/EPS/EEex game files, `WeiDU.log` SHA and WeiDU 25100 binary, exact last WeiDU V7; compiles one BAF block using temporary non-updating compiler, prepends to exact 1162-block `BDDEFAI.BCS` while preserving original 1162 blocks byte-identically, decompiles 1163-block candidate and checks first block semantics and watched game hashes. All candidates written in OS temp, no install until type `INSTALL_BGXR29_KHALID_BOW_TO_SWORD_PILOT`. Installation uses full external SHA backup and WeiDU COPY; rollback requires R29 last and `ROLLBACK_BGXR29_KHALID_BOW_TO_SWORD_PILOT`. Both may halt fail-closed on version drift.
+
+**Single CMD menu169:** old 1–168 actions unchanged, 7-file SHA pinned manifest, backend 79,927 bytes. Pinned immutable release commit `c3bd8feb979817ba707b32174a68298fe96ed5e1`; source `BGXAI_R29_GUARDED.py` SHA256 `7f64ea987733c2cd458ef102f4165201b477b25c81b3abf237f2a224a06c0453` and 1-block BAF SHA256 `e184c6468e4d927b628b826395b0b573e11b98602e58bacbba4ac9370cda3eee`. Native preflight explicitly disables WeiDU auto-tp2 and auto-update. Every mode writes one atomic report `Documents/BGXAI_LIVE_REPORTS/BGXAI_R29_<MODE>_*.json` including SAFE STOP. Source-only local 21/21 test cases PASS.
+
+**GitHub CI Windows + Ubuntu all green for this release:** https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45421330082 ; 8 updater, 21 R29, 45 batch, 21 native mock, Lua 439/439 three runtimes on Ubuntu; Windows PS5.1 AST syntax PASS. BGXAI V7/menu167 legacy compatibility also SUCCESS.
+
+**Immediate next task:** user runs `BGXAI_UPDATE.cmd` -> **169** -> **1** only. One `BGXAI_R29_PREFLIGHT_*.json` returns with either native PASS or actionable HOLD. No need to repeat 168 or manual EPS source inventory. Install option2 remains user-typed, not automatic. Native game compiler success not yet verified; do not claim R29 working in live gameplay until A/B. No file changes to user game were made in this conversation.
