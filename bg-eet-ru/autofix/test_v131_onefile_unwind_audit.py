@@ -16,10 +16,10 @@ MODULE=Path(__file__).resolve().parents[1]/"native-correlation"/"pe_unwind_entry
 class Onefile(TestCase):
     def test_source_pin_complete_download_dataclass_and_one_zip(self):
         source=UPDATER.read_text("utf8")
-        self.assertIn("SELF_VERSION = 131",source)
+        self.assertIn("SELF_VERSION = 132",source)
         self.assertIn("if a=='6':return v130_audit(",source)
         self.assertIn("sys.modules[mod.__name__]=mod",source)
-        self.assertIn("r.read(12001)",source)
+        self.assertIn("r.read(14001)",source)
         ns={"__name__":"v131_ci_fixture","__file__":str(UPDATER)}
         exec(compile(source.split("\n",1)[1],str(UPDATER),"exec"),ns)
         original=MODULE.read_bytes().replace(b"\r\n",b"\n")
