@@ -164,7 +164,19 @@ def build(root: Path = ROOT) -> bytes:
     "  ',\"queuedActionsRaw\":'..jnum(sample.queuedActionsRaw,0,512)..\n"+
     "  ',\"queueNonemptyObserved\":'..(sample.queueSnapshotStable==true and\n"+
     "    tostring(sample.queuedActionsRaw>0) or 'null')..\n"+
-    "  ',\"actionOriginVerified\":false,\"manualEpsQueueVerified\":false'..\n"+
+    "  ',\"actionContextSnapshotStable\":'..tostring(sample.actionContextSnapshotStable==true)..\n"+
+"  ',\"engineActionExecutionRaw\":'..jnum(sample.engineActionExecutionRaw,0,1)..\n"+
+"  ',\"engineNoInterruptRaw\":'..jnum(sample.engineNoInterruptRaw,0,1)..\n"+
+"  ',\"currentScriptNumberRaw\":'..jnum(sample.currentScriptNumberRaw,-32768,32767)..\n"+
+"  ',\"actionCountRaw\":'..jnum(sample.actionCountRaw,-32768,32767)..\n"+
+"  ',\"interruptRaw\":'..jnum(sample.interruptRaw,-2147483648,2147483647)..\n"+
+"  ',\"orderedByInstanceRaw\":'..jnum(sample.orderedByInstanceRaw,0,2147483647)..\n"+
+"  ',\"orderedBySentInstanceRaw\":'..jnum(sample.orderedBySentInstanceRaw,0,2147483647)..\n"+
+"  ',\"actionSourceStable\":'..tostring(sample.actionSourceStable==true)..\n"+
+"  ',\"actionSourceRaw\":'..jrawstr(sample.actionSourceRaw)..\n"+
+"  ',\"actionSourceReadStatus\":'..jstatus(sample.actionSourceReadStatus)..\n"+
+"  ',\"actionSourceSemantics\":\"UNCLASSIFIED_CAI_ACTION_M_SOURCE\"'..\n"+
+"  ',\"actionOriginVerified\":false,\"manualEpsQueueVerified\":false'..\n"+
     "  ',\"r4Status\":'..(sample.r4Status==")
   # Compose a passive advisory module only: no bootstrap, no EEex registration.
   output = (b'-- BGXAI R27 revised SOURCE ONLY: SHA-pinned R2 identity double-read.\n'
@@ -182,8 +194,11 @@ def build(root: Path = ROOT) -> bytes:
     raise ValueError('R27_STABLE_DERIVED_STATS_CONTRACT_MISSING')
   if (output.count(b'Q81_CORE.observe(sprite,action)') != 2 or
       output.count(b'queueSnapshotStable=qStable') != 1 or
-      output.count(b'queuedActionsRaw=qCount') != 1):
-    raise ValueError('R27_ENGINE_ACTION_QUEUE_RAW_OBSERVER_CONTRACT')
+      output.count(b'queuedActionsRaw=qCount') != 1 or
+      output.count(b'actionContextSnapshotStable=ctxStable') != 1 or
+      output.count(b'actionSourceStable=srcStable') != 1 or
+      output.count(b'UNCLASSIFIED_CAI_ACTION_M_SOURCE') != 1):
+    raise ValueError('R27_ENGINE_ACTION_CONTEXT_OBSERVER_CONTRACT')
   if output.count(b'return R27\n') != 1:
     raise ValueError('R27_SINGLE_EXPORT_REQUIRED')
   return output
