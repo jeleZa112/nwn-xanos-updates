@@ -11,6 +11,8 @@ on:
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_SLOTS_R2_READONLY.lua'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_slots_r2_readonly.lua'
       - 'BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124/**'
+      - 'BGXAI/BUILD/R6_SELECTED_VS_ALTERNATE_SOURCE_V1/**'
+      - 'BGXAI/BUILD/R4_R3_PRIORITY_SOURCE_V1/BGXAI_WEAPON_R4_PRIORITY_GATE_V1.lua'
       - 'BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/R27_EVENT_JOIN_TAIL.lua'
       - 'BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/M_BGXR27.lua'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_ACTIVE_R4_READONLY.lua'
@@ -59,6 +61,16 @@ jobs:
           python3 BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124/build_r27_r2_refresh_ro.py --check
           for runtime in lua5.3 lua5.4 luajit; do
             "$runtime" BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124/test_r27_refresh_runtime.lua
+          done
+      - name: R6 real historical APR selected-only and R27 bridge on THREE Lua runtimes
+        shell: bash
+        run: |
+          root=BGXAI/BUILD/R6_SELECTED_VS_ALTERNATE_SOURCE_V1
+          for runtime in lua5.3 lua5.4 luajit; do
+            "$runtime" "$root/test_bgxai_weapon_selected_vs_alternate_v1.lua"
+            "$runtime" "$root/test_bgxai_weapon_r6_live_fixture.lua"
+            "$runtime" "$root/test_bgxai_weapon_r6_priority_integration.lua"
+            "$runtime" "$root/test_r6_r27_evidence.lua"
           done
   windows-static-no-game:
     runs-on: windows-latest
