@@ -11,6 +11,8 @@ on:
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_SLOTS_R2_READONLY.lua'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_slots_r2_readonly.lua'
       - 'BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124/**'
+      - 'BGXAI/fox_new/experimental_081_eeex_action_provenance_readonly_source_only/BGXAI081_ACTION_PROVENANCE_QUEUE_V2.lua'
+      - 'BGXAI/fox_new/experimental_081_eeex_action_provenance_readonly_source_only/test_081_queue_v2.lua'
       - 'BGXAI/BUILD/R6_SELECTED_VS_ALTERNATE_SOURCE_V1/**'
       - 'BGXAI/BUILD/R4_R3_PRIORITY_SOURCE_V1/BGXAI_WEAPON_R4_PRIORITY_GATE_V1.lua'
       - 'BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/R27_EVENT_JOIN_TAIL.lua'
@@ -40,7 +42,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install Lua 5.3, Lua 5.4 and LuaJIT (EEex-compatible source syntax)
         run: sudo apt-get update -qq && sudo apt-get install -y lua5.3 lua5.4 luajit
-      - name: Batch-test complete advisory pipeline on THREE runtimes (439 cases each)
+      - name: Batch-test complete advisory pipeline on THREE runtimes (442 cases each)
         shell: bash
         run: |
           result=0
@@ -61,7 +63,13 @@ jobs:
           for runtime in lua5.3 lua5.4 luajit; do
             "$runtime" BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_active_r4_readonly.lua
           done
-      - name: R27 selected raw inventory and stable derivedStats SOURCE ONLY (65 cases each Lua; 8 Python)
+      - name: 081 x64 engine queuedActions raw count only (441 assertions each of THREE Lua runtimes)
+        shell: bash
+        run: |
+          for runtime in lua5.3 lua5.4 luajit; do
+            "$runtime" BGXAI/fox_new/experimental_081_eeex_action_provenance_readonly_source_only/test_081_queue_v2.lua
+          done
+      - name: R27 selected raw inventory + queue read SOURCE ONLY (77 cases each Lua; 9 Python)
         shell: bash
         run: |
           python3 -m unittest discover -s BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124 -p test_r27_r2_refresh_ro.py -q
