@@ -64,6 +64,9 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 7
     steps:
+      - name: Preserve exact SHA-pinned LF bytes on Windows checkout
+        shell: pwsh
+        run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
       - name: Verify Lua safety and 20 WeiDU preflight mock contracts
         shell: pwsh
@@ -71,3 +74,4 @@ jobs:
           py -3 BGXAI/patchsets/ranged_fighter_guarded_20261119/run_weapon_priority_v3_regression.py --static-only
           py -3 -m unittest discover -s BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124 -p test_r27_r2_refresh_ro.py -q
           py -3 BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124/build_r27_r2_refresh_ro.py --check
+
