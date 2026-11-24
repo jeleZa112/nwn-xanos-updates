@@ -37,7 +37,9 @@ class CompileContract(unittest.TestCase):
             p=self.game/rel;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(raw)
         self.before=mod.baseline(self.game,self.game/'lang/ru_ru/dialog.tlk')
     def ok_runner(self,cmd,**kwargs):
-        self.assertEqual(kwargs['cwd'],str(self.game))
+        # Windows TEMP may be returned as RUNNER~1 (8.3 name) while
+        # Path.resolve() expands it to runneradmin. Compare real directories.
+        self.assertEqual(Path(kwargs['cwd']).resolve(),self.game.resolve())
         self.assertEqual(kwargs['stdin'],subprocess.DEVNULL)
         self.assertEqual(kwargs['timeout'],25)
         self.assertIn('--no-auto-tp2',cmd)
