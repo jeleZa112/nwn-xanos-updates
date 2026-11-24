@@ -109,6 +109,8 @@ EEex_ReadLString=function(ptr,limit) reads=reads+1;return reads<=2 and 'MOCore.b
 local sourceDrift=M.observe(s,a,2,function()return st end)
 check(sourceDrift.actionSourceStable==false and sourceDrift.actionSourceRaw==nil,
  'source drift across same callback fails closed')
+check(sourceDrift.actionSourceReadStatus=='ACTION_SOURCE_CHANGED_DURING_CAPTURE',
+ 'source drift is named in the report')
 EEex_ReadLString=function(ptr,limit) return 'MOCore.bcs' end
 s,a,st=fixture();local noInterrupt=0
 local contextDrift=M.observe(s,a,2,function() noInterrupt=noInterrupt+1;if noInterrupt==1 then s.m_bNoInterrupt=1 end;return st end)
