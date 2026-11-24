@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 123
+SELF_VERSION = 124
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -8058,6 +8058,51 @@ def v122_run(game,path,offline=False):
   try:v116_zip(game,path,result,entry=V122_ENTRY)
   except Exception as e:print('V122 ZIP HOLD:',str(e)[:130]);return 2
   print('V122 LIVE READ ONLY:',result['status']);return 0
+V124_ENTRY='62_V124_ONE_RUN_BOT.json'
+def v124_one_run(game,path,offline=False):
+  """Execute independent read-only evidence stages in a single ZIP."""
+  stages=[
+    ('lua',lambda:v85_run(game,path,'status'),'33_V85_COMBAT_FORMAT_GUARDED.json'),
+    ('ui',lambda:v102_run(game,path,'status'),'48_V102_ROLL_MODIFIER_LABELS.json'),
+    ('weapon',lambda:v103_run(game,path),'49_V103_WEAPON_AMMO_SOURCE_AUDIT.json'),
+    ('attack',lambda:v104_run(game,path),'50_V104_EEEX_ATTACK_CONTEXT_EVIDENCE.json'),
+    ('observer',lambda:v105_run(game,path,'status'),'51_V105_WEAPON_OBSERVER_BRIDGE.json'),
+    ('console',lambda:v106_run(game,path,'status'),'52_V106_WEAPON_CONSOLE_BRIDGE.json'),
+    ('abi',lambda:v107_run(game,path),'53_V107_CITEM_STATIC_ABI_PREFLIGHT.json'),
+    ('resref',lambda:v108_run(game,path,'status'),'54_V108_NATIVE_ITEM_RESREF_PILOT.json'),
+    ('names',lambda:v111_run(game,path),'55_V111_ACTUAL_ITM_TLK_NAMES_READONLY.json'),
+    ('correlation',lambda:v112_run(game,path),'56_V112_COMBAT_JOURNAL_CORRELATION_PREFLIGHT.json'),
+    ('dispatch',lambda:v116_run(game,path),'57_V116_DISPATCH_CALLEE_STATIC_READONLY.json'),
+    ('full',lambda:full_audit_run(game,path),'58_FULL_SPECTRUM_STATIC_AUDIT.json'),
+    ('autofix',lambda:v121_run(game,path,offline),'60_V121_AUTOFIX_SOURCE_ONLY.json'),
+    ('memory',lambda:0,'61_V122_LIVE_HIT_READONLY.json')]
+  rows=[]
+  for name,fn,entry in stages:
+    row={'stage':name,'entry':entry}
+    try:
+      row['exit_code']=fn()
+      with zipfile.ZipFile(path) as z:
+        if z.testzip() is not None:raise RuntimeError('ZIP_CRC_HOLD')
+        result=json.loads(z.read(entry))
+      row['source_status']=result.get('status','NOT_REPORTED')
+      if result.get('game_files_written') not in (0,False,None) or result.get('native_hooks_installed') is True:
+        raise RuntimeError('REPORT_CLAIMS_GAME_MODIFICATION')
+      row['status']='HOLD' if row['exit_code'] or 'HOLD' in row['source_status'] or 'SAFE_STOP' in row['source_status'] else 'EVIDENCE_RECORDED'
+    except Exception as exc:
+      row['status']='HOLD'
+      row['error']=type(exc).__name__+':'+str(exc)[:180]
+    rows.append(row)
+    print('V124:',name,row['status'])
+  summary={'schema':'BG_EET_RU_V124_ONE_RUN_READ_ONLY','updater_version':SELF_VERSION,
+    'status':'COMPLETED_WITH_HOLDS' if any(x['status']=='HOLD' for x in rows) else 'ALL_RESEARCH_EVIDENCE_RECORDED',
+    'stages':rows,'stage_count':len(rows),'hold_count':sum(x['status']=='HOLD' for x in rows),
+    'game_files_written':0,'native_hooks_installed':False,'gameplay_verified':False,
+    'one_updater':True,'one_zip':True}
+  try:v116_zip(game,path,summary,entry=V124_ENTRY)
+  except Exception as exc:
+    print('V124 ZIP HOLD:',type(exc).__name__,str(exc)[:180]);return 2
+  print('V124 ONE RUN:',summary['status'],'|',path)
+  return 0
 def v122_selftest():
   assert len(V122_SOURCE_SHA)==64 and '91165691e629db817ba734ec394042c34bc2f8c3' in V122_SOURCE_URL
   return True
@@ -8076,64 +8121,64 @@ def main(argv=None):
   p.add_argument('--force',action='store_true',help='ignore result cache, repeat audit')
   p.add_argument('--selftest',action='store_true')
   p.add_argument('--live-hit-readonly',action='store_true',help='one ZIP Win64 external process inventory; no hook')
-  p.add_argument('--weapon-source-audit',action='store_true',help='v103 READ ONLY inspect local EEex weapon/ammo source capabilities; no hooks or game edits')
-  p.add_argument('--weapon-context-audit',action='store_true',help='v104 READ ONLY inspect local attack/hit/launcher Lua signatures')
-  p.add_argument('--weapon-observer-status',action='store_true',help='v105 read only guarded pilot preflight and optional captured evidence')
-  p.add_argument('--install-v105-weapon-observer',action='store_true',help='v105 optional explicitly authorized guarded pilot installation')
-  p.add_argument('--rollback-v105-weapon-observer',action='store_true',help='v105 optional explicitly authorized exact pilot rollback')
+  p.add_argument('--weapon-source-audit',action='store_true',help='')
+  p.add_argument('--weapon-context-audit',action='store_true',help='')
+  p.add_argument('--weapon-observer-status',action='store_true',help='')
+  p.add_argument('--install-v105-weapon-observer',action='store_true',help='')
+  p.add_argument('--rollback-v105-weapon-observer',action='store_true',help='')
   p.add_argument('--full-combat-audit',action='store_true',help='one-shot comprehensive READ ONLY EXE/EEex/UI/weapon audit')
   p.add_argument('--autofix-readonly',action='store_true',help='run all pinned research tests and safely repair cached source modules')
-  p.add_argument('--v116-dispatch-static',action='store_true',help='v116 READ ONLY PE64 message dispatch symbol')
-  p.add_argument('--v112-correlation-preflight',action='store_true',help='v112 READ ONLY UI/EEex action source and event-id correlation gate')
-  p.add_argument('--v111-item-audit',action='store_true',help='v111 read-only exact current ITM/TLK names for three LIVE RESREFs')
-  p.add_argument('--v108-native-status',action='store_true',help='v108 restricted CItem pilot read-only status')
-  p.add_argument('--install-v108-native-read',action='store_true',help='v108 explicit typed native item observer install, exact SHA + rollback')
-  p.add_argument('--rollback-v108-native-read',action='store_true',help='v108 explicit typed exact restore to v106')
-  p.add_argument('--capture-v108-native-read',action='store_true',help='v108 launch through same InfinityLoader and capture bounded RESREF logs into one ZIP')
-  p.add_argument('--v107-static-preflight',action='store_true',help='v107 READ ONLY EEex build fingerprint; no game writes or native CItem reads')
-  p.add_argument('--v106-weapon-console-status',action='store_true',help='v106 READ ONLY preflight and evidence status')
-  p.add_argument('--install-v106-weapon-console',action='store_true',help='v106 exact SHA guarded observer upgrade only after typed consent')
-  p.add_argument('--rollback-v106-weapon-console',action='store_true',help='v106 exact SHA guarded restore to installed v105')
-  p.add_argument('--capture-v106-weapon-console',action='store_true',help='launch existing InfinityLoader and capture bounded diagnostics into single ZIP')
-  p.add_argument('--install-v85-combat-format',action='store_true',help='optional signed v85 Lua replacement; exact typed approval required')
-  p.add_argument('--rollback-v85-combat-format',action='store_true',help='optional signed restore to v74; exact typed approval required')
-  p.add_argument('--install-v88-journal-ui',action='store_true',help='optional guarded UI.MENU two-mode pilot; exact approval required')
-  p.add_argument('--rollback-v88-journal-ui',action='store_true',help='optional guarded UI.MENU restore; exact approval required')
-  p.add_argument('--upgrade-v90-journal-ui',action='store_true',help='optional v88-to-v90 display-button reposition; exact approval')
-  p.add_argument('--rollback-v90-journal-ui',action='store_true',help='optional v90 rollback to original UI.MENU; exact approval')
-  p.add_argument('--upgrade-v91-journal-parser',action='store_true',help='optional v90-to-v91 color-safe brief parser; exact approval')
-  p.add_argument('--rollback-v91-journal-parser',action='store_true',help='optional exact restore to v90 UI.MENU; exact approval')
-  p.add_argument('--upgrade-v92-journal-marker',action='store_true',help='optional exact UI-only ^- color marker parser fix; explicit approval')
-  p.add_argument('--rollback-v92-journal-marker',action='store_true',help='optional exact revert to v91 UI.MENU; explicit approval')
-  p.add_argument('--upgrade-v93-journal-zeros',action='store_true',help='optional v92-to-v93 brief-log zero filter; exact typed approval')
-  p.add_argument('--rollback-v93-journal-zeros',action='store_true',help='optional exact v93 rollback to v92; exact typed approval')
-  p.add_argument('--upgrade-v95-journal-zeros',action='store_true',help='optional corrected v95 brief journal filter; typed approval')
-  p.add_argument('--rollback-v95-journal-zeros',action='store_true',help='optional v95 rollback to v92; typed approval')
-  p.add_argument('--upgrade-v96-journal-colors',action='store_true',help='optional v95-to-v96 colored-speaker brief roll fix; typed approval')
-  p.add_argument('--rollback-v96-journal-colors',action='store_true',help='optional v96 rollback to v95; typed approval')
-  p.add_argument('--upgrade-v97-damage-grammar',action='store_true',help='optional v96-to-v97 BRIEF-only grammar; explicit consent')
-  p.add_argument('--rollback-v97-damage-grammar',action='store_true',help='optional v97 rollback to v96; explicit consent')
-  p.add_argument('--upgrade-v98-damage-colors',action='store_true',help='optional v97-to-v98 damage control-code fix; explicit approval')
-  p.add_argument('--rollback-v98-damage-colors',action='store_true',help='optional exact v98 rollback to v97; explicit approval')
-  p.add_argument('--upgrade-v99-damage-compact',action='store_true',help='optional v98-to-v99 BRIEF damage display compact; typed approval')
-  p.add_argument('--rollback-v99-damage-compact',action='store_true',help='optional exact rollback v99 to v98; typed approval')
-  p.add_argument('--upgrade-v100-combat-colors',action='store_true',help='optional v99-to-v100 brief combat colors; typed approval')
-  p.add_argument('--rollback-v100-combat-colors',action='store_true',help='optional exact v100 rollback to v99; typed approval')
-  p.add_argument('--upgrade-v101-abgr-colors',action='store_true',help='optional v100-to-v101 ABGR color correction; typed approval')
-  p.add_argument('--upgrade-v102-roll-labels',action='store_true',help='optional v101-to-v102 compact labels; typed approval')
-  p.add_argument('--rollback-v102-roll-labels',action='store_true',help='optional v102 rollback to v101; typed approval')
-  p.add_argument('--rollback-v101-abgr-colors',action='store_true',help='optional exact v101 rollback to v100; typed approval')
-  p.add_argument('--seen-strref',action='append',type=int,default=[],help='v83: player-reported displayed StrRef, repeatable')
-  p.add_argument('--seen-text',action='append',default=[],help='v83: player-reported exact displayed text, repeatable')
-  p.add_argument('--no-open',action='store_true',help='do not open output folder')
-  p.add_argument('--no-install-prompt',action='store_true',help='compatibility: skip v34 prompt')
-  p.add_argument('--offer-v34-edits',action='store_true',help='explicitly ask about old optional v34 edits')
-  p.add_argument('--skip-iwd-dlg',action='store_true',help='skip v35 DLG read-only capture; keep earlier capture if valid')
-  p.add_argument('--combat-only',action='store_true',help='v68: capture/cache combat evidence in the existing single ZIP only')
-  p.add_argument('--combat-status',action='store_true',help='v71: read status of the single Lua pilot, no changes')
-  p.add_argument('--fix-leui-reverse',action='store_true',help='v78: optional guarded UI.MENU label repair with consent and backup')
-  p.add_argument('--rollback-leui-reverse',action='store_true',help='v78: optional consent-based exact rollback of only UI.MENU')
-  p.add_argument('--combat-rollback',action='store_true',help='v71: guarded rollback of only the single short Lua pilot')
+  p.add_argument('--v116-dispatch-static',action='store_true',help='')
+  p.add_argument('--v112-correlation-preflight',action='store_true',help='')
+  p.add_argument('--v111-item-audit',action='store_true',help='')
+  p.add_argument('--v108-native-status',action='store_true',help='')
+  p.add_argument('--install-v108-native-read',action='store_true',help='')
+  p.add_argument('--rollback-v108-native-read',action='store_true',help='')
+  p.add_argument('--capture-v108-native-read',action='store_true',help='')
+  p.add_argument('--v107-static-preflight',action='store_true',help='')
+  p.add_argument('--v106-weapon-console-status',action='store_true',help='')
+  p.add_argument('--install-v106-weapon-console',action='store_true',help='')
+  p.add_argument('--rollback-v106-weapon-console',action='store_true',help='')
+  p.add_argument('--capture-v106-weapon-console',action='store_true',help='')
+  p.add_argument('--install-v85-combat-format',action='store_true',help='')
+  p.add_argument('--rollback-v85-combat-format',action='store_true',help='')
+  p.add_argument('--install-v88-journal-ui',action='store_true',help='')
+  p.add_argument('--rollback-v88-journal-ui',action='store_true',help='')
+  p.add_argument('--upgrade-v90-journal-ui',action='store_true',help='')
+  p.add_argument('--rollback-v90-journal-ui',action='store_true',help='')
+  p.add_argument('--upgrade-v91-journal-parser',action='store_true',help='')
+  p.add_argument('--rollback-v91-journal-parser',action='store_true',help='')
+  p.add_argument('--upgrade-v92-journal-marker',action='store_true',help='')
+  p.add_argument('--rollback-v92-journal-marker',action='store_true',help='')
+  p.add_argument('--upgrade-v93-journal-zeros',action='store_true',help='')
+  p.add_argument('--rollback-v93-journal-zeros',action='store_true',help='')
+  p.add_argument('--upgrade-v95-journal-zeros',action='store_true',help='')
+  p.add_argument('--rollback-v95-journal-zeros',action='store_true',help='')
+  p.add_argument('--upgrade-v96-journal-colors',action='store_true',help='')
+  p.add_argument('--rollback-v96-journal-colors',action='store_true',help='')
+  p.add_argument('--upgrade-v97-damage-grammar',action='store_true',help='')
+  p.add_argument('--rollback-v97-damage-grammar',action='store_true',help='')
+  p.add_argument('--upgrade-v98-damage-colors',action='store_true',help='')
+  p.add_argument('--rollback-v98-damage-colors',action='store_true',help='')
+  p.add_argument('--upgrade-v99-damage-compact',action='store_true',help='')
+  p.add_argument('--rollback-v99-damage-compact',action='store_true',help='')
+  p.add_argument('--upgrade-v100-combat-colors',action='store_true',help='')
+  p.add_argument('--rollback-v100-combat-colors',action='store_true',help='')
+  p.add_argument('--upgrade-v101-abgr-colors',action='store_true',help='')
+  p.add_argument('--upgrade-v102-roll-labels',action='store_true',help='')
+  p.add_argument('--rollback-v102-roll-labels',action='store_true',help='')
+  p.add_argument('--rollback-v101-abgr-colors',action='store_true',help='')
+  p.add_argument('--seen-strref',action='append',type=int,default=[],help='')
+  p.add_argument('--seen-text',action='append',default=[],help='')
+  p.add_argument('--no-open',action='store_true',help='')
+  p.add_argument('--no-install-prompt',action='store_true',help='')
+  p.add_argument('--offer-v34-edits',action='store_true',help='')
+  p.add_argument('--skip-iwd-dlg',action='store_true',help='')
+  p.add_argument('--combat-only',action='store_true',help='')
+  p.add_argument('--combat-status',action='store_true',help='')
+  p.add_argument('--fix-leui-reverse',action='store_true',help='')
+  p.add_argument('--rollback-leui-reverse',action='store_true',help='')
+  p.add_argument('--combat-rollback',action='store_true',help='')
   args=p.parse_args(argv)
   if args.selftest: return selftest()
   game=Path(args.game).expanduser().resolve()
@@ -8189,6 +8234,7 @@ def main(argv=None):
     return subprocess.call([sys.executable,'-x',str(canonical),*sys.argv[1:]])
   try:v121_snapshot(game,WORKDIR/REPORT_NAME)
   except Exception as exc:print('V121 EVIDENCE SNAPSHOT HOLD:',type(exc).__name__,str(exc)[:140])
+  if not (argv if argv is not None else sys.argv[1:]):return v124_one_run(game,WORKDIR/REPORT_NAME,args.offline)
   if args.live_hit_readonly:return v122_run(game,WORKDIR/REPORT_NAME,args.offline)
   if args.autofix_readonly:
     return v121_run(game,WORKDIR/REPORT_NAME,args.offline)
