@@ -42,8 +42,10 @@ end
 function BG_EET_RU_HIT_PILOT_Enter(frame, attacker, target, item, ability)
   if not P.installed then return end
   P.counters.entries = P.counters.entries+1
-  if type(frame)~='number' or frame<=0 or type(attacker)~='number'
-    or type(target)~='number' or type(ability)~='number'
+  if type(frame)~='number' or frame<=0 or frame%1~=0
+    or type(attacker)~='number' or attacker<=0 or attacker%1~=0
+    or type(target)~='number' or target<=0 or target%1~=0
+    or type(ability)~='number' or ability%1~=0
     or ability<0 or ability>65535 or item==nil then
     P.counters.invalid=P.counters.invalid+1;return
   end
