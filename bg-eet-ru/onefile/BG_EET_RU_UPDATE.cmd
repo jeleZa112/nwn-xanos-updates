@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 126
+SELF_VERSION = 127
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -8106,12 +8106,12 @@ def v124_one_run(game,path,offline=False):
 V126_SHA='3c079918170ecbea959e1148e1fc9c629d84c751bf0d89415166c98a26921703'
 V126_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/601785e3a0e838ec3bc50e19ce26377153507932/bg-eet-ru/live-observer/visible_row_guarded_v1.py'
 def v126_dispatch(game,path,mode):
-  p=v121_cache(game)/'V126_ROW.py'
+  p=v121_cache(game)/'V126.py'
   if not p.is_file() or sha_path(p)!=V126_SHA:
-    with urllib.request.urlopen(V126_URL,timeout=20) as r:data=r.read(15001)
-    if digest(data)!=V126_SHA:raise RuntimeError('V126_SOURCE_SHA_HOLD')
+    with urllib.request.urlopen(V126_URL,timeout=20) as r:data=r.read(20001)
+    if digest(data)!=V126_SHA:raise RuntimeError('SHA_HOLD')
     v121_write(game,p,data)
-  ns={}
+  ns={'__name__':'v126'}
   exec(compile(p.read_bytes(),str(p),'exec'),ns)
   return ns['run'](game,path,mode)
 def v122_selftest():
