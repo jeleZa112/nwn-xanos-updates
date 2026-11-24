@@ -55,9 +55,17 @@ def verify(archive,source):
     ck('never_modify_message',b'function BG_EET_RU_HIT_PILOT_Message' in lua and b'SAME_FRAME_MESSAGE_UNTYPED' in lua)
     ck('never_use_old_site_for_capture',b'capture=first-0x1E' in lua and b'forbidden=first-0x11' in lua)
     ck('never_persist_native_item',b'item.cResRef:get()' in lua and b'P.active[frame]={weapon=ref:upper()' in lua)
-    ck('prevent_duplicate_frame',b'if P.active[frame] or P.blocked[frame]' in lua)
+    ck('prevent_duplicate_frame',b'if P.active[frame] then' in lua and b'if P.blocked[frame] then' in lua and b'bounded_block(frame)' in lua)
     ck('clear_after_exit',b'P.active[frame]=nil;P.blocked[frame]=nil' in lua)
     ck('bounded_frames',b'max_active = 128' in lua)
     ck('bounded_telemetry',b'max_samples = 64' in lua)
+    ck('exit_invalid_frame_safe',b'if not valid_id(frame) then' in lua)
+    ck('collision_exit_balance',b'P.blocked[frame]=P.blocked[frame]-1' in lua)
+    ck('session_halt_on_excess_collisions',b"session_hold('BLOCKED_FRAME_BUDGET_EXHAUSTED')" in lua and b"session_hold('SAME_FRAME_COLLISION_OVERFLOW')" in lua)
+    ck('safe_memory_reader',b'pcall(EEex_ReadU8,address+index)' in lua)
+    ck('safe_symbol_resolver',b"pcall(EEex_Label,'Hook-CGameSprite::Hit()-FirstCall')" in lua)
+    ck('rel32_call_api_contract',b"capture = 'EEex_HookBeforeRestoreWithLabels'" in lua
+       and b"message = 'EEex_HookBeforeCallWithLabels'" in lua
+       and b"exit = 'EEex_HookBeforeCallWithLabels'" in lua)
     ck('not_an_installer',b'not an installable release' in lua)
     return {'schema':'BG_EET_RU_CORRECTED_SAME_HIT_SOURCE_V1','status':'SOURCE_PASS_RUNTIME_HOLD' if all(checks.values()) else 'SOURCE_INVALID_HOLD','passed':sum(checks.values()),'total':len(checks),'checks':checks,'game_files_written':0,'native_hooks_installed':False,'gameplay_tested':False,'remaining_blockers':['Lua binding correctness in running EEex','Win64 ABI/XMM preservation','atomic multi-site native JIT installation and rollback','actual live-site bytes and patch conflicts','unwind/exception recovery','same message class and UI row proof','separate typed game change authorization']}
