@@ -8581,8 +8581,8 @@ def v121_source(game,cache,name,expected,offline=False):
   if path.is_file() and not path.is_symlink() and sha_path(path)==expected:return path
   if path.is_symlink() or (path.exists() and not path.is_file()):raise RuntimeError('V121_CACHE_FILE_UNSAFE')
   if offline:raise RuntimeError('V121_OFFLINE_TRUSTED_SOURCE_MISSING')
-  rawname='BG_EET_RU_AUTOFIX_BOT.py' if name=='BG_EET_RU_AUTOFIX_BOT.py' else 'trusted_sources.zip.b64'
-  req=urllib.request.Request(V121_PREFIX+rawname,headers={'User-Agent':'BG-EET-RU-onefile-RO/121'})
+  rawname='BG_EET_RU_AUTOFIX_BOT.py' if name=='BG_EET_RU_AUTOFIX_BOT.py' else ('trusted_sources.zip.b64' if name=='trusted_sources.zip' else name)
+  req=urllib.request.Request(V122_SOURCE_URL if name=='BG_EET_RU_V122_RO.py' else V121_PREFIX+rawname,headers={'User-Agent':'BG-EET-RU-onefile-RO/121'})
   with urllib.request.urlopen(req,timeout=15) as response:data=response.read(100_000)
   if rawname.endswith('.b64'):
     try:data=base64.b64decode(b''.join(data.split()),validate=True)
@@ -8625,53 +8625,28 @@ def v121_run(game,report_path,offline=False):
   return v122_run(game,report_path,offline)
 
 
-# V122: pinned external Win64 read-only process inventory; no game writes.
 V122_ENTRY='61_V122_LIVE_HIT_READONLY.json'
-V122_READONLY_SOURCE='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/91165691e629db817ba734ec394042c34bc2f8c3/bg-eet-ru/native-hit-pilot/windows_live_hit_inventory_ro.py'
+V122_SOURCE_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/91165691e629db817ba734ec394042c34bc2f8c3/bg-eet-ru/native-hit-pilot/windows_live_hit_inventory_ro.py'
 V122_SOURCE_SHA='ba5f4cc2b0c690f706dea032b791c0773cf673725452dfbba3d5dbe11b356d26'
-
-def v122_run(game,report_path,offline=False):
+def v122_run(game,path,offline=False):
   result={'schema':'BG_EET_RU_V122_LIVE_HIT_READONLY','status':'RUNTIME_MEMORY_HOLD',
           'game_files_written':0,'native_hooks_installed':False,'gameplay_verified':False}
   try:
-    if sys.platform!='win32':raise RuntimeError('WINDOWS_ONLY')
-    cache=v121_cache(game)
-    path=cache/'BG_EET_RU_V122_WIN_INVENTORY.py'
-    if path.is_symlink() or (path.exists() and not path.is_file()):
-      raise RuntimeError('V122_SOURCE_PATH_UNSAFE')
-    if not path.exists() or sha_path(path)!=V122_SOURCE_SHA:
-      if offline:raise RuntimeError('V122_OFFLINE_SOURCE_HOLD')
-      req=urllib.request.Request(V122_READONLY_SOURCE,headers={'User-Agent':'BG-EET-RU-onefile-RO/122'})
-      with urllib.request.urlopen(req,timeout=15) as response:raw=response.read(30000)
-      if len(raw)>20000 or digest(raw)!=V122_SOURCE_SHA:
-        raise RuntimeError('V122_PINNED_SOURCE_SHA_HOLD')
-      if path.exists():
-        old=sha_path(path)
-        bad=cache/('V122_WIN_INVENTORY_'+old[:16]+'.bad')
-        if bad.exists() or bad.is_symlink():raise RuntimeError('V122_QUARANTINE_COLLISION')
-        os.replace(path,bad)
-      v121_write(game,path,raw)
-    source=path.read_bytes()
-    if digest(source)!=V122_SOURCE_SHA:raise RuntimeError('V122_CACHE_RACE_HOLD')
-    module=types.ModuleType('_bg_eet_ru_v122_live_ro')
-    exec(compile(source,str(path),'exec'),module.__dict__)
-    live=module.run_game(Path(game))
-    if not isinstance(live,dict) or live.get('game_files_written')!=0:
-      raise RuntimeError('V122_READER_CONTRACT_HOLD')
+    src=v121_source(game,v121_cache(game),'BG_EET_RU_V122_RO.py',V122_SOURCE_SHA,offline)
+    data=src.read_bytes()
+    if digest(data)!=V122_SOURCE_SHA:raise RuntimeError('V122_CACHE_RACE')
+    ns={'__name__':'BG_EET_RU_V122_RO'}
+    exec(compile(data,str(src),'exec'),ns)
+    live=ns['run_game'](Path(game))
+    if not isinstance(live,dict) or live.get('game_files_written')!=0:raise RuntimeError('V122_READER_CONTRACT')
     result.update(live)
-  except Exception as exc:
-    result['status']='RUNTIME_MEMORY_HOLD'
-    result['reason']=type(exc).__name__+':'+str(exc)[:130]
-  try:
-    v116_zip(game,report_path,result,entry=V122_ENTRY)
-    print('V122 LIVE HIT READ ONLY:',result['status'],'| game writes: 0')
-  except Exception as exc:
-    print('V122 ZIP HOLD:',type(exc).__name__,str(exc)[:120]);return 2
-  return 0
+  except Exception as e:result['reason']=type(e).__name__+':'+str(e)[:130]
+  try:v116_zip(game,path,result,entry=V122_ENTRY)
+  except Exception as e:print('V122 ZIP HOLD:',str(e)[:130]);return 2
+  print('V122 LIVE READ ONLY:',result['status']);return 0
 
 def v122_selftest():
-  assert len(V122_SOURCE_SHA)==64 and '/91165691e629db817ba734ec394042c34bc2f8c3/' in V122_READONLY_SOURCE
-  assert V122_ENTRY.startswith('61_') and callable(v122_run)
+  assert len(V122_SOURCE_SHA)==64 and '91165691e629db817ba734ec394042c34bc2f8c3' in V122_SOURCE_URL
   return True
 
 def v121_selftest():
