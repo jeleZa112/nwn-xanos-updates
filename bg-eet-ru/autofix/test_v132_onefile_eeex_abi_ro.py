@@ -27,7 +27,7 @@ class V132OneFile(TestCase):
         with TemporaryDirectory(prefix="BG_EET_RU_V132_ONEFILE_") as d:
             root=Path(d);game=root/"game";game.mkdir()
             exe=game/"Baldur.exe"
-            exe.write_bytes(b"MZ"+b"n"*700)
+            exe.write_bytes(b"MZ"+b"n"*1600)
             (game/"EEex_scripts").mkdir()
             asm=game/"EEex_scripts"/"EEex_Assembly_x86-64.lua"
             patterns=[
@@ -78,7 +78,7 @@ class V132OneFile(TestCase):
         exec(compile(text.split("\n",1)[1],str(UPDATER),"exec"),ns)
         with TemporaryDirectory(prefix="V132_BAD_SOURCE_") as tmp:
             root=Path(tmp);game=root/"game";game.mkdir()
-            (game/"Baldur.exe").write_bytes(b"MZ"+b"n"*700)
+            (game/"Baldur.exe").write_bytes(b"MZ"+b"n"*1600)
             ns["WORKDIR"]=root/"reports";ns["WORKDIR"].mkdir()
             archive=ns["WORKDIR"]/"SEND_TO_CHATGPT_BG_EET_RU.zip"
             with zipfile.ZipFile(archive,"w") as z:z.writestr("ORIGINAL",b"one")
