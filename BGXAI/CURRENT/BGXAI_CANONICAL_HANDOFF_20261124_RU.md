@@ -1,5 +1,19 @@
 # BGXAI — единая точка продолжения, 24 ноября 2026
 
+## 25.11.2026 — EEex engine queuedActions → старый 081 → R27 → NONINTERRUPT (SOURCE/CI PASS)
+
+**Новая продуктовая возможность на уровне исходников:** в официальных x64 структурах EEex найдены `CGameAIBase.m_queuedActions` и `CTypedPtrList.m_nCount`. Возвращён конкретный ранее отсутствовавший отрицательный сигнал: *когда в очереди двигателя есть ожидающие действия, не пересчитывать и не выбирать оружие*. На этом сигнале **НЕЛЬЗЯ** выводить происхождение приказа manual/EPS/AI.
+
+- **081 V2** `BGXAI/fox_new/experimental_081_eeex_action_provenance_readonly_source_only/BGXAI081_ACTION_PROVENANCE_QUEUE_V2.lua` — без нового hook читает `m_queuedActions.m_nCount` дважды через `pcall`, сверяет `m_curAction.m_actionID`; допустимый raw диапазон 0..512, неизвестное или изменившееся → `nil`. `queue_empty=nil`, `eps_queue_empty_verified=false`, `safe_to_dispatch=false` всегда. **Старый 081 и 082 исторические файлы неизменны.** SHA256 `b3c9ecbc98c81e09d24279e4f970729750187ed6f4bafb2738572a37fa7d2edd`.
+- **R27 source-only refresh** тот же `BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124/`; обновлён детерминированный сборщик: компоновка R2+R4+Q81 в одном будущем callback, raw очередь до/после stat capture. Только устойчивый count+action → `queueSnapshotStable=true`, `queuedActionsRaw`; JSON публикует raw nonempty/null, всегда `actionOriginVerified=false` и `manualEpsQueueVerified=false`. Новый SHA256 `7ca77abeb94363c75cc58986db4427d9f93edba25e09764be35008c2f0e0600b`, **НЕ** установленный Lua. Старый live `M_BGXR27.lua` SHA `e5eb400c56ffb1bc23344a0cf30dcc724d8d18fc2752fabd1c2c63cdcca73735` и его WeiDU НЕ изменены.
+- **Существующий NONINTERRUPT V1** теперь при совпадении actor/action и `queueSnapshotStable==true` + `queuedActionsRaw>0` возвращает `PRESERVE_KNOWN_NONEMPTY_ACTION_QUEUE`, **scorerCalls=0, next=nil**, не трогая текущее действие/очередь. Count=0 не даёт разрешения на switch. SHA256 `160c0b5a099ea170772dec12443f7273b92b8b99ec61a75f2e88052c9abc1cde`.
+
+**TEST:** локально 081 441 Lua assertions, R27 77 checks + 9 Python, NONINTERRUPT 25 tests; [GitHub Actions 45447222518](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45447222518) **SUCCESS Windows+Ubuntu**: 081 441, R27 77, общий V3 regression 442 x Lua5.3/Lua5.4/LuaJIT; Windows static + Python PASS. Источник/границы/точные файлы: [BGXAI_QUEUE_081_R27_NONINTERRUPT_20261125_RU.md](BGXAI_QUEUE_081_R27_NONINTERRUPT_20261125_RU.md).
+
+**CODE/TEST PASS; DEPLOY NO; NEW GAME LIVE NO.** В пользовательской EET ещё не проверена доступность Lua binding `m_nCount` и ручной/EPS origin; нет runtime effective APR одновременно альтернативных слотов. **Следующий единственный P0** — доказать passive runtime чтение engine queue, различить manual/EPS origin и подготовить защищённый producer без вмешательства в текущие действия, затем постепенно связать существующий V3/V4/V5 с достоверными alt-slot измерениями. Не предлагать повторные R27/R28/167/V6/R29 установки или ожидать немедленного автоматического выбора.
+
+---
+
 ## 24.11.2026 — реальный API EEex: защита от временных m_tempStats (SOURCE + независимый CI PASS)
 
 **Точный upstream EEex v1.1.7:** [EEex_Sprite.lua](https://github.com/Bubb13/EEex/blob/v1.1.7/EEex/copy/EEex_scripts/EEex_Sprite.lua) — `EEex_Sprite_GetActiveStats(sprite)` возвращает `m_derivedStats` при `m_bAllowEffectListCall ~= 0`, но `m_tempStats` при `==0` (обработка эффектов в процессе). Ранее выбранный APR в таком окне можно было ошибочно принять за стабильный. Это исходник upstream, **не** повторная native-проверка в игре пользователя.
