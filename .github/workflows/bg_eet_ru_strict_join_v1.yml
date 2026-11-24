@@ -1,0 +1,39 @@
+name: BG EET RU source-only strict Hit-to-row identity gate
+on:
+  pull_request:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/**'
+      - '.github/workflows/bg_eet_ru_strict_join_v1.yml'
+  workflow_dispatch:
+jobs:
+  strict-join:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Strict source-only row provenance and negative controls
+        working-directory: bg-eet-ru/native-correlation
+        shell: bash
+        run: |
+          python -m unittest -v test_strict_join_v1
+      - name: Assert no game mutation APIs or fake runtime claim
+        shell: python
+        run: |
+          from pathlib import Path
+          import ast
+          src=Path('bg-eet-ru/native-correlation/strict_join_v1.py').read_text('utf8')
+          ast.parse(src)
+          assert 'runtime_proven: bool = False' in src
+          assert 'gameplay_verified: bool = False' in src
+          assert 'SOURCE_ONLY_CANDIDATE' in src
+          assert 'EXPECTED_TYPE = "ATTACK_ROLL"' in src
+          for forbidden in ('WriteProcessMemory(', 'VirtualProtect(', 'EEex_JITAt(', 'EEex_WriteU8('):
+              assert forbidden not in src, forbidden
+          print('STRICT_JOIN_SOURCE_ONLY_NO_INSTALL_PASS')
