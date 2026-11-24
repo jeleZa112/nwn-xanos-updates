@@ -15,7 +15,7 @@ class SourceDispatch(TestCase):
         code=original.split('\n',1)[1]
         ns={'__name__':'ci_v126_onefile','__file__':str(UPDATER)}
         exec(compile(code,str(UPDATER),'exec'),ns)
-        raw=MODULE.read_bytes()
+        raw=MODULE.read_bytes().replace(b'\r\n',b'\n')  # checkout on Windows uses CRLF; pinned GitHub raw uses LF
         self.assertGreater(len(raw),15001)
         self.assertEqual(ns['digest'](raw),ns['V126_SHA'])
         self.assertIn('r.read(20001)',code)
