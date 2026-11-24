@@ -615,6 +615,8 @@ function R27.toConsoleJson(sample)
   ',"offhandRaw":'..jslots(sample.offhandRaw and {sample.offhandRaw},1)..
   ',"rawInventoryDoubleReadConsistent":'..tostring(sample.rawInventoryDoubleReadConsistent==true)..
   ',"selectedDerivedStatsDoubleReadConsistent":'..tostring(sample.selectedDerivedStatsDoubleReadConsistent==true)..
+  ',"r4Status":'..(sample.r4Status=='RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS' and
+    '"RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS"' or 'null')..
   ',"selectedStatsRaw":'..jstats(sample.sampledStatsRaw)..
   ',"sameLuaListenerInvocation":'..tostring(sample.sameLuaListenerInvocation==true)..
   ',"nativeEventTokenAuthenticated":false,"engineSessionVerified":false,'..
