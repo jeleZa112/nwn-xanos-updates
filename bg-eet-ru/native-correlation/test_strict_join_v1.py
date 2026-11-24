@@ -93,12 +93,27 @@ class Gate(unittest.TestCase):
         got=join_exact(self.attack,[m2,self.msg],[r2,self.row]);self.assertEqual(got.row_id,'ROW-40')
         self.assertEqual(join_exact(a2,[self.msg,m2],[self.row,r2]).row_id,'ROW-41')
 
-    def test_real_v125_zip_must_hold(self):
-        user_zip=Path(__file__).resolve().parent/'_USER_ZIP_ONLY_TEST_FIXTURE'  # CI: optional
-        if user_zip.exists():
-            report=audit_v125_archive(user_zip)
+    def test_v125_report_requires_identity(self):
+        from tempfile import TemporaryDirectory
+        from zipfile import ZipFile
+        with TemporaryDirectory() as td:
+            path=Path(td)/'user.zip'
+            with ZipFile(path,'w') as z:
+                z.writestr('62_V124_ONE_RUN_BOT.json',json.dumps({'updater_version':125,'stage_count':14}))
+                z.writestr('56_V112_COMBAT_JOURNAL_CORRELATION_PREFLIGHT.json',json.dumps({'gates':{'v108_has_attacker_id':False}}))
+                z.writestr('61_V122_LIVE_HIT_READONLY.json',json.dumps({'status':'LIVE_SITES_MATCH_OWNER_AND_GAMEPLAY_HOLD','checks':{'original_capture':True}}))
+                z.writestr('54_V108_NATIVE_ITEM_RESREF_PILOT.json',json.dumps({'status':'V108_INSTALLED_AWAITING_NATIVE_RESREF_CAPTURE'}))
+            report=audit_v125_archive(path)
             self.assertEqual(report['status'],'HOLD_NO_PER_ATTACK_TO_VISIBLE_ROW_JOIN')
             self.assertEqual(report['game_files_written'],0)
             self.assertFalse(report['gameplay_verified'])
+
+    def test_row_order_never_substitutes_for_message_identity(self):
+        row=dict(self.row,message_token='OTHER',row_id='ROW-NEARBY')
+        self.assertEqual(join_exact(self.attack,[self.msg],[row]).status,'HOLD')
+
+    def test_reused_pointer_different_attack_seq_is_rejected(self):
+        row=dict(self.row,attack_seq=90,row_id='ROW-REUSED')
+        self.assertEqual(join_exact(self.attack,[self.msg],[row]).status,'HOLD')
 
 if __name__=='__main__':unittest.main()
