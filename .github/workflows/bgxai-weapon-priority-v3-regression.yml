@@ -16,6 +16,7 @@ on:
       - 'BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/R27_EVENT_JOIN_TAIL.lua'
       - 'BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/M_BGXR27.lua'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_ACTIVE_R4_READONLY.lua'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_active_r4_readonly.lua'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NONINTERRUPT_PLAN_V1.lua'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_apr_provenance_v5.lua'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_effects_v4.lua'
@@ -53,6 +54,12 @@ jobs:
         run: |
           for runtime in lua5.3 lua5.4 luajit; do
             "$runtime" BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_slots_r2_readonly.lua
+          done
+      - name: R4 EEex stable derivedStats guard (49 cases each Lua; selected-only)
+        shell: bash
+        run: |
+          for runtime in lua5.3 lua5.4 luajit; do
+            "$runtime" BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_active_r4_readonly.lua
           done
       - name: R27 single-listener R2 refresh SOURCE ONLY (49 cases each Lua; 8 Python)
         shell: bash
