@@ -409,6 +409,54 @@ function M.classifyObservedEvidence(snapshot)
   activeEffectFingerprintComplete=false,dispatchAuthorized=false,
   executable=false}
 end
+-- EEex 1.1.7 EEex_Sprite_GetActiveStats chooses m_tempStats when
+-- m_bAllowEffectListCall == 0. Such work-in-progress stats must NEVER be
+-- treated as a stable selected APR for Weapon Priority. Fail closed if the
+-- flag is unreadable, nonstandard, or changes during the two read samples.
+-- These reads do NOT establish all active effects, event ID or action origin.
+function M.observeStableDerived(sprite, action, partyIndex, getStats)
+ local function flag()
+  return bound(protected(function() return sprite.m_bAllowEffectListCall end),0,255)
+ end
+ local out=empty('HOLD_DERIVED_STATS_VIEW_UNVERIFIED')
+ if sprite==nil or flag()~=1 then return out end
+ local a=M.observe(sprite,action,partyIndex,getStats)
+ if flag()~=1 then return empty('HOLD_DERIVED_STATS_TEMP_VIEW_DURING_READ') end
+ if a.status~='RAW_CURRENT_SELECTED_STATS_OBSERVED_NOT_COMPLETE_EFFECTS' or
+    a.missingCount~=0 or a.presentCount~=#FIELDS then
+  return empty('HOLD_DERIVED_STATS_FIELDS_INCOMPLETE') end
+ local b=M.observe(sprite,action,partyIndex,getStats)
+ if flag()~=1 then return empty('HOLD_DERIVED_STATS_TEMP_VIEW_DURING_RECHECK') end
+ if b.status~='RAW_CURRENT_SELECTED_STATS_OBSERVED_NOT_COMPLETE_EFFECTS' or
+    b.missingCount~=0 or b.presentCount~=#FIELDS then
+  return empty('HOLD_DERIVED_STATS_RECHECK_INCOMPLETE') end
+ -- A script/action or selection can change *inside* the second getter after
+ -- M.observe has sampled its header. Re-read the headers after both calls.
+ local eq=protected(function() return sprite.m_equipment end)
+ local actorNow=bound(protected(function() return sprite.m_id end),0,2147483647)
+ local actionNow=bound(protected(function() return action.m_actionID end),0,65535)
+ local selectionNow=bound(protected(function() return eq.m_selectedWeapon end),0,65535)
+ local abilityNow=bound(protected(function() return eq.m_selectedWeaponAbility end),0,65535)
+ if actorNow~=a.actorId or actionNow~=a.actionRaw or
+    selectionNow~=a.selectedWeaponRaw or abilityNow~=a.selectedAbilityRaw then
+  return empty('HOLD_DERIVED_STATS_SELECTION_OR_ACTION_CHANGED') end
+ if a.actorId~=b.actorId or a.partyIndex~=b.partyIndex or
+    a.actionRaw~=b.actionRaw or a.selectedWeaponRaw~=b.selectedWeaponRaw or
+    a.selectedAbilityRaw~=b.selectedAbilityRaw then
+  return empty('HOLD_DERIVED_STATS_SELECTION_OR_ACTION_CHANGED') end
+ local difference=M.compare(a,b)
+ if difference.status~='RAW_SELECTED_STATS_UNCHANGED_NOT_PROOF_OF_ALL_EFFECTS' then
+  return empty('HOLD_DERIVED_STATS_CHANGED_DURING_READ') end
+ a.status='RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS'
+ a.activeStatsReadPath='EEEX117_M_DERIVEDSTATS_FLAG_NONZERO_SOURCE_CONTRACT'
+ a.derivedStatsDoubleReadConsistent=true
+ a.runtimeEngineAuthenticated=false
+ a.allBuffsObserved=false
+ a.allEffectsObserved=false
+ a.alternateSlotAPRVerified=false
+ a.dispatchAuthorized=false
+ return a
+end
 return M
 end)()
 -- BGXAI R27 read-only single-callback candidate.
@@ -463,7 +511,7 @@ function R27.observe(sprite,action,partyIndex,getActiveStats)
  if not same(b,b) then return hold('START_EVENT_KEYS_UNREADABLE') end
  local ok2,r2=pcall(R2_CORE.observe_sprite,sprite)
  if not ok2 or type(r2)~='table' then return hold('R2_CORE_EXCEPTION') end
- local ok4,r4=pcall(R4_CORE.observe,sprite,action,partyIndex,getActiveStats)
+ local ok4,r4=pcall(R4_CORE.observeStableDerived,sprite,action,partyIndex,getActiveStats)
  if not ok4 or type(r4)~='table' then return hold('R4_CORE_EXCEPTION') end
  local a=before_after(sprite,action)
  if not same(b,a) then return hold('SELECTION_OR_ACTION_CHANGED_DURING_CAPTURE') end
@@ -477,6 +525,9 @@ function R27.observe(sprite,action,partyIndex,getActiveStats)
   return hold('R2_RECHECK_INCOMPLETE') end
  if not same(b,before_after(sprite,action)) then
   return hold('SELECTION_OR_ACTION_CHANGED_DURING_CAPTURE') end
+ if r4.status~='RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS' or
+    r4.derivedStatsDoubleReadConsistent~=true then
+  return hold('R4_DERIVED_STATS_NOT_STABLE') end
  if r2.actorId~=b.actor or r4.actorId~=b.actor or
   r2.selectedWeaponRaw~=b.weapon or r4.selectedWeaponRaw~=b.weapon or
   r2.selectedAbilityRaw~=b.ability or r4.selectedAbilityRaw~=b.ability or
@@ -497,6 +548,7 @@ function R27.observe(sprite,action,partyIndex,getActiveStats)
    m_nTHAC0=f.m_nTHAC0,m_nSTR=f.m_nSTR,
    m_nSTRExtra=f.m_nSTRExtra,m_bImprovedHaste=f.m_bImprovedHaste,
    m_nHitBonus=f.m_nHitBonus},
+  selectedDerivedStatsDoubleReadConsistent=true,
   sameLuaListenerInvocation=true,nativeEventTokenAuthenticated=false,
   engineSessionVerified=false,alternativeAPRVerified=false,
   launcherAmmoPairVerified=false,completeActiveEffectsVerified=false,
@@ -562,6 +614,7 @@ function R27.toConsoleJson(sample)
   ',"quiversRaw":'..jslots(sample.quiversRaw,4)..
   ',"offhandRaw":'..jslots(sample.offhandRaw and {sample.offhandRaw},1)..
   ',"rawInventoryDoubleReadConsistent":'..tostring(sample.rawInventoryDoubleReadConsistent==true)..
+  ',"selectedDerivedStatsDoubleReadConsistent":'..tostring(sample.selectedDerivedStatsDoubleReadConsistent==true)..
   ',"selectedStatsRaw":'..jstats(sample.sampledStatsRaw)..
   ',"sameLuaListenerInvocation":'..tostring(sample.sameLuaListenerInvocation==true)..
   ',"nativeEventTokenAuthenticated":false,"engineSessionVerified":false,'..
