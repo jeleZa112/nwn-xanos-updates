@@ -12,8 +12,8 @@ class Batch(unittest.TestCase):
         text=UPDATER.read_text('utf8')
         source=text.split('\n',1)[1]
         self.assertIn("def v126_dispatch(",source)
-        self.assertIn("V126_SHA='554f93d617d6fe66bbdaf36c471fffe9330819ac801194de8718ac511213bdd6'",source)
-        self.assertIn("mode={'2':'install','3':'rollback','4':'status'}.get(a)",source)
+        self.assertIn("V126_SHA='3c079918170ecbea959e1148e1fc9c629d84c751bf0d89415166c98a26921703'",source)
+        self.assertIn("mode={'2':'install','3':'rollback','4':'capture','5':'status'}.get(a)",source)
         self.assertIn('rc=v124_one_run(',source)
         ns={'__name__':'v124_ci_fixture','__file__':str(UPDATER)}
         exec(compile(source,str(UPDATER),'exec'),ns)
