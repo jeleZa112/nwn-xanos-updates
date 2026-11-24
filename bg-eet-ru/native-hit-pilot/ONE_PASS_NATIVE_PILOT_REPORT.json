@@ -1,5 +1,5 @@
 {
-  "schema": "BG_EET_RU_NATIVE_PILOT_ONE_PASS_SOURCE_GATE_V1",
+  "schema": "BG_EET_RU_NATIVE_PILOT_ONE_PASS_SOURCE_GATE_V2",
   "status": "SOURCE_PASS_RUNTIME_HOLD",
   "stages": [
     {
@@ -18,8 +18,8 @@
       "result": {
         "schema": "BG_EET_RU_CORRECTED_SAME_HIT_SOURCE_V1",
         "status": "SOURCE_PASS_RUNTIME_HOLD",
-        "passed": 33,
-        "total": 33,
+        "passed": 39,
+        "total": 39,
         "checks": {
           "exact_v120_archive": true,
           "zip_crc": true,
@@ -53,6 +53,12 @@
           "clear_after_exit": true,
           "bounded_frames": true,
           "bounded_telemetry": true,
+          "exit_invalid_frame_safe": true,
+          "collision_exit_balance": true,
+          "session_halt_on_excess_collisions": true,
+          "safe_memory_reader": true,
+          "safe_symbol_resolver": true,
+          "rel32_call_api_contract": true,
           "not_an_installer": true
         },
         "game_files_written": 0,
@@ -70,13 +76,79 @@
       }
     },
     {
+      "name": "native_instruction_and_relocation_routes",
+      "status": "STATIC_ROUTE_PASS_LIVE_ABI_HOLD",
+      "result": {
+        "schema": "BG_EET_RU_RELOCATABLE_PATCHPOINT_CONTRACT_V1",
+        "status": "STATIC_ROUTE_PASS_LIVE_ABI_HOLD",
+        "passed": 18,
+        "checks": {
+          "fixed_sub_rsp_7_byte": true,
+          "frame_established_before_capture": true,
+          "old_site_is_rip_relative_lea": true,
+          "old_rip_relative_relocation_forbidden": true,
+          "firstcall_original_call": true,
+          "firstcall_target_is_constructor": true,
+          "message_call_to_CMessageHandler_AddMessage": true,
+          "exit_call_to_CString_destructor": true,
+          "one_normal_return": true,
+          "known_calls_still_rel32": true,
+          "capture_raw_copy_uses_fixed_position_instruction": true,
+          "message_call_rebuilds_target": true,
+          "exit_call_rebuilds_target": true,
+          "never_raw_copy_rel32": true,
+          "sites_do_not_overlap": true,
+          "upstream_hook_not_modified": true,
+          "correct_order_and_normal_exit": true,
+          "no_actual_runtime_patch_available": true
+        },
+        "routing": {
+          "capture": {
+            "rva": "0x39da68",
+            "bytes": 7,
+            "api": "EEex_HookBeforeRestoreWithLabels",
+            "instruction": "fixed_sub_rsp"
+          },
+          "message": {
+            "rva": "0x39e84b",
+            "bytes": 5,
+            "api": "EEex_HookBeforeCallWithLabels",
+            "instruction": "call_rel32"
+          },
+          "normal_exit": {
+            "rva": "0x39e996",
+            "bytes": 5,
+            "api": "EEex_HookBeforeCallWithLabels",
+            "instruction": "call_rel32"
+          }
+        },
+        "callees": {
+          "0x39da86": "0x3fcd70",
+          "0x39e84b": "0x204c60",
+          "0x39e996": "0x3fce00"
+        },
+        "runtime_patched": false,
+        "gameplay_verified": false
+      }
+    },
+    {
       "name": "real_lua_callback_contract",
       "status": "PASS",
       "result": {
         "status": "PASS",
-        "assertions": 43,
+        "assertions": 45,
         "engine": "Lua 5.4 shared library",
         "scope": "LUA_CALLBACK_LOGIC_ONLY_NOT_EEEX_OR_NATIVE_JIT"
+      }
+    },
+    {
+      "name": "synthetic_live_memory_preflight_and_nested_frames",
+      "status": "PASS",
+      "result": {
+        "status": "PASS",
+        "assertions": 46,
+        "engine": "Lua 5.4",
+        "scope": "SYNTHETIC_ONLY_RUNTIME_MEMORY_AND_NESTED_FRAME_FAIL_CLOSED"
       }
     },
     {
@@ -87,6 +159,15 @@
         "test_methods": 7,
         "negative_cases": "all pinned site mutations + 9 lua tamper probes + ZIP mismatch"
       }
+    },
+    {
+      "name": "exact_rel32_and_patchpoint_adversarial",
+      "status": "PASS",
+      "result": {
+        "status": "PASS",
+        "test_methods": 6,
+        "scope": "REL32_CALL_RECONSTRUCTION_AND_HOOK_ROUTE_CHECKS_ONLY"
+      }
     }
   ],
   "failed_stages": [],
@@ -95,6 +176,6 @@
   "runtime_ABI_proven": false,
   "gameplay_verified": false,
   "release_version_unchanged": 121,
-  "source_verified_sha256": "eecfb61c5f82d729b02b6cba55ed45d601c0cb53fac4024f97a1bd48f765a40b",
+  "source_verified_sha256": "e2de28c8dece233056ae4500f105aca809396eec2a77427756c655de55ff1011",
   "only_user_facing_updater": "BG_EET_RU_UPDATE.cmd"
 }
