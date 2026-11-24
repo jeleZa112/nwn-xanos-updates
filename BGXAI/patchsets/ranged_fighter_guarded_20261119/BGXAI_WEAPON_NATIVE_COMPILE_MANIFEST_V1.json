@@ -18,14 +18,14 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_AUTO_BATCH_RO_V1.py",
       "dest": "BGXAI_AUTO_BATCH_RO_V1.py",
-      "size": 21215,
-      "sha256": "9ff486848a43545e63f126ebd5664abe0802f76a95c432c3c9a43cf1ee9fcb04"
+      "size": 23680,
+      "sha256": "cf0503c7d7c0f3097ee5519f755d4d0291c653e5d52a33d266ae1c2db3572f85"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/test_auto_batch_ro_v1.py",
       "dest": "test_auto_batch_ro_v1.py",
-      "size": 12206,
-      "sha256": "6b0e0d242a37deb8cb5f89d999cf9703d1b10e5da47ce5acb984a7990e9646a9"
+      "size": 14185,
+      "sha256": "b8a9fbc1b00d43f0dcc601c46307118e19211c053773b6783c972b66624247ba"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_native_compile_ro_v1.py",

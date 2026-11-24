@@ -32,7 +32,7 @@ jobs:
           python-version: '3.11'
       - name: Validate single updater 1 to 168, pinned sources and no game deploy
         run: python BGXAI/BUILD/WEAPON_NATIVE_COMPILE_PREFLIGHT_20261124/test_updater_menu167_ro.py
-      - name: 34 dedicated batch guard tests and real 512-case advisory source gate
+      - name: 38 dedicated batch guard tests and real 512-case advisory source gate
         run: python BGXAI/patchsets/ranged_fighter_guarded_20261119/test_auto_batch_ro_v1.py
       - name: 21 native WeiDU contract tests with isolated fake game
         run: python BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_native_compile_ro_v1.py
@@ -49,6 +49,9 @@ jobs:
             game=Path(d)/'EET';game.mkdir()
             for n,data in (('chitin.key',b'KEY'),('WeiDU.log',b'LOG'),('weidu.exe',b'FAKE WEIDU BINARY')):
               (game/n).write_bytes(data)
+            core=game/'enhanced-powergaming-scripts'/'lib'/'core_base.tph'
+            core.parent.mkdir(parents=True)
+            core.write_bytes(b'ActionListEmpty() MO_SpellCast')
             reports=Path(d)/'Reports';reports.mkdir()
             previous={'schema':'BGXAI_WEAPON_NATIVE_COMPILE_RO_V1',
               'status':'NATIVE_WEIDU_COMPILED_TEMP_ONLY','exitCode':0,
@@ -64,8 +67,10 @@ jobs:
             report,rc=m.run_batch(game,root,reports,process_override=m.marker('PASS_NO_KNOWN_GAME_PROCESS',running=[]))
             assert rc==0,report['holdStages']
             assert report['status']=='SAFE_READONLY_BATCH_COMPLETE_GAMEPLAY_HOLD'
-            assert report['stepCount']>=10 and report['batchCaseCount']==512
-            assert report['unitTestCount']==55
+            assert report['stepCount']>=11 and report['batchCaseCount']==512
+            assert report['unitTestCount']==59
+            assert report['stages']['installedScriptSources']['found'][0]['sha256']==m.sha_file(core)
+            assert report['stages']['installedScriptSources']['manualVsEpsOriginVerified'] is False
             assert report['stages']['nativeWeiDU']['status']=='PASS_PRIOR_NATIVE_COMPILE_REUSED_HISTORICAL_ONLY'
             assert report['hasGameplayHold'] is True
             assert report['hasSafetyHold'] is False

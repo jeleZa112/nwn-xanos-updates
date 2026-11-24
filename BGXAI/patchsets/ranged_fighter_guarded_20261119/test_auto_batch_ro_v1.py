@@ -50,6 +50,44 @@ class AutomaticBatchSafety(unittest.TestCase):
         self.assertEqual(m.static_baf_contract(ROOT/m.BAF)['assertions'],108)
     def test_04_policy_matrix_512_no_real_game(self):
         self.assertEqual(m.negative_matrix_contract()['cases'],512)
+    def test_installed_source_inventory_is_read_only_and_never_proves_origin(self):
+        core=self.game/'enhanced-powergaming-scripts'/'lib'/'core_base.tph'
+        core.parent.mkdir(parents=True)
+        core.write_bytes(b'ActionListEmpty()\nMO_SpellCast MO_SpellCast\n')
+        before=m.sha_file(core)
+        x=m.inspect_installed_script_sources(self.game)
+        self.assertEqual(x['status'],'INFO_INSTALLED_EPS_EEEX_SOURCE_INVENTORY')
+        self.assertEqual(x['candidatesChecked'],7)
+        self.assertEqual(len(x['found']),1)
+        self.assertEqual(x['found'][0]['sha256'],before)
+        self.assertEqual(x['found'][0]['literalCounts']['MO_SpellCast'],2)
+        self.assertEqual(m.sha_file(core),before)
+        self.assertFalse(x['manualVsEpsOriginVerified'])
+        self.assertFalse(x['alternateEffectiveAprVerified'])
+        self.assertFalse(x['dispatchAuthorized'])
+        self.assertEqual(x['ordersSent'],0)
+    def test_installed_inventory_missing_does_not_fake_pass(self):
+        x=m.inspect_installed_script_sources(self.game)
+        self.assertEqual(x['found'],[])
+        self.assertEqual(len(x['notFound']),7)
+        self.assertFalse(x['version18_4Verified'])
+    def test_installed_inventory_rejects_nested_symlink(self):
+        folder=self.game/'enhanced-powergaming-scripts'
+        try:
+            folder.symlink_to(self.root, target_is_directory=True)
+        except (OSError,NotImplementedError):
+            self.skipTest('Symlink permission or platform unavailable')
+        with self.assertRaises(m.Hold):
+            m.inspect_installed_script_sources(self.game)
+    def test_installed_inventory_refuses_oversized_source(self):
+        core=self.game/'enhanced-powergaming-scripts'/'lib'/'core_base.tph'
+        core.parent.mkdir(parents=True)
+        with core.open('wb') as h:
+            h.seek(3000001)
+            h.write(b'x')
+        with self.assertRaises(m.Hold):
+            m.inspect_installed_script_sources(self.game)
+
     def test_05_runtime_proof_always_fails_closed(self):
         x=m.game_live_proof_gates()
         self.assertEqual(len(x['missing']),6)
@@ -141,7 +179,7 @@ class AutomaticBatchSafety(unittest.TestCase):
     def test_27_hold_in_process_stage_does_not_skip_independent_tests(self):
         with patch.object(m,'run_subprocess_test',return_value=m.marker('PASS_UNIT_TESTS',totalTests=0,skippedTests=0)):
             report,rc=m.run_batch(self.game,ROOT,self.docs,process_override=m.marker('HOLD_GAME_OR_WEIDU_RUNNING',running=['baldur.exe']))
-        self.assertEqual(report['stepCount'],10)
+        self.assertEqual(report['stepCount'],11)
         self.assertEqual(report['stages']['bafGuard']['status'],'PASS_BAF_EIGHT_BRANCH_STATIC')
         self.assertEqual(report['stages']['nativeWeiDU']['status'],'HOLD_PROCESS_STATE_BEFORE_NATIVE_COMPILE')
         self.assertEqual(rc,3)

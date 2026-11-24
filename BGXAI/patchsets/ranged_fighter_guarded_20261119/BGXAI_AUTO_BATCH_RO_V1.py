@@ -80,6 +80,57 @@ def parse_game_snapshot(game: Path) -> dict:
     return readings
 
 
+# Fixed-list installed source fingerprinting; no recursive traversal and no imports.
+# Records raw source identity and keyword counts, NEVER a proven action origin.
+INSTALLED_SOURCE_CANDIDATES = (
+    'enhanced-powergaming-scripts/lib/core_base.tph',
+    'enhanced-powergaming-scripts/baf/normal/mocore.baf',
+    'enhanced-powergaming-scripts/baf/accelerated/mocore.baf',
+    'EEex/copy/EEex_scripts/EEex_Action.lua',
+    'EEex/copy/EEex_scripts/EEex_Sprite.lua',
+    'EEex/EEex_scripts/EEex_Action.lua',
+    'EEex/EEex_scripts/EEex_Sprite.lua',
+)
+
+def inspect_installed_script_sources(game: Path) -> dict:
+    found=[]
+    missing=[]
+    terms=(b'ActionListEmpty()', b'MO_SpellCast',
+           b'EEex_Action_AddSpriteStartedActionListener',
+           b'EEex_Sprite_GetActiveStats')
+    for name in INSTALLED_SOURCE_CANDIDATES:
+        path=game/Path(name)
+        # Block symlinked directories as well as files. Do not follow junctions.
+        for parent in (path, *path.parents):
+            if parent==game.parent:
+                break
+            if parent.is_symlink():
+                raise Hold('INSTALLED_SOURCE_SYMLINK_DENIED:'+name)
+            try:
+                if parent.exists() and (parent.stat().st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT):
+                    raise Hold('INSTALLED_SOURCE_REPARSE_DENIED:'+name)
+            except AttributeError:
+                pass
+        if not path.exists():
+            missing.append(name)
+            continue
+        if not path.is_file() or not 0<path.stat().st_size<=3_000_000:
+            raise Hold('INSTALLED_SOURCE_NOT_READABLE_OR_OVERSIZE:'+name)
+        data=path.read_bytes()
+        found.append({'relativeSource':name,
+                      'size':len(data),
+                      'sha256':hashlib.sha256(data).hexdigest(),
+                      'literalCounts':{term.decode('ascii'):data.count(term) for term in terms}})
+    return marker('INFO_INSTALLED_EPS_EEEX_SOURCE_INVENTORY',
+                  candidatesChecked=len(INSTALLED_SOURCE_CANDIDATES),
+                  found=found,notFound=missing,
+                  version18_4Verified=False,
+                  installedSourceMatchedPublicRepository=False,
+                  manualVsEpsOriginVerified=False,
+                  alternateEffectiveAprVerified=False,
+                  dispatchAuthorized=False,
+                  ordersSent=0)
+
 def verified_existing_native(report_dir: Path, game: Path, compiler: Path) -> dict | None:
     try:
         compiler_hash=sha_file(compiler)
@@ -311,6 +362,7 @@ def run_batch(game:Path, source_dir:Path, report_dir:Path, fresh_native:bool=Fal
     stage('nativeMockContracts',lambda:run_subprocess_test(source_dir/TEST_NATIVE,source_dir))
     stage('batchSelftests',lambda:run_subprocess_test(source_dir/'test_auto_batch_ro_v1.py',source_dir))
     stage('processes',lambda:process_override if process_override is not None else inspect_game_processes())
+    stage('installedScriptSources',lambda:inspect_installed_script_sources(game))
     stage('gameBefore',lambda: marker('PASS_OBSERVED_WATCH_SET',
           files=parse_game_snapshot(game)) if (game/'chitin.key').is_file() and
           (game/'WeiDU.log').is_file() else
