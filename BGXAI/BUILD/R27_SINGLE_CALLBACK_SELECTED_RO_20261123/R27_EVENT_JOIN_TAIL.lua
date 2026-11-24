@@ -93,6 +93,23 @@ local function jstr(v)
   return 'null' end
  return '"'..v:upper()..'"'
 end
+local function jrawstr(v)
+ if type(v)~='string' or #v<1 or #v>48 then return 'null' end
+ for i=1,#v do local b=v:byte(i);if b<32 or b>126 then return 'null' end end
+ return '"'..v:gsub('\\','\\\\'):gsub('"','\\"')..'"'
+end
+local function jstatus(v)
+ local allowed={SOURCE_RAW_OBSERVED=true,ACTION_SOURCE_ACTION_UNAVAILABLE=true,
+  ACTION_SOURCE_FIELD_UNAVAILABLE=true,ACTION_SOURCE_POINTER_UNAVAILABLE=true,
+  EEEX_READLSTRING_UNAVAILABLE=true,ACTION_SOURCE_READ_FAILED=true,
+  ACTION_SOURCE_TRUNCATED=true,ACTION_SOURCE_EMPTY=true,
+  ACTION_SOURCE_NONPRINTABLE=true,ACTION_SOURCE_STRING_INVALID=true,
+  ACTION_SOURCE_STATUS_CHANGED_DURING_READ=true,
+  ACTION_SOURCE_CHANGED_DURING_READ=true,
+  ACTION_SOURCE_STATUS_CHANGED_DURING_CAPTURE=true,
+  ACTION_CHANGED_DURING_CONTEXT_SNAPSHOT=true}
+ return allowed[v] and ('"'..v..'"') or 'null'
+end
 local function jslots(arr,n)
  if type(arr)~='table' or #arr~=n then return '[]' end
  local out={}
