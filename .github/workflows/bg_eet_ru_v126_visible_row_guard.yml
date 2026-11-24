@@ -1,0 +1,39 @@
+name: BG EET RU V126 guarded visible row observer
+on:
+  pull_request:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/live-observer/**'
+      - '.github/workflows/bg_eet_ru_v126_visible_row_guard.yml'
+  workflow_dispatch:
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test exact reversible source-only UI observer
+        shell: bash
+        working-directory: bg-eet-ru/live-observer
+        run: python -m unittest -v test_visible_row_guarded_v1
+      - name: Enforce no injected native code and no automatic install
+        shell: python
+        run: |
+          from pathlib import Path
+          import ast
+          p=Path('bg-eet-ru/live-observer/visible_row_guarded_v1.py')
+          s=p.read_text('utf8')
+          ast.parse(s)
+          assert 'UI_PIN="86ba0c4c36b33a97c4dd57f07ee344df6c2198f46f444f574c798791ad6f7a09"' in s
+          assert 'APPROVE_INSTALL=' in s and 'APPROVE_ROLLBACK=' in s
+          assert 'return value -- identical display value' in s
+          assert 'native_hooks_installed":False' in s
+          for forbidden in ('EEex_JITAt(', 'EEex_HookBefore', 'WriteProcessMemory(', 'VirtualProtect(', 'CreateRemoteThread('):
+              assert forbidden not in s
+          print('V126_GUARDED_UI_ONLY_NO_NATIVE_HOOKS_PASS')
