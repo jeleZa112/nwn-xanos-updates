@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "636cf0056109aa028563a39fd03b19ba0617de3d",
+  "commit": "a01ca4d297c6aee9198d9f6acd8e158a96d5370a",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
   "script_sha256": "1dbe8c08a3ab30d23d003019e4ebc9c702c0d0541db1dc52a8fce0e3321b85be",
   "script_size": 79935,
-  "description": "One-CMD menu168 automatic batched read-only weapon checks: 29 unit + 21 native guard tests, 108 BAF assertions, 512 synthetic negative cases; menu167 preserved; no game install or action dispatch."
+  "description": "Single-CMD menu168 auto batch: 34 real unit tests + 21 native tests, 512 source advisory gate cases, gameplay HOLD explicitly separate; no install, no engine orders. Script 79,935 bytes pinned."
 }
