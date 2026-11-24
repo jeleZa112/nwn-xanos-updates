@@ -26,6 +26,9 @@ SOURCE_SHA256 = 'e184c6468e4d927b628b826395b0b573e11b98602e58bacbba4ac9370cda3ee
 EXPECTED_WEIDU_SHA = '0d17e26e3f3ef5b36796eb0ee8ae73cb851d8b62c9702c2e224da2945caafb75'
 EXPECTED_WEIDU_LOG_SHA = '96d9db5d80e64c546022aa252e4f4714a869b81526b0df2822d7b8e7c567818f'
 BEFORE_LAST = re.compile(r'^~(?:[^~]*[/\\])?BGXRANGED7[/\\]SETUP-BGXRANGED7[.]TP2~\s+#0\s+#0(?:\s|$)', re.I)
+RANGED6_LAST = re.compile(r'^~(?:[^~]*[/\\])?BGXRANGED6[/\\]SETUP-BGXRANGED6[.]TP2~\s+#0\s+#0(?:\s|$)', re.I)
+RANGED6_PROOF = 'BGXRANGED6/PROOF.json'
+RANGED6_STAGE = 'BGXRANGED6/staged/DPLAYER.BCS'
 AFTER_LAST = re.compile(r'^~(?:[^~]*[/\\])?BGXR29[/\\]SETUP-BGXR29[.]TP2~\s+#0\s+#0(?:\s|$)', re.I)
 RANGED7_PROOF = 'BGXRANGED7/PROOF.json'
 RANGED7_STAGE = 'BGXRANGED7/staged/DPLAYER.BCS'
@@ -113,63 +116,93 @@ def sanitize_component(line:str)->str:
     return name[:80] if re.fullmatch(r'[a-zA-Z0-9_.-]{1,80}',name) else 'UNKNOWN_COMPONENT'
 
 def verify_ranged7_history(game:pathlib.Path)->dict:
-    """Positive, read-only evidence for existing RANGED7 even when WeiDU-last moved.
+    """Authenticate the installed V6 OR V7 DPLAYER guard, never assume V7.
 
-    A newer component is NOT sufficient by itself: require RANGED7 installed in
-    the log, exact live+staged DPLAYER hashes and an authentic proof+backup.
-    Never claim later mods are independent from the game from the last line.
+    V6 was deployed and live-tested; V7 is source-only in the project plan.
+    The same final exact DPLAYER SHA can come from V6 or V7, so a file hash
+    alone is insufficient evidence of provenance. All historical and all V6
+    installations require their exact on-disk proof, staged BCS and old backup.
     """
     entries=weidu_entries(game)
     latest=entries[-1]
     if any(AFTER_LAST.match(v) for v in entries):
         raise Hold('R29_ALREADY_IN_WEIDU_LOG_STOP')
-    matching=[v for v in entries if BEFORE_LAST.match(v)]
-    if len(matching)!=1:
+    v6=[v for v in entries if RANGED6_LAST.match(v)]
+    v7=[v for v in entries if BEFORE_LAST.match(v)]
+    if len(v6)==1 and not v7:
+        version='6'; match=RANGED6_LAST
+        proof_rel=RANGED6_PROOF; stage_rel=RANGED6_STAGE
+    elif len(v7)==1 and not v6:
+        version='7'; match=BEFORE_LAST
+        proof_rel=RANGED7_PROOF; stage_rel=RANGED7_STAGE
+    elif len(v6)>1:
+        raise Hold('RANGED6_NOT_EXACTLY_ONCE_IN_WEIDU_LOG')
+    elif len(v7)>1:
         raise Hold('RANGED7_NOT_EXACTLY_ONCE_IN_WEIDU_LOG')
-    last_is_r7=bool(BEFORE_LAST.match(latest))
+    elif v6 and v7:
+        raise Hold('AMBIGUOUS_RANGED6_AND_RANGED7_HISTORY')
+    else:
+        raise Hold('RANGED6_OR_RANGED7_NOT_INSTALLED_IN_WEIDU_LOG')
+    last_is_selected=bool(match.match(latest))
     if sha(game/'override/DPLAYER.BCS')!=BASELINE['override/DPLAYER.BCS']:
-        raise Hold('RANGED7_LIVE_DPLAYER_SHA_DRIFT')
-    # A newer WeiDU component does not automatically invalidate RANGED7, but
-    # the V7 install proof and backup become mandatory in that case.
-    if not last_is_r7:
-        proof_path=game/RANGED7_PROOF
+        raise Hold('RANGED_LIVE_DPLAYER_SHA_DRIFT')
+    # V6 is the actual user-deployed guard. Never substitute hypothetical V7.
+    # For V7-last, preserve the old strict last+hash contract; any historical
+    # component (and V6 regardless of position) needs independent proof.
+    check_proof=(version=='6' or not last_is_selected)
+    if check_proof:
+        stem='RANGED'+version+'_HISTORICAL_'
+        proof_path=game/proof_rel
         safe(proof_path)
         if not proof_path.is_file() or proof_path.stat().st_size>100_000:
-            raise Hold('RANGED7_HISTORICAL_INSTALL_PROOF_MISSING')
+            raise Hold(stem+'INSTALL_PROOF_MISSING')
         try:
             proof=json.loads(proof_path.read_text('utf-8'))
         except (ValueError,UnicodeError) as exc:
-            raise Hold('RANGED7_HISTORICAL_PROOF_INVALID') from exc
+            raise Hold(stem+'PROOF_INVALID') from exc
         if not isinstance(proof,dict) or (proof.get('old_dplayer_sha256')!=RANGED7_PREVIOUS_SHA or
             proof.get('new_dplayer_sha256')!=BASELINE['override/DPLAYER.BCS'] or
             proof.get('source_sha256')!=RANGED7_SOURCE_SHA or
             proof.get('changed_blocks')!=[1,2]):
-            raise Hold('RANGED7_HISTORICAL_PROOF_DRIFT')
-        if sha(game/RANGED7_STAGE)!=BASELINE['override/DPLAYER.BCS']:
-            raise Hold('RANGED7_HISTORICAL_STAGED_DPLAYER_DRIFT')
+            raise Hold(stem+'PROOF_DRIFT')
+        if sha(game/stage_rel)!=BASELINE['override/DPLAYER.BCS']:
+            raise Hold(stem+'STAGED_DPLAYER_DRIFT')
         folder=proof.get('backup')
         if not isinstance(folder,str) or not folder or len(folder)>1024:
-            raise Hold('RANGED7_HISTORICAL_BACKUP_REFERENCE_MISSING')
+            raise Hold(stem+'BACKUP_REFERENCE_MISSING')
         backup=pathlib.Path(folder)
         if not backup.is_absolute():
-            raise Hold('RANGED7_HISTORICAL_BACKUP_NOT_ABSOLUTE')
+            raise Hold(stem+'BACKUP_NOT_ABSOLUTE')
         safe(backup)
         manifest=backup/'SHA256.json'
         safe(manifest)
         if not manifest.is_file() or manifest.stat().st_size>100_000:
-            raise Hold('RANGED7_HISTORICAL_BACKUP_MANIFEST_MISSING')
+            raise Hold(stem+'BACKUP_MANIFEST_MISSING')
         try:
             backup_hashes=json.loads(manifest.read_text('utf-8'))
         except (ValueError,UnicodeError) as exc:
-            raise Hold('RANGED7_HISTORICAL_BACKUP_MANIFEST_INVALID') from exc
+            raise Hold(stem+'BACKUP_MANIFEST_INVALID') from exc
         if not isinstance(backup_hashes,dict) or backup_hashes.get('override/DPLAYER.BCS')!=RANGED7_PREVIOUS_SHA:
-            raise Hold('RANGED7_HISTORICAL_BACKUP_SHA_DRIFT')
+            raise Hold(stem+'BACKUP_SHA_DRIFT')
         if sha(backup/'override/DPLAYER.BCS')!=RANGED7_PREVIOUS_SHA:
-            raise Hold('RANGED7_HISTORICAL_BACKUP_DPLAYER_CORRUPTED')
+            raise Hold(stem+'BACKUP_DPLAYER_CORRUPTED')
+        # Every recorded backup object must match the backed-up manifest.
+        # No manual bypass or regeneration of proof is permitted.
+        for rel,expected in backup_hashes.items():
+            if not isinstance(rel,str) or not re.fullmatch(r'[A-Za-z0-9_./-]{1,200}',rel) or \
+               rel.startswith('/') or '..' in pathlib.PurePosixPath(rel).parts or \
+               not isinstance(expected,str) or not re.fullmatch(r'[0-9a-f]{64}',expected):
+                raise Hold(stem+'BACKUP_MANIFEST_UNTRUSTED')
+            if sha(backup/rel)!=expected:
+                raise Hold(stem+'BACKUP_FILE_CORRUPTED')
     return {
-        'ranged7InWeiDULog':True,
-        'ranged7LastWeiDU':last_is_r7,
-        'ranged7HistoricalProofVerified':not last_is_r7,
+        'rangedInstalledVariant':'BGXRANGED'+version,
+        'ranged6InWeiDULog':version=='6',
+        'ranged7InWeiDULog':version=='7',
+        'ranged7LastWeiDU':version=='7' and last_is_selected,
+        'ranged6LastWeiDU':version=='6' and last_is_selected,
+        'ranged7HistoricalProofVerified':version=='7' and check_proof,
+        'ranged6InstallProofVerified':version=='6' and check_proof,
         'lastComponentBasename':sanitize_component(latest),
         'liveDPLAYERExactBaseline':True,
         'manualEpsOriginVerified':False,
@@ -374,7 +407,7 @@ def status(game:pathlib.Path)->dict:
     latest=last_weidu(game)
     if not AFTER_LAST.match(latest):
         # If R29 is absent, a later unrelated WeiDU mod is not an error.
-        # Require the same exact baseline + authenticated RANGED7 chain.
+        # Require the same exact baseline + authenticated V6/V7 chain.
         snap=baseline(game)
         return {'status':'R29_NOT_INSTALLED_BASELINE',
                 'ranged7History':verify_ranged7_history(game),
@@ -450,8 +483,10 @@ def main()->int:
                     entries=weidu_entries(args.game.resolve())
                     failed['weiduHistoryReadOnly']={
                         'lastComponentBasename':sanitize_component(entries[-1]),
+                        'ranged6InstalledEntryCount':sum(bool(RANGED6_LAST.match(v)) for v in entries),
                         'ranged7InstalledEntryCount':sum(bool(BEFORE_LAST.match(v)) for v in entries),
                         'r29InstalledEntryPresent':any(bool(AFTER_LAST.match(v)) for v in entries),
+                        'ranged6InstallProofPresent':(GAME/RANGED6_PROOF).is_file(),
                         'ranged7InstallProofPresent':(GAME/RANGED7_PROOF).is_file(),
                         'liveDPLAYERBaselineMatches':sha(GAME/'override/DPLAYER.BCS')==BASELINE['override/DPLAYER.BCS'],
                     }
