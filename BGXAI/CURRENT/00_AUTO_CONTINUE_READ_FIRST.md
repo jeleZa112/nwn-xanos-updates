@@ -1,3 +1,9 @@
+# CURRENT 24.11.2026 — AUTO 168 ENHANCED: EPS/EEEX READ-ONLY SOURCE INVENTORY
+
+**Current reliable state:** previous user run `BGXAI_AUTO_BATCH_RO_20261124T073318947435Z.json` is safety PASS/10 stages but gameplay HOLD. Implemented 11th stage in same single updater 168 to identify installed EPS/EEex source SHA/predicates in one report. Pinned source commit `76b7d47998fcfeeaa5e532eefeed171c5e2c3895`, unchanged backend `BGXAI_SYNC.ps1` 79935 bytes, strict 5-file manifest, 38 batch+21 native tests, CI Windows+Ubuntu **SUCCESS** https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45414065171 . Nothing installed; no orders. See `CURRENT/BGXAI_AUTO_BATCH_168_EPS_SOURCE_INVENTORY_20261124_RU.md`. Only after code update, a single fresh menu 168 run is needed if collecting actual EPS/EEex source fingerprints, not rerun old diagnostics. Current missing mechanics remain APR alt slot, launcher+ammo selected, EPS/manual origin, safe boundary, target freshness, authenticated producer. Don't repeat R27/R28/167.
+
+---
+
 # BGXAI 24.11.2026 — REAL 168 REPORT REVIEWED, POLICY TEST FIXED, CI SUCCESS
 
 User-supplied `BGXAI_AUTO_BATCH_RO_20261124T073318947435Z.json` examined: 10 stages, 108 BAF assertions, 512 OLD synthetic cases, 29 self-tests + 21 native mock tests (3 platform skips); `PASS_PRIOR_NATIVE_COMPILE_REUSED_HISTORICAL_ONLY`; 7 watched game files unchanged, no install/orders; `SAFE_READONLY_BATCH_COMPLETE_GAMEPLAY_HOLD`. Six runtime proofs still missing (alt quickslot under buffs, selected launcher+ammo effects, EPS/manual/AI origin, queue and action-recovery boundary, fresh target/equipment, authenticated producer/installer). No need to repeat R27/R28/167 or old menu168.
