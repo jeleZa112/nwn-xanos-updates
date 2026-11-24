@@ -4,7 +4,7 @@
 
 **За один запуск:** 10 независимых этапов; 108 BAF source-guards; 512 *синтетических* fail-closed комбинаций (не игровое поведение); 29 + 21 Python tests (Windows 2 POSIX-only skipped); контроль watched game files до/после, проверка открытой игры/WeiDU; при совпадении уже присланного 167-native-отчёта — пометка *historical-only*, без повторения compile; иначе безопасная временная компиляция. Даже при HOLD этапы продолжаются, один JSON `%USERPROFILE%\Documents\BGXAI_LIVE_REPORTS\BGXAI_AUTO_BATCH_RO_*.json`. Известные пробелы по APR другого слота, фактической ammo pair, manual/EPS origin и safe action boundary остаются HOLD; авторизовать автосмену оружия нельзя.
 
-**Первый независимый CI SUCCESS Windows+Ubuntu:** https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45347514847; R27/V7/menu167 также PASS. Полная инструкция и текущая контрольная точка: `CURRENT/BGXAI_AUTO_BATCH_168_README_RU.md`. Следующий CI расширен *также* до 439 Lua × Lua5.3, Lua5.4 и LuaJIT, результат проверить отдельно. Не повторять 165/R27, R28, 167. Не создавать второй updater.
+**Первый независимый CI SUCCESS Windows+Ubuntu:** https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45347514847; R27/V7/menu167 также PASS. Полная инструкция и текущая контрольная точка: `CURRENT/BGXAI_AUTO_BATCH_168_README_RU.md`. **Расширенный CI 45347895742 — SUCCESS Windows+Ubuntu:** https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45347895742; на Linux дополнительно 439/439 Lua5.3, 439/439 Lua5.4 и 439/439 LuaJIT (1317 запусков 439 разных офлайн сценариев, не игры). Не повторять 165/R27, R28, 167. Не создавать второй updater.
 
 ---
 
