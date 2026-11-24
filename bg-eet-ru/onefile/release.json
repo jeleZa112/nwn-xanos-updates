@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 128,
-  "sha256": "57cf8e75f4fbdead1d3dbebd4f4ed86201bfe581ee7f71578129af73c4ce55a3",
-  "mode": "V128_ISOLATED_SELFTEST_PRESERVE_EXISTING_V120_CACHE",
+  "version": 131,
+  "sha256": "b5cb631f0d11623b5b3d33802172251bb4ef759af80703e43a66fd243617d144",
+  "mode": "V131_SAME_ONEFILE_EXACT_BAHLDUR_EXE_PE_UNWIND_READONLY_OPTION_6",
   "game_writes_allowed": false,
-  "note": "V128 repairs real Windows auto-update SAFE STOP from V127 where v121_selftest() accessed existing valid V120_EVIDENCE_PINNED.zip under user's persistent WORKDIR and failed its synthetic 'missing.zip' assertion. The test now redirects WORKDIR into TemporaryDirectory and restores it even on exception; no user cache deletion/changes. Existing one CMD and ZIP, optional explicit typed V126 UI observer install/rollback and console capture remain unchanged. Windows/Linux CI exercises real updater --selftest with occupied cache. No automatic game writes."
+  "note": "V131 adds option 6=unwind to the ONLY BG_EET_RU_UPDATE.cmd. It SHA-fetches the independently tested read-only V130 AMD64 PE .pdata/.xdata parser from immutable commit ea012654ce6323b265ba1a91c1b71d9e0a866ad8, validates exact Baldur.exe SHA and 6-byte post-prologue candidate 0x39DA6F, and appends a SINGLE 64_V130_PE_UNWIND.json report to the existing ZIP. Does not launch the game, patch code or install hooks. 1=old 14-stage audit is NOT used when selecting 6. Existing V126 observer and V108 are unchanged. Hook safety still HOLD until actual game unwind and Win64 ABI, EEex owner, rollback and visible-row identity proven."
 }
