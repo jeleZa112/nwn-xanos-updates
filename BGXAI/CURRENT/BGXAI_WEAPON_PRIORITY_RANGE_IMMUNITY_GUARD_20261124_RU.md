@@ -30,3 +30,12 @@
 - Current Stats `11cf8255e94f57ad3b9d798b389e242c8074b7b671217f49a5e4b976669291b1`
 - Suite `028be2ebe3ec1874dd67dd4f521400ce51b2e29d4ea0e264c19e80d42269821e`
 - Matrix `5ee2e2a9c57c17340e2c81f7d8faeee0d904a0d59065e5f5593efb325074080c`
+
+## CI и непосредственное исследование следующего блокера (подтверждено после публикации)
+
+**Публикация:** GitHub `bg-eet-ai`, commit `aded00f36c4f92540df03bf38ffe08a751d08946` — атомарно опубликовано 12 файлов. Независимый GitHub Actions run [`45321005280`](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45321005280): **completed / success**, `behavior-native-lua` **SUCCESS** (145 отдельных Lua-тестов + 288 состояний), `windows-static-no-game` **SUCCESS**. Не путать с другим workflow `bgxai-wtasight-enemy-guard.yml` (раньше уже завершался `failure` и по этому коммиту снова `failure`); он относится к прежней инфраструктуре и не входит в данный 433-пакет. Не объявлять все workflow репозитория зелёными.
+
+**Продолжение после PASS без запроса `+`:** проверен подлинный `EEex/copy/EEex_scripts/EEex_Action.lua` upstream `v1.1.7`.
+- `EEex_Action_AddSpriteStartedActionListener(func)` регистрирует слушателя начала действия, но фактический `EEex_Action_LuaHook_OnAfterSpriteStartedAction(sprite)` вызывает `listener(sprite, sprite.m_curAction)` **без доказанного поля источника действия**. Он подтверждает `action` и `sprite`, а не то, было ли действие ручным, инициированным EPS или BGXAI. Источник: https://github.com/Bubb13/EEex/blob/v1.1.7/EEex/copy/EEex_scripts/EEex_Action.lua#L174-L190 и #L326-L340.
+- `EEex_Action_QueueResponseStringOnAIBase` *добавляет* команды в очередь; `EEex_Action_ExecuteResponseStringOnAIBaseInstantly` не поддерживает обычные не-INSTANT.IDS действия и не должен применяться к переключению. `ActionListEmpty()` в BAF не доказывает, что нет непрерывного ручного приказа / текущей атаки.
+- Поэтому **не регистрировали никаких новых слушателей, не активировали producer, не трогали BAF/BCS/EEex**. Следующий инженерный путь ограничен: доказать происхождение очереди и effective APR альтернатив с поддерживаемыми событиями/native фактами либо оставить `KEEP_CURRENT_WEAPON_NO_DISPATCH`. Одно и то же исследование старого R21/R23 заново не повторять.
