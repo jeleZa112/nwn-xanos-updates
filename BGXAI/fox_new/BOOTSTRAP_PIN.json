@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "39112329c498a82886b544cfe275623327051975",
+  "commit": "0a0ccfc43a0a8d5117682e1f70097fdc6fa721d3",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
   "script_sha256": "c55a5ebecc4e244e0fe263fc995b1e1b5d802b1d36c7b103475c7559bef78fbe",
   "script_size": 79927,
-  "description": "One-CMD menu169: narrow R29 guarded native sword handoff, read-only preflight and typed install/rollback; old 168 actions unchanged."
+  "description": "Single-CMD 169 narrow native fighter bow-to-sword pilot, typed install/last-only rollback, atomic one JSON report, old 1-168 actions preserved."
 }
