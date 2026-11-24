@@ -70,10 +70,9 @@ class Unwind(unittest.TestCase):
         self.assertFalse(r["new_candidate_after_prologue"])
         self.assertFalse(r["static_candidate_gate"])
 
-    def test_old_site_not_in_short_prologue_must_hold(self):
-        r=g.inspect_pe(fixture(prologue=20),pin_exe=False)
-        self.assertEqual(r["status"],"UNWIND_OR_PROLOGUE_PLACEMENT_HOLD")
-        self.assertFalse(r["old_sub_rsp_in_prologue"])
+    def test_short_prologue_with_later_unwind_ops_is_corrupt(self):
+        with self.assertRaisesRegex(g.Hold,"UNWIND_CODE_AFTER_PROLOGUE"):
+            g.inspect_pe(fixture(prologue=20),pin_exe=False)
 
     def test_ehandler_unwind_flags_prevent_static_candidate_pass(self):
         r=g.inspect_pe(fixture(flags=1),pin_exe=False)
