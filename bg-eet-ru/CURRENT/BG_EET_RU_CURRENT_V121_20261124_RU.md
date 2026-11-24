@@ -66,3 +66,18 @@
 Пройден чистый запуск настоящего Lua 5.4 с синтетическим EEex memory mock: **24/24 assertions PASS**, включая подмену каждого участка, неизвестный call target, недоступную память, сбой symbol-label, x86-режим, изменение bytes во время считывания. Эти 24 проверки **не запускались в GitHub CI**, а только локально. Воспроизводимый архив `BG_EET_RU_NATIVE_HIT_READONLY_INVENTORY_V3_20261124.zip` SHA256 `9bb948ec65f6cdd2b1c7564abbb9c86e09b0fb4be7118fb2324933eb6a003cdc`, прикреплён к беседе.
 
 **Статус:** SOURCE/MOCK PASS; actual Windows memory/owner = NOT TESTED; atomic native JIT = HOLD; weapon miss→display row = HOLD; gameplay = NOT TESTED. Опубликованная V121 и игровые файлы не изменялись. У пользователя новых действий сейчас нет.
+
+
+## 24.11 — V4 большой автономный этап: внешний Win64 read-only проверен CI
+
+После постоянного правила «делай максимум без моего участия» выполнен ОДИН полный офлайн-комплекс: старые **9/9** этапов, новые **7/7** этапов. Все данные исходного пользовательского V120 ZIP `08a9d5da367404b33bc982871627e8c3e1179c7a8ec8808bab0a75bea5755015` остались без изменений. Приватные фрагменты EXE не коммитились.
+
+**Новое инженерное доказательство:** внутри pinned Hit `0x39DA50` сообщение создаётся по месту `0x39E7D9` (vtable `0x597CD0`), размещается в объекте `0x39E7E0`, передаётся через RDX `0x39E848` в вызов `CMessageHandler::AddMessage` `0x39E84B`; **25/25** точных проверок источника и адресов PASS. Таблица методов **НЕ уникальна для броска**: damage-функция `0x38FBF0` использует ту же vtable в `0x390DF9`. Поэтому новый логический guard требует одновременно native Hit-callsite, ожидаемую vtable, thread ID и RBP-frame.
+
+Lua source-only bridge `BG_EET_RU_THREAD_FRAME_BRIDGE_V4.lua` исполнялся в **настоящем Lua 5.4**: 6410 assertions + лимит 24 потоков + fail-closed переполнение глубины collision. Не удерживает CItem, не изменяет игру и UI. Это логическая модель, реальную потокобезопасность EEex пока не доказывает.
+
+**Новый реальный Win64 компонент:** `windows_live_hit_inventory_ro.py` реализует внешний **только для чтения** процессный снимок (PROCESS_VM_READ + PROCESS_QUERY_LIMITED_INFORMATION, QueryFullProcessImageNameW, Toolhelp32 Module32FirstW, ReadProcessMemory). Проверяет on-disk SHA EXE, идентичность game root, exact live five sites, call targets, JIT JMP, семь адресов vtable, повторный снимок. Работает без внедрения/изменения игры. 15/15 методов Python, включая 500 порч участков. Реальный Windows API успешно проверен на безопасном CI-самопроцессе: [GitHub Actions 45417857638](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45417857638): Windows и Linux SUCCESS. **На реальном Baldur.exe ещё НЕ запускалось.**
+
+Финальный dev-архив `BG_EET_RU_ONE_BIG_NATIVE_V4_20261124.zip`, SHA256 `d4c4f8a1b6c5d87c5f07a0a787fe8146dc81562f77981cede4d7ff463c0b6ad7`, 19 файлов, CRC PASS, clean-room 7/7 + прежние 9/9. На испорченном входном V120 ZIP — 2 зависимых HOLD, 5 независимых PASS, общий код ошибки 2; изменений игры 0. Исходники в draft [PR #89](https://github.com/jeleZa112/nwn-xanos-updates/pull/89). 
+
+**STATUS:** SOURCE PASS, MOCK PASS, настоящая Windows API self-process CI PASS. Live game process = NOT TESTED. Native EEex hook ownership, atomic install/rollback, actual miss CItem и UI row = HOLD; GAMEPLAY PASS=0. Пользователь не обязан делать отдельные шаги сейчас. **Единственный рабочий релиз V121 не менялся**. Нельзя считать эту разработку готовым игровым модом.
