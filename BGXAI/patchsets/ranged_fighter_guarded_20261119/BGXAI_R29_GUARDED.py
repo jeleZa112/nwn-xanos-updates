@@ -24,6 +24,9 @@ INSTALL_TOKEN = 'INSTALL_BGXR29_KHALID_BOW_TO_SWORD_PILOT'
 ROLLBACK_TOKEN = 'ROLLBACK_BGXR29_KHALID_BOW_TO_SWORD_PILOT'
 SOURCE_SHA256 = 'e184c6468e4d927b628b826395b0b573e11b98602e58bacbba4ac9370cda3eee'
 EXPECTED_WEIDU_SHA = '0d17e26e3f3ef5b36796eb0ee8ae73cb851d8b62c9702c2e224da2945caafb75'
+# The real EET 167 native PASS used setup-enhanced-powergaming-scripts.exe,
+# not a weidu.exe in game root. Allow only the two known locations and exact SHA.
+TRUSTED_WEIDU_NAMES = ('weidu.exe', 'setup-enhanced-powergaming-scripts.exe')
 EXPECTED_WEIDU_LOG_SHA = '96d9db5d80e64c546022aa252e4f4714a869b81526b0df2822d7b8e7c567818f'
 BEFORE_LAST = re.compile(r'^~(?:[^~]*[/\\])?BGXRANGED7[/\\]SETUP-BGXRANGED7[.]TP2~\s+#0\s+#0(?:\s|$)', re.I)
 RANGED6_LAST = re.compile(r'^~(?:[^~]*[/\\])?BGXRANGED6[/\\]SETUP-BGXRANGED6[.]TP2~\s+#0\s+#0(?:\s|$)', re.I)
@@ -77,6 +80,27 @@ def sha(path: pathlib.Path) -> str:
     safe(path)
     if not path.is_file(): raise Hold('REQUIRED_FILE_MISSING:' + path.name)
     return hash_bytes(path.read_bytes())
+
+def trusted_native_weidu(game:pathlib.Path)->pathlib.Path:
+    """Choose only an installed, byte-pinned WeiDU 25100 executable.
+
+    Read-only path discovery; never download, install or rename a game EXE.
+    Do not trust a .exe from PATH or any arbitrary setup-*.exe file.
+    """
+    available=[]
+    for filename in TRUSTED_WEIDU_NAMES:
+        candidate=game/filename
+        safe(candidate)
+        if not candidate.exists():
+            continue
+        if not candidate.is_file() or not (16 <= candidate.stat().st_size <= 200_000_000):
+            raise Hold('NATIVE_WEIDU_CANDIDATE_INVALID:'+filename)
+        available.append(filename)
+        if sha(candidate)==EXPECTED_WEIDU_SHA:
+            return candidate
+    if available:
+        raise Hold('NATIVE_WEIDU_CANDIDATE_SHA_DRIFT:'+','.join(available))
+    raise Hold('NATIVE_WEIDU_TRUSTED_EXECUTABLE_MISSING')
 
 def no_game_process() -> None:
     if os.name != 'nt':
@@ -274,23 +298,24 @@ def baseline(game:pathlib.Path, require_last:bool=True)->dict:
     # `require_last` is kept for old caller compatibility but is not enough
     # to certify a historical component on its own.
     verify_ranged7_history(game)
-    compiler=game/'weidu.exe'
-    if sha(compiler)!=EXPECTED_WEIDU_SHA:
-        raise Hold('GAME_NATIVE_WEIDU_SHA_DRIFT')
+    compiler=trusted_native_weidu(game)
     source_contract(SOURCE.read_bytes())
     for name in (STAGED,PROOF,TP2,SETUP):
         safe(game/name)
         if (game/name).exists():raise Hold('R29_STAGE_COLLISION:'+name)
-    return {name:sha(game/name) for name in WATCH}
+    return {**{name:sha(game/name) for name in WATCH}, compiler.name:sha(compiler)}
 
 def candidate(game:pathlib.Path)->tuple[bytes,dict]:
     before=baseline(game)
     original=(game/BCS).read_bytes()
     old=bcs_parts(original)
     if len(old)!=1162:raise Hold('EXPECTED_1162_BDDEFAI_BLOCKS')
+    compiler=trusted_native_weidu(game)
     with tempfile.TemporaryDirectory(prefix='BGX29_Native_') as td:
         work=pathlib.Path(td)
-        binary=work/'weidu.exe';shutil.copy2(game/'weidu.exe',binary)
+        binary=work/'weidu.exe';shutil.copy2(compiler,binary)
+        if sha(binary)!=EXPECTED_WEIDU_SHA:
+            raise Hold('NATIVE_TEMP_COMPILER_SHA_DRIFT')
         baf=work/'PILOT.BAF';baf.write_bytes(SOURCE.read_bytes())
         compiled=work/'PILOT.BCS'
         call_native(binary,game,work,baf,compiled,'PILOT_COMPILE')
@@ -308,9 +333,13 @@ def candidate(game:pathlib.Path)->tuple[bytes,dict]:
             raise Hold('NATIVE_DECOMPILE_FIRST_BLOCK_NOT_EXACT')
     if any(sha(game/k)!=v for k,v in before.items()):
         raise Hold('GAME_CHANGED_DURING_NATIVE_PREFLIGHT')
+    if trusted_native_weidu(game).name!=compiler.name:
+        raise Hold('NATIVE_COMPILER_SELECTION_CHANGED_DURING_PREFLIGHT')
     historical=verify_ranged7_history(game)
     return candidate_bytes,{'status':'R29_NATIVE_CANDIDATE_READY_NO_INSTALL',
                             'ranged7History':historical,
+                             'nativeCompilerBasename':compiler.name,
+                             'nativeCompilerSha256':EXPECTED_WEIDU_SHA,
                             'sourceSha256':SOURCE_SHA256,
                             'newBCSSha256':hash_bytes(candidate_bytes),
                             'newBCSBytes':len(candidate_bytes),
@@ -371,7 +400,7 @@ def install(game:pathlib.Path)->dict:
     safe(stage);stage.parent.mkdir(parents=True,exist_ok=False)
     stage.write_bytes(compiled)
     (game/TP2).write_text(TP2_TEXT,encoding='ascii')
-    shutil.copy2(game/'weidu.exe',game/SETUP)
+    shutil.copy2(trusted_native_weidu(game),game/SETUP)
     if sha(stage)!=p['newBCSSha256'] or sha(game/SETUP)!=EXPECTED_WEIDU_SHA:
         raise Hold('STAGING_SHA_MISMATCH_STOP')
     use_weidu(game)
