@@ -1,5 +1,21 @@
 # BGXAI — единая точка продолжения, 24 ноября 2026
 
+## 24.11.2026 — реальный API EEex: защита от временных m_tempStats (SOURCE + независимый CI PASS)
+
+**Точный upstream EEex v1.1.7:** [EEex_Sprite.lua](https://github.com/Bubb13/EEex/blob/v1.1.7/EEex/copy/EEex_scripts/EEex_Sprite.lua) — `EEex_Sprite_GetActiveStats(sprite)` возвращает `m_derivedStats` при `m_bAllowEffectListCall ~= 0`, но `m_tempStats` при `==0` (обработка эффектов в процессе). Ранее выбранный APR в таком окне можно было ошибочно принять за стабильный. Это исходник upstream, **не** повторная native-проверка в игре пользователя.
+
+**CODE:** существующий `BGXAI_WEAPON_ACTIVE_R4_READONLY.lua` расширен методом `observeStableDerived`: строго читает `m_bAllowEffectListCall==1` до/после каждого из двух raw чтений всех 68 полей R4; запрещает любые смещения APR/THAC0/STR/haste/профили/действия/слота/способности. *После второго чтения* повторно сверяет action/selection, исключая гонку внутри самого getter. При любом несоответствии HOLD и **нет команды**. Старый R4 `observe` остался для исторической совместимости.
+
+**Интеграция в существующий неустановленный R27 refresh:** исходник `BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124/BGXAI_R27_R2_REFRESH_SOURCE_ONLY.lua` детерминированно пересобран из SHA-pinned текущих R2/R4 и замороженного оригинального R27 tail. Теперь `R27.observe` использует `R4_CORE.observeStableDerived` вместе с прежними двумя проверками raw инвентаря. Только при стабильности в bounded JSON пишутся `selectedDerivedStatsDoubleReadConsistent=true` и точное `r4Status`. Новый SHA256 кандидата `18d1780a5b83b953f31f441cf81a1af489fc21b37e0e2ced05cc0261ec26008c`. Это **source-only** Lua без bootstrap/hook/установки. Старый **установленный** `M_BGXR27.lua` SHA256 `e5eb400c56ffb1bc23344a0cf30dcc724d8d18fc2752fabd1c2c63cdcca73735` НЕ изменён.
+
+**R6:** в существующий `BGXAI_WEAPON_SELECTED_VS_ALTERNATE_V1.lua` добавлены обязательные проверки `selectedDerivedStatsDoubleReadConsistent==true` и точного `r4Status`; запись старого R27 или с временным stats не попадает в исторический APR-кэш. Это только предотвращение неверного чтения, **не** вычисление альтернативного эффективного APR.
+
+**TEST:** локально R4 **49/49** (LuaTeX), R27 **65/65** (LuaTeX) + **8/8** Python и R6 **18/18** расширенных локальных; независимый [GitHub Actions 45443795441](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45443795441) **SUCCESS Windows+Ubuntu**, Lua 5.3/Lua 5.4/LuaJIT: R4 **49/49**, R27 **65/65**, R6 **14/14** на каждом, прежний V3 regression PASS. Подробности: [README](../BUILD/WEAPON_V3_R4_DERIVED_STATS_STABILITY_20261124/README_RU.md).
+
+**DEPLOY НЕТ; GAME LIVE новой версии НЕТ.** Нет доказанного runtime-вызова новой ветви в пользовательской EET. Полные эффекты, альтернативные одновременные APR, нативная ammo+launcher связка, ручные/EPS origins остаются **НЕ подтверждены**. Не переустанавливать V6/R27, не повторять R29. Единый `BGXAI_UPDATE.cmd`, PowerShell backend, закреплённый PIN, EPS, TD15, WeiDU, BG_EET_RU, BG Voice RU и сейвы не менялись. Следующий P0 — именно нативная/безопасная альтернативная effective-stats информация и manual/EPS arbitration, затем защищённая установка и один LIVE A/B, не очередной уже реализованный bow→sword.
+
+---
+
 ## 24.11.2026 — R6 теперь принимает R27 с повторным чтением и не переносит APR на чужой слот (SOURCE/CI PASS)
 
 **Практическое улучшение кода, не установка:** вместо очередного скорера доработан **существующий** `BGXAI/BUILD/R6_SELECTED_VS_ALTERNATE_SOURCE_V1/BGXAI_WEAPON_SELECTED_VS_ALTERNATE_V1.lua`. Его старый путь R1/R2/R4 теперь сбрасывает исторические измерения APR при изменении raw экипировки, оружия, колчана, зарядов или флагов. Добавлен `R6.observe_r27` для ранее подготовленного **неустановленного** кандидата R27 с двойным чтением R2. Он привязывает измеренный APR и THAC0 к точному slot/resref/ability, последовательности событий, actor/party, текущему raw слепку оружия/колчанов/offhand. Изменение исходных полей или ошибочный/старый формат → сброс истории или HOLD. Данные другого слота никогда не объявляются текущими; ammo `AROW01` не объявляется доказанным APR `BOW05`.
