@@ -1,3 +1,13 @@
+# BGXAI ТЕКУЩИЙ ЭТАП 24.11.2026 — NATIVE WEAPON DAMAGE RECOVERY, 439/439 × 3 PASS, НЕ LIVE
+
+**Действительно реализовано (SOURCE ONLY):** V3 теперь не оставляет заведомо непроникающее оружие из-за общего DPS hysteresis, если существует проверенно действующая положительная альтернатива. В том же `BGXAI_WEAPON_SLOT_CONSUMER_V3.baf` исходные 4 optimizer ветки сохранены byte-identical; добавлены 4 опциональные gated native-recovery ветки `BGXW3_REQ=5..8` с движковым `!WeaponCanDamage(NearestEnemyOf(Myself),MAINHAND)` (BG2EE TRIGGER 0x40F2). Отдельный producer не внедрён, BAF не компилирован на EET, ручная/EPS очередь и alt-slot эффективность не доказаны; никакой игровой dispatch не разрешён.
+
+**Тесты:** локально 439/439 offline Lua + BAF 8/8 source guard. GitHub commit `4e64224a59c146242ffb030f9d8c6e25e9f749b6`, независимый run `45322504666` **completed SUCCESS**: Lua5.3, Lua5.4, LuaJIT **439/439 на каждом** + Windows static PASS: https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45322504666 . Подробный checkpoint `CURRENT/BGXAI_WEAPON_NATIVE_RECOVERY_ENGINE_TRIGGER_20261124_RU.md` в Library и GitHub. Старый WTASIGHT workflow остаётся красным (ожидает устаревший V6 manifest 0.3.76/34; текущий V7-R27 0.3.90/35), не путать с этим PASS.
+
+**Далее:** проверить installed EET TRIGGER.IDS/HAND.IDS и native WeiDU-компиляцию, достоверную альтернативу и manual/EPS-provenance; лишь после этого делать единый authenticated producer, отдельное typed install и игровой A/B. Не просить повтор R27/R28/V6; не трогать игру, SCS, EPS, переводы, голос, сейвы или `BGXAI_UPDATE.cmd` до авторизации. Не создавать дублирующие ранкеры или невыверенные API hooks.
+
+---
+
 # НОВЕЙШЕЕ 24.11.2026 — BGXAI 433/433 × 3 RUNTIMES, SOURCE ONLY
 
 После первой успешной проверки BGXAI V3 range/immunity, тот же GitHub workflow расширен на **Lua5.3, Lua5.4 и LuaJIT**. Run `45321449013`: **completed SUCCESS**, в логах по **433/433 PASS на каждом из 3 интерпретаторов**, Windows static PASS (1299 выполнений 433 разных offline сценариев). CI-only commit `3be52f9f520a1ed43bf8dafa2c8e2d58d9d4a190`. Полный checkpoint `CURRENT/BGXAI_WEAPON_PRIORITY_RANGE_IMMUNITY_GUARD_20261124_RU.md`. Исходники изменения предыдущего коммита `aded00f36c4f92540df03bf38ffe08a751d08946`.
