@@ -32,13 +32,13 @@ jobs:
           assert len(s)<=750000,(len(s),'onefile exceeds updater safety limit')
           text=s.decode('utf8')
           assert text.startswith('@echo off & py -3 -x')
-          assert 'SELF_VERSION = 132' in text
+          assert 'SELF_VERSION = ' in text
           assert "V121_BOT_SHA='94dec300ea191101e74da139e5844e1f04c97a5b42eaf299f2a68e42a6f881bc'" in text
           assert "V121_TRUST_SHA='9d9a92e182a2389dc4ac4ca1f5c218c04b6452c80e4167d47a95d578da791090'" in text
           ast.parse('\n'.join(text.splitlines()[1:]))
           import hashlib,json
           manifest=json.loads(Path('bg-eet-ru/onefile/release.json').read_text(encoding='utf8'))
-          assert manifest['version']==132
+          assert manifest['version']>=132 and f"SELF_VERSION = {manifest['version']}" in text
           assert manifest['game_writes_allowed'] is False
           actual_sha=hashlib.sha256(s).hexdigest()
           print('V121_COMPUTED_SOURCE_SHA256',actual_sha,flush=True)
