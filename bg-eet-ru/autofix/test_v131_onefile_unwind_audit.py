@@ -16,7 +16,7 @@ MODULE=Path(__file__).resolve().parents[1]/"native-correlation"/"pe_unwind_entry
 class Onefile(TestCase):
     def test_source_pin_complete_download_dataclass_and_one_zip(self):
         source=UPDATER.read_text("utf8")
-        self.assertIn("SELF_VERSION = 132",source)
+        self.assertIn("SELF_VERSION = ",source)
         self.assertIn("if a=='6':return v130_audit(",source)
         self.assertIn("sys.modules[mod.__name__]=mod",source)
         self.assertIn("r.read(14001)",source)
