@@ -57,3 +57,12 @@
 Исходный Lua, все тесты, единый runner и отчёт сохранены в **draft GitHub PR №89**: `https://github.com/jeleZa112/nwn-xanos-updates/pull/89`. Workflow обновлён, однако его выполнение **не подтверждено**; не заявлять GitHub CI PASS.
 
 **Оставшиеся обязательные блокеры перед установкой:** настоящий Win64 JIT callback с сохранением volatile/XMM/FLAGS и unwind; реальная runtime-память и исключение конфликта уже установленных хуков; надёжность частичной установки/отката; доказанная пара CItem/ability при промахе; связь same-message с видимой строкой combatLog; явное отдельное разрешение пользователя, внешний backup и один комплексный игровой тест. Статус: `CODE/SOURCE PASS; WINDOWS LIVE HOLD; GAMEPLAY NOT TESTED`. При следующем направлении заранее строить комплексный тест, не требовать отдельного запуска на каждую точку.
+
+
+## 24.11 — read-only live site inventory V3 (no hooks)
+
+**После PR #89 V2**, проведён инженерный этап, не изменяющий игру. В [draft PR #89](https://github.com/jeleZa112/nwn-xanos-updates/pull/89) добавлен независимый `bg-eet-ru/native-hit-pilot/BG_EET_RU_HIT_RUNTIME_INVENTORY_RO.lua`: чтение **только** 5 известных участков установленной памяти по EEex FirstCall-label, проверка оригинальных байтов у entry/message/exit/запрещённой RIP LEA, декодирование rel32 для обоих native вызовов, проверка существующего JMP и повторное чтение для выявления изменения участка между выборками. Утилита принципиально **никогда не подтверждает владельца существующего JMP по одному opcode** и отвечает `SOURCE_SITES_MATCH_OWNER_UNPROVEN_HOLD` даже при полном совпадении байтов. JIT/EEex hook/write API отсутствуют.
+
+Пройден чистый запуск настоящего Lua 5.4 с синтетическим EEex memory mock: **24/24 assertions PASS**, включая подмену каждого участка, неизвестный call target, недоступную память, сбой symbol-label, x86-режим, изменение bytes во время считывания. Эти 24 проверки **не запускались в GitHub CI**, а только локально. Воспроизводимый архив `BG_EET_RU_NATIVE_HIT_READONLY_INVENTORY_V3_20261124.zip` SHA256 `9bb948ec65f6cdd2b1c7564abbb9c86e09b0fb4be7118fb2324933eb6a003cdc`, прикреплён к беседе.
+
+**Статус:** SOURCE/MOCK PASS; actual Windows memory/owner = NOT TESTED; atomic native JIT = HOLD; weapon miss→display row = HOLD; gameplay = NOT TESTED. Опубликованная V121 и игровые файлы не изменялись. У пользователя новых действий сейчас нет.
