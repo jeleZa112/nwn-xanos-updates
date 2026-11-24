@@ -7881,9 +7881,12 @@ def v111_inside_game(game, path):
   if not path.resolve().is_relative_to(root):
     raise ValueError('V111_OUTSIDE_GAME_PATH')
   parent=path
-  while parent!=root:
+  while True:
     if parent.is_symlink():raise ValueError('V111_SYMLINK_RESOURCE_HOLD')
-    parent=parent.parent
+    if parent.resolve()==root:break
+    next_parent=parent.parent
+    if next_parent==parent:raise ValueError('V111_UNREACHABLE_ROOT_HOLD')
+    parent=next_parent
   return path
 
 def v111_key_index(game):
