@@ -34,6 +34,7 @@ class RefreshContracts(unittest.TestCase):
         self.assertIn(b'R4_CORE.observeStableDerived,sprite',code)
         self.assertIn(b'selectedDerivedStatsDoubleReadConsistent=true',code)
         self.assertIn(b'R4_DERIVED_STATS_NOT_STABLE',code)
+        self.assertIn(b'\"r4Status\"',code)
 
     def test_no_game_actions_or_pointer_dereference(self):
         code=build()
