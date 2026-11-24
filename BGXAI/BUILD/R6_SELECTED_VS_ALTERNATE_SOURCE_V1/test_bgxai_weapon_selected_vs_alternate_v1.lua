@@ -1,4 +1,5 @@
-local M=dofile('BGXAI_WEAPON_SELECTED_VS_ALTERNATE_V1.lua')
+local here=(arg and arg[0] or ''):match('^(.*[/\\])') or './'
+local M=dofile(here..'BGXAI_WEAPON_SELECTED_VS_ALTERNATE_V1.lua')
 local c=0
 local function test(label,fn) c=c+1;fn();print('PASS '..c..' '..label) end
 local function clone(x)
