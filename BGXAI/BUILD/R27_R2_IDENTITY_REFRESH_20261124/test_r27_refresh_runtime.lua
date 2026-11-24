@@ -6,11 +6,19 @@ local function check(yes,what)
  n=n+1
  assert(yes,'test '..n..' FAILED: '..what)
 end
+EEex_ReadLString=function(ptr,limit)
+ if ptr==65536 then return 'MOCore.bcs' end
+ error('unknown CString pointer')
+end
 local function fixture()
  local stats=setmetatable({m_nNumberOfAttacks=7},{__index=function() return 1 end})
- local sprite={m_id=1001,m_bAllowEffectListCall=1,m_equipment={m_selectedWeapon=35,
-  m_selectedWeaponAbility=0,m_items={get=function() return nil end}}}
- local action={m_actionID=3}
+ local action={m_actionID=3,m_source={m_pchData=65536}}
+ local sprite={m_id=1001,m_bAllowEffectListCall=1,m_curAction=action,
+  m_queuedActions={m_nCount=0},m_bInActionExecution=0,m_bNoInterrupt=0,
+  m_curScriptNum=4,m_actionCount=2,m_interrupt=0,
+  m_lOrderedBy={m_Instance=0},m_lOrderedBySent={m_Instance=0},
+  m_equipment={m_selectedWeapon=35,m_selectedWeaponAbility=0,
+   m_items={get=function() return nil end}}}
  return sprite,action,stats
 end
 local s,a,st=fixture()
@@ -26,6 +34,15 @@ check(x.alternativeAPRVerified==false and x.launcherAmmoPairVerified==false,'no 
 check(x.completeActiveEffectsVerified==false and x.epsManualQueueVerified==false,'effects queue unverified')
 check(x.ordersSent==0 and x.localsWritten==0 and x.dispatchAuthorized==false,'no commands')
 check(x.actionQueueCleared==false and x.currentActionPreserved==true,'no queue change')
+check(x.queueSnapshotStable==true and x.queuedActionsRaw==0,'raw engine queue zero only')
+check(x.actionContextSnapshotStable==true and x.engineActionExecutionRaw==0 and
+ x.engineNoInterruptRaw==0,'stable engine action flags')
+check(x.currentScriptNumberRaw==4 and x.actionCountRaw==2 and x.interruptRaw==0,
+ 'raw current script/action context')
+check(x.actionSourceStable==true and x.actionSourceRaw=='MOCore.bcs',
+ 'bounded CAIAction m_source candidate observed')
+check(x.actionOriginVerified==false and x.manualEpsQueueVerified==false,
+ 'raw source never classifies manual or EPS origin')
 local z=M.observe(nil,a,2,active)
 check(z.status=='HOLD_SINGLE_CALLBACK_NO_DISPATCH','missing sprite hold')
 z=M.observe(s,nil,2,active)
@@ -72,6 +89,10 @@ check(json:find('"alternativeAPRVerified":false',1,true)~=nil,'JSON never grants
 check(json:find('"r4Status":"RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS"',1,true)~=nil,
  'R4 status serialized, selected-only provenance')
 check(json:find('"dispatchAuthorized":false',1,true)~=nil,'JSON never authorizes dispatch')
+check(json:find('"actionSourceRaw":"MOCore.bcs"',1,true)~=nil,'JSON bounded action source')
+check(json:find('"actionSourceSemantics":"UNCLASSIFIED_CAI_ACTION_M_SOURCE"',1,true)~=nil,
+ 'JSON keeps source semantics unclassified')
+check(json:find('"actionContextSnapshotStable":true',1,true)~=nil,'JSON stable engine context')
 check(M.toConsoleJson({status='CURRENT_SELECTED_SAME_CALLBACK_SOURCE_CANDIDATE'})==nil,'unknown sample denied')
 local emitted={}
 M.recorded=0;M.limit=64
@@ -82,6 +103,27 @@ p.listener(s,a)
 check(#emitted==1 and emitted[1]:find('[BGXR27]',1,true)==1,'one source-only line')
 check(M.registered==false and M.ordersSent==0,'no auto registration after callback')
 check(M.prepareConsolePilot({})==nil,'ports required')
+-- New action source / engine context negative tests remain one-callback and read-only.
+s,a,st=fixture();local reads=0
+EEex_ReadLString=function(ptr,limit) reads=reads+1;return reads<=2 and 'MOCore.bcs' or 'BALDUR.BCS' end
+local sourceDrift=M.observe(s,a,2,function()return st end)
+check(sourceDrift.actionSourceStable==false and sourceDrift.actionSourceRaw==nil,
+ 'source drift across same callback fails closed')
+EEex_ReadLString=function(ptr,limit) return 'MOCore.bcs' end
+s,a,st=fixture();local noInterrupt=0
+local contextDrift=M.observe(s,a,2,function() noInterrupt=noInterrupt+1;if noInterrupt==1 then s.m_bNoInterrupt=1 end;return st end)
+check(contextDrift.actionContextSnapshotStable==false,
+ 'engine no-interrupt flag drift invalidates context snapshot')
+s,a,st=fixture();s.m_bInActionExecution=1;s.m_bNoInterrupt=1
+local activeContext=M.observe(s,a,2,function()return st end)
+check(activeContext.engineActionExecutionRaw==1 and activeContext.engineNoInterruptRaw==1,
+ 'active execution and no-interrupt raw flags observed')
+local savedReader=EEex_ReadLString;EEex_ReadLString=nil
+s,a,st=fixture();local noReader=M.observe(s,a,2,function()return st end)
+check(noReader.actionSourceStable==false and noReader.actionSourceRaw==nil and
+ noReader.actionSourceReadStatus=='EEEX_READLSTRING_UNAVAILABLE',
+ 'missing bounded reader fails closed without dispatch')
+EEex_ReadLString=savedReader
 -- Additional R2-refresh invariants not covered by the historical R27 suite.
 local function inventory_fixture(index, original)
  local sprite,action,stats=fixture()
