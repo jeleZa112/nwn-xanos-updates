@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 121,
-  "sha256": "a83c832777460480c165d25ffa0ea6d1c2b6d88a341e74937d2567513f02fa44",
-  "mode": "READ_ONLY_DEFAULT_ONE_PASS_AUTOFIX_SOURCE_AUDIT",
+  "version": 122,
+  "sha256": "0f60ee78fc5a51db410664659dcbfeaf98ca07be27fc3ea9a3d660e4fed773ec",
+  "mode": "READ_ONLY_DEFAULT_ONE_PASS_AUTOFIX_PLUS_WINDOWS_EXTERNAL_LIVE_HIT_INVENTORY",
   "game_writes_allowed": false,
-  "note": "V121 retains one canonical Windows CMD and one ZIP, adds pinned SHA-verified self-healing source-only AutoFix (14 offline research modules and 735 static/model checks). Safe external cache and immutable exact V120 archive snapshot, one bounded retry, quarantine corrupt cached modules, clear HOLD on unknown source/runtime failures. No game writes, new hooks, TLK, saves, BGXAI or BG Voice RU changes. Native gameplay miss-to-weapon correlation remains HOLD. Also fixes V111 Windows canonical-path vs 8.3-short-path infinite parent traversal with drive-root fail-closed termination."
+  "note": "V122 retains one canonical Windows CMD (<750000 bytes, compatible with V121 auto-update), one ZIP, existing SHA-pinned V121 AutoFix and quarantine, plus a pinned 13 KB Win64 read-only process memory inventory. It automatically appends 61_V122_LIVE_HIT_READONLY.json when V121 source audit runs, or via --live-hit-readonly. No new hooks, write access to game, modifications of EXE/TLK/UI/saves/BGXAI/BG Voice RU. Live data only when user game is actually running, otherwise explicit HOLD. Native miss-to-weapon and UI row remain unverified."
 }
