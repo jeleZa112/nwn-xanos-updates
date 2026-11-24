@@ -61,7 +61,7 @@ jobs:
           for runtime in lua5.3 lua5.4 luajit; do
             "$runtime" BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_active_r4_readonly.lua
           done
-      - name: R27 single-listener R2 refresh SOURCE ONLY (49 cases each Lua; 8 Python)
+      - name: R27 selected raw inventory and stable derivedStats SOURCE ONLY (65 cases each Lua; 8 Python)
         shell: bash
         run: |
           python3 -m unittest discover -s BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124 -p test_r27_r2_refresh_ro.py -q
@@ -69,7 +69,7 @@ jobs:
           for runtime in lua5.3 lua5.4 luajit; do
             "$runtime" BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124/test_r27_refresh_runtime.lua
           done
-      - name: R6 real historical APR selected-only and R27 bridge on THREE Lua runtimes
+      - name: R6 real historical APR selected-only and R27 bridge (14 cases each) on THREE Lua runtimes
         shell: bash
         run: |
           root=BGXAI/BUILD/R6_SELECTED_VS_ALTERNATE_SOURCE_V1
