@@ -37,7 +37,7 @@ jobs:
         run: python BGXAI/BUILD/WEAPON_NATIVE_COMPILE_PREFLIGHT_20261124/test_updater_menu167_ro.py
       - name: 45 dedicated batch guard tests and real 512-case advisory source gate
         run: python BGXAI/patchsets/ranged_fighter_guarded_20261119/test_auto_batch_ro_v1.py
-      - name: R29 guarded prototype 20 offline fail-closed tests
+      - name: R29 guarded prototype 21 offline fail-closed tests
         run: python BGXAI/patchsets/ranged_fighter_guarded_20261119/test_bgxai_r29_guarded.py
       - name: 21 native WeiDU contract tests with isolated fake game
         run: python BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_native_compile_ro_v1.py

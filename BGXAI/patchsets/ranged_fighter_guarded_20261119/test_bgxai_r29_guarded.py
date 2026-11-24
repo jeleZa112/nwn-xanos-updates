@@ -140,6 +140,19 @@ class NativeSpliceSimulation(unittest.TestCase):
     def test_bad_bcs_envelope_or_blocks_fails(self):
         for data in (b'',b'SC\nCR\nSC\n',b'CR\nCO\nTR\n',b'SC\nCR\nCO\n'):
             with self.assertRaises(m.Hold):m.bcs_parts(data)
+    def test_native_compiler_has_non_mutating_wei_du_flags(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            t=pathlib.Path(tmp);f=t/'a.baf';f.write_bytes(SOURCE.read_bytes())
+            def verify(cmd,**kwargs):
+                for flag in ('--no-auto-tp2','--noautoupdate','--no-exit-pause'):
+                    self.assertIn(flag,cmd)
+                self.assertIn('--out',cmd)
+                self.assertIn('--game',cmd)
+                self.assertEqual(kwargs['stdin'],m.subprocess.DEVNULL)
+                (t/'a.bcs').write_bytes(b'SC\nCR\nCO\nTR\nCR\nSC\n')
+                return type('P',(),{'returncode':0,'stdout':'','stderr':''})()
+            with patch.object(m.subprocess,'run',side_effect=verify):
+                m.call_native(t/'weidu.exe',t,t,f,t/'a.bcs','TEST')
     def test_missing_bcs_baseline_prevents_production(self):
         with tempfile.TemporaryDirectory() as tmp:
             game=pathlib.Path(tmp)

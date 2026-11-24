@@ -132,7 +132,9 @@ def source_contract(data: bytes) -> None:
 
 def call_native(exe:pathlib.Path,game:pathlib.Path,work:pathlib.Path,
                 source:pathlib.Path,out:pathlib.Path,step:str)->None:
-    p=subprocess.run([str(exe),'--game',str(game),'--out',str(out),str(source)],
+    p=subprocess.run([str(exe),'--no-auto-tp2','--noautoupdate',
+                      '--no-exit-pause','--game',str(game),
+                      '--out',str(out),str(source)],
                      cwd=work,stdin=subprocess.DEVNULL,capture_output=True,text=True,
                      errors='replace',timeout=180,check=False)
     msg=(p.stdout or '')+'\n'+(p.stderr or '')
