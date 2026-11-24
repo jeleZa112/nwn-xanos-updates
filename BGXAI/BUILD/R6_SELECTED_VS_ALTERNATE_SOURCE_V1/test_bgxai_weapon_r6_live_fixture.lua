@@ -1,5 +1,6 @@
-local mod=dofile('BGXAI_WEAPON_SELECTED_VS_ALTERNATE_V1.lua')
-local rows=dofile('BGXAI_R6_LIVE_REDUCED_FIXTURE_20261122.lua')
+local here=(arg and arg[0] or ''):match('^(.*[/\\])') or './'
+local mod=dofile(here..'BGXAI_WEAPON_SELECTED_VS_ALTERNATE_V1.lua')
+local rows=dofile(here..'BGXAI_R6_LIVE_REDUCED_FIXTURE_20261122.lua')
 assert(#rows==16)
 local previous=nil
 local rates={}
