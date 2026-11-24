@@ -1,3 +1,13 @@
+# АКТУАЛЬНО 24.11.2026 — BGXAI WEAPON V3/V4/V5, RANGE + IMMUNITY, 433/433 SOURCE TESTS
+
+**Реальный новый результат:** исправлены fail-closed иммунитеты врага (запрет map/дыр/дубликатов вместо молчаливого игнорирования) и ранжирование при доказанно недосягаемом дальнем оружии без выдуманного APR; неизвестный ammo provenance по-прежнему HOLD. Проверено 145 отдельными Lua тестами и 288 комбинациями = **433/433 offline PASS**. Commit `aded00f36c4f92540df03bf38ffe08a751d08946`, CI `45321005280` **completed SUCCESS** (Ubuntu Lua5.3, Windows static): https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45321005280 . Полный checkpoint: `CURRENT/BGXAI_WEAPON_PRIORITY_RANGE_IMMUNITY_GUARD_20261124_RU.md`.
+
+**CODE/TEST PASS; DEPLOY/LIVE новых изменений НЕТ.** BGXRANGED6 и R27 установлены ранее; R27 LIVE 24/24, R28 native 4/4 получены ранее. Никаких повторов 158–165, V7 или старых боёв. Игру, EPS, SCS, EEex, BG_EET_RU, Voice RU, сейвы и один BGXAI_UPDATE.cmd не менять без отдельного typed разрешения. Успешная CI этого workflow не означает успех всех остальных (отдельный старый WTASIGHT workflow остаётся красным).
+
+**Продолжено после PASS:** изучен официальный EEex 1.1.7 `EEex_Action_AddSpriteStartedActionListener`; listener получает только `sprite, action`, а не достоверный источник manual/EPS — нельзя этим фактом разрешить dispatch. Следующий настоящий рубеж: engine-provenance очереди и effective APR альтернатив, проверенный launcher/ammo, затем ранее созданный guarded BAF consumer/producer без конфликтов. Не создавать очередной дублирующий ранкер/HOLD-движок.
+
+---
+
 # BGXAI АКТУАЛЬНО 24.11.2026 — V3/V4/V5 VERIFIED-INELIGIBLE, CI PASS, В ИГРУ НЕ УСТАНОВЛЕНО
 
 **Последний результат:** исправлен существующий приоритет оружия: подтверждённо пустой дальний слот и подтверждённо небезопасный ближний слот больше не требуют выдуманного APR, THAC0, урона или эффектов для исключения из оценки. Ненадёжные сведения о пригодном альтернативном оружии по-прежнему HOLD. Добавлены защитные регрессии; **122/122 native Lua tests PASS**, Windows static no-engine-dispatch PASS; CI https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45319538088; commit e7e7f553e998f5d0a0f8cda6015d47282c1a6d01.
