@@ -14,7 +14,9 @@ local function record(seq,chosen,apr)
  quickWeaponsRaw={slot(35,'SW1H04',1),slot(36,'BOW05',1),slot(37,nil,nil),slot(38,'STAF01',1)},
  quiversRaw={slot(11,nil,nil),slot(12,'AROW01',20),slot(13,nil,nil),slot(14,nil,nil)},
  offhandRaw={slot(9,nil,nil)},
- rawInventoryDoubleReadConsistent=true,sameLuaListenerInvocation=true,
+ rawInventoryDoubleReadConsistent=true,selectedDerivedStatsDoubleReadConsistent=true,
+ r4Status='RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS',
+ sameLuaListenerInvocation=true,
  nativeEventTokenAuthenticated=false,engineSessionVerified=false,
  alternativeAPRVerified=false,launcherAmmoPairVerified=false,
  completeActiveEffectsVerified=false,epsManualQueueVerified=false,
@@ -101,5 +103,20 @@ check('malformed inventory and stats fail closed',function()
  v=record(4,35,7);v.selectedStatsRaw.m_nNumberOfAttacks=2
  local y=R6.observe_r27(v,p3);safe(y)
  eq(y.status,'HOLD_UNVERIFIED_OBSERVATION')
+end)
+check('R27 work-in-progress temporary stats never enter R6 APR history',function()
+ local v=record(4,35,7);v.selectedDerivedStatsDoubleReadConsistent=nil
+ local x,next=R6.observe_r27(v,p3);safe(x)
+ eq(x.status,'HOLD_UNVERIFIED_OBSERVATION');eq(next,nil)
+end)
+check('R27 missing or stale R4 status never enters selected APR history',function()
+ for _,kind in ipairs({'RAW_CURRENT_SELECTED_STATS_OBSERVED_NOT_COMPLETE_EFFECTS',
+                       'HOLD_DERIVED_STATS_TEMP_VIEW_DURING_READ'}) do
+  local v=record(4,35,7);v.r4Status=kind
+  local x,next=R6.observe_r27(v,p3);safe(x)
+  eq(x.status,'HOLD_UNVERIFIED_OBSERVATION');eq(next,nil)
+ end
+ local v=record(4,35,7);v.r4Status=nil
+ local x=R6.observe_r27(v,p3);safe(x);eq(x.status,'HOLD_UNVERIFIED_OBSERVATION')
 end)
 print('PASS R6 R27 evidence '..n..'/'..n)
