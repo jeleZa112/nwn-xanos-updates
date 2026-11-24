@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "6e2bbc77d58343373428f4ef1eaa8a844d0b080c",
+  "commit": "76b7d47998fcfeeaa5e532eefeed171c5e2c3895",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
   "script_sha256": "1dbe8c08a3ab30d23d003019e4ebc9c702c0d0541db1dc52a8fce0e3321b85be",
   "script_size": 79935,
-  "description": "Single-CMD menu168 auto batch: 34 real unit tests + 21 native tests, 512 source advisory gate cases, gameplay HOLD explicitly separate; no install, no engine orders. Script 79,935 bytes pinned."
+  "description": "One-CMD 168: 11-stage automated read-only batch including source fingerprint inventory for installed EPS/EEex; 38 batch +21 native contracts; no game installs/orders."
 }
