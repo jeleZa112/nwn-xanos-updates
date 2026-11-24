@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "c3bd8feb979817ba707b32174a68298fe96ed5e1",
+  "commit": "43fa54d8ed1ed811473e16d7deec8226c476039b",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
   "script_sha256": "c55a5ebecc4e244e0fe263fc995b1e1b5d802b1d36c7b103475c7559bef78fbe",
   "script_size": 79927,
-  "description": "Single CMD menu169 guarded R29 native pilot: readonly no-autoupdate preflight, exact item slots, atomic JSON, typed install/WeiDU-last rollback. No auto game changes."
+  "description": "Single CMD menu169: R29 read-only preflight accepts historical RANGED7 only with verified WeiDU log entry, install proof, exact staged DPLAYER and external SHA backup; 35 guarded tests, typed install/last-only rollback unchanged."
 }
