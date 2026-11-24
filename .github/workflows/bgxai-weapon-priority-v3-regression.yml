@@ -19,6 +19,7 @@ on:
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_native_compile_ro_v1.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/run_weapon_priority_v3_regression.py'
+      - '.gitattributes'
       - '.github/workflows/bgxai-weapon-priority-v3-regression.yml'
   workflow_dispatch:
 
