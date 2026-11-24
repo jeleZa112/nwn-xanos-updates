@@ -36,6 +36,10 @@ class Updater167(unittest.TestCase):
         self.assertIn('SyncRelease $w3',branch)
         self.assertIn('--game $gr',branch)
         self.assertIn('--source',branch)
+        self.assertIn("REPORT_FILE=",branch)
+        self.assertIn('Out-File -LiteralPath $o -Encoding utf8',branch)
+        self.assertIn('ANR $d',branch)
+        self.assertIn('BGXAI_LIVE_REPORTS',branch)
         self.assertIn('BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py',branch)
         for bad in ('--install','--uninstall','--rollback','WeiDU.log','override','SelectWeaponAbility','ClearActions','setup-'):
             self.assertNotIn(bad,branch)
