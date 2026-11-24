@@ -73,6 +73,16 @@ jobs:
             print('AUTO BATCH END-TO-END PASS; steps',report['stepCount'],
                   'tests',report['unitTestCount'],'synthetic',report['batchCaseCount'])
           PY
+      - name: Full 439-case V3/V4/V5/noninterrupt Lua regression across three runtimes
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends lua5.3 lua5.4 luajit
+          for runtime in lua5.3 lua5.4 luajit; do
+            echo "=== BGXAI AUTO BATCH LUA ${runtime} ==="
+            python BGXAI/patchsets/ranged_fighter_guarded_20261119/run_weapon_priority_v3_regression.py --lua "$runtime"
+          done
       - name: Windows PowerShell 5.1 AST syntax check, no execution
         if: runner.os == 'Windows'
         shell: powershell

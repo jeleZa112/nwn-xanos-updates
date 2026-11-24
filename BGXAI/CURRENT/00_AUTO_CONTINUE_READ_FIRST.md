@@ -1,3 +1,13 @@
+# BGXAI CURRENT 24.11.2026 — AUTO BATCH 168, ОДИН CMD И ОДИН JSON, НЕ LIVE
+
+**Новая работающая программа:** `BGXAI_AUTO_BATCH_RO_V1.py`, подключена к ЕДИНСТВЕННОМУ `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd` как меню **168 — AUTO batch weapon READ ONLY**. Старые пункты 1–167 неизменны. `BGXAI_SYNC.ps1` 79 935/80 000 байт; pinned source commit `636cf0056109aa028563a39fd03b19ba0617de3d`, SHA256 `1dbe8c08a3ab30d23d003019e4ebc9c702c0d0541db1dc52a8fce0e3321b85be`. Пять файлов загружаются в `BGXAI_DEV/weapon_priority_v3` только через SHA256-манифест: native preflight, BAF, автоматический batch, его 29 тестов и 21 native mock тест. Никакой установки, записи LOCALS/override, отправки приказов.
+
+**За один запуск:** 10 независимых этапов; 108 BAF source-guards; 512 *синтетических* fail-closed комбинаций (не игровое поведение); 29 + 21 Python tests (Windows 2 POSIX-only skipped); контроль watched game files до/после, проверка открытой игры/WeiDU; при совпадении уже присланного 167-native-отчёта — пометка *historical-only*, без повторения compile; иначе безопасная временная компиляция. Даже при HOLD этапы продолжаются, один JSON `%USERPROFILE%\Documents\BGXAI_LIVE_REPORTS\BGXAI_AUTO_BATCH_RO_*.json`. Известные пробелы по APR другого слота, фактической ammo pair, manual/EPS origin и safe action boundary остаются HOLD; авторизовать автосмену оружия нельзя.
+
+**Первый независимый CI SUCCESS Windows+Ubuntu:** https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45347514847; R27/V7/menu167 также PASS. Полная инструкция и текущая контрольная точка: `CURRENT/BGXAI_AUTO_BATCH_168_README_RU.md`. Следующий CI расширен *также* до 439 Lua × Lua5.3, Lua5.4 и LuaJIT, результат проверить отдельно. Не повторять 165/R27, R28, 167. Не создавать второй updater.
+
+---
+
 # BGXAI СЕЙЧАС 24.11.2026 — МЕНЮ167 NATIVE EET PASS + R27/R28 JOIN CI PASS
 
 **Реальный результат пользователя:** `BGXAI_WEAPON_NATIVE_COMPILE_RO_20261124T134604227.json`: `NATIVE_WEIDU_COMPILED_TEMP_ONLY`, WeiDU25100, 8/8 BAF blocks/actions, BCS **10550 байт** SHA256 `10426a2262e79553e861d464bdcf89d82a0fc91498dfb02c430c9b1fb02ef929`. `watchedFilesChanged=false`, `installPerformed=false`, `ordersSent=0`, `dispatchAuthorized=false`, `engineBehaviorVerified=false`. **Реальная native компиляция на EET подтверждена: не просить повтор пункта 167.**
