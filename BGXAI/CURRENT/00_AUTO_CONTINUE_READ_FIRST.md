@@ -1,3 +1,11 @@
+# НОВЕЙШЕЕ 24.11.2026 — BGXAI 433/433 × 3 RUNTIMES, SOURCE ONLY
+
+После первой успешной проверки BGXAI V3 range/immunity, тот же GitHub workflow расширен на **Lua5.3, Lua5.4 и LuaJIT**. Run `45321449013`: **completed SUCCESS**, в логах по **433/433 PASS на каждом из 3 интерпретаторов**, Windows static PASS (1299 выполнений 433 разных offline сценариев). CI-only commit `3be52f9f520a1ed43bf8dafa2c8e2d58d9d4a190`. Полный checkpoint `CURRENT/BGXAI_WEAPON_PRIORITY_RANGE_IMMUNITY_GUARD_20261124_RU.md`. Исходники изменения предыдущего коммита `aded00f36c4f92540df03bf38ffe08a751d08946`.
+
+**Не путать с работой в игре:** новая DEPLOY/LIVE NO; не повторять старые R27/R28, V6. После положительного CI сделано независимое изучение upstream EEex ActionListener: action-start даёт sprite+action, **не подтверждает manual/EPS origin**; нельзя включить producer/BCS switch без доказанного alt APR, launcher/ammo, очереди и отдельного typed разрешения. Это текущая объективная граница безопасного дальнейшего внедрения. Другой, исторически красный WTASIGHT workflow, не связан с успехом данного 433-пакета.
+
+---
+
 # АКТУАЛЬНО 24.11.2026 — BGXAI WEAPON V3/V4/V5, RANGE + IMMUNITY, 433/433 SOURCE TESTS
 
 **Реальный новый результат:** исправлены fail-closed иммунитеты врага (запрет map/дыр/дубликатов вместо молчаливого игнорирования) и ранжирование при доказанно недосягаемом дальнем оружии без выдуманного APR; неизвестный ammo provenance по-прежнему HOLD. Проверено 145 отдельными Lua тестами и 288 комбинациями = **433/433 offline PASS**. Commit `aded00f36c4f92540df03bf38ffe08a751d08946`, CI `45321005280` **completed SUCCESS** (Ubuntu Lua5.3, Windows static): https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45321005280 . Полный checkpoint: `CURRENT/BGXAI_WEAPON_PRIORITY_RANGE_IMMUNITY_GUARD_20261124_RU.md`.
