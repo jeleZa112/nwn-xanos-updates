@@ -7,6 +7,7 @@ from __future__ import annotations
 import argparse, contextlib, hashlib, io, json, os, subprocess, sys, tempfile, zipfile
 from pathlib import Path
 from pilot_static_gates import verify
+from patchpoint_contract import route_verify
 
 HERE=Path(__file__).resolve().parent
 V120_SHA='08a9d5da367404b33bc982871627e8c3e1179c7a8ec8808bab0a75bea5755015'
@@ -46,15 +47,25 @@ def audit(archive:Path, trusted:Path, lua:Path, extra_tests:bool=True):
             return {'status':'PASS','passed':735,'stages':len(r['stages']),'gameplay_verified':False}
     stage('base_735_source_suite',trusted_source_suite)
     stage('corrected_site_and_lua_source',lambda:verify(archive,lua))
+    stage('native_instruction_and_relocation_routes',lambda:route_verify(archive))
     if extra_tests:
         def real_lua_callbacks():
             child=subprocess.run([sys.executable,str(HERE/'test_lua_runtime.py')],
                  cwd=HERE,capture_output=True,text=True,timeout=15)
-            if child.returncode!=0 or 'LUA_SOURCE_RUNTIME_PASS\t43' not in child.stdout:
+            if child.returncode!=0 or 'LUA_SOURCE_RUNTIME_PASS\t45' not in child.stdout:
                 raise RuntimeError('LUA_RUNTIME_CALLBACKS_NOT_PASS:'+child.stderr[-150:])
-            return {'status':'PASS','assertions':43,'engine':'Lua 5.4 shared library',
+            return {'status':'PASS','assertions':45,'engine':'Lua 5.4 shared library',
                     'scope':'LUA_CALLBACK_LOGIC_ONLY_NOT_EEEX_OR_NATIVE_JIT'}
         stage('real_lua_callback_contract',real_lua_callbacks)
+    if extra_tests:
+        def native_preflight_hardening():
+            child=subprocess.run([sys.executable,str(HERE/'test_lua_preflight_v2.py')],
+                cwd=HERE,capture_output=True,text=True,timeout=15)
+            if child.returncode!=0 or 'LUA_PREFLIGHT_HARDENING_PASS\t46' not in child.stdout:
+                raise RuntimeError('LUA_PREFLIGHT_HARDENING_FAIL:'+child.stderr[-180:])
+            return {'status':'PASS','assertions':46,'engine':'Lua 5.4',
+              'scope':'SYNTHETIC_ONLY_RUNTIME_MEMORY_AND_NESTED_FRAME_FAIL_CLOSED'}
+        stage('synthetic_live_memory_preflight_and_nested_frames',native_preflight_hardening)
     if extra_tests:
         def adversarial():
             env={**os.environ,'BG_EET_RU_V120_ZIP':str(archive)}
@@ -64,8 +75,18 @@ def audit(archive:Path, trusted:Path, lua:Path, extra_tests:bool=True):
                 raise RuntimeError('ADVERSARIAL_TESTS_FAIL')
             return {'status':'PASS','test_methods':7,'negative_cases':'all pinned site mutations + 9 lua tamper probes + ZIP mismatch'}
         stage('adversarial_fail_closed',adversarial)
-    fail=[x['name'] for x in checks if x['status'] not in ('PASS','SOURCE_PASS_RUNTIME_HOLD')]
-    return {'schema':'BG_EET_RU_NATIVE_PILOT_ONE_PASS_SOURCE_GATE_V1',
+    if extra_tests:
+        def patchpoint_negative_tests():
+            env={**os.environ,'PYTHONPATH':str(HERE),'BG_EET_RU_V120_ZIP':str(archive)}
+            ch=subprocess.run([sys.executable,'-m','unittest','-q',str(HERE/'test_patchpoint_contract.py')],
+                              cwd=HERE,env=env,capture_output=True,text=True,timeout=30)
+            if ch.returncode or 'Ran 6 tests' not in ch.stderr or 'OK' not in ch.stderr:
+                raise RuntimeError('PATCHPOINT_NEGATIVE_TESTS_FAILED:'+ch.stderr[-150:])
+            return {'status':'PASS','test_methods':6,
+               'scope':'REL32_CALL_RECONSTRUCTION_AND_HOOK_ROUTE_CHECKS_ONLY'}
+        stage('exact_rel32_and_patchpoint_adversarial',patchpoint_negative_tests)
+    fail=[x['name'] for x in checks if x['status'] not in ('PASS','SOURCE_PASS_RUNTIME_HOLD','STATIC_ROUTE_PASS_LIVE_ABI_HOLD')]
+    return {'schema':'BG_EET_RU_NATIVE_PILOT_ONE_PASS_SOURCE_GATE_V2',
       'status':'SOURCE_PASS_RUNTIME_HOLD' if not fail else 'SOURCE_HOLD',
       'stages':checks,'failed_stages':fail,'game_files_written':0,'native_hooks_installed':False,
       'runtime_ABI_proven':False,'gameplay_verified':False,
