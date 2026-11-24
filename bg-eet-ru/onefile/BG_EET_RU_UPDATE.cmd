@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 127
+SELF_VERSION = 128
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -310,11 +310,7 @@ def get_log(path):
       return z.read(inf).decode('utf-8') if inf.file_size<150_000 else ''
   except (OSError,KeyError,ValueError,zipfile.BadZipFile):return ''
 def published_update(path, offline=False):
-  """Fetch only the versioned source+SHA256 manifest from the pinned GitHub branch.
-
-    Return (status, activated). Every write stays in WORKDIR, never in game.
-    Fail closed (and retain the current updater) for all network and integrity errors.
-    """
+  """SHA-pinned updater; all writes outside game."""
   if offline:return 'OFFLINE: обновление пропущено',False
   import subprocess
   pending=WORKDIR/'_BG_EET_RU_UPDATE_PENDING.cmd'
@@ -8121,9 +8117,13 @@ def v121_selftest():
   assert len(V121_INPUT_SHA)==len(V121_BOT_SHA)==len(V121_TRUST_SHA)==64
   assert V121_PREFIX.startswith('https://raw.githubusercontent.com/')
   assert V121_REF in V121_PREFIX and len(V121_REF)==40
+  global WORKDIR
   with tempfile.TemporaryDirectory(prefix='V121_TEST_') as d:
-    game=Path(d)/'game';game.mkdir()
-    assert v121_snapshot(game,Path(d)/'missing.zip') is None
+    previous=WORKDIR;WORKDIR=Path(d)/'isolated'
+    try:
+      game=Path(d)/'game';game.mkdir()
+      assert v121_snapshot(game,Path(d)/'missing.zip') is None
+    finally:WORKDIR=previous
   return True
 def main(argv=None):
   p=argparse.ArgumentParser(description='BG_EET_RU one-file visible-only read-only auto-updater')
