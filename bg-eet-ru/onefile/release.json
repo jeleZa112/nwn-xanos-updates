@@ -2,8 +2,8 @@
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
   "version": 121,
-  "sha256": "f0095d9cb7aed9856b2582036f708e2f4d6a2b33ce5feb3542a772ffd5fa1a86",
+  "sha256": "a83c832777460480c165d25ffa0ea6d1c2b6d88a341e74937d2567513f02fa44",
   "mode": "READ_ONLY_DEFAULT_ONE_PASS_AUTOFIX_SOURCE_AUDIT",
   "game_writes_allowed": false,
-  "note": "V121 retains one canonical Windows CMD and one ZIP, adds pinned SHA-verified self-healing source-only AutoFix (14 offline research modules and 735 static/model checks). Safe external cache and immutable exact V120 archive snapshot, one bounded retry, quarantine corrupt cached modules, clear HOLD on unknown source/runtime failures. No game writes, new hooks, TLK, saves, BGXAI or BG Voice RU changes. Native gameplay miss-to-weapon correlation remains HOLD."
+  "note": "V121 retains one canonical Windows CMD and one ZIP, adds pinned SHA-verified self-healing source-only AutoFix (14 offline research modules and 735 static/model checks). Safe external cache and immutable exact V120 archive snapshot, one bounded retry, quarantine corrupt cached modules, clear HOLD on unknown source/runtime failures. No game writes, new hooks, TLK, saves, BGXAI or BG Voice RU changes. Native gameplay miss-to-weapon correlation remains HOLD. Also fixes V111 Windows canonical-path vs 8.3-short-path infinite parent traversal with drive-root fail-closed termination."
 }
