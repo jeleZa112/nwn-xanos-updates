@@ -111,7 +111,7 @@ eq(r.action_context_snapshot_stable,false)
 eq(r.engine_no_interrupt_raw,nil);invariant(r)
 
 -- Action ID mismatch / mutation invalidates queue and source snapshot.
-s,a=fixture();a.m_actionID=24
+s,a=fixture();s.m_curAction={m_actionID=24}
 r=M.observe(s,a)
 eq(r.status,'ACTION_UNKNOWN');eq(r.current_action_id,nil)
 eq(r.queue_count_observed,false);eq(r.action_source_raw,nil);invariant(r)
