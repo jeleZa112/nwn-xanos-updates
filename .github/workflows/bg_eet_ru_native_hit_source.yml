@@ -26,8 +26,9 @@ jobs:
       - name: Python syntax, inert Lua callback runtime, source-only gate
         run: |
           cd bg-eet-ru/native-hit-pilot
-          python -m py_compile pilot_static_gates.py test_pilot_source.py test_lua_runtime.py one_pass_native_pilot_check.py
+          python -m py_compile pilot_static_gates.py patchpoint_contract.py test_pilot_source.py test_patchpoint_contract.py test_lua_runtime.py test_lua_preflight_v2.py one_pass_native_pilot_check.py
           python test_lua_runtime.py
+          python test_lua_preflight_v2.py
           python - <<'PY'
           from pathlib import Path
           s=Path('BG_EET_RU_HIT_PILOT_DRAFT.lua').read_text()
@@ -36,6 +37,9 @@ jobs:
           assert "return false,'RUNTIME_HOOK_IMPLEMENTATION_NOT_VERIFIED'" in s
           assert 'capture=first-0x1E' in s
           assert 'forbidden=first-0x11' in s
+          assert "message = 'EEex_HookBeforeCallWithLabels'" in s
+          assert "capture = 'EEex_HookBeforeRestoreWithLabels'" in s
+          assert 'P.blocked[frame]=P.blocked[frame]-1' in s
           assert 'EEex_HookBeforeRestoreWithLabels(' not in s
           assert 'EEex_HookBeforeCallWithLabels(' not in s
           print('SOURCE_ONLY_INERT_HOOK_GATE_PASS')
