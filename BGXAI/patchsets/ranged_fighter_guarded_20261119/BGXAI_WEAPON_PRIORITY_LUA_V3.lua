@@ -77,7 +77,7 @@ local function verified_scene(s,passivePreview)
     return 'HOLD_DUAL_WIELD_COMBAT_STATS_UNKNOWN' end
    if weapon.mode=='RANGED' then
     if weapon.ammoVerified~=true or (weapon.ammunitionModel~='QUIVER' and
-        weapon.ammunitionModel~='SELF') or not between(weapon.ammoCount,1,1000000) or
+        weapon.ammunitionModel~='SELF') or not between(weapon.ammoCount,0,1000000) or
        weapon.ammoCount~=math.floor(weapon.ammoCount) or
        (weapon.ammunitionModel=='QUIVER' and not ident(weapon.ammoResRef)) then
      return 'HOLD_AMMO_OR_THROWABLE_UNVERIFIED' end
@@ -97,12 +97,29 @@ local function scored_weapon(w,a,e)
   if not between(w[key],0,1000) then return nil,'COSTS_UNVERIFIED' end
  end
  if type(w.inRange)~='boolean' then return nil,'IN_RANGE_EVIDENCE_UNKNOWN' end
+ -- A confirmed lack of ammo, a verified unreachable position, or an unsafe
+ -- melee engagement excludes ONLY that candidate; it must not disable a
+ -- different, complete and safe quickslot. Unknown provenance still HOLDs.
+ local function excluded(reason)
+  return {id=w.id,slotIndex=w.quickslotIndex,available=false,
+          reason=reason,mode=w.mode,penetrates=false,dpr=0},nil
+ end
+ if w.mode=='RANGED' and w.ammoCount==0 then
+  return excluded('VERIFIED_EMPTY_AMMUNITION')
+ end
  if w.inRange~=true then
-  if w.mode~='MELEE' or a.pathSafeVerified~=true or w.canReachWithSafeMove~=true then
-   return nil,'OUT_OF_RANGE_OR_UNSAFE_PATH'
+  if w.mode=='RANGED' then return excluded('VERIFIED_RANGED_OUT_OF_RANGE') end
+  if a.pathSafeVerified==false or w.canReachWithSafeMove==false then
+   return excluded('VERIFIED_NO_SAFE_MELEE_PATH')
+  end
+  if a.pathSafeVerified~=true or w.canReachWithSafeMove~=true then
+   return nil,'MELEE_PATH_EVIDENCE_UNKNOWN'
   end
  end
- if w.mode=='MELEE' and a.canSustainMelee~=true then return nil,'MELEE_SURVIVABILITY_UNVERIFIED' end
+ if w.mode=='MELEE' then
+  if a.canSustainMelee==false then return excluded('VERIFIED_UNSAFE_TO_TANK') end
+  if a.canSustainMelee~=true then return nil,'MELEE_SURVIVABILITY_UNVERIFIED' end
+ end
  if w.mode=='RANGED' and a.nearRangedEnemy==true and w.rangedClosePenaltyAccounted~=true then
   return nil,'CLOSE_RANGE_THAC0_PENALTY_UNVERIFIED' end
  local p=e.protections
@@ -123,7 +140,7 @@ local function scored_weapon(w,a,e)
  local dpr=immune and 0 or hit*w.avgDamageOnHit*w.apr*(1-p.resistance[w.damageType])
  local extra=immune and 0 or w.extraEffectValue
  local value=dpr+extra-w.switchCost-w.resourceCost-w.retaliationRisk-w.movementCost
- return {id=w.id,slotIndex=w.quickslotIndex,value=value,dpr=dpr,penetrates=not immune,
+ return {id=w.id,slotIndex=w.quickslotIndex,available=true,value=value,dpr=dpr,penetrates=not immune,
          hitChance=hit,mode=w.mode},nil
 end
 local function choose_impl(scene,previous,passivePreview)
@@ -145,22 +162,38 @@ local function choose_impl(scene,previous,passivePreview)
   if not score then return issue('HOLD_UNRANKABLE_OCCUPIED_WEAPON',{next=next,reason=err}) end
   candidates[#candidates+1]=score
   if score.id==a.selectedWeaponId then current=score end
-  if not best or score.value>best.value or (score.value==best.value and score.id==a.selectedWeaponId) then
+  if score.available~=false and (not best or score.value>best.value or
+      (score.value==best.value and score.id==a.selectedWeaponId)) then
    best=score end
  end
- if not current or not best then return issue('HOLD_CURRENT_WEAPON_UNVERIFIED',{next=next}) end
+ if not current then return issue('HOLD_CURRENT_WEAPON_UNVERIFIED',{next=next}) end
+ if not best then return issue('HOLD_NO_EFFECTIVE_ATTACK',{next=next,candidates=candidates}) end
  local anyEffective=false
  for _,x in ipairs(candidates) do if x.penetrates and x.dpr>0 then anyEffective=true end end
  if not anyEffective then return issue('HOLD_NO_EFFECTIVE_ATTACK',{next=next,candidates=candidates}) end
- local diff=best.value-current.value
- local threshold=math.max(2,math.abs(current.value)*0.15)
- if best.id==current.id or diff<=threshold then
-  return issue('KEEP_CURRENT',{next=next,candidates=candidates}) end
+ local currentUnusable=current.available==false
+ local diff=nil
+ local threshold=0
+ if not currentUnusable then
+  diff=best.value-current.value
+  threshold=math.max(2,math.abs(current.value)*0.15)
+ end
+ if currentUnusable then
+  -- Switching from a known unusable weapon is allowed as ADVICE only when
+  -- the alternative has positive actual combat utility, not merely an attack.
+  if not best.penetrates or best.dpr<=0 or best.value<=0 then
+   return issue('HOLD_NO_EFFECTIVE_ATTACK',{next=next,candidates=candidates})
+  end
+ elseif best.id==current.id or diff<=threshold then
+  return issue('KEEP_CURRENT',{next=next,candidates=candidates})
+ end
  next.lastAdviceTick=f.tick
  return issue('ADVISE_PRIORITY_QUICKSLOT_ONLY',{
   fromWeaponId=current.id,toWeaponId=best.id,slotIndex=best.slotIndex,
   targetId=e.enemyId,improvement=diff,threshold=threshold,next=next,candidates=candidates,
-  reason='COMPLETE_EFFECTIVE_STATS_BETTER_AFTER_STABILITY'})
+  currentUnusableReason=currentUnusable and current.reason or nil,
+  reason=currentUnusable and 'VERIFIED_CURRENT_WEAPON_UNUSABLE_SAFE_FALLBACK' or
+                          'COMPLETE_EFFECTIVE_STATS_BETTER_AFTER_STABILITY'})
 end
 -- Existing foreground scorer remains strict: no recommendation under manual/EPS/cast.
 function M.choose(scene,previous)

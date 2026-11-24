@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+"""Repository SOURCE-only V3/V4/V5/NONINTERRUPT regressions, never touches game."""
+from __future__ import annotations
+import argparse
+import hashlib
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+CODE = 'BGXAI_WEAPON_PRIORITY_LUA_V3.lua'
+TEST = 'test_weapon_priority_lua_v3.lua'
+
+
+def _static() -> None:
+    s = (ROOT / CODE).read_text(encoding='utf-8')
+    assert s.startswith('-- BGXAI priority weapon selection V3')
+    # The ineligibility fix must remain advisory. No executable engine commands
+    # or IO are allowed in the V3 source, even if future refactors add them.
+    for forbidden in ('SelectWeaponAbility(', 'Attack(', 'ClearActions(',
+                      'ActionOverride(', 'SetGlobal(', 'EEex_Action_Queue',
+                      'io.open(', 'os.execute('):
+        assert forbidden not in s, forbidden
+    for proof in ('VERIFIED_EMPTY_AMMUNITION', 'VERIFIED_NO_SAFE_MELEE_PATH',
+                  'VERIFIED_UNSAFE_TO_TANK', 'HOLD_UNRANKABLE_OCCUPIED_WEAPON',
+                  'currentUnusableReason', "dispatchAuthorized=false"):
+        assert proof in s, proof
+    assert "not between(weapon.ammoCount,0,1000000)" in s
+    print('PASS V3 STATIC NO-ENGINE-ACTIONS and UNKNOWN-FAIL-CLOSED')
+
+
+def _lua(lua: str) -> None:
+    with tempfile.TemporaryDirectory(prefix='bgxai_weapon_v3_source_') as tmp:
+        root = Path(tmp)
+        p3 = root / 'BGXAI_WEAPON_PRIORITY_V3'
+        p4 = root / 'BGXAI_WEAPON_PRIORITY_V4'
+        p5 = root / 'BGXAI_WEAPON_APR_PROVENANCE_V5'
+        for p in (p3, p4, p5):
+            p.mkdir()
+        for name in (CODE, TEST):
+            shutil.copy2(ROOT / name, p3 / name)
+        for name in ('BGXAI_WEAPON_EFFECTS_V4.lua', 'test_weapon_effects_v4.lua'):
+            shutil.copy2(ROOT / name, p4 / name)
+        for name in ('BGXAI_WEAPON_APR_PROVENANCE_V5.lua', 'test_weapon_apr_provenance_v5.lua'):
+            shutil.copy2(ROOT / name, p5 / name)
+        suites = [
+            (p3 / TEST, r'PASS WEAPON PRIORITY NATIVE LUA 36/36 SOURCE ONLY'),
+            (p4 / 'test_weapon_effects_v4.lua', r'PASS TOTAL 30 / 30 NATIVE LUA SOURCE ONLY'),
+            (p5 / 'test_weapon_apr_provenance_v5.lua', r'PASS APR V5 18/18 OFFLINE SOURCE ONLY'),
+            (ROOT / 'test_weapon_noninterrupt_plan_v1.lua', r'PASS NONINTERRUPT SCHEDULER 22/22 SOURCE ONLY'),
+            (ROOT / 'test_weapon_noninterrupt_integration_v1.lua', r'PASS REAL WEAPON PIPELINE INTEGRATION 4/4 OFFLINE')
+        ]
+        passed = 0
+        for path, marker in suites:
+            result = subprocess.run(([lua, '--luaonly'] if Path(lua).name.lower().startswith('luatex') else [lua]) + [str(path)], cwd=ROOT, text=True,
+                                    capture_output=True, check=False, timeout=20)
+            if result.returncode != 0 or marker not in result.stdout:
+                print(result.stdout, file=sys.stderr)
+                print(result.stderr, file=sys.stderr)
+                raise RuntimeError(f'Lua regression failed: {path.name} ({result.returncode})')
+            count = len(re.findall(r'^PASS ', result.stdout, re.M)) - 1
+            print(f'PASS {path.name}: {count} behavior assertions')
+            passed += count
+        assert passed == 110, passed
+        print(f'PASS TOTAL {passed}/110 OFFLINE LUA BEHAVIOR ASSERTIONS; NO GAME DEPLOY')
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--static-only', action='store_true')
+    parser.add_argument('--lua', default=None)
+    args = parser.parse_args()
+    _static()
+    if not args.static_only:
+        selected = args.lua or next((c for c in ('lua5.3','lua5.4','lua','luatex') if shutil.which(c)), None)
+        if not selected:
+            raise RuntimeError('Lua 5.3/5.4 or LuaTeX required for native regression')
+        args.lua = selected
+        _lua(selected)
+    return 0
+
+
+if __name__ == '__main__':
+    try:
+        sys.exit(main())
+    except (AssertionError, RuntimeError, OSError, subprocess.TimeoutExpired) as error:
+        print(f'SOURCE_REGRESSION_HOLD: {error}', file=sys.stderr)
+        sys.exit(1)

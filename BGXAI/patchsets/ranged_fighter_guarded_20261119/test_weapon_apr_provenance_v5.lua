@@ -41,4 +41,12 @@ test('class without proficiency APR cannot claim WSPATCK bonus',function()local 
 test('haste not accounted means hold, no APR guess',function()local s=scene();s.weapons[2].aprAudit.activeHasteStateVerified=false;eq(choose(s).reason,'FINAL_APR_NOT_OBSERVED_OR_DOUBLE_COUNTED')end)
 test('two-hand offhand aggregation unverified means hold',function()local s=scene();s.actor.handsMode='DUAL';s.weapons[1].mode='MELEE';eq(choose(s).reason,'OFFHAND_APR_AGGREGATION_UNKNOWN')end)
 test('preserve explicit no dispatch even on recommendation',function()local _,b=two(scene());eq(b.executable,false);eq(b.dispatchAuthorized,false)end)
+test('complete V5/V4/V3 chain: selected verified empty darts switches to sling',function()
+ local s=scene();s.weapons[2].ammoCount=0
+ local _,b=two(s)
+ eq(b.status,'ADVISE_PRIORITY_QUICKSLOT_ONLY')
+ eq(b.toWeaponId,'SLING')
+ eq(b.currentUnusableReason,'VERIFIED_EMPTY_AMMUNITION')
+ eq(b.dispatchAuthorized,false)
+end)
 print('PASS APR V5 '..count..'/'..count..' OFFLINE SOURCE ONLY')

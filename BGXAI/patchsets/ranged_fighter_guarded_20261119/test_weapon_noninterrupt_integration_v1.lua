@@ -95,4 +95,15 @@ check('missing per-slot stats fail closed during cast',function()
  eq(r.status,'HOLD_SCORER_RESULT_UNTRUSTED')
  eq(r.ordersSent,0)
 end)
+check('verified empty ammo reaches pending advisory while EPS/manual busy; never dispatched',function()
+ local s=active_scene();s.weapons[2].ammoCount=0
+ s.actor.manualOrderActive=true;s.actor.epsBusy=true;s.actor.originVerified='UNKNOWN'
+ local a=nonintr.step(s,nil,readonly)
+ local bscene=clone(s);bscene.frame.tick=101;bscene.actor.activeStatsEvidence.tick=101
+ local b=nonintr.step(bscene,a.next,readonly)
+ eq(b.status,'CONTINUE_CURRENT_ACTION_SWITCH_PENDING')
+ eq(b.proposedWeaponId,'SLING');eq(b.proposedSlotIndex,0)
+ eq(b.ordersSent,0);eq(b.dispatchAuthorized,false)
+ eq(b.currentActionPreserved,true);eq(b.actionQueueCleared,false)
+end)
 print('PASS REAL WEAPON PIPELINE INTEGRATION '..n..'/'..n..' OFFLINE')

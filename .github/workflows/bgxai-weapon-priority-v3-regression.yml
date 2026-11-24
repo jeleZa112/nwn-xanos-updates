@@ -1,0 +1,30 @@
+name: BGXAI Weapon Priority V3 known-ineligible fallback regressions SOURCE ONLY
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_PRIORITY_LUA_V3.lua'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_priority_lua_v3.lua'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_apr_provenance_v5.lua'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_noninterrupt_integration_v1.lua'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/run_weapon_priority_v3_regression.py'
+      - '.github/workflows/bgxai-weapon-priority-v3-regression.yml'
+  workflow_dispatch:
+
+jobs:
+  behavior-native-lua:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua 5.3
+        run: sudo apt-get update -qq && sudo apt-get install -y lua5.3
+      - name: Test V3 V4 APR V5 and noninterrupt together (110 assertions)
+        run: python3 BGXAI/patchsets/ranged_fighter_guarded_20261119/run_weapon_priority_v3_regression.py --lua lua5.3
+  windows-static-no-game:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify no Lua weapon execution from V3 (read-only source)
+        shell: pwsh
+        run: |
+          py -3 BGXAI/patchsets/ranged_fighter_guarded_20261119/run_weapon_priority_v3_regression.py --static-only

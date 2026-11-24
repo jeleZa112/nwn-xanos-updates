@@ -101,9 +101,68 @@ check('occupied slot missing weapon HOLD',function()
  local s=mk(true);s.weapons[2]=nil
  eq(choose(s).status,'HOLD_QUICKSLOT_EVIDENCE_INCOMPLETE')
 end)
-check('out of ammo HOLD',function()
+check('known empty selected darts switch to ready melee',function()
  local s=mk(true);s.weapons[2].ammoCount=0
+ local _,b=two(s);eq(b.status,'ADVISE_PRIORITY_QUICKSLOT_ONLY')
+ eq(b.toWeaponId,'SWORD');eq(b.currentUnusableReason,'VERIFIED_EMPTY_AMMUNITION')
+ eq(b.dispatchAuthorized,false)
+end)
+check('known empty inactive darts keep current sword',function()
+ local s=mk(true);s.frame.selectedWeaponId='SWORD';s.actor.selectedWeaponId='SWORD'
+ s.weapons[2].ammoCount=0
+ local _,b=two(s);eq(b.status,'KEEP_CURRENT')
+end)
+check('unknown ammo HOLD',function()
+ local s=mk(true);s.weapons[2].ammoCount=nil
  eq(choose(s).status,'HOLD_AMMO_OR_THROWABLE_UNVERIFIED')
+end)
+check('empty ammo and unsafe melee does not force engagement',function()
+ local s=mk(true);s.weapons[2].ammoCount=0;s.actor.canSustainMelee=false
+ local _,b=two(s);eq(b.status,'HOLD_NO_EFFECTIVE_ATTACK')
+end)
+check('zero ammo without observed inventory is unknown HOLD',function()
+ local s=mk(true);s.weapons[2].ammoCount=0;s.weapons[2].ammoVerified=false
+ eq(choose(s).status,'HOLD_AMMO_OR_THROWABLE_UNVERIFIED')
+end)
+check('unreachable distant melee excludes only melee; ranged can be recommended',function()
+ local s=mk(false);s.actor.pathSafeVerified=false
+ local _,b=two(s);eq(b.status,'ADVISE_PRIORITY_QUICKSLOT_ONLY')
+ eq(b.toWeaponId,'DART');eq(b.candidates[1].reason,'VERIFIED_NO_SAFE_MELEE_PATH')
+end)
+check('melee unable to survive excludes sword only, keeps darts',function()
+ local s=mk(true);s.actor.canSustainMelee=false
+ local _,b=two(s);eq(b.status,'KEEP_CURRENT')
+ eq(b.candidates[1].reason,'VERIFIED_UNSAFE_TO_TANK')
+end)
+check('unknown melee survivability keeps HOLD not exclusion',function()
+ local s=mk(true);s.actor.canSustainMelee=nil
+ local _,b=two(s);eq(b.status,'HOLD_UNRANKABLE_OCCUPIED_WEAPON')
+end)
+check('unknown safe path keeps HOLD not exclusion',function()
+ local s=mk(false);s.actor.pathSafeVerified=nil
+ local _,b=two(s);eq(b.status,'HOLD_UNRANKABLE_OCCUPIED_WEAPON')
+end)
+check('ranged out of range excluded but does not block current sword',function()
+ local s=mk(true);s.frame.selectedWeaponId='SWORD';s.actor.selectedWeaponId='SWORD'
+ s.weapons[2].inRange=false
+ local _,b=two(s);eq(b.status,'KEEP_CURRENT')
+ eq(b.candidates[2].reason,'VERIFIED_RANGED_OUT_OF_RANGE')
+end)
+check('cannot switch away from empty ammo to unsafe negative utility',function()
+ local s=mk(true);s.weapons[2].ammoCount=0;s.weapons[1].retaliationRisk=200
+ local _,b=two(s);eq(b.status,'HOLD_NO_EFFECTIVE_ATTACK')
+end)
+check('manual or EPS busy blocks even verified no ammo in foreground',function()
+ local s=mk(true);s.weapons[2].ammoCount=0;s.actor.epsBusy=true
+ eq(choose(s).status,'HOLD_PRESERVE_MANUAL_OR_EPS')
+end)
+check('passive preview cannot request dispatch even for empty ammo',function()
+ local s=mk(true);s.weapons[2].ammoCount=0;s.actor.originVerified='UNKNOWN'
+ local preview=dofile(root..'BGXAI_WEAPON_PRIORITY_LUA_V3.lua').preview
+ local first=preview(s);s.frame.tick=101
+ local second=preview(s,first.next)
+ eq(second.status,'PASSIVE_RANKING_SUGGESTS_SLOT')
+ eq(second.dispatchAuthorized,false);eq(second.executable,false)
 end)
 check('wrong enemy identity HOLD',function()
  local s=mk(true);s.enemy.enemyId='ALLY'
