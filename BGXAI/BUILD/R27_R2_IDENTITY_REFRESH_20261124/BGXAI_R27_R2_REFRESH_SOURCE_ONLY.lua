@@ -460,90 +460,176 @@ end
 return M
 end)()
 local Q81_CORE = (function()
--- BGXAI 081: fail-closed observation of action ID; NEVER proof of manual/EPS origin.
--- SOURCE ONLY. No hook, engine command, timers, local writes, file system or globals.
-local M = {version='0.3.49-081-QUEUE-OBSERVATION-V2',installed=false}
-local function integer(x)
-  return type(x)=='number' and x==math.floor(x) and x>=0 and x<=65535
+-- BGXAI 081 V3: passive raw action-context evidence, NEVER origin authorization.
+-- SOURCE ONLY. No hooks, actions, LOCALS, timers, files or game writes.
+-- m_source is recorded as an unclassified candidate, not manual/EPS proof.
+local M={version='0.3.51-081-ACTION-CONTEXT-V3',installed=false}
+
+local function integer(x,lo,hi)
+ return type(x)=='number' and x==x and x~=math.huge and x~=-math.huge and
+  x%1==0 and x>=lo and x<=hi
 end
-local function get_action(sprite)
-  if sprite==nil then return nil,'NO_SPRITE' end
-  local ok,action=pcall(function() return sprite.m_curAction end)
-  if not ok or action==nil then return nil,'CURRENT_ACTION_UNAVAILABLE' end
-  local ok2,id=pcall(function() return action.m_actionID end)
-  if not ok2 or not integer(id) then return nil,'ACTION_ID_UNAVAILABLE' end
-  return id,nil
+
+local function read_int(obj,key,lo,hi)
+ if obj==nil then return nil end
+ local ok,value=pcall(function() return obj[key] end)
+ if ok and integer(value,lo,hi) then return value end
+ return nil
 end
--- The x64 CGameAIBase structure has m_queuedActions (CTypedPtrList) with
--- m_nCount. This is a RAW size observation, never command provenance.
--- Do not iterate native pointers: only read the integer value, twice, via pcall.
-local function get_queue_count(sprite)
-  if sprite==nil then return nil,'QUEUE_SPRITE_UNKNOWN' end
-  local function one()
-    local q=sprite.m_queuedActions
-    return q and q.m_nCount or nil
-  end
-  local okA,a=pcall(one)
-  if not okA or not integer(a) or a>512 then
-    return nil,'QUEUE_COUNT_NOT_READABLE'
-  end
-  local okB,b=pcall(one)
-  if not okB or not integer(b) or b>512 or a~=b then
-    return nil,'QUEUE_COUNT_CHANGED_DURING_READ'
-  end
-  return a,nil
+
+local function read_nested_int(obj,parentKey,key,lo,hi)
+ if obj==nil then return nil end
+ local ok,parent=pcall(function() return obj[parentKey] end)
+ if not ok or parent==nil then return nil end
+ return read_int(parent,key,lo,hi)
 end
-function M.observe(sprite)
-  local id,issue=get_action(sprite)
-  local rawQueue,queueIssue=get_queue_count(sprite)
-  local afterId,afterIssue=get_action(sprite)
-  if afterIssue or afterId~=id then
-    id=nil;issue='ACTION_CHANGED_DURING_QUEUE_SNAPSHOT'
-    rawQueue=nil;queueIssue='QUEUE_OR_ACTION_UNSTABLE'
-  end
+
+local function current_action_id(sprite)
+ if sprite==nil then return nil end
+ local ok,action=pcall(function() return sprite.m_curAction end)
+ if not ok or action==nil then return nil end
+ return read_int(action,'m_actionID',0,65535)
+end
+
+local function queue_count(sprite)
+ if sprite==nil then return nil end
+ local function once()
+  local q=sprite.m_queuedActions
+  if q==nil then return nil end
+  return q.m_nCount
+ end
+ local okA,a=pcall(once)
+ if not okA or not integer(a,0,512) then return nil,'QUEUE_COUNT_NOT_READABLE' end
+ local okB,b=pcall(once)
+ if not okB or not integer(b,0,512) then return nil,'QUEUE_COUNT_NOT_READABLE' end
+ if a~=b then return nil,'QUEUE_COUNT_CHANGED_DURING_READ' end
+ return a,'RAW_QUEUE_COUNT_STABLE'
+end
+
+local function printable_ascii(value)
+ if type(value)~='string' or #value<1 or #value>48 then return false end
+ for i=1,#value do
+  local b=value:byte(i)
+  if b<32 or b>126 then return false end
+ end
+ return true
+end
+
+local function read_action_source(action)
+ if action==nil then return nil,'ACTION_SOURCE_ACTION_UNAVAILABLE' end
+ local ok,source=pcall(function() return action.m_source end)
+ if not ok or source==nil then return nil,'ACTION_SOURCE_FIELD_UNAVAILABLE' end
+ if type(source)=='string' then
+  if printable_ascii(source) then return source,'SOURCE_RAW_OBSERVED' end
+  return nil,'ACTION_SOURCE_STRING_INVALID'
+ end
+ local okPtr,ptr=pcall(function() return source.m_pchData end)
+ if not okPtr or not integer(ptr,65536,140737488355327) then
+  return nil,'ACTION_SOURCE_POINTER_UNAVAILABLE'
+ end
+ local reader=rawget(_G,'EEex_ReadLString')
+ if type(reader)~='function' then return nil,'EEEX_READLSTRING_UNAVAILABLE' end
+ local okRead,value=pcall(reader,ptr,49)
+ if not okRead or type(value)~='string' then return nil,'ACTION_SOURCE_READ_FAILED' end
+ if #value>48 then return nil,'ACTION_SOURCE_TRUNCATED' end
+ if value=='' then return nil,'ACTION_SOURCE_EMPTY' end
+ if not printable_ascii(value) then return nil,'ACTION_SOURCE_NONPRINTABLE' end
+ return value,'SOURCE_RAW_OBSERVED'
+end
+
+local function context_once(sprite,action)
+ local source,sourceStatus=read_action_source(action)
+ return {
+  inActionExecution=read_int(sprite,'m_bInActionExecution',0,1),
+  noInterrupt=read_int(sprite,'m_bNoInterrupt',0,1),
+  curScriptNum=read_int(sprite,'m_curScriptNum',-32768,32767),
+  actionCount=read_int(sprite,'m_actionCount',-32768,32767),
+  interrupt=read_int(sprite,'m_interrupt',-2147483648,2147483647),
+  orderedByInstance=read_nested_int(sprite,'m_lOrderedBy','m_Instance',0,2147483647),
+  orderedBySentInstance=read_nested_int(sprite,'m_lOrderedBySent','m_Instance',0,2147483647),
+  actionSource=source,
+  actionSourceStatus=sourceStatus,
+ }
+end
+
+local function context_stable(a,b)
+ return a.inActionExecution~=nil and b.inActionExecution==a.inActionExecution and
+  a.noInterrupt~=nil and b.noInterrupt==a.noInterrupt and
+  a.curScriptNum~=nil and b.curScriptNum==a.curScriptNum and
+  a.actionCount~=nil and b.actionCount==a.actionCount and
+  a.interrupt~=nil and b.interrupt==a.interrupt and
+  a.orderedByInstance==b.orderedByInstance and
+  a.orderedBySentInstance==b.orderedBySentInstance
+end
+
+function M.observe(sprite,action)
+ local idBefore=current_action_id(sprite)
+ local q1,q1Status=queue_count(sprite)
+ local c1=context_once(sprite,action)
+ local q2,q2Status=queue_count(sprite)
+ local c2=context_once(sprite,action)
+ local idAfter=current_action_id(sprite)
+ local callbackId=read_int(action,'m_actionID',0,65535)
+ local actionStable=idBefore~=nil and idBefore==idAfter and callbackId==idBefore
+ if not actionStable then
   return {
-    status=id==nil and 'ACTION_UNKNOWN' or 'CURRENT_ACTION_ID_OBSERVED',
-    reason=issue or 'ORIGIN_AND_QUEUE_NOT_PROVEN',
-    current_action_id=id,
-    -- Neither id==0 nor action-started listener proves script queue is empty.
-    queue_empty=nil, -- Do NOT promote raw count to EPS/manual-safe empty.
-    queue_count_raw=rawQueue,
-    queue_count_observed=rawQueue~=nil,
-    queue_count_read_status=rawQueue==nil and queueIssue or 'RAW_QUEUE_COUNT_STABLE',
-    queue_count_source='EEEX117_CGAMEAIBASE_QUEUED_ACTIONS_NCOUNT',
-    -- A nonzero count proves queued actions exist, NOT whose they are.
-    -- A zero count does NOT prove the active action is finished or AI-owned.
-    queue_nonempty_observed=rawQueue~=nil and rawQueue>0,
-    eps_queue_empty_verified=false,
-    action_origin='UNKNOWN',
-    action_origin_verified=false,
-    manual_command=nil,
-    manual_command_verified=false,
-    casting=nil,
-    healing=nil,
-    buffing=nil,
-    singing=nil,
-    detecting_traps=nil,
-    safe_to_dispatch=false,
-    orders_sent=0,
-    locals_written=0,
-    hooks_registered=0,
+   status='ACTION_UNKNOWN',reason='ACTION_CHANGED_DURING_CONTEXT_SNAPSHOT',
+   current_action_id=nil,queue_empty=nil,queue_count_raw=nil,
+   queue_count_observed=false,queue_count_read_status='QUEUE_OR_ACTION_UNSTABLE',
+   action_context_snapshot_stable=false,action_source_stable=false,
+   action_source_raw=nil,action_source_read_status='ACTION_CHANGED_DURING_CONTEXT_SNAPSHOT',
+   action_origin='UNKNOWN',action_origin_verified=false,
+   manual_command=nil,manual_command_verified=false,eps_queue_empty_verified=false,
+   safe_to_dispatch=false,orders_sent=0,locals_written=0,hooks_registered=0,
   }
+ end
+ local queueStable=q1~=nil and q2~=nil and q1==q2
+ local contextStable=context_stable(c1,c2)
+ local sourceStable=c1.actionSourceStatus=='SOURCE_RAW_OBSERVED' and
+  c2.actionSourceStatus=='SOURCE_RAW_OBSERVED' and c1.actionSource==c2.actionSource
+ local sourceStatus=c1.actionSourceStatus
+ if c1.actionSourceStatus~=c2.actionSourceStatus then
+  sourceStatus='ACTION_SOURCE_STATUS_CHANGED_DURING_READ'
+ elseif c1.actionSourceStatus=='SOURCE_RAW_OBSERVED' and c1.actionSource~=c2.actionSource then
+  sourceStatus='ACTION_SOURCE_CHANGED_DURING_READ'
+ end
+ local qNonempty=nil
+ if queueStable then qNonempty=(q1>0) end
+ local qStatus=q1Status
+ if q1Status~=q2Status then qStatus='QUEUE_COUNT_STATUS_CHANGED_DURING_READ'
+ elseif q1~=q2 then qStatus='QUEUE_COUNT_CHANGED_DURING_CAPTURE' end
+ return {
+  status='CURRENT_ACTION_CONTEXT_OBSERVED',reason='ORIGIN_NOT_PROVEN',
+  current_action_id=idBefore,
+  queue_empty=nil,
+  queue_count_raw=queueStable and q1 or nil,
+  queue_count_observed=queueStable,
+  queue_count_read_status=queueStable and 'RAW_QUEUE_COUNT_STABLE' or qStatus,
+  queue_nonempty_observed=qNonempty,
+  action_context_snapshot_stable=contextStable,
+  engine_action_execution_raw=contextStable and c1.inActionExecution or nil,
+  engine_no_interrupt_raw=contextStable and c1.noInterrupt or nil,
+  current_script_number_raw=contextStable and c1.curScriptNum or nil,
+  action_count_raw=contextStable and c1.actionCount or nil,
+  interrupt_raw=contextStable and c1.interrupt or nil,
+  ordered_by_instance_raw=contextStable and c1.orderedByInstance or nil,
+  ordered_by_sent_instance_raw=contextStable and c1.orderedBySentInstance or nil,
+  action_source_stable=sourceStable,
+  action_source_raw=sourceStable and c1.actionSource or nil,
+  action_source_read_status=sourceStatus,
+  action_source_semantics='UNCLASSIFIED_CAI_ACTION_M_SOURCE',
+  eps_queue_empty_verified=false,
+  action_origin='UNKNOWN',action_origin_verified=false,
+  manual_command=nil,manual_command_verified=false,
+  casting=nil,healing=nil,buffing=nil,singing=nil,detecting_traps=nil,
+  safe_to_dispatch=false,orders_sent=0,locals_written=0,hooks_registered=0,
+ }
 end
-function M.arbitrate(advisory, snapshot)
-  -- A new active adapter is NOT present in 081. Even a fabricated externally
-  -- optimistic snapshot cannot grant dispatch permission through this module.
-  local reason='ACTION_ORIGIN_AND_EPS_QUEUE_UNVERIFIED'
-  if type(snapshot)~='table' or snapshot.status~='CURRENT_ACTION_ID_OBSERVED' then
-    reason='CURRENT_ACTION_NOT_OBSERVED'
-  elseif type(advisory)~='table' or advisory.orders_sent~=0 then
-    reason='ADVISORY_NOT_TRUSTED'
-  elseif snapshot.current_action_id~=0 then
-    reason='ACTION_PRESENT_OR_QUEUE_UNVERIFIED'
-  end
-  return {status='HOLD',reason=reason,allow_engine_action=false,
-    orders_sent=0,locals_written=0,verified_queue_empty=false,
-    verified_origin=false}
+
+function M.arbitrate(advisory,snapshot)
+ return {status='HOLD',reason='ACTION_ORIGIN_AND_SAFE_BOUNDARY_NOT_PROVEN',
+  allow_engine_action=false,orders_sent=0,locals_written=0,
+  verified_queue_empty=false,verified_origin=false}
 end
 return M
 end)()
@@ -596,7 +682,7 @@ function R27.observe(sprite,action,partyIndex,getActiveStats)
  if sprite==nil or action==nil or not int(partyIndex,0,5) then
   return hold('ACTOR_ACTION_OR_PARTY_UNAVAILABLE') end
  local b=before_after(sprite,action)
- local queueBefore=Q81_CORE.observe(sprite)
+ local queueBefore=Q81_CORE.observe(sprite,action)
  if not same(b,b) then return hold('START_EVENT_KEYS_UNREADABLE') end
  local ok2,r2=pcall(R2_CORE.observe_sprite,sprite)
  if not ok2 or type(r2)~='table' then return hold('R2_CORE_EXCEPTION') end
@@ -614,13 +700,30 @@ function R27.observe(sprite,action,partyIndex,getActiveStats)
   return hold('R2_RECHECK_INCOMPLETE') end
  if not same(b,before_after(sprite,action)) then
   return hold('SELECTION_OR_ACTION_CHANGED_DURING_CAPTURE') end
- local queueAfter=Q81_CORE.observe(sprite)
+ local queueAfter=Q81_CORE.observe(sprite,action)
  local qStable=queueBefore.queue_count_observed==true and
   queueAfter.queue_count_observed==true and
   queueBefore.current_action_id==b.action and
   queueAfter.current_action_id==b.action and
   queueBefore.queue_count_raw==queueAfter.queue_count_raw
  local qCount=qStable and queueBefore.queue_count_raw or nil
+ local ctxStable=queueBefore.action_context_snapshot_stable==true and
+  queueAfter.action_context_snapshot_stable==true and
+  queueBefore.engine_action_execution_raw==queueAfter.engine_action_execution_raw and
+  queueBefore.engine_no_interrupt_raw==queueAfter.engine_no_interrupt_raw and
+  queueBefore.current_script_number_raw==queueAfter.current_script_number_raw and
+  queueBefore.action_count_raw==queueAfter.action_count_raw and
+  queueBefore.interrupt_raw==queueAfter.interrupt_raw and
+  queueBefore.ordered_by_instance_raw==queueAfter.ordered_by_instance_raw and
+  queueBefore.ordered_by_sent_instance_raw==queueAfter.ordered_by_sent_instance_raw
+ local srcStable=queueBefore.action_source_stable==true and
+  queueAfter.action_source_stable==true and
+  queueBefore.action_source_raw==queueAfter.action_source_raw
+ local srcStatus=queueBefore.action_source_read_status
+ if srcStatus~=queueAfter.action_source_read_status then
+  srcStatus='ACTION_SOURCE_STATUS_CHANGED_DURING_CAPTURE'
+ elseif queueBefore.action_source_raw~=queueAfter.action_source_raw then
+  srcStatus='ACTION_SOURCE_CHANGED_DURING_CAPTURE' end
  if r4.status~='RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS' or
     r4.derivedStatsDoubleReadConsistent~=true then
   return hold('R4_DERIVED_STATS_NOT_STABLE') end
@@ -642,6 +745,16 @@ function R27.observe(sprite,action,partyIndex,getActiveStats)
   rawInventoryDoubleReadConsistent=true,
   queueSnapshotStable=qStable,queuedActionsRaw=qCount,
   actionOriginVerified=false,manualEpsQueueVerified=false,
+  actionContextSnapshotStable=ctxStable,
+  engineActionExecutionRaw=ctxStable and queueBefore.engine_action_execution_raw or nil,
+  engineNoInterruptRaw=ctxStable and queueBefore.engine_no_interrupt_raw or nil,
+  currentScriptNumberRaw=ctxStable and queueBefore.current_script_number_raw or nil,
+  actionCountRaw=ctxStable and queueBefore.action_count_raw or nil,
+  interruptRaw=ctxStable and queueBefore.interrupt_raw or nil,
+  orderedByInstanceRaw=ctxStable and queueBefore.ordered_by_instance_raw or nil,
+  orderedBySentInstanceRaw=ctxStable and queueBefore.ordered_by_sent_instance_raw or nil,
+  actionSourceStable=srcStable,actionSourceRaw=srcStable and queueBefore.action_source_raw or nil,
+  actionSourceReadStatus=srcStatus,
   sampledStatsRaw={m_nNumberOfAttacks=rawApr,
    m_nTHAC0=f.m_nTHAC0,m_nSTR=f.m_nSTR,
    m_nSTRExtra=f.m_nSTRExtra,m_bImprovedHaste=f.m_bImprovedHaste,
@@ -657,7 +770,7 @@ function R27.observe(sprite,action,partyIndex,getActiveStats)
 end
 
 -- Strict bounded JSON for the future single existing-updater diagnostic writer.
--- No resource pointer, arbitrary object or user-supplied string is serialized.
+-- Only bounded, sanitized CAIAction source text is serialized; no raw pointer or origin classification.
 local function jnum(v,lo,hi)
  if int(v,lo,hi) then return tostring(v) end
  return 'null'
@@ -666,6 +779,24 @@ local function jstr(v)
  if type(v)~='string' or #v<1 or #v>8 or v:find('[^%w_]') then
   return 'null' end
  return '"'..v:upper()..'"'
+end
+local function jrawstr(v)
+ if type(v)~='string' or #v<1 or #v>48 then return 'null' end
+ for i=1,#v do local b=v:byte(i);if b<32 or b>126 then return 'null' end end
+ return '"'..v:gsub('\\','\\\\'):gsub('"','\\"')..'"'
+end
+local function jstatus(v)
+ local allowed={SOURCE_RAW_OBSERVED=true,ACTION_SOURCE_ACTION_UNAVAILABLE=true,
+  ACTION_SOURCE_FIELD_UNAVAILABLE=true,ACTION_SOURCE_POINTER_UNAVAILABLE=true,
+  EEEX_READLSTRING_UNAVAILABLE=true,ACTION_SOURCE_READ_FAILED=true,
+  ACTION_SOURCE_TRUNCATED=true,ACTION_SOURCE_EMPTY=true,
+  ACTION_SOURCE_NONPRINTABLE=true,ACTION_SOURCE_STRING_INVALID=true,
+  ACTION_SOURCE_STATUS_CHANGED_DURING_READ=true,
+  ACTION_SOURCE_CHANGED_DURING_READ=true,
+  ACTION_SOURCE_STATUS_CHANGED_DURING_CAPTURE=true,
+  ACTION_SOURCE_CHANGED_DURING_CAPTURE=true,
+  ACTION_CHANGED_DURING_CONTEXT_SNAPSHOT=true}
+ return allowed[v] and ('"'..v..'"') or 'null'
 end
 local function jslots(arr,n)
  if type(arr)~='table' or #arr~=n then return '[]' end
@@ -717,6 +848,18 @@ function R27.toConsoleJson(sample)
   ',"queuedActionsRaw":'..jnum(sample.queuedActionsRaw,0,512)..
   ',"queueNonemptyObserved":'..(sample.queueSnapshotStable==true and
     tostring(sample.queuedActionsRaw>0) or 'null')..
+  ',"actionContextSnapshotStable":'..tostring(sample.actionContextSnapshotStable==true)..
+  ',"engineActionExecutionRaw":'..jnum(sample.engineActionExecutionRaw,0,1)..
+  ',"engineNoInterruptRaw":'..jnum(sample.engineNoInterruptRaw,0,1)..
+  ',"currentScriptNumberRaw":'..jnum(sample.currentScriptNumberRaw,-32768,32767)..
+  ',"actionCountRaw":'..jnum(sample.actionCountRaw,-32768,32767)..
+  ',"interruptRaw":'..jnum(sample.interruptRaw,-2147483648,2147483647)..
+  ',"orderedByInstanceRaw":'..jnum(sample.orderedByInstanceRaw,0,2147483647)..
+  ',"orderedBySentInstanceRaw":'..jnum(sample.orderedBySentInstanceRaw,0,2147483647)..
+  ',"actionSourceStable":'..tostring(sample.actionSourceStable==true)..
+  ',"actionSourceRaw":'..jrawstr(sample.actionSourceRaw)..
+  ',"actionSourceReadStatus":'..jstatus(sample.actionSourceReadStatus)..
+  ',"actionSourceSemantics":"UNCLASSIFIED_CAI_ACTION_M_SOURCE"..
   ',"actionOriginVerified":false,"manualEpsQueueVerified":false'..
   ',"r4Status":'..(sample.r4Status=='RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS' and
     '"RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS"' or 'null')..
