@@ -115,7 +115,7 @@ jobs:
               ns['v108_get_state']=lambda:{'phase':phase['value']}
               calls=[]
               for name in ('v101_run','v102_run','v103_run','v104_run',
-                           'v105_run','v106_run','v107_run','v108_run','v111_run','v112_run','v116_run'):
+                           'v105_run','v106_run','v107_run','v108_run','v111_run','v112_run','v116_run','full_audit_run'):
                   def fn(*args,name=name,**kwargs):
                       calls.append(name)
                       return 0
@@ -128,6 +128,9 @@ jobs:
               short=['v101_run','v102_run','v103_run','v104_run','v107_run','v108_run','v111_run','v112_run','v116_run']
               full=['v101_run','v102_run','v103_run','v104_run',
                     'v105_run','v106_run','v107_run','v108_run','v111_run','v112_run','v116_run']
+              if release['version']>=120:
+                  short.append('full_audit_run')
+                  full.append('full_audit_run')
               check('INSTALLED',short)
               check('PREPARED',short)
               check('ROLLED_BACK',full)
