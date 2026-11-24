@@ -33,7 +33,13 @@ jobs:
           assert "V121_BOT_SHA='4dfb5d57f3bfddaca5a31884c5a91ea2a8380aa78ace28047409ebe9dfb531b3'" in text
           assert "V121_TRUST_SHA='7622bfdec1f77e44a307c0cda3e73c86d143a024b87d4ad0f359897c89a74124'" in text
           ast.parse('\n'.join(text.splitlines()[1:]))
+          import hashlib,json
+          manifest=json.loads(Path('bg-eet-ru/onefile/release.json').read_text(encoding='utf8'))
+          assert manifest['version']==121
+          assert manifest['game_writes_allowed'] is False
+          assert hashlib.sha256(s).hexdigest()==manifest['sha256']
           print('V121_AST_AND_SAFETY_PINS_PASS',len(s))
+          print('V121_RELEASE_MANIFEST_SHA_PASS')
       - name: Verify exact bundle source fingerprints
         shell: python
         run: |
