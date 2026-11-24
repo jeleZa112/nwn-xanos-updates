@@ -26,7 +26,7 @@ class Updater167(unittest.TestCase):
         self.assertIn('Download-Limited $scriptSources $temporaryScript 80000',(ROOT/'BGXAI_UPDATE.cmd').read_text())
     def test_02_legacy_1_to_166_branch_bodies_preserved_after_aliasing(self):
         lines=re.findall(r"(?m)^'(\d+)' \{[^\r\n]*",self.text)
-        self.assertEqual([int(x) for x in lines],list(range(1,169)))
+        self.assertEqual([int(x) for x in lines],list(range(1,170)))
         old=[line for line in self.text.splitlines() if re.match(r"^'\d+' \{",line) and int(line.split("'")[1])<=166]
         for short,long in SHORT_TO_ORIGINAL.items():
             old=[re.sub(r'\b'+re.escape(short)+r'\b',long,line) for line in old]
@@ -50,8 +50,8 @@ class Updater167(unittest.TestCase):
         self.assertEqual(m['schema'],1)
         self.assertEqual(m['channel'],'bgxai-fox-new-safe-source')
         self.assertEqual(m['version'],VERSION)
-        self.assertEqual(len(m['files']),5)
-        expected={'BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py','BGXAI_WEAPON_SLOT_CONSUMER_V3.baf','BGXAI_AUTO_BATCH_RO_V1.py','test_auto_batch_ro_v1.py','test_weapon_native_compile_ro_v1.py'}
+        self.assertEqual(len(m['files']),7)
+        expected={'BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py','BGXAI_WEAPON_SLOT_CONSUMER_V3.baf','BGXAI_AUTO_BATCH_RO_V1.py','test_auto_batch_ro_v1.py','test_weapon_native_compile_ro_v1.py','BGXAI_R29_GUARDED.py','BGXAI_R29_KHALID_BOW_TO_SWORD.baf'}
         self.assertEqual({e['dest'] for e in m['files']},expected)
         for entry in m['files']:
             self.assertEqual(entry['source'],'BGXAI/patchsets/ranged_fighter_guarded_20261119/'+entry['dest'])
@@ -83,5 +83,18 @@ class Updater167(unittest.TestCase):
             self.assertNotIn(banned,branch)
         self.assertIn('BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py',
                       next(x for x in self.text.splitlines() if x.startswith("'167' {")))
+    def test_08_r29_typed_guard_and_old_menus_unchanged(self):
+        self.assertIn('169 - R29 bow-to-sword native pilot (guarded)',self.text)
+        branch=next(v for v in self.text.splitlines() if v.startswith("'169' {"))
+        self.assertIn('SyncRelease $w3',branch)
+        self.assertIn('BGXAI_R29_GUARDED.py',branch)
+        self.assertIn('--game $gr',branch)
+        for bad in ('--force-install','--force-uninstall','SelectWeaponAbility','ClearActions','WeiDU.log'):
+            self.assertNotIn(bad,branch)
+        module=(SOURCE/'BGXAI_R29_GUARDED.py').read_text()
+        for required in ('INSTALL_BGXR29_KHALID_BOW_TO_SWORD_PILOT',
+                         'ROLLBACK_BGXR29_KHALID_BOW_TO_SWORD_PILOT',
+                         'ORIGINAL_1162_BLOCKS_NOT_PRESERVED'):
+            self.assertIn(required,module)
 if __name__=='__main__':
     unittest.main(verbosity=2)

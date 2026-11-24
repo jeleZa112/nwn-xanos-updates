@@ -7,6 +7,9 @@ on:
       - 'BGXAI/fox_new/BOOTSTRAP_PIN.json'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_COMPILE_MANIFEST_V1.json'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_AUTO_BATCH_RO_V1.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_R29_GUARDED.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_R29_KHALID_BOW_TO_SWORD.baf'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_bgxai_r29_guarded.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_auto_batch_ro_v1.py'
       - 'BGXAI/BUILD/WEAPON_NATIVE_COMPILE_PREFLIGHT_20261124/test_updater_menu167_ro.py'
       - '.github/workflows/bgxai-auto-batch-ro-ci.yml'
@@ -34,6 +37,8 @@ jobs:
         run: python BGXAI/BUILD/WEAPON_NATIVE_COMPILE_PREFLIGHT_20261124/test_updater_menu167_ro.py
       - name: 45 dedicated batch guard tests and real 512-case advisory source gate
         run: python BGXAI/patchsets/ranged_fighter_guarded_20261119/test_auto_batch_ro_v1.py
+      - name: R29 guarded prototype 18 offline fail-closed tests
+        run: python BGXAI/patchsets/ranged_fighter_guarded_20261119/test_bgxai_r29_guarded.py
       - name: 21 native WeiDU contract tests with isolated fake game
         run: python BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_native_compile_ro_v1.py
       - name: Batch orchestrator end-to-end no EET, no game changes

@@ -1,0 +1,30 @@
+// BGXAI R29 — narrow, experimental native close-range bow-to-sword pilot.
+// Never claims APR optimization, manual/EPS origin or a safe universal action boundary.
+// For pure fighter companion with EXACT SW1H04 quickslot 0 and BOW05 quickslot 1.
+// Requires currently selected AROW01 projectile and ranged weapon.
+// Does not attack, clear actions, cast spells, change target or select a character.
+// Installed only with typed authorisation; existing F guard OFF disables behavior.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Class(Myself,FIGHTER)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  Global("BGX29_DISABLE","LOCALS",0)
+  ActionListEmpty()
+  !GlobalTimerNotExpired("MO_SpellCast","LOCALS")
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_HELPLESS)
+  IsWeaponRanged(Myself)
+  CheckItemSlot(Myself,"SW1H04",SLOT_WEAPON0)
+  CheckItemSlot(Myself,"BOW05",SLOT_WEAPON1)
+  CurrentAmmo("AROW01",Myself)
+  See(NearestEnemyOf(Myself))
+  !InParty(NearestEnemyOf(Myself))
+  !Allegiance(NearestEnemyOf(Myself),GOODCUTOFF)
+  Range(NearestEnemyOf(Myself),6)
+THEN
+  RESPONSE #100
+    SelectWeaponAbility(SLOT_WEAPON0,0)
+END

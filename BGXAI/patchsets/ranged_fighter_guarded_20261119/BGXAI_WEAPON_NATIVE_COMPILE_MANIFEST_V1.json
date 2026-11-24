@@ -32,6 +32,18 @@
       "dest": "test_weapon_native_compile_ro_v1.py",
       "size": 10977,
       "sha256": "6df6bbd236b60dec18af1d2174f804d55640f605ceeee567701893459c0ee182"
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_R29_GUARDED.py",
+      "dest": "BGXAI_R29_GUARDED.py",
+      "size": 16537,
+      "sha256": "14f4d83d058bbd216a91a625df25ff447be70dddd2a43e2b0f4537062ff3e742"
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_R29_KHALID_BOW_TO_SWORD.baf",
+      "dest": "BGXAI_R29_KHALID_BOW_TO_SWORD.baf",
+      "size": 1189,
+      "sha256": "e184c6468e4d927b628b826395b0b573e11b98602e58bacbba4ac9370cda3eee"
     }
   ]
 }
