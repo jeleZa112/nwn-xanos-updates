@@ -174,7 +174,7 @@ class NativeEvidenceJoin(unittest.TestCase):
             self.assertFalse(data['R28']['engineSelectedBowArrowPairProven'])
             self.assertFalse(data['dispatchAuthorized'])
             self.assertEqual(data['ordersSent'],0)
-            for private in ('C:\\\\','Drevo','\\\\Users\\\\','actorRaw','captureFileName'):
+            for private in ('C:\\\\','Somebody','\\\\Users\\\\','actorRaw','captureFileName'):
                 self.assertNotIn(private,json.dumps(data))
     def test_boolean_as_zero_not_accepted(self):
         z=list(fixtures());z[2]['ordersSent']=False
