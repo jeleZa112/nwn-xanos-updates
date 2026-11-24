@@ -214,6 +214,7 @@ $td13=@{id='TD13';version='0.3.85-R13-TARGET-MISSILE-RO';manifest=($rg.prefix+'B
 $td14=@{id='TD14';version='0.3.87-R13-CONSOLE-CAPTURE-RO';manifest=($rg.prefix+'BGXAI_R13_SHORTNAME_MANIFEST_V1.json');prefix=$rg.prefix;localPath=Join-Path $gr 'BGXAI_DEV\weapon_target_r13_shortfix';names=@('BGXAI_R13_SHORTNAME_GUARDED.py','M_BGXD13.lua')}
 $td15=@{id='TD15';version='0.3.88-R13-HOLD-DIAG-RO';manifest=($rg.prefix+'BGXAI_R13_HOLD_DIAG_MANIFEST_V1.json');prefix=$rg.prefix;localPath=Join-Path $gr 'BGXAI_DEV\weapon_target_r13_diag';names=@('BGXAI_R13_HOLD_DIAG_GUARDED.py','R15_M_BGXD13.lua')}
 $r27=@{id='R27';version='0.3.89-R27-PASSIVE-GUARDED';manifest='BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/manifest_updater.json';prefix='BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/';localPath=Join-Path $gr 'BGXAI_DEV\weapon_r27_observer';names=@('BGXAI_R27_GUARDED.py','M_BGXR27.lua','BGXAI_R28_NATIVE_FROM_R27_RO.py','BGXAI_WEAPON_NATIVE_ITM_R3_RO.py')}
+$w3=@{id='W3';version='0.3.91-WEAPON-NATIVE-COMPILE-RO';manifest='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_COMPILE_MANIFEST_V1.json';prefix='BGXAI/patchsets/ranged_fighter_guarded_20261119/';localPath=Join-Path $gr 'BGXAI_DEV\weapon_priority_v3';names=@('BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py','BGXAI_WEAPON_SLOT_CONSUMER_V3.baf')}
 $v2install=Join-Path $rg.localPath 'BGXRANGED_V2_GUARDED_INSTALL.py'
 $ff=Join-Path $rg.localPath 'BGX_FRIENDLY_RETALIATION_GUARDED.py'
 $rr=$rg.localPath
@@ -264,13 +265,13 @@ try{return ([BitConverter]::ToString($hasher.ComputeHash($stream))).Replace('-',
 finally {$stream.Dispose()}
 } finally {$hasher.Dispose()}
 }
-function AssertNotReparse([string]$item) {
+function ANR([string]$item) {
 if(Test-Path -LiteralPath $item){
 $node=Get-Item -LiteralPath $item -Force
 if(($node.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){throw ('Reparse path blocked: '+$item)}
 }
 }
-function VerifiedManifest($spec) {
+function VM($spec) {
 $bytes=Get-PinnedBytes $spec.manifest
 if($bytes.Length -gt 30000){throw 'Oversized manifest'}
 $m=[Text.Encoding]::UTF8.GetString($bytes) | ConvertFrom-Json
@@ -289,10 +290,10 @@ return $seen
 }
 function Generate041Assets($spec) {
 if($spec.id -ne '041'){return}
-$checked=VerifiedManifest $spec
+$checked=VM $spec
 foreach($name in $spec.names) {
 $f=Join-Path $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
-AssertNotReparse $f
+ANR $f
 if((HashFile $f) -cne $checked[$name].sha){throw ('Unverified BGX41 generator/source: '+$name)}
 }
 $manifest=[Text.Encoding]::UTF8.GetString((Get-PinnedBytes $spec.manifest)) | ConvertFrom-Json
@@ -310,8 +311,8 @@ $seen[$name]=$x
 $zcur=$true
 foreach($name in $expected) {
 $dest=Join-Path $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
-AssertNotReparse (Split-Path -Parent $dest)
-AssertNotReparse $dest
+ANR (Split-Path -Parent $dest)
+ANR $dest
 if((HashFile $dest) -cne [string]$seen[$name].sha256) {$zcur=$false}
 }
 if(!$zcur) {
@@ -330,11 +331,11 @@ Write-Host (' VERIFIED generated '+$name)
 }
 }
 function SyncRelease($spec){
-AssertNotReparse $gr
-AssertNotReparse (Join-Path $gr 'BGXAI_DEV')
-AssertNotReparse $spec.localPath
+ANR $gr
+ANR (Join-Path $gr 'BGXAI_DEV')
+ANR $spec.localPath
 Write-Host ('Verifying BGXAI '+$spec.id+' from pinned commit ...')
-$list=VerifiedManifest $spec
+$list=VM $spec
 $payload=@{}
 foreach($name in $spec.names){
 $bytes=Get-PinnedBytes $list[$name].remote
@@ -352,8 +353,8 @@ $stamp=(Get-Date -Format 'yyyyMMdd_HHmmss_fff')
 $oldCopy=Join-Path $zcd ($spec.id+'_backup_'+$stamp)
 foreach($name in $spec.names){
 $dest=Join-Path $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
-AssertNotReparse (Split-Path -Parent $dest)
-AssertNotReparse $dest
+ANR (Split-Path -Parent $dest)
+ANR $dest
 if(Test-Path -LiteralPath $dest){
 $oldFile=Join-Path $oldCopy ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
 [IO.Directory]::CreateDirectory((Split-Path -Parent $oldFile))|Out-Null
@@ -374,11 +375,11 @@ if((HashFile $dest) -cne $list[$name].sha){throw ('Source file hash failure: '+$
 Generate041Assets $spec
 Write-Host ('BGXAI '+$spec.id+' SOURCE SYNC DONE. Live scripts and WeiDU unchanged.')
 }
-function RunRelease($spec,[string]$mode){
-$list=VerifiedManifest $spec
+function RR($spec,[string]$mode){
+$list=VM $spec
 foreach($name in $spec.names){
 $dest=Join-Path $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
-AssertNotReparse $dest
+ANR $dest
 if((HashFile $dest) -cne $list[$name].sha){throw ('Unverified local source; select source sync first: '+$name)}
 }
 Generate041Assets $spec
@@ -397,10 +398,10 @@ if($LASTEXITCODE -ne 0){throw ('BGXAI '+$spec.id+' installer returned code '+$LA
 function Run060Guarded([string]$mode) {
 if($mode -cne 'install' -and $mode -cne 'rollback'){throw 'BGXAI060 unsafe operation blocked'}
 SyncRelease $b60
-$files=VerifiedManifest $b60
+$files=VM $b60
 foreach($name in $b60.names){
 $dest=Join-Path $b60.localPath $name
-AssertNotReparse $dest
+ANR $dest
 if((HashFile $dest) -cne $files[$name].sha){throw ('BGXAI060 source SHA mismatch: '+$name)}
 }
 $ztok=if($mode -ceq 'install'){'INSTALL_BGXAI_060'}else{'ROLLBACK_BGXAI_060'}
@@ -416,9 +417,9 @@ function Status060ReadOnly {
 $log=Join-Path $gr 'WeiDU.log'
 $bcs=Join-Path $gr 'override\BDDEFAI.BCS'
 $lua=Join-Path $gr 'override\M_BX43.lua'
-AssertNotReparse $log
-AssertNotReparse $bcs
-AssertNotReparse $lua
+ANR $log
+ANR $bcs
+ANR $lua
 if(!(Test-Path -LiteralPath $log -PathType Leaf)){throw 'WeiDU.log missing'}
 $rows=@(Get-Content -LiteralPath $log -ErrorAction Stop | Where-Object {$_.TrimStart().StartsWith('~')})
 if($rows.Count -lt 1){throw 'WeiDU.log has no active components'}
@@ -435,17 +436,17 @@ if($is056){
 Write-Host ('056 BCS SHA correct: '+($actualBCS -ceq '054c1c8e99b4d8ef8fb541287844d46cb81faa4c320f59c3f39f82f8bf0ab87c'))
 } elseif($is060) {
 $stage=Join-Path $gr 'BGX60\staged\BDDEFAI.BCS'
-AssertNotReparse $stage
+ANR $stage
 Write-Host ('060 staged BCS SHA matches installed: '+((HashFile $stage) -ceq $actualBCS -and $actualBCS.Length -eq 64))
 } else {Write-Host 'BGXAI060/056 is not last; do not install/rollback blindly.'}
 Write-Host ('Installed BCS SHA256: '+$actualBCS)
 }
 function Test061ReadOnly {
 $spec=$x61
-$list=VerifiedManifest $spec
+$list=VM $spec
 foreach($name in $spec.names){
 $dest=Join-Path $spec.localPath $name
-AssertNotReparse $dest
+ANR $dest
 if((HashFile $dest) -cne $list[$name].sha){throw ('BGXAI061 unverified file: '+$name)}
 }
 Write-Host '061 WeiDU BAF/Lua preflight (RO).'
@@ -456,10 +457,10 @@ Write-Host 'BGXAI 061 - preflight PASS; installed 060 unchanged.'
 function Run061Guarded([string]$mode) {
 if($mode -cne 'install' -and $mode -cne 'rollback'){throw 'BGXAI061 unknown mode blocked'}
 SyncRelease $x61
-$list=VerifiedManifest $x61
+$list=VM $x61
 foreach($name in $x61.names){
 $dest=Join-Path $x61.localPath $name
-AssertNotReparse $dest
+ANR $dest
 if((HashFile $dest) -cne $list[$name].sha){throw ('BGXAI061 source SHA mismatch: '+$name)}
 }
 $ztok=if($mode -ceq 'install'){'INSTALL_BGXAI_061'}else{'ROLLBACK_BGXAI_061'}
@@ -473,10 +474,10 @@ Write-Host ('BGXAI 061 '+$mode+' completed, inspect status 68.')
 }
 function Verify064GuardedSource {
 $spec=$x64
-$list=VerifiedManifest $spec
+$list=VM $spec
 foreach($name in $spec.names){
 $dest=Join-Path $spec.localPath $name
-AssertNotReparse $dest
+ANR $dest
 if((HashFile $dest) -cne $list[$name].sha){throw ('BGXAI064G source SHA mismatch: '+$name)}
 }
 }
@@ -515,19 +516,19 @@ Write-Host ('BGXAI064 '+$mode+' completed; check guarded read-only STATUS menu 7
 }
 function Verify066Source {
 $spec=$x66
-$checked=VerifiedManifest $spec
+$checked=VM $spec
 foreach($name in $spec.names){
 $dest=Join-Path $spec.localPath $name
-AssertNotReparse $dest
+ANR $dest
 if((HashFile $dest) -cne $checked[$name].sha){throw ('BGXAI066 source SHA mismatch: '+$name)}
 }
 }
 function Verify066SGuardedSource {
 $spec=$x6s
-$items=VerifiedManifest $spec
+$items=VM $spec
 foreach($name in $spec.names){
 $file=Join-Path $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
-AssertNotReparse $file
+ANR $file
 if((HashFile $file) -cne $items[$name].sha){throw ('BGXAI066S source SHA mismatch: '+$name)}
 }
 }
@@ -561,10 +562,10 @@ Write-Host 'BGXAI066S action completed. Verify via menu 85.'
 
 function Verify067GuardedSource {
 $spec=$x67
-$items=VerifiedManifest $spec
+$items=VM $spec
 foreach($name in $spec.names){
 $file=Join-Path $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
-AssertNotReparse $file
+ANR $file
 if((HashFile $file) -cne $items[$name].sha){throw ('BGXAI067 source SHA mismatch: '+$name)}
 }
 }
@@ -599,10 +600,10 @@ Write-Host 'BGXAI067 action completed. Read-only status via menu 90.'
 
 function VerifyIdleGuardSource {
 $spec=$xidle
-$items=VerifiedManifest $spec
+$items=VM $spec
 foreach($name in $spec.names){
 $file=Join-Path $spec.localPath $name
-AssertNotReparse $file
+ANR $file
 if((HashFile $file) -cne $items[$name].sha){throw ('BGXAI IDLE source SHA mismatch: '+$name)}
 }
 }
@@ -634,10 +635,10 @@ Write-Host ('BGXAI IDLE '+$mode+' completed. Use menu 95 for status.')
 
 function BGXAOEReadOnly {
 SyncRelease $ao
-$checked=VerifiedManifest $ao
+$checked=VM $ao
 foreach($name in $ao.names) {
 $file=Join-Path $ao.localPath $name
-AssertNotReparse $file
+ANR $file
 if((HashFile $file) -cne $checked[$name].sha){throw ('AOE117 source SHA mismatch: '+$name)}
 }
 Write-Host 'AOE117 READ ONLY.'
@@ -658,13 +659,13 @@ $rows=@(Get-Content -LiteralPath (Join-Path $gr 'WeiDU.log') -ErrorAction Stop |
 if($rows.Count -lt 1){throw 'No WeiDU components'}
 return [string]$rows[-1]
 }
-function BGXOneFileManaged($spec,[string]$mode,[string]$yesInstall,[string]$yesRollback){
+function BOM($spec,[string]$mode,[string]$yesInstall,[string]$yesRollback){
 if(@('status','preflight','install','rollback') -cnotcontains $mode){throw 'Invalid managed mode'}
 SyncRelease $spec
-$expected=VerifiedManifest $spec
+$expected=VM $spec
 foreach($name in $spec.names){
 $file=Join-Path $spec.localPath $name
-AssertNotReparse $file
+ANR $file
 if((HashFile $file) -cne $expected[$name].sha){throw ('BGX source SHA invalid: '+$name)}
 }
 $zin=Join-Path $spec.localPath $spec.installer
@@ -749,10 +750,10 @@ $zpe=$null
 [System.Management.Automation.Language.Parser]::ParseFile($PSCommandPath,[ref]$parsedTokens,[ref]$zpe) | Out-Null
 if($zpe.Count -gt 0){throw ('BGXAI064 PowerShell parser STOP: '+(($zpe | ForEach-Object {$_.Message}) -join '; '))}
 $spec=$release064
-$list=VerifiedManifest $spec
+$list=VM $spec
 foreach($name in $spec.names){
 $dest=Join-Path $spec.localPath $name
-AssertNotReparse $dest
+ANR $dest
 if((HashFile $dest) -cne $list[$name].sha){throw ('BGXAI064 source SHA mismatch: '+$name)}
 }
 Write-Host '064 SHA-checked 061 status; read only.'
@@ -764,9 +765,9 @@ function Status061ReadOnly {
 $log=Join-Path $gr 'WeiDU.log'
 $bcs=Join-Path $gr 'override\BDDEFAI.BCS'
 $lua=Join-Path $gr 'override\M_BX43.lua'
-AssertNotReparse $log
-AssertNotReparse $bcs
-AssertNotReparse $lua
+ANR $log
+ANR $bcs
+ANR $lua
 if(!(Test-Path -LiteralPath $log -PathType Leaf)){throw 'WeiDU.log missing'}
 $rows=@(Get-Content -LiteralPath $log -ErrorAction Stop | Where-Object {$_.TrimStart().StartsWith('~')})
 if($rows.Count -lt 1){throw 'WeiDU.log has no installed components'}
@@ -781,8 +782,8 @@ Write-Host ('060 is LAST: '+$is060)
 if($is061){
 $sourceBCS=Join-Path $gr 'BGX61\staged\BDDEFAI.BCS'
 $sourceLua=Join-Path $gr 'BGX61\staged\M_BX43.lua'
-AssertNotReparse $sourceBCS
-AssertNotReparse $sourceLua
+ANR $sourceBCS
+ANR $sourceLua
 Write-Host ('061 BCS staged SHA matches live: '+((HashFile $sourceBCS) -ceq $bhash -and $bhash.Length -eq 64))
 Write-Host ('061 Lua staged SHA matches live: '+((HashFile $sourceLua) -ceq $lhash -and $lhash.Length -eq 64))
 } elseif($is060) {
@@ -794,10 +795,10 @@ Write-Host ('Live Lua SHA: '+$lhash)
 }
 function Test060ReadOnly {
 $spec=$b60
-$list=VerifiedManifest $spec
+$list=VM $spec
 foreach($name in $spec.names){
 $dest=Join-Path $spec.localPath $name
-AssertNotReparse $dest
+ANR $dest
 if((HashFile $dest) -cne $list[$name].sha){throw ('BGXAI060 unverified file: '+$name)}
 }
 Write-Host 'BGXAI 060 - READ-ONLY Windows WeiDU compile (NO INSTALL).'
@@ -1136,6 +1137,7 @@ Write-Host @'
 164 - Installed EEex R19 static audit (READ ONLY)
 165 - R27 observer (guarded)
 166 - V7 DPLAYER close-fire fix (guarded)
+167 - Weapon V3 native BAF compile (READ ONLY)
  0 - Exit [default]
 '@
 $choice=Read-Host 'Choice [0]'
@@ -1144,64 +1146,64 @@ if($choice -eq '0'){Write-Host 'No changes.';exit 0}
 try {
 switch($choice){
 '1' {SyncRelease $b40;break}
-'2' {RunRelease $b40 '--status';break}
-'3' {SyncRelease $b40;RunRelease $b40 '--install';break}
-'4' {RunRelease $b40 '--uninstall';break}
-'5' {RunRelease $release039 '--status';break}
-'6' {RunRelease $release039 '--uninstall';break}
+'2' {RR $b40 '--status';break}
+'3' {SyncRelease $b40;RR $b40 '--install';break}
+'4' {RR $b40 '--uninstall';break}
+'5' {RR $release039 '--status';break}
+'6' {RR $release039 '--uninstall';break}
 '7' {Test041ReadOnly;break}
 '8' {SyncRelease $b41;break}
-'9' {RunRelease $b41 '--status';break}
-'10' {SyncRelease $b41;RunRelease $b41 '--install';break}
-'11' {RunRelease $b41 '--uninstall';break}
+'9' {RR $b41 '--status';break}
+'10' {SyncRelease $b41;RR $b41 '--install';break}
+'11' {RR $b41 '--uninstall';break}
 '12' {Test042EPSReadOnly;break}
 '13' {Test042BReadOnly;break}
 '14' {SyncRelease $b42;break}
-'15' {SyncRelease $b42;RunRelease $b42 '--install';break}
-'16' {RunRelease $b42 '--status';break}
-'17' {SyncRelease $b42;RunRelease $b42 '--uninstall';break}
+'15' {SyncRelease $b42;RR $b42 '--install';break}
+'16' {RR $b42 '--status';break}
+'17' {SyncRelease $b42;RR $b42 '--uninstall';break}
 '18' {Test043PReadOnly;break}
 '19' {SyncRelease $x43;break}
-'20' {SyncRelease $x43;RunRelease $x43 '--install';break}
-'21' {RunRelease $x43 '--status';break}
-'22' {SyncRelease $x43;RunRelease $x43 '--uninstall';break}
+'20' {SyncRelease $x43;RR $x43 '--install';break}
+'21' {RR $x43 '--status';break}
+'22' {SyncRelease $x43;RR $x43 '--uninstall';break}
 '23' {Test044ReadOnly;break}
 '24' {SyncRelease $t44;break}
-'25' {SyncRelease $t44;RunRelease $t44 '--install';break}
-'26' {RunRelease $t44 '--status';break}
-'27' {SyncRelease $t44;RunRelease $t44 '--uninstall';break}
+'25' {SyncRelease $t44;RR $t44 '--install';break}
+'26' {RR $t44 '--status';break}
+'27' {SyncRelease $t44;RR $t44 '--uninstall';break}
 '28' {Test045ReadOnly;break}
 '29' {SyncRelease $t45;break}
-'30' {SyncRelease $t45;RunRelease $t45 '--install';break}
-'31' {RunRelease $t45 '--status';break}
-'32' {SyncRelease $t45;RunRelease $t45 '--uninstall';break}
+'30' {SyncRelease $t45;RR $t45 '--install';break}
+'31' {RR $t45 '--status';break}
+'32' {SyncRelease $t45;RR $t45 '--uninstall';break}
 '33' {Test046ReadOnly;break}
 '34' {SyncRelease $t46;break}
-'35' {SyncRelease $t46;RunRelease $t46 '--install';break}
-'36' {RunRelease $t46 '--status';break}
-'37' {SyncRelease $t46;RunRelease $t46 '--uninstall';break}
+'35' {SyncRelease $t46;RR $t46 '--install';break}
+'36' {RR $t46 '--status';break}
+'37' {SyncRelease $t46;RR $t46 '--uninstall';break}
 '38' {Test047ReadOnly;break}
 '39' {SyncRelease $t47;break}
-'40' {SyncRelease $t47;RunRelease $t47 '--install';break}
-'41' {RunRelease $t47 '--status';break}
-'42' {SyncRelease $t47;RunRelease $t47 '--uninstall';break}
+'40' {SyncRelease $t47;RR $t47 '--install';break}
+'41' {RR $t47 '--status';break}
+'42' {SyncRelease $t47;RR $t47 '--uninstall';break}
 '43' {Test048ReadOnly;break}
 '44' {SyncRelease $t48;break}
-'45' {SyncRelease $t48;RunRelease $t48 '--install';break}
-'46' {RunRelease $t48 '--status';break}
-'47' {SyncRelease $t48;RunRelease $t48 '--uninstall';break}
+'45' {SyncRelease $t48;RR $t48 '--install';break}
+'46' {RR $t48 '--status';break}
+'47' {SyncRelease $t48;RR $t48 '--uninstall';break}
 '48' {Test049ReadOnly;break}
 '49' {SyncRelease $t49;break}
-'50' {SyncRelease $t49;RunRelease $t49 '--install';break}
-'51' {RunRelease $t49 '--status';break}
-'52' {SyncRelease $t49;RunRelease $t49 '--uninstall';break}
+'50' {SyncRelease $t49;RR $t49 '--install';break}
+'51' {RR $t49 '--status';break}
+'52' {SyncRelease $t49;RR $t49 '--uninstall';break}
 '53' {SyncRelease $release054;break}
-'54' {SyncRelease $release054;RunRelease $release054 '--compile-readonly';break}
-'55' {SyncRelease $x56;RunRelease $x56 '--precheck';break}
+'54' {SyncRelease $release054;RR $release054 '--compile-readonly';break}
+'55' {SyncRelease $x56;RR $x56 '--precheck';break}
 '56' {SyncRelease $x56;break}
-'57' {SyncRelease $x56;RunRelease $x56 '--install';break}
-'58' {RunRelease $x56 '--status';break}
-'59' {SyncRelease $x56;RunRelease $x56 '--uninstall';break}
+'57' {SyncRelease $x56;RR $x56 '--install';break}
+'58' {RR $x56 '--status';break}
+'59' {SyncRelease $x56;RR $x56 '--uninstall';break}
 '60' {SyncRelease $b60;break}
 '61' {SyncRelease $b60;Test060ReadOnly;break}
 '62' {Run060Guarded 'install';break}
@@ -1239,26 +1241,26 @@ switch($choice){
 '94' {RunIdleGuardGuarded 'install';break}
 '95' {CheckIdleGuardReadOnly 'status';break}
 '96' {RunIdleGuardGuarded 'rollback';break}
-'97' {BGXOneFileManaged $xpr 'status' 'INSTALL_BGXPRIEST_MODES' 'ROLLBACK_BGXPRIEST_MODES';break}
-'98' {BGXOneFileManaged $xpr 'preflight' 'INSTALL_BGXPRIEST_MODES' 'ROLLBACK_BGXPRIEST_MODES';break}
-'99' {BGXOneFileManaged $xpr 'install' 'INSTALL_BGXPRIEST_MODES' 'ROLLBACK_BGXPRIEST_MODES';break}
-'100' {BGXOneFileManaged $xpr 'rollback' 'INSTALL_BGXPRIEST_MODES' 'ROLLBACK_BGXPRIEST_MODES';break}
-'101' {BGXOneFileManaged $xteam 'status' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
-'102' {BGXOneFileManaged $xteam 'preflight' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
-'103' {BGXOneFileManaged $xteam 'install' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
-'104' {BGXOneFileManaged $xteam 'rollback' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
-'105' {BGXOneFileManaged $xp2 'status' 'INSTALL_BGXP2_COMBAT_PRIEST' 'ROLLBACK_BGXP2_COMBAT_PRIEST';break}
-'106' {BGXOneFileManaged $xp2 'preflight' 'INSTALL_BGXP2_COMBAT_PRIEST' 'ROLLBACK_BGXP2_COMBAT_PRIEST';break}
-'107' {BGXOneFileManaged $xp2 'install' 'INSTALL_BGXP2_COMBAT_PRIEST' 'ROLLBACK_BGXP2_COMBAT_PRIEST';break}
-'108' {BGXOneFileManaged $xp2 'rollback' 'INSTALL_BGXP2_COMBAT_PRIEST' 'ROLLBACK_BGXP2_COMBAT_PRIEST';break}
-'109' {BGXOneFileManaged $xp3 'status' 'INSTALL_BGXP3_AUTO_BUFFER' 'ROLLBACK_BGXP3_AUTO_BUFFER';break}
-'110' {BGXOneFileManaged $xp3 'preflight' 'INSTALL_BGXP3_AUTO_BUFFER' 'ROLLBACK_BGXP3_AUTO_BUFFER';break}
-'111' {BGXOneFileManaged $xp3 'install' 'INSTALL_BGXP3_AUTO_BUFFER' 'ROLLBACK_BGXP3_AUTO_BUFFER';break}
-'112' {BGXOneFileManaged $xp3 'rollback' 'INSTALL_BGXP3_AUTO_BUFFER' 'ROLLBACK_BGXP3_AUTO_BUFFER';break}
-'113' {BGXOneFileManaged $xp5 'status' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
-'114' {BGXOneFileManaged $xp5 'preflight' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
-'115' {BGXOneFileManaged $xp5 'install' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
-'116' {BGXOneFileManaged $xp5 'rollback' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
+'97' {BOM $xpr 'status' 'INSTALL_BGXPRIEST_MODES' 'ROLLBACK_BGXPRIEST_MODES';break}
+'98' {BOM $xpr 'preflight' 'INSTALL_BGXPRIEST_MODES' 'ROLLBACK_BGXPRIEST_MODES';break}
+'99' {BOM $xpr 'install' 'INSTALL_BGXPRIEST_MODES' 'ROLLBACK_BGXPRIEST_MODES';break}
+'100' {BOM $xpr 'rollback' 'INSTALL_BGXPRIEST_MODES' 'ROLLBACK_BGXPRIEST_MODES';break}
+'101' {BOM $xteam 'status' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
+'102' {BOM $xteam 'preflight' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
+'103' {BOM $xteam 'install' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
+'104' {BOM $xteam 'rollback' 'INSTALL_BGXAI_TEAM_GUARD' 'ROLLBACK_BGXAI_TEAM_GUARD';break}
+'105' {BOM $xp2 'status' 'INSTALL_BGXP2_COMBAT_PRIEST' 'ROLLBACK_BGXP2_COMBAT_PRIEST';break}
+'106' {BOM $xp2 'preflight' 'INSTALL_BGXP2_COMBAT_PRIEST' 'ROLLBACK_BGXP2_COMBAT_PRIEST';break}
+'107' {BOM $xp2 'install' 'INSTALL_BGXP2_COMBAT_PRIEST' 'ROLLBACK_BGXP2_COMBAT_PRIEST';break}
+'108' {BOM $xp2 'rollback' 'INSTALL_BGXP2_COMBAT_PRIEST' 'ROLLBACK_BGXP2_COMBAT_PRIEST';break}
+'109' {BOM $xp3 'status' 'INSTALL_BGXP3_AUTO_BUFFER' 'ROLLBACK_BGXP3_AUTO_BUFFER';break}
+'110' {BOM $xp3 'preflight' 'INSTALL_BGXP3_AUTO_BUFFER' 'ROLLBACK_BGXP3_AUTO_BUFFER';break}
+'111' {BOM $xp3 'install' 'INSTALL_BGXP3_AUTO_BUFFER' 'ROLLBACK_BGXP3_AUTO_BUFFER';break}
+'112' {BOM $xp3 'rollback' 'INSTALL_BGXP3_AUTO_BUFFER' 'ROLLBACK_BGXP3_AUTO_BUFFER';break}
+'113' {BOM $xp5 'status' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
+'114' {BOM $xp5 'preflight' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
+'115' {BOM $xp5 'install' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
+'116' {BOM $xp5 'rollback' 'INSTALL_BGXP5_EARLY_HEAL_SAFE' 'ROLLBACK_BGXP5_EARLY_HEAL_SAFE';break}
 '117' {BGXAOEReadOnly;break}
 '118' {BGXTest6Safe;break}
 '119' {SyncRelease $ao;& py -3 (Join-Path $ao.localPath 'BGX119_TRACE.py');if($LASTEXITCODE){throw '119 STOP'};break}
@@ -1302,13 +1304,14 @@ switch($choice){
 '157' {SyncRelease $rg;& py -3 (Join-Path $rr 'BGXRANGED_V6_GUARDED_INSTALL.py') --game $gr;if($LASTEXITCODE){throw '157 STOP'};break}
 '158' {SyncRelease $wr;& py -3 (Join-Path $wr.localPath 'BGXAI_WEAPON_GAME_PREFLIGHT_RO.py') --game $gr;if($LASTEXITCODE){throw '158 STOP'};break}
 '159' {SyncRelease $wp;& py -3 (Join-Path $wp.localPath 'BGXWP_OBSERVER_GUARDED.py') --game $gr;if($LASTEXITCODE){throw '159 STOP'};break}
-'160' {$r='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_EEEX_R11_STATIC_COMPAT_RO_V3.py';$b=Get-PinnedBytes $r;if($b.Length -ne 8301 -or (HashBytes $b) -cne '4bf4e2a981a6602da02ba53dc3e5601fd69bb2f408c64d880c208f1a19bf83f4'){throw '160 SHA STOP'};$f=Join-Path $zcd ('eeex_ro_'+[guid]::NewGuid().ToString('N')+'.py');AssertNotReparse $zcd;try{$h=[IO.File]::Open($f,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);try{$h.Write($b,0,$b.Length)}finally{$h.Dispose()};if((HashFile $f) -cne '4bf4e2a981a6602da02ba53dc3e5601fd69bb2f408c64d880c208f1a19bf83f4'){throw '160 CACHE STOP'};& py -3 $f --game $gr;if($LASTEXITCODE){throw '160 STOP'}}finally{if(Test-Path -LiteralPath $f){Remove-Item -LiteralPath $f -Force}};break}
+'160' {$r='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_EEEX_R11_STATIC_COMPAT_RO_V3.py';$b=Get-PinnedBytes $r;if($b.Length -ne 8301 -or (HashBytes $b) -cne '4bf4e2a981a6602da02ba53dc3e5601fd69bb2f408c64d880c208f1a19bf83f4'){throw '160 SHA STOP'};$f=Join-Path $zcd ('eeex_ro_'+[guid]::NewGuid().ToString('N')+'.py');ANR $zcd;try{$h=[IO.File]::Open($f,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);try{$h.Write($b,0,$b.Length)}finally{$h.Dispose()};if((HashFile $f) -cne '4bf4e2a981a6602da02ba53dc3e5601fd69bb2f408c64d880c208f1a19bf83f4'){throw '160 CACHE STOP'};& py -3 $f --game $gr;if($LASTEXITCODE){throw '160 STOP'}}finally{if(Test-Path -LiteralPath $f){Remove-Item -LiteralPath $f -Force}};break}
 '161' {SyncRelease $td13;& py -3 (Join-Path $td13.localPath 'BGXAI_R13_GUARDED.py') --game $gr;if($LASTEXITCODE){throw '161 STOP'};break}
 '162' {SyncRelease $td14;& py -3 (Join-Path $td14.localPath 'BGXAI_R13_SHORTNAME_GUARDED.py') --game $gr;if($LASTEXITCODE){throw '162 STOP'};break}
 '163' {SyncRelease $td15;& py -3 (Join-Path $td15.localPath 'BGXAI_R13_HOLD_DIAG_GUARDED.py') --game $gr;if($LASTEXITCODE){throw '163 STOP'};break}
-'164' {$p='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_R19_INSTALLED_EEEX_AUDIT_RO.py';$b=Get-PinnedBytes $p;if($b.Length -ne 11013 -or (HashBytes $b) -cne '7426faaa18c1a7bb9a8437ee0733854bed0f868a419e96593c58c7ec71451300'){throw '164 SHA STOP'};$f=Join-Path $zcd ('r19_'+[guid]::NewGuid().ToString('N')+'.py');AssertNotReparse $zcd;try{$h=[IO.File]::Open($f,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);try{$h.Write($b,0,$b.Length)}finally{$h.Dispose()};if((HashFile $f) -cne '7426faaa18c1a7bb9a8437ee0733854bed0f868a419e96593c58c7ec71451300'){throw '164 CACHE STOP'};$d=Join-Path $env:USERPROFILE 'Documents\BGXAI_LIVE_REPORTS';if(!(Test-Path -LiteralPath $d)){New-Item -ItemType Directory -Path $d|Out-Null};AssertNotReparse $d;$o=Join-Path $d ('BGXAI_R20_EEEX_STATIC_'+(Get-Date -Format 'yyyyMMddTHHmmssfff')+'.json');& py -3 $f --game $gr | Out-File -LiteralPath $o -Encoding utf8;$rc=$LASTEXITCODE;Get-Content -LiteralPath $o -Raw;Write-Host ('REPORT_FILE='+$o);if($rc -ne 0 -and $rc -ne 2){throw '164 SCAN ERROR'}}finally{if(Test-Path -LiteralPath $f){Remove-Item -LiteralPath $f -Force}};break}
+'164' {$p='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_R19_INSTALLED_EEEX_AUDIT_RO.py';$b=Get-PinnedBytes $p;if($b.Length -ne 11013 -or (HashBytes $b) -cne '7426faaa18c1a7bb9a8437ee0733854bed0f868a419e96593c58c7ec71451300'){throw '164 SHA STOP'};$f=Join-Path $zcd ('r19_'+[guid]::NewGuid().ToString('N')+'.py');ANR $zcd;try{$h=[IO.File]::Open($f,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);try{$h.Write($b,0,$b.Length)}finally{$h.Dispose()};if((HashFile $f) -cne '7426faaa18c1a7bb9a8437ee0733854bed0f868a419e96593c58c7ec71451300'){throw '164 CACHE STOP'};$d=Join-Path $env:USERPROFILE 'Documents\BGXAI_LIVE_REPORTS';if(!(Test-Path -LiteralPath $d)){New-Item -ItemType Directory -Path $d|Out-Null};ANR $d;$o=Join-Path $d ('BGXAI_R20_EEEX_STATIC_'+(Get-Date -Format 'yyyyMMddTHHmmssfff')+'.json');& py -3 $f --game $gr | Out-File -LiteralPath $o -Encoding utf8;$rc=$LASTEXITCODE;Get-Content -LiteralPath $o -Raw;Write-Host ('REPORT_FILE='+$o);if($rc -ne 0 -and $rc -ne 2){throw '164 SCAN ERROR'}}finally{if(Test-Path -LiteralPath $f){Remove-Item -LiteralPath $f -Force}};break}
 '165' {SyncRelease $r27;& py -3 (Join-Path $r27.localPath 'BGXAI_R27_GUARDED.py') --game $gr;if($LASTEXITCODE){throw '165 STOP'};break}
 '166' {SyncRelease $rg;& py -3 (Join-Path $rr 'BGXRANGED_V7_GUARDED_INSTALL.py') --game $gr;if($LASTEXITCODE){throw '166 STOP'};break}
+'167' {SyncRelease $w3;& py -3 (Join-Path $w3.localPath 'BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py') --game $gr --source (Join-Path $w3.localPath 'BGXAI_WEAPON_SLOT_CONSUMER_V3.baf');if($LASTEXITCODE){throw '167 STOP'};break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0

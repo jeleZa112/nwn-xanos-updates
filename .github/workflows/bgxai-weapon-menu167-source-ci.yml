@@ -1,0 +1,44 @@
+name: BGXAI onefile menu167 native BAF compile READ ONLY CI
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BGXAI_SYNC.ps1'
+      - 'BGXAI/fox_new/BOOTSTRAP_PIN.json'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_COMPILE_MANIFEST_V1.json'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_SLOT_CONSUMER_V3.baf'
+      - 'BGXAI/BUILD/WEAPON_NATIVE_COMPILE_PREFLIGHT_20261124/test_updater_menu167_ro.py'
+      - '.github/workflows/bgxai-weapon-menu167-source-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  safe-single-updater:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Keep source byte identity on checkout
+        shell: bash
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check old menus, SHA pin, new read-only 167, and strict 80KB
+        run: python BGXAI/BUILD/WEAPON_NATIVE_COMPILE_PREFLIGHT_20261124/test_updater_menu167_ro.py
+      - name: Full native compiler safety tests with mock game (no game changes)
+        run: python BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_native_compile_ro_v1.py
+      - name: PowerShell 5.1 syntax parse (Windows only, no invocation)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $tokens=$null; $errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path 'BGXAI/BGXAI_SYNC.ps1'),[ref]$tokens,[ref]$errors) | Out-Null
+          if ($errors.Count -ne 0) {$errors | Out-String | Write-Host; throw 'PS5.1 parse failed'}
+          Write-Host 'PASS PS5.1 MENU167 SOURCE SYNTAX ONLY'

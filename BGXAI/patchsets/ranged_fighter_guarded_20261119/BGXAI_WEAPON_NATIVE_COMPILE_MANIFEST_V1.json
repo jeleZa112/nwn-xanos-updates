@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "channel": "bgxai-fox-new-safe-source",
+  "version": "0.3.91-WEAPON-NATIVE-COMPILE-RO",
+  "files": [
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py",
+      "dest": "BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py",
+      "size": 9551,
+      "sha256": "27285b3d067eab2c67b075dc8654b9a0f74da0d7920b2e96339ced3e14bcd10a"
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_SLOT_CONSUMER_V3.baf",
+      "dest": "BGXAI_WEAPON_SLOT_CONSUMER_V3.baf",
+      "size": 6763,
+      "sha256": "92b8b1d3393a286d4d69f38b9542651acb429f8ef6627051195c7a1a95c09f30"
+    }
+  ]
+}
