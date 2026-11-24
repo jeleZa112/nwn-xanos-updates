@@ -69,6 +69,8 @@ local good=M.observe(s,a,2,active)
 local json=M.toConsoleJson(good)
 check(type(json)=='string' and json:find('"selectedAprKeyRaw":7',1,true)~=nil,'JSON selected APR')
 check(json:find('"alternativeAPRVerified":false',1,true)~=nil,'JSON never grants alternate APR')
+check(json:find('"r4Status":"RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS"',1,true)~=nil,
+ 'R4 status serialized, selected-only provenance')
 check(json:find('"dispatchAuthorized":false',1,true)~=nil,'JSON never authorizes dispatch')
 check(M.toConsoleJson({status='CURRENT_SELECTED_SAME_CALLBACK_SOURCE_CANDIDATE'})==nil,'unknown sample denied')
 local emitted={}
