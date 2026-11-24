@@ -26,6 +26,8 @@
     "currentGameResourcesRead": true,
     "buffAwareAlternateAprProven": false,
     "launcherAmmoPairProven": false,
+    "rawBowArrowHeaderTypesCompatible": true,
+    "engineSelectedBowArrowPairProven": false,
     "manualEpsQueueOriginProven": false
   },
   "missingGates": [

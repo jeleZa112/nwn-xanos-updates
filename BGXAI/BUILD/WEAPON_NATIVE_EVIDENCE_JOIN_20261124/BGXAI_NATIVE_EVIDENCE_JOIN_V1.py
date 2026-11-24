@@ -109,6 +109,25 @@ def join(native: dict, r27: dict, r28: dict) -> dict:
         raise EvidenceHold('R27_SELECTED_SLOTS_NOT_MATCHING_REAL_TRACE')
     if r28.get('liveR27Evidence',{}).get('observedRawItemResrefs') != ['AROW01','BOW05','STAF01','SW1H04']:
         raise EvidenceHold('R28_R27_RESOURCE_LIST_MISMATCH')
+    # Real item header compatibility is narrower than the runtime equipped
+    # launcher/ammunition association and does not prove hits or APR.
+    bow = audit['items']['BOW05']
+    arrow = audit['items']['AROW01']
+    for label, record in (('BOW',bow),('ARROW',arrow)):
+        if not isinstance(record,dict) or not isinstance(record.get('item'),dict) or \
+           not isinstance(record.get('provenance'),dict) or \
+           record['provenance'].get('origin') not in ('CURRENT_GAME_BIFF','CURRENT_GAME_OVERRIDE') or \
+           not _sha(record['provenance'].get('sha256')) or record['item'].get('rawOnly') is not True:
+            raise EvidenceHold('R28_' + label + '_CURRENT_ITM_HEADER_UNPROVEN')
+    bow_item,arrow_item=bow['item'],arrow['item']
+    def has_ability(item, attack, launcher):
+        return any(isinstance(a,dict) and a.get('attackTypeRaw')==attack and
+                   a.get('launcherRequiredRaw')==launcher and
+                   a.get('locationRaw')==1 and type(a.get('rangeRaw')) is int and
+                   1<=a['rangeRaw']<=200 for a in item.get('abilities',[]))
+    if bow_item.get('itemTypeRaw') != 15 or arrow_item.get('itemTypeRaw') != 5 or \
+       not has_ability(bow_item,4,0) or not has_ability(arrow_item,2,1):
+        raise EvidenceHold('R28_BOW_ARROW_RAW_HEADER_PAIR_MISMATCH')
     _exact_false(r28, ('gameModified','gameplayActionOriginVerified',
                        'manualAndEPSQueueVerified','effectiveAlternateAPRVerified',
                        'launcherAmmoPairVerified','weaponSwitchAuthorized',
@@ -133,6 +152,8 @@ def join(native: dict, r27: dict, r28: dict) -> dict:
                'alternateEffectiveStatsProven':False},
         'R28':{'nativeItemCountVerified':4,'currentGameResourcesRead':True,
                'buffAwareAlternateAprProven':False,'launcherAmmoPairProven':False,
+               'rawBowArrowHeaderTypesCompatible':True,
+               'engineSelectedBowArrowPairProven':False,
                'manualEpsQueueOriginProven':False},
         'missingGates':list(MISSING_GATES),
         'installPerformed':False,'dispatchAuthorized':False,

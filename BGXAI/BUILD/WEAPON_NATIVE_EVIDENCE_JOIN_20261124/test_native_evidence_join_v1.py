@@ -45,7 +45,12 @@ def fixtures():
                            'observedRawItemResrefs':['AROW01','BOW05','STAF01','SW1H04']},
         'nativeAudit':{'schema':'BGXAI_WEAPON_NATIVE_ITM_R3_READONLY',
             'status':'ITM_NATIVE_ALL_ITEMS_RAW_READ','sourceKind':'CURRENT_GAME',
-            'items':{'AROW01':{},'BOW05':{},'STAF01':{},'SW1H04':{}},
+            'items':{
+                'AROW01':{'provenance':{'origin':'CURRENT_GAME_BIFF','sha256':'c'*64},
+                          'item':{'itemTypeRaw':5,'rawOnly':True,'abilities':[{'attackTypeRaw':2,'launcherRequiredRaw':1,'locationRaw':1,'rangeRaw':100}]}},
+                'BOW05':{'provenance':{'origin':'CURRENT_GAME_BIFF','sha256':'d'*64},
+                          'item':{'itemTypeRaw':15,'rawOnly':True,'abilities':[{'attackTypeRaw':4,'launcherRequiredRaw':0,'locationRaw':1,'rangeRaw':75}]}},
+                'STAF01':{},'SW1H04':{}},
             'missingItemsOrLinkedSpells':[],
             'aprPerSlotVerified':False,'currentCharacterBuffsVerified':False,
             'launcherAmmoPairVerified':False,'fullWeaponEffectsVerified':False,
@@ -65,6 +70,8 @@ class NativeEvidenceJoin(unittest.TestCase):
         self.assertEqual(result['nativeWeiDU']['compiledBcsSize'],10550)
         self.assertEqual(result['R27']['gameCallbacksVerified'],24)
         self.assertEqual(result['R28']['nativeItemCountVerified'],4)
+        self.assertTrue(result['R28']['rawBowArrowHeaderTypesCompatible'])
+        self.assertFalse(result['R28']['engineSelectedBowArrowPairProven'])
         self.assertEqual(len(result['missingGates']),7)
         for field in ('installPerformed','dispatchAuthorized','weaponSwitchAuthorized'):
             self.assertIs(result[field],False)
@@ -129,6 +136,13 @@ class NativeEvidenceJoin(unittest.TestCase):
             (2,('nativeAudit','sourceKind'),'OLDER_USER_ZIP_NOT_CURRENT'),
             (2,('nativeAudit','status'),'ITM_NATIVE_PARTIAL_HOLD'),
             (2,('nativeAudit','items'),{'BOW05':{}}),
+            (2,('nativeAudit','items','BOW05','item','itemTypeRaw'),99),
+            (2,('nativeAudit','items','BOW05','item','abilities'),[]),
+            (2,('nativeAudit','items','BOW05','provenance','origin'),'OLDER_USER_ZIP_NOT_CURRENT'),
+            (2,('nativeAudit','items','AROW01','item','itemTypeRaw'),99),
+            (2,('nativeAudit','items','AROW01','item','abilities'),[]),
+            (2,('nativeAudit','items','AROW01','item','rawOnly'),False),
+            (2,('nativeAudit','items','AROW01','provenance','sha256'),'BAD'),
             (2,('nativeAudit','missingItemsOrLinkedSpells'),['MISSING']),
             (2,('nativeAudit','aprPerSlotVerified'),True),
             (2,('nativeAudit','targetImmuneOrResistantVerified'),True),
@@ -156,6 +170,8 @@ class NativeEvidenceJoin(unittest.TestCase):
             self.assertEqual(data['status'],'NATIVE_BAF_COMPILED_R27_R28_LINKED_NO_DISPATCH')
             self.assertEqual(data['nativeWeiDU']['compiledBcsSha256'],mod.EXPECTED_BCS_SHA_FROM_REAL_EET)
             self.assertEqual(len(data['missingGates']),7)
+            self.assertTrue(data['R28']['rawBowArrowHeaderTypesCompatible'])
+            self.assertFalse(data['R28']['engineSelectedBowArrowPairProven'])
             self.assertFalse(data['dispatchAuthorized'])
             self.assertEqual(data['ordersSent'],0)
             for private in ('C:\\\\','Drevo','\\\\Users\\\\','actorRaw','captureFileName'):
