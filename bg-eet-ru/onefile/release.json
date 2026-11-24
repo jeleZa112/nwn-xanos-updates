@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 131,
-  "sha256": "b5cb631f0d11623b5b3d33802172251bb4ef759af80703e43a66fd243617d144",
-  "mode": "V131_SAME_ONEFILE_EXACT_BAHLDUR_EXE_PE_UNWIND_READONLY_OPTION_6",
+  "version": 132,
+  "sha256": "b4b6d8dd864dc2ad6beeec50965015396e8d5f02efc22c0071dc8f5835e86644",
+  "mode": "V132_SAME_UPDATER_INSTALLED_EEEX_X64_RTL_FUNCTION_TABLE_AND_RAW_UNWIND_RO",
   "game_writes_allowed": false,
-  "note": "V131 adds option 6=unwind to the ONLY BG_EET_RU_UPDATE.cmd. It SHA-fetches the independently tested read-only V130 AMD64 PE .pdata/.xdata parser from immutable commit ea012654ce6323b265ba1a91c1b71d9e0a866ad8, validates exact Baldur.exe SHA and 6-byte post-prologue candidate 0x39DA6F, and appends a SINGLE 64_V130_PE_UNWIND.json report to the existing ZIP. Does not launch the game, patch code or install hooks. 1=old 14-stage audit is NOT used when selecting 6. Existing V126 observer and V108 are unchanged. Hook safety still HOLD until actual game unwind and Win64 ABI, EEex owner, rollback and visible-row identity proven."
+  "note": "V132 adds option 7=abi to existing one CMD. Exact SHA-pinned V132 read-only parser reads Baldur.exe .pdata/.xdata and checks raw UWOP_SAVE_NONVOL RBX offset encoded 27*8=216, installed EEex_scripts/EEex_Assembly_x86-64.lua symbols and SHA, EEex_Sprite_Patch source SHA, InfinityLoader.db FirstCall label. Appends 65_V132_EEEX_ABI.json to same ZIP. Native hook still NOT installed: owner/Win64 callback ABI/XMM/trampoline/rollback and same-Hit-to-combatLog row not proven. Preserves prior V126 UI observer and V131 menu 6; no game writes or 14-stage audit required."
 }
