@@ -131,6 +131,92 @@ def inspect_installed_script_sources(game: Path) -> dict:
                   dispatchAuthorized=False,
                   ordersSent=0)
 
+# Installed-source EPS action arbitration map. This is a SOURCE-level map,
+# not the interpreter's runtime script priority, not an order-origin proof.
+# Never evaluate BAF/TPH/Lua, and never expose entire user source lines.
+_EPS_SOURCES = INSTALLED_SOURCE_CANDIDATES[:3]
+_EEEX_ACTION = INSTALLED_SOURCE_CANDIDATES[3]
+_R27_PINNED_EEEX_ACTION_SHA = '7a64c157418f503e914c4fb3083c97f017e70c9787024fcac779f162c86f20da'
+_START_IF = re.compile(rb'(?m)^[ \t]*IF[ \t]*(?:\r?\n)')
+_END_IF = re.compile(rb'(?m)^[ \t]*END(?:[ \t]*(?:\r?\n|$))')
+_THEN = re.compile(rb'(?m)^[ \t]*THEN[ \t]*(?:\r?\n)')
+_ACTION_CAST = re.compile(rb'(?mi)^[ \t]*(?:ReallyForceSpell|ForceSpell|Spell|SpellRES|UseItem|UseItemSlot|ApplySpell)(?:\s|\()')
+_ACTION_ATTACK = re.compile(rb'(?mi)^[ \t]*(?:Attack|AttackOneRound|AttackReevaluate|ForceAttack)(?:\s|\()')
+
+
+def _eps_block_logic(data: bytes) -> dict:
+    # This bounded regex scanner recognizes only literal BAF IF/THEN/END lines.
+    # WeiDU macros, aliases, expansions and actual runtime priorities are UNKNOWN.
+    stats={'literalIfThenEndBlocks':0,'blocksWithQueueEmptyTrigger':0,
+           'blocksWithMOSpellCastTrigger':0,'blocksWithBothTriggers':0,
+           'blocksWithSpellOrItemAction':0,'blocksWithAttackAction':0,
+           'blocksWithPotentialOrderWithoutQueueGuard':0,
+           'sourceMentionsBGXW3Req':data.count(b'BGXW3_REQ')}
+    pending=None
+    for line in data.splitlines(keepends=True):
+        if _START_IF.fullmatch(line):
+            pending={'trigger':bytearray(),'actions':bytearray(),'then':False}
+        elif pending is not None and _THEN.fullmatch(line):
+            pending['then']=True
+        elif pending is not None and _END_IF.fullmatch(line):
+            if pending['then']:
+                trig=bytes(pending['trigger']);actions=bytes(pending['actions'])
+                queue=b'ActionListEmpty()' in trig
+                spell_timer=b'MO_SpellCast' in trig
+                cast=bool(_ACTION_CAST.search(actions))
+                attack=bool(_ACTION_ATTACK.search(actions))
+                stats['literalIfThenEndBlocks']+=1
+                stats['blocksWithQueueEmptyTrigger']+=int(queue)
+                stats['blocksWithMOSpellCastTrigger']+=int(spell_timer)
+                stats['blocksWithBothTriggers']+=int(queue and spell_timer)
+                stats['blocksWithSpellOrItemAction']+=int(cast)
+                stats['blocksWithAttackAction']+=int(attack)
+                stats['blocksWithPotentialOrderWithoutQueueGuard']+=int((cast or attack) and not queue)
+            pending=None
+        elif pending is not None:
+            part='actions' if pending['then'] else 'trigger'
+            # Keep memory bounded if a non-BAF file has an extremely long macro.
+            if len(pending[part])<80_000:
+                pending[part].extend(line[:min(len(line),80_000-len(pending[part]))])
+    return stats
+
+
+def inspect_installed_eps_priority(game: Path, inventory: dict) -> dict:
+    if inventory.get('status')!='INFO_INSTALLED_EPS_EEEX_SOURCE_INVENTORY':
+        return marker('INFO_EPS_SOURCE_INVENTORY_REQUIRED',filesAnalyzed=0,
+                      manualVsEpsOriginVerified=False,dispatchAuthorized=False,ordersSent=0)
+    items={x.get('relativeSource'):x for x in inventory.get('found',[])}
+    if len(items)!=len(inventory.get('found',[])):
+        raise Hold('REPEATED_SOURCE_IDENTITY_IN_INVENTORY')
+    analyses=[]
+    for name in _EPS_SOURCES:
+        item=items.get(name)
+        if item is None:continue
+        path=game/name
+        if sha_file(path,max_bytes=3_000_000)!=item.get('sha256'):
+            raise Hold('EPS_SOURCE_CHANGED_BETWEEN_INVENTORY_AND_AUDIT:'+name)
+        data=path.read_bytes()
+        if hashlib.sha256(data).hexdigest()!=item['sha256']:
+            raise Hold('EPS_SOURCE_CHANGED_DURING_AUDIT:'+name)
+        x=_eps_block_logic(data)
+        if x['sourceMentionsBGXW3Req']:
+            raise Hold('EPS_SOURCE_MENTIONS_RESERVED_BGXW3_REQUEST:'+name)
+        analyses.append({'relativeSource':name,'sha256':item['sha256'],
+                         'size':len(data),'sourceLevelHeuristicOnly':True,**x})
+    action=items.get(_EEEX_ACTION)
+    hook_sha_known=bool(action and action.get('sha256')==_R27_PINNED_EEEX_ACTION_SHA)
+    return marker('INFO_EPS_LITERAL_SOURCE_PRIORITY_MAP_NOT_RUNTIME_PROOF',
+                  filesAnalyzed=len(analyses),fileResults=analyses,
+                  eeexActionSourceMatchesR27PinnedHook=hook_sha_known,
+                  eeexActionHookAvailabilityInCurrentLiveSessionVerified=False,
+                  selectedEpsNormalOrAcceleratedRuntimeProfileVerified=False,
+                  weiDuMacroExpandedPriorityVerified=False,
+                  currentlyCompiledEPSRuntimePriorityVerified=False,
+                  alternativeQuickslotEffectiveAprVerified=False,
+                  manualVsEpsOriginVerified=False,
+                  actionBoundaryVerified=False,
+                  dispatchAuthorized=False,weaponSwitchAuthorized=False,ordersSent=0)
+
 def verified_existing_native(report_dir: Path, game: Path, compiler: Path) -> dict | None:
     try:
         compiler_hash=sha_file(compiler)
@@ -363,6 +449,7 @@ def run_batch(game:Path, source_dir:Path, report_dir:Path, fresh_native:bool=Fal
     stage('batchSelftests',lambda:run_subprocess_test(source_dir/'test_auto_batch_ro_v1.py',source_dir))
     stage('processes',lambda:process_override if process_override is not None else inspect_game_processes())
     stage('installedScriptSources',lambda:inspect_installed_script_sources(game))
+    stage('epsSourcePriorityMap',lambda:inspect_installed_eps_priority(game,stages['installedScriptSources']))
     stage('gameBefore',lambda: marker('PASS_OBSERVED_WATCH_SET',
           files=parse_game_snapshot(game)) if (game/'chitin.key').is_file() and
           (game/'WeiDU.log').is_file() else

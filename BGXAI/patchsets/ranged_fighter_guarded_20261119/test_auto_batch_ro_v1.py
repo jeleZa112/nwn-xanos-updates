@@ -88,6 +88,72 @@ class AutomaticBatchSafety(unittest.TestCase):
         with self.assertRaises(m.Hold):
             m.inspect_installed_script_sources(self.game)
 
+    def test_eps_logic_literal_eps_guards_and_actions(self):
+        core=self.game/'enhanced-powergaming-scripts'/'lib'/'core_base.tph'
+        core.parent.mkdir(parents=True,exist_ok=True)
+        core.write_bytes(b'IF\n ActionListEmpty()\n !GlobalTimerNotExpired("MO_SpellCast","LOCALS")\nTHEN\n RESPONSE #100\n ReallyForceSpell(Myself,SPWI101)\nEND\nIF\n See(NearestEnemyOf(Myself))\nTHEN\n RESPONSE #100\n Attack(NearestEnemyOf(Myself))\nEND\n')
+        info=m.inspect_installed_script_sources(self.game)
+        result=m.inspect_installed_eps_priority(self.game,info)
+        self.assertEqual(result['status'],'INFO_EPS_LITERAL_SOURCE_PRIORITY_MAP_NOT_RUNTIME_PROOF')
+        self.assertEqual(result['filesAnalyzed'],1)
+        facts=result['fileResults'][0]
+        self.assertEqual(facts['literalIfThenEndBlocks'],2)
+        self.assertEqual(facts['blocksWithQueueEmptyTrigger'],1)
+        self.assertEqual(facts['blocksWithMOSpellCastTrigger'],1)
+        self.assertEqual(facts['blocksWithBothTriggers'],1)
+        self.assertEqual(facts['blocksWithSpellOrItemAction'],1)
+        self.assertEqual(facts['blocksWithAttackAction'],1)
+        self.assertEqual(facts['blocksWithPotentialOrderWithoutQueueGuard'],1)
+        self.assertFalse(result['eeexActionSourceMatchesR27PinnedHook'])
+        self.assertFalse(result['manualVsEpsOriginVerified'])
+        self.assertFalse(result['dispatchAuthorized'])
+        self.assertEqual(result['ordersSent'],0)
+
+    def test_eps_logic_changed_sha_aborts_only_this_stage(self):
+        core=self.game/'enhanced-powergaming-scripts'/'lib'/'core_base.tph'
+        core.parent.mkdir(parents=True,exist_ok=True)
+        core.write_bytes(b'IF\n ActionListEmpty()\nTHEN\nEND\n')
+        info=m.inspect_installed_script_sources(self.game)
+        core.write_bytes(b'CHANGED')
+        with self.assertRaises(m.Hold):m.inspect_installed_eps_priority(self.game,info)
+
+    def test_eps_logic_rejects_reserved_global_collision(self):
+        core=self.game/'enhanced-powergaming-scripts'/'lib'/'core_base.tph'
+        core.parent.mkdir(parents=True,exist_ok=True)
+        core.write_bytes(b'IF\n Global("BGXW3_REQ","LOCALS",1)\nTHEN\nEND\n')
+        with self.assertRaises(m.Hold):m.inspect_installed_eps_priority(self.game,m.inspect_installed_script_sources(self.game))
+
+    def test_eps_logic_missing_sources_informational_not_fake_runtime_pass(self):
+        info=m.inspect_installed_script_sources(self.game)
+        out=m.inspect_installed_eps_priority(self.game,info)
+        self.assertEqual(out['filesAnalyzed'],0)
+        self.assertFalse(out['selectedEpsNormalOrAcceleratedRuntimeProfileVerified'])
+        self.assertFalse(out['currentlyCompiledEPSRuntimePriorityVerified'])
+        self.assertFalse(out['manualVsEpsOriginVerified'])
+        self.assertFalse(out['dispatchAuthorized'])
+
+    def test_eps_logic_unknown_inventory_fail_closed(self):
+        out=m.inspect_installed_eps_priority(self.game,{'status':'HOLD_FILES_NOT_FOUND'})
+        self.assertEqual(out['status'],'INFO_EPS_SOURCE_INVENTORY_REQUIRED')
+        self.assertFalse(out['dispatchAuthorized'])
+        self.assertEqual(out['ordersSent'],0)
+
+    def test_eps_logic_does_not_leak_installed_eps_code(self):
+        core=self.game/'enhanced-powergaming-scripts'/'lib'/'core_base.tph'
+        core.parent.mkdir(parents=True,exist_ok=True)
+        core.write_bytes(b'IF\n SecretPersonalLineToken\nTHEN\nEND\n')
+        out=m.inspect_installed_eps_priority(self.game,m.inspect_installed_script_sources(self.game))
+        self.assertNotIn('SecretPersonalLineToken',str(out))
+        self.assertEqual(out['fileResults'][0]['literalIfThenEndBlocks'],1)
+
+    def test_eps_logic_rejects_unstable_invalid_source_identity(self):
+        core=self.game/'enhanced-powergaming-scripts'/'lib'/'core_base.tph'
+        core.parent.mkdir(parents=True,exist_ok=True)
+        core.write_bytes(b'IF\nTHEN\nEND\n')
+        info=m.inspect_installed_script_sources(self.game)
+        info['found'].append(info['found'][0])
+        with self.assertRaises(m.Hold):m.inspect_installed_eps_priority(self.game,info)
+
     def test_05_runtime_proof_always_fails_closed(self):
         x=m.game_live_proof_gates()
         self.assertEqual(len(x['missing']),6)
@@ -179,7 +245,7 @@ class AutomaticBatchSafety(unittest.TestCase):
     def test_27_hold_in_process_stage_does_not_skip_independent_tests(self):
         with patch.object(m,'run_subprocess_test',return_value=m.marker('PASS_UNIT_TESTS',totalTests=0,skippedTests=0)):
             report,rc=m.run_batch(self.game,ROOT,self.docs,process_override=m.marker('HOLD_GAME_OR_WEIDU_RUNNING',running=['baldur.exe']))
-        self.assertEqual(report['stepCount'],11)
+        self.assertEqual(report['stepCount'],12)
         self.assertEqual(report['stages']['bafGuard']['status'],'PASS_BAF_EIGHT_BRANCH_STATIC')
         self.assertEqual(report['stages']['nativeWeiDU']['status'],'HOLD_PROCESS_STATE_BEFORE_NATIVE_COMPILE')
         self.assertEqual(rc,3)
