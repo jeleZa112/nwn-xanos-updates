@@ -96,6 +96,41 @@ class SourceContracts(unittest.TestCase):
     def test_install_requires_windows_runtime(self):
         if sys.platform!='win32':
             with self.assertRaises(m.Hold):m.no_game_process()
+    def test_install_stages_exact_eps_compiler_without_weidu_exe(self):
+        import json
+        with tempfile.TemporaryDirectory() as temp:
+            game=pathlib.Path(temp)/'GAME';game.mkdir()
+            (game/'override').mkdir()
+            original=b'SC\nCR\nCO\nTR\nCR\nSC\n'
+            (game/m.BCS).write_bytes(original)
+            (game/'WeiDU.log').write_text('~BGXRANGED6/SETUP-BGXRANGED6.TP2~ #0 #0\n')
+            eps=game/'setup-enhanced-powergaming-scripts.exe'
+            eps.write_bytes(b'MZTESTED_NATIVE_WEIDU_25100')
+            candidate=b'SC\nCR\nCO\nTR\nAC\nCR\nSC\n'
+            old_snapshot={m.BCS:m.sha(game/m.BCS),'WeiDU.log':m.sha(game/'WeiDU.log'),
+                          eps.name:m.sha(eps)}
+            info={'baselineSnapshot':old_snapshot,'newBCSSha256':m.hash_bytes(candidate),
+                  'sourceSha256':m.SOURCE_SHA256}
+            outside=pathlib.Path(temp)/'outsideBackup'
+            outside.mkdir()
+            def mock_weidu(root,uninstall=False):
+                self.assertEqual((root/m.SETUP).read_bytes(),eps.read_bytes())
+                (root/m.BCS).write_bytes(candidate)
+                with (root/'WeiDU.log').open('a') as f:
+                    f.write('~BGXR29/SETUP-BGXR29.TP2~ #0 #0\n')
+            with patch.object(m,'candidate',return_value=(candidate,info)), \
+                 patch.object(m,'EXPECTED_WEIDU_SHA',m.sha(eps)), \
+                 patch.object(m,'no_game_process'), \
+                 patch('builtins.input',return_value=m.INSTALL_TOKEN), \
+                 patch.object(m,'external_backup',return_value=outside), \
+                 patch.object(m,'use_weidu',side_effect=mock_weidu):
+                out=m.install(game)
+            self.assertEqual(out['status'],'R29_INSTALLED_AWAITING_LIVE_AB')
+            self.assertFalse((game/'weidu.exe').exists())
+            self.assertEqual((game/m.SETUP).read_bytes(),eps.read_bytes())
+            self.assertEqual((game/m.BCS).read_bytes(),candidate)
+            self.assertTrue((game/m.PROOF).is_file())
+
     def test_weidu_component_does_not_touch_eps(self):
         self.assertIn('COPY ~BGXR29/staged/BDDEFAI.BCS~ ~override/BDDEFAI.BCS~',m.TP2_TEXT)
         self.assertNotIn('core_base.tph',m.TP2_TEXT)
@@ -121,7 +156,7 @@ class NativeSpliceSimulation(unittest.TestCase):
             original=self.fake_bcs(1162)
             (game/'override').mkdir()
             (game/m.BCS).write_bytes(original)
-            (game/'weidu.exe').write_bytes(b'MZFAKE')
+            (game/'weidu.exe').write_bytes(b'MZFAKE_WEIDU_BINARY_25100')
             def mock_compiler(_exe,_game,_work,source,out,step):
                 if step=='PILOT_COMPILE':
                     out.write_bytes(self.fake_bcs(1))
@@ -129,7 +164,7 @@ class NativeSpliceSimulation(unittest.TestCase):
                     oldblock='IF\n ActionListEmpty()\nTHEN\n RESPONSE #100\n NoAction()\nEND\n'
                     out.write_text(SOURCE.read_text('utf-8')+oldblock*1162,encoding='utf-8')
                 else:raise AssertionError(step)
-            with patch.object(m,'baseline',return_value={}),patch.object(m,'verify_ranged7_history',return_value={'ranged7InWeiDULog':True}),patch.object(m,'call_native',side_effect=mock_compiler):
+            with patch.object(m,'baseline',return_value={}),patch.object(m,'verify_ranged7_history',return_value={'ranged7InWeiDULog':True}),patch.object(m,'EXPECTED_WEIDU_SHA',m.sha(game/'weidu.exe')),patch.object(m,'call_native',side_effect=mock_compiler):
                 new,proof=m.candidate(game)
             self.assertEqual(len(m.bcs_parts(new)),1163)
             self.assertEqual(m.bcs_parts(new)[1:],m.bcs_parts(original))
@@ -137,6 +172,33 @@ class NativeSpliceSimulation(unittest.TestCase):
             self.assertFalse(proof['gameModified'])
             self.assertFalse(proof['dispatchAuthorized'])
             self.assertEqual((game/m.BCS).read_bytes(),original)
+    def test_candidate_uses_exact_eps_exe_without_game_weidu(self):
+        with tempfile.TemporaryDirectory() as temp:
+            game=pathlib.Path(temp)/'GAME';game.mkdir()
+            (game/'override').mkdir()
+            original=self.fake_bcs(1162)
+            (game/m.BCS).write_bytes(original)
+            eps=game/'setup-enhanced-powergaming-scripts.exe'
+            eps.write_bytes(b'MZTRUSTED_NATIVE_WEIDU_25100')
+            def mock_compiler(exe,root,work,source,out,step):
+                self.assertEqual(exe.name,'weidu.exe')
+                self.assertEqual(exe.read_bytes(),eps.read_bytes())
+                if step=='PILOT_COMPILE':
+                    out.write_bytes(self.fake_bcs(1))
+                elif step=='FULL_DECOMPILE':
+                    oldblock='IF\n ActionListEmpty()\nTHEN\n RESPONSE #100\n NoAction()\nEND\n'
+                    out.write_text(SOURCE.read_text('utf-8')+oldblock*1162,encoding='utf-8')
+                else:raise AssertionError(step)
+            with patch.object(m,'baseline',return_value={}), \
+                 patch.object(m,'verify_ranged7_history',return_value={'ranged6InWeiDULog':True}), \
+                 patch.object(m,'EXPECTED_WEIDU_SHA',m.sha(eps)), \
+                 patch.object(m,'call_native',side_effect=mock_compiler):
+                result,proof=m.candidate(game)
+                self.assertEqual(proof['nativeCompilerBasename'],'setup-enhanced-powergaming-scripts.exe')
+            self.assertEqual(m.bcs_parts(result)[1:],m.bcs_parts(original))
+            self.assertFalse((game/'weidu.exe').exists())
+            self.assertEqual((game/m.BCS).read_bytes(),original)
+
     def test_bad_bcs_envelope_or_blocks_fails(self):
         for data in (b'',b'SC\nCR\nSC\n',b'CR\nCO\nTR\n',b'SC\nCR\nCO\n'):
             with self.assertRaises(m.Hold):m.bcs_parts(data)
@@ -173,14 +235,14 @@ class HistoricalRanged7Chain(unittest.TestCase):
     R7='~BGXRANGED7/SETUP-BGXRANGED7.TP2~ #0 #0 ~Guard~'
     LATER='~OTHERPACK/SETUP-OTHERPACK.TP2~ #0 #1 ~Unrelated mod~'
 
-    def setup_game(self, game, log_lines, with_proof=True, variant=7):
+    def setup_game(self, game, log_lines, with_proof=True, variant=7, compiler_name="weidu.exe"):
         import json,hashlib
         root=pathlib.Path(game)
         data={name:('MOCK:'+name).encode('ascii') for name in m.BASELINE}
         for name,value in data.items():
             p=root/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(value)
         for name,content in (('chitin.key',b'KEY'),('weidu.conf',b'CONF'),
-                             ('weidu.exe',b'MZMOCK_WEIDU'),
+                             (compiler_name,b'MZMOCK_WEIDU_25100_BIN'),
                              ('WeiDU.log',('\n'.join(log_lines)+'\n').encode('utf8'))):
             p=root/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(content)
         old=b'Original BGXRANGED DPLAYER BCS bytes'
@@ -208,7 +270,7 @@ class HistoricalRanged7Chain(unittest.TestCase):
         x.enter_context(patch.object(m,'GAME',game))
         x.enter_context(patch.object(m,'BASELINE',{k:m.hash_bytes(v) for k,v in dat.items()}))
         x.enter_context(patch.object(m,'EXPECTED_WEIDU_LOG_SHA',m.sha(game/'WeiDU.log')))
-        x.enter_context(patch.object(m,'EXPECTED_WEIDU_SHA',m.sha(game/'weidu.exe')))
+        x.enter_context(patch.object(m,'EXPECTED_WEIDU_SHA',m.sha(game/('weidu.exe' if (game/'weidu.exe').is_file() else 'setup-enhanced-powergaming-scripts.exe'))))
         x.enter_context(patch.object(m,'RANGED7_PREVIOUS_SHA',m.hash_bytes(old)))
         x.enter_context(patch.object(m,'no_game_process'))
 
@@ -233,7 +295,7 @@ class HistoricalRanged7Chain(unittest.TestCase):
             self.assertFalse(history['ranged7LastWeiDU'])
             self.assertTrue(history['ranged7HistoricalProofVerified'])
             self.assertEqual(history['lastComponentBasename'],'SETUP-OTHERPACK.TP2')
-            self.assertEqual(len(m.baseline(game)),len(m.WATCH))
+            self.assertEqual(len(m.baseline(game)),len(m.WATCH)+1)
             self.assertEqual(m.status(game)['status'],'R29_NOT_INSTALLED_BASELINE')
             self.assertEqual((game/'WeiDU.log').read_bytes(),log_before)
             self.assertEqual((game/'override/DPLAYER.BCS').read_bytes(),dplayer_before)
@@ -366,14 +428,67 @@ class HistoricalRanged6Chain(unittest.TestCase):
     R7='~BGXRANGED7/SETUP-BGXRANGED7.TP2~ #0 #0 // other provenance'
     LATER='~BGXR27/SETUP-BGXR27.TP2~ #0 #0 // later installed'
 
-    def game(self,root,log,with_proof=True):
+    def game(self,root,log,with_proof=True,compiler_name='weidu.exe'):
         c=HistoricalRanged7Chain()
-        dat,old=c.setup_game(root,log,with_proof=with_proof,variant=6)
+        dat,old=c.setup_game(root,log,with_proof=with_proof,variant=6,compiler_name=compiler_name)
         c.patched_context(root,dat,old)
         # addCleanup of the helper would be too late to unwind at end of test;
         # ExitStack closures are registered on the owning test instead.
         self.addCleanup(c.doCleanups)
         return dat,old
+
+    def test_real_167_compiler_name_setup_eps_v6_native_preflight_baseline(self):
+        with tempfile.TemporaryDirectory() as td:
+            game=pathlib.Path(td)/'GAME';game.mkdir()
+            self.game(game,[self.R6,self.LATER],compiler_name='setup-enhanced-powergaming-scripts.exe')
+            self.assertFalse((game/'weidu.exe').exists())
+            exact=m.trusted_native_weidu(game)
+            self.assertEqual(exact.name,'setup-enhanced-powergaming-scripts.exe')
+            snapshot=m.baseline(game)
+            self.assertEqual(snapshot['setup-enhanced-powergaming-scripts.exe'],m.EXPECTED_WEIDU_SHA)
+            self.assertTrue(m.verify_ranged7_history(game)['ranged6InstallProofVerified'])
+            self.assertFalse((game/'weidu.exe').exists())
+
+    def test_native_compiler_candidate_fails_closed_on_unpinned_sha(self):
+        with tempfile.TemporaryDirectory() as td:
+            game=pathlib.Path(td)/'GAME';game.mkdir()
+            self.game(game,[self.R6,self.LATER],compiler_name='setup-enhanced-powergaming-scripts.exe')
+            (game/'setup-enhanced-powergaming-scripts.exe').write_bytes(b'MZUNPINNED_BINARY_25100')
+            with self.assertRaisesRegex(m.Hold,'NATIVE_WEIDU_CANDIDATE_SHA_DRIFT'):
+                m.baseline(game)
+
+    def test_native_compiler_absent_not_faked(self):
+        with tempfile.TemporaryDirectory() as td:
+            game=pathlib.Path(td)/'GAME';game.mkdir()
+            self.game(game,[self.R6,self.LATER],compiler_name='setup-enhanced-powergaming-scripts.exe')
+            (game/'setup-enhanced-powergaming-scripts.exe').unlink()
+            with self.assertRaisesRegex(m.Hold,'NATIVE_WEIDU_TRUSTED_EXECUTABLE_MISSING'):
+                m.baseline(game)
+
+    def test_unrelated_setup_exe_never_substituted(self):
+        with tempfile.TemporaryDirectory() as td:
+            game=pathlib.Path(td)/'GAME';game.mkdir()
+            self.game(game,[self.R6,self.LATER],compiler_name='setup-enhanced-powergaming-scripts.exe')
+            b=(game/'setup-enhanced-powergaming-scripts.exe').read_bytes()
+            (game/'setup-enhanced-powergaming-scripts.exe').unlink()
+            (game/'setup-another-mod.exe').write_bytes(b)
+            with self.assertRaisesRegex(m.Hold,'NATIVE_WEIDU_TRUSTED_EXECUTABLE_MISSING'):
+                m.baseline(game)
+
+    def test_wrong_weidu_and_exact_eps_fallback(self):
+        with tempfile.TemporaryDirectory() as td:
+            game=pathlib.Path(td)/'GAME';game.mkdir()
+            self.game(game,[self.R6,self.LATER],compiler_name='setup-enhanced-powergaming-scripts.exe')
+            (game/'weidu.exe').write_bytes(b'MZUNPINNED_BINARY_25100')
+            self.assertEqual(m.trusted_native_weidu(game).name,'setup-enhanced-powergaming-scripts.exe')
+
+    def test_symlink_compiler_denied(self):
+        with tempfile.TemporaryDirectory() as td:
+            game=pathlib.Path(td)/'GAME';game.mkdir()
+            self.game(game,[self.R6,self.LATER],compiler_name='setup-enhanced-powergaming-scripts.exe')
+            (game/'weidu.exe').symlink_to(game/'setup-enhanced-powergaming-scripts.exe')
+            with self.assertRaisesRegex(m.Hold,'SYMLINK_OR_JUNCTION_DENIED'):
+                m.baseline(game)
 
     def test_v6_with_later_mod_and_full_proof_passes_readonly(self):
         with tempfile.TemporaryDirectory() as td:
