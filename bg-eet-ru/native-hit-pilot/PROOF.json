@@ -1,0 +1,40 @@
+{
+  "schema": "BG_EET_RU_NATIVE_HIT_INERT_SOURCE_V2",
+  "status": "SOURCE_PASS_RUNTIME_HOLD",
+  "source_stages": [
+    {
+      "name": "base_735_source_suite",
+      "status": "PASS"
+    },
+    {
+      "name": "corrected_site_and_lua_source",
+      "status": "SOURCE_PASS_RUNTIME_HOLD"
+    },
+    {
+      "name": "native_instruction_and_relocation_routes",
+      "status": "STATIC_ROUTE_PASS_LIVE_ABI_HOLD"
+    },
+    {
+      "name": "real_lua_callback_contract",
+      "status": "PASS"
+    },
+    {
+      "name": "synthetic_live_memory_preflight_and_nested_frames",
+      "status": "PASS"
+    },
+    {
+      "name": "adversarial_fail_closed",
+      "status": "PASS"
+    },
+    {
+      "name": "exact_rel32_and_patchpoint_adversarial",
+      "status": "PASS"
+    }
+  ],
+  "native_jit_installed": false,
+  "gameplay_verified": false,
+  "game_files_written": 0,
+  "release_version_unchanged": 121,
+  "upstream_EEex_hashed_from_user_archive": false,
+  "pinned_archive_sha256": "08a9d5da367404b33bc982871627e8c3e1179c7a8ec8808bab0a75bea5755015"
+}

@@ -1,0 +1,73 @@
+name: BG EET RU V4 - real Windows read-only API and Lua stress
+on:
+  push:
+    branches: [bg-eet-ru-native-hit-pilot-corrected-20261124]
+    paths:
+      - 'bg-eet-ru/native-hit-pilot/**'
+      - '.github/workflows/bg_eet_ru_v4_win_ro.yml'
+  pull_request:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-hit-pilot/**'
+      - '.github/workflows/bg_eet_ru_v4_win_ro.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-win64-kernel32-readonly:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: x64
+      - name: Confirm 64-bit Python and compile all V4 components
+        shell: pwsh
+        run: |
+          python -c "import ctypes; assert ctypes.sizeof(ctypes.c_void_p)==8"
+          cd bg-eet-ru/native-hit-pilot
+          python -m py_compile windows_live_hit_inventory_ro.py test_windows_inventory_ro.py message_callsite_proof_v4.py one_big_batch_v4.py
+      - name: REAL ReadProcessMemory, process path and Toolhelp modules on Windows self-process
+        shell: pwsh
+        run: |
+          cd bg-eet-ru/native-hit-pilot
+          python windows_live_hit_inventory_ro.py --selftest-windows
+      - name: All negative windows-reader cases in mock memory
+        shell: pwsh
+        run: |
+          cd bg-eet-ru/native-hit-pilot
+          python -m unittest -v test_windows_inventory_ro
+      - name: Do not pretend Windows CI validates gameplay
+        shell: pwsh
+        run: |
+          Write-Output 'Read-only self-process API checked. Baldur.exe has not been launched. No game JIT hook installed.'
+  real-lua-and-inert-native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Prepare Lua 5.4
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq liblua5.4-0
+      - name: Execute 6400+ Lua assertions and prove no native patches exist in source
+        run: |
+          cd bg-eet-ru/native-hit-pilot
+          python test_v4_lua_runtime.py
+          python -m unittest -v test_windows_inventory_ro
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('BG_EET_RU_THREAD_FRAME_BRIDGE_V4.lua').read_text()
+          assert "NO_JIT_OR_GAME_INSTALL_IN_THIS_SOURCE_ONLY_MODULE" in s
+          assert "install_allowed=false" in s
+          for forbidden in ('EEex_HookBefore', 'EEex_DisableCodeProtection', 'EEex_JITAt', 'WriteProcessMemory('):
+              assert forbidden not in s
+          print('V4_INERT_NATIVE_SOURCE_PASS')
+          PY
+      - name: Private game EXE evidence is intentionally absent from GitHub
+        run: echo 'Pinned V120 ZIP and 25 native checks run only in private clean-room, not in public CI.'
