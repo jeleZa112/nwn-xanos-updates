@@ -81,16 +81,19 @@ class RefreshContracts(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'R27_SOURCE_FILE_MISSING_OR_LINK'):
                 build(Path(temp))
 
-    def test_queue_source_is_pinned_and_embedded_without_registration(self):
+    def test_action_context_source_is_pinned_and_embedded_without_registration(self):
         names=[str(x) for x in FILES]
-        queue=[n for n in names if n.endswith('BGXAI081_ACTION_PROVENANCE_QUEUE_V2.lua')]
-        self.assertEqual(len(queue),1)
+        context=[n for n in names if n.endswith('BGXAI081_ACTION_CONTEXT_READONLY_V3.lua')]
+        self.assertEqual(len(context),1)
         source=build()
-        self.assertEqual(source.count(b'Q81_CORE.observe(sprite)'),2)
+        self.assertEqual(source.count(b'Q81_CORE.observe(sprite,action)'),2)
         self.assertGreaterEqual(source.count(b'm_queuedActions'),1)
         self.assertIn(b'm_nCount',source)
         self.assertIn(b'queueSnapshotStable=qStable',source)
         self.assertIn(b'queuedActionsRaw=qCount',source)
+        self.assertIn(b'actionContextSnapshotStable=ctxStable',source)
+        self.assertIn(b'actionSourceStable=srcStable',source)
+        self.assertGreaterEqual(source.count(b'UNCLASSIFIED_CAI_ACTION_M_SOURCE'),2)
         self.assertIn(b'actionOriginVerified=false',source)
         self.assertIn(b'manualEpsQueueVerified=false',source)
         self.assertNotIn(b'P.initialized=start()',source)
