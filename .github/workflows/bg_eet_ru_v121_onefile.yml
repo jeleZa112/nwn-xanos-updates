@@ -1,0 +1,56 @@
+name: BG EET RU V121 onefile source-only verification
+on:
+  push:
+    branches: [bg-eet-ru-v121-autofix-onefile]
+  pull_request:
+    branches: [bg-eet-ai]
+  workflow_dispatch:
+jobs:
+  verify-onefile:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify size, compile and all pinned source constants
+        shell: python
+        run: |
+          from pathlib import Path
+          import ast
+          s=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd').read_bytes()
+          assert len(s)<=750000,(len(s),'onefile exceeds updater safety limit')
+          text=s.decode('utf8')
+          assert text.startswith('@echo off & py -3 -x')
+          assert 'SELF_VERSION = 121' in text
+          assert "V121_BOT_SHA='4dfb5d57f3bfddaca5a31884c5a91ea2a8380aa78ace28047409ebe9dfb531b3'" in text
+          assert "V121_TRUST_SHA='7622bfdec1f77e44a307c0cda3e73c86d143a024b87d4ad0f359897c89a74124'" in text
+          ast.parse('\n'.join(text.splitlines()[1:]))
+          print('V121_AST_AND_SAFETY_PINS_PASS',len(s))
+      - name: Verify exact bundle source fingerprints
+        shell: python
+        run: |
+          from pathlib import Path
+          import base64,hashlib,zipfile,io
+          root=Path('bg-eet-ru/autofix')
+          source=(root/'BG_EET_RU_AUTOFIX_BOT.py').read_bytes()
+          b64=(root/'trusted_sources.zip.b64').read_bytes()
+          bundle=base64.b64decode(b''.join(b64.split()),validate=True)
+          assert hashlib.sha256(source).hexdigest()=='4dfb5d57f3bfddaca5a31884c5a91ea2a8380aa78ace28047409ebe9dfb531b3'
+          assert hashlib.sha256(bundle).hexdigest()=='7622bfdec1f77e44a307c0cda3e73c86d143a024b87d4ad0f359897c89a74124'
+          with zipfile.ZipFile(io.BytesIO(bundle)) as z:
+              assert len(z.namelist())==14 and z.testzip() is None
+          print('V121_BOT_AND_TRUSTED_BUNDLE_SHA_PASS')
+      - name: Full onefile selftest
+        shell: python
+        run: |
+          import runpy,sys
+          sys.argv=['BG_EET_RU_UPDATE.cmd','--selftest']
+          source='bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+          ns={'__name__':'__main__'}
+          data=open(source,encoding='utf8').read().splitlines(True)
+          exec(compile(''.join(data[1:]),source,'exec'),ns)
