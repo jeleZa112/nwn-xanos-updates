@@ -1,5 +1,15 @@
 # BGXAI — R27 + актуальный R2: контроль изменений экипировки внутри одного события
 
+## Дополнение 25.11.2026 — x64 raw очередь действий: 081 V2 включён в R27 SOURCE ONLY
+
+**Текущая неустановленная кандидатная сборка:** SHA256 `7ca77abeb94363c75cc58986db4427d9f93edba25e09764be35008c2f0e0600b`. Более ранние SHA в следующих исторических разделах сохранены как архивные; **их не следует использовать для нового деплоя**. Исторический установленный игровой R27 всё ещё SHA256 `e5eb400c56ffb1bc23344a0cf30dcc724d8d18fc2752fabd1c2c63cdcca73735`; ни его BCS, ни WeiDU не изменены.
+
+Тот же сборщик теперь SHA-проверяет `BGXAI081_ACTION_PROVENANCE_QUEUE_V2.lua` и включает его в единую R27 Lua-функцию. Безопасное прямое чтение `CGameAIBase.m_queuedActions.m_nCount` дважды до и дважды после R2/R4: при одинаковом действии и стабильном значении 0..512 выдаёт `queueSnapshotStable` и `queuedActionsRaw`; иначе `nil`. В JSON явно `actionOriginVerified=false` и `manualEpsQueueVerified=false`, даже если raw count 0. Второй слушатель не регистрируется. NONINTERRUPT только **откладывает пересчёт** при count>0, не делает игровой switch.
+
+Независимый [CI 45447222518](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45447222518) Windows/Linux SUCCESS (77/77 R27 Lua на трёх рантаймах, 9/9 Python, 081 441 assertion на каждом, V3 442 сценария). **CODE/TEST PASS, DEPLOY NO, LIVE NO**, и x64 Lua binding `m_nCount` в конкретной пользовательской EET ещё не подтверждён. [Подробный контрольный файл](../../CURRENT/BGXAI_QUEUE_081_R27_NONINTERRUPT_20261125_RU.md).
+
+---
+
 ## Дополнение после интеграции R4 стабильных derivedStats (24.11.2026)
 
 **Актуальный исходник R27 refresh** теперь SHA256 `18d1780a5b83b953f31f441cf81a1af489fc21b37e0e2ced05cc0261ec26008c`, предыдущий SHA `149fcf0e5079bb6f2ac0ca1bbd24fd10b46fea2f6422acabd42093be970e974e` в историческом разделе ниже относится к прежнему неустановленному кандидату. Установленный игровой `M_BGXR27.lua` не изменён.
