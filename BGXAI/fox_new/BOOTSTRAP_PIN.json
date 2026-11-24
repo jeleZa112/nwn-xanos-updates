@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "ad183bfd8c0814273cde149bc51ecd77afe4344b",
+  "commit": "39112329c498a82886b544cfe275623327051975",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "1dbe8c08a3ab30d23d003019e4ebc9c702c0d0541db1dc52a8fce0e3321b85be",
-  "script_size": 79935,
-  "description": "Single CMD menu168 12-stage READ-ONLY EET+EPS source priority map; 45 batch +21 native tests, 512 matrix cases; source-level analysis never licenses action dispatch."
+  "script_sha256": "c55a5ebecc4e244e0fe263fc995b1e1b5d802b1d36c7b103475c7559bef78fbe",
+  "script_size": 79927,
+  "description": "One-CMD menu169: narrow R29 guarded native sword handoff, read-only preflight and typed install/rollback; old 168 actions unchanged."
 }
