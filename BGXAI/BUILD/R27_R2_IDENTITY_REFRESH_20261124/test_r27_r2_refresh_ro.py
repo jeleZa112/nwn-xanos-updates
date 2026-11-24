@@ -35,8 +35,15 @@ class RefreshContracts(unittest.TestCase):
         self.assertIn(b'selectedDerivedStatsDoubleReadConsistent=true',code)
         self.assertIn(b'R4_DERIVED_STATS_NOT_STABLE',code)
         self.assertIn(b'\"r4Status\"',code)
+        self.assertEqual(code.count(b'Q81_CORE.observe(sprite,action)'),2)
+        self.assertIn(b'actionContextSnapshotStable=ctxStable',code)
+        self.assertIn(b'actionSourceStable=srcStable',code)
+        self.assertIn(b'UNCLASSIFIED_CAI_ACTION_M_SOURCE',code)
+        self.assertIn(b'EEEX_READLSTRING_UNAVAILABLE',code)
+        self.assertIn(b'actionOriginVerified=false',code)
+        self.assertIn(b'manualEpsQueueVerified=false',code)
 
-    def test_no_game_actions_or_pointer_dereference(self):
+    def test_no_game_actions_or_unbounded_pointer_walk(self):
         code=build()
         for forbidden in (b'ClearActions(',b'Stop(',b'SelectWeaponAbility(',
             b'getAbility(',b'getLauncher(',b'SetGlobal(',b'os.execute(',
@@ -46,6 +53,11 @@ class RefreshContracts(unittest.TestCase):
         self.assertIn(b'launcherAmmoPairVerified=false',code)
         self.assertIn(b'epsManualQueueVerified=false',code)
         self.assertIn(b'engineSessionVerified=false',code)
+        context_path=ROOT/'BGXAI/fox_new/experimental_081_eeex_action_provenance_readonly_source_only/BGXAI081_ACTION_CONTEXT_READONLY_V3.lua'
+        context=context_path.read_bytes()
+        self.assertIn(b'EEex_ReadLString(ptr,49)',context)
+        self.assertNotIn(b'EEex_ReadString(ptr)',context)
+        self.assertIn(b'action_source_semantics',context)
 
     def test_tampered_inputs_all_denied(self):
         with tempfile.TemporaryDirectory() as temp:
