@@ -20,7 +20,7 @@
 - Наличие `ui_row_number` НЕ доказывает уникальность `CMessage` и идентификатор атаки. `miss_weapon_verified=false`, `combat_row_join_verified=false`; не добавлять названия оружия в журнал по догадке.
 
 ## Релиз
-`bg-eet-ru/onefile/release.json` — V126, один CMD `749992` bytes, SHA256 `a4dab31bb437344350790c4258983cd28fa9987a6a1dfe22e83ccea4d43a2c89`.
+`bg-eet-ru/onefile/release.json` — V126, один CMD `749993` bytes, SHA256 `971a96175c5746d652a9b1df36771dae156c4cd7d3e985d028bc05eb631326c6`.
 Пассивный модуль: pinned commit `601785e3a0e838ec3bc50e19ce26377153507932`, SHA256 `3c079918170ecbea959e1148e1fc9c629d84c751bf0d89415166c98a26921703`.
 Ветка пользователя `bg-eet-ai` после merge. CI Ubuntu/Windows (16+ synthetic scenarios) + реальный Lua 5.4 test без `io`, полная самопроверка CMD.
 Game state на пользовательском ПК **не менялся** этим GitHub-релизом.
