@@ -8,6 +8,8 @@ on:
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_EFFECTS_V4.lua'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_APR_PROVENANCE_V5.lua'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_CURRENT_STATS_BRIDGE.lua'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_SLOTS_R2_READONLY.lua'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_slots_r2_readonly.lua'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NONINTERRUPT_PLAN_V1.lua'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_apr_provenance_v5.lua'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_effects_v4.lua'
@@ -40,6 +42,12 @@ jobs:
             python3 BGXAI/patchsets/ranged_fighter_guarded_20261119/run_weapon_priority_v3_regression.py --lua "${runtime}" || result=1
           done
           exit "${result}"
+      - name: R2 real quickslot/quiver/offhand fingerprint invalidation on THREE Lua runtimes (39 cases each)
+        shell: bash
+        run: |
+          for runtime in lua5.3 lua5.4 luajit; do
+            "$runtime" BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_slots_r2_readonly.lua
+          done
   windows-static-no-game:
     runs-on: windows-latest
     timeout-minutes: 7
