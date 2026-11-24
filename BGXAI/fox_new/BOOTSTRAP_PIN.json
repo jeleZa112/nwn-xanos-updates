@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "fb87a3875a8027295655a9b94557211e6a6665f4",
+  "commit": "10905c8138dc72b3febb6629d164d9c33a6d292f",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
   "script_sha256": "c55a5ebecc4e244e0fe263fc995b1e1b5d802b1d36c7b103475c7559bef78fbe",
   "script_size": 79927,
-  "description": "Single CMD menu169: R29 authenticates deployed RANGED6 or V7 with exact WeiDU record, source/proof/staged DPLAYER/external backup; 45 source tests; typed install and last-only rollback unchanged."
+  "description": "One CMD menu169 R29: selects only exact SHA256-pinned weidu.exe or installed setup-enhanced-powergaming-scripts.exe; real 167 compiler SHA256 matches, V6 provenance retained, 53 fail-closed offline tests. Source-only until typed install."
 }
