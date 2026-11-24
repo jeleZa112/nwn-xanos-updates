@@ -261,4 +261,62 @@ check('both known unusable candidates cannot cause a switch',function()
  local _,b=two(s)
  eq(b.status,'HOLD_NO_EFFECTIVE_ATTACK');eq(b.dispatchAuthorized,false)
 end)
+
+check('selected verified out-of-range dart needs no fake APR for sword fallback',function()
+ local s=mk(true);local dead=s.weapons[2]
+ dead.inRange=false;dead.apr=nil;dead.finalTHAC0=nil
+ dead.avgDamageOnHit=nil;dead.finalCombatStatsVerified=false;dead.combatCostsVerified=false
+ local _,b=two(s)
+ eq(b.status,'ADVISE_PRIORITY_QUICKSLOT_ONLY');eq(b.toWeaponId,'SWORD')
+ eq(b.currentUnusableReason,'VERIFIED_RANGED_OUT_OF_RANGE')
+ eq(b.dispatchAuthorized,false)
+end)
+check('verified out-of-range alternative cannot block selected sword',function()
+ local s=mk(true);s.frame.selectedWeaponId='SWORD';s.actor.selectedWeaponId='SWORD'
+ s.weapons[2].inRange=false;s.weapons[2].apr=nil
+ s.weapons[2].finalCombatStatsVerified=false;s.weapons[2].combatCostsVerified=false
+ local _,b=two(s);eq(b.status,'KEEP_CURRENT')
+ eq(b.candidates[2].reason,'VERIFIED_RANGED_OUT_OF_RANGE')
+end)
+check('unknown ranged reach never implies confirmed exclusion',function()
+ local s=mk(true);s.weapons[2].inRange=nil;s.weapons[2].apr=nil
+ s.weapons[2].finalCombatStatsVerified=false
+ eq(choose(s).status,'HOLD_QUICKSLOT_EVIDENCE_INCOMPLETE')
+end)
+check('known out-of-range cannot launder unknown ammo provenance',function()
+ local s=mk(true);s.weapons[2].inRange=false;s.weapons[2].ammoVerified=false
+ s.weapons[2].apr=nil;s.weapons[2].finalCombatStatsVerified=false
+ eq(choose(s).status,'HOLD_AMMO_OR_THROWABLE_UNVERIFIED')
+end)
+check('immune set must not accept silently ignored named keys',function()
+ local s=mk(true);s.enemy.protections.immuneDamageTypes={SLASHING=true}
+ local _,b=two(s);eq(b.status,'HOLD_UNRANKABLE_OCCUPIED_WEAPON')
+ eq(b.reason,'IMMUNITY_SET_INCOMPLETE');eq(b.dispatchAuthorized,false)
+end)
+check('immune set mixed numeric and named keys must HOLD',function()
+ local s=mk(true);s.enemy.protections.immuneDamageTypes={[1]='SLASHING',MISSILE=true}
+ local _,b=two(s);eq(b.reason,'IMMUNITY_SET_INCOMPLETE')
+end)
+check('immune set with sparse array must HOLD',function()
+ local s=mk(true);s.enemy.protections.immuneDamageTypes={[2]='SLASHING'}
+ local _,b=two(s);eq(b.reason,'IMMUNITY_SET_INCOMPLETE')
+end)
+check('immune set repeated damage type must HOLD',function()
+ local s=mk(true);s.enemy.protections.immuneDamageTypes={'SLASHING','SLASHING'}
+ local _,b=two(s);eq(b.reason,'IMMUNITY_SET_INCOMPLETE')
+end)
+check('immune set unsupported damage type must HOLD',function()
+ local s=mk(true);s.enemy.protections.immuneDamageTypes={'UNKNOWN'}
+ local _,b=two(s);eq(b.reason,'IMMUNITY_SET_INCOMPLETE')
+end)
+check('valid two-element immune array excludes sword without false empty map',function()
+ local s=mk(false);s.enemy.protections.immuneDamageTypes={'SLASHING','CRUSHING'}
+ local _,b=two(s);eq(b.status,'ADVISE_PRIORITY_QUICKSLOT_ONLY')
+ eq(b.toWeaponId,'DART');eq(b.dispatchAuthorized,false)
+end)
+check('all weapon damage types immune yields HOLD with no false switch',function()
+ local s=mk(true);s.enemy.protections.immuneDamageTypes={'SLASHING','MISSILE'}
+ local _,b=two(s);eq(b.status,'HOLD_NO_EFFECTIVE_ATTACK')
+ eq(b.dispatchAuthorized,false)
+end)
 print('PASS WEAPON PRIORITY NATIVE LUA '..count..'/'..count..' SOURCE ONLY')

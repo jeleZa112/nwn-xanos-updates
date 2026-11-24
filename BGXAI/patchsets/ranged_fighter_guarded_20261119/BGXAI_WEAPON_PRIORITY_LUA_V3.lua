@@ -17,6 +17,21 @@ end
 local modes={MELEE=true,RANGED=true}
 local hands={SINGLE=true,DUAL=true,TWO_HANDED=true}
 local damage_types={SLASHING=true,PIERCING=true,CRUSHING=true,MISSILE=true}
+-- Immunity evidence MUST be a dense array of distinct known damage types.
+-- A keyed table such as {SLASHING=true}, sparse list, or a hidden extra
+-- field must HOLD, not silently read as an empty immunity list via ipairs().
+local function immunities_complete(t)
+ if type(t)~='table' then return false end
+ local count,seen=0,{}
+ for index,damageType in pairs(t) do
+  if type(index)~='number' or index%1~=0 or index<1 or index>16 or
+     damage_types[damageType]~=true or seen[damageType] then return false end
+  seen[damageType]=true
+  count=count+1
+ end
+ for i=1,count do if t[i]==nil then return false end end
+ return true
+end
 -- Exclusions require direct, current, positive evidence that an attack is impossible
 -- or unsafe. A confirmed unusable candidate needs a verified slot and evidence,
 -- but its *hypothetical* APR / damage / combat costs must not block every other
@@ -24,6 +39,9 @@ local damage_types={SLASHING=true,PIERCING=true,CRUSHING=true,MISSILE=true}
 local function proven_ineligible(w,a)
  if w.mode=='RANGED' and w.ammoVerified==true and w.ammoCount==0 then
   return 'VERIFIED_EMPTY_AMMUNITION'
+ end
+ if w.mode=='RANGED' and w.inRange==false then
+  return 'VERIFIED_RANGED_OUT_OF_RANGE'
  end
  if w.mode=='MELEE' then
   if a.canSustainMelee==false then return 'VERIFIED_UNSAFE_TO_TANK' end
@@ -155,8 +173,9 @@ local function scored_weapon(w,a,e)
     type(p.normalWeaponsBlocked)~='boolean' or type(p.missilesBlocked)~='boolean' or
     not between(p.resistance[w.damageType],0,1) or not between(e.armorClass,-50,100) then
   return nil,'ENEMY_PROTECTIONS_UNVERIFIED' end
- if #p.immuneDamageTypes>16 then return nil,'IMMUNITY_SET_INCOMPLETE' end
- for _,x in ipairs(p.immuneDamageTypes) do if not damage_types[x] then return nil,'IMMUNITY_SET_INCOMPLETE' end end
+ if not immunities_complete(p.immuneDamageTypes) then
+  return nil,'IMMUNITY_SET_INCOMPLETE'
+ end
  local immune=(w.enchantment<p.minimumEnchantment or
     (w.magical and p.magicalWeaponsBlocked) or
     (not w.magical and p.normalWeaponsBlocked) or

@@ -218,4 +218,31 @@ test('full breakdown must exclude on-hit poison from base damage',function()
  local s=scene(7);s.weapons[1].damageBreakdown.conditionalOnHitEffectsExcluded=false
  eq(src.choose(s,nil,choose3).reason,'PHYSICAL_BREAKDOWN_INCOMPLETE')
 end)
+
+test('V4 range exclusion skips unobservable physical and on-hit fields of selected dart',function()
+ local s=scene(7);local dead=s.weapons[2]
+ dead.inRange=false;dead.apr=nil;dead.finalTHAC0=nil
+ dead.avgDamageOnHit=nil;dead.finalCombatStatsVerified=false
+ dead.damageBreakdown=nil;dead.specialEffectsComplete=false;dead.combatCostsVerified=false
+ local _,b=steps(s);eq(b.status,'ADVISE_PRIORITY_QUICKSLOT_ONLY')
+ eq(b.currentUnusableReason,'VERIFIED_RANGED_OUT_OF_RANGE')
+ eq(b.toWeaponId,'SLING')
+end)
+test('V4 nonselectable distant sling with missing effects cannot block useful darts',function()
+ local s=scene(0);local dead=s.weapons[1]
+ dead.inRange=false;dead.apr=nil;dead.finalCombatStatsVerified=false
+ dead.damageBreakdown=nil;dead.specialEffectsComplete=false;dead.combatCostsVerified=false
+ local _,b=steps(s);eq(b.status,'KEEP_CURRENT')
+ eq(b.candidates[1].reason,'VERIFIED_RANGED_OUT_OF_RANGE')
+end)
+test('V4 unknown range cannot bypass absent effect evidence',function()
+ local s=scene(7);local w=s.weapons[2]
+ w.inRange=nil;w.apr=nil;w.finalCombatStatsVerified=false
+ eq(src.choose(s,nil,choose3).reason,'FINAL_STATS_NOT_VERIFIED')
+end)
+test('V4 cannot exempt out-of-range missile with unknown quiver provenance',function()
+ local s=scene(7);local w=s.weapons[2]
+ w.inRange=false;w.ammoVerified=false;w.finalCombatStatsVerified=false
+ eq(src.choose(s,nil,choose3).reason,'FINAL_STATS_NOT_VERIFIED')
+end)
 print('PASS TOTAL '..count..' / '..count..' NATIVE LUA SOURCE ONLY')

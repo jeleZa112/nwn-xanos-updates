@@ -25,8 +25,14 @@ end
 local function known_ineligible(w,a)
  if type(w)~='table' or type(a)~='table' then return false end
  if w.mode=='RANGED' then
-  return w.ammoVerified==true and w.ammoCount==0 and
-     (w.ammunitionModel=='QUIVER' or w.ammunitionModel=='SELF')
+  -- Out of range is only a valid exclusion after *all* ammo provenance is
+  -- complete; never let a guessed range bypass missing quiver evidence.
+  local ammoConfirmed=w.ammoVerified==true and
+     (w.ammunitionModel=='QUIVER' or w.ammunitionModel=='SELF') and
+     type(w.ammoCount)=='number' and w.ammoCount>=0 and
+     w.ammoCount<=1000000 and w.ammoCount%1==0 and
+     (w.ammunitionModel~='QUIVER' or ident(w.ammoResRef))
+  return ammoConfirmed and (w.ammoCount==0 or w.inRange==false)
  end
  if w.mode=='MELEE' then
   return a.canSustainMelee==false or

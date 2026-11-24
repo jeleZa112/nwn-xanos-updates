@@ -70,4 +70,30 @@ test('ineligible exemption never covers missing effective APR of candidate sling
  s.weapons[1].aprAudit=nil
  eq(choose(s).reason,'WEAPON_APR_AUDIT_MISSING')
 end)
+
+test('V5 verified out-of-range selected dart skips unobservable APR',function()
+ local s=scene();local dead=s.weapons[2]
+ dead.inRange=false;dead.apr=nil;dead.aprAudit=nil
+ dead.avgDamageOnHit=nil;dead.finalTHAC0=nil
+ dead.finalCombatStatsVerified=false;dead.combatCostsVerified=false
+ local _,b=two(s);eq(b.status,'ADVISE_PRIORITY_QUICKSLOT_ONLY')
+ eq(b.currentUnusableReason,'VERIFIED_RANGED_OUT_OF_RANGE')
+ eq(b.toWeaponId,'SLING');eq(b.dispatchAuthorized,false)
+end)
+test('V5 verified out-of-range sling avoids fake alternate APR',function()
+ local s=scene();s.weapons[1].inRange=false
+ s.weapons[1].aprAudit=nil;s.weapons[1].apr=nil
+ s.weapons[1].finalCombatStatsVerified=false;s.weapons[1].combatCostsVerified=false
+ local _,b=two(s);eq(b.status,'KEEP_CURRENT')
+ eq(b.candidates[1].reason,'VERIFIED_RANGED_OUT_OF_RANGE')
+end)
+test('V5 range unknown with absent APR remains strict hold',function()
+ local s=scene();s.weapons[2].inRange=nil;s.weapons[2].aprAudit=nil
+ eq(choose(s).reason,'WEAPON_APR_AUDIT_MISSING')
+end)
+test('V5 cannot exempt out-of-range missile when ammo is unverified',function()
+ local s=scene();local w=s.weapons[2]
+ w.inRange=false;w.ammoVerified=false;w.aprAudit=nil
+ eq(choose(s).reason,'WEAPON_APR_AUDIT_MISSING')
+end)
 print('PASS APR V5 '..count..'/'..count..' OFFLINE SOURCE ONLY')

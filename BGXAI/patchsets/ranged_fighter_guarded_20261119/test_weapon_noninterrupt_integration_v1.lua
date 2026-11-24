@@ -140,4 +140,40 @@ check('pending fallback preserves manual EPS cast and does not send commands',fu
  eq(b.proposedWeaponId,'SLING');eq(b.ordersSent,0)
  eq(b.dispatchAuthorized,false);eq(b.actionQueueCleared,false)
 end)
+
+check('active-stats bridge range exclusion tolerates missing selected derived APR',function()
+ local s=active_scene();local dead=s.weapons[2]
+ dead.inRange=false;dead.apr=nil;dead.avgDamageOnHit=nil;dead.finalTHAC0=nil
+ dead.finalCombatStatsVerified=false;dead.combatCostsVerified=false
+ dead.effectiveStatsEvidence=nil
+ local a,b=two(s)
+ eq(a.status,'HOLD_STABILIZE_TARGET_AND_EQUIPMENT')
+ eq(b.status,'ADVISE_PRIORITY_QUICKSLOT_ONLY');eq(b.toWeaponId,'SLING')
+ eq(b.currentUnusableReason,'VERIFIED_RANGED_OUT_OF_RANGE')
+ eq(b.dispatchAuthorized,false)
+end)
+check('active-stats bridge unknown range cannot bypass absent per-slot facts',function()
+ local s=active_scene();s.weapons[2].inRange=nil
+ s.weapons[2].effectiveStatsEvidence=nil
+ local r=bridge.choose(s,nil,v4.choose,v3.choose)
+ eq(r.reason,'PER_SLOT_BUFF_AWARE_STATS_UNVERIFIED');eq(r.dispatchAuthorized,false)
+end)
+check('range fallback must preserve manual order EPS cast and noninterrupt queue',function()
+ local s=active_scene();local dead=s.weapons[2]
+ dead.inRange=false;dead.apr=nil;dead.avgDamageOnHit=nil;dead.finalTHAC0=nil
+ dead.effectiveStatsEvidence=nil;dead.finalCombatStatsVerified=false;dead.combatCostsVerified=false
+ s.actor.manualOrderActive=true;s.actor.epsBusy=true;s.actor.currentlyCasting=true
+ s.actor.originVerified='UNKNOWN'
+ local a=nonintr.step(s,nil,readonly)
+ local n=clone(s);n.frame.tick=101;n.actor.activeStatsEvidence.tick=101
+ local b=nonintr.step(n,a.next,readonly)
+ eq(b.status,'CONTINUE_CURRENT_ACTION_SWITCH_PENDING')
+ eq(b.proposedWeaponId,'SLING');eq(b.ordersSent,0)
+ eq(b.dispatchAuthorized,false);eq(b.actionQueueCleared,false)
+end)
+check('active bridge refuses out-of-range exemption for unknown ammunition',function()
+ local s=active_scene();local w=s.weapons[2]
+ w.inRange=false;w.ammoVerified=false;w.effectiveStatsEvidence=nil
+ eq(bridge.audit(s),'PER_SLOT_BUFF_AWARE_STATS_UNVERIFIED')
+end)
 print('PASS REAL WEAPON PIPELINE INTEGRATION '..n..'/'..n..' OFFLINE')

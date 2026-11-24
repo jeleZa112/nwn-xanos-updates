@@ -63,11 +63,12 @@ def _lua(lua: str) -> None:
         for name in ('BGXAI_WEAPON_APR_PROVENANCE_V5.lua', 'test_weapon_apr_provenance_v5.lua'):
             shutil.copy2(ROOT / name, p5 / name)
         suites = [
-            (p3 / TEST, r'PASS WEAPON PRIORITY NATIVE LUA 42/42 SOURCE ONLY'),
-            (p4 / 'test_weapon_effects_v4.lua', r'PASS TOTAL 30 / 30 NATIVE LUA SOURCE ONLY'),
-            (p5 / 'test_weapon_apr_provenance_v5.lua', r'PASS APR V5 21/21 OFFLINE SOURCE ONLY'),
+            (p3 / TEST, r'PASS WEAPON PRIORITY NATIVE LUA 53/53 SOURCE ONLY'),
+            (p4 / 'test_weapon_effects_v4.lua', r'PASS TOTAL 34 / 34 NATIVE LUA SOURCE ONLY'),
+            (p5 / 'test_weapon_apr_provenance_v5.lua', r'PASS APR V5 25/25 OFFLINE SOURCE ONLY'),
             (ROOT / 'test_weapon_noninterrupt_plan_v1.lua', r'PASS NONINTERRUPT SCHEDULER 22/22 SOURCE ONLY'),
-            (ROOT / 'test_weapon_noninterrupt_integration_v1.lua', r'PASS REAL WEAPON PIPELINE INTEGRATION 7/7 OFFLINE')
+            (ROOT / 'test_weapon_noninterrupt_integration_v1.lua', r'PASS REAL WEAPON PIPELINE INTEGRATION 11/11 OFFLINE'),
+            (ROOT / 'test_weapon_failclosed_matrix_v1.lua', r'PASS WEAPON MATRIX 288/288 READONLY CASES SOURCE ONLY')
         ]
         passed = 0
         for path, marker in suites:
@@ -77,11 +78,14 @@ def _lua(lua: str) -> None:
                 print(result.stdout, file=sys.stderr)
                 print(result.stderr, file=sys.stderr)
                 raise RuntimeError(f'Lua regression failed: {path.name} ({result.returncode})')
-            count = len(re.findall(r'^PASS ', result.stdout, re.M)) - 1
-            print(f'PASS {path.name}: {count} behavior assertions')
+            if path.name == 'test_weapon_failclosed_matrix_v1.lua':
+                count = 288 # Cross-product scenarios, not 288 game-play cases.
+            else:
+                count = len(re.findall(r'^PASS ', result.stdout, re.M)) - 1
+            print(f'PASS {path.name}: {count} offline tests / matrix cases')
             passed += count
-        assert passed == 122, passed
-        print(f'PASS TOTAL {passed}/122 OFFLINE LUA BEHAVIOR ASSERTIONS; NO GAME DEPLOY')
+        assert passed == 433, passed
+        print(f'PASS TOTAL {passed}/433 OFFLINE LUA TESTS AND MATRIX CASES; NO GAME DEPLOY')
 
 
 def main() -> int:
