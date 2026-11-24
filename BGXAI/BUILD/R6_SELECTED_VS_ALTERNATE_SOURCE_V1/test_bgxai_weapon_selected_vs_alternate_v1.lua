@@ -136,18 +136,29 @@ end)
 test('no legacy APR guessed in place of new raw',function()
  local a,b,d=event(1,35,6);local x=M.observe(a,b,d);safe(x)
 end)
-test('history is bounded to eight selected item references',function()
+test('changing weapon identity invalidates stale history (not carry old APR)',function()
  local prior=nil
  for n=1,12 do
   local a,b,d=event(n,35,7)
   b.quickWeapons[1].resrefRaw=string.format('WPN%05d',n)
   local out,next= M.observe(a,b,d,prior)
   safe(out);assert(out.status=='SELECTED_ONLY_EFFECTIVE_APR_OBSERVED_PRIORITY_HOLD')
+  if n>1 then assert(out.quickslots[4].historicalSelectedAPR==nil) end
   prior=next
  end
  local size=0;for _ in pairs(prior.history) do size=size+1 end
- assert(size==8 and prior.history.WPN00001==nil)
+ assert(size==1 and prior.history.WPN00001==nil)
  assert(prior.history.WPN00012~=nil)
+end)
+test('old selected APR invalidated by quiver depletion',function()
+ local a,b,d=event(4,35,7);b.quivers[2].useCount1Raw=19
+ local out,next=M.observe(a,b,d,sSword)
+ safe(out);assert(next.history.STAF01==nil)
+end)
+test('slot-resref change with same charges does not reuse APR',function()
+ local a,b,d=event(4,35,7);b.quickWeapons[4].resrefRaw='STAF02'
+ local out,next=M.observe(a,b,d,sSword)
+ safe(out);assert(next.history.STAF01==nil)
 end)
 test('malicious stale history with non-sequence entry is purged when cap reached',function()
  local a,b,d=event(2,35,7)
