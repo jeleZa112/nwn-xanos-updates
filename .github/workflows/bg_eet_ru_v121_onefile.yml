@@ -1,12 +1,12 @@
-name: BG EET RU V121 onefile source-only verification
+name: BG EET RU V122 onefile source-only verification
 on:
   push:
-    branches: [bg-eet-ru-v121-autofix-onefile]
+    branches: [bg-eet-ru-v122-live-readonly-onefile]
   pull_request:
     branches: [bg-eet-ai]
   workflow_dispatch:
 concurrency:
-  group: bg-eet-ru-v121-${{ github.ref }}
+  group: bg-eet-ru-v122-${{ github.ref }}
   cancel-in-progress: true
 env:
   PYTHONIOENCODING: utf-8
@@ -32,13 +32,13 @@ jobs:
           assert len(s)<=750000,(len(s),'onefile exceeds updater safety limit')
           text=s.decode('utf8')
           assert text.startswith('@echo off & py -3 -x')
-          assert 'SELF_VERSION = 121' in text
+          assert 'SELF_VERSION = 122' in text
           assert "V121_BOT_SHA='4dfb5d57f3bfddaca5a31884c5a91ea2a8380aa78ace28047409ebe9dfb531b3'" in text
           assert "V121_TRUST_SHA='7622bfdec1f77e44a307c0cda3e73c86d143a024b87d4ad0f359897c89a74124'" in text
           ast.parse('\n'.join(text.splitlines()[1:]))
           import hashlib,json
           manifest=json.loads(Path('bg-eet-ru/onefile/release.json').read_text(encoding='utf8'))
-          assert manifest['version']==121
+          assert manifest['version']==122
           assert manifest['game_writes_allowed'] is False
           actual_sha=hashlib.sha256(s).hexdigest()
           print('V121_COMPUTED_SOURCE_SHA256',actual_sha,flush=True)
@@ -59,6 +59,47 @@ jobs:
           with zipfile.ZipFile(io.BytesIO(bundle)) as z:
               assert len(z.namelist())==14 and z.testzip() is None
           print('V121_BOT_AND_TRUSTED_BUNDLE_SHA_PASS')
+      - name: V122 external inventory SHA, mock safety, real Win32 self-process API
+        shell: python
+        run: |
+          from pathlib import Path
+          import hashlib,subprocess,sys
+          root=Path('bg-eet-ru/live-inventory')
+          source=root/'windows_live_hit_inventory_ro.py'
+          assert hashlib.sha256(source.read_bytes()).hexdigest()=='ba5f4cc2b0c690f706dea032b791c0773cf673725452dfbba3d5dbe11b356d26'
+          subprocess.run([sys.executable,'-m','unittest','-v','test_windows_inventory_ro'],cwd=root,check=True,timeout=30)
+          if sys.platform=='win32':
+              subprocess.run([sys.executable,'windows_live_hit_inventory_ro.py','--selftest-windows'],cwd=root,check=True,timeout=30)
+          print('V122_READER_SHA_AND_WINDOWS_RO_CHECKS_PASS')
+      - name: V122 one-CMD exact source-cache integration and single ZIP regression
+        shell: python
+        run: |
+          import hashlib,io,json,sys,tempfile,types,zipfile
+          from pathlib import Path
+          source=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd')
+          ns={'__name__':'_v122_ci_','__file__':str(source)}
+          exec(compile(source.read_text('utf8').split('\\n',1)[1],str(source),'exec'),ns)
+          with tempfile.TemporaryDirectory() as td:
+              base=Path(td);game=base/'game';game.mkdir()
+              ns['WORKDIR']=base/'reports';ns['WORKDIR'].mkdir()
+              archive=ns['WORKDIR']/ns['REPORT_NAME']
+              with zipfile.ZipFile(archive,'w') as z:z.writestr('previous.txt',b'unchanged')
+              p=ns['v121_cache'](game)/'BG_EET_RU_V122_RO.py'
+              p.write_bytes(Path('bg-eet-ru/live-inventory/windows_live_hit_inventory_ro.py').read_bytes())
+              assert ns['sha_path'](p)==ns['V122_SOURCE_SHA']
+              assert ns['v122_run'](game,archive,offline=True)==0
+              with zipfile.ZipFile(archive) as z:
+                  assert z.testzip() is None and z.read('previous.txt')==b'unchanged'
+                  r=json.loads(z.read(ns['V122_ENTRY']))
+                  assert r['game_files_written']==0 and not r['native_hooks_installed']
+                  assert not r['gameplay_verified'] and r['status']=='RUNTIME_MEMORY_HOLD'
+              p.write_text('corrupted')
+              assert ns['v122_run'](game,archive,offline=True)==0
+              with zipfile.ZipFile(archive) as z:
+                  r=json.loads(z.read(ns['V122_ENTRY']))
+                  assert r['status']=='RUNTIME_MEMORY_HOLD'
+                  assert z.read('previous.txt')==b'unchanged'
+          print('V122_SOURCE_PIN_CACHE_REPORT_AND_FAIL_CLOSED_PASS')
       - name: Full onefile selftest
         shell: python
         run: |
