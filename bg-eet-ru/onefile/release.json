@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 125,
-  "sha256": "ceab5eed864f693ce3792b213ead0fbdc683c3c337dab24acca714b86290a992",
-  "mode": "ONE_CLICK_14_STAGE_READ_ONLY_INDEPENDENT_V122_LIVE_GATE",
+  "version": 126,
+  "sha256": "c33ec3a3fd3eb8802a698877603d61db4c2256b470cc34deee0a631a1e000f2c",
+  "mode": "GUARDED_V126_PASSIVE_VISIBLE_UI_ROW_OBSERVER_OPTIONAL_TYPED_INSTALL",
   "game_writes_allowed": false,
-  "note": "V125 extends V124: one CMD and ZIP; 14 independent READ ONLY stages, with V122 ReadProcessMemory running even if V121 AutoFix fails. Reports 62_V124_ONE_RUN_BOT.json with updater_version 125. No hook/gameplay claims, no game changes. Before authorizing native pilot require owner/ABI/miss-row join evidence."
+  "note": "V126 preserves default 14-stage read-only batch and V108. On normal double-click offers 1=research audit (default), 2=typed guarded install of passive UI.MENU visible-row observer, 3=typed exact rollback, 4=status/capture. Install is optional and writes only UI.MENU after exact V125 SHA, external backup and game-closed check; no native hooks and no weapon-attribution claims."
 }
