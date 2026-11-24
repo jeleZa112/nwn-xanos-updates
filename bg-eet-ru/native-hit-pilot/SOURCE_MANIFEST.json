@@ -1,0 +1,78 @@
+{
+  "schema": "BG_EET_RU_V4_SOURCE_BUNDLE_PINNED",
+  "files": {
+    "BG_EET_RU_AUTOFIX_BOT.py": {
+      "size": 16919,
+      "sha256": "4dfb5d57f3bfddaca5a31884c5a91ea2a8380aa78ace28047409ebe9dfb531b3"
+    },
+    "BG_EET_RU_HIT_PILOT_DRAFT.lua": {
+      "size": 6355,
+      "sha256": "eecfb61c5f82d729b02b6cba55ed45d601c0cb53fac4024f97a1bd48f765a40b"
+    },
+    "BG_EET_RU_HIT_RUNTIME_INVENTORY_RO.lua": {
+      "size": 3585,
+      "sha256": "4fcb4429b99617dc9f98f737b039e99cd656ab6359ab315545aa5c2b99ca5d07"
+    },
+    "one_big_batch_ro.py": {
+      "size": 10357,
+      "sha256": "e8e9e3634762fba2c0b9d659ff7e56f6d0b477b05259ae2e998be1c23586ae23"
+    },
+    "one_pass_native_pilot_check.py": {
+      "size": 5332,
+      "sha256": "2b17e5e0ebb1f0bc0528560cd9858f7a26266e15d32bb83fc4a62de75c6b89cd"
+    },
+    "pilot_static_gates.py": {
+      "size": 4342,
+      "sha256": "88a67372f7ba04a415abb3d08411aaa1fd9e4d60f8bd42a2e3fb9e82e228b2ea"
+    },
+    "test_autofix_bot.py": {
+      "size": 14481,
+      "sha256": "54e73e6d7f47ae01a3661e2b088eeefbc3655e503ec510f5acefa67cd4ad46f7"
+    },
+    "test_inventory_ro.py": {
+      "size": 3409,
+      "sha256": "31896df3e1bb168bce72864dc7708c9f1fda0fbbb8daa014e38c9418ebb6e935"
+    },
+    "test_lua_runtime.py": {
+      "size": 6540,
+      "sha256": "8ac1c01f0f01383d9184f5f78b3626ce2e01727b09077d1c36b0f62d86811e53"
+    },
+    "test_pilot_source.py": {
+      "size": 3721,
+      "sha256": "a9d80f3229277fb1d4ff03eeb1bd41a1692fd4a726d0be8919c91efe0ac5125d"
+    },
+    "trusted_sources.zip": {
+      "size": 29668,
+      "sha256": "7622bfdec1f77e44a307c0cda3e73c86d143a024b87d4ad0f359897c89a74124"
+    },
+    "message_callsite_proof_v4.py": {
+      "size": 5439,
+      "sha256": "83045666890a5bd6aaa3cab0b3a554e5bde76dfb2a2f3e5728734c6b693ceaad"
+    },
+    "BG_EET_RU_THREAD_FRAME_BRIDGE_V4.lua": {
+      "size": 6878,
+      "sha256": "89f0af33bae3188f25c7368ba863a5ac7d944f232668524a6504e371d7a286e2"
+    },
+    "test_v4_lua_runtime.py": {
+      "size": 7952,
+      "sha256": "3f2ddc61324ff27af1eccd5ceacf81cd65616ec0a694e2225ace7e6a64ca5210"
+    },
+    "windows_live_hit_inventory_ro.py": {
+      "size": 13355,
+      "sha256": "6b92ccb227a099e52d738244a11a25c702a5c87d129e63324006bf389e8b57d1"
+    },
+    "test_windows_inventory_ro.py": {
+      "size": 5041,
+      "sha256": "b6af0d3936ac7ac7965a014cfa39e9e8101089432457ef2cebcb634476827ca5"
+    },
+    "one_big_batch_v4.py": {
+      "size": 7533,
+      "sha256": "900aabcf2dd9991363bd9ca0d0750a44f3284f2b8bd6ad9ac3ee3a3cad923945"
+    },
+    "README_V4_RU.md": {
+      "size": 6044,
+      "sha256": "5c5eff6086c53bdf20b4d8df5f4ba7872938ebfd64ff142109b9f05f83a81946"
+    }
+  },
+  "private_exe_bytes_present": false
+}
