@@ -55,7 +55,8 @@ class RefreshContracts(unittest.TestCase):
         self.assertIn(b'engineSessionVerified=false',code)
         context_path=ROOT/'BGXAI/fox_new/experimental_081_eeex_action_provenance_readonly_source_only/BGXAI081_ACTION_CONTEXT_READONLY_V3.lua'
         context=context_path.read_bytes()
-        self.assertIn(b'EEex_ReadLString(ptr,49)',context)
+        self.assertIn(b'pcall(reader,ptr,49)',context)
+        self.assertIn(b'EEex_ReadLString',context)
         self.assertNotIn(b'EEex_ReadString(ptr)',context)
         self.assertIn(b'action_source_semantics',context)
 
