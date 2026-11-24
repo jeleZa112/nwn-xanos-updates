@@ -173,7 +173,7 @@ class HistoricalRanged7Chain(unittest.TestCase):
     R7='~BGXRANGED7/SETUP-BGXRANGED7.TP2~ #0 #0 ~Guard~'
     LATER='~OTHERPACK/SETUP-OTHERPACK.TP2~ #0 #1 ~Unrelated mod~'
 
-    def setup_game(self, game, log_lines, with_proof=True):
+    def setup_game(self, game, log_lines, with_proof=True, variant=7):
         import json,hashlib
         root=pathlib.Path(game)
         data={name:('MOCK:'+name).encode('ascii') for name in m.BASELINE}
@@ -183,9 +183,9 @@ class HistoricalRanged7Chain(unittest.TestCase):
                              ('weidu.exe',b'MZMOCK_WEIDU'),
                              ('WeiDU.log',('\n'.join(log_lines)+'\n').encode('utf8'))):
             p=root/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(content)
-        old=b'Original BGXRANGED7 DPLAYER BCS bytes'
+        old=b'Original BGXRANGED DPLAYER BCS bytes'
         if with_proof:
-            stage=root/m.RANGED7_STAGE;stage.parent.mkdir(parents=True,exist_ok=True)
+            stage=root/(m.RANGED6_STAGE if variant==6 else m.RANGED7_STAGE);stage.parent.mkdir(parents=True,exist_ok=True)
             stage.write_bytes(data['override/DPLAYER.BCS'])
             backup=root.parent/'SAFE_BACKUP'
             dplayer=backup/'override/DPLAYER.BCS';dplayer.parent.mkdir(parents=True,exist_ok=True)
@@ -195,7 +195,7 @@ class HistoricalRanged7Chain(unittest.TestCase):
                    'new_dplayer_sha256':hashlib.sha256(data['override/DPLAYER.BCS']).hexdigest(),
                    'source_sha256':m.RANGED7_SOURCE_SHA,'changed_blocks':[1,2],
                    'backup':str(backup)}
-            p=root/m.RANGED7_PROOF;p.parent.mkdir(parents=True,exist_ok=True)
+            p=root/(m.RANGED6_PROOF if variant==6 else m.RANGED7_PROOF);p.parent.mkdir(parents=True,exist_ok=True)
             p.write_text(json.dumps(proof))
         return data,old
 
@@ -242,7 +242,7 @@ class HistoricalRanged7Chain(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             game=pathlib.Path(temp)/'GAME';game.mkdir()
             dat,old=self.setup_game(game,[self.LATER]);self.patched_context(game,dat,old)
-            with self.assertRaisesRegex(m.Hold,'RANGED7_NOT_EXACTLY_ONCE'):
+            with self.assertRaisesRegex(m.Hold,'RANGED6_OR_RANGED7_NOT_INSTALLED'):
                 m.baseline(game)
 
     def test_duplicate_r7_entry_denied(self):
@@ -317,7 +317,7 @@ class HistoricalRanged7Chain(unittest.TestCase):
             game=pathlib.Path(temp)/'GAME';game.mkdir()
             dat,old=self.setup_game(game,[self.LATER],with_proof=False)
             self.patched_context(game,dat,old)
-            with self.assertRaisesRegex(m.Hold,'RANGED7_NOT_EXACTLY_ONCE'):
+            with self.assertRaisesRegex(m.Hold,'RANGED6_OR_RANGED7_NOT_INSTALLED'):
                 m.baseline(game)
             history=m.weidu_entries(game)
             summary={'lastComponentBasename':m.sanitize_component(history[-1]),
@@ -344,8 +344,9 @@ class HistoricalRanged7Chain(unittest.TestCase):
             self.assertEqual(len(reports),1)
             data=json.loads(reports[0].read_text())
             self.assertEqual(data['status'],'R29_SAFE_STOP')
-            self.assertEqual(data['reason'],'RANGED7_NOT_EXACTLY_ONCE_IN_WEIDU_LOG')
+            self.assertEqual(data['reason'],'RANGED6_OR_RANGED7_NOT_INSTALLED_IN_WEIDU_LOG')
             self.assertEqual(data['weiduHistoryReadOnly']['ranged7InstalledEntryCount'],0)
+            self.assertEqual(data['weiduHistoryReadOnly']['ranged6InstalledEntryCount'],0)
             self.assertEqual(data['weiduHistoryReadOnly']['lastComponentBasename'],'SETUP-OTHERPACK.TP2')
             self.assertFalse(data['gameModifiedUnknown'])
             self.assertEqual((game/'WeiDU.log').read_bytes(),before)
@@ -357,5 +358,106 @@ class HistoricalRanged7Chain(unittest.TestCase):
             with patch.object(m,'GAME',game),patch.object(m,'no_game_process'),patch.object(m,'last_weidu',return_value=self.LATER):
                 with self.assertRaisesRegex(m.Hold,'R29_NOT_LAST_NO_ROLLBACK'):
                     m.rollback(game)
+
+
+class HistoricalRanged6Chain(unittest.TestCase):
+    """Actual deployed V6 must be accepted only with original proof and backup."""
+    R6='~BGXRANGED6\\SETUP-BGXRANGED6.TP2~ #0 #0 // real-format V6 install'
+    R7='~BGXRANGED7/SETUP-BGXRANGED7.TP2~ #0 #0 // other provenance'
+    LATER='~BGXR27/SETUP-BGXR27.TP2~ #0 #0 // later installed'
+
+    def game(self,root,log,with_proof=True):
+        c=HistoricalRanged7Chain()
+        dat,old=c.setup_game(root,log,with_proof=with_proof,variant=6)
+        c.patched_context(root,dat,old)
+        # addCleanup of the helper would be too late to unwind at end of test;
+        # ExitStack closures are registered on the owning test instead.
+        self.addCleanup(c.doCleanups)
+        return dat,old
+
+    def test_v6_with_later_mod_and_full_proof_passes_readonly(self):
+        with tempfile.TemporaryDirectory() as td:
+            game=pathlib.Path(td)/'GAME';game.mkdir()
+            self.game(game,[self.R6,self.LATER])
+            before=[(game/'WeiDU.log').read_bytes(),(game/'override/DPLAYER.BCS').read_bytes()]
+            r=m.verify_ranged7_history(game)
+            self.assertEqual(r['rangedInstalledVariant'],'BGXRANGED6')
+            self.assertTrue(r['ranged6InstallProofVerified'])
+            self.assertFalse(r['ranged7InWeiDULog'])
+            self.assertEqual(m.status(game)['status'],'R29_NOT_INSTALLED_BASELINE')
+            self.assertEqual(before,[(game/'WeiDU.log').read_bytes(),(game/'override/DPLAYER.BCS').read_bytes()])
+
+    def test_v6_even_when_last_requires_proof(self):
+        with tempfile.TemporaryDirectory() as td:
+            game=pathlib.Path(td)/'GAME';game.mkdir()
+            self.game(game,[self.R6],with_proof=False)
+            with self.assertRaisesRegex(m.Hold,'RANGED6_HISTORICAL_INSTALL_PROOF_MISSING'):
+                m.baseline(game)
+
+    def test_v6_later_missing_proof_denied(self):
+        with tempfile.TemporaryDirectory() as td:
+            game=pathlib.Path(td)/'GAME';game.mkdir()
+            self.game(game,[self.R6,self.LATER],with_proof=False)
+            with self.assertRaisesRegex(m.Hold,'RANGED6_HISTORICAL_INSTALL_PROOF_MISSING'):
+                m.baseline(game)
+
+    def test_v6_duplicate_denied(self):
+        with tempfile.TemporaryDirectory() as td:
+            game=pathlib.Path(td)/'GAME';game.mkdir()
+            self.game(game,[self.R6,self.R6,self.LATER])
+            with self.assertRaisesRegex(m.Hold,'RANGED6_NOT_EXACTLY_ONCE'):
+                m.baseline(game)
+
+    def test_v6_and_v7_mixed_lineage_denied(self):
+        with tempfile.TemporaryDirectory() as td:
+            game=pathlib.Path(td)/'GAME';game.mkdir()
+            self.game(game,[self.R6,self.R7,self.LATER])
+            with self.assertRaisesRegex(m.Hold,'AMBIGUOUS_RANGED6_AND_RANGED7'):
+                m.baseline(game)
+
+    def test_v6_proof_corruption_denied(self):
+        import json
+        with tempfile.TemporaryDirectory() as td:
+            game=pathlib.Path(td)/'GAME';game.mkdir()
+            self.game(game,[self.R6,self.LATER])
+            p=game/m.RANGED6_PROOF
+            d=json.loads(p.read_text());d['source_sha256']='0'*64
+            p.write_text(json.dumps(d))
+            with self.assertRaisesRegex(m.Hold,'RANGED6_HISTORICAL_PROOF_DRIFT'):
+                m.baseline(game)
+
+    def test_v6_staged_dplayer_corruption_denied(self):
+        with tempfile.TemporaryDirectory() as td:
+            game=pathlib.Path(td)/'GAME';game.mkdir()
+            self.game(game,[self.R6,self.LATER])
+            (game/m.RANGED6_STAGE).write_bytes(b'ATTACKED')
+            with self.assertRaisesRegex(m.Hold,'RANGED6_HISTORICAL_STAGED_DPLAYER_DRIFT'):
+                m.baseline(game)
+
+    def test_v6_backup_corruption_denied(self):
+        import json
+        with tempfile.TemporaryDirectory() as td:
+            game=pathlib.Path(td)/'GAME';game.mkdir()
+            self.game(game,[self.R6,self.LATER])
+            location=json.loads((game/m.RANGED6_PROOF).read_text())['backup']
+            (pathlib.Path(location)/'override/DPLAYER.BCS').write_bytes(b'TAMPERED')
+            with self.assertRaisesRegex(m.Hold,'RANGED6_HISTORICAL_BACKUP_DPLAYER_CORRUPTED'):
+                m.baseline(game)
+
+    def test_v6_log_mutation_denied(self):
+        with tempfile.TemporaryDirectory() as td:
+            game=pathlib.Path(td)/'GAME';game.mkdir()
+            self.game(game,[self.R6,self.LATER])
+            with (game/'WeiDU.log').open('ab') as f:f.write(b'\nCHANGED')
+            with self.assertRaisesRegex(m.Hold,'WEIDU_LOG_SHA_DRIFT'):
+                m.baseline(game)
+
+    def test_v6_live_dplayer_changed_denied(self):
+        with tempfile.TemporaryDirectory() as td:
+            game=pathlib.Path(td)/'GAME';game.mkdir()
+            self.game(game,[self.R6,self.LATER])
+            (game/'override/DPLAYER.BCS').write_bytes(b'WRONG')
+            with self.assertRaisesRegex(m.Hold,'BASELINE_SHA_DRIFT'):
+                m.baseline(game)
 
 if __name__=='__main__':unittest.main(verbosity=2)
