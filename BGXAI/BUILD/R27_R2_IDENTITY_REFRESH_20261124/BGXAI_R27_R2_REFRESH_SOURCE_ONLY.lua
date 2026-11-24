@@ -859,7 +859,7 @@ function R27.toConsoleJson(sample)
   ',"actionSourceStable":'..tostring(sample.actionSourceStable==true)..
   ',"actionSourceRaw":'..jrawstr(sample.actionSourceRaw)..
   ',"actionSourceReadStatus":'..jstatus(sample.actionSourceReadStatus)..
-  ',"actionSourceSemantics":"UNCLASSIFIED_CAI_ACTION_M_SOURCE"..
+  ',"actionSourceSemantics":"UNCLASSIFIED_CAI_ACTION_M_SOURCE"'..
   ',"actionOriginVerified":false,"manualEpsQueueVerified":false'..
   ',"r4Status":'..(sample.r4Status=='RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS' and
     '"RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS"' or 'null')..
