@@ -330,6 +330,9 @@ class HistoricalRanged7Chain(unittest.TestCase):
         import json
         with tempfile.TemporaryDirectory() as temp:
             game=pathlib.Path(temp)/'GAME';game.mkdir()
+            # Windows tempfile often returns an 8.3 path alias; CLI resolves
+            # --game before the exact-root safety comparison.
+            game=game.resolve()
             dat,old=self.setup_game(game,[self.LATER],with_proof=False)
             self.patched_context(game,dat,old)
             before=(game/'WeiDU.log').read_bytes()
