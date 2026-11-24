@@ -199,7 +199,7 @@ def build(root: Path = ROOT) -> bytes:
       output.count(b'queuedActionsRaw=qCount') != 1 or
       output.count(b'actionContextSnapshotStable=ctxStable') != 1 or
       output.count(b'actionSourceStable=srcStable') != 1 or
-      output.count(b'UNCLASSIFIED_CAI_ACTION_M_SOURCE') != 1):
+      output.count(b'UNCLASSIFIED_CAI_ACTION_M_SOURCE') < 2):
     raise ValueError('R27_ENGINE_ACTION_CONTEXT_OBSERVER_CONTRACT')
   if output.count(b'return R27\n') != 1:
     raise ValueError('R27_SINGLE_EXPORT_REQUIRED')
