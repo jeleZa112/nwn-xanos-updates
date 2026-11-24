@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 128
+SELF_VERSION = 131
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -127,7 +127,6 @@ def v33_extract(game,fp):
   data['created_utc']=now()
   return data
 def read_archive(path: Path):
-  """Only read a small fixed set of known archive entries; never extract any ZIP."""
   if not path.is_file(): return {}
   results={}
   try:
@@ -200,7 +199,6 @@ def summary(v28report,v29report,used,fp,notes):
     'review_queue_included':True
   }
 def make_review_queue(v28report):
-  """Editorial evidence inventory, not a proposed patch and never an approval gate."""
   verified = v28report.get('targets', []) if isinstance(v28report,dict) else []
   expected = {int(k) for k in REVIEW_SEEDS}
   actual = {int(row['strref']) for row in verified}
@@ -310,7 +308,6 @@ def get_log(path):
       return z.read(inf).decode('utf-8') if inf.file_size<150_000 else ''
   except (OSError,KeyError,ValueError,zipfile.BadZipFile):return ''
 def published_update(path, offline=False):
-  """SHA-pinned updater; all writes outside game."""
   if offline:return 'OFFLINE: обновление пропущено',False
   import subprocess
   pending=WORKDIR/'_BG_EET_RU_UPDATE_PENDING.cmd'
@@ -513,7 +510,6 @@ V78_ROLLBACK_APPROVAL = 'RESTORE_BG_EET_RU_LEUI_LABEL_78'
 V78_OLD = 'Реверсивные кнопоки'
 V78_NEW = 'Поменять кнопки местами'
 def v78_make_patch(raw):
-  """Pure exact-replacement transformer. Persisted LeUI option name stays unchanged."""
   if not isinstance(raw, bytes):raise ValueError('V78_RAW_NOT_BYTES')
   a=('LEUI_REVERSE_BUTTON_POSITIONS_LABEL = "'+V78_OLD+'"').encode('utf-8')
   b=('LEUI_REVERSE_BUTTON_POSITIONS_LABEL = "'+V78_NEW+'"').encode('utf-8')
@@ -566,7 +562,6 @@ def v78_atomic_replace(path, raw, tempname, expected):
   finally:
     if stage.exists():stage.unlink()
 def v78_live_fix(game,report_path,mode):
-  """Guarded, externally backed-up optional action; separate approval every time."""
   game=Path(game);report_path=Path(report_path)
   safe_external(game,report_path)
   backup=v78_backup_path()
@@ -685,7 +680,6 @@ def v79_read_gam_journal(raw):
             'in_internal_tlk':external==255})
   return {'gam_version':raw[4:8].decode('ascii'),'journal_count':count,'journal_entries':items}
 def v79_selected_tlk(path,strrefs):
-  """Sparse read of indexed journal StrRefs; no full 360k-string iteration."""
   path=Path(path)
   result={}
   with path.open('rb') as f:
@@ -722,7 +716,6 @@ def v79_selected_tlk(path,strrefs):
                 'latin_letters':latin}
   return result
 def v79_save_roots(game):
-  """Include the EET-specific Documents directory confirmed by prior user saves."""
   game=Path(game)
   documents=Path.home()/'Documents'
   eet=documents/"Baldur's Gate - Enhanced Edition Trilogy"
@@ -1366,7 +1359,6 @@ def v83_parse_evidence(raw):
 def v83_normalize(text):
   return ' '.join(text.casefold().split())
 def v83_scan_tlk_phrases(path, phrases):
-  """Scan only when a reported text fragment has no StrRef. Bounds checked TLK."""
   if not phrases:return {}
   path=Path(path)
   needles={s:v83_normalize(s) for s in phrases}
@@ -8056,7 +8048,6 @@ def v122_run(game,path,offline=False):
   print('V122 LIVE READ ONLY:',result['status']);return 0
 V124_ENTRY='62_V124_ONE_RUN_BOT.json'
 def v124_one_run(game,path,offline=False):
-  """Execute independent read-only evidence stages in a single ZIP."""
   stages=[
     ('lua',lambda:v85_run(game,path,'status'),'33_V85_COMBAT_FORMAT_GUARDED.json'),
     ('ui',lambda:v102_run(game,path,'status'),'48_V102_ROLL_MODIFIER_LABELS.json'),
@@ -8110,6 +8101,26 @@ def v126_dispatch(game,path,mode):
   ns={'__name__':'v126'}
   exec(compile(p.read_bytes(),str(p),'exec'),ns)
   return ns['run'](game,path,mode)
+V130_PIN='683243951008f19495a978134d8f44732aa4d132472d08ead2c480e9c86c2f70'
+V130_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/ea012654ce6323b265ba1a91c1b71d9e0a866ad8/bg-eet-ru/native-correlation/pe_unwind_entry_gate_v130.py'
+def v130_audit(game,path):
+  report={'schema':'BG_EET_RU_V130_WIN64_UNWIND_RO','status':'SOURCE_OR_GAME_HOLD','game_files_written':0,'native_hook_install_allowed':False}
+  try:
+    p=v121_cache(game)/'V130_RO.py'
+    if not p.is_file() or sha_path(p)!=V130_PIN:
+      with urllib.request.urlopen(V130_URL,timeout=20) as r:data=r.read(12001)
+      if digest(data)!=V130_PIN:raise RuntimeError('V130_SOURCE_SHA_HOLD')
+      v121_write(game,p,data)
+    ns={'__name__':'v130'}
+    exec(compile(p.read_bytes(),str(p),'exec'),ns)
+    report=ns['inspect_game_exe'](Path(game)/'Baldur.exe')
+  except Exception as e:report['hold_reason']=type(e).__name__+':'+str(e)[:160]
+  report['game_files_written']=0
+  report['native_hook_install_allowed']=False
+  try:v116_zip(game,path,report,entry='64_V130_PE_UNWIND.json')
+  except Exception as e:print('V130 ZIP STOP',type(e).__name__,str(e)[:140]);return 2
+  print('V130 PE:',report['status'],'| game writes: 0 | one ZIP:',path)
+  return 0
 def v122_selftest():
   assert len(V122_SOURCE_SHA)==64 and '91165691e629db817ba734ec394042c34bc2f8c3' in V122_SOURCE_URL
   return True
@@ -8246,9 +8257,10 @@ def main(argv=None):
   try:v121_snapshot(game,WORKDIR/REPORT_NAME)
   except Exception as exc:print('V121 EVIDENCE SNAPSHOT HOLD:',type(exc).__name__,str(exc)[:140])
   if not (argv if argv is not None else sys.argv[1:]):
-    try:a=input('1=audit 2=install 3=undo 4=play 5=status [1]: ').strip()
+    try:a=input('1=audit 2=install 3=undo 4=play 5=status 6=unwind [1]: ').strip()
     except EOFError:a=''
     mode={'2':'install','3':'rollback','4':'capture','5':'status'}.get(a)
+    if a=='6':return v130_audit(game,WORKDIR/REPORT_NAME)
     if mode:return v126_dispatch(game,WORKDIR/REPORT_NAME,mode)
     rc=v124_one_run(game,WORKDIR/REPORT_NAME,args.offline)
     return rc if rc else v126_dispatch(game,WORKDIR/REPORT_NAME,'status')
@@ -8957,7 +8969,6 @@ def main(argv=None):
     except Exception:pass
   return 0
 def v56_static_audit(game, previous_zip, output_zip):
-  """CRE/ARE/KEY directory only; read-only game resources, no BIF payloads."""
   import csv as _csv
   game=Path(game)
   override=game/'override'
@@ -9088,7 +9099,6 @@ def v56_static_audit(game, previous_zip, output_zip):
     if z.testzip() is not None:raise RuntimeError('v56 archive CRC failure')
   return output
 def v56_preserve_prior(path):
-  """Retain safe prior audit reports before the base ZIP is rewritten."""
   result={}
   if not Path(path).is_file():return result
   with zipfile.ZipFile(path) as z:
@@ -9101,7 +9111,6 @@ def v56_preserve_prior(path):
       except KeyError:pass
   return result
 def v58_local_tp2_bcs_gate(game, report_path):
-  """Only inspect locally installed TP2/WeiDU.log/override BCS; no game changes."""
   g=Path(game)
   candidates=(
     g/'iwd_eet-party-banter'/'Setup-iwd_eet-party-banter.tp2',
@@ -9155,7 +9164,6 @@ def v58_local_tp2_bcs_gate(game, report_path):
     if z.testzip() is not None:raise RuntimeError('v58 ZIP integrity error')
   return result
 def v60_weidu_installed_components(game, report_path):
-  """Read WeiDU.log independently of TP2 source availability."""
   g=Path(game)
   log=next((p for p in (g/'WeiDU.log',g/'weidu.log') if p.is_file()),None)
   report={'schema':'bg-eet-ru-v60-installed-component-audit-v1',
@@ -9228,7 +9236,6 @@ V64_EARLY_COMPONENTS={
   'EET':[0]
 }
 def v64_two_segment_evidence(game, report_path, current):
-  """Distinct provenance: current game WeiDU vs supplied historical log."""
   game=Path(game)
   live_log=next((p for p in (game/'WeiDU.log',game/'weidu.log') if p.is_file()),None)
   live_hash=digest(live_log.read_bytes()) if live_log else None
@@ -9272,7 +9279,6 @@ def v64_two_segment_evidence(game, report_path, current):
            json.dumps(report,ensure_ascii=False,indent=2).encode('utf-8'))
   return report
 def v65_autonomous_stages(report_path):
-  """Automatically run safe dependent gates, then independent text triage."""
   with zipfile.ZipFile(report_path) as z:
     def read(name):
       try:
@@ -9327,7 +9333,6 @@ def v65_autonomous_stages(report_path):
     z.writestr(name,json.dumps(report,ensure_ascii=False,indent=2).encode('utf-8'))
   return report
 def v66_cached_original_matches(report_path):
-  """Compare original English lines with current TLK evidence and cached live DLG."""
   import collections
   with zipfile.ZipFile(report_path) as z:
     pre=json.loads(z.read('10_BANTER_COMPILER_PREFLIGHT.json'))
