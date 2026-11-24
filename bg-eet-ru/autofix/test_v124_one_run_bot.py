@@ -62,7 +62,7 @@ class Batch(unittest.TestCase):
                 self.assertEqual(z.namelist().count(ns['V124_ENTRY']),1)
                 report=json.loads(z.read(ns['V124_ENTRY']))
                 self.assertEqual(report['stage_count'],14)
-                self.assertEqual(report['updater_version'],132)
+                self.assertEqual(report['updater_version'],ns['SELF_VERSION'])
                 self.assertEqual(report['game_files_written'],0)
                 self.assertFalse(report['native_hooks_installed'])
                 self.assertFalse(report['gameplay_verified'])

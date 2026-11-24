@@ -1,0 +1,68 @@
+name: BG EET RU V133 live inventory read-only validation
+on:
+  pull_request:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - 'bg-eet-ru/onefile/release.json'
+      - 'bg-eet-ru/native-correlation/v133_live_hit_inventory_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v133_live_hit_inventory_ro.py'
+      - '.github/workflows/bg-eet-ru-v133-live-readonly.yml'
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - 'bg-eet-ru/onefile/release.json'
+      - 'bg-eet-ru/native-correlation/v133_live_hit_inventory_ro.py'
+      - '.github/workflows/bg-eet-ru-v133-live-readonly.yml'
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Lua runtime for old one-file selftests
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq liblua5.4-0
+      - name: Verify release hashes, one-file size cap and code compilation
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import ast, hashlib, json
+          root=Path('bg-eet-ru')
+          updater=(root/'onefile/BG_EET_RU_UPDATE.cmd').read_bytes()
+          v133=(root/'native-correlation/v133_live_hit_inventory_ro.py').read_bytes()
+          release=json.loads((root/'onefile/release.json').read_text('utf8'))
+          assert 10000<len(updater)<=750000, ('AUTOUPDATE_SIZE',len(updater))
+          assert release['version']==133 and release['game_writes_allowed'] is False
+          assert hashlib.sha256(updater).hexdigest()==release['sha256']
+          assert hashlib.sha256(v133).hexdigest()=='b3f22f56550d951483863fb59e84f2e543b2473d7bb2e51f8fd03fed4e58f624'
+          code=updater.split(b'\n',1)[1]
+          ast.parse(code.decode('utf8'))
+          ast.parse(v133.decode('utf8'))
+          assert b"SELF_VERSION = 133" in code
+          assert b"66_V133_LIVE_HIT_INVENTORY.json" in code
+          assert b"V133_PIN='b3f22f56550d951483863fb59e84f2e543b2473d7bb2e51f8fd03fed4e58f624'" in code
+          assert b"if a=='8':return v133_audit" in code
+          print('V133_RELEASE_AND_GRAMMAR_PASS',len(updater))
+          PY
+      - name: Verify 15 fail-closed memory-audit cases
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p test_v133_live_hit_inventory_ro.py -v
+      - name: Preserve previous updater isolated selftests
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
+  windows-kernel32:
+    runs-on: windows-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: 'x64'
+      - name: Real Windows memory-read API selftest without game
+        run: python bg-eet-ru/native-correlation/v133_live_hit_inventory_ro.py --selftest-windows
+      - name: Verify 15 synthetic fail-closed tests on Windows
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p test_v133_live_hit_inventory_ro.py -v

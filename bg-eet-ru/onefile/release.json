@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 132,
-  "sha256": "b4b6d8dd864dc2ad6beeec50965015396e8d5f02efc22c0071dc8f5835e86644",
-  "mode": "V132_SAME_UPDATER_INSTALLED_EEEX_X64_RTL_FUNCTION_TABLE_AND_RAW_UNWIND_RO",
+  "version": 133,
+  "sha256": "280b09cadb2a2a92da02a77f91a67640620e0076d508428d1fb2adc12df8ab9c",
+  "mode": "V133_LIVE_HIT_READONLY_39DA6F_NO_NATIVE_HOOK",
   "game_writes_allowed": false,
-  "note": "V132 adds option 7=abi to existing one CMD. Exact SHA-pinned V132 read-only parser reads Baldur.exe .pdata/.xdata and checks raw UWOP_SAVE_NONVOL RBX offset encoded 27*8=216, installed EEex_scripts/EEex_Assembly_x86-64.lua symbols and SHA, EEex_Sprite_Patch source SHA, InfinityLoader.db FirstCall label. Appends 65_V132_EEEX_ABI.json to same ZIP. Native hook still NOT installed: owner/Win64 callback ABI/XMM/trampoline/rollback and same-Hit-to-combatLog row not proven. Preserves prior V126 UI observer and V131 menu 6; no game writes or 14-stage audit required."
+  "note": "V133 reuses the single BG_EET_RU_UPDATE.cmd, adds menu 8=live-RO, exact SHA-pinned external Windows ReadProcessMemory inventory of CGameSprite::Hit() post-prolog site 0x39DA6F, FirstCall E9, AddMessage and exit. 15 mock tests including 500 corruptions; no injected hooks, no changes to game. Owner/ABI/unwind live correctness/visible journal row remain HOLD. Same canonical ZIP entry 66_V133_LIVE_HIT_INVENTORY.json. Requires Baldur.exe running for a useful process snapshot; no battle required. V126 preserved."
 }
