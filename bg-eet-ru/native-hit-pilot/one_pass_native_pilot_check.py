@@ -47,6 +47,15 @@ def audit(archive:Path, trusted:Path, lua:Path, extra_tests:bool=True):
     stage('base_735_source_suite',trusted_source_suite)
     stage('corrected_site_and_lua_source',lambda:verify(archive,lua))
     if extra_tests:
+        def real_lua_callbacks():
+            child=subprocess.run([sys.executable,str(HERE/'test_lua_runtime.py')],
+                 cwd=HERE,capture_output=True,text=True,timeout=15)
+            if child.returncode!=0 or 'LUA_SOURCE_RUNTIME_PASS\t43' not in child.stdout:
+                raise RuntimeError('LUA_RUNTIME_CALLBACKS_NOT_PASS:'+child.stderr[-150:])
+            return {'status':'PASS','assertions':43,'engine':'Lua 5.4 shared library',
+                    'scope':'LUA_CALLBACK_LOGIC_ONLY_NOT_EEEX_OR_NATIVE_JIT'}
+        stage('real_lua_callback_contract',real_lua_callbacks)
+    if extra_tests:
         def adversarial():
             env={**os.environ,'BG_EET_RU_V120_ZIP':str(archive)}
             ch=subprocess.run([sys.executable,'-m','unittest','discover','-s',str(HERE),'-p','test_pilot_source.py','-v'],
