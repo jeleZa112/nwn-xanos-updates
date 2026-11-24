@@ -117,29 +117,66 @@ function M.observe_portrait(index, getter)
  out.portraitIndex=index
  return out
 end
+-- Rechecking the same selected slot does not make cached advice safe: a
+-- character can replace BOW05 with another bow (or change quiver/offhand)
+-- while all charges and flags stay identical. Invalidate the advice on any
+-- changed *observed* identity or count, never interrupt the current action.
+local function compare_slot(a,b)
+ if type(a)~='table' or type(b)~='table' then return nil end
+ if a.access=='READ_ERROR' or a.access=='UNAVAILABLE' or
+    b.access=='READ_ERROR' or b.access=='UNAVAILABLE' then return nil end
+ if a.index~=b.index or a.kind~=b.kind or a.ordinal~=b.ordinal then
+  return nil -- incomparable contract, not an equipment change
+ end
+ for _,key in ipairs({'access','itemResrefRaw','resrefAccess','useCount1Raw',
+    'useCount2Raw','useCount3Raw','flagsRaw','itemTypeRaw'}) do
+  if a[key]~=b[key] then return true end
+ end
+ return false
+end
+local function compare_slots(a,b,indices,kind)
+ if type(a)~='table' or type(b)~='table' then return nil end
+ -- Lua # on sparse tables is not a proof that a complete array was read.
+ for key in pairs(a) do if not int(key,1,4) then return nil end end
+ for key in pairs(b) do if not int(key,1,4) then return nil end end
+ local changed=false
+ for i=1,4 do
+  local x,y=a[i],b[i]
+  if type(x)~='table' or type(y)~='table' or
+     x.index~=indices[i] or y.index~=indices[i] or
+     x.kind~=kind or y.kind~=kind or x.ordinal~=i-1 or y.ordinal~=i-1 then
+   return nil
+  end
+  local different=compare_slot(x,y)
+  if different==nil then return nil end
+  changed=changed or different
+ end
+ return changed
+end
 function M.compare(before,after)
  if type(before)~='table' or type(after)~='table' or
     before.actorId==nil or before.actorId~=after.actorId then
-   return result('HOLD_INCOMPARABLE_ACTOR') end
+  return result('HOLD_INCOMPARABLE_ACTOR') end
+ if not int(before.selectedWeaponRaw,0,65535) or
+    not int(after.selectedWeaponRaw,0,65535) or
+    before.status=='HOLD_SOME_SLOTS_UNREADABLE' or
+    after.status=='HOLD_SOME_SLOTS_UNREADABLE' then
+  return result('HOLD_INCOMPLETE_COMPARISON') end
+ local w=compare_slots(before.quickWeapons,after.quickWeapons,WEAPON,'QUICKWEAPON')
+ local q=compare_slots(before.quivers,after.quivers,QUIVER,'QUIVER')
+ local hand=compare_slot(before.offhand,after.offhand)
+ if hand~=nil and (before.offhand.index~=OTHER[1] or
+      after.offhand.index~=OTHER[1] or
+      before.offhand.kind~='OFFHAND_OR_SHIELD' or
+      after.offhand.kind~='OFFHAND_OR_SHIELD') then hand=nil end
+ if w==nil or q==nil or hand==nil then
+  return result('HOLD_INCOMPLETE_COMPARISON') end
  local changed=before.selectedWeaponRaw~=after.selectedWeaponRaw
- local context_changed=false
- local function compare_slots(a,b)
-  if type(a)~='table' or type(b)~='table' or #a~=#b then return nil end
-  for i=1,#a do
-   local x,y=a[i],b[i]
-   if x.index~=y.index or x.access~=y.access or
-      x.useCount1Raw~=y.useCount1Raw or x.useCount2Raw~=y.useCount2Raw or
-      x.useCount3Raw~=y.useCount3Raw or x.flagsRaw~=y.flagsRaw then
-       return true end
-  end
-  return false
- end
- local w=compare_slots(before.quickWeapons,after.quickWeapons)
- local q=compare_slots(before.quivers,after.quivers)
- if w==nil or q==nil then return result('HOLD_INCOMPLETE_COMPARISON') end
- context_changed=w or q or before.selectedAbilityRaw~=after.selectedAbilityRaw
+ local context_changed=w or q or hand or
+   before.selectedAbilityRaw~=after.selectedAbilityRaw
  return result((changed or context_changed) and
     'INVALIDATE_WEAPON_ADVICE_KEEP_ACTION' or 'RAW_FINGERPRINT_SAME_NOT_PROOF_OF_BUFFS',
     {actorId=before.actorId,selectedChanged=changed,slotDataChanged=context_changed})
 end
+
 return M
