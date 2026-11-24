@@ -222,4 +222,52 @@ function M.classifyObservedEvidence(snapshot)
   activeEffectFingerprintComplete=false,dispatchAuthorized=false,
   executable=false}
 end
+-- EEex 1.1.7 EEex_Sprite_GetActiveStats chooses m_tempStats when
+-- m_bAllowEffectListCall == 0. Such work-in-progress stats must NEVER be
+-- treated as a stable selected APR for Weapon Priority. Fail closed if the
+-- flag is unreadable, nonstandard, or changes during the two read samples.
+-- These reads do NOT establish all active effects, event ID or action origin.
+function M.observeStableDerived(sprite, action, partyIndex, getStats)
+ local function flag()
+  return bound(protected(function() return sprite.m_bAllowEffectListCall end),0,255)
+ end
+ local out=empty('HOLD_DERIVED_STATS_VIEW_UNVERIFIED')
+ if sprite==nil or flag()~=1 then return out end
+ local a=M.observe(sprite,action,partyIndex,getStats)
+ if flag()~=1 then return empty('HOLD_DERIVED_STATS_TEMP_VIEW_DURING_READ') end
+ if a.status~='RAW_CURRENT_SELECTED_STATS_OBSERVED_NOT_COMPLETE_EFFECTS' or
+    a.missingCount~=0 or a.presentCount~=#FIELDS then
+  return empty('HOLD_DERIVED_STATS_FIELDS_INCOMPLETE') end
+ local b=M.observe(sprite,action,partyIndex,getStats)
+ if flag()~=1 then return empty('HOLD_DERIVED_STATS_TEMP_VIEW_DURING_RECHECK') end
+ if b.status~='RAW_CURRENT_SELECTED_STATS_OBSERVED_NOT_COMPLETE_EFFECTS' or
+    b.missingCount~=0 or b.presentCount~=#FIELDS then
+  return empty('HOLD_DERIVED_STATS_RECHECK_INCOMPLETE') end
+ -- A script/action or selection can change *inside* the second getter after
+ -- M.observe has sampled its header. Re-read the headers after both calls.
+ local eq=protected(function() return sprite.m_equipment end)
+ local actorNow=bound(protected(function() return sprite.m_id end),0,2147483647)
+ local actionNow=bound(protected(function() return action.m_actionID end),0,65535)
+ local selectionNow=bound(protected(function() return eq.m_selectedWeapon end),0,65535)
+ local abilityNow=bound(protected(function() return eq.m_selectedWeaponAbility end),0,65535)
+ if actorNow~=a.actorId or actionNow~=a.actionRaw or
+    selectionNow~=a.selectedWeaponRaw or abilityNow~=a.selectedAbilityRaw then
+  return empty('HOLD_DERIVED_STATS_SELECTION_OR_ACTION_CHANGED') end
+ if a.actorId~=b.actorId or a.partyIndex~=b.partyIndex or
+    a.actionRaw~=b.actionRaw or a.selectedWeaponRaw~=b.selectedWeaponRaw or
+    a.selectedAbilityRaw~=b.selectedAbilityRaw then
+  return empty('HOLD_DERIVED_STATS_SELECTION_OR_ACTION_CHANGED') end
+ local difference=M.compare(a,b)
+ if difference.status~='RAW_SELECTED_STATS_UNCHANGED_NOT_PROOF_OF_ALL_EFFECTS' then
+  return empty('HOLD_DERIVED_STATS_CHANGED_DURING_READ') end
+ a.status='RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS'
+ a.activeStatsReadPath='EEEX117_M_DERIVEDSTATS_FLAG_NONZERO_SOURCE_CONTRACT'
+ a.derivedStatsDoubleReadConsistent=true
+ a.runtimeEngineAuthenticated=false
+ a.allBuffsObserved=false
+ a.allEffectsObserved=false
+ a.alternateSlotAPRVerified=false
+ a.dispatchAuthorized=false
+ return a
+end
 return M
