@@ -31,6 +31,9 @@ class RefreshContracts(unittest.TestCase):
         self.assertNotIn(b'EEex_Action_AddSpriteStartedActionListener(',code)
         self.assertIn(b'rawInventoryDoubleReadConsistent=true',code)
         self.assertIn(b'offhandRaw=r2.offhand',code)
+        self.assertIn(b'R4_CORE.observeStableDerived,sprite',code)
+        self.assertIn(b'selectedDerivedStatsDoubleReadConsistent=true',code)
+        self.assertIn(b'R4_DERIVED_STATS_NOT_STABLE',code)
 
     def test_no_game_actions_or_pointer_dereference(self):
         code=build()
