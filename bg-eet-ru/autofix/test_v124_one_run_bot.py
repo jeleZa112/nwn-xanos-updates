@@ -1,4 +1,4 @@
-"""V125 one-click batch: V121 failure cannot suppress independent V122 live scan."""
+"""V126 one-click batch: V121 failure cannot suppress independent V122 live scan."""
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import json
@@ -11,7 +11,10 @@ class Batch(unittest.TestCase):
     def test_one_default_batch_collects_every_stage_after_exception(self):
         text=UPDATER.read_text('utf8')
         source=text.split('\n',1)[1]
-        self.assertIn('if not (argv if argv is not None else sys.argv[1:]):return v124_one_run(',source)
+        self.assertIn("def v126_dispatch(",source)
+        self.assertIn("V126_SHA='3c079918170ecbea959e1148e1fc9c629d84c751bf0d89415166c98a26921703'",source)
+        self.assertIn("mode={'2':'install','3':'rollback','4':'capture','5':'status'}.get(a)",source)
+        self.assertIn('rc=v124_one_run(',source)
         ns={'__name__':'v124_ci_fixture','__file__':str(UPDATER)}
         exec(compile(source,str(UPDATER),'exec'),ns)
         with TemporaryDirectory(prefix='BG_EET_RU_V124_ONE_RUN_') as td:
@@ -59,7 +62,7 @@ class Batch(unittest.TestCase):
                 self.assertEqual(z.namelist().count(ns['V124_ENTRY']),1)
                 report=json.loads(z.read(ns['V124_ENTRY']))
                 self.assertEqual(report['stage_count'],14)
-                self.assertEqual(report['updater_version'],125)
+                self.assertEqual(report['updater_version'],126)
                 self.assertEqual(report['game_files_written'],0)
                 self.assertFalse(report['native_hooks_installed'])
                 self.assertFalse(report['gameplay_verified'])

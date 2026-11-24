@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 125,
-  "sha256": "ceab5eed864f693ce3792b213ead0fbdc683c3c337dab24acca714b86290a992",
-  "mode": "ONE_CLICK_14_STAGE_READ_ONLY_INDEPENDENT_V122_LIVE_GATE",
+  "version": 126,
+  "sha256": "a4dab31bb437344350790c4258983cd28fa9987a6a1dfe22e83ccea4d43a2c89",
+  "mode": "ONE_CMD_GUARDED_UI_ROW_OBSERVER_INSTALL_ROLLBACK_CONSOLE_CAPTURE",
   "game_writes_allowed": false,
-  "note": "V125 extends V124: one CMD and ZIP; 14 independent READ ONLY stages, with V122 ReadProcessMemory running even if V121 AutoFix fails. Reports 62_V124_ONE_RUN_BOT.json with updater_version 125. No hook/gameplay claims, no game changes. Before authorizing native pilot require owner/ABI/miss-row join evidence."
+  "note": "V126 existing one updater opens small interactive menu: 1=all read-only tests; 2=typed guarded install passive visible UI row observer; 3=typed exact rollback; 4=launch InfinityLoader and capture bounded console row markers in same ZIP; 5=read-only status. Exact old V125 UI SHA and external backup mandatory; no native hooks, no auto game writes, no proven weapon/miss-to-visible-row identity."
 }
