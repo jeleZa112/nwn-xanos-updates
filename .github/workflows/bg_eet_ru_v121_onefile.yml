@@ -51,6 +51,6 @@ jobs:
           import runpy,sys
           sys.argv=['BG_EET_RU_UPDATE.cmd','--selftest']
           source='bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
-          ns={'__name__':'__main__'}
+          ns={'__name__':'__main__','__file__':source}
           data=open(source,encoding='utf8').read().splitlines(True)
           exec(compile(''.join(data[1:]),source,'exec'),ns)
