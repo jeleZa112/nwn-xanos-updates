@@ -1,14 +1,17 @@
-local r6=dofile('BGXAI_WEAPON_SELECTED_VS_ALTERNATE_V1.lua')
-local r5=dofile('/mnt/data/bgxai_weapon_r5_source/BGXAI_WEAPON_R4_PRIORITY_GATE_V1.lua')
-local root='/mnt/data/bgxai_weapon_r6_source/'
+-- Repo-relative regression: never rely on another chat's /mnt/data paths.
+local here=(arg and arg[0] or ''):match('^(.*[/\\])') or './'
+local root=here..'../../../'
+local priority=root..'BGXAI/patchsets/ranged_fighter_guarded_20261119/'
+local r6=dofile(here..'BGXAI_WEAPON_SELECTED_VS_ALTERNATE_V1.lua')
+local r5=dofile(root..'BGXAI/BUILD/R4_R3_PRIORITY_SOURCE_V1/BGXAI_WEAPON_R4_PRIORITY_GATE_V1.lua')
 local modules={
- current=dofile(root..'BGXAI_WEAPON_CURRENT_STATS_BRIDGE.lua'),
- apr=dofile(root..'BGXAI_WEAPON_APR_PROVENANCE_V5.lua'),
- effects=dofile(root..'BGXAI_WEAPON_EFFECTS_V4.lua'),
- priority=dofile(root..'BGXAI_WEAPON_PRIORITY_LUA_V3.lua'),
- noninterrupt=dofile(root..'BGXAI_WEAPON_NONINTERRUPT_PLAN_V1.lua')
+ current=dofile(priority..'BGXAI_WEAPON_CURRENT_STATS_BRIDGE.lua'),
+ apr=dofile(priority..'BGXAI_WEAPON_APR_PROVENANCE_V5.lua'),
+ effects=dofile(priority..'BGXAI_WEAPON_EFFECTS_V4.lua'),
+ priority=dofile(priority..'BGXAI_WEAPON_PRIORITY_LUA_V3.lua'),
+ noninterrupt=dofile(priority..'BGXAI_WEAPON_NONINTERRUPT_PLAN_V1.lua')
 }
-local rows=dofile('BGXAI_R6_LIVE_REDUCED_FIXTURE_20261122.lua')
+local rows=dofile(here..'BGXAI_R6_LIVE_REDUCED_FIXTURE_20261122.lua')
 local matrix={schema='BGXAI_WEAPON_R4_R3_LIVE_EVIDENCE_V1',
  status='SELECTED_HISTORICAL_APR_AND_ITEM_IDENTITY_OBSERVED_PRIORITY_HOLD',
  executable=false,dispatchAuthorized=false,weaponSwitchAuthorized=false,
