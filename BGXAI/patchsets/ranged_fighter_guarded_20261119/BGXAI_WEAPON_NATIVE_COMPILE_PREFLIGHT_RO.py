@@ -18,7 +18,7 @@ import subprocess
 import tempfile
 
 SOURCE_NAME = 'BGXAI_WEAPON_SLOT_CONSUMER_V3.baf'
-SOURCE_SHA256 = '7d8c615894b21674be7624d6d1a61b0b42ad92f116e8cd5f9f5db1b7f7a52911'
+SOURCE_SHA256 = '92b8b1d3393a286d4d69f38b9542651acb429f8ef6627051195c7a1a95c09f30'
 TEMP_SOURCE_NAME = 'BGXW3CHK.baf' # <= 8-character Infinity Engine resource name
 TIMEOUT_SECONDS = 25
 WATCH = ('chitin.key', 'WeiDU.log', 'weidu.conf', 'override/DPLAYER.BCS',

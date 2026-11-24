@@ -4,7 +4,7 @@
 
 ## Реальный результат
 
-После предыдущего source-only `BGXAI_WEAPON_SLOT_CONSUMER_V3.baf` (8 веток, SHA256 `7d8c615894b21674be7624d6d1a61b0b42ad92f116e8cd5f9f5db1b7f7a52911`) подготовлен новый **отдельный read-only preflight**, а не ещё один ранкер или альтернативный установщик:
+После предыдущего source-only `BGXAI_WEAPON_SLOT_CONSUMER_V3.baf` (8 веток, SHA256 `92b8b1d3393a286d4d69f38b9542651acb429f8ef6627051195c7a1a95c09f30`) подготовлен новый **отдельный read-only preflight**, а не ещё один ранкер или альтернативный установщик:
 
 - `BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py` проверяет исходник по **точному pinned SHA256**, ожидает 8 веток и 4 штатных `WeaponCanDamage`-триггера.
 - Использует найденный ранее в проекте шаблон `release_054/compile_guard_054.py`: копирует проверенный `weidu.exe` или `setup-enhanced-powergaming-scripts.exe` во временную директорию **под именем `weidu.exe`**, не запускает TP2, передаёт `--noautoupdate`, `--no-auto-tp2`, `--no-exit-pause`, `--game`, `--tlkin`, `--out`, `--log` с временным выводом и закрытым stdin. Исходный EET служит только источником реально установленных IDS/TLK.
@@ -33,3 +33,7 @@
 3. Любой активный install только после typed user consent, SHA preflight, external backup, WeiDU last-only rollback и A/B в настоящем бою. Не затрагивать BG_EET_RU/Voice RU/сейвы/EPS/SCS/EEex без отдельной необходимости.
 
 **Файлы проекта:** `BGXAI/patchsets/ranged_fighter_guarded_20261119/` и текущая точка `BGXAI/CURRENT/BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_20261124_RU.md`.
+
+## Исправление точного SHA после первого CI
+
+Первый CI `45331124467` верно остановился на `BAF_SOURCE_SHA256_MISMATCH`: Локальная Library-копия BAF имела завершающий LF, в отличие от GitHub-источника в ветке `bg-eet-ai` заканчивается ровно `END` без LF. Сверены через GitHub connector строки Library и GitHub (6761 символ без финального перевода строки); различие обнаружено в байтовом представлении копий, а не в логике BAF. Причину добавления/удаления LF нельзя достоверно установить без трассировки всего пути сохранения. Зафиксирован **именно байтовый GitHub BAF без финального LF** (6763 байта, SHA256 `92b8b1d3393a286d4d69f38b9542651acb429f8ef6627051195c7a1a95c09f30`). Исходник BAF в GitHub **не менялся**, пин SHA не отключался. Повторный локальный тест и повторный независимый CI обязательны; не писать CI PASS до проверки run.
