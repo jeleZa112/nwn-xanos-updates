@@ -52,6 +52,17 @@ def _static() -> None:
     if baf.returncode != 0 or 'PASS BAF NATIVE RECOVERY 8/8' not in baf.stdout:
         raise RuntimeError('BAF native recovery source check failed: '+baf.stdout+baf.stderr)
     print(baf.stdout.strip())
+    # The native EET compile preflight is SOURCE-ONLY. Its 20 contract tests
+    # simulate WeiDU and verify safety/rollbacks, never the user's real game.
+    native = subprocess.run([sys.executable, str(ROOT / 'test_weapon_native_compile_ro_v1.py')],
+                            cwd=ROOT, capture_output=True, text=True, timeout=20)
+    check = re.search(r'PASS NATIVE BAF COMPILER CONTRACT (\d+)/(\d+) SOURCE-ONLY CHECKS; (\d+) SKIPPED', native.stdout)
+    if (native.returncode != 0 or not check or
+        int(check.group(1)) != int(check.group(2)) or
+        int(check.group(1))+int(check.group(3)) != 21 or
+        int(check.group(1)) < 19):
+        raise RuntimeError('Native read-only preflight contract failed: '+native.stdout+native.stderr)
+    print(check.group(0))
     print('PASS V3/V4/V5/CURRENT-STATS/NONINTERRUPT STATIC NO-ENGINE-ACTIONS and UNKNOWN-FAIL-CLOSED')
 
 

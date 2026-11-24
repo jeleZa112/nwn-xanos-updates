@@ -16,6 +16,8 @@ on:
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_failclosed_matrix_v1.lua'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_SLOT_CONSUMER_V3.baf'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_native_recovery_baf_v1.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_native_compile_ro_v1.py'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/run_weapon_priority_v3_regression.py'
       - '.github/workflows/bgxai-weapon-priority-v3-regression.yml'
   workflow_dispatch:
@@ -42,7 +44,7 @@ jobs:
     timeout-minutes: 7
     steps:
       - uses: actions/checkout@v4
-      - name: Verify no Lua weapon execution from entire advisory chain
+      - name: Verify Lua safety and 20 WeiDU preflight mock contracts
         shell: pwsh
         run: |
           py -3 BGXAI/patchsets/ranged_fighter_guarded_20261119/run_weapon_priority_v3_regression.py --static-only
