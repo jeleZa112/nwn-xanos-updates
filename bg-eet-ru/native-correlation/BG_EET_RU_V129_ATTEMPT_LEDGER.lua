@@ -78,7 +78,8 @@ function M.finish(thread,frame,ordinal)
  if #M.completed>=M.max_completed then return stop('COMPLETED_BUDGET_EXCEEDED') end
  M.active[k]=nil;M.count=M.count-1
  -- Never infer a miss from a missing message; the native CALL is conditional.
- a.message_emission='SEEN' if not a.message_seen then a.message_emission='NOT_SEEN' end
+ if a.message_seen then a.message_emission='SEEN'
+ else a.message_emission='NOT_SEEN' end
  a.source_scope='SOURCE_ONLY_NOT_GAMEPLAY_VERIFIED'
  a.attack_result='UNVERIFIED'
  a.ui_row_id=nil
