@@ -40,3 +40,20 @@
 - Новый clean-room пакет `BG_EET_RU_SAME_HIT_PILOT_ONE_PASS_SOURCE_20261124.zip`, SHA256 `e64643a8f4284f603126f4c99f4e025874db82fcee5a51d861b0f89ac8744216` (47109 байт). За один офлайн-проход: **735/735** старых SOURCE тестов, **33/33** новых byte/source gates, **7/7** adversarial методов, **43/43** проверок на Lua 5.4. Входной V120 ZIP, EXE и EEex не изменялись. Из пакета в чистой папке всё воспроизведено.
 - Сохранён в личной Library `/BG_EET_RU/CURRENT/`. **GitHub draft PR #89**: `https://github.com/jeleZa112/nwn-xanos-updates/pull/89` с Lua, Python исходниками, тестами, отчётом и source-only GitHub Actions. CI статусы для новой ветки пока не подтверждены; рабочая release **V121 без изменений**.
 - Остались обязательные блокеры **перед единственным разрешённым игровым пилотом**: Win64 JIT callback wrapper, проверка runtime памяти и конфликтов EEex, предотвращение частичной установки трёх JIT-хуков, исключения/SEH, тип CMessage и реальный visible combatLog при промахе, отдельное разрешение + SHA backup + rollback. До устранения блокеров: INSTALL=HOLD, GAMEPLAY PASS=0.
+
+
+## 24.11 — native Hit V2: разные EEex API для SUB и CALL, Lua-защита
+
+**Результат:** создан воспроизводимый **SOURCE-ONLY** пакет `BG_EET_RU_NATIVE_HIT_ONE_PASS_V2_20261124.zip` (SHA256 `3fe239a8376f8714d82369ac8dd5f0890f94b1240ebde095062b1d6faec43ca8`, 55 824 байта), сохранён в персональную Library `/BG_EET_RU/CURRENT/`. Приватный V120 ZIP с EXE-байтами ни в публичный GitHub, ни в новый исходный пакет не включался. Рабочий выпуск V121 не изменён.
+
+**Устранённые ошибки и подтверждённые инженерные решения:**
+1. Запрет RAW переноса RIP-relative LEA `0x39DA75`. Исправленная входная точка `0x39DA68` содержит relocatable `sub rsp,0x80`.
+2. **Две исходные инструкции `CALL rel32` нельзя перехватывать тем же RAW-copy способом:** для `0x39E84B` (в `0x204C60` = `CMessageHandler::AddMessage`) и `0x39E996` (в `0x3FCE00` = string destructor) требуется EEex `HookBeforeCallWithLabels`, которое перенаправляет исходный CALL к верному адресату. Для SUB — `HookBeforeRestoreWithLabels`. Upstream FirstCall `0x39DA86` не трогать. Адреса CALL вычислены заново по signed 32-bit displacement из закреплённого EXE; **LIVE патчи EEex не проверены**.
+3. Исправлен Lua-crash для `Exit(nil)`, NaN, ошибочного `EEex_ReadU8`/ошибки разрешения `EEex_Label`. Дублирующиеся идентификаторы кадров теперь остаются заблокированными до всех парных выходов; при превышении лимита конфликтов весь Lua observer переходит в `session HOLD` и не выдаёт ложных событий.
+4. Проверена **неизменность игры и всего пользовательского исходного V120 ZIP**; в Lua `Start()` всегда отказывает в JIT-инсталляции, даже если тест искусственно устанавливает разрешающие флаги.
+
+**Один полный независимый чистый прогон из распакованного V2 пакета:** 7 этапов, статусы `SOURCE_PASS_RUNTIME_HOLD`; 735 старых SOURCE/MODEL проверок, 39 source/site gates, 18 точных проверок маршрута, 45 Lua callbacks и 46 mock-memory Lua preflight assertions, 7+6 negative Python tests. Подменённый V120 ZIP и подменённый доверенный source bundle дают `SOURCE_HOLD`, остальные независимые стадии проверяются; никакой игровой код не меняется. Эти цифры НЕ означают GAMEPLAY PASS.
+
+Исходный Lua, все тесты, единый runner и отчёт сохранены в **draft GitHub PR №89**: `https://github.com/jeleZa112/nwn-xanos-updates/pull/89`. Workflow обновлён, однако его выполнение **не подтверждено**; не заявлять GitHub CI PASS.
+
+**Оставшиеся обязательные блокеры перед установкой:** настоящий Win64 JIT callback с сохранением volatile/XMM/FLAGS и unwind; реальная runtime-память и исключение конфликта уже установленных хуков; надёжность частичной установки/отката; доказанная пара CItem/ability при промахе; связь same-message с видимой строкой combatLog; явное отдельное разрешение пользователя, внешний backup и один комплексный игровой тест. Статус: `CODE/SOURCE PASS; WINDOWS LIVE HOLD; GAMEPLAY NOT TESTED`. При следующем направлении заранее строить комплексный тест, не требовать отдельного запуска на каждую точку.
