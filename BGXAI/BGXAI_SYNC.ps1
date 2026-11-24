@@ -214,7 +214,7 @@ $td13=@{id='TD13';version='0.3.85-R13-TARGET-MISSILE-RO';manifest=($rg.prefix+'B
 $td14=@{id='TD14';version='0.3.87-R13-CONSOLE-CAPTURE-RO';manifest=($rg.prefix+'BGXAI_R13_SHORTNAME_MANIFEST_V1.json');prefix=$rg.prefix;localPath=Join-Path $gr 'BGXAI_DEV\weapon_target_r13_shortfix';names=@('BGXAI_R13_SHORTNAME_GUARDED.py','M_BGXD13.lua')}
 $td15=@{id='TD15';version='0.3.88-R13-HOLD-DIAG-RO';manifest=($rg.prefix+'BGXAI_R13_HOLD_DIAG_MANIFEST_V1.json');prefix=$rg.prefix;localPath=Join-Path $gr 'BGXAI_DEV\weapon_target_r13_diag';names=@('BGXAI_R13_HOLD_DIAG_GUARDED.py','R15_M_BGXD13.lua')}
 $r27=@{id='R27';version='0.3.89-R27-PASSIVE-GUARDED';manifest='BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/manifest_updater.json';prefix='BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/';localPath=Join-Path $gr 'BGXAI_DEV\weapon_r27_observer';names=@('BGXAI_R27_GUARDED.py','M_BGXR27.lua','BGXAI_R28_NATIVE_FROM_R27_RO.py','BGXAI_WEAPON_NATIVE_ITM_R3_RO.py')}
-$w3=@{id='W3';version='0.3.91-WEAPON-NATIVE-COMPILE-RO';manifest='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_COMPILE_MANIFEST_V1.json';prefix='BGXAI/patchsets/ranged_fighter_guarded_20261119/';localPath=Join-Path $gr 'BGXAI_DEV\weapon_priority_v3';names=@('BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py','BGXAI_WEAPON_SLOT_CONSUMER_V3.baf')}
+$w3=@{id='W3';version='0.3.92-BGXAI-AUTO-BATCH-RO';manifest='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_COMPILE_MANIFEST_V1.json';prefix='BGXAI/patchsets/ranged_fighter_guarded_20261119/';localPath=Join-Path $gr 'BGXAI_DEV\weapon_priority_v3';names=@('BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py','BGXAI_WEAPON_SLOT_CONSUMER_V3.baf','BGXAI_AUTO_BATCH_RO_V1.py','test_auto_batch_ro_v1.py','test_weapon_native_compile_ro_v1.py')}
 $v2install=Join-Path $rg.localPath 'BGXRANGED_V2_GUARDED_INSTALL.py'
 $ff=Join-Path $rg.localPath 'BGX_FRIENDLY_RETALIATION_GUARDED.py'
 $rr=$rg.localPath
@@ -1138,6 +1138,7 @@ Write-Host @'
 165 - R27 observer (guarded)
 166 - V7 DPLAYER close-fire fix (guarded)
 167 - Weapon V3 native BAF compile (READ ONLY)
+168 - AUTO batch weapon READ ONLY
  0 - Exit [default]
 '@
 $choice=Read-Host 'Choice [0]'
@@ -1312,6 +1313,7 @@ switch($choice){
 '165' {SyncRelease $r27;& py -3 (Join-Path $r27.localPath 'BGXAI_R27_GUARDED.py') --game $gr;if($LASTEXITCODE){throw '165 STOP'};break}
 '166' {SyncRelease $rg;& py -3 (Join-Path $rr 'BGXRANGED_V7_GUARDED_INSTALL.py') --game $gr;if($LASTEXITCODE){throw '166 STOP'};break}
 '167' {SyncRelease $w3;$d=Join-Path $env:USERPROFILE 'Documents\BGXAI_LIVE_REPORTS';if(!(Test-Path -LiteralPath $d)){[IO.Directory]::CreateDirectory($d)|Out-Null};ANR $d;$o=Join-Path $d ('BGXAI_WEAPON_NATIVE_COMPILE_RO_'+(Get-Date -Format 'yyyyMMddTHHmmssfff')+'.json');& py -3 (Join-Path $w3.localPath 'BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py') --game $gr --source (Join-Path $w3.localPath 'BGXAI_WEAPON_SLOT_CONSUMER_V3.baf') | Out-File -LiteralPath $o -Encoding utf8;$rc=$LASTEXITCODE;Get-Content -LiteralPath $o -Raw;Write-Host ('REPORT_FILE='+$o);if($rc){throw '167 STOP'};break}
+'168' {SyncRelease $w3;& py -3 (Join-Path $w3.localPath 'BGXAI_AUTO_BATCH_RO_V1.py') --game $gr;if($LASTEXITCODE){throw '168 STOP'};break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0

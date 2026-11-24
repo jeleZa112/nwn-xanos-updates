@@ -9,7 +9,7 @@ SOURCE=ROOT/'BGXAI/patchsets/ranged_fighter_guarded_20261119'
 MANIFEST=SOURCE/'BGXAI_WEAPON_NATIVE_COMPILE_MANIFEST_V1.json'
 LEGACY_MENU_SHA='74f52097ccfcc6beb2117344df92f23150de37e2979063b79d3387c3cbc9a230'
 SHORT_TO_ORIGINAL={"ANR":"AssertNotReparse","VM":"VerifiedManifest","RR":"RunRelease","BOM":"BGXOneFileManaged"}
-VERSION='0.3.91-WEAPON-NATIVE-COMPILE-RO'
+VERSION='0.3.92-BGXAI-AUTO-BATCH-RO'
 class Updater167(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -26,7 +26,7 @@ class Updater167(unittest.TestCase):
         self.assertIn('Download-Limited $scriptSources $temporaryScript 80000',(ROOT/'BGXAI_UPDATE.cmd').read_text())
     def test_02_legacy_1_to_166_branch_bodies_preserved_after_aliasing(self):
         lines=re.findall(r"(?m)^'(\d+)' \{[^\r\n]*",self.text)
-        self.assertEqual([int(x) for x in lines],list(range(1,168)))
+        self.assertEqual([int(x) for x in lines],list(range(1,169)))
         old=[line for line in self.text.splitlines() if re.match(r"^'\d+' \{",line) and int(line.split("'")[1])<=166]
         for short,long in SHORT_TO_ORIGINAL.items():
             old=[re.sub(r'\b'+re.escape(short)+r'\b',long,line) for line in old]
@@ -50,8 +50,8 @@ class Updater167(unittest.TestCase):
         self.assertEqual(m['schema'],1)
         self.assertEqual(m['channel'],'bgxai-fox-new-safe-source')
         self.assertEqual(m['version'],VERSION)
-        self.assertEqual(len(m['files']),2)
-        expected={'BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py','BGXAI_WEAPON_SLOT_CONSUMER_V3.baf'}
+        self.assertEqual(len(m['files']),5)
+        expected={'BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py','BGXAI_WEAPON_SLOT_CONSUMER_V3.baf','BGXAI_AUTO_BATCH_RO_V1.py','test_auto_batch_ro_v1.py','test_weapon_native_compile_ro_v1.py'}
         self.assertEqual({e['dest'] for e in m['files']},expected)
         for entry in m['files']:
             self.assertEqual(entry['source'],'BGXAI/patchsets/ranged_fighter_guarded_20261119/'+entry['dest'])
@@ -73,5 +73,15 @@ class Updater167(unittest.TestCase):
                          'shutil.copy2','watchedFilesChanged','temporaryOutputRemoved','installPerformed'):
             self.assertIn(required,source)
         self.assertNotIn('force-install',source)
+    def test_07_auto_batch_168_is_readonly_and_old_167_unmodified(self):
+        self.assertIn('168 - AUTO batch weapon READ ONLY',self.text)
+        branch=next(x for x in self.text.splitlines() if x.startswith("'168' {"))
+        self.assertIn('SyncRelease $w3',branch)
+        self.assertIn('BGXAI_AUTO_BATCH_RO_V1.py',branch)
+        self.assertIn('--game $gr',branch)
+        for banned in ('--install','--rollback','--uninstall','ClearActions','SelectWeaponAbility','setup-'):
+            self.assertNotIn(banned,branch)
+        self.assertIn('BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py',
+                      next(x for x in self.text.splitlines() if x.startswith("'167' {")))
 if __name__=='__main__':
     unittest.main(verbosity=2)

@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "channel": "bgxai-fox-new-safe-source",
-  "version": "0.3.91-WEAPON-NATIVE-COMPILE-RO",
+  "version": "0.3.92-BGXAI-AUTO-BATCH-RO",
   "files": [
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py",
@@ -14,6 +14,24 @@
       "dest": "BGXAI_WEAPON_SLOT_CONSUMER_V3.baf",
       "size": 6763,
       "sha256": "92b8b1d3393a286d4d69f38b9542651acb429f8ef6627051195c7a1a95c09f30"
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_AUTO_BATCH_RO_V1.py",
+      "dest": "BGXAI_AUTO_BATCH_RO_V1.py",
+      "size": 18015,
+      "sha256": "b69ee4b8c82ba3b11626a61d672f38206ec06b36bb7999e65bbadd10478f330f"
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/test_auto_batch_ro_v1.py",
+      "dest": "test_auto_batch_ro_v1.py",
+      "size": 9546,
+      "sha256": "01c18e643520feaaa4361a37023fdfd400079f57ec47afaa81487558f6b9fb33"
+    },
+    {
+      "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_native_compile_ro_v1.py",
+      "dest": "test_weapon_native_compile_ro_v1.py",
+      "size": 10977,
+      "sha256": "6df6bbd236b60dec18af1d2174f804d55640f605ceeee567701893459c0ee182"
     }
   ]
 }

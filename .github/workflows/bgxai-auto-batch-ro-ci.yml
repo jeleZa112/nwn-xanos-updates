@@ -1,0 +1,83 @@
+name: BGXAI automatic one-run 168 read-only batch CI
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BGXAI_SYNC.ps1'
+      - 'BGXAI/fox_new/BOOTSTRAP_PIN.json'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_COMPILE_MANIFEST_V1.json'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_AUTO_BATCH_RO_V1.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_auto_batch_ro_v1.py'
+      - 'BGXAI/BUILD/WEAPON_NATIVE_COMPILE_PREFLIGHT_20261124/test_updater_menu167_ro.py'
+      - '.github/workflows/bgxai-auto-batch-ro-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  automatic-safe-batch:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Prevent checkout byte conversion
+        shell: bash
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate single updater 1 to 168, pinned sources and no game deploy
+        run: python BGXAI/BUILD/WEAPON_NATIVE_COMPILE_PREFLIGHT_20261124/test_updater_menu167_ro.py
+      - name: 26 dedicated batch guard tests and 512-case synthetic deny matrix
+        run: python BGXAI/patchsets/ranged_fighter_guarded_20261119/test_auto_batch_ro_v1.py
+      - name: 21 native WeiDU contract tests with isolated fake game
+        run: python BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_native_compile_ro_v1.py
+      - name: Batch orchestrator end-to-end no EET, no game changes
+        shell: bash
+        run: |
+          python - <<'PY'
+          import tempfile,pathlib,json,hashlib,sys
+          from pathlib import Path
+          root=Path('BGXAI/patchsets/ranged_fighter_guarded_20261119').resolve()
+          sys.path.insert(0,str(root))
+          import BGXAI_AUTO_BATCH_RO_V1 as m
+          with tempfile.TemporaryDirectory() as d:
+            game=Path(d)/'EET';game.mkdir()
+            for n,data in (('chitin.key',b'KEY'),('WeiDU.log',b'LOG'),('weidu.exe',b'FAKE WEIDU BINARY')):
+              (game/n).write_bytes(data)
+            reports=Path(d)/'Reports';reports.mkdir()
+            previous={'schema':'BGXAI_WEAPON_NATIVE_COMPILE_RO_V1',
+              'status':'NATIVE_WEIDU_COMPILED_TEMP_ONLY','exitCode':0,
+              'compilerSha256':m.sha_file(game/'weidu.exe'),
+              'source':{'sha256':m.BAF_SHA,'size':6763,'blocks':8,'actionCount':8},
+              'compiledSize':10550,'compiledSha256':'a'*64,
+              'nativeSymbolsAcceptedByCompiler':True,'watchedFilesChanged':False,
+              'engineBehaviorVerified':False,'gameplayLiveVerified':False,
+              'installPerformed':False,'ordersSent':0,'dispatchAuthorized':False,
+              'weaponSwitchAuthorized':False}
+            (reports/'BGXAI_WEAPON_NATIVE_COMPILE_RO_previous.json').write_text(json.dumps(previous))
+            original={p:m.sha_file(game/p) for p in ('chitin.key','WeiDU.log')}
+            report,rc=m.run_batch(game,root,reports,process_override=m.marker('PASS_NO_KNOWN_GAME_PROCESS',running=[]))
+            assert rc==0,report['holdStages']
+            assert report['status']=='SAFE_READONLY_BATCH_COMPLETE_GAMEPLAY_HOLD'
+            assert report['stepCount']>=10 and report['batchCaseCount']==512
+            assert report['unitTestCount']>=45
+            assert report['stages']['nativeWeiDU']['status']=='PASS_PRIOR_NATIVE_COMPILE_REUSED_HISTORICAL_ONLY'
+            assert report['gameFilesChanged'] is False
+            assert report['dispatchAuthorized'] is False and report['ordersSent']==0
+            assert original=={p:m.sha_file(game/p) for p in original}
+            print('AUTO BATCH END-TO-END PASS; steps',report['stepCount'],
+                  'tests',report['unitTestCount'],'synthetic',report['batchCaseCount'])
+          PY
+      - name: Windows PowerShell 5.1 AST syntax check, no execution
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $tok=$null; $err=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path 'BGXAI/BGXAI_SYNC.ps1'),[ref]$tok,[ref]$err) | Out-Null
+          if ($err.Count -ne 0) {$err | Out-String | Write-Host; throw 'PS5.1 AST failed'}
+          Write-Host 'PS5.1 source syntax PASS; no live game'
