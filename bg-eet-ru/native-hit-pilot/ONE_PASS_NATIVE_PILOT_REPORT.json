@@ -1,0 +1,90 @@
+{
+  "schema": "BG_EET_RU_NATIVE_PILOT_ONE_PASS_SOURCE_GATE_V1",
+  "status": "SOURCE_PASS_RUNTIME_HOLD",
+  "stages": [
+    {
+      "name": "base_735_source_suite",
+      "status": "PASS",
+      "result": {
+        "status": "PASS",
+        "passed": 735,
+        "stages": 11,
+        "gameplay_verified": false
+      }
+    },
+    {
+      "name": "corrected_site_and_lua_source",
+      "status": "SOURCE_PASS_RUNTIME_HOLD",
+      "result": {
+        "schema": "BG_EET_RU_CORRECTED_SAME_HIT_SOURCE_V1",
+        "status": "SOURCE_PASS_RUNTIME_HOLD",
+        "passed": 33,
+        "total": 33,
+        "checks": {
+          "exact_v120_archive": true,
+          "zip_crc": true,
+          "zip_no_duplicate_names": true,
+          "exact_hit_fragment": true,
+          "exact_hit_length": true,
+          "byte_corrected_early_capture": true,
+          "byte_old_rip_relative_forbidden": true,
+          "byte_existing_upstream_eeex_owned_call": true,
+          "byte_same_frame_addmessage": true,
+          "byte_same_frame_exit": true,
+          "byte_same_frame_return": true,
+          "hook_disjoint_corrected_early_capture_same_frame_addmessage": true,
+          "hook_disjoint_corrected_early_capture_same_frame_exit": true,
+          "hook_disjoint_same_frame_addmessage_same_frame_exit": true,
+          "does_not_touch_reserved_firstcall": true,
+          "old_hook_not_selected": true,
+          "relocatable_sub_rsp": true,
+          "native_frame_established": true,
+          "capture_before_context_clobber": true,
+          "message_before_exit": true,
+          "hook_pair_firstcall_distances": true,
+          "passive_pilot_source_only": true,
+          "atomic_install_guard": true,
+          "startup_refuses_hook": true,
+          "no_runtime_hook_calls": true,
+          "never_modify_message": true,
+          "never_use_old_site_for_capture": true,
+          "never_persist_native_item": true,
+          "prevent_duplicate_frame": true,
+          "clear_after_exit": true,
+          "bounded_frames": true,
+          "bounded_telemetry": true,
+          "not_an_installer": true
+        },
+        "game_files_written": 0,
+        "native_hooks_installed": false,
+        "gameplay_tested": false,
+        "remaining_blockers": [
+          "Lua binding correctness in running EEex",
+          "Win64 ABI/XMM preservation",
+          "atomic multi-site native JIT installation and rollback",
+          "actual live-site bytes and patch conflicts",
+          "unwind/exception recovery",
+          "same message class and UI row proof",
+          "separate typed game change authorization"
+        ]
+      }
+    },
+    {
+      "name": "adversarial_fail_closed",
+      "status": "PASS",
+      "result": {
+        "status": "PASS",
+        "test_methods": 7,
+        "negative_cases": "all pinned site mutations + 9 lua tamper probes + ZIP mismatch"
+      }
+    }
+  ],
+  "failed_stages": [],
+  "game_files_written": 0,
+  "native_hooks_installed": false,
+  "runtime_ABI_proven": false,
+  "gameplay_verified": false,
+  "release_version_unchanged": 121,
+  "source_verified_sha256": "3301cf3681fa8593c8e132ae958e13b712947f87b4fb54e9c9978b138aa14452",
+  "only_user_facing_updater": "BG_EET_RU_UPDATE.cmd"
+}
