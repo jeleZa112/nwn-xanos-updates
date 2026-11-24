@@ -1,3 +1,16 @@
+# BGXAI — единая актуальная точка входа (24.11.2026)
+
+**СТАРЫЕ ИНСТРУКЦИИ НИЖЕ — ИСТОРИЯ, НЕ ПЛАН НА СЕГОДНЯ.** Сначала прочесть:
+
+1. [00_CURRENT_STATUS.md](00_CURRENT_STATUS.md) — краткий статус и предупреждения.
+2. [BGXAI_CANONICAL_HANDOFF_20261124_RU.md](BGXAI_CANONICAL_HANDOFF_20261124_RU.md) — точный CODE / TEST / DEPLOY / LIVE, единственный P0.
+3. [BGXAI_ALL_CHATS_MASTER_ARCHIVE_20261124_RU.md](BGXAI_ALL_CHATS_MASTER_ARCHIVE_20261124_RU.md) — все восстановленные наработки из старых чатов, решения, инсталляции, тесты, ошибки и ссылки на оригиналы.
+4. [BGXAI_COMPLETE_SOURCE_TREE_20261124.json](BGXAI_COMPLETE_SOURCE_TREE_20261124.json) — исходный полный инвентарь 1 584 файлов + GitHub Actions.
+
+**СЕЙЧАС:** V6 уже переключает лук на меч (LIVE 21.11); R27 24/24 selected states, R28 4/4 ITM, V3 BAF native 167 PASS. R29 реальная нативная компиляция 24.11 PASS, но поздний deploy неизвестен и сам R29 не заменяет V3. Не предлагать 166/V7, 169→2/R29, повторно R27/R28/167/168, слепой rollback. **P0:** проверить в реальной EET все альтернативные quickslots/effective APR/эффекты+ammo/launcher+manual/EPS queue; затем подключить существующие V3/V4/V5/NONINTERRUPT/BAF, отдельный typed install и LIVE A/B.
+
+---
+
 # BGXAI — ПРИОРИТЕТНОЕ СОСТОЯНИЕ НА 24.11.2026 (CANONICAL)
 
 **ВНАЧАЛЕ ПРОЧИТАТЬ:** [BGXAI_CANONICAL_HANDOFF_20261124_RU.md](BGXAI_CANONICAL_HANDOFF_20261124_RU.md) — актуальная единая точка продолжения проекта, CODE / TEST / DEPLOY / LIVE, доказательства и конкретный план. Всё ниже — **историческая лента** с частично устаревшими командами; не выполнять её как новый план.
