@@ -1,3 +1,13 @@
+# BGXAI CURRENT 24.11.2026 — NATIVE BAF COMPILE RO: SOURCE + CI PASS, GAME NOT TOUCHED
+
+**Новый результат:** безопасный исходник `BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py` (коммит `f4365791`) готов для isolated native WeiDU компиляции восьмиветочного `BGXAI_WEAPON_SLOT_CONSUMER_V3.baf`, но **не подключён к updater и не запускался на EET**. Сохранены source SHA256, TEMP weidu.exe, реальная TLK и IDS из EET при будущем запуске, до/после SHA выбранных live файлов, закрытый stdin, 25s timeout, no TP2, нет приказов.
+
+**CI завершена SUCCESS:** https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45331726567, commit `db9584b79bf4ee1bf078314f9dc36ad87d746a4f`. Lua5.3, Lua5.4, LuaJIT: **439/439 каждый**, native preflight Linux **21/21**, Windows **19/19 (2 POSIX-only skipped)**, BAF source static **8/8**. Ранние CI FAIL были исправлены: точный BAF SHA без конечного LF `92b8b1d3...`, `.gitattributes` `-text` для Windows bytes, и Windows TEMP 8.3 path сравнение canonical. Последняя детальная контрольная точка `CURRENT/BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_20261124_RU.md` обновлена также в Library.
+
+**Следующий настоящий рубеж:** единственный `BGXAI_UPDATE.cmd` пока без нового пункта: `BGXAI_SYNC.ps1` **79 937/80 000 байт**, свободно 63. Нельзя просто дописать меню и нарушить pinned SHA/лимит. Безопасно сократить/проверить updater + manifest, затем **один** read-only native WeiDU запуск на Windows пользователя, далее доказать alt-slot APR/ammo/launcher и manual/EPS provenance. **DEPLOY/LIVE новой логики NO**, V6/R27 ранее LIVE, R28 ранее completed. Не повторять старые логи/бои, не устанавливать новый BAF без typed approval, backup/WeiDU-last. WTASIGHT CI остаётся отдельной исторически красной веткой.
+
+---
+
 # BGXAI ТЕКУЩИЙ ЭТАП 24.11.2026 — NATIVE WEAPON DAMAGE RECOVERY, 439/439 × 3 PASS, НЕ LIVE
 
 **Действительно реализовано (SOURCE ONLY):** V3 теперь не оставляет заведомо непроникающее оружие из-за общего DPS hysteresis, если существует проверенно действующая положительная альтернатива. В том же `BGXAI_WEAPON_SLOT_CONSUMER_V3.baf` исходные 4 optimizer ветки сохранены byte-identical; добавлены 4 опциональные gated native-recovery ветки `BGXW3_REQ=5..8` с движковым `!WeaponCanDamage(NearestEnemyOf(Myself),MAINHAND)` (BG2EE TRIGGER 0x40F2). Отдельный producer не внедрён, BAF не компилирован на EET, ручная/EPS очередь и alt-slot эффективность не доказаны; никакой игровой dispatch не разрешён.
