@@ -124,6 +124,34 @@ class Probe(unittest.TestCase):
             self.assertIsNone(z.testzip())
             self.assertEqual(z.namelist(),["00_LEGACY.txt",q.ENTRY])
             self.assertEqual(z.read("00_LEGACY.txt"),b"PRESERVE")
+    def test_lua_emits_console_marker_without_file_io(self):
+        lua=q.lua_observer(self.log)
+        self.assertIn("pcall(print,'BG_EET_RU_V126_ROW",lua)
+        self.assertIn("type(io)=='table'",lua)
+        self.assertIn("return value -- identical display value",lua)
+    def test_console_capture_parses_prefixed_engine_prints(self):
+        log=self.work/"BG_EET_RU_V126_CONSOLE_20261124T150000000000Z.log"
+        log.write_text("EEex log: BG_EET_RU_V126_ROW\t19\tХалид промахнулся\n",encoding="utf8")
+        out=q.capture(self.work)
+        self.assertEqual(out["rows"],1)
+        self.assertEqual(out["samples"][0]["ui_row_number"],19)
+        self.assertFalse(out["row_to_weapon_join_verified"])
+    def test_launcher_capture_after_guarded_install(self):
+        self.install()
+        (self.game/"InfinityLoader.exe").write_bytes(b"MZ"+b"test")
+        class Proc:
+            def wait(self):return 0
+        def fake_popen(cmd,**kwargs):
+            kwargs["stdout"].write(b"game: BG_EET_RU_V126_ROW\t22\tTEST MISS\n")
+            return Proc()
+        with mock.patch.object(q,"closed",return_value=(True,"CLOSED")):
+            with mock.patch.object(q.subprocess,"Popen",side_effect=fake_popen):
+                result=q.launch_capture(self.game,self.work)
+        self.assertEqual(result["capture_exit_code"],0)
+        self.assertEqual(result["captured"]["rows"],1)
+        self.assertEqual(result["captured"]["samples"][0]["ui_row_number"],22)
+        self.assertEqual(result["game_files_written"],0)
+        self.assertEqual(result["status"],"V126_CAPTURED_RENDERED_ROWS_UNCORRELATED")
     def test_patched_visible_row_passes_game_value_unchanged(self):
         output=q.candidate(FIXTURE,self.log)
         self.assertIn(b"return value",output)
