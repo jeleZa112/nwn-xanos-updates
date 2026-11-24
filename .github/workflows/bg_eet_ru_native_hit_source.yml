@@ -1,0 +1,44 @@
+name: BG EET RU native Hit pilot (source-only)
+on:
+  pull_request:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-hit-pilot/**'
+      - '.github/workflows/bg_eet_ru_native_hit_source.yml'
+  push:
+    branches: [bg-eet-ru-native-hit-pilot-corrected-20261124]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  lua-and-python-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Lua 5.4 shared runtime (no game)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq liblua5.4-0
+      - name: Python syntax, inert Lua callback runtime, source-only gate
+        run: |
+          cd bg-eet-ru/native-hit-pilot
+          python -m py_compile pilot_static_gates.py test_pilot_source.py test_lua_runtime.py one_pass_native_pilot_check.py
+          python test_lua_runtime.py
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('BG_EET_RU_HIT_PILOT_DRAFT.lua').read_text()
+          assert 'authorized_install = false' in s
+          assert 'atomic_three_hook_install_verified = false' in s
+          assert "return false,'RUNTIME_HOOK_IMPLEMENTATION_NOT_VERIFIED'" in s
+          assert 'capture=first-0x1E' in s
+          assert 'forbidden=first-0x11' in s
+          assert 'EEex_HookBeforeRestoreWithLabels(' not in s
+          assert 'EEex_HookBeforeCallWithLabels(' not in s
+          print('SOURCE_ONLY_INERT_HOOK_GATE_PASS')
+          PY
+      - name: Private Windows evidence not available in public CI
+        run: echo 'V120 pinned EXE evidence, 735 offline checks, EEex runtime and gameplay are NOT checked by this public workflow.'
