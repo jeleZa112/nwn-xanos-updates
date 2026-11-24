@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 121
+SELF_VERSION = 122
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -440,7 +440,7 @@ def published_update(path, offline=False):
       if response.status!=200 or response.url!=SRC_URL:
         return 'STOP: некорректный адрес исходника',False
       new_source=response.read(750001)
-    if not 10000<len(new_source)<=750000 or digest(new_source)!=wanted_sha:
+    if not 10000<len(new_source)<=755000 or digest(new_source)!=wanted_sha:
       return 'STOP: скачанный источник не прошёл SHA256',False
     first,sep,body=new_source.partition(b'\n')
     if (not sep or not first.startswith(b'@echo off & py -3 -x ') or
@@ -8622,7 +8622,57 @@ def v121_run(game,report_path,offline=False):
     print('V121 SOURCE AUTOFIX:',result['status'],'| one ZIP changed:',changed)
   except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
     print('V121 OUTPUT HOLD:',type(exc).__name__,str(exc)[:160]);return 2
+  return v122_run(game,report_path,offline)
+
+
+# V122: pinned external Win64 read-only process inventory; no game writes.
+V122_ENTRY='61_V122_LIVE_HIT_READONLY.json'
+V122_READONLY_SOURCE='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/91165691e629db817ba734ec394042c34bc2f8c3/bg-eet-ru/native-hit-pilot/windows_live_hit_inventory_ro.py'
+V122_SOURCE_SHA='ba5f4cc2b0c690f706dea032b791c0773cf673725452dfbba3d5dbe11b356d26'
+
+def v122_run(game,report_path,offline=False):
+  result={'schema':'BG_EET_RU_V122_LIVE_HIT_READONLY','status':'RUNTIME_MEMORY_HOLD',
+          'game_files_written':0,'native_hooks_installed':False,'gameplay_verified':False}
+  try:
+    if sys.platform!='win32':raise RuntimeError('WINDOWS_ONLY')
+    cache=v121_cache(game)
+    path=cache/'BG_EET_RU_V122_WIN_INVENTORY.py'
+    if path.is_symlink() or (path.exists() and not path.is_file()):
+      raise RuntimeError('V122_SOURCE_PATH_UNSAFE')
+    if not path.exists() or sha_path(path)!=V122_SOURCE_SHA:
+      if offline:raise RuntimeError('V122_OFFLINE_SOURCE_HOLD')
+      req=urllib.request.Request(V122_READONLY_SOURCE,headers={'User-Agent':'BG-EET-RU-onefile-RO/122'})
+      with urllib.request.urlopen(req,timeout=15) as response:raw=response.read(30000)
+      if len(raw)>20000 or digest(raw)!=V122_SOURCE_SHA:
+        raise RuntimeError('V122_PINNED_SOURCE_SHA_HOLD')
+      if path.exists():
+        old=sha_path(path)
+        bad=cache/('V122_WIN_INVENTORY_'+old[:16]+'.bad')
+        if bad.exists() or bad.is_symlink():raise RuntimeError('V122_QUARANTINE_COLLISION')
+        os.replace(path,bad)
+      v121_write(game,path,raw)
+    source=path.read_bytes()
+    if digest(source)!=V122_SOURCE_SHA:raise RuntimeError('V122_CACHE_RACE_HOLD')
+    module=types.ModuleType('_bg_eet_ru_v122_live_ro')
+    exec(compile(source,str(path),'exec'),module.__dict__)
+    live=module.run_game(Path(game))
+    if not isinstance(live,dict) or live.get('game_files_written')!=0:
+      raise RuntimeError('V122_READER_CONTRACT_HOLD')
+    result.update(live)
+  except Exception as exc:
+    result['status']='RUNTIME_MEMORY_HOLD'
+    result['reason']=type(exc).__name__+':'+str(exc)[:130]
+  try:
+    v116_zip(game,report_path,result,entry=V122_ENTRY)
+    print('V122 LIVE HIT READ ONLY:',result['status'],'| game writes: 0')
+  except Exception as exc:
+    print('V122 ZIP HOLD:',type(exc).__name__,str(exc)[:120]);return 2
   return 0
+
+def v122_selftest():
+  assert len(V122_SOURCE_SHA)==64 and '/91165691e629db817ba734ec394042c34bc2f8c3/' in V122_READONLY_SOURCE
+  assert V122_ENTRY.startswith('61_') and callable(v122_run)
+  return True
 
 def v121_selftest():
   assert len(V121_INPUT_SHA)==len(V121_BOT_SHA)==len(V121_TRUST_SHA)==64
@@ -8639,6 +8689,7 @@ def main(argv=None):
   p.add_argument('--offline',action='store_true',help='no GitHub update check')
   p.add_argument('--force',action='store_true',help='ignore result cache, repeat audit')
   p.add_argument('--selftest',action='store_true')
+  p.add_argument('--live-hit-readonly',action='store_true',help='one ZIP Win64 external process inventory; no hook')
   p.add_argument('--weapon-source-audit',action='store_true',help='v103 READ ONLY inspect local EEex weapon/ammo source capabilities; no hooks or game edits')
   p.add_argument('--weapon-context-audit',action='store_true',help='v104 READ ONLY inspect local attack/hit/launcher Lua signatures')
   p.add_argument('--weapon-observer-status',action='store_true',help='v105 read only guarded pilot preflight and optional captured evidence')
@@ -8752,6 +8803,7 @@ def main(argv=None):
     return subprocess.call([sys.executable,'-x',str(canonical),*sys.argv[1:]])
   try:v121_snapshot(game,WORKDIR/REPORT_NAME)
   except Exception as exc:print('V121 EVIDENCE SNAPSHOT HOLD:',type(exc).__name__,str(exc)[:140])
+  if args.live_hit_readonly:return v122_run(game,WORKDIR/REPORT_NAME,args.offline)
   if args.autofix_readonly:
     return v121_run(game,WORKDIR/REPORT_NAME,args.offline)
   if args.full_combat_audit:
@@ -11901,6 +11953,7 @@ def selftest():
   assert v116_selftest() and callable(v116_run)
   assert full_audit_selftest() and callable(full_audit_run)
   assert v121_selftest() and callable(v121_run)
+  assert v122_selftest() and callable(v122_run)
   print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
   return 0
 
