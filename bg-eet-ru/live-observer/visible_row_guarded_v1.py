@@ -94,14 +94,17 @@ function BG_EET_RU_V126_RowRecord(row,value)
     local compact=value:sub(1,1000):gsub('[\t\r\n]',' ')
     local key=tostring(row)..'\t'..compact
     if state.seen[key] then return end
-    if type(io)~='table' or type(io.open)~='function' then return end
-    local fh=io.open(__V126_LOG_PATH__,'ab')
-    if not fh then return end
-    local wrote=pcall(function()
-      fh:write('ROW\t',tostring(row),'\t',compact,'\n')
-      fh:close()
-    end)
-    if not wrote then return end
+    -- Base EE does not open the io library. Engine print() is the primary
+    -- capture channel; io.open is only a guarded optional EEex extension.
+    if type(print)=='function' then
+      pcall(print,'BG_EET_RU_V126_ROW\t'..tostring(row)..'\t'..compact)
+    end
+    if type(io)=='table' and type(io.open)=='function' then
+      pcall(function()
+        local f=io.open(__V126_LOG_PATH__,'ab')
+        if f then f:write('ROW\t',tostring(row),'\t',compact,'\n');f:close() end
+      end)
+    end
     state.seen[key]=true
     state.count=state.count+1
   end)
@@ -165,20 +168,61 @@ def backup_external(game:Path,work:Path,raw:bytes):
     return path
 
 def capture(work:Path)->dict:
-    path=work/"BG_EET_RU_V126_VISIBLE_ROWS.tsv"
-    if not path.exists():return {"status":"NO_UI_ROW_CAPTURE_YET","rows":0}
-    regular(path)
-    if path.stat().st_size>MAX_CAPTURE:return {"status":"ROW_CAPTURE_OVERSIZE_HOLD"}
-    raw=path.read_bytes()
-    rows=[]
-    for line in raw.decode("utf8","replace").splitlines():
-        parts=line.split("\t",2)
-        if len(parts)==3 and parts[0]=="ROW" and parts[1].isdigit() and len(rows)<160:
-            rows.append({"ui_row_number":int(parts[1]),"rendered_text":parts[2][:1000]})
-    return {"status":"UI_RENDER_ROWS_CAPTURED_NO_MESSAGE_JOIN" if rows else "NO_UI_ROW_CAPTURE_YET",
-            "bytes":len(raw),"sha256":sha(raw),"rows":len(rows),"samples":rows,
+    lines=[]
+    sources=[]
+    raw_tsv=work/"BG_EET_RU_V126_VISIBLE_ROWS.tsv"
+    logs=sorted(work.glob("BG_EET_RU_V126_CONSOLE_*.log"),key=lambda p:p.stat().st_mtime,reverse=True)
+    for path in ([raw_tsv] if raw_tsv.is_file() else [])+logs[:1]:
+        regular(path)
+        limit=8_000_000 if path.suffix==".log" else MAX_CAPTURE
+        if path.stat().st_size>limit:return {"status":"ROW_CAPTURE_OVERSIZE_HOLD","path":str(path)}
+        raw=path.read_bytes()
+        if len(raw)>limit:return {"status":"ROW_CAPTURE_OVERSIZE_HOLD","path":str(path)}
+        sources.append({"name":path.name,"bytes":len(raw),"sha256":sha(raw)})
+        for line in raw.decode("utf8","replace").splitlines():
+            if path.suffix==".log":
+                pos=line.find("BG_EET_RU_V126_ROW\t")
+                if pos<0:continue
+                line="ROW\t"+line[pos+len("BG_EET_RU_V126_ROW\t"):]
+            parts=line.split("\t",2)
+            if len(parts)==3 and parts[0]=="ROW" and parts[1].isdigit():
+                lines.append((int(parts[1]),parts[2][:1000]))
+    unique=list(dict.fromkeys(lines))[:160]
+    return {"status":"UI_RENDER_ROWS_CAPTURED_NO_MESSAGE_JOIN" if unique else "NO_UI_ROW_CAPTURE_YET",
+            "rows":len(unique),"sources":sources,
+            "samples":[{"ui_row_number":n,"rendered_text":t} for n,t in unique],
             "native_message_pointer_verified":False,"attack_sequence_verified":False,
             "row_to_weapon_join_verified":False}
+
+def launch_capture(game:Path,work:Path):
+    state=load_state(work)
+    if not state or state["phase"]!="INSTALLED":
+        raise RuntimeError("V126_NOT_INSTALLED_FOR_CONSOLE_CAPTURE")
+    ui=ui_file(game)
+    if sha(ui.read_bytes())!=state["new_sha"]:
+        raise RuntimeError("V126_CAPTURE_UI_SHA_DRIFT")
+    ok,why=closed()
+    if not ok:raise RuntimeError("CLOSE_GAME_AND_LOADER_BEFORE_CAPTURE:"+why)
+    loader=game/"InfinityLoader.exe"
+    regular(loader)
+    with loader.open("rb") as f:
+        if f.read(2)!=b"MZ":raise RuntimeError("INFINITYLOADER_NOT_WINDOWS_EXE")
+    from datetime import datetime,timezone
+    stamp=datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+    path=work/("BG_EET_RU_V126_CONSOLE_"+stamp+".log")
+    if path.exists():raise RuntimeError("CONSOLE_CAPTURE_COLLISION")
+    with path.open("xb") as output:
+        proc=subprocess.Popen([str(loader)],cwd=game,stdin=subprocess.DEVNULL,
+                              stdout=output,stderr=subprocess.STDOUT,close_fds=True)
+        exit_code=proc.wait()
+    result=_status(game,work,"status",UI_PIN,lambda _:False)
+    result["mode"]="capture"
+    result["capture_exit_code"]=exit_code
+    result["console_log"]=str(path)
+    result["captured"]=capture(work)
+    result["status"]=("V126_CAPTURED_RENDERED_ROWS_UNCORRELATED" if
+                      result["captured"]["rows"] else "V126_CAPTURE_FINISHED_NO_ROWS_HOLD")
+    return result
 
 def _approval(expected:str):
     answer=input("Type "+expected+" exactly; ENTER cancels: ").strip()
@@ -281,8 +325,8 @@ def run(game,report_path,mode="status"):
             "native_hooks_installed":False,"gameplay_verified":False,
             "status":"V126_PREFLIGHT_HOLD"}
     try:
-        if mode not in ("status","install","rollback"):raise RuntimeError("UNKNOWN_MODE")
-        result=_status(game,work,mode,UI_PIN,_approval)
+        if mode not in ("status","install","rollback","capture"):raise RuntimeError("UNKNOWN_MODE")
+        result=launch_capture(game,work) if mode=="capture" else _status(game,work,mode,UI_PIN,_approval)
     except (OSError,RuntimeError,ValueError,UnicodeError,json.JSONDecodeError) as e:
         result["status"]="V126_SAFE_STOP"
         result["hold_reason"]=type(e).__name__+":"+str(e)[:180]
