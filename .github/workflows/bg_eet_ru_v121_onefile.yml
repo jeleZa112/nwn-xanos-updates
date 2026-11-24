@@ -40,7 +40,9 @@ jobs:
           manifest=json.loads(Path('bg-eet-ru/onefile/release.json').read_text(encoding='utf8'))
           assert manifest['version']==121
           assert manifest['game_writes_allowed'] is False
-          assert hashlib.sha256(s).hexdigest()==manifest['sha256']
+          actual_sha=hashlib.sha256(s).hexdigest()
+          print('V121_COMPUTED_SOURCE_SHA256',actual_sha,flush=True)
+          assert actual_sha==manifest['sha256']
           print('V121_AST_AND_SAFETY_PINS_PASS',len(s))
           print('V121_RELEASE_MANIFEST_SHA_PASS')
       - name: Verify exact bundle source fingerprints
