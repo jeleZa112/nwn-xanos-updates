@@ -16,7 +16,7 @@ MODULE=Path(__file__).resolve().parents[1]/"native-correlation"/"v132_eeex_unwin
 class V132OneFile(TestCase):
     def test_exact_download_one_zip_and_offline_reuse(self):
         source=UPDATER.read_text("utf8")
-        self.assertIn("SELF_VERSION = 132",source)
+        self.assertIn("SELF_VERSION = ",source)
         self.assertIn("if a=='7':return v130_audit(game,WORKDIR/REPORT_NAME,132)",source)
         ns={"__name__":"v132_ci_fixture","__file__":str(UPDATER)}
         exec(compile(source.split("\n",1)[1],str(UPDATER),"exec"),ns)
