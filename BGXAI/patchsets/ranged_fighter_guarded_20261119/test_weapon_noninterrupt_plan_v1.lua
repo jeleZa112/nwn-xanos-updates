@@ -215,4 +215,57 @@ test('changed target while cached prevents reuse of pending slot',function()
  local c=M.step(s,b.next,score)
  eq(c.status,'CONTINUE_CURRENT_ACTION_RECALCULATING');assert(not c.next.pending)
 end)
+test('R27 real queue busy preserves actions without running scorer',function()
+ local s=sample();s.actor.engineActorRaw=142;s.actor.currentActionRaw=23
+ s.observedR27Queue={schema='BGXAI_R27_SINGLE_CALLBACK_SELECTED_RO_V1',
+  status='CURRENT_SELECTED_SAME_CALLBACK_SOURCE_CANDIDATE',
+  queueSnapshotStable=true,readOnly=true,sameLuaListenerInvocation=true,
+  ordersSent=0,dispatchAuthorized=false,actionOriginVerified=false,
+  manualEpsQueueVerified=false,actor=142,actionRaw=23,queuedActionsRaw=3}
+ local calls=0;local r=M.step(s,{pending={toWeaponId='SWORD'}},function()
+  calls=calls+1;error('scorer must not run while queue busy') end)
+ eq(r.status,'PRESERVE_KNOWN_NONEMPTY_ACTION_QUEUE')
+ eq(calls,0);eq(r.scorerCalls,0);eq(r.queuedActionsRaw,3)
+ eq(r.next,nil);eq(r.actionQueueCleared,false);eq(r.currentActionPreserved,true)
+ eq(r.dispatchAuthorized,false);eq(r.ordersSent,0)
+end)
+test('R27 zero queue count never grants EPS or manual permission',function()
+ local s=sample();s.actor.engineActorRaw=142;s.actor.currentActionRaw=0
+ s.observedR27Queue={schema='BGXAI_R27_SINGLE_CALLBACK_SELECTED_RO_V1',
+  status='CURRENT_SELECTED_SAME_CALLBACK_SOURCE_CANDIDATE',
+  queueSnapshotStable=true,readOnly=true,sameLuaListenerInvocation=true,
+  ordersSent=0,dispatchAuthorized=false,actionOriginVerified=false,
+  manualEpsQueueVerified=false,actor=142,actionRaw=0,queuedActionsRaw=0}
+ local calls=0
+ local r=M.step(s,nil,function()calls=calls+1;return score(s,nil) end)
+ eq(calls,1);eq(r.status,'CONTINUE_CURRENT_ACTION_RECALCULATING')
+ eq(r.dispatchAuthorized,false)
+end)
+test('R27 queued count must match actor, action and strict no-dispatch flags',function()
+ local s=sample();s.actor.engineActorRaw=142;s.actor.currentActionRaw=23
+ s.observedR27Queue={schema='BGXAI_R27_SINGLE_CALLBACK_SELECTED_RO_V1',
+  status='CURRENT_SELECTED_SAME_CALLBACK_SOURCE_CANDIDATE',
+  queueSnapshotStable=true,readOnly=true,sameLuaListenerInvocation=true,
+  ordersSent=0,dispatchAuthorized=false,actionOriginVerified=false,
+  manualEpsQueueVerified=false,actor=142,actionRaw=23,queuedActionsRaw=5}
+ local base=copy(s.observedR27Queue)
+ local mutate={
+  function(q)q.actor=999 end,function(q)q.actionRaw=3 end,
+  function(q)q.queuedActionsRaw=-1 end,function(q)q.queuedActionsRaw=513 end,
+  function(q)q.queuedActionsRaw=0.5 end,
+  function(q)q.queueSnapshotStable=false end,
+  function(q)q.actionOriginVerified=true end,
+  function(q)q.manualEpsQueueVerified=true end,
+  function(q)q.dispatchAuthorized=true end,
+  function(q)q.ordersSent=1 end,
+  function(q)q.sameLuaListenerInvocation=false end,
+  function(q)q.status='HOLD_SINGLE_CALLBACK_NO_DISPATCH' end,
+ }
+ for _,alter in ipairs(mutate) do
+  local q=copy(base);alter(q);s.observedR27Queue=q
+  local calls=0;local r=M.step(s,nil,function()calls=calls+1;return score(s,nil) end)
+  eq(calls,1);eq(r.dispatchAuthorized,false)
+  assert(r.status~='PRESERVE_KNOWN_NONEMPTY_ACTION_QUEUE')
+ end
+end)
 print('PASS NONINTERRUPT SCHEDULER '..count..'/'..count..' SOURCE ONLY')
