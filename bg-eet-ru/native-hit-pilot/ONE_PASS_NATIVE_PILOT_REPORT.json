@@ -70,6 +70,16 @@
       }
     },
     {
+      "name": "real_lua_callback_contract",
+      "status": "PASS",
+      "result": {
+        "status": "PASS",
+        "assertions": 43,
+        "engine": "Lua 5.4 shared library",
+        "scope": "LUA_CALLBACK_LOGIC_ONLY_NOT_EEEX_OR_NATIVE_JIT"
+      }
+    },
+    {
       "name": "adversarial_fail_closed",
       "status": "PASS",
       "result": {
@@ -85,6 +95,6 @@
   "runtime_ABI_proven": false,
   "gameplay_verified": false,
   "release_version_unchanged": 121,
-  "source_verified_sha256": "3301cf3681fa8593c8e132ae958e13b712947f87b4fb54e9c9978b138aa14452",
+  "source_verified_sha256": "eecfb61c5f82d729b02b6cba55ed45d601c0cb53fac4024f97a1bd48f765a40b",
   "only_user_facing_updater": "BG_EET_RU_UPDATE.cmd"
 }
