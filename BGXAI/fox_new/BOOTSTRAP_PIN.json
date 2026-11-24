@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "8b09a615c7b4dde2666b278e7f95108689588752",
+  "commit": "73271e30b0864fdc7074dac63a52cdf538170aa4",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "4caa4c249af405300b80446a6e799320cb0ac5ef10ef97fc439ef0acb4ed6d26",
-  "script_size": 79937,
-  "description": "BGXAI functional V7 DPLAYER duplicate close-range AttackOneRound guard (same V6 two-block compiled SHA), guarded WeiDU overlay on last installed R27. Menu166 typed installation/last-only rollback, game remains unchanged until explicit user token. Old 165 R27 and all scripts retained. Windows/Linux source and PS 5.1 CI PASS."
+  "script_sha256": "df8a28f90f894d6e566ce0d7637896d167af3ef47ed9eca1bc800da33631128a",
+  "script_size": 79313,
+  "description": "Single CMD menu167: pinned native weapon BAF WeiDU temporary read-only preflight; legacy menus 1-166 preserved; strict 80KB limit, no new game behavior without separate approval."
 }
