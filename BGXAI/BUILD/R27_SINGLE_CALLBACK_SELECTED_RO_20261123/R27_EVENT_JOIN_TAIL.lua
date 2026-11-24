@@ -83,7 +83,7 @@ function R27.observe(sprite,action,partyIndex,getActiveStats)
 end
 
 -- Strict bounded JSON for the future single existing-updater diagnostic writer.
--- No resource pointer, arbitrary object or user-supplied string is serialized.
+-- Only bounded, sanitized CAIAction source text is serialized; no raw pointer or origin classification.
 local function jnum(v,lo,hi)
  if int(v,lo,hi) then return tostring(v) end
  return 'null'
