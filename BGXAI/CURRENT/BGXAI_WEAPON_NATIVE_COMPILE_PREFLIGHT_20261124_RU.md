@@ -37,3 +37,24 @@
 ## Исправление точного SHA после первого CI
 
 Первый CI `45331124467` верно остановился на `BAF_SOURCE_SHA256_MISMATCH`: Локальная Library-копия BAF имела завершающий LF, в отличие от GitHub-источника в ветке `bg-eet-ai` заканчивается ровно `END` без LF. Сверены через GitHub connector строки Library и GitHub (6761 символ без финального перевода строки); различие обнаружено в байтовом представлении копий, а не в логике BAF. Причину добавления/удаления LF нельзя достоверно установить без трассировки всего пути сохранения. Зафиксирован **именно байтовый GitHub BAF без финального LF** (6763 байта, SHA256 `92b8b1d3393a286d4d69f38b9542651acb429f8ef6627051195c7a1a95c09f30`). Исходник BAF в GitHub **не менялся**, пин SHA не отключался. Повторный локальный тест и повторный независимый CI обязательны; не писать CI PASS до проверки run.
+
+## Итог независимой CI после исправлений — ПОДТВЕРЖДЕНО 24.11.2026
+
+**Проверено фактическими GitHub Actions jobs и логами:** [run 45331726567](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45331726567) **completed / SUCCESS** на commit `db9584b79bf4ee1bf078314f9dc36ad87d746a4f`.
+
+- Ubuntu Lua 5.3: **439/439 PASS**, native compiler safety **21/21 PASS**, BAF static **8/8 PASS**.
+- Ubuntu Lua 5.4: **439/439 PASS**, native safety **21/21 PASS**, BAF static **8/8 PASS**.
+- Ubuntu LuaJIT: **439/439 PASS**, native safety **21/21 PASS**, BAF static **8/8 PASS**.
+- Windows static: BAF static **8/8 PASS**, native compiler **19/19 PASS**, **2 POSIX/symlink теста намеренно SKIPPED**. Оба jobs завершились `success`.
+
+Отрицательные CI запуски `45331124467`, `45331386209`, `45331597656` завершились FAILURE и **не скрываются**. Их проблемы полностью устранены до успешного прогона:
+
+1. Источник BAF в GitHub имеет SHA256 `92b8b1d3393a286d4d69f38b9542651acb429f8ef6627051195c7a1a95c09f30` **без конечного LF**; исходный SHA-пин из Library-копии с LF был отличен. Проверено сравнение Git blob SHA1 `84e478827bbd7726d48ea2c9e2e6624eb652bac0` с вычисленным git blob SHA1 у байтового кандидата. Source pin исправлен в commit `3b9ce200184349369c05de248c752670b58d75b4`. BAF в GitHub не переписывали.
+2. Windows Git по умолчанию менял окончания строк BAF при checkout. В корень репозитория добавлен единственный точный `.gitattributes`: `BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_SLOT_CONSUMER_V3.baf -text`; это сохраняет **точные SHA-проверяемые байты BAF** на Windows; commit `3e2a402d88115892c281b45a7bf468a4fb7c3fe9`.
+3. Windows TEMP возвращал 8.3-путь `RUNNER~1`, в то время как `Path.resolve()` давал полное имя `runneradmin`. Тест исправлен сравнением именно разрешённых путей, без отключения проверки директории; commit `db9584b79bf4ee1bf078314f9dc36ad87d746a4f`.
+
+Все исправления **не изменяют установленную EET, EPS, Lua/BSC/WEIDU, сохранения или единый обновлятор**. `installedIdSVerified` не заявляется; статус результата `nativeSymbolsAcceptedByCompiler` будет устанавливаться лишь после успешной реальной компиляции с установленными IDS.
+
+**Следующий безопасный шаг после CI:** проверено подключение к единственному updater. `BGXAI/BGXAI_SYNC.ps1` на ветке `bg-eet-ai` — **79 937 UTF-8 байт**, а загрузчик `BGXAI_UPDATE.cmd` ограничивает скрипт **80 000 байт**. Свободно **63 байта**, для нового пункта меню и signed manifest этого недостаточно. Не внедрять новый пункт без сокращения script source с сохранением старых действий, pin manifest, статических Windows/PowerShell тестов и размера ниже лимита. Не обходить 80KB cap. Не требовать отдельного bat/PowerShell от пользователя.
+
+**Текущий функциональный рубеж:** native preflight подготовлен, **но не подключён** к `BGXAI_UPDATE.cmd` и **не проверял настоящий EET WeiDU**. После безопасной интеграции запустить одним updater один read-only native preflight, затем перейти к alt-slot effective APR, launcher/ammo, manual/EPS provenance, отдельно разрешённому install и LIVE A/B. Не повторять R27/R28/V6.
