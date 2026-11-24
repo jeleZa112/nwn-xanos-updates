@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "73271e30b0864fdc7074dac63a52cdf538170aa4",
+  "commit": "557c97c093fbfffc3d4027dd0e570d41c4aadd22",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "df8a28f90f894d6e566ce0d7637896d167af3ef47ed9eca1bc800da33631128a",
-  "script_size": 79313,
-  "description": "Single CMD menu167: pinned native weapon BAF WeiDU temporary read-only preflight; legacy menus 1-166 preserved; strict 80KB limit, no new game behavior without separate approval."
+  "script_sha256": "5f53f7a7f3a76dbe2477776f9d0331f5d9b7a57f421267f70ddf421ebf27b129",
+  "script_size": 79674,
+  "description": "Single CMD menu167: strict SHA256 source-only native WeiDU preflight and one JSON report in Documents/BGXAI_LIVE_REPORTS; 166 old menu actions retained; 80KB cap and no game install."
 }
