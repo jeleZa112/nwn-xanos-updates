@@ -136,4 +136,96 @@ test('weapon proficiency changes are never mistaken for spell buffs',function()
  local r=R.auditTemporaryCombatShift(a,b)
  equal(r.status,'HOLD_PROFICIENCY_CHANGED_REAUDIT_WEAPON')
 end)
+-- EEex v1.1.7: EEex_Sprite_GetActiveStats returns m_tempStats when
+-- sprite.m_bAllowEffectListCall == 0 (temporary effects processing).
+test('R4 strict observer refuses unknown stat origin',function()
+ local s,a,stats=mock()
+ local got=R.observeStableDerived(s,a,2,function()return stats end)
+ equal(got.status,'HOLD_DERIVED_STATS_VIEW_UNVERIFIED')
+end)
+test('R4 strict observer never calls native stats when temp view flagged',function()
+ local s,a=mock();s.m_bAllowEffectListCall=0;local calls=0
+ local v=R.observeStableDerived(s,a,2,function()calls=calls+1;return {} end)
+ equal(v.status,'HOLD_DERIVED_STATS_VIEW_UNVERIFIED');equal(calls,0)
+end)
+test('R4 strict observer refuses unexpected non-one flag',function()
+ local s,a,stats=mock();s.m_bAllowEffectListCall=2
+ local v=R.observeStableDerived(s,a,2,function()return stats end)
+ equal(v.status,'HOLD_DERIVED_STATS_VIEW_UNVERIFIED')
+end)
+test('R4 strict derived path reads all 68 stats twice, still selected-only',function()
+ local s,a,stats=mock();s.m_bAllowEffectListCall=1;local calls=0
+ local v=R.observeStableDerived(s,a,2,function()calls=calls+1;return stats end)
+ equal(calls,2)
+ equal(v.status,'RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS')
+ equal(v.derivedStatsDoubleReadConsistent,true)
+ equal(v.runtimeEngineAuthenticated,false)
+ equal(v.allBuffsObserved,false);equal(v.allEffectsObserved,false)
+ equal(v.alternateSlotAPRVerified,false);equal(v.dispatchAuthorized,false)
+ equal(v.presentCount,68)
+end)
+test('R4 rejects flag flip during first stats read',function()
+ local s,a,stats=mock();s.m_bAllowEffectListCall=1
+ local v=R.observeStableDerived(s,a,2,function()s.m_bAllowEffectListCall=0;return stats end)
+ equal(v.status,'HOLD_DERIVED_STATS_TEMP_VIEW_DURING_READ')
+end)
+test('R4 rejects flag flip during second stats read',function()
+ local s,a,stats=mock();s.m_bAllowEffectListCall=1;local reads=0
+ local v=R.observeStableDerived(s,a,2,function()
+  reads=reads+1;if reads==2 then s.m_bAllowEffectListCall=0 end
+  return stats end)
+ equal(v.status,'HOLD_DERIVED_STATS_TEMP_VIEW_DURING_RECHECK')
+end)
+test('R4 rejects APR recalculation between two reads',function()
+ local s,a,stats=mock();s.m_bAllowEffectListCall=1;local reads=0
+ local v=R.observeStableDerived(s,a,2,function()
+  reads=reads+1;if reads==2 then stats.m_nNumberOfAttacks=7 end
+  return stats end)
+ equal(v.status,'HOLD_DERIVED_STATS_CHANGED_DURING_READ')
+end)
+test('R4 rejects STR buff recalculation between two reads',function()
+ local s,a,stats=mock();s.m_bAllowEffectListCall=1;local reads=0
+ local v=R.observeStableDerived(s,a,2,function()
+  reads=reads+1;if reads==2 then stats.m_nSTR=19 end
+  return stats end)
+ equal(v.status,'HOLD_DERIVED_STATS_CHANGED_DURING_READ')
+end)
+test('R4 rejects proficiency changes between two reads',function()
+ local s,a,stats=mock();s.m_bAllowEffectListCall=1;local reads=0
+ local v=R.observeStableDerived(s,a,2,function()
+  reads=reads+1;if reads==2 then stats.m_nProficiencyLongSword=3 end
+  return stats end)
+ equal(v.status,'HOLD_DERIVED_STATS_CHANGED_DURING_READ')
+end)
+test('R4 rejects action changes while reading',function()
+ local s,a,stats=mock();s.m_bAllowEffectListCall=1;local reads=0
+ local v=R.observeStableDerived(s,a,2,function()
+  reads=reads+1;if reads==2 then a.m_actionID=23 end
+  return stats end)
+ equal(v.status,'HOLD_DERIVED_STATS_SELECTION_OR_ACTION_CHANGED')
+end)
+test('R4 rejects selection changes while reading',function()
+ local s,a,stats=mock();s.m_bAllowEffectListCall=1;local reads=0
+ local v=R.observeStableDerived(s,a,2,function()
+  reads=reads+1;if reads==2 then s.m_equipment.m_selectedWeapon=35 end
+  return stats end)
+ equal(v.status,'HOLD_DERIVED_STATS_SELECTION_OR_ACTION_CHANGED')
+end)
+test('R4 rejects unreadable non-APR effect-sensitive stat',function()
+ local s,a,stats=mock();s.m_bAllowEffectListCall=1;stats.m_nSTR=nil
+ local v=R.observeStableDerived(s,a,2,function()return stats end)
+ equal(v.status,'HOLD_DERIVED_STATS_FIELDS_INCOMPLETE')
+end)
+test('R4 strict stat errors fail closed',function()
+ local s,a,stats=mock();s.m_bAllowEffectListCall=1
+ local v=R.observeStableDerived(s,a,2,function() error('reader failed') end)
+ equal(v.status,'HOLD_DERIVED_STATS_FIELDS_INCOMPLETE')
+end)
+test('R4 stable selected APR never authorizes weapon choice',function()
+ local s,a,stats=mock();s.m_bAllowEffectListCall=1
+ local v=R.observeStableDerived(s,a,2,function()return stats end)
+ equal(R.classifyObservedEvidence(v).status,'HOLD_NO_CURRENT_SELECTED_EVIDENCE')
+ equal(v.alternateSlotAPRVerified,false)
+ equal(v.dispatchAuthorized,false)
+end)
 print('BGXAI_R4_CORE_OFFLINE_PASS '..n..'/'..n)
