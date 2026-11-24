@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "557c97c093fbfffc3d4027dd0e570d41c4aadd22",
+  "commit": "636cf0056109aa028563a39fd03b19ba0617de3d",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "5f53f7a7f3a76dbe2477776f9d0331f5d9b7a57f421267f70ddf421ebf27b129",
-  "script_size": 79674,
-  "description": "Single CMD menu167: strict SHA256 source-only native WeiDU preflight and one JSON report in Documents/BGXAI_LIVE_REPORTS; 166 old menu actions retained; 80KB cap and no game install."
+  "script_sha256": "1dbe8c08a3ab30d23d003019e4ebc9c702c0d0541db1dc52a8fce0e3321b85be",
+  "script_size": 79935,
+  "description": "One-CMD menu168 automatic batched read-only weapon checks: 29 unit + 21 native guard tests, 108 BAF assertions, 512 synthetic negative cases; menu167 preserved; no game install or action dispatch."
 }
