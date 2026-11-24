@@ -20,6 +20,20 @@ function M.decode_wspatck(raw)
  if raw<0 then return -raw-0.5 end
  return raw
 end
+-- Keep this narrow verified exclusion in lockstep with V3.proven_ineligible.
+-- A guessed empty quiver, an unknown path, or an unverified class is NOT evidence.
+local function known_ineligible(w,a)
+ if type(w)~='table' or type(a)~='table' then return false end
+ if w.mode=='RANGED' then
+  return w.ammoVerified==true and w.ammoCount==0 and
+     (w.ammunitionModel=='QUIVER' or w.ammunitionModel=='SELF')
+ end
+ if w.mode=='MELEE' then
+  return a.canSustainMelee==false or
+    (w.inRange==false and (a.pathSafeVerified==false or w.canReachWithSafeMove==false))
+ end
+ return false
+end
 local function check(scene)
  if type(scene)~='table' or type(scene.frame)~='table' or
     type(scene.actor)~='table' or type(scene.weapons)~='table' or
@@ -35,8 +49,10 @@ local function check(scene)
     data.activeDualMultiClassVerified~=true then
   return 'INSTALLED_APR_TABLES_OR_CLASS_UNKNOWN' end
  for _,w in ipairs(scene.weapons) do
-  if type(w)~='table' or type(w.id)~='string' or type(w.aprAudit)~='table' then
+  if type(w)~='table' or type(w.id)~='string' then
    return 'WEAPON_APR_AUDIT_MISSING',w and w.id end
+  if not known_ineligible(w,a) then
+  if type(w.aprAudit)~='table' then return 'WEAPON_APR_AUDIT_MISSING',w.id end
   local t=w.aprAudit
   if not integer(t.proficiencyRank,0,5) or not integer(t.classLevel,1,50) or
       not integer(t.tableRank,0,5) or t.tableRank~=t.proficiencyRank or
@@ -77,6 +93,7 @@ local function check(scene)
       (t.offhandRateAndAccuracyVerified~=true or
        t.offhandDamageRateWeightedVerified~=true) then
    return 'OFFHAND_APR_AGGREGATION_UNKNOWN',w.id end
+  end -- only check final APR for candidates capable of attacking
  end
  return nil,nil
 end

@@ -217,4 +217,48 @@ check('input remains unchanged',function()
  eq(s.weapons[2].finalTHAC0,orig.weapons[2].finalTHAC0)
  eq(s.frame.tick,100);eq(b.executable,false)
 end)
+check('selected depleted missiles need no invented APR to recommend safe sword',function()
+ local s=mk(true);s.weapons[2].ammoCount=0
+ s.weapons[2].apr=nil;s.weapons[2].finalTHAC0=nil
+ s.weapons[2].avgDamageOnHit=nil;s.weapons[2].combatCostsVerified=false
+ s.weapons[2].finalCombatStatsVerified=false
+ local _,b=two(s)
+ eq(b.status,'ADVISE_PRIORITY_QUICKSLOT_ONLY');eq(b.toWeaponId,'SWORD')
+ eq(b.currentUnusableReason,'VERIFIED_EMPTY_AMMUNITION')
+ eq(b.dispatchAuthorized,false)
+end)
+check('unsafe melee need no hypothetical APR to preserve useful darts',function()
+ local s=mk(false);s.actor.canSustainMelee=false
+ s.weapons[1].apr=nil;s.weapons[1].finalTHAC0=nil
+ s.weapons[1].avgDamageOnHit=nil;s.weapons[1].combatCostsVerified=false
+ s.weapons[1].finalCombatStatsVerified=false
+ local _,b=two(s)
+ eq(b.status,'ADVISE_PRIORITY_QUICKSLOT_ONLY');eq(b.toWeaponId,'DART')
+ eq(b.candidates[1].reason,'VERIFIED_UNSAFE_TO_TANK')
+end)
+check('known inaccessible melee can be excluded without virtual stats',function()
+ local s=mk(false);s.actor.pathSafeVerified=false
+ s.weapons[1].apr=nil;s.weapons[1].combatCostsVerified=false
+ s.weapons[1].finalCombatStatsVerified=false
+ local _,b=two(s)
+ eq(b.status,'ADVISE_PRIORITY_QUICKSLOT_ONLY')
+ eq(b.candidates[1].reason,'VERIFIED_NO_SAFE_MELEE_PATH')
+end)
+check('no ammo without verification must not bypass final-stat gates',function()
+ local s=mk(true);s.weapons[2].ammoCount=0;s.weapons[2].ammoVerified=false
+ s.weapons[2].apr=nil;s.weapons[2].finalCombatStatsVerified=false
+ eq(choose(s).status,'HOLD_AMMO_OR_THROWABLE_UNVERIFIED')
+end)
+check('unverified melee survivability and absent APR remain blocked',function()
+ local s=mk(false);s.actor.canSustainMelee=nil
+ s.weapons[1].apr=nil;s.weapons[1].finalCombatStatsVerified=false
+ eq(choose(s).status,'HOLD_QUICKSLOT_EVIDENCE_INCOMPLETE')
+end)
+check('both known unusable candidates cannot cause a switch',function()
+ local s=mk(true);s.weapons[2].ammoCount=0;s.actor.canSustainMelee=false
+ s.weapons[1].apr=nil;s.weapons[2].apr=nil
+ s.weapons[1].finalCombatStatsVerified=false;s.weapons[2].finalCombatStatsVerified=false
+ local _,b=two(s)
+ eq(b.status,'HOLD_NO_EFFECTIVE_ATTACK');eq(b.dispatchAuthorized,false)
+end)
 print('PASS WEAPON PRIORITY NATIVE LUA '..count..'/'..count..' SOURCE ONLY')

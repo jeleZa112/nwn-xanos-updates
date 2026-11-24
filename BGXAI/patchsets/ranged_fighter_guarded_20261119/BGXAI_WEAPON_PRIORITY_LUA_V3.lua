@@ -17,6 +17,21 @@ end
 local modes={MELEE=true,RANGED=true}
 local hands={SINGLE=true,DUAL=true,TWO_HANDED=true}
 local damage_types={SLASHING=true,PIERCING=true,CRUSHING=true,MISSILE=true}
+-- Exclusions require direct, current, positive evidence that an attack is impossible
+-- or unsafe. A confirmed unusable candidate needs a verified slot and evidence,
+-- but its *hypothetical* APR / damage / combat costs must not block every other
+-- weapon; no attack will ever be made through an excluded slot by this scorer.
+local function proven_ineligible(w,a)
+ if w.mode=='RANGED' and w.ammoVerified==true and w.ammoCount==0 then
+  return 'VERIFIED_EMPTY_AMMUNITION'
+ end
+ if w.mode=='MELEE' then
+  if a.canSustainMelee==false then return 'VERIFIED_UNSAFE_TO_TANK' end
+  if w.inRange==false and (a.pathSafeVerified==false or
+       w.canReachWithSafeMove==false) then return 'VERIFIED_NO_SAFE_MELEE_PATH' end
+ end
+ return nil
+end
 local function signature(s)
  local f=s.frame
  local t={f.area,f.actorId,f.enemyId,f.equipmentFingerprint,f.protectionFingerprint,
@@ -70,17 +85,23 @@ local function verified_scene(s,passivePreview)
    if count~=1 or weapon.quickslotIndex~=i-1 or weapon.slot~='QUICKSLOT' or
       weapon.snapshotId~=f.snapshotId or weapon.modFingerprint~=a.traitProfile.modFingerprint or
       weapon.usableVerified~=true or weapon.equippedWeaponSlotVerified~=true or
-      weapon.combatCostsVerified~=true or weapon.statBasis~='FINAL_EFFECTIVE' or
-      weapon.finalCombatStatsVerified~=true or weapon.allRaceClassKitProficiencyBonusesIncluded~=true or
       not modes[weapon.mode] then return 'HOLD_QUICKSLOT_EVIDENCE_INCOMPLETE' end
-   if a.handsMode=='DUAL' and weapon.mode=='MELEE' and weapon.dualWieldStatsVerified~=true then
-    return 'HOLD_DUAL_WIELD_COMBAT_STATS_UNKNOWN' end
    if weapon.mode=='RANGED' then
     if weapon.ammoVerified~=true or (weapon.ammunitionModel~='QUIVER' and
         weapon.ammunitionModel~='SELF') or not between(weapon.ammoCount,0,1000000) or
        weapon.ammoCount~=math.floor(weapon.ammoCount) or
        (weapon.ammunitionModel=='QUIVER' and not ident(weapon.ammoResRef)) then
      return 'HOLD_AMMO_OR_THROWABLE_UNVERIFIED' end
+   end
+   -- A *verified* non-attacking weapon cannot need speculative final combat
+   -- stats. Unknown ammo, route or survivability still use the strict path.
+   if not proven_ineligible(weapon,a) then
+    if weapon.combatCostsVerified~=true or weapon.statBasis~='FINAL_EFFECTIVE' or
+       weapon.finalCombatStatsVerified~=true or
+       weapon.allRaceClassKitProficiencyBonusesIncluded~=true then
+      return 'HOLD_QUICKSLOT_EVIDENCE_INCOMPLETE' end
+    if a.handsMode=='DUAL' and weapon.mode=='MELEE' and weapon.dualWieldStatsVerified~=true then
+     return 'HOLD_DUAL_WIELD_COMBAT_STATS_UNKNOWN' end
    end
   end
  end
@@ -89,6 +110,11 @@ local function verified_scene(s,passivePreview)
  return nil
 end
 local function scored_weapon(w,a,e)
+ local excludedReason=proven_ineligible(w,a)
+ if excludedReason then
+  return {id=w.id,slotIndex=w.quickslotIndex,available=false,
+          reason=excludedReason,mode=w.mode,penetrates=false,dpr=0},nil
+ end
  if not between(w.apr,0.5,10) or not between(w.avgDamageOnHit,0,1000) or
     not between(w.finalTHAC0,-50,100) or not damage_types[w.damageType] or
     not between(w.enchantment,-5,15) or type(w.magical)~='boolean' then

@@ -106,4 +106,38 @@ check('verified empty ammo reaches pending advisory while EPS/manual busy; never
  eq(b.ordersSent,0);eq(b.dispatchAuthorized,false)
  eq(b.currentActionPreserved,true);eq(b.actionQueueCleared,false)
 end)
+check('depleted selected darts need no fabricated per-slot APR through active V4 V3',function()
+ local s=active_scene();local dead=s.weapons[2]
+ dead.ammoCount=0;dead.apr=nil;dead.finalTHAC0=nil
+ dead.avgDamageOnHit=nil;dead.finalCombatStatsVerified=false
+ dead.combatCostsVerified=false;dead.effectiveStatsEvidence=nil
+ local a,b=two(s)
+ eq(a.status,'HOLD_STABILIZE_TARGET_AND_EQUIPMENT')
+ eq(b.status,'ADVISE_PRIORITY_QUICKSLOT_ONLY');eq(b.toWeaponId,'SLING')
+ eq(b.currentUnusableReason,'VERIFIED_EMPTY_AMMUNITION')
+ eq(b.dispatchAuthorized,false)
+end)
+check('depleted but unobserved ammo does not skip per-slot evidence',function()
+ local s=active_scene();local dead=s.weapons[2]
+ dead.ammoCount=0;dead.ammoVerified=false
+ dead.effectiveStatsEvidence=nil
+ local r=readonly(s)
+ eq(r.status,'HOLD_CURRENT_STATS_UNVERIFIED')
+ eq(r.reason,'PER_SLOT_BUFF_AWARE_STATS_UNVERIFIED')
+ eq(r.dispatchAuthorized,false)
+end)
+check('pending fallback preserves manual EPS cast and does not send commands',function()
+ local s=active_scene();local dead=s.weapons[2]
+ dead.ammoCount=0;dead.apr=nil;dead.finalTHAC0=nil
+ dead.avgDamageOnHit=nil;dead.finalCombatStatsVerified=false
+ dead.combatCostsVerified=false;dead.effectiveStatsEvidence=nil
+ s.actor.manualOrderActive=true;s.actor.epsBusy=true
+ s.actor.currentlyCasting=true;s.actor.originVerified='UNKNOWN'
+ local a=nonintr.step(s,nil,readonly)
+ local next=clone(s);next.frame.tick=101;next.actor.activeStatsEvidence.tick=101
+ local b=nonintr.step(next,a.next,readonly)
+ eq(b.status,'CONTINUE_CURRENT_ACTION_SWITCH_PENDING')
+ eq(b.proposedWeaponId,'SLING');eq(b.ordersSent,0)
+ eq(b.dispatchAuthorized,false);eq(b.actionQueueCleared,false)
+end)
 print('PASS REAL WEAPON PIPELINE INTEGRATION '..n..'/'..n..' OFFLINE')

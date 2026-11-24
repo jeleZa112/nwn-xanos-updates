@@ -29,7 +29,23 @@ def _static() -> None:
                   'currentUnusableReason', "dispatchAuthorized=false"):
         assert proof in s, proof
     assert "not between(weapon.ammoCount,0,1000000)" in s
-    print('PASS V3 STATIC NO-ENGINE-ACTIONS and UNKNOWN-FAIL-CLOSED')
+    # Verify every executable Lua module in the advisory chain, not only V3.
+    # Ignore comments (which intentionally document forbidden engine APIs).
+    other = (
+        'BGXAI_WEAPON_EFFECTS_V4.lua',
+        'BGXAI_WEAPON_APR_PROVENANCE_V5.lua',
+        'BGXAI_WEAPON_CURRENT_STATS_BRIDGE.lua',
+        'BGXAI_WEAPON_NONINTERRUPT_PLAN_V1.lua',
+    )
+    for name in (CODE,) + other:
+        source = (ROOT / name).read_text(encoding='utf-8')
+        active = '\n'.join(line.split('--', 1)[0] for line in source.splitlines())
+        for pattern in (r'\bSelectWeaponAbility\s*\(', r'\bAttack\s*\(',
+                        r'\bClearActions\s*\(', r'\bActionOverride\s*\(',
+                        r'\bSetGlobal\s*\(', r'\bEEex_Action_Queue',
+                        r'\bio\.open\s*\(', r'\bos\.execute\s*\('):
+            assert not re.search(pattern, active), (name, pattern)
+    print('PASS V3/V4/V5/CURRENT-STATS/NONINTERRUPT STATIC NO-ENGINE-ACTIONS and UNKNOWN-FAIL-CLOSED')
 
 
 def _lua(lua: str) -> None:
@@ -47,11 +63,11 @@ def _lua(lua: str) -> None:
         for name in ('BGXAI_WEAPON_APR_PROVENANCE_V5.lua', 'test_weapon_apr_provenance_v5.lua'):
             shutil.copy2(ROOT / name, p5 / name)
         suites = [
-            (p3 / TEST, r'PASS WEAPON PRIORITY NATIVE LUA 36/36 SOURCE ONLY'),
+            (p3 / TEST, r'PASS WEAPON PRIORITY NATIVE LUA 42/42 SOURCE ONLY'),
             (p4 / 'test_weapon_effects_v4.lua', r'PASS TOTAL 30 / 30 NATIVE LUA SOURCE ONLY'),
-            (p5 / 'test_weapon_apr_provenance_v5.lua', r'PASS APR V5 18/18 OFFLINE SOURCE ONLY'),
+            (p5 / 'test_weapon_apr_provenance_v5.lua', r'PASS APR V5 21/21 OFFLINE SOURCE ONLY'),
             (ROOT / 'test_weapon_noninterrupt_plan_v1.lua', r'PASS NONINTERRUPT SCHEDULER 22/22 SOURCE ONLY'),
-            (ROOT / 'test_weapon_noninterrupt_integration_v1.lua', r'PASS REAL WEAPON PIPELINE INTEGRATION 4/4 OFFLINE')
+            (ROOT / 'test_weapon_noninterrupt_integration_v1.lua', r'PASS REAL WEAPON PIPELINE INTEGRATION 7/7 OFFLINE')
         ]
         passed = 0
         for path, marker in suites:
@@ -64,8 +80,8 @@ def _lua(lua: str) -> None:
             count = len(re.findall(r'^PASS ', result.stdout, re.M)) - 1
             print(f'PASS {path.name}: {count} behavior assertions')
             passed += count
-        assert passed == 110, passed
-        print(f'PASS TOTAL {passed}/110 OFFLINE LUA BEHAVIOR ASSERTIONS; NO GAME DEPLOY')
+        assert passed == 122, passed
+        print(f'PASS TOTAL {passed}/122 OFFLINE LUA BEHAVIOR ASSERTIONS; NO GAME DEPLOY')
 
 
 def main() -> int:

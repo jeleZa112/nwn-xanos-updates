@@ -6,6 +6,20 @@ local M={}
 local function ok(x,lo,hi) return type(x)=='number' and x==x and x>=lo and x<=hi end
 local function ident(x) return type(x)=='string' and #x>0 and #x<=80 and not x:find('[^%w_%+%.%-]') end
 local function hold(reason,weapon) return {status='HOLD_CURRENT_STATS_UNVERIFIED',reason=reason,weaponId=weapon,executable=false,dispatchAuthorized=false} end
+-- Keep this narrow verified exclusion in lockstep with V3.proven_ineligible.
+-- A guessed empty quiver, an unknown path, or an unverified class is NOT evidence.
+local function known_ineligible(w,a)
+ if type(w)~='table' or type(a)~='table' then return false end
+ if w.mode=='RANGED' then
+  return w.ammoVerified==true and w.ammoCount==0 and
+     (w.ammunitionModel=='QUIVER' or w.ammunitionModel=='SELF')
+ end
+ if w.mode=='MELEE' then
+  return a.canSustainMelee==false or
+    (w.inRange==false and (a.pathSafeVerified==false or w.canReachWithSafeMove==false))
+ end
+ return false
+end
 function M.audit(scene)
  if type(scene)~='table' or type(scene.frame)~='table' or
    type(scene.actor)~='table' or type(scene.weapons)~='table' then return 'SCENE_INCOMPLETE' end
@@ -23,6 +37,11 @@ function M.audit(scene)
  if #scene.weapons<1 or #scene.weapons>4 then return 'LOADOUT_INCOMPLETE' end
  local selectedFound=false
  for _,w in ipairs(scene.weapons) do
+  if known_ineligible(w,a) then
+   -- A confirmed impossible slot needs no fictitious counterfactual APR.
+   -- Its observed slot identity / ammunition is validated by V3 below.
+   if w.id==a.selectedWeaponId then selectedFound=true end
+  else
   local p=type(w)=='table' and w.effectiveStatsEvidence
   if type(p)~='table' or p.snapshotId~=f.snapshotId or
     p.actorId~=f.actorId or p.weaponId~=w.id or
@@ -48,6 +67,7 @@ function M.audit(scene)
   if a.handsMode=='DUAL' and w.mode=='MELEE' and
     p.offhandAndMainhandRatesVerified~=true then
    return 'OFFHAND_RATE_UNVERIFIED',w.id end
+  end -- eligible slot requires complete final stats
  end
  if not selectedFound then return 'CURRENT_WEAPON_NOT_IN_LOADOUT' end
  return nil

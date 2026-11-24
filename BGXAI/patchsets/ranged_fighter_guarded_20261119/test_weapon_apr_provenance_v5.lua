@@ -49,4 +49,25 @@ test('complete V5/V4/V3 chain: selected verified empty darts switches to sling',
  eq(b.currentUnusableReason,'VERIFIED_EMPTY_AMMUNITION')
  eq(b.dispatchAuthorized,false)
 end)
+test('known empty current ammo does not need invented V5 APR or V4 damage',function()
+ local s=scene();s.weapons[2].ammoCount=0
+ s.weapons[2].apr=nil;s.weapons[2].aprAudit=nil
+ s.weapons[2].avgDamageOnHit=nil;s.weapons[2].finalTHAC0=nil
+ s.weapons[2].finalCombatStatsVerified=false;s.weapons[2].combatCostsVerified=false
+ local _,b=two(s)
+ eq(b.status,'ADVISE_PRIORITY_QUICKSLOT_ONLY');eq(b.toWeaponId,'SLING')
+ eq(b.currentUnusableReason,'VERIFIED_EMPTY_AMMUNITION')
+ eq(b.dispatchAuthorized,false)
+end)
+test('ineligible exemption never covers unknown empty ammo',function()
+ local s=scene();s.weapons[2].ammoCount=0;s.weapons[2].ammoVerified=false
+ s.weapons[2].aprAudit=nil
+ eq(choose(s).status,'HOLD_APR_PROVENANCE_UNVERIFIED')
+ eq(choose(s).reason,'WEAPON_APR_AUDIT_MISSING')
+end)
+test('ineligible exemption never covers missing effective APR of candidate sling',function()
+ local s=scene();s.weapons[2].ammoCount=0;s.weapons[2].aprAudit=nil
+ s.weapons[1].aprAudit=nil
+ eq(choose(s).reason,'WEAPON_APR_AUDIT_MISSING')
+end)
 print('PASS APR V5 '..count..'/'..count..' OFFLINE SOURCE ONLY')

@@ -11,6 +11,20 @@ local function hold(why,other)
  if type(other)=='table' then for k,v in pairs(other) do out[k]=v end end
  return out
 end
+-- Keep this narrow verified exclusion in lockstep with V3.proven_ineligible.
+-- A guessed empty quiver, an unknown path, or an unverified class is NOT evidence.
+local function known_ineligible(w,a)
+ if type(w)~='table' or type(a)~='table' then return false end
+ if w.mode=='RANGED' then
+  return w.ammoVerified==true and w.ammoCount==0 and
+     (w.ammunitionModel=='QUIVER' or w.ammunitionModel=='SELF')
+ end
+ if w.mode=='MELEE' then
+  return a.canSustainMelee==false or
+    (w.inRange==false and (a.pathSafeVerified==false or w.canReachWithSafeMove==false))
+ end
+ return false
+end
 local STRENGTH_RANGED={SLING=true,THROWING_DAGGER=true,THROWING_AXE=true}
 local KINDS={INSTANT_DAMAGE=true,POISON_DOT=true,CONTROL=true,DEBUFF=true,OTHER_DAMAGE_OVER_TIME=true}
 local SOURCES={WEAPON=true,AMMO=true,LAUNCHER=true,ACTIVE_BUFF=true}
@@ -151,13 +165,17 @@ function M.choose(scene,previous,prioritizer)
  local updated={}
  for _,w in ipairs(scene.weapons) do
   if type(w)~='table' then return hold('WEAPON_UNKNOWN') end
-  local total,why=physical(w,scene.actor,f.snapshotId)
-  if not total then return hold(why,{weaponId=w.id}) end
-  local ext,err=status_value(w,scene.enemy,f)
-  if not ext then return hold(err,{weaponId=w.id}) end
+  -- No speculative APR/damage/effects are necessary for a verified
+  -- excluded candidate. V3 must still confirm all inventory/ammo identifiers.
   local clone={};for k,v in pairs(w) do clone[k]=v end
-  clone.avgDamageOnHit=total
-  clone.extraEffectValue=ext
+  if not known_ineligible(w,scene.actor) then
+   local total,why=physical(w,scene.actor,f.snapshotId)
+   if not total then return hold(why,{weaponId=w.id}) end
+   local ext,err=status_value(w,scene.enemy,f)
+   if not ext then return hold(err,{weaponId=w.id}) end
+   clone.avgDamageOnHit=total
+   clone.extraEffectValue=ext
+  end
   updated[#updated+1]=clone
  end
  local frm={};for k,v in pairs(f) do frm[k]=v end
