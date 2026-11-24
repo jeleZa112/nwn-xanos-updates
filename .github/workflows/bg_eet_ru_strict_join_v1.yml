@@ -68,6 +68,24 @@ jobs:
           for forbidden in ('WriteProcessMemory(', 'EEex_JITAt(', 'VirtualProtect(', 'CreateRemoteThread(', 'OpenProcess('):
               assert forbidden not in t
           print('V130_RO_ONLY_WIN64_UNWIND_GATE_NO_INSTALL_PASS')
+      - name: V132 raw Win64 unwind slots and installed EEex source contract
+        shell: bash
+        working-directory: bg-eet-ru/native-correlation
+        run: |
+          python -m unittest -v test_v132_eeex_unwind_contract_ro
+      - name: V132 deny native install and game mutations
+        shell: python
+        run: |
+          from pathlib import Path
+          import ast
+          s=Path('bg-eet-ru/native-correlation/v132_eeex_unwind_contract_ro.py').read_text('utf8')
+          ast.parse(s)
+          assert '"native_hook_install_allowed":False' in s
+          assert '"eeex_existing_firstcall_owner_verified":False' in s
+          assert 'raw_save_rbx_encoded_scaled_offset' in s
+          for forbidden in ('WriteProcessMemory(', 'EEex_JITAt(', 'VirtualProtect(', 'CreateRemoteThread(', 'os.replace(', 'write_bytes('):
+              assert forbidden not in s, forbidden
+          print('V132_SOURCE_ONLY_NO_NATIVE_INSTALL_PASS')
       - name: Assert no game mutation APIs or fake runtime claim
         shell: python
         run: |

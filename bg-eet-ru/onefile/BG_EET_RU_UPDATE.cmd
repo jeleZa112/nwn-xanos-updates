@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 131
+SELF_VERSION = 132
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -8103,23 +8103,26 @@ def v126_dispatch(game,path,mode):
   return ns['run'](game,path,mode)
 V130_PIN='683243951008f19495a978134d8f44732aa4d132472d08ead2c480e9c86c2f70'
 V130_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/ea012654ce6323b265ba1a91c1b71d9e0a866ad8/bg-eet-ru/native-correlation/pe_unwind_entry_gate_v130.py'
-def v130_audit(game,path):
+V132_PIN='6dfaf835b7d84a25f25eb55e96fd91a0d4f15d62329ceb57c2337027156166be'
+V132_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/1607cfc1426dcd01621fae8dea5648115f37e7c3/bg-eet-ru/native-correlation/v132_eeex_unwind_contract_ro.py'
+def v130_audit(game,path,v=130):
   report={'schema':'BG_EET_RU_V130_WIN64_UNWIND_RO','status':'SOURCE_OR_GAME_HOLD','game_files_written':0,'native_hook_install_allowed':False}
   try:
-    p=v121_cache(game)/'V130_RO.py'
-    if not p.is_file() or sha_path(p)!=V130_PIN:
-      with urllib.request.urlopen(V130_URL,timeout=20) as r:data=r.read(12001)
-      if digest(data)!=V130_PIN:raise RuntimeError('V130_SOURCE_SHA_HOLD')
+    p=v121_cache(game)/('V132_RO.py' if v==132 else 'V130_RO.py')
+    pin,url=(V132_PIN,V132_URL) if v==132 else (V130_PIN,V130_URL)
+    if not p.is_file() or sha_path(p)!=pin:
+      with urllib.request.urlopen(url,timeout=20) as r:data=r.read(14001)
+      if digest(data)!=pin:raise RuntimeError('V130_SOURCE_SHA_HOLD')
       v121_write(game,p,data)
-    mod=types.ModuleType('v130');sys.modules[mod.__name__]=mod
+    mod=types.ModuleType('v'+str(v));sys.modules[mod.__name__]=mod
     exec(compile(p.read_bytes(),str(p),'exec'),mod.__dict__)
-    report=mod.inspect_game_exe(Path(game)/'Baldur.exe')
+    report=mod.audit_game(Path(game)) if v==132 else mod.inspect_game_exe(Path(game)/'Baldur.exe')
   except Exception as e:report['hold_reason']=type(e).__name__+':'+str(e)[:160]
   report['game_files_written']=0
   report['native_hook_install_allowed']=False
-  try:v116_zip(game,path,report,entry='64_V130_PE_UNWIND.json')
+  try:v116_zip(game,path,report,entry='65_V132_EEEX_ABI.json' if v==132 else '64_V130_PE_UNWIND.json')
   except Exception as e:print('V130 ZIP STOP',type(e).__name__,str(e)[:140]);return 2
-  print('V130 PE:',report['status'],'| game writes: 0 | one ZIP:',path)
+  print('V'+str(v)+':',report['status'],'| game writes: 0 | one ZIP:',path)
   return 0
 def v122_selftest():
   assert len(V122_SOURCE_SHA)==64 and '91165691e629db817ba734ec394042c34bc2f8c3' in V122_SOURCE_URL
@@ -8257,10 +8260,11 @@ def main(argv=None):
   try:v121_snapshot(game,WORKDIR/REPORT_NAME)
   except Exception as exc:print('V121 EVIDENCE SNAPSHOT HOLD:',type(exc).__name__,str(exc)[:140])
   if not (argv if argv is not None else sys.argv[1:]):
-    try:a=input('1=audit 2=install 3=undo 4=play 5=status 6=unwind [1]: ').strip()
+    try:a=input('1=audit 2=install 3=undo 4=play 5=status 6=unwind 7=abi [1]: ').strip()
     except EOFError:a=''
     mode={'2':'install','3':'rollback','4':'capture','5':'status'}.get(a)
     if a=='6':return v130_audit(game,WORKDIR/REPORT_NAME)
+    if a=='7':return v130_audit(game,WORKDIR/REPORT_NAME,132)
     if mode:return v126_dispatch(game,WORKDIR/REPORT_NAME,mode)
     rc=v124_one_run(game,WORKDIR/REPORT_NAME,args.offline)
     return rc if rc else v126_dispatch(game,WORKDIR/REPORT_NAME,'status')
@@ -9450,7 +9454,6 @@ def v68_load_combat_module():
   exec(compile(V68_COMBAT_SOURCE, module.__file__, 'exec'), module.__dict__)
   return module
 def v68_baseline_report_ready(game, report_path):
-  """Reuse fully completed v67 when the three checked game anchors match."""
   if not report_path.is_file():
     return False
   try:
@@ -9477,7 +9480,6 @@ def v68_baseline_report_ready(game, report_path):
   except (OSError, KeyError, ValueError, TypeError, zipfile.BadZipFile):
     return False
 def v68_combat_evidence(game, report_path):
-  """V4 read-only evidence in the SAME existing ZIP; cached by fingerprints."""
   safe_external(game, report_path)
   if not report_path.is_file():
     print('SAFE_STOP: нет единого отчёта v67; запусти обновлятор без параметров.')
@@ -9593,7 +9595,6 @@ def v68_combat_evidence(game, report_path):
 V69_PROOF_SCHEMA = 'BG_EET_RU_V69_INDEPENDENT_DISASM_REPLAY_V1'
 V69_PROOF_DATA = '{"functions":{"19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin":"6191eadc6417846290e659abb1e81f7f2ee60a408b247a3e8d3f2fe7408ed5a2","19_V68_COMBAT_CODE/functions/0037ECA0_0038552C.bin":"8c6fae5b8a25834289d63c166824502a04f6bf4422e9b7d0be671620b762f00f","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin":"59fa0cdbc7206698acd7bd49c7c68807a02d9318a001f13911e04d0d5e49723a","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin":"19c1d11b7ac41d261d22b19506b3570427e356544e48f2e2c622c1efdb74cc79"},"refs":{"3458097":[5949192,"488d15d0022600","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3458184":[5949216,"488d1591022600","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3458658":[5949232,"488d15c7002600","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3458987":[5949232,"488d157eff2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459174":[5949248,"488d15d3fe2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459214":[5949256,"488d15b3fe2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459253":[5949256,"488d158cfe2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459574":[5949272,"488d155bfd2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459610":[5949280,"488d153ffd2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459678":[5949296,"488d150bfd2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459722":[5949296,"488d15dffc2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459920":[5949328,"488d1539fc2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459955":[5949344,"488d1526fc2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3460003":[5949344,"488d15f6fb2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3460298":[5949344,"488d15cffa2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3673126":[5950952,"488d15bbc12200","19_V68_COMBAT_CODE/functions/0037ECA0_0038552C.bin"],"3673511":[5950952,"488d153ac02200","19_V68_COMBAT_CODE/functions/0037ECA0_0038552C.bin"],"3673325":[5950968,"488d1504c12200","19_V68_COMBAT_CODE/functions/0037ECA0_0038552C.bin"],"3791578":[5952264,"488d1527f82000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3791683":[5952272,"488d15c6f72000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792268":[5952288,"488d158df52000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792304":[5952304,"488d1579f52000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3735649":[5952320,"488d15d8d22100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3736015":[5952320,"488d156ad12100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3792482":[5952320,"488d15d7f42000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792649":[5952320,"488d1530f42000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3735749":[5952352,"488d1594d22100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3792574":[5952352,"488d159bf42000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792636":[5952384,"488d157df42000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792663":[5952400,"488d1572f42000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792727":[5952416,"488d1542f42000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792866":[5952432,"488d15c7f32000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3793213":[5952448,"488d157cf22000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3793311":[5952464,"488d152af22000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3793934":[5952488,"488d15d3ef2000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3738589":[5952504,"488d1514c82100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3794036":[5952504,"488d157def2000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3794110":[5952528,"488d154bef2000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3794187":[5952552,"488d1516ef2000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3735182":[5952576,"488d15abd52100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3735245":[5952592,"488d157cd52100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3735400":[5952608,"488d15f1d42100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3738043":[5952632,"488d15b6ca2100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3738115":[5952648,"488d157eca2100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3738475":[5952664,"488d1526c92100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3738655":[5952680,"488d1582c82100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3738692":[5952704,"488d1575c82100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"]},"exe_sha256":"fc821a4806a0305b84fd85f1aad2bd472c8db642ed34b4494ae62351cae1c580","analysis_tool":"GNU objdump 2.44 x86-64; independent RIP target calculation","disassembly_anomalies":{"19_V68_COMBAT_CODE/functions/0037ECA0_0038552C.bin":14}}'
 def v69_static_proof(report_path):
-  """Replay pinned independent x64 decoding against the existing one ZIP."""
   report_path = Path(report_path)
   proof = json.loads(V69_PROOF_DATA)
   result = {
@@ -9701,7 +9702,6 @@ def v69_static_proof(report_path):
   return 0 if result['status'] == 'STATIC_CODE_REFERENCES_CONFIRMED_RUNTIME_HOLD' else 2
 V70_PROBE_SCHEMA='BG_EET_RU_V70_EEEX_LOADER_SOURCE_DIAGNOSTIC_V1'
 def v70_eeex_loader_diagnostic(game, report_path):
-  """Collect minimal EEex loader/M_ lua evidence in one existing ZIP."""
   game=Path(game)
   report_path=Path(report_path)
   safe_external(game,report_path)
@@ -10975,7 +10975,6 @@ def v76_file_sha(path):
       h.update(part)
   return h.hexdigest()
 def v76_tlk_selected(path):
-  """Read only two chosen StrRefs, without enumerating or altering TLK entries."""
   path=Path(path)
   count=None
   with path.open('rb') as f:
@@ -11022,7 +11021,6 @@ def v76_tlk_selected(path):
     return {'status':'READ_ONLY_TWO_STRREFS_EXTRACTED', 'entries':rows,
         'tlk_count':count,'language_id':language_id,'file_size':size}
 def v76_ui_selected(path):
-  """Look for one known UI key and typo in active override/UI.MENU only."""
   path=Path(path)
   if not path.is_file():
     return {'status':'UI_MENU_NOT_IN_OVERRIDE','path':str(path),
@@ -11131,7 +11129,6 @@ def v76_live_audit(game,report_path):
     print('v76: SAFE_STOP — '+type(exc).__name__+': '+str(exc)[:220])
     return 2
 def v76_selftest():
-  """Isolated TLK+UI fixture; no installed game dependency."""
   import tempfile as _tmp
   assert len(V76_TARGETS)==2 and V76_TARGETS[0][0]==266659 and V76_TARGETS[1][0]==273940
   with _tmp.TemporaryDirectory(prefix='BG_EET_RU_V76_TEST_') as d:
