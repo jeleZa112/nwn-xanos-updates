@@ -17,11 +17,13 @@ ROOT = HERE.parents[2]
 OUT = 'BGXAI_R27_R2_REFRESH_SOURCE_ONLY.lua'
 SRC = Path('BGXAI/patchsets/ranged_fighter_guarded_20261119')
 HIST = Path('BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123')
+QUEUE81 = Path('BGXAI/fox_new/experimental_081_eeex_action_provenance_readonly_source_only/BGXAI081_ACTION_PROVENANCE_QUEUE_V2.lua')
 FILES = {
   SRC/'BGXAI_WEAPON_SLOTS_R2_READONLY.lua': '317f6fd6ad2beee0e61b7936c65ef35736e825e04d82f330133cc6c791d889af',
   SRC/'BGXAI_WEAPON_ACTIVE_R4_READONLY.lua': '64905835258bf85a30be078ba02967a227ce28d063dee61969ecab89829c43aa',
   HIST/'R27_EVENT_JOIN_TAIL.lua': '39abc118d43d3d9105a5c79341e61a0e4d158c5769944591ff324949bad2bc4b',
   HIST/'M_BGXR27.lua': 'e5eb400c56ffb1bc23344a0cf30dcc724d8d18fc2752fabd1c2c63cdcca73735',
+  QUEUE81: 'b3c9ecbc98c81e09d24279e4f970729750187ed6f4bafb2738572a37fa7d2edd',
 }
 FORBIDDEN = (
   'ClearActions(', 'SelectWeaponAbility(', 'ActionOverride(', 'SetGlobal(',
@@ -55,10 +57,13 @@ def build(root: Path = ROOT) -> bytes:
   root = Path(root)
   r2 = checked(root, SRC/'BGXAI_WEAPON_SLOTS_R2_READONLY.lua')
   r4 = checked(root, SRC/'BGXAI_WEAPON_ACTIVE_R4_READONLY.lua')
+  q81 = checked(root, QUEUE81)
   tail = checked(root, HIST/'R27_EVENT_JOIN_TAIL.lua').decode('ascii')
   legacy = checked(root, HIST/'M_BGXR27.lua')
   if len(legacy) != 28890 or not legacy.endswith(b'P.initialized=start()\n'):
     raise ValueError('R27_INSTALLED_HISTORICAL_SOURCE_UNEXPECTED')
+  if not q81.endswith(b'\nreturn M\n'):
+    raise ValueError('R27_QUEUE_PROVENANCE_CORE_MISSING_RETURN')
   if not r2.endswith(b'\nreturn M\n') or not r4.endswith(b'\nreturn M\n'):
     raise ValueError('R27_OBSERVER_CORE_MISSING_RETURN')
   if not tail.endswith('return R27\n'):
@@ -107,11 +112,41 @@ def build(root: Path = ROOT) -> bytes:
     "  ',\"selectedDerivedStatsDoubleReadConsistent\":'..tostring(sample.selectedDerivedStatsDoubleReadConsistent==true)..\n"+
     "  ',\"r4Status\":'..(sample.r4Status=='RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS' and\n"+
     "    '\"RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS\"' or 'null')..\n")
+  # Safely sample the engine's action queue raw count without walking pointer
+  # nodes. Empty count != manual/EPS authorization, and action origin UNKNOWN.
+  tail = replacement(tail,
+    ' local b=before_after(sprite,action)\n',
+    ' local b=before_after(sprite,action)\n'+
+    ' local queueBefore=Q81_CORE.observe(sprite)\n')
+  tail = replacement(tail,
+    " if r4.status~='RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS' or\n",
+    " local queueAfter=Q81_CORE.observe(sprite)\n"+
+    " local qStable=queueBefore.queue_count_observed==true and\n"+
+    "  queueAfter.queue_count_observed==true and\n"+
+    "  queueBefore.current_action_id==b.action and\n"+
+    "  queueAfter.current_action_id==b.action and\n"+
+    "  queueBefore.queue_count_raw==queueAfter.queue_count_raw\n"+
+    " local qCount=qStable and queueBefore.queue_count_raw or nil\n"+
+    " if r4.status~='RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS' or\n")
+  tail = replacement(tail,
+    '  rawInventoryDoubleReadConsistent=true,\n',
+    '  rawInventoryDoubleReadConsistent=true,\n'+
+    '  queueSnapshotStable=qStable,queuedActionsRaw=qCount,\n'+
+    '  actionOriginVerified=false,manualEpsQueueVerified=false,\n')
+  tail = replacement(tail,
+    "  ',\"r4Status\":'..(sample.r4Status==",
+    "  ',\"queueSnapshotStable\":'..tostring(sample.queueSnapshotStable==true)..\n"+
+    "  ',\"queuedActionsRaw\":'..jnum(sample.queuedActionsRaw,0,512)..\n"+
+    "  ',\"queueNonemptyObserved\":'..(sample.queueSnapshotStable==true and\n"+
+    "    tostring(sample.queuedActionsRaw>0) or 'null')..\n"+
+    "  ',\"actionOriginVerified\":false,\"manualEpsQueueVerified\":false'..\n"+
+    "  ',\"r4Status\":'..(sample.r4Status==")
   # Compose a passive advisory module only: no bootstrap, no EEex registration.
   output = (b'-- BGXAI R27 revised SOURCE ONLY: SHA-pinned R2 identity double-read.\n'
        +b'-- NOT INSTALLED. Does not change original M_BGXR27.lua.\n'
        +b'local R2_CORE = (function()\n'+r2+b'end)()\n'
        +b'local R4_CORE = (function()\n'+r4+b'end)()\n'
+       +b'local Q81_CORE = (function()\n'+q81+b'end)()\n'
        +tail.encode('ascii'))
   if any(word.encode() in output for word in FORBIDDEN):
     raise ValueError('R27_REBUILD_ACTION_DISPATCH_OR_UNSAFE_POINTER')
@@ -120,6 +155,10 @@ def build(root: Path = ROOT) -> bytes:
   if output.count(b'pcall(R4_CORE.observeStableDerived,sprite,action,partyIndex,getActiveStats)') != 1 or \
      output.count(b'selectedDerivedStatsDoubleReadConsistent=true') != 1:
     raise ValueError('R27_STABLE_DERIVED_STATS_CONTRACT_MISSING')
+  if (output.count(b'Q81_CORE.observe(sprite)') != 2 or
+      output.count(b'queueSnapshotStable=qStable') != 1 or
+      output.count(b'queuedActionsRaw=qCount') != 1):
+    raise ValueError('R27_ENGINE_ACTION_QUEUE_RAW_OBSERVER_CONTRACT')
   if output.count(b'return R27\n') != 1:
     raise ValueError('R27_SINGLE_EXPORT_REQUIRED')
   return output
