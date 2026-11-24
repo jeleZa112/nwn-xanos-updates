@@ -84,7 +84,7 @@ def _lua(lua: str) -> None:
             (p3 / TEST, r'PASS WEAPON PRIORITY NATIVE LUA 59/59 SOURCE ONLY'),
             (p4 / 'test_weapon_effects_v4.lua', r'PASS TOTAL 34 / 34 NATIVE LUA SOURCE ONLY'),
             (p5 / 'test_weapon_apr_provenance_v5.lua', r'PASS APR V5 25/25 OFFLINE SOURCE ONLY'),
-            (ROOT / 'test_weapon_noninterrupt_plan_v1.lua', r'PASS NONINTERRUPT SCHEDULER 22/22 SOURCE ONLY'),
+            (ROOT / 'test_weapon_noninterrupt_plan_v1.lua', r'PASS NONINTERRUPT SCHEDULER 25/25 SOURCE ONLY'),
             (ROOT / 'test_weapon_noninterrupt_integration_v1.lua', r'PASS REAL WEAPON PIPELINE INTEGRATION 11/11 OFFLINE'),
             (ROOT / 'test_weapon_failclosed_matrix_v1.lua', r'PASS WEAPON MATRIX 288/288 READONLY CASES SOURCE ONLY')
         ]
@@ -102,8 +102,8 @@ def _lua(lua: str) -> None:
                 count = len(re.findall(r'^PASS ', result.stdout, re.M)) - 1
             print(f'PASS {path.name}: {count} offline tests / matrix cases')
             passed += count
-        assert passed == 439, passed
-        print(f'PASS TOTAL {passed}/439 OFFLINE LUA TESTS AND MATRIX CASES; NO GAME DEPLOY')
+        assert passed == 442, passed
+        print(f'PASS TOTAL {passed}/442 OFFLINE LUA TESTS AND MATRIX CASES; NO GAME DEPLOY')
 
 
 def main() -> int:
