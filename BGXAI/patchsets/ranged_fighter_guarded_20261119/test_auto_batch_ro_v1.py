@@ -154,6 +154,47 @@ class AutomaticBatchSafety(unittest.TestCase):
         self.assertEqual(rc,0)
         self.assertEqual(report['stages']['nativeWeiDU']['status'],'PASS_PRIOR_NATIVE_COMPILE_REUSED_HISTORICAL_ONLY')
         self.assertEqual(report['stages']['runtimeProof']['status'],'HOLD_LIVE_ORIGIN_AND_ALT_STATS_NOT_PROVEN')
+    def test_30_real_gate_rejects_partial_evidence_matrix(self):
+        result=m.negative_matrix_contract()
+        self.assertEqual(result['cases'],512)
+        self.assertEqual(result['rejectedIncompleteCases'],508)
+        self.assertEqual(result['untrustedCompleteCandidatesNoDispatch'],4)
+        self.assertIn('SYNTHETIC',result['note'])
+    def test_31_full_synthetic_evidence_is_never_dispatch_permission(self):
+        facts={k:True for k in m.CAPTURE_REQUIREMENTS}
+        for slot in range(4):
+            res=m.evaluate_capture_candidate(facts,slot)
+            self.assertTrue(res['candidateReady'])
+            self.assertEqual(res['status'],'CANDIDATE_COMPLETE_UNTRUSTED_NO_DISPATCH')
+            self.assertIs(res['dispatchAuthorized'],False)
+            self.assertIs(res['weaponSwitchAuthorized'],False)
+            self.assertEqual(res['ordersSent'],0)
+    def test_32_bad_shape_numeric_true_extra_keys_and_bad_slot_denied(self):
+        facts={k:True for k in m.CAPTURE_REQUIREMENTS}
+        for name in m.CAPTURE_REQUIREMENTS:
+            bad=dict(facts);bad[name]=1
+            self.assertFalse(m.evaluate_capture_candidate(bad,0)['candidateReady'])
+        bad=dict(facts);bad['unknown_authorization']=True
+        self.assertFalse(m.evaluate_capture_candidate(bad,0)['candidateReady'])
+        for slot in (True,False,'0',-1,4,0.0,None):
+            self.assertFalse(m.evaluate_capture_candidate(facts,slot)['candidateReady'])
+    def test_33_gameplay_hold_separate_from_safety_hold(self):
+        self.write_native()
+        with patch.object(m,'run_subprocess_test',return_value=m.marker('PASS_UNIT_TESTS',totalTests=0,skippedTests=0)):
+            report,rc=m.run_batch(self.game,ROOT,self.docs,process_override=m.marker('PASS_NO_KNOWN_GAME_PROCESS',running=[]))
+        self.assertEqual(rc,0)
+        self.assertIs(report['hasSafetyHold'],False)
+        self.assertIs(report['hasGameplayHold'],True)
+        self.assertEqual(report['runtimeGatesMissingCount'],6)
+        self.assertEqual(report['status'],'SAFE_READONLY_BATCH_COMPLETE_GAMEPLAY_HOLD')
+        self.assertIs(report['dispatchAuthorized'],False)
+    def test_34_r27_hash_recognized_but_not_an_origin_or_alt_apr_proof(self):
+        x=m.game_live_proof_gates('e5eb400c56ffb1bc23344a0cf30dcc724d8d18fc2752fabd1c2c63cdcca73735')
+        self.assertIs(x['selectedOnlyR27SourceShaRecognized'],True)
+        self.assertIs(x['alternateEffectiveAprVerified'],False)
+        self.assertIs(x['manualVsEpsOriginVerified'],False)
+        self.assertIs(x['dispatchAuthorized'],False)
+        self.assertIs(m.game_live_proof_gates(None)['selectedOnlyR27SourceShaRecognized'],False)
     def test_29_hard_hold_with_missing_game_does_not_grant_permission(self):
         with patch.object(m,'run_subprocess_test',return_value=m.marker('PASS_UNIT_TESTS',totalTests=0,skippedTests=0)):
             report,rc=m.run_batch(self.root/'missing_game',ROOT,self.docs,process_override=m.marker('PASS_NO_KNOWN_GAME_PROCESS',running=[]))

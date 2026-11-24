@@ -32,7 +32,7 @@ jobs:
           python-version: '3.11'
       - name: Validate single updater 1 to 168, pinned sources and no game deploy
         run: python BGXAI/BUILD/WEAPON_NATIVE_COMPILE_PREFLIGHT_20261124/test_updater_menu167_ro.py
-      - name: 26 dedicated batch guard tests and 512-case synthetic deny matrix
+      - name: 34 dedicated batch guard tests and real 512-case advisory source gate
         run: python BGXAI/patchsets/ranged_fighter_guarded_20261119/test_auto_batch_ro_v1.py
       - name: 21 native WeiDU contract tests with isolated fake game
         run: python BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_native_compile_ro_v1.py
@@ -65,8 +65,12 @@ jobs:
             assert rc==0,report['holdStages']
             assert report['status']=='SAFE_READONLY_BATCH_COMPLETE_GAMEPLAY_HOLD'
             assert report['stepCount']>=10 and report['batchCaseCount']==512
-            assert report['unitTestCount']>=45
+            assert report['unitTestCount']==55
             assert report['stages']['nativeWeiDU']['status']=='PASS_PRIOR_NATIVE_COMPILE_REUSED_HISTORICAL_ONLY'
+            assert report['hasGameplayHold'] is True
+            assert report['hasSafetyHold'] is False
+            assert report['stages']['policyMatrix']['rejectedIncompleteCases']==508
+            assert report['stages']['policyMatrix']['untrustedCompleteCandidatesNoDispatch']==4
             assert report['gameFilesChanged'] is False
             assert report['dispatchAuthorized'] is False and report['ordersSent']==0
             assert original=={p:m.sha_file(game/p) for p in original}

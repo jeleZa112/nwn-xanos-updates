@@ -187,22 +187,60 @@ def static_baf_contract(path: Path) -> dict:
                   compiledOnRealEETInPriorReportOnly=True)
 
 
+CAPTURE_REQUIREMENTS = RUNTIME_GATES + ('SOURCE_ORIGIN_TRUSTED',)
+
+
+def evaluate_capture_candidate(snapshot: object, slot: object) -> dict:
+    """Real pure-function policy for the *advisory* gate, never a dispatch gate.
+
+    A Boolean supplied by an untrusted caller is NOT engine proof. Even a
+    fully positive synthetic scene is only a candidate to inspect further.
+    No returned field can authorize a weapon switch or a game action.
+    """
+    if type(slot) is not int or not 0 <= slot <= 3 or not isinstance(snapshot,dict):
+        return marker('REJECT_BAD_SLOT_OR_SNAPSHOT',candidateReady=False,
+                      dispatchAuthorized=False,weaponSwitchAuthorized=False,ordersSent=0)
+    # Exact key set and exact Boolean types: neither missing keys, False==0,
+    # nor attacker-added metadata can silently satisfy evidence requirements.
+    if set(snapshot) != set(CAPTURE_REQUIREMENTS) or any(
+            type(snapshot[k]) is not bool for k in CAPTURE_REQUIREMENTS):
+        return marker('REJECT_UNVERIFIED_EVIDENCE_SHAPE',candidateReady=False,
+                      dispatchAuthorized=False,weaponSwitchAuthorized=False,ordersSent=0)
+    absent=[k for k in CAPTURE_REQUIREMENTS if snapshot[k] is not True]
+    return marker('CANDIDATE_COMPLETE_UNTRUSTED_NO_DISPATCH' if not absent
+                  else 'HOLD_MISSING_SNAPSHOT_REQUIREMENTS',
+                  candidateReady=not absent, missing=absent,
+                  dispatchAuthorized=False,weaponSwitchAuthorized=False,ordersSent=0)
+
+
 def negative_matrix_contract() -> dict:
-    # Deliberately a policy matrix, NOT an invented EEex runtime action test.
-    # Testing 7 independent binary flags plus every slot means 512 independent cases.
-    checks=0
+    """Run actual advisory gate over every combination: 2^7 states x 4 slots.
+
+    This tests source policy on synthetic inputs, NOT live action provenance,
+    EPS state, gameplay, or authority to write to BCS/LOCALS.
+    """
+    checks=0;incomplete=0;complete=0
     for bits in range(128):
         for slot in range(4):
-            # Exhaustively ensure that the observer never grants any action.
-            evidence={RUNTIME_GATES[i]:bool(bits & (1<<i)) for i in range(len(RUNTIME_GATES))}
-            evidence['SOURCE_ORIGIN_TRUSTED']=bool(bits & (1<<6))
-            advice={'slot':slot,'requested':True,'snapshot':evidence}
-            dispatch_authorized=False
-            orders_sent=0
-            assert advice['slot'] in range(4) and not dispatch_authorized and orders_sent==0
+            evidence={name:bool(bits & (1<<i))
+                      for i,name in enumerate(CAPTURE_REQUIREMENTS)}
+            result=evaluate_capture_candidate(evidence,slot)
+            expected_complete=bits==127
+            if result['candidateReady'] is not expected_complete or \
+               result['dispatchAuthorized'] is not False or \
+               result['weaponSwitchAuthorized'] is not False or \
+               type(result['ordersSent']) is not int or result['ordersSent']!=0 or \
+               len(result['missing']) != len(CAPTURE_REQUIREMENTS)-bits.bit_count():
+                raise Hold('SYNTHETIC_POLICY_MATRIX_CONTRACT_FAILURE')
+            if expected_complete:complete+=1
+            else:incomplete+=1
             checks+=1
-    return marker('PASS_512_FAIL_CLOSED_POLICY_CASES',cases=checks,
-                  note='SYNTHETIC_MATRIX_NOT_GAMEPLAY')
+    if checks!=512 or complete!=4 or incomplete!=508:
+        raise Hold('SYNTHETIC_POLICY_MATRIX_CARDINALITY_DRIFT')
+    return marker('PASS_512_ADVISORY_GATE_CASES',cases=checks,
+                  rejectedIncompleteCases=incomplete,
+                  untrustedCompleteCandidatesNoDispatch=complete,
+                  note='ACTUAL_SOURCE_GATE_ON_SYNTHETIC_INPUTS_NOT_GAMEPLAY')
 
 
 def run_subprocess_test(path: Path, cwd: Path) -> dict:
@@ -223,15 +261,23 @@ def run_subprocess_test(path: Path, cwd: Path) -> dict:
         return marker('HOLD_UNIT_TESTS_RUNTIME',reason=type(e).__name__)
 
 
-def game_live_proof_gates() -> dict:
-    # No probe in this package can prove these; never turn a string flag into permission.
+def game_live_proof_gates(installed_r27_sha: str | None = None) -> dict:
+    # The already installed R27 SOURCE identity is useful evidence, but still
+    # captures ONLY the selected weapon. Never project APR to another slot.
+    # Authoritative source hash comes from actual R27 deployment manifest.
+    selected_only=(installed_r27_sha ==
+                   'e5eb400c56ffb1bc23344a0cf30dcc724d8d18fc2752fabd1c2c63cdcca73735')
     return marker('HOLD_LIVE_ORIGIN_AND_ALT_STATS_NOT_PROVEN',
                   missing=list(RUNTIME_GATES),
+                  selectedOnlyR27SourceShaRecognized=selected_only,
+                  selectedOnlyObserverIsNotAlternateAPRProof=True,
+                  currentBCSSyntaxPreviouslyCompiledOnly=True,
                   alternateEffectiveAprVerified=False,
                   launcherAmmoEnginePairVerified=False,
                   manualVsEpsOriginVerified=False,
                   nativeActionRecoveryVerified=False,
-                  dispatchAuthorized=False,ordersSent=0)
+                  dispatchAuthorized=False,weaponSwitchAuthorized=False,
+                  ordersSent=0)
 
 
 def run_batch(game:Path, source_dir:Path, report_dir:Path, fresh_native:bool=False,
@@ -304,7 +350,8 @@ def run_batch(game:Path, source_dir:Path, report_dir:Path, fresh_native:bool=Fal
           stages['gameBefore']['status']=='PASS_OBSERVED_WATCH_SET' and
           stages['gameBefore']['files']==parse_game_snapshot(game) else
           marker('HOLD_WATCHED_GAME_FILE_DIFF_OR_BASELINE_MISSING'))
-    stage('runtimeProof',game_live_proof_gates)
+    stage('runtimeProof',lambda:game_live_proof_gates(
+          stages.get('gameBefore',{}).get('files',{}).get('override/M_BGXR27.lua')))
     failed=[name for name,item in stages.items() if item['status'].startswith('HOLD_')
             and name != 'runtimeProof']
     report['gameFilesChanged'] = False if stages['gameAfter']['status']=='PASS_WATCHED_GAME_FILES_UNCHANGED' else None
@@ -315,6 +362,10 @@ def run_batch(game:Path, source_dir:Path, report_dir:Path, fresh_native:bool=Fal
     report['unitTestSkipped']=sum(stages.get(k,{}).get('skippedTests',0) or 0 for k in
                                   ('nativeMockContracts','batchSelftests'))
     report['hasSafetyHold']=bool(failed)
+    report['hasGameplayHold']=bool(stages['runtimeProof']['status'].startswith('HOLD_'))
+    report['runtimeGatesMissingCount']=len(RUNTIME_GATES)
+    report['nextRequiredCapability']='PROVE_ALT_STATS_AND_EPS_ORDER_ORIGIN_WITH_PASSIVE_LIVE_ADAPTER'
+    report['safeChecksCompletedNotGameplayPass']=True
     report['holdStages']=failed
     report['status']='SAFE_READONLY_BATCH_COMPLETE_GAMEPLAY_HOLD' if not failed else 'READONLY_BATCH_SAFETY_HOLD'
     report['elapsedMs']=round((time.monotonic()-started)*1000)
@@ -357,6 +408,8 @@ def main(argv=None):
     print('CHECKS='+str(report['stepCount'])+' MATRIX_CASES='+str(report['batchCaseCount'])+
           ' UNIT_TESTS='+str(report['unitTestCount']))
     print('NEW_GAME_ACTIONS=0 INSTALL=NO LIVE_NEW_WEAPON_AI=NO')
+    print('GAMEPLAY_HOLD='+str(report['hasGameplayHold']).lower()+
+          ' MISSING_PROOFS='+str(report['runtimeGatesMissingCount']))
     print('REPORT_FILE='+str(target))
     return rc
 
