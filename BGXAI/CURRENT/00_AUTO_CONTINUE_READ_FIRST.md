@@ -1,3 +1,13 @@
+# BGXAI АКТУАЛЬНО 24.11.2026 — V3/V4/V5 VERIFIED-INELIGIBLE, CI PASS, В ИГРУ НЕ УСТАНОВЛЕНО
+
+**Последний результат:** исправлен существующий приоритет оружия: подтверждённо пустой дальний слот и подтверждённо небезопасный ближний слот больше не требуют выдуманного APR, THAC0, урона или эффектов для исключения из оценки. Ненадёжные сведения о пригодном альтернативном оружии по-прежнему HOLD. Добавлены защитные регрессии; **122/122 native Lua tests PASS**, Windows static no-engine-dispatch PASS; CI https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45319538088; commit e7e7f553e998f5d0a0f8cda6015d47282c1a6d01.
+
+**Статус CODE/TEST PASS; GAME DEPLOY/LIVE новой логики НЕТ.** Реально в игре: BGXRANGED6 V6 и R27 24/24 passive observer; R28 4/4 native items. Альтернативный effective APR/launcher-ammo pair/manual-EPS action provenance не подтверждены. НЕ устанавливать V7 (166→2), НЕ повторять 165→6, R27/R28 или прежние preflight. Ни игра, ни EPS18.4, ни WeiDU, ни сейвы, ни один BGXAI_UPDATE.cmd не менялись.
+
+**Следующий функциональный этап:** достоверный EEex/native snapshot альтернативных слотов и происхождения ручной/EPS очереди; затем только проверенный producer+BCS consumer SelectWeaponAbility, native WeiDU compile, отдельное разрешение на установку и A/B gameplay. Нельзя вызывать CItem:getAbility из недоказанного native pointer и нельзя использовать instant engine actions за пределами INSTANT.IDS. Подробная контрольная точка: CURRENT/BGXAI_WEAPON_PRIORITY_V3_INELIGIBLE_NO_STATS_20261124_RU.md. Безопасные шаги продолжать в текущем обращении без «+», не создавать дубли и не выдавать SOURCE/CI за игру.
+
+---
+
 # ACTIVE 2026-11-24 — WEAPON PRIORITY V3 LOGIC FIX (SOURCE/CI PASS); FULL GAME AI NOT YET LIVE
 
 **CURRENT USER COMMAND:** "дальше" = continue the actual approved intelligent weapon priority plan, NOT re-implement bow↔sword V6 nor run duplicate 166→2 V7. BGXRANGED6 user installed and LIVE one extra near-range arrow → sword on Nov 21; V7 same DPLAYER candidate SHA, no new gameplay. Installed later R27 passive hook 24/24 LIVE, R28 real installed ITM/SPL/2DA read 4/4 PASS. Actual per-alternate *effective* APR and authoritative EPS/manual action origin NOT verified; actor/target effect protection incomplete. Never mark source advice as game action.
