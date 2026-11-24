@@ -1,4 +1,4 @@
-name: BG EET RU V126 guarded visible-row observer onefile verification
+name: BG EET RU V127 full pinned V126 observer loader regression
 on:
   push:
     branches: [bg-eet-ru-v122-live-readonly-onefile]
@@ -32,13 +32,13 @@ jobs:
           assert len(s)<=750000,(len(s),'onefile exceeds updater safety limit')
           text=s.decode('utf8')
           assert text.startswith('@echo off & py -3 -x')
-          assert 'SELF_VERSION = 126' in text
+          assert 'SELF_VERSION = 127' in text
           assert "V121_BOT_SHA='94dec300ea191101e74da139e5844e1f04c97a5b42eaf299f2a68e42a6f881bc'" in text
           assert "V121_TRUST_SHA='9d9a92e182a2389dc4ac4ca1f5c218c04b6452c80e4167d47a95d578da791090'" in text
           ast.parse('\n'.join(text.splitlines()[1:]))
           import hashlib,json
           manifest=json.loads(Path('bg-eet-ru/onefile/release.json').read_text(encoding='utf8'))
-          assert manifest['version']==126
+          assert manifest['version']==127
           assert manifest['game_writes_allowed'] is False
           actual_sha=hashlib.sha256(s).hexdigest()
           print('V121_COMPUTED_SOURCE_SHA256',actual_sha,flush=True)
@@ -66,6 +66,14 @@ jobs:
           subprocess.run([sys.executable,'-m','unittest','-v','test_v123_crossplatform_flow_ro'],
                          cwd='bg-eet-ru/autofix',check=True,timeout=30)
           print('V123_PINNED_REPLAY_AND_FOUR_NEGATIVE_GATES_PASS')
+
+      - name: V127 full pinned UI module loader and no-game-write cache integration
+        shell: python
+        run: |
+          import subprocess,sys
+          subprocess.run([sys.executable,'-m','unittest','-v','test_v126_dispatch_loader'],
+                         cwd='bg-eet-ru/autofix',check=True,timeout=45)
+          print('V127_FULL_MODULE_LOADER_SHA_AND_NAMESPACE_PASS')
 
       - name: V126 one-run 14 stages, preserves memory after errors
         shell: python
