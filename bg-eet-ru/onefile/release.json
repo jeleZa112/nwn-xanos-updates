@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 123,
-  "sha256": "2cb42999a50c8f8a8274fd894246edbadab674fe820ca447bae1b9f6ed138cbd",
-  "mode": "READ_ONLY_DEFAULT_ONE_PASS_AUTOFIX_WINDOWS_OBJdump_INDEPENDENT_REPLAY_PLUS_V122_LIVE_MEMORY",
+  "version": 124,
+  "sha256": "4f84e4a46468b40d36bdcb286d5f643464c8b7ea6f79542bfd39866a7369c52b",
+  "mode": "ONE_CLICK_AUTONOMOUS_14_STAGE_READONLY_COMBAT_BOT",
   "game_writes_allowed": false,
-  "note": "V123 retains single updater, exact 750000-byte cap, and all V122 read-only memory checks. Re-pins same 14 audited research modules with Windows no-objdump path: only exact SHA of Hit bytes plus fixed Linux disassembly evidence can PASS, reporting replay rather than a new local disassembly. Unknown or mutated evidence fails closed. No native hook or gameplay claims; game files unmodified."
+  "note": "V124 default double-click invokes 14 independent read-only stages (V85/V102-108/V111/V112/V116/full V120/AUTOFIX 735 + V122 external memory), continuing after individual failures, and emits 62_V124_ONE_RUN_BOT.json inside existing SEND_TO_CHATGPT_BG_EET_RU.zip. No new CMD or executable, no game patch/hook; gameplay remains HOLD."
 }
