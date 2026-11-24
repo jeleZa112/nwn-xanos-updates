@@ -36,8 +36,8 @@
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_R29_GUARDED.py",
       "dest": "BGXAI_R29_GUARDED.py",
-      "size": 25803,
-      "sha256": "9677bbb0e1be564e855ee6c4443b815009429f2adfe2ec88463df12ab9b4be14"
+      "size": 27276,
+      "sha256": "a7fb68121464d0b6b372542d294682ef7fa1e28bf60e4cbf4c11a11e00efded8"
     },
     {
       "source": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_R29_KHALID_BOW_TO_SWORD.baf",
