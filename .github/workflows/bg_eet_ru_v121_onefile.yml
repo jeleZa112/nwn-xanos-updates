@@ -1,0 +1,77 @@
+name: BG EET RU V121 onefile source-only verification
+on:
+  push:
+    branches: [bg-eet-ru-v121-autofix-onefile]
+  pull_request:
+    branches: [bg-eet-ai]
+  workflow_dispatch:
+concurrency:
+  group: bg-eet-ru-v121-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  PYTHONIOENCODING: utf-8
+  PYTHONUTF8: '1'
+jobs:
+  verify-onefile:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify size, compile and all pinned source constants
+        shell: python
+        run: |
+          from pathlib import Path
+          import ast
+          s=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd').read_bytes()
+          assert len(s)<=750000,(len(s),'onefile exceeds updater safety limit')
+          text=s.decode('utf8')
+          assert text.startswith('@echo off & py -3 -x')
+          assert 'SELF_VERSION = 121' in text
+          assert "V121_BOT_SHA='4dfb5d57f3bfddaca5a31884c5a91ea2a8380aa78ace28047409ebe9dfb531b3'" in text
+          assert "V121_TRUST_SHA='7622bfdec1f77e44a307c0cda3e73c86d143a024b87d4ad0f359897c89a74124'" in text
+          ast.parse('\n'.join(text.splitlines()[1:]))
+          import hashlib,json
+          manifest=json.loads(Path('bg-eet-ru/onefile/release.json').read_text(encoding='utf8'))
+          assert manifest['version']==121
+          assert manifest['game_writes_allowed'] is False
+          actual_sha=hashlib.sha256(s).hexdigest()
+          print('V121_COMPUTED_SOURCE_SHA256',actual_sha,flush=True)
+          assert actual_sha==manifest['sha256']
+          print('V121_AST_AND_SAFETY_PINS_PASS',len(s))
+          print('V121_RELEASE_MANIFEST_SHA_PASS')
+      - name: Verify exact bundle source fingerprints
+        shell: python
+        run: |
+          from pathlib import Path
+          import base64,hashlib,zipfile,io
+          root=Path('bg-eet-ru/autofix')
+          source=(root/'BG_EET_RU_AUTOFIX_BOT.py').read_bytes()
+          b64=(root/'trusted_sources.zip.b64').read_bytes()
+          bundle=base64.b64decode(b''.join(b64.split()),validate=True)
+          assert hashlib.sha256(source).hexdigest()=='4dfb5d57f3bfddaca5a31884c5a91ea2a8380aa78ace28047409ebe9dfb531b3'
+          assert hashlib.sha256(bundle).hexdigest()=='7622bfdec1f77e44a307c0cda3e73c86d143a024b87d4ad0f359897c89a74124'
+          with zipfile.ZipFile(io.BytesIO(bundle)) as z:
+              assert len(z.namelist())==14 and z.testzip() is None
+          print('V121_BOT_AND_TRUSTED_BUNDLE_SHA_PASS')
+      - name: Full onefile selftest
+        shell: python
+        run: |
+          import subprocess,sys
+          source='bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+          try:
+              result=subprocess.run([sys.executable,'-x',source,'--selftest'],
+                      capture_output=True,text=True,errors='replace',timeout=75)
+          except subprocess.TimeoutExpired as exc:
+              captured=exc.stdout.decode('utf8','replace') if isinstance(exc.stdout,bytes) else (exc.stdout or '')
+              print(captured[-1200:])
+              raise AssertionError('V121_ONEFILE_SELFTEST_75_SECOND_LIMIT_HOLD')
+          print(result.stdout[-2500:])
+          if result.returncode or 'SELFTEST: PASS' not in result.stdout:
+              print(result.stderr[-2500:])
+              raise AssertionError('V121_ONEFILE_SELFTEST_NOT_PASS:'+str(result.returncode))

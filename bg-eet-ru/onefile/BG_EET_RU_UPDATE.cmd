@@ -30,7 +30,7 @@ import zlib
 
 
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 120
+SELF_VERSION = 121
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -7881,9 +7881,12 @@ def v111_inside_game(game, path):
   if not path.resolve().is_relative_to(root):
     raise ValueError('V111_OUTSIDE_GAME_PATH')
   parent=path
-  while parent!=root:
+  while True:
     if parent.is_symlink():raise ValueError('V111_SYMLINK_RESOURCE_HOLD')
-    parent=parent.parent
+    if parent.resolve()==root:break
+    next_parent=parent.parent
+    if next_parent==parent:raise ValueError('V111_UNREACHABLE_ROOT_HOLD')
+    parent=next_parent
   return path
 
 def v111_key_index(game):
@@ -8530,6 +8533,106 @@ def full_audit_selftest():
       assert z.namelist().count(FULL_AUDIT_ENTRY)==1
   return True
 
+# V121: one-CMD source-only AutoFix, pinned to a reviewed GitHub commit.
+V121_ENTRY='60_V121_AUTOFIX_SOURCE_ONLY.json'
+V121_REF='bf7a30b651d427e38af850d7dc6c06ade7a625ec'
+V121_PREFIX='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/'+V121_REF+'/bg-eet-ru/autofix/'
+V121_BOT_SHA='4dfb5d57f3bfddaca5a31884c5a91ea2a8380aa78ace28047409ebe9dfb531b3'
+V121_TRUST_SHA='7622bfdec1f77e44a307c0cda3e73c86d143a024b87d4ad0f359897c89a74124'
+V121_INPUT_SHA='08a9d5da367404b33bc982871627e8c3e1179c7a8ec8808bab0a75bea5755015'
+
+def v121_cache(game):
+  p=WORKDIR/'.BG_EET_RU_AUTOFIX_CACHE'
+  safe_external(game,p)
+  if p.is_symlink() or (p.exists() and not p.is_dir()):raise RuntimeError('V121_CACHE_UNSAFE')
+  p.mkdir(parents=True,exist_ok=True)
+  return p
+
+def v121_write(game,path,data):
+  safe_external(game,path)
+  if path.is_symlink() or (path.exists() and not path.is_file()):raise RuntimeError('V121_TARGET_UNSAFE')
+  with tempfile.NamedTemporaryFile(dir=path.parent,prefix='.v121_',delete=False) as o:
+    tmp=Path(o.name)
+    o.write(data);o.flush();os.fsync(o.fileno())
+  try:
+    if digest(tmp.read_bytes())!=digest(data):raise RuntimeError('V121_STAGED_SHA_HOLD')
+    os.replace(tmp,path)
+  finally:
+    if tmp.exists():tmp.unlink()
+
+def v121_snapshot(game,report_path):
+  cache=v121_cache(game)
+  dst=cache/'V120_EVIDENCE_PINNED.zip'
+  if dst.exists():
+    if dst.is_symlink() or not dst.is_file():raise RuntimeError('V121_SNAPSHOT_UNSAFE')
+    if sha_path(dst)==V121_INPUT_SHA:return dst
+    raise RuntimeError('V121_PINNED_SNAPSHOT_DRIFT_HOLD')
+  report_path=Path(report_path)
+  safe_external(game,report_path)
+  if report_path.is_symlink() or not report_path.is_file():return None
+  if sha_path(report_path)!=V121_INPUT_SHA:return None
+  data=report_path.read_bytes()
+  if digest(data)!=V121_INPUT_SHA:raise RuntimeError('V121_SOURCE_RACE_HOLD')
+  v121_write(game,dst,data)
+  return dst
+
+def v121_source(game,cache,name,expected,offline=False):
+  path=cache/name
+  if path.is_file() and not path.is_symlink() and sha_path(path)==expected:return path
+  if path.is_symlink() or (path.exists() and not path.is_file()):raise RuntimeError('V121_CACHE_FILE_UNSAFE')
+  if offline:raise RuntimeError('V121_OFFLINE_TRUSTED_SOURCE_MISSING')
+  rawname='BG_EET_RU_AUTOFIX_BOT.py' if name=='BG_EET_RU_AUTOFIX_BOT.py' else 'trusted_sources.zip.b64'
+  req=urllib.request.Request(V121_PREFIX+rawname,headers={'User-Agent':'BG-EET-RU-onefile-RO/121'})
+  with urllib.request.urlopen(req,timeout=15) as response:data=response.read(100_000)
+  if rawname.endswith('.b64'):
+    try:data=base64.b64decode(b''.join(data.split()),validate=True)
+    except (ValueError,base64.binascii.Error):raise RuntimeError('V121_BUNDLE_DECODE_HOLD')
+  if len(data)>75_000 or digest(data)!=expected:raise RuntimeError('V121_PINNED_SOURCE_HASH_HOLD')
+  if path.exists():
+    oldsha=sha_path(path)
+    quarantine=cache/(name+'.'+oldsha[:16]+'.bad')
+    if quarantine.is_symlink() or quarantine.exists():raise RuntimeError('V121_QUARANTINE_COLLISION_HOLD')
+    os.replace(path,quarantine)
+    if sha_path(quarantine)!=oldsha:raise RuntimeError('V121_QUARANTINE_SHA_HOLD')
+  v121_write(game,path,data)
+  return path
+
+def v121_run(game,report_path,offline=False):
+  result={'schema':'BG_EET_RU_ONEFILE_AUTOFIX_V121','updater_version':SELF_VERSION,
+          'status':'RESEARCH_SOURCE_HOLD','game_files_written':0,
+          'native_hooks_installed':False,'gameplay_verified':False}
+  try:
+    archive=v121_snapshot(game,report_path)
+    if archive is None:raise RuntimeError('V121_EXACT_V120_EVIDENCE_NOT_FOUND_HOLD')
+    cache=v121_cache(game)
+    botfile=v121_source(game,cache,'BG_EET_RU_AUTOFIX_BOT.py',V121_BOT_SHA,offline)
+    v121_source(game,cache,'trusted_sources.zip',V121_TRUST_SHA,offline)
+    module=types.ModuleType('_bg_eet_ru_v121_autofix')
+    exec(compile(botfile.read_bytes(),str(botfile),'exec'),module.__dict__)
+    summary=module.run(archive,cache/'work',cache,game_root=game,timeout=120)
+    result.update({'status':summary['status'],'source_archive_sha256':summary['source_archive_sha256'],
+      'checks_passed':summary['checks_passed'],'modules_repaired':summary['modules_repaired'],
+      'bounded_stage_retries':summary['bounded_stage_retries'],
+      'remaining_blockers':summary['remaining_blockers']})
+  except Exception as exc:
+    result['status']='V121_AUTOFIX_HOLD'
+    result['hold_reason']=type(exc).__name__+':'+str(exc)[:200]
+  try:
+    changed=v116_zip(game,report_path,result,entry=V121_ENTRY)
+    print('V121 SOURCE AUTOFIX:',result['status'],'| one ZIP changed:',changed)
+  except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
+    print('V121 OUTPUT HOLD:',type(exc).__name__,str(exc)[:160]);return 2
+  return 0
+
+def v121_selftest():
+  assert len(V121_INPUT_SHA)==len(V121_BOT_SHA)==len(V121_TRUST_SHA)==64
+  assert V121_PREFIX.startswith('https://raw.githubusercontent.com/')
+  assert V121_REF in V121_PREFIX and len(V121_REF)==40
+  with tempfile.TemporaryDirectory(prefix='V121_TEST_') as d:
+    game=Path(d)/'game';game.mkdir()
+    assert v121_snapshot(game,Path(d)/'missing.zip') is None
+  return True
+
 def main(argv=None):
   p=argparse.ArgumentParser(description='BG_EET_RU one-file visible-only read-only auto-updater')
   p.add_argument('--game',default=DEFAULT_GAME)
@@ -8542,6 +8645,7 @@ def main(argv=None):
   p.add_argument('--install-v105-weapon-observer',action='store_true',help='v105 optional explicitly authorized guarded pilot installation')
   p.add_argument('--rollback-v105-weapon-observer',action='store_true',help='v105 optional explicitly authorized exact pilot rollback')
   p.add_argument('--full-combat-audit',action='store_true',help='one-shot comprehensive READ ONLY EXE/EEex/UI/weapon audit')
+  p.add_argument('--autofix-readonly',action='store_true',help='run all pinned research tests and safely repair cached source modules')
   p.add_argument('--v116-dispatch-static',action='store_true',help='v116 READ ONLY PE64 message dispatch symbol')
   p.add_argument('--v112-correlation-preflight',action='store_true',help='v112 READ ONLY UI/EEex action source and event-id correlation gate')
   p.add_argument('--v111-item-audit',action='store_true',help='v111 read-only exact current ITM/TLK names for three LIVE RESREFs')
@@ -8646,8 +8750,14 @@ def main(argv=None):
   if activated:
     import subprocess
     return subprocess.call([sys.executable,'-x',str(canonical),*sys.argv[1:]])
+  try:v121_snapshot(game,WORKDIR/REPORT_NAME)
+  except Exception as exc:print('V121 EVIDENCE SNAPSHOT HOLD:',type(exc).__name__,str(exc)[:140])
+  if args.autofix_readonly:
+    return v121_run(game,WORKDIR/REPORT_NAME,args.offline)
   if args.full_combat_audit:
-    return full_audit_run(game,WORKDIR/REPORT_NAME)
+    rc=full_audit_run(game,WORKDIR/REPORT_NAME)
+    fix=v121_run(game,WORKDIR/REPORT_NAME,args.offline)
+    return rc if rc else fix
   if args.v116_dispatch_static:
     return v116_run(game,WORKDIR/REPORT_NAME)
   if args.v112_correlation_preflight:
@@ -8699,7 +8809,10 @@ def main(argv=None):
       rc=v112_run(game,WORKDIR/REPORT_NAME)
       if rc:return rc
       rc=v116_run(game,WORKDIR/REPORT_NAME)
-      return rc if rc else full_audit_run(game,WORKDIR/REPORT_NAME)
+      if rc:return rc
+      rc=full_audit_run(game,WORKDIR/REPORT_NAME)
+      fix=v121_run(game,WORKDIR/REPORT_NAME,args.offline)
+      return rc if rc else fix
     ui_v101=v101_state_read()
     if ui_v101 and ui_v101['phase'] in ('INSTALLED','PREPARED'):
       rc=v101_run(game,WORKDIR/REPORT_NAME)
@@ -8725,7 +8838,10 @@ def main(argv=None):
       rc=v112_run(game,WORKDIR/REPORT_NAME)
       if rc:return rc
       rc=v116_run(game,WORKDIR/REPORT_NAME)
-      return rc if rc else full_audit_run(game,WORKDIR/REPORT_NAME)
+      if rc:return rc
+      rc=full_audit_run(game,WORKDIR/REPORT_NAME)
+      fix=v121_run(game,WORKDIR/REPORT_NAME,args.offline)
+      return rc if rc else fix
     ui_v100=v100_state_read()
     if ui_v100 and ui_v100['phase'] in ('INSTALLED','PREPARED'):
       rc=v100_run(game,WORKDIR/REPORT_NAME)
@@ -11784,6 +11900,7 @@ def selftest():
   assert v112_selftest() and callable(v112_run)
   assert v116_selftest() and callable(v116_run)
   assert full_audit_selftest() and callable(full_audit_run)
+  assert v121_selftest() and callable(v121_run)
   print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
   return 0
 

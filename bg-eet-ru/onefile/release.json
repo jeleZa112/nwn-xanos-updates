@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 120,
-  "sha256": "de32ea54ab6b978c9a61fda2cd64f6597eb45f110abd53aeeda69939e6be307b",
-  "mode": "READ_ONLY_DEFAULT_ONE_PASS_FULL_SPECTRUM_COMBAT_AUDIT",
+  "version": 121,
+  "sha256": "a83c832777460480c165d25ffa0ea6d1c2b6d88a341e74937d2567513f02fa44",
+  "mode": "READ_ONLY_DEFAULT_ONE_PASS_AUTOFIX_SOURCE_AUDIT",
   "game_writes_allowed": false,
-  "note": "V120 bundles one embedded, SHA-pinned source-only bot into the SAME original CMD. One default Windows invocation reads pinned installed EXE, loader DB, vtable, dispatch callsites, EEex/Lua/UI source, historical reports and bounded private code evidence into the SAME external ZIP. Runtime hit/miss row correlation and gameplay installation remain HOLD; no game writes, hooks, TLK or saves changed. Existing V101/V108/V111/V112/V116 preserved."
+  "note": "V121 retains one canonical Windows CMD and one ZIP, adds pinned SHA-verified self-healing source-only AutoFix (14 offline research modules and 735 static/model checks). Safe external cache and immutable exact V120 archive snapshot, one bounded retry, quarantine corrupt cached modules, clear HOLD on unknown source/runtime failures. No game writes, new hooks, TLK, saves, BGXAI or BG Voice RU changes. Native gameplay miss-to-weapon correlation remains HOLD. Also fixes V111 Windows canonical-path vs 8.3-short-path infinite parent traversal with drive-root fail-closed termination."
 }
