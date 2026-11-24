@@ -45,6 +45,13 @@ def _static() -> None:
                         r'\bSetGlobal\s*\(', r'\bEEex_Action_Queue',
                         r'\bio\.open\s*\(', r'\bos\.execute\s*\('):
             assert not re.search(pattern, active), (name, pattern)
+    # Preserve original BCS consumer and verify restricted native fallback source.
+    # This is NOT a WeiDU compile or installation approval.
+    baf = subprocess.run([sys.executable, str(ROOT / 'test_weapon_native_recovery_baf_v1.py')],
+                         cwd=ROOT, capture_output=True, text=True, timeout=10)
+    if baf.returncode != 0 or 'PASS BAF NATIVE RECOVERY 8/8' not in baf.stdout:
+        raise RuntimeError('BAF native recovery source check failed: '+baf.stdout+baf.stderr)
+    print(baf.stdout.strip())
     print('PASS V3/V4/V5/CURRENT-STATS/NONINTERRUPT STATIC NO-ENGINE-ACTIONS and UNKNOWN-FAIL-CLOSED')
 
 
@@ -63,7 +70,7 @@ def _lua(lua: str) -> None:
         for name in ('BGXAI_WEAPON_APR_PROVENANCE_V5.lua', 'test_weapon_apr_provenance_v5.lua'):
             shutil.copy2(ROOT / name, p5 / name)
         suites = [
-            (p3 / TEST, r'PASS WEAPON PRIORITY NATIVE LUA 53/53 SOURCE ONLY'),
+            (p3 / TEST, r'PASS WEAPON PRIORITY NATIVE LUA 59/59 SOURCE ONLY'),
             (p4 / 'test_weapon_effects_v4.lua', r'PASS TOTAL 34 / 34 NATIVE LUA SOURCE ONLY'),
             (p5 / 'test_weapon_apr_provenance_v5.lua', r'PASS APR V5 25/25 OFFLINE SOURCE ONLY'),
             (ROOT / 'test_weapon_noninterrupt_plan_v1.lua', r'PASS NONINTERRUPT SCHEDULER 22/22 SOURCE ONLY'),
@@ -84,8 +91,8 @@ def _lua(lua: str) -> None:
                 count = len(re.findall(r'^PASS ', result.stdout, re.M)) - 1
             print(f'PASS {path.name}: {count} offline tests / matrix cases')
             passed += count
-        assert passed == 433, passed
-        print(f'PASS TOTAL {passed}/433 OFFLINE LUA TESTS AND MATRIX CASES; NO GAME DEPLOY')
+        assert passed == 439, passed
+        print(f'PASS TOTAL {passed}/439 OFFLINE LUA TESTS AND MATRIX CASES; NO GAME DEPLOY')
 
 
 def main() -> int:

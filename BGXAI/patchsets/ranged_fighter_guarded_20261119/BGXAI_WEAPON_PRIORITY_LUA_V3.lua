@@ -185,8 +185,19 @@ local function scored_weapon(w,a,e)
  local dpr=immune and 0 or hit*w.avgDamageOnHit*w.apr*(1-p.resistance[w.damageType])
  local extra=immune and 0 or w.extraEffectValue
  local value=dpr+extra-w.switchCost-w.resourceCost-w.retaliationRisk-w.movementCost
+ -- A witnessed, fully blocked or entirely zero-value current attack must not
+ -- retain a generic 2-DPR / 15% switching threshold. This is target-specific
+ -- evidence, never an instruction to switch or evidence of a free EPS queue.
+ -- Keep status utility alive: a weapon that applies a verified nonphysical
+ -- effect still has a reason to remain equipped even when physical DPR is 0.
+ local ineffectiveReason=nil
+ if immune then
+  ineffectiveReason='VERIFIED_TARGET_WEAPON_IMMUNITY'
+ elseif dpr==0 and extra==0 then
+  ineffectiveReason='VERIFIED_NO_EFFECTIVE_DAMAGE_OR_EFFECT'
+ end
  return {id=w.id,slotIndex=w.quickslotIndex,available=true,value=value,dpr=dpr,penetrates=not immune,
-         hitChance=hit,mode=w.mode},nil
+         hitChance=hit,mode=w.mode,ineffectiveReason=ineffectiveReason},nil
 end
 local function choose_impl(scene,previous,passivePreview)
  local problem=verified_scene(scene,passivePreview)
@@ -216,7 +227,11 @@ local function choose_impl(scene,previous,passivePreview)
  local anyEffective=false
  for _,x in ipairs(candidates) do if x.penetrates and x.dpr>0 then anyEffective=true end end
  if not anyEffective then return issue('HOLD_NO_EFFECTIVE_ATTACK',{next=next,candidates=candidates}) end
- local currentUnusable=current.available==false
+ -- A shielded / fully resistant target makes the current weapon as
+ -- ineffective as confirmed empty ammo. Even a small *positive verified*
+ -- alternative can be better than zero; the normal hysteresis is for two
+ -- functioning weapons, not for continuing a futile attack indefinitely.
+ local currentUnusable=current.available==false or current.ineffectiveReason~=nil
  local diff=nil
  local threshold=0
  if not currentUnusable then
@@ -236,7 +251,7 @@ local function choose_impl(scene,previous,passivePreview)
  return issue('ADVISE_PRIORITY_QUICKSLOT_ONLY',{
   fromWeaponId=current.id,toWeaponId=best.id,slotIndex=best.slotIndex,
   targetId=e.enemyId,improvement=diff,threshold=threshold,next=next,candidates=candidates,
-  currentUnusableReason=currentUnusable and current.reason or nil,
+  currentUnusableReason=currentUnusable and (current.reason or current.ineffectiveReason) or nil,
   reason=currentUnusable and 'VERIFIED_CURRENT_WEAPON_UNUSABLE_SAFE_FALLBACK' or
                           'COMPLETE_EFFECTIVE_STATS_BETTER_AFTER_STABILITY'})
 end

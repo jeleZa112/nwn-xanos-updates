@@ -319,4 +319,69 @@ check('all weapon damage types immune yields HOLD with no false switch',function
  local _,b=two(s);eq(b.status,'HOLD_NO_EFFECTIVE_ATTACK')
  eq(b.dispatchAuthorized,false)
 end)
+
+-- These are real ranking bugs: current weapon cannot hurt the *verified*
+-- target, yet the previous 2-DPR threshold kept attacking futilely.
+local function selected_sword_with_weak_dart()
+ local s=mk(true)
+ s.frame.selectedWeaponId='SWORD';s.actor.selectedWeaponId='SWORD'
+ s.weapons[2].apr=0.5;s.weapons[2].avgDamageOnHit=1
+ s.weapons[2].finalTHAC0=20 -- ~0.025 expected damage/round
+ return s
+end
+check('fully immune current sword yields to low damage verified dart',function()
+ local s=selected_sword_with_weak_dart()
+ s.enemy.protections.immuneDamageTypes={'SLASHING'}
+ local _,b=two(s)
+ eq(b.status,'ADVISE_PRIORITY_QUICKSLOT_ONLY')
+ eq(b.toWeaponId,'DART');eq(b.slotIndex,1)
+ eq(b.currentUnusableReason,'VERIFIED_TARGET_WEAPON_IMMUNITY')
+ eq(b.executable,false);eq(b.dispatchAuthorized,false)
+end)
+check('full damage resistance switches but 99 percent does not force it',function()
+ local s=selected_sword_with_weak_dart()
+ s.enemy.protections.resistance.SLASHING=1
+ local _,b=two(s)
+ eq(b.status,'ADVISE_PRIORITY_QUICKSLOT_ONLY')
+ eq(b.currentUnusableReason,'VERIFIED_NO_EFFECTIVE_DAMAGE_OR_EFFECT')
+ local p=selected_sword_with_weak_dart()
+ p.enemy.protections.resistance.SLASHING=0.999
+ local _,c=two(p)
+ eq(c.status,'KEEP_CURRENT')
+end)
+check('missile-blocked selected dart yields to weak safe melee attack',function()
+ local s=mk(true)
+ s.enemy.protections.missilesBlocked=true
+ s.weapons[1].apr=0.5;s.weapons[1].avgDamageOnHit=0.5
+ s.weapons[1].finalTHAC0=20
+ local _,b=two(s)
+ eq(b.status,'ADVISE_PRIORITY_QUICKSLOT_ONLY');eq(b.toWeaponId,'SWORD')
+ eq(b.currentUnusableReason,'VERIFIED_TARGET_WEAPON_IMMUNITY')
+end)
+check('blocked current never sends player or EPS order in passive preview',function()
+ local s=selected_sword_with_weak_dart()
+ s.enemy.protections.immuneDamageTypes={'SLASHING'}
+ s.actor.originVerified='UNKNOWN';s.actor.epsBusy=true
+ local preview=dofile(root..'BGXAI_WEAPON_PRIORITY_LUA_V3.lua').preview
+ local first=preview(s);s.frame.tick=101
+ local second=preview(s,first.next)
+ eq(second.status,'PASSIVE_RANKING_SUGGESTS_SLOT')
+ eq(second.dispatchAuthorized,false);eq(second.executable,false)
+ eq(choose(s).status,'HOLD_PRESERVE_MANUAL_OR_EPS')
+end)
+check('fully immune current cannot force switching to net negative alternative',function()
+ local s=selected_sword_with_weak_dart()
+ s.enemy.protections.immuneDamageTypes={'SLASHING'}
+ s.weapons[2].retaliationRisk=2
+ local _,b=two(s)
+ eq(b.status,'HOLD_NO_EFFECTIVE_ATTACK')
+ eq(b.dispatchAuthorized,false)
+end)
+check('nonphysical verified utility preserves currently selected weapon',function()
+ local s=selected_sword_with_weak_dart()
+ s.weapons[1].avgDamageOnHit=0;s.weapons[1].extraEffectValue=1
+ local _,b=two(s)
+ eq(b.status,'KEEP_CURRENT')
+ eq(b.dispatchAuthorized,false)
+end)
 print('PASS WEAPON PRIORITY NATIVE LUA '..count..'/'..count..' SOURCE ONLY')

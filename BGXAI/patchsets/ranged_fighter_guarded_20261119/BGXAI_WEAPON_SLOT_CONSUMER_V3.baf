@@ -90,3 +90,112 @@ THEN
     SelectWeaponAbility(SLOT_WEAPON3,0)
     SetGlobal("BGXW3_REQ","LOCALS",0)
 END
+
+// SOURCE-ONLY NATIVE INEFFECTIVE-WEAPON RECOVERY EXTENSION (BG2EE 0x40F2).
+// If the engine reports that the ACTUALLY EQUIPPED MAINHAND weapon cannot
+// cause non-zero damage to the current visible enemy, a separately proven
+// native-safe producer may request BGXW3_REQ=5..8 (slot 0..3 respectively).
+// The existing 1..4 optimization requests above remain BYTE IDENTICAL.
+// IMPORTANT: Native WeaponCanDamage checks CURRENT selected hand only, NOT
+// alternate-slot APR, target-specific effects or alt-weapon usability.
+// The producer must independently verify the proposed alternate, ammo/launcher,
+// manual and EPS queue provenance, stable target and action boundary. A bare
+// Global("BGXW3_NATIVE_PROVENANCE","LOCALS",1) is NOT proof of any of them.
+// Source gate cannot be installed until these invariants, installed TRIGGER.IDS,
+// native WeiDU compilation, explicit typed install consent and rollback are ready.
+// NO hook, timer, threat selection, animation cancellation or Attack action.
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  Global("BGXW3_REQ","LOCALS",5)
+  Global("BGXW3_NATIVE_PROVENANCE","LOCALS",1)
+  GlobalTimerNotExpired("BGXW3_LEASE","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_HELPLESS)
+  See(NearestEnemyOf(Myself))
+  !InParty(NearestEnemyOf(Myself))
+  !Allegiance(NearestEnemyOf(Myself),GOODCUTOFF)
+  !WeaponCanDamage(NearestEnemyOf(Myself),MAINHAND)
+  HasItemSlot(Myself,SLOT_WEAPON0)
+THEN
+  RESPONSE #100
+    SelectWeaponAbility(SLOT_WEAPON0,0)
+    SetGlobal("BGXW3_REQ","LOCALS",0)
+    SetGlobal("BGXW3_NATIVE_PROVENANCE","LOCALS",0)
+END
+
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  Global("BGXW3_REQ","LOCALS",6)
+  Global("BGXW3_NATIVE_PROVENANCE","LOCALS",1)
+  GlobalTimerNotExpired("BGXW3_LEASE","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_HELPLESS)
+  See(NearestEnemyOf(Myself))
+  !InParty(NearestEnemyOf(Myself))
+  !Allegiance(NearestEnemyOf(Myself),GOODCUTOFF)
+  !WeaponCanDamage(NearestEnemyOf(Myself),MAINHAND)
+  HasItemSlot(Myself,SLOT_WEAPON1)
+THEN
+  RESPONSE #100
+    SelectWeaponAbility(SLOT_WEAPON1,0)
+    SetGlobal("BGXW3_REQ","LOCALS",0)
+    SetGlobal("BGXW3_NATIVE_PROVENANCE","LOCALS",0)
+END
+
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  Global("BGXW3_REQ","LOCALS",7)
+  Global("BGXW3_NATIVE_PROVENANCE","LOCALS",1)
+  GlobalTimerNotExpired("BGXW3_LEASE","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_HELPLESS)
+  See(NearestEnemyOf(Myself))
+  !InParty(NearestEnemyOf(Myself))
+  !Allegiance(NearestEnemyOf(Myself),GOODCUTOFF)
+  !WeaponCanDamage(NearestEnemyOf(Myself),MAINHAND)
+  HasItemSlot(Myself,SLOT_WEAPON2)
+THEN
+  RESPONSE #100
+    SelectWeaponAbility(SLOT_WEAPON2,0)
+    SetGlobal("BGXW3_REQ","LOCALS",0)
+    SetGlobal("BGXW3_NATIVE_PROVENANCE","LOCALS",0)
+END
+
+IF
+  InParty(Myself)
+  !InPartySlot(Myself,0)
+  Global("BGX38_GUARD","LOCALS",1)
+  Global("BGX66_S_HEAL_SLOT","LOCALS",0)
+  Global("BGXW3_REQ","LOCALS",8)
+  Global("BGXW3_NATIVE_PROVENANCE","LOCALS",1)
+  GlobalTimerNotExpired("BGXW3_LEASE","LOCALS")
+  ActionListEmpty()
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_HELPLESS)
+  See(NearestEnemyOf(Myself))
+  !InParty(NearestEnemyOf(Myself))
+  !Allegiance(NearestEnemyOf(Myself),GOODCUTOFF)
+  !WeaponCanDamage(NearestEnemyOf(Myself),MAINHAND)
+  HasItemSlot(Myself,SLOT_WEAPON3)
+THEN
+  RESPONSE #100
+    SelectWeaponAbility(SLOT_WEAPON3,0)
+    SetGlobal("BGXW3_REQ","LOCALS",0)
+    SetGlobal("BGXW3_NATIVE_PROVENANCE","LOCALS",0)
+END
