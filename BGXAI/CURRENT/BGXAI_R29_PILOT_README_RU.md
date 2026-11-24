@@ -19,6 +19,8 @@
 - **2 — guarded install (typed)**. Только после ввода **`INSTALL_BGXR29_KHALID_BOW_TO_SWORD_PILOT`** и только при пройденном повторном preflight выполняет проверенный внешний backup и WeiDU COPY подготовленного BCS. Проводит сверку хэшей после установки. Поскольку игровой результат не проверен, успешная установка сообщает `R29_INSTALLED_AWAITING_LIVE_AB`.
 - **3 — status (READ ONLY)**; **4 — rollback (typed, только если R29 последний в WeiDU.log)**, фраза `ROLLBACK_BGXR29_KHALID_BOW_TO_SWORD_PILOT`; **0 — выход**.
 
+В каждом выполненном режиме (включая безопасную остановку) программа автоматически сохраняет ровно один JSON-отчёт за пределами игры: `%USERPROFILE%\Documents\BGXAI_LIVE_REPORTS\BGXAI_R29_<MODE>_*.json` и печатает `REPORT_FILE=...`. Не требуется копировать длинный текст консоли.
+
 Не вводить install token до успешного пункта 1 и согласованного игрового теста. Ввод неверной фразы ничего не устанавливает. Внешний бэкап находится в `Documents\BGXAI_R29_SAFE_BACKUPS`. Сейвы, BG Voice RU, BG_EET_RU, EPS .tph/.baf, `WTASIGHT.BCS`, `DPLAYER.BCS` и `PRIEST1.BCS` не изменяются скриптом установки.
 
 ### Условия реального теста, только после отдельно подтверждённой установки
@@ -27,4 +29,4 @@
 
 ### Статус достоверности
 
-Доказано: один BAF блок; 18 Python-тестов изолированных contract cases; native binary splice 1162+1 offline; что код защищает только точные item/slot conditions и не содержит опасных action; типизированная установка, копирование с SHA; исходный `BDDEFAI.BCS` копируется побайтово в 1162 исходных блоках. Ещё предстоит: проверка настоящим WeiDU 25100 на пользовательской EET (пункт 169/1), реальная игра после typed install, наблюдение/manual/EPS origin. Кодовые PASS не равно gameplay PASS.
+Доказано: один BAF блок; 20 Python-тестов изолированных contract cases; native binary splice 1162+1 offline; что код защищает только точные item/slot conditions и не содержит опасных action; типизированная установка, копирование с SHA; исходный `BDDEFAI.BCS` копируется побайтово в 1162 исходных блоках. Ещё предстоит: проверка настоящим WeiDU 25100 на пользовательской EET (пункт 169/1), реальная игра после typed install, наблюдение/manual/EPS origin. Кодовые PASS не равно gameplay PASS.

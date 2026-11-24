@@ -303,6 +303,27 @@ def rollback(game:pathlib.Path)->dict:
         raise Hold('ROLLBACK_BASELINE_NOT_RESTORED')
     return {'status':'R29_ROLLBACK_VERIFIED','restoredBCSSha256':BASELINE[BCS]}
 
+def save_report(result: dict, mode: str) -> pathlib.Path:
+    """Exactly one atomic JSON OUTSIDE game, no silent preflight success."""
+    root=pathlib.Path(os.environ.get('USERPROFILE',str(pathlib.Path.home())))
+    out=root/'Documents'/'BGXAI_LIVE_REPORTS'
+    safe(out)
+    if out==GAME or GAME in out.parents:
+        raise Hold('REPORT_DESTINATION_INSIDE_GAME')
+    out.mkdir(parents=True,exist_ok=True)
+    name=('BGXAI_R29_'+mode.upper()+'_'
+          +datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')+'.json')
+    target=out/name
+    temp=target.with_suffix('.tmp')
+    safe(target);safe(temp)
+    if target.exists() or temp.exists():raise Hold('R29_REPORT_FILENAME_COLLISION')
+    with temp.open('x',encoding='utf-8') as handle:
+        json.dump({'schema':'BGXAI_R29_GUARDED_V1','mode':mode,**result},
+                  handle,ensure_ascii=False,indent=2)
+        handle.write('\n')
+    os.replace(temp,target)
+    return target
+
 def main()->int:
     p=argparse.ArgumentParser()
     p.add_argument('--game',type=pathlib.Path,default=GAME)
@@ -317,8 +338,18 @@ def main()->int:
     try:
         result=globals()[mode](args.game.resolve())
         print(json.dumps(result,ensure_ascii=False,indent=2))
+        path=save_report(result,mode)
+        print('REPORT_FILE='+str(path))
         return 0
     except (Hold,OSError,ValueError,subprocess.TimeoutExpired,UnicodeError) as e:
         print('R29 SAFE STOP: '+str(e),file=sys.stderr)
+        failed={'status':'R29_SAFE_STOP','reason':str(e),
+                'gameModifiedUnknown':mode in ('install','rollback'),
+                'dispatchAuthorized':False,'ordersSent':0}
+        try:
+            path=save_report(failed,mode)
+            print('REPORT_FILE='+str(path))
+        except (Hold,OSError,ValueError) as err:
+            print('R29 REPORT SAVE FAILED: '+str(err),file=sys.stderr)
         return 3
 if __name__=='__main__':raise SystemExit(main())

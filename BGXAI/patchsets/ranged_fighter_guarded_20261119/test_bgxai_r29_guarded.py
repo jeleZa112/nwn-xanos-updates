@@ -71,6 +71,28 @@ class SourceContracts(unittest.TestCase):
             with patch.object(m,'GAME',game),patch.object(m,'no_game_process'), \
                  patch.object(m,'last_weidu',return_value='~OTHER/SETUP-OTHER.TP2~ #0 #0'):
                 with self.assertRaises(m.Hold):m.rollback(game)
+    def test_report_is_atomic_one_file_outside_game(self):
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            with patch.dict(m.os.environ,{'USERPROFILE':tmp}):
+                p=m.save_report({'status':'READONLY_TEST','ordersSent':0},'preflight')
+                self.assertTrue(p.is_file())
+                self.assertEqual(list(p.parent.glob('BGXAI_R29_*.json')),[p])
+                self.assertFalse(list(p.parent.glob('*.tmp')))
+                result=json.loads(p.read_text('utf-8'))
+                self.assertEqual(result['status'],'READONLY_TEST')
+                self.assertEqual(result['schema'],'BGXAI_R29_GUARDED_V1')
+    def test_report_destination_symlink_denied(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base=pathlib.Path(tmp)
+            root=base/'target';root.mkdir()
+            d=base/'Documents';d.mkdir()
+            try:
+                (d/'BGXAI_LIVE_REPORTS').symlink_to(root,target_is_directory=True)
+            except OSError:
+                self.skipTest('OS denies unprivileged symlink creation')
+            with patch.dict(m.os.environ,{'USERPROFILE':tmp}):
+                with self.assertRaises(m.Hold):m.save_report({'status':'TEST'},'preflight')
     def test_install_requires_windows_runtime(self):
         if sys.platform!='win32':
             with self.assertRaises(m.Hold):m.no_game_process()
