@@ -141,7 +141,9 @@ def build(root: Path = ROOT) -> bytes:
 "  queueBefore.action_source_raw==queueAfter.action_source_raw\n"+
 " local srcStatus=queueBefore.action_source_read_status\n"+
 " if srcStatus~=queueAfter.action_source_read_status then\n"+
-"  srcStatus='ACTION_SOURCE_STATUS_CHANGED_DURING_CAPTURE' end\n"+
+"  srcStatus='ACTION_SOURCE_STATUS_CHANGED_DURING_CAPTURE'\n"+
+" elseif queueBefore.action_source_raw~=queueAfter.action_source_raw then\n"+
+"  srcStatus='ACTION_SOURCE_CHANGED_DURING_CAPTURE' end\n"+
     " if r4.status~='RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS' or\n")
   tail = replacement(tail,
     '  rawInventoryDoubleReadConsistent=true,\n',
