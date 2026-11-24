@@ -49,6 +49,25 @@ jobs:
           for bad in ('WriteProcessMemory(', 'EEex_HookBefore(', 'EEex_JITAt(', 'VirtualProtect('):
               assert bad not in text
           print('V129_NO_NATIVE_INSTALL_SOURCE_ONLY_PASS')
+      - name: V130 exact AMD64 PE unwind proof and adversarial malformed .pdata xdata
+        shell: bash
+        working-directory: bg-eet-ru/native-correlation
+        run: |
+          python -m unittest -v test_pe_unwind_entry_gate_v130
+      - name: V130 source-only and no process injection
+        shell: python
+        run: |
+          from pathlib import Path
+          import ast
+          p=Path('bg-eet-ru/native-correlation/pe_unwind_entry_gate_v130.py')
+          t=p.read_text('utf8')
+          ast.parse(t)
+          assert 'native_hook_install_allowed":False' in t
+          assert 'exact_game_build_proven' in t
+          assert 'RVA_SECTION_AMBIGUOUS_OR_UNAVAILABLE' in t
+          for forbidden in ('WriteProcessMemory(', 'EEex_JITAt(', 'VirtualProtect(', 'CreateRemoteThread(', 'OpenProcess('):
+              assert forbidden not in t
+          print('V130_RO_ONLY_WIN64_UNWIND_GATE_NO_INSTALL_PASS')
       - name: Assert no game mutation APIs or fake runtime claim
         shell: python
         run: |

@@ -67,6 +67,14 @@ jobs:
                          cwd='bg-eet-ru/autofix',check=True,timeout=30)
           print('V123_PINNED_REPLAY_AND_FOUR_NEGATIVE_GATES_PASS')
 
+      - name: V130 exact AMD64 PE unwind synthetic positive and malicious table cases
+        shell: python
+        run: |
+          import subprocess,sys
+          subprocess.run([sys.executable,'-m','unittest','-v','test_pe_unwind_entry_gate_v130'],
+                         cwd='bg-eet-ru/native-correlation',check=True,timeout=45)
+          print('V130_WIN64_UNWIND_SOURCE_ONLY_NO_INSTALL_PASS')
+
       - name: V129 Hit source proof with 16 byte anchors and 5 real branch targets
         shell: python
         run: |
