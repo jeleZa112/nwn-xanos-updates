@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 126,
-  "sha256": "a4dab31bb437344350790c4258983cd28fa9987a6a1dfe22e83ccea4d43a2c89",
-  "mode": "ONE_CMD_GUARDED_UI_ROW_OBSERVER_INSTALL_ROLLBACK_CONSOLE_CAPTURE",
+  "version": 127,
+  "sha256": "1cbb34cdee3d78011bc91daa3206c8381564a358ae2f44451ee6518c3e7bb012",
+  "mode": "V127_PINNED_V126_UI_ROW_OBSERVER_LOADER_FIXED",
   "game_writes_allowed": false,
-  "note": "V126 existing one updater opens small interactive menu: 1=all read-only tests; 2=typed guarded install passive visible UI row observer; 3=typed exact rollback; 4=launch InfinityLoader and capture bounded console row markers in same ZIP; 5=read-only status. Exact old V125 UI SHA and external backup mandatory; no native hooks, no auto game writes, no proven weapon/miss-to-visible-row identity."
+  "note": "V127 hotfix for published V126: read all 16178 bytes of exact SHA-pinned passive UI observer instead of truncated 15001, define __name__ while executing sourced Python, retain 1=14 checks; 2=guarded UI-only install; 3=exact rollback; 4=console capture; 5=status. No automatic game writes. No native Hook/Hit modification. Existing V125/V126 updater auto-upgrades by immutable SHA+size+selftest. Separate typed authorization mandatory."
 }
