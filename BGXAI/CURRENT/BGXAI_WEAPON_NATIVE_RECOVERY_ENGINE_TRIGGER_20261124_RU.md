@@ -30,7 +30,7 @@ IESDP BG(2)EE документирует встроенный триггер `0x
 ## Выполненные и не выполненные проверки
 
 - [x] LuaTeX `439/439` offline suite PASS; Python static full advisory chain PASS; BAF guard audit 8/8 PASS.
-- [ ] Независимый CI для нового коммита — заполнять только по фактическому run после публикации (Lua 5.3 / 5.4 / LuaJIT + Windows static).
+- [x] Независимая CI — commit `4e64224a59c146242ffb030f9d8c6e25e9f749b6`, run `45322504666` **COMPLETED / SUCCESS**. Ubuntu: **Lua 5.3 439/439 PASS, Lua 5.4 439/439 PASS, LuaJIT 439/439 PASS**; каждый из трёх раз успешно прошёл 8/8 BAF static guard; Windows статическая проверка **SUCCESS**. Точное подтверждение — прочитанные журналы jobs `138204151718` и `138204151413`. Это 1317 повторных выполнений 439 уникальных OFFLINE случаев, без WeiDU и игры.
 - [ ] Installed native `TRIGGER.IDS`/`HAND.IDS` и WeiDU compile — **НЕ ПРОВЕРЕНЫ**.
 - [ ] Состояние очереди ручных/EPS приказов, ammo/launcher для предлагаемого альтернативного слота, target/actor provenance — **НЕ ДОКАЗАНЫ**.
 - [ ] Истинная автономная смена оружия в игре новой V3 / native recovery — **НЕ LIVE**.
@@ -38,3 +38,11 @@ IESDP BG(2)EE документирует встроенный триггер `0x
 ## Ближайший безопасный следующий шаг
 
 После CI PASS **не повторять R27/R28/V6, не плодить ранкеры, не запрашивать `+`**. Следующий реальный рубеж: связать native engine-evidence текущего оружия с существующей цепью `V3.preview + NONINTERRUPT` через producer, которому можно доверить manual/EPS queue и точное свойство альтернативы. До этого BAF не устанавливать и не запускать game test. Для установки обязательно закрытая игра, один `BGXAI_UPDATE.cmd`, pinned SHA, external backup, native WeiDU last-only и отдельное typed подтверждение.
+
+
+## Независимый CI и оставшееся ограничение (после CODE PASS)
+
+- Код опубликован одним коммитом `4e64224a59c146242ffb030f9d8c6e25e9f749b6`; 7 файлов, включая изменённые существующие scorer/consumer и общую CI. https://github.com/jeleZa112/nwn-xanos-updates/commit/4e64224a59c146242ffb030f9d8c6e25e9f749b6
+- Успешный GitHub run https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45322504666 (по результатам read-only проверки фактических job logs). **Игровых команд этот тест не выполнял**.
+- Параллельно ранее красный workflow `bgxai-wtasight-enemy-guard.yml` опять FAIL в другом run `45322504878`: первая проверка в embedded Python ожидает устаревший manifest version `0.3.76-V6-GUARDED-PILOT` и 34 файла, а текущий `manifest_updater.json` уже имеет `0.3.90-V7-R27-DPLAYER-FUNCTIONAL` и 35 файлов. Это отдельный stale-check; **не маскировать его и не заявлять общую CI зелёной**. Файлы обновлятора и manifest в этом изменении не трогали.
+- **Самый большой блокер gameplay:** доступен поддерживаемый engine-native `WeaponCanDamage` для **текущей** руки; не подтверждены native installed IDS/WeiDU compile, доступность/effectiveness предлагаемого **альтернативного** слота и provenance ручных/EPS действий. Не создавать рискованного установщика и не просить повтор R27/R28. Если источников нет — оставить **NO DISPATCH**, не приравнивать BAF static PASS к LIVE.
