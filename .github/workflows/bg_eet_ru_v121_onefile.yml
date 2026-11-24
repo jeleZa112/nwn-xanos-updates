@@ -1,4 +1,4 @@
-name: BG EET RU V125 one-click independent-memory bot verification
+name: BG EET RU V126 guarded visible-row observer onefile verification
 on:
   push:
     branches: [bg-eet-ru-v122-live-readonly-onefile]
@@ -32,13 +32,13 @@ jobs:
           assert len(s)<=750000,(len(s),'onefile exceeds updater safety limit')
           text=s.decode('utf8')
           assert text.startswith('@echo off & py -3 -x')
-          assert 'SELF_VERSION = 125' in text
+          assert 'SELF_VERSION = 126' in text
           assert "V121_BOT_SHA='94dec300ea191101e74da139e5844e1f04c97a5b42eaf299f2a68e42a6f881bc'" in text
           assert "V121_TRUST_SHA='9d9a92e182a2389dc4ac4ca1f5c218c04b6452c80e4167d47a95d578da791090'" in text
           ast.parse('\n'.join(text.splitlines()[1:]))
           import hashlib,json
           manifest=json.loads(Path('bg-eet-ru/onefile/release.json').read_text(encoding='utf8'))
-          assert manifest['version']==125
+          assert manifest['version']==126
           assert manifest['game_writes_allowed'] is False
           actual_sha=hashlib.sha256(s).hexdigest()
           print('V121_COMPUTED_SOURCE_SHA256',actual_sha,flush=True)
@@ -67,13 +67,13 @@ jobs:
                          cwd='bg-eet-ru/autofix',check=True,timeout=30)
           print('V123_PINNED_REPLAY_AND_FOUR_NEGATIVE_GATES_PASS')
 
-      - name: V125 one-run 14 stages, independently read memory after errors
+      - name: V126 one-run 14 stages, preserves memory after errors
         shell: python
         run: |
           import subprocess,sys
           subprocess.run([sys.executable,'-m','unittest','-v','test_v124_one_run_bot'],
                          cwd='bg-eet-ru/autofix',check=True,timeout=45)
-          print('V125_14_STAGES_MEMORY_INDEPENDENCE_PASS')
+          print('V126_14_STAGES_MEMORY_INDEPENDENCE_PASS')
 
       - name: V122 external inventory SHA, mock safety, real Win32 self-process API
         shell: python
