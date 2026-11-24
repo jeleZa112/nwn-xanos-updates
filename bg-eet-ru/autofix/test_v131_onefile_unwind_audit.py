@@ -30,7 +30,7 @@ class Onefile(TestCase):
             root=Path(d)
             game=root/"game";game.mkdir()
             exe=game/"Baldur.exe"
-            exe.write_bytes(b"MZ"+"FAKE_PE_FIXTURE".encode("ascii"))
+            exe.write_bytes(b"MZ"+b"X"*600)
             ns["WORKDIR"]=root/"reports"
             ns["WORKDIR"].mkdir()
             result_zip=ns["WORKDIR"]/"SEND_TO_CHATGPT_BG_EET_RU.zip"
@@ -56,7 +56,7 @@ class Onefile(TestCase):
                 self.assertIn("EXACT_GAME_EXE_SHA_MISMATCH",report["hold_reason"])
             with mock.patch.object(ns["urllib"].request,"urlopen",side_effect=AssertionError("offline cache hit only")):
                 self.assertEqual(ns["v130_audit"](game,result_zip),0)
-            self.assertEqual(exe.read_bytes(),b"MZFAKE_PE_FIXTURE")
+            self.assertEqual(exe.read_bytes(),b"MZ"+b"X"*600)
 
     def test_tampered_source_cannot_execute(self):
         source=UPDATER.read_text("utf8")
