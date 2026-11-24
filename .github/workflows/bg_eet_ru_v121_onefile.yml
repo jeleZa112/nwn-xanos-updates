@@ -5,6 +5,9 @@ on:
   pull_request:
     branches: [bg-eet-ai]
   workflow_dispatch:
+concurrency:
+  group: bg-eet-ru-v121-${{ github.ref }}
+  cancel-in-progress: true
 env:
   PYTHONIOENCODING: utf-8
   PYTHONUTF8: '1'
@@ -57,9 +60,14 @@ jobs:
       - name: Full onefile selftest
         shell: python
         run: |
-          import runpy,sys
-          sys.argv=['BG_EET_RU_UPDATE.cmd','--selftest']
+          import subprocess,sys
           source='bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
-          ns={'__name__':'__main__','__file__':source}
-          data=open(source,encoding='utf8').read().splitlines(True)
-          exec(compile(''.join(data[1:]),source,'exec'),ns)
+          try:
+              result=subprocess.run([sys.executable,'-x',source,'--selftest'],
+                      capture_output=True,text=True,errors='replace',timeout=75)
+          except subprocess.TimeoutExpired:
+              raise AssertionError('V121_ONEFILE_SELFTEST_75_SECOND_LIMIT_HOLD')
+          print(result.stdout[-2800:])
+          if result.returncode or 'SELFTEST: PASS' not in result.stdout:
+              print(result.stderr[-2000:])
+              raise AssertionError('V121_ONEFILE_SELFTEST_NOT_PASS:'+str(result.returncode))
