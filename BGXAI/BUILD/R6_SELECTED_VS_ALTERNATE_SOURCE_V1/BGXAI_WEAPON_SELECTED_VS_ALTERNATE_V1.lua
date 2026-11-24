@@ -220,6 +220,8 @@ local function r27valid(v)
    not integer(v.selectedAprKeyRaw,0,10) or
    not standardAPR[v.selectedAprKeyRaw] or
    v.rawInventoryDoubleReadConsistent~=true or
+   v.selectedDerivedStatsDoubleReadConsistent~=true or
+   v.r4Status~='RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS' or
    v.sameLuaListenerInvocation~=true or
    v.nativeEventTokenAuthenticated~=false or
    v.engineSessionVerified~=false or
