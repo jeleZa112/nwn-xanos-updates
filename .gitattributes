@@ -1,2 +1,4 @@
 BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_SLOT_CONSUMER_V3.baf -text
 bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd text eol=lf
+bg-eet-ru/autofix/BG_EET_RU_AUTOFIX_BOT.py text eol=lf
+bg-eet-ru/autofix/trusted_sources.zip.b64 text eol=lf
