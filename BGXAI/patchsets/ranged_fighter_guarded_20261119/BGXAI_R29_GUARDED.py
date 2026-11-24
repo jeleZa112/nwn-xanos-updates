@@ -27,6 +27,10 @@ EXPECTED_WEIDU_SHA = '0d17e26e3f3ef5b36796eb0ee8ae73cb851d8b62c9702c2e224da2945c
 EXPECTED_WEIDU_LOG_SHA = '96d9db5d80e64c546022aa252e4f4714a869b81526b0df2822d7b8e7c567818f'
 BEFORE_LAST = re.compile(r'^~(?:[^~]*[/\\])?BGXRANGED7[/\\]SETUP-BGXRANGED7[.]TP2~\s+#0\s+#0(?:\s|$)', re.I)
 AFTER_LAST = re.compile(r'^~(?:[^~]*[/\\])?BGXR29[/\\]SETUP-BGXR29[.]TP2~\s+#0\s+#0(?:\s|$)', re.I)
+RANGED7_PROOF = 'BGXRANGED7/PROOF.json'
+RANGED7_STAGE = 'BGXRANGED7/staged/DPLAYER.BCS'
+RANGED7_PREVIOUS_SHA = '1786f4dc050be5c4bef65d9b0c39100975a03fdf74057b21fe1b1c2b926d661f'
+RANGED7_SOURCE_SHA = '2fd136f4eac23beb24c31744b01ae897aa6a9476e27cfe8392941ef30b600032'
 BCS = 'override/BDDEFAI.BCS'
 STAGED = f'{PACKAGE}/staged/BDDEFAI.BCS'
 PROOF = f'{PACKAGE}/PROOF.json'
@@ -91,6 +95,87 @@ def last_weidu(game: pathlib.Path) -> str:
     if not values: raise Hold('WEIDU_LAST_RECORD_MISSING')
     return values[-1]
 
+def weidu_entries(game: pathlib.Path) -> list[str]:
+    log=game/'WeiDU.log'
+    safe(log)
+    if not log.is_file() or log.stat().st_size>8_000_000:
+        raise Hold('WEIDU_LOG_MISSING_OR_OVERSIZED')
+    lines=log.read_text(encoding='utf-8-sig',errors='replace').splitlines()
+    found=[v.strip() for v in lines if v.lstrip().startswith('~')]
+    if not found:raise Hold('WEIDU_INSTALLED_COMPONENTS_MISSING')
+    return found
+
+def sanitize_component(line:str)->str:
+    # Display basename only, never expose absolute game or user paths.
+    m=re.match(r'^~([^~]+)~\s+#\d+\s+#\d+',line)
+    if not m:return 'UNKNOWN_COMPONENT'
+    name=m.group(1).replace('\\','/').rsplit('/',1)[-1]
+    return name[:80] if re.fullmatch(r'[a-zA-Z0-9_.-]{1,80}',name) else 'UNKNOWN_COMPONENT'
+
+def verify_ranged7_history(game:pathlib.Path)->dict:
+    """Positive, read-only evidence for existing RANGED7 even when WeiDU-last moved.
+
+    A newer component is NOT sufficient by itself: require RANGED7 installed in
+    the log, exact live+staged DPLAYER hashes and an authentic proof+backup.
+    Never claim later mods are independent from the game from the last line.
+    """
+    entries=weidu_entries(game)
+    latest=entries[-1]
+    if any(AFTER_LAST.match(v) for v in entries):
+        raise Hold('R29_ALREADY_IN_WEIDU_LOG_STOP')
+    matching=[v for v in entries if BEFORE_LAST.match(v)]
+    if len(matching)!=1:
+        raise Hold('RANGED7_NOT_EXACTLY_ONCE_IN_WEIDU_LOG')
+    last_is_r7=bool(BEFORE_LAST.match(latest))
+    if sha(game/'override/DPLAYER.BCS')!=BASELINE['override/DPLAYER.BCS']:
+        raise Hold('RANGED7_LIVE_DPLAYER_SHA_DRIFT')
+    # A newer WeiDU component does not automatically invalidate RANGED7, but
+    # the V7 install proof and backup become mandatory in that case.
+    if not last_is_r7:
+        proof_path=game/RANGED7_PROOF
+        safe(proof_path)
+        if not proof_path.is_file() or proof_path.stat().st_size>100_000:
+            raise Hold('RANGED7_HISTORICAL_INSTALL_PROOF_MISSING')
+        try:
+            proof=json.loads(proof_path.read_text('utf-8'))
+        except (ValueError,UnicodeError) as exc:
+            raise Hold('RANGED7_HISTORICAL_PROOF_INVALID') from exc
+        if not isinstance(proof,dict) or (proof.get('old_dplayer_sha256')!=RANGED7_PREVIOUS_SHA or
+            proof.get('new_dplayer_sha256')!=BASELINE['override/DPLAYER.BCS'] or
+            proof.get('source_sha256')!=RANGED7_SOURCE_SHA or
+            proof.get('changed_blocks')!=[1,2]):
+            raise Hold('RANGED7_HISTORICAL_PROOF_DRIFT')
+        if sha(game/RANGED7_STAGE)!=BASELINE['override/DPLAYER.BCS']:
+            raise Hold('RANGED7_HISTORICAL_STAGED_DPLAYER_DRIFT')
+        folder=proof.get('backup')
+        if not isinstance(folder,str) or not folder or len(folder)>1024:
+            raise Hold('RANGED7_HISTORICAL_BACKUP_REFERENCE_MISSING')
+        backup=pathlib.Path(folder)
+        if not backup.is_absolute():
+            raise Hold('RANGED7_HISTORICAL_BACKUP_NOT_ABSOLUTE')
+        safe(backup)
+        manifest=backup/'SHA256.json'
+        safe(manifest)
+        if not manifest.is_file() or manifest.stat().st_size>100_000:
+            raise Hold('RANGED7_HISTORICAL_BACKUP_MANIFEST_MISSING')
+        try:
+            backup_hashes=json.loads(manifest.read_text('utf-8'))
+        except (ValueError,UnicodeError) as exc:
+            raise Hold('RANGED7_HISTORICAL_BACKUP_MANIFEST_INVALID') from exc
+        if not isinstance(backup_hashes,dict) or backup_hashes.get('override/DPLAYER.BCS')!=RANGED7_PREVIOUS_SHA:
+            raise Hold('RANGED7_HISTORICAL_BACKUP_SHA_DRIFT')
+        if sha(backup/'override/DPLAYER.BCS')!=RANGED7_PREVIOUS_SHA:
+            raise Hold('RANGED7_HISTORICAL_BACKUP_DPLAYER_CORRUPTED')
+    return {
+        'ranged7InWeiDULog':True,
+        'ranged7LastWeiDU':last_is_r7,
+        'ranged7HistoricalProofVerified':not last_is_r7,
+        'lastComponentBasename':sanitize_component(latest),
+        'liveDPLAYERExactBaseline':True,
+        'manualEpsOriginVerified':False,
+        'gameplayLiveVerified':False,
+    }
+
 def bcs_parts(raw:bytes) -> list[bytes]:
     if not raw.startswith(b'SC\nCR\nCO\n') or not raw.endswith(b'CR\nSC\n'):
         raise Hold('INVALID_BCS_ENVELOPE')
@@ -151,8 +236,11 @@ def baseline(game:pathlib.Path, require_last:bool=True)->dict:
     for name in ('chitin.key','weidu.conf','WeiDU.log'):sha(game/name)
     if sha(game/'WeiDU.log')!=EXPECTED_WEIDU_LOG_SHA:
         raise Hold('WEIDU_LOG_SHA_DRIFT')
-    if require_last and not BEFORE_LAST.match(last_weidu(game)):
-        raise Hold('RANGED7_MUST_BE_LAST_WEIDU_COMPONENT')
+    # Historical RANGED7 is acceptable ONLY with proof, staged SHA, backup,
+    # exact live DPLAYER/BDDEFAI/EPS/EEex hashes and exact pinned WeiDU.log.
+    # `require_last` is kept for old caller compatibility but is not enough
+    # to certify a historical component on its own.
+    verify_ranged7_history(game)
     compiler=game/'weidu.exe'
     if sha(compiler)!=EXPECTED_WEIDU_SHA:
         raise Hold('GAME_NATIVE_WEIDU_SHA_DRIFT')
@@ -187,7 +275,9 @@ def candidate(game:pathlib.Path)->tuple[bytes,dict]:
             raise Hold('NATIVE_DECOMPILE_FIRST_BLOCK_NOT_EXACT')
     if any(sha(game/k)!=v for k,v in before.items()):
         raise Hold('GAME_CHANGED_DURING_NATIVE_PREFLIGHT')
+    historical=verify_ranged7_history(game)
     return candidate_bytes,{'status':'R29_NATIVE_CANDIDATE_READY_NO_INSTALL',
+                            'ranged7History':historical,
                             'sourceSha256':SOURCE_SHA256,
                             'newBCSSha256':hash_bytes(candidate_bytes),
                             'newBCSBytes':len(candidate_bytes),
@@ -282,9 +372,13 @@ def status(game:pathlib.Path)->dict:
     if game != GAME:raise Hold('WRONG_GAME_ROOT')
     no_game_process()
     latest=last_weidu(game)
-    if BEFORE_LAST.match(latest):
-        return {'status':'R29_NOT_INSTALLED_BASELINE', 'gameModified':False}
-    if not AFTER_LAST.match(latest):raise Hold('R29_NOT_WEIDU_LAST')
+    if not AFTER_LAST.match(latest):
+        # If R29 is absent, a later unrelated WeiDU mod is not an error.
+        # Require the same exact baseline + authenticated RANGED7 chain.
+        snap=baseline(game)
+        return {'status':'R29_NOT_INSTALLED_BASELINE',
+                'ranged7History':verify_ranged7_history(game),
+                'baselineCheckedFiles':len(snap),'gameModified':False}
     p=read_proof(game)
     if sha(game/BCS)!=p['newBCSSha256']:
         raise Hold('INSTALLED_BCS_SHA_DRIFT')
@@ -348,6 +442,21 @@ def main()->int:
         failed={'status':'R29_SAFE_STOP','reason':str(e),
                 'gameModifiedUnknown':mode in ('install','rollback'),
                 'dispatchAuthorized':False,'ordersSent':0}
+        if mode in ('preflight','status'):
+            # Source-only explanation: never leak full Windows paths or change
+            # the state of WeiDU; do not turn this into a successful preflight.
+            try:
+                if args.game.resolve()==GAME:
+                    entries=weidu_entries(args.game.resolve())
+                    failed['weiduHistoryReadOnly']={
+                        'lastComponentBasename':sanitize_component(entries[-1]),
+                        'ranged7InstalledEntryCount':sum(bool(BEFORE_LAST.match(v)) for v in entries),
+                        'r29InstalledEntryPresent':any(bool(AFTER_LAST.match(v)) for v in entries),
+                        'ranged7InstallProofPresent':(GAME/RANGED7_PROOF).is_file(),
+                        'liveDPLAYERBaselineMatches':sha(GAME/'override/DPLAYER.BCS')==BASELINE['override/DPLAYER.BCS'],
+                    }
+            except (OSError,ValueError,UnicodeError):
+                pass
         try:
             path=save_report(failed,mode)
             print('REPORT_FILE='+str(path))
