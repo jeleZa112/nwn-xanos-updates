@@ -1,5 +1,17 @@
 # BGXAI — R27 + актуальный R2: контроль изменений экипировки внутри одного события
 
+## Дополнение после интеграции R4 стабильных derivedStats (24.11.2026)
+
+**Актуальный исходник R27 refresh** теперь SHA256 `18d1780a5b83b953f31f441cf81a1af489fc21b37e0e2ced05cc0261ec26008c`, предыдущий SHA `149fcf0e5079bb6f2ac0ca1bbd24fd10b46fea2f6422acabd42093be970e974e` в историческом разделе ниже относится к прежнему неустановленному кандидату. Установленный игровой `M_BGXR27.lua` не изменён.
+
+Добавлен источник `R4_CORE.observeStableDerived`: `EEex_Sprite_GetActiveStats` в официальном v1.1.7 может возвращать `m_tempStats` при `m_bAllowEffectListCall==0`. Для чтения текущего выбранного APR в source-only R27 теперь требуются флаг ==1 и стабильные 68 полей R4 в двух чтениях; action/selection проверяются и после второго getter. Неустойчивая выборка → `R4_DERIVED_STATS_NOT_STABLE`, без команды и без прерывания текущего действия. Сериализуются `selectedDerivedStatsDoubleReadConsistent` и `r4Status`, чтобы R6 мог исключать такой кэш.
+
+Тесты: R4 **49/49**, R27 **65/65**, R6 **14/14** на каждом Lua 5.3/5.4/LuaJIT; Python R27 **8/8**, Windows static PASS. [GitHub CI 45443795441](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45443795441) SUCCESS. Разбор и исходники: [R4 Derived Stats Stability](../WEAPON_V3_R4_DERIVED_STATS_STABILITY_20261124/README_RU.md).
+
+**CODE/CI PASS; DEPLOY=NO; GAME LIVE=NO; ALL-ALTERNATE EFFECTIVE APR=NOT VERIFIED.** Старую локальную проверку и игровой захват не повторять.
+
+---
+
 Дата: 24 ноября 2026 года. **CODE PASS / ЛОКАЛЬНЫЕ TEST PASS / DEPLOY NO / GAME LIVE NO.**
 
 ## Зачем это сделано
