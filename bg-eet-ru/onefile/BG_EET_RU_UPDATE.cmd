@@ -8111,9 +8111,9 @@ def v130_audit(game,path):
       with urllib.request.urlopen(V130_URL,timeout=20) as r:data=r.read(12001)
       if digest(data)!=V130_PIN:raise RuntimeError('V130_SOURCE_SHA_HOLD')
       v121_write(game,p,data)
-    ns={'__name__':'v130'}
-    exec(compile(p.read_bytes(),str(p),'exec'),ns)
-    report=ns['inspect_game_exe'](Path(game)/'Baldur.exe')
+    mod=types.ModuleType('v130');sys.modules[mod.__name__]=mod
+    exec(compile(p.read_bytes(),str(p),'exec'),mod.__dict__)
+    report=mod.inspect_game_exe(Path(game)/'Baldur.exe')
   except Exception as e:report['hold_reason']=type(e).__name__+':'+str(e)[:160]
   report['game_files_written']=0
   report['native_hook_install_allowed']=False
@@ -9378,7 +9378,6 @@ def v66_cached_original_matches(report_path):
     z.writestr(name,json.dumps(result,ensure_ascii=False,indent=2).encode('utf-8'))
   return result
 def v67_cached_dlg_graph(report_path):
-  """No game reads; analyze only five already matched strrefs in 63 cached DLGs."""
   from collections import defaultdict
   with zipfile.ZipFile(report_path) as z:
     prev=json.loads(z.read('17_V66_TARGETED_LIVE_ORIGINAL_MATCHES.json'))
