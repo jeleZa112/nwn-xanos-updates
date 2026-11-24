@@ -19,7 +19,7 @@ SRC = Path('BGXAI/patchsets/ranged_fighter_guarded_20261119')
 HIST = Path('BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123')
 FILES = {
   SRC/'BGXAI_WEAPON_SLOTS_R2_READONLY.lua': '317f6fd6ad2beee0e61b7936c65ef35736e825e04d82f330133cc6c791d889af',
-  SRC/'BGXAI_WEAPON_ACTIVE_R4_READONLY.lua': '2b618df53566b75f651ae75ce737496e4b24cb18fd754be7eb7c245ccfbbcc40',
+  SRC/'BGXAI_WEAPON_ACTIVE_R4_READONLY.lua': '64905835258bf85a30be078ba02967a227ce28d063dee61969ecab89829c43aa',
   HIST/'R27_EVENT_JOIN_TAIL.lua': '39abc118d43d3d9105a5c79341e61a0e4d158c5769944591ff324949bad2bc4b',
   HIST/'M_BGXR27.lua': 'e5eb400c56ffb1bc23344a0cf30dcc724d8d18fc2752fabd1c2c63cdcca73735',
 }
@@ -76,12 +76,30 @@ def build(root: Path = ROOT) -> bytes:
   return hold('R2_RECHECK_INCOMPLETE') end
 """
   tail = replacement(tail, needle, needle+inject+" if not same(b,before_after(sprite,action)) then\n  return hold('SELECTION_OR_ACTION_CHANGED_DURING_CAPTURE') end\n")
+  # Never turn EEex m_tempStats (effect-list work in progress) into APR evidence.
+  # The original historical R27 source/installer remain frozen.
+  tail = replacement(tail,
+    'pcall(R4_CORE.observe,sprite,action,partyIndex,getActiveStats)',
+    'pcall(R4_CORE.observeStableDerived,sprite,action,partyIndex,getActiveStats)')
+  tail = replacement(tail,
+    " if r2.actorId~=b.actor or r4.actorId~=b.actor or\n",
+    " if r4.status~='RAW_CURRENT_SELECTED_DERIVED_STATS_STABLE_NOT_COMPLETE_EFFECTS' or\n"+
+    "    r4.derivedStatsDoubleReadConsistent~=true then\n"+
+    "  return hold('R4_DERIVED_STATS_NOT_STABLE') end\n"+
+    " if r2.actorId~=b.actor or r4.actorId~=b.actor or\n")
+  tail = replacement(tail,
+    '  sameLuaListenerInvocation=true,nativeEventTokenAuthenticated=false,\n',
+    '  selectedDerivedStatsDoubleReadConsistent=true,\n  sameLuaListenerInvocation=true,nativeEventTokenAuthenticated=false,\n')
   tail = replacement(tail,
     '  quickWeaponsRaw=r2.quickWeapons,quiversRaw=r2.quivers,\n',
     '  quickWeaponsRaw=r2.quickWeapons,quiversRaw=r2.quivers,offhandRaw=r2.offhand,\n  rawInventoryDoubleReadConsistent=true,\n')
   tail = replacement(tail,
     "  ',\"quiversRaw\":'..jslots(sample.quiversRaw,4)..\n",
     "  ',\"quiversRaw\":'..jslots(sample.quiversRaw,4)..\n  ',\"offhandRaw\":'..jslots(sample.offhandRaw and {sample.offhandRaw},1)..\n  ',\"rawInventoryDoubleReadConsistent\":'..tostring(sample.rawInventoryDoubleReadConsistent==true)..\n")
+  tail = replacement(tail,
+    "  ',\"rawInventoryDoubleReadConsistent\":'..tostring(sample.rawInventoryDoubleReadConsistent==true)..\n",
+    "  ',\"rawInventoryDoubleReadConsistent\":'..tostring(sample.rawInventoryDoubleReadConsistent==true)..\n"+
+    "  ',\"selectedDerivedStatsDoubleReadConsistent\":'..tostring(sample.selectedDerivedStatsDoubleReadConsistent==true)..\n")
   # Compose a passive advisory module only: no bootstrap, no EEex registration.
   output = (b'-- BGXAI R27 revised SOURCE ONLY: SHA-pinned R2 identity double-read.\n'
        +b'-- NOT INSTALLED. Does not change original M_BGXR27.lua.\n'
@@ -92,6 +110,9 @@ def build(root: Path = ROOT) -> bytes:
     raise ValueError('R27_REBUILD_ACTION_DISPATCH_OR_UNSAFE_POINTER')
   if output.count(b'R2_CORE.observe_sprite,sprite') != 2 or output.count(b'R2_CORE.compare,r2,r2later') != 1:
     raise ValueError('R27_R2_DOUBLE_READ_OR_COMPARE_NOT_EXACT')
+  if output.count(b'pcall(R4_CORE.observeStableDerived,sprite,action,partyIndex,getActiveStats)') != 1 or \
+     output.count(b'selectedDerivedStatsDoubleReadConsistent=true') != 1:
+    raise ValueError('R27_STABLE_DERIVED_STATS_CONTRACT_MISSING')
   if output.count(b'return R27\n') != 1:
     raise ValueError('R27_SINGLE_EXPORT_REQUIRED')
   return output
