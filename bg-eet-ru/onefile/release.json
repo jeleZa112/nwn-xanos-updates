@@ -2,8 +2,8 @@
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
   "version": 126,
-  "sha256": "c33ec3a3fd3eb8802a698877603d61db4c2256b470cc34deee0a631a1e000f2c",
-  "mode": "GUARDED_V126_PASSIVE_VISIBLE_UI_ROW_OBSERVER_OPTIONAL_TYPED_INSTALL",
+  "sha256": "a4dab31bb437344350790c4258983cd28fa9987a6a1dfe22e83ccea4d43a2c89",
+  "mode": "ONE_CMD_GUARDED_UI_ROW_OBSERVER_INSTALL_ROLLBACK_CONSOLE_CAPTURE",
   "game_writes_allowed": false,
-  "note": "V126 preserves default 14-stage read-only batch and V108. On normal double-click offers 1=research audit (default), 2=typed guarded install of passive UI.MENU visible-row observer, 3=typed exact rollback, 4=status/capture. Install is optional and writes only UI.MENU after exact V125 SHA, external backup and game-closed check; no native hooks and no weapon-attribution claims."
+  "note": "V126 existing one updater opens small interactive menu: 1=all read-only tests; 2=typed guarded install passive visible UI row observer; 3=typed exact rollback; 4=launch InfinityLoader and capture bounded console row markers in same ZIP; 5=read-only status. Exact old V125 UI SHA and external backup mandatory; no native hooks, no auto game writes, no proven weapon/miss-to-visible-row identity."
 }
