@@ -7,7 +7,7 @@ from __future__ import annotations
 import random, unittest, sys
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).parent))
-import windows_live_hit_inventory_ro as W
+import v133_live_hit_inventory_ro as W
 BASE=0x140000000
 
 class FakeMemory:
