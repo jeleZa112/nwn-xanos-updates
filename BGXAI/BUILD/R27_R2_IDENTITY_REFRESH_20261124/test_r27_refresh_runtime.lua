@@ -171,4 +171,39 @@ check(stable.selectedDerivedStatsDoubleReadConsistent==true,'two selected derive
 local js=M.toConsoleJson(stable)
 check(type(js)=='string' and js:find('"selectedDerivedStatsDoubleReadConsistent":true',1,true)~=nil,
  'stable derived status serialized without granting APR permission')
+-- x64 raw CGameAIBase queued action count is only negative evidence.
+s,a,st=fixture();s.m_curAction=a;s.m_queuedActions={m_nCount=3}
+local qSample=M.observe(s,a,2,function()return st end)
+check(qSample.status=='CURRENT_SELECTED_SAME_CALLBACK_SOURCE_CANDIDATE',
+ 'queue read does not interrupt selected APR observation')
+check(qSample.queueSnapshotStable==true and qSample.queuedActionsRaw==3,
+ 'stable engine queue count 3 recognized')
+check(qSample.actionOriginVerified==false and qSample.manualEpsQueueVerified==false,
+ 'queue count cannot authenticate manual EPS action origin')
+local qJson=M.toConsoleJson(qSample)
+check(qJson:find('"queuedActionsRaw":3',1,true)~=nil,
+ 'bounded JSON carries engine observed queue count')
+check(qJson:find('"queueNonemptyObserved":true',1,true)~=nil,
+ 'nonempty engine queue can be exposed for negative scheduling')
+check(qJson:find('"manualEpsQueueVerified":false',1,true)~=nil,
+ 'zero switch authorization even if count known')
+s,a,st=fixture();s.m_curAction=a;s.m_queuedActions={m_nCount=0}
+local qZero=M.observe(s,a,2,function()return st end)
+check(qZero.queuedActionsRaw==0 and qZero.queueSnapshotStable==true,
+ 'zero means raw queue count zero only')
+check(M.toConsoleJson(qZero):find('"queueNonemptyObserved":false',1,true)~=nil,
+ 'zero queue count JSON not an EPS-free proof')
+s,a,st=fixture();s.m_curAction=a;s.m_queuedActions={m_nCount=3}
+local changed=M.observe(s,a,2,function()
+ s.m_queuedActions.m_nCount=4;return st end)
+check(changed.status=='CURRENT_SELECTED_SAME_CALLBACK_SOURCE_CANDIDATE',
+ 'queue transition does not invalidate selected-only APR observation')
+check(changed.queueSnapshotStable==false and changed.queuedActionsRaw==nil,
+ 'queue changed between two observer reads fails closed')
+check(M.toConsoleJson(changed):find('"queuedActionsRaw":null',1,true)~=nil,
+ 'no stale queue count exposed')
+s,a,st=fixture();s.m_curAction=a;s.m_queuedActions={m_nCount=900}
+local badQ=M.observe(s,a,2,function()return st end)
+check(badQ.queueSnapshotStable==false and badQ.queuedActionsRaw==nil,
+ 'invalid queue count never gives a false raw queue observation')
 print('R27 '..n..' source-only one-callback tests PASS')
