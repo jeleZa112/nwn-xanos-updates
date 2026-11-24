@@ -1,4 +1,4 @@
-"""V124 one-click batch: synthetic isolated fail-continue and one-ZIP checks."""
+"""V125 one-click batch: V121 failure cannot suppress independent V122 live scan."""
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import json
@@ -35,23 +35,23 @@ class Batch(unittest.TestCase):
               'v116_run':'57_V116_DISPATCH_CALLEE_STATIC_READONLY.json',
               'full_audit_run':'58_FULL_SPECTRUM_STATIC_AUDIT.json',
               'v121_run':'60_V121_AUTOFIX_SOURCE_ONLY.json',
+              'v122_run':'61_V122_LIVE_HIT_READONLY.json',
             }
             invoked=[]
             def mk(name,entry):
                 def fake(g,z,*args):
                     invoked.append(name)
                     if name=='v104_run':raise RuntimeError('SYNTHETIC_SINGLE_STAGE_FAILURE')
+                    if name=='v121_run':raise RuntimeError('SYNTHETIC_AUTOFIX_FAILURE')
                     report={'status':'SOURCE_TEST_PASS_GAMEPLAY_HOLD',
                             'game_files_written':0,'gameplay_verified':False}
                     ns['v116_zip'](g,z,report,entry=entry)
-                    if name=='v121_run':
-                        ns['v116_zip'](g,z,{'status':'RUNTIME_MEMORY_HOLD',
-                            'game_files_written':0,'native_hooks_installed':False},entry='61_V122_LIVE_HIT_READONLY.json')
                     return 0
                 return fake
             for name,entry in stages.items():ns[name]=mk(name,entry)
             self.assertEqual(ns['v124_one_run'](game,path,True),0)
-            self.assertEqual(len(invoked),13)
+            self.assertEqual(len(invoked),14)
+            self.assertEqual(invoked[-1],'v122_run')
             self.assertEqual(len(list(game.iterdir())),0)
             with zipfile.ZipFile(path) as z:
                 self.assertIsNone(z.testzip())
@@ -59,14 +59,17 @@ class Batch(unittest.TestCase):
                 self.assertEqual(z.namelist().count(ns['V124_ENTRY']),1)
                 report=json.loads(z.read(ns['V124_ENTRY']))
                 self.assertEqual(report['stage_count'],14)
-                self.assertEqual(report['updater_version'],124)
+                self.assertEqual(report['updater_version'],125)
                 self.assertEqual(report['game_files_written'],0)
                 self.assertFalse(report['native_hooks_installed'])
                 self.assertFalse(report['gameplay_verified'])
                 self.assertEqual(len(report['stages']),14)
                 self.assertEqual(report['stages'][3]['status'],'HOLD')
                 self.assertIn('SYNTHETIC_SINGLE_STAGE_FAILURE',report['stages'][3]['error'])
-                self.assertTrue(any(row['stage']=='memory' for row in report['stages']))
+                self.assertEqual(report['stages'][12]['status'],'HOLD')
+                self.assertIn('SYNTHETIC_AUTOFIX_FAILURE',report['stages'][12]['error'])
+                self.assertEqual(report['stages'][13]['stage'],'memory')
+                self.assertEqual(report['stages'][13]['source_status'],'SOURCE_TEST_PASS_GAMEPLAY_HOLD')
                 self.assertIn('61_V122_LIVE_HIT_READONLY.json',z.namelist())
                 self.assertEqual(report['status'],'COMPLETED_WITH_HOLDS')
 
