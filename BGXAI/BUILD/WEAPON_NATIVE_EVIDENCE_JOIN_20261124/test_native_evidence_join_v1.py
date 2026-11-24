@@ -147,7 +147,10 @@ class NativeEvidenceJoin(unittest.TestCase):
                 obj[path[-1]]=value
                 with self.assertRaises(mod.EvidenceHold):mod.join(*z)
     def test_redacted_real_result_committed_with_same_limits(self):
-        proof=Path(__file__).with_name('BGXAI_NATIVE_EVIDENCE_JOIN_20261124.json')
+        proof=Path(__file__).resolve().parents[3] / 'BGXAI/CURRENT/BGXAI_NATIVE_EVIDENCE_JOIN_20261124.json'
+        if not proof.is_file():
+            proof=Path(__file__).with_name('BGXAI_NATIVE_EVIDENCE_JOIN_20261124.json')
+        self.assertTrue(proof.is_file(), 'sanitized real EET gate proof must exist')
         if proof.is_file():
             data=json.loads(proof.read_text(encoding='utf-8-sig'))
             self.assertEqual(data['status'],'NATIVE_BAF_COMPILED_R27_R28_LINKED_NO_DISPATCH')
