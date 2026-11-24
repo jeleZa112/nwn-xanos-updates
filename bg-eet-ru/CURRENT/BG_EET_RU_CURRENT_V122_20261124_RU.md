@@ -20,7 +20,7 @@
 ## Проверки и ошибки
 - Полные проверки V122 на Linux и Windows подтверждены в GitHub Actions PR #90: AST, size <750000, точный release manifest SHA, неизменные 14 эталонных AutoFix модулей, full onefile selftest, PIN SRC SHA, 15 mock-memory tests, **настоящий Win64 ReadProcessMemory на CI self-process**, интеграция кеша/offline-HOLD/одного ZIP. `bg-eet-ru-onefile-selftest.yml` прошёл на squash commit `3a08f981...`.
 - Первоначальный Windows CI обнаружил CRLF SHA error, устранён `.gitattributes` и повторный CI успешен.
-- После объединения legacy V108 test fixture использовал synthetic game без report ZIP и не подменял появившийся в V121 AutoFix; тест был неактуален. Отдельный CI test fixture исправлен на ветке `bg-eet-ai`, commit `372d0e3df5a0177ca283ed023d68f1c85b0ed9bc`, добавлением mock v121_run в ожидаемую последовательность. Следить за итоговым CI этого коммита; НЕ менять или отключать защиту самого AutoFix ради старого мок-теста.
+- После объединения legacy V108 test fixture использовал synthetic game без report ZIP и не подменял появившийся в V121 AutoFix; тест был неактуален. Отдельный CI test fixture исправлен на ветке `bg-eet-ai`, commit `372d0e3df5a0177ca283ed023d68f1c85b0ed9bc`, добавлением mock v121_run в ожидаемую последовательность. **Повторный V108 CI PASS:** GitHub Actions run `45420869003`, исправленный isolated fixture подтверждён. Защита реального AutoFix не изменялась.
 
 ## Оставшиеся блокеры перед игровым результатом
 - **Работающий native hook всё ещё не установлен**; сработал ли новый V122 на конкретной игре пользователя — ещё не проверено.
