@@ -23,3 +23,16 @@
 ## Historical channel (not the active onefile version)
 
 `channel.json` and its old **v18** metadata belong to the earlier text-update channel. They must not be used as the status of the current V120 one-file updater. Earlier project files remain historical evidence rather than the active release manifest.
+
+## Independent analysis of actual Windows V120 ZIP — 2026-11-24
+
+A user-provided private archive was inspected locally (129 entries, ZIP CRC PASS; no game writes). Its `58_FULL_SPECTRUM_STATIC_AUDIT.json` reports `STATIC_EVIDENCE_COLLECTED_RUNTIME_JOIN_HOLD`, zero errors, unchanged EXE baseline. **This is a real Windows STATIC PASS, not gameplay/journal row identity PASS.**
+
+Independent local verification rehashed **30 bounded function fragments** from that report and correlated them with the archived V68 attack-function bytes:
+
+- At attack RVA `0x39E7D9`, the message constructor stores vtable RVA `0x597CD0`; it copies the formatted text into the message's offset `+0x18`.
+- The same attack function calls `CMessageHandler::AddMessage` at RVA `0x204C60`; within that method, virtual slot `+0x8` classifies/routes messages. The 5 earlier dispatch calls remain validated.
+- In the captured message vtable, **slot 6** points to RVA `0x2110B0` (message-processing method candidate). It passes the message's name `+0x10`, text `+0x18`, and color/parameters `+0x20` to another function via an independently verified call at RVA `0x21113B` targeting **`0x2EEFE0`**.
+- **The body of `0x2EEFE0` was not in the V120 evidence.** The queue-to-slot6 delivery semantics and append into `combatLog[rowNumber]` have not been proven; there is no immutable attack-to-journal-row token or verified weapon identity for misses. No UI weapon injection is authorized.
+
+The next meaningful SOURCE ONLY step is to inspect `0x2EEFE0` and the corresponding row-append semantics using verified existing evidence; do not re-run V92–V120 or infer identity from timestamps/actor IDs. No new runtime hook or game change was installed by this independent audit. Preserve this conclusion when starting a new chat.
