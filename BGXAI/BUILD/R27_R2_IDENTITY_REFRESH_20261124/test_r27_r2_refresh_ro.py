@@ -68,6 +68,21 @@ class RefreshContracts(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'R27_SOURCE_FILE_MISSING_OR_LINK'):
                 build(Path(temp))
 
+    def test_queue_source_is_pinned_and_embedded_without_registration(self):
+        names=[str(x) for x in FILES]
+        queue=[n for n in names if n.endswith('BGXAI081_ACTION_PROVENANCE_QUEUE_V2.lua')]
+        self.assertEqual(len(queue),1)
+        source=build()
+        self.assertEqual(source.count(b'Q81_CORE.observe(sprite)'),2)
+        self.assertGreaterEqual(source.count(b'm_queuedActions'),1)
+        self.assertIn(b'm_nCount',source)
+        self.assertIn(b'queueSnapshotStable=qStable',source)
+        self.assertIn(b'queuedActionsRaw=qCount',source)
+        self.assertIn(b'actionOriginVerified=false',source)
+        self.assertIn(b'manualEpsQueueVerified=false',source)
+        self.assertNotIn(b'P.initialized=start()',source)
+        self.assertNotIn(b'EEex_Action_AddSpriteStartedActionListener(',source)
+
     def test_result_not_equal_to_installable_lua(self):
         source=build()
         self.assertTrue(source.startswith(b'-- BGXAI R27 revised SOURCE ONLY:'))
