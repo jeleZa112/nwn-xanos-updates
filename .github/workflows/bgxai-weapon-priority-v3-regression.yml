@@ -14,6 +14,8 @@ on:
       - 'BGXAI/BUILD/R30_QUEUE_DEPLOY_PREFLIGHT_RO_20261125/**'
       - 'BGXAI/fox_new/experimental_081_eeex_action_provenance_readonly_source_only/BGXAI081_ACTION_PROVENANCE_QUEUE_V2.lua'
       - 'BGXAI/fox_new/experimental_081_eeex_action_provenance_readonly_source_only/test_081_queue_v2.lua'
+      - 'BGXAI/fox_new/experimental_081_eeex_action_provenance_readonly_source_only/BGXAI081_ACTION_CONTEXT_READONLY_V3.lua'
+      - 'BGXAI/fox_new/experimental_081_eeex_action_provenance_readonly_source_only/test_081_action_context_v3.lua'
       - 'BGXAI/BUILD/R6_SELECTED_VS_ALTERNATE_SOURCE_V1/**'
       - 'BGXAI/BUILD/R4_R3_PRIORITY_SOURCE_V1/BGXAI_WEAPON_R4_PRIORITY_GATE_V1.lua'
       - 'BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/R27_EVENT_JOIN_TAIL.lua'
@@ -73,7 +75,13 @@ jobs:
           for runtime in lua5.3 lua5.4 luajit; do
             "$runtime" BGXAI/fox_new/experimental_081_eeex_action_provenance_readonly_source_only/test_081_queue_v2.lua
           done
-      - name: R27 selected raw inventory + queue read SOURCE ONLY (77 cases each Lua; 9 Python)
+      - name: 081 CAIAction source candidate and CGameAIBase context V3 (three Lua runtimes)
+        shell: bash
+        run: |
+          for runtime in lua5.3 lua5.4 luajit; do
+            "$runtime" BGXAI/fox_new/experimental_081_eeex_action_provenance_readonly_source_only/test_081_action_context_v3.lua
+          done
+      - name: R27 selected raw inventory + queue and action source context SOURCE ONLY (9 Python tests)
         shell: bash
         run: |
           python3 -m unittest discover -s BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124 -p test_r27_r2_refresh_ro.py -q
