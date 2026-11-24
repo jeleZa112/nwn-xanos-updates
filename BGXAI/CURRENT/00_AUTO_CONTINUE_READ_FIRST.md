@@ -1,3 +1,11 @@
+# CURRENT 24.11.2026 — BGXAI MENU167 SOURCE/CI PASS, ЖДЁМ ОДИН NATIVE EET ОТЧЁТ
+
+**Сделано:** в том же `BGXAI_UPDATE.cmd` через SHA-пин доставляется обновлённый backend `BGXAI_SYNC.ps1` (79 674/80 000 байт), все 166 старых опций сохранены, добавлена **167 — Weapon V3 native BAF compile (READ ONLY)**. Пин на immutable commit `557c97c093fbfffc3d4027dd0e570d41c4aadd22`, SHA256 backend `5f53f7a7f3a76dbe2477776f9d0331f5d9b7a57f421267f70ddf421ebf27b129`. Меню 167 сохраняет **один JSON-отчёт** `Documents\BGXAI_LIVE_REPORTS\BGXAI_WEAPON_NATIVE_COMPILE_RO_*.json`. **CI SUCCESS** https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45340782245 (Windows+Ubuntu); R27, V7 CI также PASS. BAF и Python доставляются только как verified SOURCE в `BGXAI_DEV\weapon_priority_v3`, не в override.
+
+**Следующий единственный шаг пользователя:** закрыть игру/InfinityLoader → запустить `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd` → пункт **167** → прислать один JSON. **НЕ запускать 166, не переустанавливать R27/V6.** 167 компилирует временный BCS и контролирует изменение файлов; **игровая установка не выполняется**, новая логика **не LIVE**. Детали и риски: `CURRENT/BGXAI_MENU167_NATIVE_WEIDU_READONLY_20261124_RU.md`. Не тормозить после безопасного PASS, не путать source CI с native EET.
+
+---
+
 # BGXAI CURRENT 24.11.2026 — NATIVE BAF COMPILE RO: SOURCE + CI PASS, GAME NOT TOUCHED
 
 **Новый результат:** безопасный исходник `BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py` (коммит `f4365791`) готов для isolated native WeiDU компиляции восьмиветочного `BGXAI_WEAPON_SLOT_CONSUMER_V3.baf`, но **не подключён к updater и не запускался на EET**. Сохранены source SHA256, TEMP weidu.exe, реальная TLK и IDS из EET при будущем запуске, до/после SHA выбранных live файлов, закрытый stdin, 25s timeout, no TP2, нет приказов.
