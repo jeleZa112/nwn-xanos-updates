@@ -71,7 +71,31 @@ local function model_safe_window(scene)
     a.healingReserved==false and a.currentlyCasting==false and
     a.originVerified=='AI'
 end
+-- Raw x64 engine queue count is enough to DEFER work when >0. It never
+-- proves an empty EPS/manual queue or authorizes a switch, even if forged.
+local function queued_actions_known_busy(scene)
+ if type(scene)~='table' or type(scene.actor)~='table' then return nil end
+ local q=scene.observedR27Queue
+ local actor=scene.actor
+ if type(q)~='table' or q.schema~='BGXAI_R27_SINGLE_CALLBACK_SELECTED_RO_V1' or
+    q.status~='CURRENT_SELECTED_SAME_CALLBACK_SOURCE_CANDIDATE' or
+    q.queueSnapshotStable~=true or q.readOnly~=true or
+    q.sameLuaListenerInvocation~=true or q.ordersSent~=0 or
+    q.dispatchAuthorized~=false or q.actionOriginVerified~=false or
+    q.manualEpsQueueVerified~=false or
+    q.actor~=actor.engineActorRaw or q.actionRaw~=actor.currentActionRaw or
+    type(q.queuedActionsRaw)~='number' or q.queuedActionsRaw%1~=0 or
+    q.queuedActionsRaw<1 or q.queuedActionsRaw>512 then return nil end
+ return q.queuedActionsRaw
+end
 function M.step(scene,previous,scoreReadOnly)
+ local busyCount=queued_actions_known_busy(scene)
+ if busyCount then
+  -- This is a one-way NOOP safety signal. Drop pending advice and never call
+  -- a scorer; no requirement to prove the origin of the queued actions.
+  return output('PRESERVE_KNOWN_NONEMPTY_ACTION_QUEUE',nil,
+   {queuedActionsRaw=busyCount,scorerCalls=0})
+ end
  local k=key(scene)
  if k==nil then return output('HOLD_SCENE_AND_BUFF_EVIDENCE_INCOMPLETE',nil) end
  if type(scoreReadOnly)~='function' then
