@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 124
+SELF_VERSION = 125
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -8013,7 +8013,7 @@ def v121_source(game,cache,name,expected,offline=False):
     if sha_path(quarantine)!=oldsha:raise RuntimeError('V121_QUARANTINE_SHA_HOLD')
   v121_write(game,path,data)
   return path
-def v121_run(game,report_path,offline=False):
+def v121_run(game,report_path,offline=False,with_live=True):
   result={'schema':'BG_EET_RU_ONEFILE_AUTOFIX_V121','updater_version':SELF_VERSION,
           'status':'RESEARCH_SOURCE_HOLD','game_files_written':0,
           'native_hooks_installed':False,'gameplay_verified':False}
@@ -8038,7 +8038,7 @@ def v121_run(game,report_path,offline=False):
     print('V121 SOURCE AUTOFIX:',result['status'],'| one ZIP changed:',changed)
   except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
     print('V121 OUTPUT HOLD:',type(exc).__name__,str(exc)[:160]);return 2
-  return v122_run(game,report_path,offline)
+  return v122_run(game,report_path,offline) if with_live else 0
 V122_ENTRY='61_V122_LIVE_HIT_READONLY.json'
 V122_SOURCE_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/91165691e629db817ba734ec394042c34bc2f8c3/bg-eet-ru/native-hit-pilot/windows_live_hit_inventory_ro.py'
 V122_SOURCE_SHA='ba5f4cc2b0c690f706dea032b791c0773cf673725452dfbba3d5dbe11b356d26'
@@ -8074,8 +8074,8 @@ def v124_one_run(game,path,offline=False):
     ('correlation',lambda:v112_run(game,path),'56_V112_COMBAT_JOURNAL_CORRELATION_PREFLIGHT.json'),
     ('dispatch',lambda:v116_run(game,path),'57_V116_DISPATCH_CALLEE_STATIC_READONLY.json'),
     ('full',lambda:full_audit_run(game,path),'58_FULL_SPECTRUM_STATIC_AUDIT.json'),
-    ('autofix',lambda:v121_run(game,path,offline),'60_V121_AUTOFIX_SOURCE_ONLY.json'),
-    ('memory',lambda:0,'61_V122_LIVE_HIT_READONLY.json')]
+    ('autofix',lambda:v121_run(game,path,offline,False),'60_V121_AUTOFIX_SOURCE_ONLY.json'),
+    ('memory',lambda:v122_run(game,path,offline),'61_V122_LIVE_HIT_READONLY.json')]
   rows=[]
   for name,fn,entry in stages:
     row={'stage':name,'entry':entry}
