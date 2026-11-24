@@ -8,7 +8,7 @@ local function check(yes,what)
 end
 local function fixture()
  local stats=setmetatable({m_nNumberOfAttacks=7},{__index=function() return 1 end})
- local sprite={m_id=1001,m_equipment={m_selectedWeapon=35,
+ local sprite={m_id=1001,m_bAllowEffectListCall=1,m_equipment={m_selectedWeapon=35,
   m_selectedWeaponAbility=0,m_items={get=function() return nil end}}}
  local action={m_actionID=3}
  return sprite,action,stats
@@ -40,10 +40,10 @@ z=M.observe(s,a,2,function()a.m_actionID=23; return st end)
 check(z.reason=='SELECTION_OR_ACTION_CHANGED_DURING_CAPTURE','changed action reject')
 s,a,st=fixture()
 z=M.observe(s,a,2,function() return {} end)
-check(z.reason=='CURRENT_SELECTED_APR_UNAVAILABLE','no APR reject')
+check(z.reason=='R4_DERIVED_STATS_NOT_STABLE','no APR reject')
 s,a,st=fixture()
 z=M.observe(s,a,2,function() error('fake stats API failure') end)
-check(z.reason=='CURRENT_SELECTED_APR_UNAVAILABLE','stats API fail safe')
+check(z.reason=='R4_DERIVED_STATS_NOT_STABLE','stats API fail safe')
 s,a,st=fixture()
 s.m_equipment.m_selectedWeapon=nil
 z=M.observe(s,a,2,active)
@@ -138,4 +138,35 @@ local encoded=M.toConsoleJson(valid)
 check(encoded:find('"offhandRaw":[{"slot":9',1,true)~=nil,'offhand serialized')
 check(encoded:find('"rawInventoryDoubleReadConsistent":true',1,true)~=nil,'consistency serialized')
 check(encoded:find('"alternativeAPRVerified":false',1,true)~=nil,'no false engine APR claim')
+-- EEex 1.1.7 active stats branch: 0 -> m_tempStats work-in-progress.
+s,a,st=fixture();s.m_bAllowEffectListCall=0
+must_hold(M.observe(s,a,2,function()error('must not read temp stats')end),'R4_DERIVED_STATS_NOT_STABLE')
+s,a,st=fixture();s.m_bAllowEffectListCall=nil
+must_hold(M.observe(s,a,2,function()return st end),'R4_DERIVED_STATS_NOT_STABLE')
+s,a,st=fixture();local calls=0
+snapshot=M.observe(s,a,2,function()
+ calls=calls+1;if calls==1 then s.m_bAllowEffectListCall=0 end
+ return st end)
+must_hold(snapshot,'R4_DERIVED_STATS_NOT_STABLE')
+s,a,st=fixture();calls=0
+snapshot=M.observe(s,a,2,function()
+ calls=calls+1;if calls==2 then st.m_nNumberOfAttacks=2 end
+ return st end)
+must_hold(snapshot,'R4_DERIVED_STATS_NOT_STABLE')
+s,a,st=fixture();calls=0
+snapshot=M.observe(s,a,2,function()
+ calls=calls+1;if calls==2 then st.m_nSTR=19 end
+ return st end)
+must_hold(snapshot,'R4_DERIVED_STATS_NOT_STABLE')
+s,a,st=fixture();calls=0
+snapshot=M.observe(s,a,2,function()
+ calls=calls+1;if calls==2 then s.m_bAllowEffectListCall=0 end
+ return st end)
+must_hold(snapshot,'R4_DERIVED_STATS_NOT_STABLE')
+s,a,st=fixture();local stable=M.observe(s,a,2,function()return st end)
+check(stable.status=='CURRENT_SELECTED_SAME_CALLBACK_SOURCE_CANDIDATE','stable native path candidate')
+check(stable.selectedDerivedStatsDoubleReadConsistent==true,'two selected derived stats reads')
+local js=M.toConsoleJson(stable)
+check(type(js)=='string' and js:find('"selectedDerivedStatsDoubleReadConsistent":true',1,true)~=nil,
+ 'stable derived status serialized without granting APR permission')
 print('R27 '..n..' source-only one-callback tests PASS')
