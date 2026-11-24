@@ -67,6 +67,14 @@ jobs:
                          cwd='bg-eet-ru/autofix',check=True,timeout=30)
           print('V123_PINNED_REPLAY_AND_FOUR_NEGATIVE_GATES_PASS')
 
+      - name: V126 full-size Python source loader, cached fetch and fail-closed user ZIP
+        shell: python
+        run: |
+          import subprocess,sys
+          subprocess.run([sys.executable,'-m','unittest','-v','test_v126_dispatch_loader'],
+                         cwd='bg-eet-ru/autofix',check=True,timeout=45)
+          print('V126_REAL_SOURCE_LOADER_GATE_PASS')
+
       - name: V126 one-run 14 stages, preserves memory after errors
         shell: python
         run: |
