@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 122
+SELF_VERSION = 123
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -7956,10 +7956,10 @@ def full_audit_selftest():
       assert z.namelist().count(FULL_AUDIT_ENTRY)==1
   return True
 V121_ENTRY='60_V121_AUTOFIX_SOURCE_ONLY.json'
-V121_REF='bf7a30b651d427e38af850d7dc6c06ade7a625ec'
+V121_REF='a6cc0b19668ee9f9c8a1471cddfd6c2c62c9f582'
 V121_PREFIX='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/'+V121_REF+'/bg-eet-ru/autofix/'
-V121_BOT_SHA='4dfb5d57f3bfddaca5a31884c5a91ea2a8380aa78ace28047409ebe9dfb531b3'
-V121_TRUST_SHA='7622bfdec1f77e44a307c0cda3e73c86d143a024b87d4ad0f359897c89a74124'
+V121_BOT_SHA='94dec300ea191101e74da139e5844e1f04c97a5b42eaf299f2a68e42a6f881bc'
+V121_TRUST_SHA='9d9a92e182a2389dc4ac4ca1f5c218c04b6452c80e4167d47a95d578da791090'
 V121_INPUT_SHA='08a9d5da367404b33bc982871627e8c3e1179c7a8ec8808bab0a75bea5755015'
 def v121_cache(game):
   p=WORKDIR/'.BG_EET_RU_AUTOFIX_CACHE'
