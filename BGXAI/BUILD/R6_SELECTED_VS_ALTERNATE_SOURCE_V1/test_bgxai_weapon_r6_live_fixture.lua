@@ -21,7 +21,9 @@ for i,record in ipairs(rows) do
 end
 assert(rates.STAF01==1 and rates.AROW01==2 and rates.SW1H04==1.5)
 assert(rates.BOW05==nil) -- arrow selection does not independently prove active bow
-assert(previous.history.STAF01.selectedAPRDecoded==1)
-assert(previous.history.AROW01.selectedAPRDecoded==2)
+-- Legacy R2 raw ammunition/count changes invalidate the previous history.
+-- Standalone real recorded measurements still exist in `rates` above.
+assert(previous.history.STAF01==nil)
+assert(previous.history.AROW01==nil)
 assert(previous.history.SW1H04.selectedAPRDecoded==1.5)
 print('PASS R6 REAL 16/16 CORRELATION; ACTIVE LAUNCHER UNKNOWN; PER-ALTERNATE EFFECTIVE APR HOLD; NO DISPATCH')
