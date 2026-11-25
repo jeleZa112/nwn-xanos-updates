@@ -1,0 +1,42 @@
+name: BGXAI R32 installed EET APR tables READ ONLY
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R32_APR_EET_TABLES_RO_20261125/**'
+      - '.github/workflows/bgxai-r32-apr-installed-tables-readonly.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    steps:
+      - name: Preserve native line endings on Windows
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: R32 test real-format synthetic 2DA and fail-closed permission checks
+        shell: bash
+        run: |
+          python -m unittest discover -s BGXAI/BUILD/R32_APR_EET_TABLES_RO_20261125 -p test_r32_apr_eet_tables_ro.py -v
+      - name: Static read-only Python compile; no EET install or patch
+        shell: bash
+        run: |
+          python - <<'PY'
+          import ast
+          from pathlib import Path
+          p=Path('BGXAI/BUILD/R32_APR_EET_TABLES_RO_20261125/BGXAI_R32_APR_EET_TABLES_RO.py')
+          src=p.read_text(encoding='utf-8')
+          ast.parse(src)
+          assert all(x not in src for x in ('--force-install','--force-uninstall','SelectWeaponAbility(', 'ClearActions(', '.write_bytes(', '.write_text('))
+          print('R32 PYTHON READ ONLY AST / NO GAME COMMANDS PASS')
+          PY
