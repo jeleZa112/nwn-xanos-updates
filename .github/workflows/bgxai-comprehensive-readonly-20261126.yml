@@ -175,7 +175,8 @@ jobs:
             [IO.File]::WriteAllText((Join-Path $cache 'head.txt'),$pin.commit)
             $source=(Resolve-Path 'BGXAI/BGXAI_SYNC.ps1').Path
             $driver=Join-Path $env:RUNNER_TEMP 'bgxai_full_menu_test.ps1'
-            [IO.File]::WriteAllText($driver,("function global:Read-Host { param([string]$Prompt) '0' }" + [Environment]::NewLine + "& '$source' -GameRoot '$root'"))
+            $readHostStub='function global:Read-Host { param([string]$Prompt) ''0'' }'
+            [IO.File]::WriteAllText($driver,($readHostStub + [Environment]::NewLine + "& '$source' -GameRoot '$root'"))
             $output=(& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $driver 2>&1|Out-String)
             if($LASTEXITCODE -ne 0 -or $output -notmatch 'BGXAI ONE-FILE UPDATER' -or $output -notmatch 'No changes\.'){throw ("MENU_SMOKE_FAILED "+$output)}
             Write-Host 'PASS active onefile startup through choice 0 with throwaway fixture, no real game touched'
