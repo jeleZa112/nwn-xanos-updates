@@ -114,6 +114,9 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 7
     steps:
+      - name: Preserve exact LF for SHA pinned R33 guard
+        shell: pwsh
+        run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
