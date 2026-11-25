@@ -16,7 +16,7 @@ import sys
 
 SCHEMA = 'BGXAI_R30_PASSIVE_QUEUE_READONLY_PREFLIGHT_V1'
 OLD_R27_SHA = 'e5eb400c56ffb1bc23344a0cf30dcc724d8d18fc2752fabd1c2c63cdcca73735'
-SOURCE_CANDIDATE_SHA = '7ca77abeb94363c75cc58986db4427d9f93edba25e09764be35008c2f0e0600b'
+SOURCE_CANDIDATE_SHA = '61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929'
 # Snapshot anchored in user's 24 Nov existing preflight. These are provenance
 # gates, not instructions to modify or restore either source.
 EEEX_ACTION_SHA = '7a64c157418f503e914c4fb3083c97f017e70c9787024fcac779f162c86f20da'
@@ -32,6 +32,19 @@ FORBIDDEN = (b'ClearActions(', b'SelectWeaponAbility(', b'ActionOverride(',
              b'getLauncher(', b'EEex_Action_AddSpriteStartedActionListener(',
              b'EEex_Action_QueueScriptFileResponseOnAIBase(',
              b'EEex_Resource_Demand(', b'io.open(', b'os.execute(')
+
+# Pinned source-only R27 candidate includes the proven V3 action-context
+# records. These strings are not themselves runtime proof or authorization.
+REQUIRED_OBSERVER_MARKERS = (
+    b'queueSnapshotStable=qStable',
+    b'actionContextSnapshotStable=ctxStable',
+    b'actionSourceStable=srcStable',
+    b'UNCLASSIFIED_CAI_ACTION_M_SOURCE',
+    b'rawInventoryDoubleReadConsistent=true',
+    b'selectedDerivedStatsDoubleReadConsistent=true',
+    b'actionOriginVerified=false',
+    b'manualEpsQueueVerified=false',
+)
 
 class Hold(ValueError):
     pass
@@ -132,6 +145,8 @@ def inspect(root: Path, candidate: Path | None = None) -> dict:
                 raise Hold('CANDIDATE_CONTAINS_ENGINE_ACTION_OR_HOOK')
             if not raw.endswith(b'return R27\n'):
                 raise Hold('CANDIDATE_EXPORT_MISSING')
+            if not all(mark in raw for mark in REQUIRED_OBSERVER_MARKERS):
+                raise Hold('CANDIDATE_V3_CONTEXT_CONTRACT_MISSING')
             state['candidateSourceVerified'] = True
         # Re-read all game metadata to prevent silently accepting changed bytes.
         if blob(root, 'WeiDU.log')[0] != log_sha or \
