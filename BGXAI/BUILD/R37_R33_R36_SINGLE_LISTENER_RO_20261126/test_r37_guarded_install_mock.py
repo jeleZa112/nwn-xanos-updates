@@ -276,5 +276,20 @@ class R37Guarded(unittest.TestCase):
                 G.capture(self.root)
             p.assert_not_called()
 
+
+    def test_cli_capture_hold_exits_nonzero_preserving_json(self):
+        with mock.patch("sys.argv",["r37_guard","--mode","capture"]),\
+             mock.patch.object(G,"capture",return_value={"status":"R37_RUNTIME_HOLD_MANUAL_REVIEW"}),\
+             mock.patch.object(G,"report",side_effect=lambda mode,data:data),\
+             mock.patch("builtins.print") as printer:
+            self.assertEqual(G.main(),2)
+            printer.assert_called_once()
+    def test_cli_capture_ready_exits_zero(self):
+        with mock.patch("sys.argv",["r37_guard","--mode","capture"]),\
+             mock.patch.object(G,"capture",return_value={"status":"R37_RUNTIME_ADVICE_LOG_READY_FOR_REVIEW"}),\
+             mock.patch.object(G,"report",side_effect=lambda mode,data:data),\
+             mock.patch("builtins.print"):
+            self.assertEqual(G.main(),0)
+
 if __name__=="__main__":
     unittest.main(verbosity=2)
