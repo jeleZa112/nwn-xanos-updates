@@ -19,10 +19,16 @@ if(!(tp -Lit $pinnedFile -PathT Leaf)){wh 'STOP: pinned GitHub commit missing';e
 $commitId=[IO.File]::ReadAllText($pinnedFile).Trim()
 if($commitId -notmatch '^[a-fA-F0-9]{40}$'){wh 'STOP: invalid pinned GitHub commit';exit 2}
 $xrr='BGXAI/fox_new/'
+$ps='BGXAI/patchsets/'
+$dev=jp $gr 'BGXAI_DEV'
+$build='BGXAI/BUILD/'
+$sm='SOURCE_MANIFEST.json'
+$p64='BGXAI64_PREFLIGHT_READONLY.py'
+$i64='BGXAI64_INSTALL_SOURCE_ONLY.py'
 $b41=@{
 id='041';version='0.3.11';manifest=$xrr+'release_041/manifest.json';prefix=$xrr+'release_041/';
-localPath=jp $gr 'BGXAI_DEV\experimental_041';installer='BGXAI41_INSTALL.py';
-names=@('BGXAI41_INSTALL.py','README_RU.md','SOURCE_MANIFEST.json','build_assets.py',
+localPath=jp $dev 'experimental_041';installer='BGXAI41_INSTALL.py';
+names=@('BGXAI41_INSTALL.py','README_RU.md',$sm,'build_assets.py',
 'setup-BGX41.tp2','BGX41/icon.tra','BGX41/toggle_icon.baf',
 'combat_ru/GLOSSARY_RU.md','combat_ru/explain_attack.py','combat_ru/parse_attack_feedback.py',
 'tests/test_attack_parser_041.py','tests/test_attack_ru.py','tests/test_installer_041.py',
@@ -30,197 +36,197 @@ names=@('BGXAI41_INSTALL.py','README_RU.md','SOURCE_MANIFEST.json','build_assets
 }
 $b40=@{
 id='040';version='0.3.10';manifest=$xrr+'release_040/manifest.json';prefix=$xrr+'release_040/';
-localPath=jp $gr 'BGXAI_DEV\experimental_040';installer='BGXAI40_INSTALL.py';
-names=@('BGXAI40_INSTALL.py','setup-BGX40.tp2','BGX40/toggle_feedback.baf','BGX40/lang/ru_ru/feedback.tra','SOURCE_MANIFEST.json','README_RU.txt','tests/test_feedback_040.py')
+localPath=jp $dev 'experimental_040';installer='BGXAI40_INSTALL.py';
+names=@('BGXAI40_INSTALL.py','setup-BGX40.tp2','BGX40/toggle_feedback.baf','BGX40/lang/ru_ru/feedback.tra',$sm,'README_RU.txt','tests/test_feedback_040.py')
 }
 $release039=@{
 id='039';version='0.3.9';manifest=$xrr+'release_039/manifest.json';prefix=$xrr+'release_039/';
-localPath=jp $gr 'BGXAI_DEV\experimental_039';installer='BGXAI39_INSTALL.py';
-names=@('BGXAI39_INSTALL.py','setup-BGX39.tp2','BGX39/team_guard_fallback.baf','SOURCE_MANIFEST.json','README_RU.txt','tests/test_team_guard_039.py')
+localPath=jp $dev 'experimental_039';installer='BGXAI39_INSTALL.py';
+names=@('BGXAI39_INSTALL.py','setup-BGX39.tp2','BGX39/team_guard_fallback.baf',$sm,'README_RU.txt','tests/test_team_guard_039.py')
 }
 $b42=@{
 id='042B';version='0.3.12-042B';manifest=$xrr+'release_042b/manifest.json';prefix=$xrr+'release_042b/';
-localPath=jp $gr 'BGXAI_DEV\experimental_042b';installer='BGXAI42_INSTALL.py';
+localPath=jp $dev 'experimental_042b';installer='BGXAI42_INSTALL.py';
 names=@('BGXAI42_INSTALL.py','build_042b_preview.py','guard_source_042a.py',
-'setup-BGX42.tp2','SOURCE_MANIFEST.json','README_RU.md',
+'setup-BGX42.tp2',$sm,'README_RU.md',
 'BGX42/tests/test_installer_042b.py','BGX42/tests/test_recovery_gate.py')
 }
 $x43=@{
 id='043P';version='0.3.14-043-PROBE';manifest=$xrr+'release_043p/manifest.json';prefix=$xrr+'release_043p/';
-localPath=jp $gr 'BGXAI_DEV\experimental_043p';installer='BGXAI43_PROBE_INSTALL.py';
+localPath=jp $dev 'experimental_043p';installer='BGXAI43_PROBE_INSTALL.py';
 names=@('BGXAI43_PROBE_INSTALL.py','BGX43/setup-BGX43.tp2','BGX43/M_BGX43Probe.lua',
 'BGX43/tests/test_installer_043.py','README_RU.md','eeex_bridge_043.py',
-'intercept_policy.py','test_eeex_bridge_043.py','SOURCE_MANIFEST.json')
+'intercept_policy.py','test_eeex_bridge_043.py',$sm)
 }
 $t44=@{
 id='044';version='0.3.15-044-DIAG';manifest=$xrr+'release_044/manifest.json';prefix=$xrr+'release_044/';
-localPath=jp $gr 'BGXAI_DEV\experimental_044';installer='BGXAI44_INSTALL.py';
+localPath=jp $dev 'experimental_044';installer='BGXAI44_INSTALL.py';
 names=@('BGXAI44_INSTALL.py','BGX44/setup-BGX44.tp2','BGX44/M_BGX44Diag.lua',
 'README_RU.md','BGX44/tests/test_installer_044.py',
-'BGX44/tests/test_lua_044.py','SOURCE_MANIFEST.json')
+'BGX44/tests/test_lua_044.py',$sm)
 }
 $t45=@{
 id='045';version='0.3.16b-045-RESREF-FIX';manifest=$xrr+'release_045b/manifest.json';prefix=$xrr+'release_045b/';
-localPath=jp $gr 'BGXAI_DEV\experimental_045';installer='BGXAI45_INSTALL.py';
+localPath=jp $dev 'experimental_045';installer='BGXAI45_INSTALL.py';
 names=@('BGXAI45_INSTALL.py','BGX45/setup-BGX45.tp2','BGX45/M_BX43.lua',
 'BGX45/M_BX44.lua','README_RU.md','BGX45/tests/test_installer_045.py',
-'BGX45/tests/test_lua_045.py','SOURCE_MANIFEST.json')
+'BGX45/tests/test_lua_045.py',$sm)
 }
 $t46=@{
 id='046';version='0.3.17-046-ATTACK-FILTER';manifest=$xrr+'release_046/manifest.json';prefix=$xrr+'release_046/';
-localPath=jp $gr 'BGXAI_DEV\experimental_046';installer='BGXAI46_INSTALL.py';
+localPath=jp $dev 'experimental_046';installer='BGXAI46_INSTALL.py';
 names=@('BGXAI46_INSTALL.py','BGX46/setup-BGX46.tp2','BGX46/M_BX43.lua',
 'BGX46/tests/test_installer_046.py','BGX46/tests/test_lua_046.py',
-'README_RU.md','SOURCE_MANIFEST.json')
+'README_RU.md',$sm)
 }
 $t47=@{
 id='047';version='0.3.18-047-RESOLVED-TARGET';manifest=$xrr+'release_047/manifest.json';prefix=$xrr+'release_047/';
-localPath=jp $gr 'BGXAI_DEV\experimental_047';installer='BGXAI47_INSTALL.py';
+localPath=jp $dev 'experimental_047';installer='BGXAI47_INSTALL.py';
 names=@('BGXAI47_INSTALL.py','BGX47/setup-BGX47.tp2','BGX47/M_BX43.lua',
 'BGX47/tests/test_installer_047.py','BGX47/tests/test_lua_047.py',
-'README_RU.md','SOURCE_MANIFEST.json')
+'README_RU.md',$sm)
 }
 $t48=@{
 id='048';version='0.3.19-048-CONFIRMED-HIT';manifest=$xrr+'release_048/manifest.json';prefix=$xrr+'release_048/';
-localPath=jp $gr 'BGXAI_DEV\experimental_048';installer='BGXAI48_INSTALL.py';
+localPath=jp $dev 'experimental_048';installer='BGXAI48_INSTALL.py';
 names=@('BGXAI48_INSTALL.py','BGX48/setup-BGX48.tp2','BGX48/M_BX43.lua',
 'BGX48/tests/test_installer_048.py','BGX48/tests/test_lua_048.py',
-'README_RU.md','SOURCE_MANIFEST.json')
+'README_RU.md',$sm)
 }
 $t49=@{
 id='049';version='0.3.20-049-GUARD-ADVISORY';manifest=$xrr+'release_049/manifest.json';prefix=$xrr+'release_049/';
-localPath=jp $gr 'BGXAI_DEV\experimental_049';installer='BGXAI49_INSTALL.py';
+localPath=jp $dev 'experimental_049';installer='BGXAI49_INSTALL.py';
 names=@('BGXAI49_INSTALL.py','BGX49/setup-BGX49.tp2','BGX49/M_BX43.lua',
 'BGX49/tests/test_installer_049.py','BGX49/tests/test_lua_049.py',
-'README_RU.md','SOURCE_MANIFEST.json')
+'README_RU.md',$sm)
 }
 $release054=@{
 id='054';version='0.3.21-054-WEIDU-READONLY';manifest=$xrr+'release_054/manifest.json';prefix=$xrr+'release_054/';
-localPath=jp $gr 'BGXAI_DEV\experimental_054';installer='compile_guard_054.py';
+localPath=jp $dev 'experimental_054';installer='compile_guard_054.py';
 names=@('compile_guard_054.py','verify_053_baseline.py','BGX52_guard_receiver_PREVIEW.baf',
-'test_compile_054.py','README_RU.md','SOURCE_MANIFEST.json')
+'test_compile_054.py','README_RU.md',$sm)
 }
 $x56=@{
 id='056';version='0.3.22-056-ACTIVE-GUARD-OPTIN';
 manifest=$xrr+'experimental_056_active_guard/manifest.json';prefix=$xrr+'experimental_056_active_guard/';
-localPath=jp $gr 'BGXAI_DEV\experimental_056';installer='BGXAI56_INSTALL.py';
-names=@('BGX56/M_BX43.lua','BGX56/BGX56_RECEIVER.baf','BGX56/setup-BGX56.tp2','BGXAI56_BUILDER.py','BGXAI56_INSTALL.py','README_RU.md','tests/test_056.py','tests/test_lua_056.py','ci_weidu_056.py','ids/trigger.ids','ids/action.ids','ids/object.ids','ids/modal.ids','SOURCE_MANIFEST.json')
+localPath=jp $dev 'experimental_056';installer='BGXAI56_INSTALL.py';
+names=@('BGX56/M_BX43.lua','BGX56/BGX56_RECEIVER.baf','BGX56/setup-BGX56.tp2','BGXAI56_BUILDER.py','BGXAI56_INSTALL.py','README_RU.md','tests/test_056.py','tests/test_lua_056.py','ci_weidu_056.py','ids/trigger.ids','ids/action.ids','ids/object.ids','ids/modal.ids',$sm)
 }
 $b60=@{
 id='060';version='0.3.26-060-READONLY-COMPILE';
 manifest=$xrr+'experimental_060_direct_response_source_only/manifest.json';
 prefix=$xrr+'experimental_060_direct_response_source_only/';
-localPath=jp $gr 'BGXAI_DEV\experimental_060';installer='BGXAI60_INSTALL.py';
+localPath=jp $dev 'experimental_060';installer='BGXAI60_INSTALL.py';
 names=@('BGX60_RECEIVER.baf','generate_baf.py','BGXAI60_BUILDER.py','BGXAI60_INSTALL.py','test_060.py','test_060_install.py','README_RU.md')
 }
 $x61=@{
 id='061';version='0.3.27-061-RESCUE-APPROACH';
 manifest=$xrr+'experimental_061_rescue_approach_source_only/manifest.json';
 prefix=$xrr+'experimental_061_rescue_approach_source_only/';
-localPath=jp $gr 'BGXAI_DEV\experimental_061';installer='BGXAI61_INSTALL.py';
+localPath=jp $dev 'experimental_061';installer='BGXAI61_INSTALL.py';
 names=@('BGX61_RECEIVER.baf','generate_baf.py','BGXAI61_BUILDER.py','BGXAI61_INSTALL.py','test_061.py','test_061_install.py','README_RU.md')
 }
 $release064=@{
 id='064';version='0.3.29-064-061-SAME-AREA-GUARD-SOURCE';
 manifest=$xrr+'experimental_064_same_area_061_source_only/manifest.json';
 prefix=$xrr+'experimental_064_same_area_061_source_only/';
-localPath=jp $gr 'BGXAI_DEV\experimental_064';installer='BGXAI64_PREFLIGHT_READONLY.py';
-names=@('M_BX43_064_CANDIDATE.lua','BGX64_BRIDGE_PREPARE_NATIVE.lua','BGXAI64_PATCH.py','BGXAI64_PREFLIGHT_READONLY.py','README_RU.md','lua64_harness.py','test_064_native.py','test_064_patch.py','test_064_preflight.py','SOURCE_MANIFEST.json')
+localPath=jp $dev 'experimental_064';installer=$p64;
+names=@('M_BX43_064_CANDIDATE.lua','BGX64_BRIDGE_PREPARE_NATIVE.lua','BGXAI64_PATCH.py',$p64,'README_RU.md','lua64_harness.py','test_064_native.py','test_064_patch.py','test_064_preflight.py',$sm)
 }
 $x64=@{
 id='064G';version='0.3.30-064-GUARDED-WEIDU-CANDIDATE';
 manifest=$xrr+'experimental_064_guarded_weidu_source_only/manifest.json';
 prefix=$xrr+'experimental_064_guarded_weidu_source_only/';
-localPath=jp $gr 'BGXAI_DEV\experimental_064_guarded';installer='BGXAI64_INSTALL_SOURCE_ONLY.py';
-names=@('M_BX43_064_CANDIDATE.lua','M_BX43_061_BASELINE_READONLY.lua','BGX64_BRIDGE_PREPARE_NATIVE.lua','BGXAI64_PATCH.py','BGXAI64_PREFLIGHT_READONLY.py','BGXAI64_INSTALL_SOURCE_ONLY.py','test_064_install_mock.py','test_064_patch.py','test_064_preflight.py','README_RU.md')
+localPath=jp $dev 'experimental_064_guarded';installer=$i64;
+names=@('M_BX43_064_CANDIDATE.lua','M_BX43_061_BASELINE_READONLY.lua','BGX64_BRIDGE_PREPARE_NATIVE.lua','BGXAI64_PATCH.py',$p64,$i64,'test_064_install_mock.py','test_064_patch.py','test_064_preflight.py','README_RU.md')
 }
 $x66=@{
 id='066';version='0.3.32-066-MULTI-FRONTLINE-GUARDED';
 manifest=$xrr+'experimental_066_multi_guard_guarded/manifest.json';
 prefix=$xrr+'experimental_066_multi_guard_guarded/';
-localPath=jp $gr 'BGXAI_DEV\experimental_066_guarded';installer='BGXAI66_INSTALL.py';
-names=@('BGX66_TEAM_BRIDGE.lua','M_BX43_064_BASELINE_READONLY.lua','M_BX43_066_CANDIDATE.lua','build_066.py','BGXAI66_INSTALL.py','BGXAI64_INSTALL_SOURCE_ONLY.py','BGXAI64_PATCH.py','BGXAI64_PREFLIGHT_READONLY.py','M_BX43_061_BASELINE_READONLY.lua','M_BX43_064_CANDIDATE.lua','test_066_native.py','test_066_install_mock.py','lua65_harness.py','README_RU.md')
+localPath=jp $dev 'experimental_066_guarded';installer='BGXAI66_INSTALL.py';
+names=@('BGX66_TEAM_BRIDGE.lua','M_BX43_064_BASELINE_READONLY.lua','M_BX43_066_CANDIDATE.lua','build_066.py','BGXAI66_INSTALL.py',$i64,'BGXAI64_PATCH.py',$p64,'M_BX43_061_BASELINE_READONLY.lua','M_BX43_064_CANDIDATE.lua','test_066_native.py','test_066_install_mock.py','lua65_harness.py','README_RU.md')
 }
 $x6s=@{
 id='066S';version='0.3.34-066S-CASTER-GUARDED';
 manifest=$xrr+'experimental_066s_guarded_install_candidate/manifest_updater.json';
 prefix=$xrr+'experimental_066s_guarded_install_candidate/';
-localPath=jp $gr 'BGXAI_DEV\experimental_066s_guarded';installer='BGXAI66S_INSTALL.py';
-names=@('BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf','BGX66_CASTER_SUPPORT.lua','BGXAI64_INSTALL_SOURCE_ONLY.py','BGXAI64_PATCH.py','BGXAI64_PREFLIGHT_READONLY.py','BGXAI66S_BCS_PATCH.py','BGXAI66S_INSTALL.py','M_BX43_061_BASELINE_READONLY.lua','M_BX43_064_CANDIDATE.lua','M_BX43_066S_CASTER_CANDIDATE.lua','M_BX43_066_BASELINE_READONLY.lua','M_BX43_066_CANDIDATE.lua','README_RELEASE_RU.md','README_RU.md','build_066.py','build_066s.py','ci_weidu_066s.py','generate_receiver.py','ids/action.ids','ids/modal.ids','ids/object.ids','ids/spell.ids','ids/trigger.ids','lua65_harness.py','native_066_fixture.py','test_066s_caster_native.py','test_066s_installer_mock.py','verify_066s.py','verify_release.py')
+localPath=jp $dev 'experimental_066s_guarded';installer='BGXAI66S_INSTALL.py';
+names=@('BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf','BGX66_CASTER_SUPPORT.lua',$i64,'BGXAI64_PATCH.py',$p64,'BGXAI66S_BCS_PATCH.py','BGXAI66S_INSTALL.py','M_BX43_061_BASELINE_READONLY.lua','M_BX43_064_CANDIDATE.lua','M_BX43_066S_CASTER_CANDIDATE.lua','M_BX43_066_BASELINE_READONLY.lua','M_BX43_066_CANDIDATE.lua','README_RELEASE_RU.md','README_RU.md','build_066.py','build_066s.py','ci_weidu_066s.py','generate_receiver.py','ids/action.ids','ids/modal.ids','ids/object.ids','ids/spell.ids','ids/trigger.ids','lua65_harness.py','native_066_fixture.py','test_066s_caster_native.py','test_066s_installer_mock.py','verify_066s.py','verify_release.py')
 }
 $x67=@{
 id='067';version='0.3.35-067-EARLY-GUARD-GUARDED';
 manifest=$xrr+'experimental_067_early_guard_guarded/manifest_updater.json';
 prefix=$xrr+'experimental_067_early_guard_guarded/';
-localPath=jp $gr 'BGXAI_DEV\experimental_067_early_guard';installer='BGXAI67_INSTALL.py';
-names=@('BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf','BGX66_CASTER_SUPPORT.lua','BGX67_EARLY_GUARD.baf','BGX67_PREHIT_GUARD.lua','BGXAI64_INSTALL_SOURCE_ONLY.py','BGXAI64_PATCH.py','BGXAI64_PREFLIGHT_READONLY.py','BGXAI66S_BCS_PATCH.py','BGXAI66S_INSTALL.py','BGXAI67_BCS_PATCH.py','BGXAI67_INSTALL.py','M_BX43_064_CANDIDATE.lua','M_BX43_066S_CASTER_CANDIDATE.lua','M_BX43_066_BASELINE_READONLY.lua','M_BX43_066_CANDIDATE.lua','M_BX43_067_EARLY_CANDIDATE.lua','README_RU.md','build_066.py','build_066s.py','build_067.py','ci_weidu_067.py','generate_067_baf.py','generate_receiver.py','ids/action.ids','ids/modal.ids','ids/object.ids','ids/spell.ids','ids/trigger.ids','lua65_harness.py','native_066_fixture.py','test_066s_installer_mock.py','test_067_bcs.py','test_067_install_mock.py','test_067_native.py')
+localPath=jp $dev 'experimental_067_early_guard';installer='BGXAI67_INSTALL.py';
+names=@('BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf','BGX66_CASTER_SUPPORT.lua','BGX67_EARLY_GUARD.baf','BGX67_PREHIT_GUARD.lua',$i64,'BGXAI64_PATCH.py',$p64,'BGXAI66S_BCS_PATCH.py','BGXAI66S_INSTALL.py','BGXAI67_BCS_PATCH.py','BGXAI67_INSTALL.py','M_BX43_064_CANDIDATE.lua','M_BX43_066S_CASTER_CANDIDATE.lua','M_BX43_066_BASELINE_READONLY.lua','M_BX43_066_CANDIDATE.lua','M_BX43_067_EARLY_CANDIDATE.lua','README_RU.md','build_066.py','build_066s.py','build_067.py','ci_weidu_067.py','generate_067_baf.py','generate_receiver.py','ids/action.ids','ids/modal.ids','ids/object.ids','ids/spell.ids','ids/trigger.ids','lua65_harness.py','native_066_fixture.py','test_066s_installer_mock.py','test_067_bcs.py','test_067_install_mock.py','test_067_native.py')
 }
 
 $xidle=@{
 id='IDLE';version='0.3.36-066S-IDLE-GUARD-PILOT';
-manifest='BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/manifest_updater.json';
-prefix='BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/';
-localPath=jp $gr 'BGXAI_DEV\experimental_066s_idle_guard_pilot';
+manifest=$ps+'eps_first_066s_idle_guard_pilot_guarded_installer_source_only/manifest_updater.json';
+prefix=$ps+'eps_first_066s_idle_guard_pilot_guarded_installer_source_only/';
+localPath=jp $dev 'experimental_066s_idle_guard_pilot';
 installer='BGXAI_IDLE_GUARD_INSTALL_SOURCE_ONLY.py';
 names=@('066S_idle_guard_minimal.diff','BGX66_CASTER_RECEIVER_SOURCE_ONLY.baf','BGX66_CASTER_SUPPORT.lua','BGXAI_IDLE_GUARD_INSTALL_SOURCE_ONLY.py','M_BX43_066S_IDLE_GUARD_CANDIDATE.lua','M_BX43_066S_VERIFIED_ORIGINAL.lua','M_BX43_066_BASELINE_READONLY.lua','README_INSTALLER_RU.md','README_RU.md','TEST_PROTOCOL_RU.md','lua65_harness.py','manifest_install_sha256.json','native_066_fixture.py','parse.lua','run_tests.py','test_066s_caster_native.py','test_guarded_installer.py','test_idle_guard.py','verify_install_release.py')
 }
 
 $xpr=@{
 id='BGXPR';version='0.3.37-BGXPR-ONEFILE';
-manifest='BGXAI/patchsets/priest_modes_eps_first_installable_20261116/manifest_updater.json';
-prefix='BGXAI/patchsets/priest_modes_eps_first_installable_20261116/';
-localPath=jp $gr 'BGXAI_DEV\priest_modes_verified';installer='BGXPR_INSTALL.py';
+manifest=$ps+'priest_modes_eps_first_installable_20261116/manifest_updater.json';
+prefix=$ps+'priest_modes_eps_first_installable_20261116/';
+localPath=jp $dev 'priest_modes_verified';installer='BGXPR_INSTALL.py';
 names=@('M_BX43_066S_CASTER_CANDIDATE.lua','M_BX43_066S_GUARD_TEAM_CANDIDATE.lua','M_BX43_066S_PRIEST_MODES.lua','M_BX43_BGXTEAM_PRIEST_MODES.lua','BGXPR_LAST_PRIORITY.baf','BGXPR_BCS_PATCH.py','BGXPR_INSTALL.py','parse.lua','SHA256_FILES.json')
 }
 $xteam=@{
 id='BGXTEAM';version='0.3.38-BGXTEAM-ONEFILE';
-manifest='BGXAI/patchsets/team_f_guard_066s_installable_pilot_20261116/manifest_updater.json';
-prefix='BGXAI/patchsets/team_f_guard_066s_installable_pilot_20261116/';
-localPath=jp $gr 'BGXAI_DEV\team_guard_verified';installer='BGXAI_TEAM_GUARD_INSTALL.py';
+manifest=$ps+'team_f_guard_066s_installable_pilot_20261116/manifest_updater.json';
+prefix=$ps+'team_f_guard_066s_installable_pilot_20261116/';
+localPath=jp $dev 'team_guard_verified';installer='BGXAI_TEAM_GUARD_INSTALL.py';
 names=@('BGXAI_TEAM_GUARD_INSTALL.py','M_BX43_066S_VERIFIED_ORIGINAL.lua','M_BX43_066S_GUARD_TEAM_CANDIDATE.lua')
 }
 $xp2=@{
 id='BGXP2';version='0.3.39-BGXP2-COMBAT-PRIEST';
-manifest='BGXAI/patchsets/priest_combat_eps_first_20261116/manifest_updater.json';
-prefix='BGXAI/patchsets/priest_combat_eps_first_20261116/';
-localPath=jp $gr 'BGXAI_DEV\priest_combat_verified';installer='BGXP2_INSTALL.py';
+manifest=$ps+'priest_combat_eps_first_20261116/manifest_updater.json';
+prefix=$ps+'priest_combat_eps_first_20261116/';
+localPath=jp $dev 'priest_combat_verified';installer='BGXP2_INSTALL.py';
 names=@('BGXP2_LAST_PRIORITY.baf','BGXP2_BCS_PATCH.py','BGXP2_INSTALL.py','README_RU.md','PLAYTEST_RU.md','test_bgxp2.py','SHA256_FILES.json')
 }
 $xp3=@{
 id='BGXP3';version='0.3.40-BGXP3-AUTO-BUFFER';
-manifest='BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/manifest_updater.json';
-prefix='BGXAI/patchsets/priest_auto_attack_buffer_source_only_20261117/';
-localPath=jp $gr 'BGXAI_DEV\priest_auto_buffer_verified';installer='BGXP3_INSTALL.py';
+manifest=$ps+'priest_auto_attack_buffer_source_only_20261117/manifest_updater.json';
+prefix=$ps+'priest_auto_attack_buffer_source_only_20261117/';
+localPath=jp $dev 'priest_auto_buffer_verified';installer='BGXP3_INSTALL.py';
 names=@('BGXP2_LAST_PRIORITY.baf','BGXP2_BCS_PATCH.py','BGXP3_AUTO_ATTACK_BUFFER_SOURCE_ONLY.py','BGXP3_BCS_PREFLIGHT_SOURCE_ONLY.py','BGXP3_INSTALL.py','README_RU.md','test_bgxp3_auto_attack_buffer.py','test_bgxp3_bcs_preflight.py','SHA256_FILES.json')
 }
 $xp5=@{
 id='BGXP5';version='0.3.41-BGXP5-AUTO-PRIORITY-GUARD';
-manifest='BGXAI/patchsets/priest_auto_priority_guard_source_20261117/manifest_updater.json';
-prefix='BGXAI/patchsets/priest_auto_priority_guard_source_20261117/';
-localPath=jp $gr 'BGXAI_DEV\priest_auto_priority_verified';installer='BGXP5_INSTALL.py';
+manifest=$ps+'priest_auto_priority_guard_source_20261117/manifest_updater.json';
+prefix=$ps+'priest_auto_priority_guard_source_20261117/';
+localPath=jp $dev 'priest_auto_priority_verified';installer='BGXP5_INSTALL.py';
 names=@('BGXPR_LAST_PRIORITY.baf','BGXP2_LAST_PRIORITY.baf','BGXP2_BCS_PATCH.py','BGXP5_PRIORITY_AND_ALLY_GUARD_SOURCE_ONLY.py','BGXP5_BCS_PREFLIGHT_READ_ONLY.py','BGXP5_INSTALL.py','test_bgxp5_source.py','test_bgxp5_bcs_preflight.py','test_bgxp5_installer_mock.py','README_RU.md','SHA256_FILES.json')
 }
 $ao=@{
 id='AOE117';version='0.3.50-BGX122-IDS-HYPHEN';
-manifest='BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/manifest_updater.json';
-prefix='BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117/';
-localPath=jp $gr 'BGXAI_DEV\aoe_readonly_verified';installer='BGXAI_AOE_AUDIT.py';
+manifest=$ps+'aoe_entangle_readonly_onefile_20261117/manifest_updater.json';
+prefix=$ps+'aoe_entangle_readonly_onefile_20261117/';
+localPath=jp $dev 'aoe_readonly_verified';installer='BGXAI_AOE_AUDIT.py';
 names=@('BGXAI_AOE_AUDIT.py','test_aoe_audit.py','BGXAI_TEST6_SAFE_COPY.py','test_safe_copy.py','BGX119_TRACE.py','BGX120_ENTANGLE_GUARD.py','test_guard120.py','BGX121_POLICY.py','BGX121_READONLY.py','test_121.py','BGX122_PROJECTILES_READONLY.py','test_122.py','README_RU.md')
 }
 $rg=@{
 id='BGXRANGED';version='0.3.90-V7-R27-DPLAYER-FUNCTIONAL';
-manifest='BGXAI/patchsets/ranged_fighter_guarded_20261119/manifest_updater.json';
-prefix='BGXAI/patchsets/ranged_fighter_guarded_20261119/';
-localPath=jp $gr 'BGXAI_DEV\ranged_fighter_verified';installer='BGXRANGED_PREFLIGHT.py';
+manifest=$ps+'ranged_fighter_guarded_20261119/manifest_updater.json';
+prefix=$ps+'ranged_fighter_guarded_20261119/';
+localPath=jp $dev 'ranged_fighter_verified';installer='BGXRANGED_PREFLIGHT.py';
 names=@('BGXRANGED_PREFLIGHT.py','BGX_RANGED_FIGHTER.baf','BGXRANGED_GUARDED_INSTALL.py','BGXRANGED_V2_MELEE_HANDOFF.baf','BGXRANGED_V2_PREFLIGHT.py','BGXRANGED_V2_GUARDED_INSTALL.py','BGXRANGED_V3_MELEE_HANDOFF.baf','BGXRANGED_V3_PREFLIGHT.py','BGXRANGED_V3_GUARDED_INSTALL.py','BGX_FRIENDLY_AGGRO_AUDIT_READONLY.py','BGXRANGED_V4_NO_FRIEND_ATTACK.baf','BGX_FRIENDLY_PROTECT_ISOLATION.py','BGXAI_SAVE_SCRIPT_AUDIT_READONLY.py','BGX_FRIENDLY_RETALIATION_GUARDED.py','BGX_COMBAT_LOG_READONLY_AUDIT.py','M_BXFR.lua','BGX_FRIEND_TRACE_GUARDED.py','BGX_FRIEND_TRACE_REPORT.py','M_BXFR_CONSOLE_V2.lua','BGXFTRACE_V2_GUARDED.py','BGXFTRACE_CONSOLE_CAPTURE.py','M_BXFR_MOTION_V3.lua','BGXFTRACE_V3_GUARDED.py','BGXF_WTASIGHT_ENEMY_GUARD_SOURCE_ONLY.py','BGXFENEMY_WTASIGHT_GUARDED.py','BGXAI_WEAPON_SAVED_SNAPSHOT_READONLY.py','BGXAI_WEAPON_CHOICE_ADVISORY_V1.js','BGXAI_WEAPON_TRAITS_ADVISORY_V1.js','BGXRANGED_V5_ANTICIPATORY_CLOSE_SOURCE_ONLY.baf','BGXRANGED_V5_NATIVE_CANDIDATE_READONLY.py','BGXRANGED_V5_GUARDED_INSTALL.py','BGXRANGED_V6_DPLAYER_CLOSE_GUARD_SOURCE_ONLY.baf','BGXRANGED_V6_DPLAYER_NATIVE_READONLY.py','BGXRANGED_V6_GUARDED_INSTALL.py','BGXRANGED_V7_GUARDED_INSTALL.py')
 }
-$wr=@{id='WRO';version='0.3.77-WEAPON-NATIVE-READONLY';manifest=($rg.prefix+'BGXAI_WEAPON_NATIVE_PREFLIGHT_MANIFEST_V1.json');prefix=$rg.prefix;localPath=jp $gr 'BGXAI_DEV\weapon_native_ro';names=@('BGXAI_WEAPON_GAME_PREFLIGHT_RO.py','BGXAI_WEAPON_GAME_PREFLIGHT_V1.baf')}
-$wp=@{id='WP';version='0.3.82-R4-ALLPROF-BUFF-RO';manifest=($rg.prefix+'BGXWP_OBSERVER_MANIFEST_R1.json');prefix=$rg.prefix;localPath=jp $gr 'BGXAI_DEV\weapon_runtime_ro';names=@('BGXWP_OBSERVER_GUARDED.py','M_BGXWP.lua','BGXW2_OBSERVER_GUARDED.py','M_BGXW2.lua','BGXAI_WEAPON_NATIVE_ITM_R3_RO.py','M_BGXW4.lua')}
-$td13=@{id='TD13';version='0.3.85-R13-TARGET-MISSILE-RO';manifest=($rg.prefix+'BGXAI_R13_MANIFEST_V1.json');prefix=$rg.prefix;localPath=jp $gr 'BGXAI_DEV\weapon_target_r13';names=@('BGXAI_R13_GUARDED.py','M_BGXTDEF13.lua')}
-$td14=@{id='TD14';version='0.3.87-R13-CONSOLE-CAPTURE-RO';manifest=($rg.prefix+'BGXAI_R13_SHORTNAME_MANIFEST_V1.json');prefix=$rg.prefix;localPath=jp $gr 'BGXAI_DEV\weapon_target_r13_shortfix';names=@('BGXAI_R13_SHORTNAME_GUARDED.py','M_BGXD13.lua')}
-$td15=@{id='TD15';version='0.3.88-R13-HOLD-DIAG-RO';manifest=($rg.prefix+'BGXAI_R13_HOLD_DIAG_MANIFEST_V1.json');prefix=$rg.prefix;localPath=jp $gr 'BGXAI_DEV\weapon_target_r13_diag';names=@('BGXAI_R13_HOLD_DIAG_GUARDED.py','R15_M_BGXD13.lua')}
-$r27=@{id='R27';version='0.3.89-R27-PASSIVE-GUARDED';manifest='BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/manifest_updater.json';prefix='BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/';localPath=jp $gr 'BGXAI_DEV\weapon_r27_observer';names=@('BGXAI_R27_GUARDED.py','M_BGXR27.lua','BGXAI_R28_NATIVE_FROM_R27_RO.py','BGXAI_WEAPON_NATIVE_ITM_R3_RO.py')}
-$w3=@{id='W3';version='0.3.92-BGXAI-AUTO-BATCH-RO';manifest='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_COMPILE_MANIFEST_V1.json';prefix='BGXAI/patchsets/ranged_fighter_guarded_20261119/';localPath=jp $gr 'BGXAI_DEV\weapon_priority_v3';names=@('BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py','BGXAI_WEAPON_SLOT_CONSUMER_V3.baf','BGXAI_AUTO_BATCH_RO_V1.py','test_auto_batch_ro_v1.py','test_weapon_native_compile_ro_v1.py','BGXAI_R29_GUARDED.py','BGXAI_R29_KHALID_BOW_TO_SWORD.baf')}
+$wr=@{id='WRO';version='0.3.77-WEAPON-NATIVE-READONLY';manifest=($rg.prefix+'BGXAI_WEAPON_NATIVE_PREFLIGHT_MANIFEST_V1.json');prefix=$rg.prefix;localPath=jp $dev 'weapon_native_ro';names=@('BGXAI_WEAPON_GAME_PREFLIGHT_RO.py','BGXAI_WEAPON_GAME_PREFLIGHT_V1.baf')}
+$wp=@{id='WP';version='0.3.82-R4-ALLPROF-BUFF-RO';manifest=($rg.prefix+'BGXWP_OBSERVER_MANIFEST_R1.json');prefix=$rg.prefix;localPath=jp $dev 'weapon_runtime_ro';names=@('BGXWP_OBSERVER_GUARDED.py','M_BGXWP.lua','BGXW2_OBSERVER_GUARDED.py','M_BGXW2.lua','BGXAI_WEAPON_NATIVE_ITM_R3_RO.py','M_BGXW4.lua')}
+$td13=@{id='TD13';version='0.3.85-R13-TARGET-MISSILE-RO';manifest=($rg.prefix+'BGXAI_R13_MANIFEST_V1.json');prefix=$rg.prefix;localPath=jp $dev 'weapon_target_r13';names=@('BGXAI_R13_GUARDED.py','M_BGXTDEF13.lua')}
+$td14=@{id='TD14';version='0.3.87-R13-CONSOLE-CAPTURE-RO';manifest=($rg.prefix+'BGXAI_R13_SHORTNAME_MANIFEST_V1.json');prefix=$rg.prefix;localPath=jp $dev 'weapon_target_r13_shortfix';names=@('BGXAI_R13_SHORTNAME_GUARDED.py','M_BGXD13.lua')}
+$td15=@{id='TD15';version='0.3.88-R13-HOLD-DIAG-RO';manifest=($rg.prefix+'BGXAI_R13_HOLD_DIAG_MANIFEST_V1.json');prefix=$rg.prefix;localPath=jp $dev 'weapon_target_r13_diag';names=@('BGXAI_R13_HOLD_DIAG_GUARDED.py','R15_M_BGXD13.lua')}
+$r27=@{id='R27';version='0.3.89-R27-PASSIVE-GUARDED';manifest=$build+'R27_SINGLE_CALLBACK_SELECTED_RO_20261123/manifest_updater.json';prefix=$build+'R27_SINGLE_CALLBACK_SELECTED_RO_20261123/';localPath=jp $dev 'weapon_r27_observer';names=@('BGXAI_R27_GUARDED.py','M_BGXR27.lua','BGXAI_R28_NATIVE_FROM_R27_RO.py','BGXAI_WEAPON_NATIVE_ITM_R3_RO.py')}
+$w3=@{id='W3';version='0.3.92-BGXAI-AUTO-BATCH-RO';manifest=$ps+'ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_COMPILE_MANIFEST_V1.json';prefix=$ps+'ranged_fighter_guarded_20261119/';localPath=jp $dev 'weapon_priority_v3';names=@('BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py','BGXAI_WEAPON_SLOT_CONSUMER_V3.baf','BGXAI_AUTO_BATCH_RO_V1.py','test_auto_batch_ro_v1.py','test_weapon_native_compile_ro_v1.py','BGXAI_R29_GUARDED.py','BGXAI_R29_KHALID_BOW_TO_SWORD.baf')}
 $v2install=jp $rg.localPath 'BGXRANGED_V2_GUARDED_INSTALL.py'
 $ff=jp $rg.localPath 'BGX_FRIENDLY_RETALIATION_GUARDED.py'
 $rr=$rg.localPath
@@ -498,14 +504,14 @@ function Test064GuardedReadOnly {
 SyncRelease $x64
 Verify064GuardedSource
 wh '064 guarded preflight (RO).'
-& py -3 (jp $x64.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') preflight
+& py -3 (jp $x64.localPath $i64) preflight
 if($LASTEXITCODE -ne 0){throw ('BGXAI064 guarded PRECHECK STOP '+$LASTEXITCODE)}
 wh 'BGXAI064 guarded preflight PASS. Installed 061 remains unchanged.'
 }
 function Status064GuardedReadOnly {
 SyncRelease $x64
 Verify064GuardedSource
-& py -3 (jp $x64.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') status
+& py -3 (jp $x64.localPath $i64) status
 if($LASTEXITCODE -ne 0){throw ('BGXAI064 guarded STATUS STOP '+$LASTEXITCODE)}
 }
 function Run064Guarded([string]$mode) {
@@ -513,9 +519,9 @@ if($mode -cne 'install' -and $mode -cne 'rollback'){throw 'BGXAI064 illegal mode
 SyncRelease $x64
 Verify064GuardedSource
 if($mode -ceq 'install'){
-& py -3 (jp $x64.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') preflight
+& py -3 (jp $x64.localPath $i64) preflight
 }else{
-& py -3 (jp $x64.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') status
+& py -3 (jp $x64.localPath $i64) status
 }
 if($LASTEXITCODE -ne 0){throw ('BGXAI064 pre-authorization CHECK FAILED '+$LASTEXITCODE)}
 $ztok=if($mode -ceq 'install'){'INSTALL_BGXAI_064'}else{'ROLLBACK_BGXAI_064'}
@@ -523,7 +529,7 @@ wh '064: verified backup; Lua changes via WeiDU.'
 wh 'Close game/loader; BCS and EPS unchanged.'
 $zcf=rh ('Type '+$ztok+' exactly to authorize or ENTER to cancel')
 if($zcf -cne $ztok){wh '064 cancelled; game unchanged.';return}
-& py -3 (jp $x64.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') $mode '--yes' '--confirm' $ztok
+& py -3 (jp $x64.localPath $i64) $mode '--yes' '--confirm' $ztok
 if($LASTEXITCODE -ne 0){throw ('BGXAI064 '+$mode+' STOP code '+$LASTEXITCODE+'; do NOT retry blindly')}
 wh ('BGXAI064 '+$mode+' completed; check guarded read-only STATUS menu 75.')
 }
@@ -770,7 +776,7 @@ ANR $dest
 if((hf $dest) -cne $list[$name].sha){throw ('BGXAI064 source SHA mismatch: '+$name)}
 }
 wh '064 SHA-checked 061 status; read only.'
-& py -3 (jp $spec.localPath 'BGXAI64_PREFLIGHT_READONLY.py') '--game-root' $gr
+& py -3 (jp $spec.localPath $p64) '--game-root' $gr
 if($LASTEXITCODE -ne 0){throw ('BGXAI064 read-only preflight STOP: '+$LASTEXITCODE)}
 wh '064 preflight PASS; not installed; runtime unverified.'
 }
