@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 144,
-  "sha256": "86ff8c0f02b7ff8b48bad8c80da1201e7d3a1897fbbfd9de2b2ca6ec7ac80594",
-  "mode": "V144_PINNED_DOWNSTREAM_ROUTER_FUNCTION_READ_ONLY_UI_HOLD",
+  "version": 146,
+  "sha256": "5376a7417fb8def89ef5743f59ba9af8f3c91ae6f8c8ca83a9da676b2598e671",
+  "mode": "V146_PINNED_FIVE_FOLLOWUP_FUNCTIONS_READ_ONLY_ROW_HOLD",
   "game_writes_allowed": false,
-  "note": "Same user CMD, menu 9 V144 read-only collects bounded code windows and optional pdata for downstream RVA 0x209580,0x2195B0,0x406720 from exact EXE. Nested V136/V140/V142 evidence retained in new 70_V144_DOWNSTREAM_SOURCE_RO.json; old 67/68/69 historical ZIP entries unchanged. No game writes, hooks or gameplay/render row proof."
+  "note": "One unchanged user CMD, menu 9; V146 reads exact SHA-pinned Baldur.exe on disk to capture five follow-up RVAs 0x40BC80/0x40A400/0x276490/0x4069F0/0x2197B0, along with nested V136/V140/V142/V144 evidence, and writes 71_V146_FOLLOWUP_SOURCE_RO.json in existing ZIP. Historical 67-70 entries preserved. No game write/hook/install/visible combatLog row identity claim."
 }
