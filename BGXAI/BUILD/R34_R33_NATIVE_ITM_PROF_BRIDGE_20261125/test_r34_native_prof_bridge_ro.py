@@ -93,7 +93,9 @@ class Bridge(unittest.TestCase):
         self.source=FakeSource()
     def test_real_native_parser_and_skill_group(self):
         result=r34.join(raw(self.s,self.events),self.source,r3.parse_itm)
-        self.assertEqual(result["status"],"CURRENT_NATIVE_ITM_PROF_GROUPS_JOINED_RO_NO_SWITCH")
+        self.assertEqual(result["status"],"R34_SOURCE_ONLY_SYNTHETIC_JOIN_NO_SWITCH")
+        self.assertFalse(result["liveGamePinVerified"])
+        self.assertFalse(result["sameSessionItemResourcesVerified"])
         self.assertEqual(result["r33EventCount"],8)
         self.assertEqual(result["nativeResourceCount"],5)
         rows={x["resref"]:x for x in result["resourceItems"]}
