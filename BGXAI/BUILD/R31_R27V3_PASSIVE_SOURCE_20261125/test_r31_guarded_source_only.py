@@ -123,14 +123,14 @@ class R31GuardedTests(TestCase):
                 self.assertEqual(native_calls, ["install"])
                 # Real capture is never executed here: fake InfinityLoader writes
                 # only a synthetic console log in the disposable home directory.
-                (root / 'InfinityLoader.exe').write_bytes(b'MZ' + b'\\0' * 2048)
+                (root / 'InfinityLoader.exe').write_bytes(b'MZ' + b'\0' * 2048)
                 class Child:
                     def wait(self):
                         return 0
                 def fake_popen(args, **kwargs):
                     kwargs['stdout'].write(
-                        b'[BGXR27] {"type":"SESSION","observerCandidate":"R31_R27V3_PASSIVE"}\\n'
-                        b'[BGXR27] {"type":"R27_SINGLE_CALLBACK","queueSnapshotStable":true,"queueNonemptyObserved":true}\\n')
+                        b'[BGXR27] {"type":"SESSION","observerCandidate":"R31_R27V3_PASSIVE"}\n'
+                        b'[BGXR27] {"type":"R27_SINGLE_CALLBACK","queueSnapshotStable":true,"queueNonemptyObserved":true}\n')
                     return Child()
                 with mock.patch.object(g.subprocess, 'Popen', fake_popen):
                     capture = g.capture_console(root)
