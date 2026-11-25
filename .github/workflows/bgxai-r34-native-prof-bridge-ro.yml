@@ -1,0 +1,45 @@
+name: BGXAI R34 R33 live native ITM proficiency bridge SOURCE ONLY
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125/**'
+      - '.github/workflows/bgxai-r34-native-prof-bridge-ro.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-join:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 6
+    steps:
+      - name: Prevent Windows CRLF drift of pinned R3 parser
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: R34 bridge + prior SHA-pinned real native R3 on synthetic ITM fixtures
+        shell: bash
+        run: python -m unittest discover -s BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125 -p 'test_r34_native_prof_bridge_ro.py' -v
+      - name: Check no game-order functions/new listeners/new updater
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          d=Path('BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125')
+          source=(d/'BGXAI_R34_NATIVE_PROF_BRIDGE_RO.py').read_text()
+          assert 'EEex_Action_AddSpriteStartedActionListener' not in source
+          assert 'SelectWeaponAbility(' not in source
+          assert 'AttackReevaluate(' not in source
+          assert 'subprocess.Popen' not in source
+          r3=Path('BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_ITM_R3_RO.py').read_bytes()
+          assert hashlib.sha256(r3).hexdigest()=='ed87a7a6618826c6d3901d2579a39bf280fcaeb09cd18b7b6ee159b9ebfcc74a'
+          print('R34 SHA-pinned R3 reuse, code read-only PASS. No game deployment.')
+          PY
