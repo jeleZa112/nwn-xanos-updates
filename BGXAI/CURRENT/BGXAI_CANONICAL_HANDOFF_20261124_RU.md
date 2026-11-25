@@ -1,5 +1,15 @@
 # BGXAI — единая точка продолжения, 24 ноября 2026
 
+## 25.11.2026 — R30/CURRENT R27 V3 снова согласованы: только CODE/CI PASS
+
+Устранён зафиксированный ранее конфликт R30 с параллельно созданным `ACTION_CONTEXT_V3`. **Сначала** проверено, что актуальная чистая ветка собирает исходник R27 source-only: независимый GitHub [CI 45456677110](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45456677110) SUCCESS Windows+Linux, кандидат **44805 байт**, SHA256 **`61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929`**, источник из `BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124/BGXAI_R27_R2_REFRESH_SOURCE_ONLY.lua`.
+
+В **существующем** `BGXAI_R30_QUEUE_DEPLOY_PREFLIGHT_RO.py` обновлён SHA с исторического V2 `7ca77abe...` на точный собранный V3 `61744e9b...`. Кроме SHA, новый readonly preflight требует обязательные маркеры `queueSnapshotStable`, `actionContextSnapshotStable`, `actionSourceStable`, `UNCLASSIFIED_CAI_ACTION_M_SOURCE`, двойные снимки R2/R4 и жёсткие `actionOriginVerified=false`, `manualEpsQueueVerified=false`. Он отвергает старый queue-only V2 даже при подмене SHA в тестовом стенде. **Ни одна из этих проверок не предоставляет право на игровую установку.** Новые тесты R30 **12/12**; [CI 45553690490](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45553690490) SUCCESS Windows+Linux, R27 **90/90** Lua x3, V3 **442/442** x3. Следующий commit Workflow-лейбла меняет только число тестов 10→12, не алгоритм.
+
+**DEPLOY NO / LIVE NEW V3 NO**: R30 всё ещё НЕ встроен в единственный `BGXAI_UPDATE.cmd`; на пользовательской машине не запускался; точно установленный R27 SHA `e5eb400c56ffb1bc23344a0cf30dcc724d8d18fc2752fabd1c2c63cdcca73735` не изменялся. Следующий P0 — безопасная интеграция **только read-only R30** в уже существующий пункт обновлятора, с one-run real WeiDU/EPS/EEex checks, но без повторного R27 native capture, без R29, без live-модификации без typed согласия.
+
+---
+
 ## 25.11.2026 — R30 read-only preflight и обнаруженный параллельный конфликт R27
 
 **CODE готов:** [R30 README](../BUILD/R30_QUEUE_DEPLOY_PREFLIGHT_RO_20261125/README_RU.md) и [контрольная точка](BGXAI_R30_PREFLIGHT_AND_CONTEXTV3_CONFLICT_20261125_RU.md). Новый preflight в **READ ONLY** режиме проверяет полный порядок WeiDU (R27 может быть не последним), точный SHA установленного R27 и установленного EPS/EEex, и source-only кандидата; не изменяет игру. Локально Python **10/10**. В [CI 45453114204](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45453114204) сам шаг R30 и Windows static **PASS**, но **общий workflow FAILURE** на несовпадении SHA исходника R27 после параллельного изменения `ACTION_CONTEXT_V3` коммитом `2dd3b91ba724`.
