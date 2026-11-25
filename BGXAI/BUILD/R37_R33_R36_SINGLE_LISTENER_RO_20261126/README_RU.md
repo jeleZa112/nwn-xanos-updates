@@ -1,3 +1,13 @@
+## ЗАФИКСИРОВАННЫЙ РЕЛИЗ R37 — 26.11.2026 (поверх исторических записей ниже)
+
+**ФИНАЛЬНЫЕ ДАННЫЕ:** `BGXAI_SYNC.ps1` **79 832 B**, SHA256 `65e4c5fe29355cad35d4ef565042edf5cdbcd507e846e340056dcc5816246d43`, bootstrap commit `3c869ebad84fecaac8a671aa0105069b5c9ccb54`. Guard `R37_GUARDED_SOURCE_ONLY.py` **26 210 B**, SHA256 `5dca3b0709a70687221e640a2fc8a4d1e3ca12e5ffa34baeeddb8d174479ba0e`. Lua R37 **60 835 B**, SHA256 `5ece282270f0e6a1fa7a6086b7f13c57c77de98759637efa4b2ab0cc1e5744d6`. Эти значения заменяют упоминания более ранних сборок R37 ниже — никогда не возвращаться к старым checksum.
+
+**Один CMD, пункт 174:** 1 = preflight (по умолчанию), 2 = typed install, 3 = status, 4 = typed rollback, 5 = read-only игровой capture. Capture после запуска original InfinityLoader, игры и нормального выхода сохраняет `BGXAI_R37_CAPTURE_*.json` и raw console. Если session/paired event повреждены, статус HOLD и код завершения **2** (но отчёт сохранён); только `R37_RUNTIME_ADVICE_LOG_READY_FOR_REVIEW` даёт exit 0. **25 позитивных/негативных тестов PASS Windows+Linux** [CI](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45678510306). Общая матрица [7/7 PASS](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45678510335). **R37 в пользовательской игре НЕ установлен**, активация выбора оружия запрещена.
+
+Для GAME LIVE: закрыть игру, `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd` → 174 → 2, typed `INSTALL_BGXAI_R37_PASSIVE_ADVICE_AFTER_R33`. При SUCCESS после этого тот же CMD → 174 → 5, загрузить готовое сохранение, провести обычную схватку, закрыть игру и прикрепить **один последний `BGXAI_R37_CAPTURE_*.json`**. При STOP/HOLD повторно не выполнять и не восстанавливать файлы вручную. Старые пункты 1–173 не изменялись, исходный CMD 80 000-byte limit соблюдён.
+
+---
+
 ## 26.11.2026 — добавлен реальный сбор журнала R37 через ТОТ ЖЕ пункт 174
 
 **Актуально:** R37 по-прежнему не установлен в игре, но защищённый маршрут полностью готов: `BGXAI_UPDATE.cmd → 174` и варианты **1 preflight (по умолчанию), 2 install (typed), 3 status, 4 rollback (typed), 5 capture (READ ONLY)**. Режим 5 запускает исходный `InfinityLoader.exe`, пишет лог `BGXAI_R37_CONSOLE_*.log`, по завершении игры формирует **один JSON-отчёт `BGXAI_R37_CAPTURE_*.json`** в `C:\Users\Drevo\Documents\BGXAI_LIVE_REPORTS`. Нет вторых CMD, PowerShell, отдельных ZIP или ручного поиска лога. JSON содержит до 64 пар `R33/R37` с очередными номерами, partyIndex, status, invalidateCachedAdvice, но **не** actor ID и **не** выдуманное EPS/manual происхождение. Raw лог сохраняется отдельно на случай диагностики и не нужен для первичной проверки, если JSON PASS.
