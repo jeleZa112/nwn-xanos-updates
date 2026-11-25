@@ -61,7 +61,10 @@ jobs:
             print('PASS new immutable bootstrap pinned')
           else:
             print('PENDING_BOOTSTRAP_UPDATE_ONLY previous pin still intact')
-          assert len(s)<=82000,'new menu must not grow unbounded'
+          assert len(s)<=80000,'raw CMD bootstrap has HARD 80000-byte cap'
+          cmd=Path('BGXAI_UPDATE.cmd').read_bytes()
+          assert b'$expectedSize -gt 80000' in cmd and b'Download-Limited $scriptSources $temporaryScript 80000' in cmd
+          print('PASS unchanged CMD bootstrap HARD <=80000 cap honored')
           print('R37_MENU174_SCRIPT_BYTES='+str(len(s)))
           print('R37_MENU174_SCRIPT_SHA256='+hashlib.sha256(s).hexdigest())
           print('PASS source-only menu 1-173 byte IDENTICAL; 174 SHA-pinned guarded')
