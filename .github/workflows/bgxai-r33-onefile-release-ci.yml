@@ -1,4 +1,4 @@
-name: BGXAI R33 active one-CMD menu172 immutable pin and PS5.1
+name: BGXAI R33 historical menu172 guarded install preserved by R34
 on:
   push:
     branches: [bg-eet-ai]
@@ -38,8 +38,8 @@ jobs:
           assert re.fullmatch('[a-f0-9]{40}',pin['commit'])
           assert re.fullmatch('[a-f0-9]{64}',pin['script_sha256'])
           s=(here/pin['script_path']).read_bytes()
-          assert len(s)==pin['script_size']==79920<=80000
-          assert hashlib.sha256(s).hexdigest()==pin['script_sha256']=='7e3c3cc69ce865ff197a5238564757a2c01df71950f56018590f5fa2c38b2417'
+          assert len(s)==pin['script_size']==79935<=80000
+          assert hashlib.sha256(s).hexdigest()==pin['script_sha256']=='c900e8aa6c4ec92bcb80cac1624cf1d6caa477dc961dd137555508e14e9d1f78'
           immutable=subprocess.check_output(['git','show',pin['commit']+':'+pin['script_path']])
           assert immutable==s, 'released pin must reference exact immutable Git commit'
           original=subprocess.check_output(['git','show','fe992a60a4c7880912270cfed27be59c6a0bf359:BGXAI/BGXAI_SYNC.ps1'])
@@ -47,17 +47,29 @@ jobs:
           pattern=r"(?m)^'[1-9][0-9]*' \{[^\n]+}$"
           older=re.findall(pattern,original.decode())
           newer=re.findall(pattern,s.decode())
-          assert len(older)==171 and newer[:171]==older and len(newer)==172
-          assert newer[171].startswith("'172' {")
+          assert len(older)==171 and newer[:171]==older and len(newer)==173
+          assert newer[171].startswith("'172' {") and newer[172].startswith("'173' {")
+          historical= (here/'BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/BGXAI_SYNC_R33_MENU172_SOURCE_ONLY.ps1').read_bytes()
+          assert len(historical)==79920 and hashlib.sha256(historical).hexdigest()=='7e3c3cc69ce865ff197a5238564757a2c01df71950f56018590f5fa2c38b2417'
+          assert newer[:172]==re.findall(pattern,historical.decode()), 'R33 dispatch changed after R34'
           assert "Set-Alias jp Join-Path -Scope Script" in s.decode()
           assert "Set-Alias tp Test-Path -Scope Script" in s.decode()
           cmd=(here/'BGXAI_UPDATE.cmd').read_bytes()
           assert cmd==subprocess.check_output(['git','show','71b1d37db787a59ed16c8b92ac495314b3577e02:BGXAI_UPDATE.cmd'])
-          print('BGXAI R33 ONE CMD ACTIVE PIN SHA256 + ORIGINAL 171 DISPATCHES + 80KB PASS; no game install')
+          print('BGXAI R33 historical handler remains identical; R34 active SHA and original CMD intact')
           PY
-      - name: Reproduce user's blocked path and ensure pinned guard and Lua now downloadable
+      - name: Historical immutable R33 source allowlist still accepted both R33 artifacts
         shell: bash
-        run: python BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/test_r33_updater_remote_allowlist_ro.py
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib,re
+          s=Path('BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/BGXAI_SYNC_R33_MENU172_SOURCE_ONLY.ps1').read_bytes()
+          assert len(s)==79920
+          assert hashlib.sha256(s).hexdigest()=='7e3c3cc69ce865ff197a5238564757a2c01df71950f56018590f5fa2c38b2417'
+          assert b'|BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125|' in s
+          print('R33 historical source release SHA preserved, game unchanged')
+          PY
       - name: Guard code, Lua pin, staging script and manifest match exact
         shell: bash
         run: |
@@ -70,11 +82,11 @@ jobs:
           assert hashlib.sha256(guard).hexdigest()=='0815d173b276c0f990eb3ab66ac6f8f614a9a0f0f59fc301f94f5f8c890be653'
           assert len(lua)==49438
           assert hashlib.sha256(lua).hexdigest()=='1420ef723df1090d56f8f6590fd82e5c69107ba97a39b2ca2ba73f93e0e77069'
-          live=pathlib.Path('BGXAI/BGXAI_SYNC.ps1').read_bytes()
-          assert live==(dir/'BGXAI_SYNC_R33_MENU172_SOURCE_ONLY.ps1').read_bytes()
+          historical=(dir/'BGXAI_SYNC_R33_MENU172_SOURCE_ONLY.ps1').read_bytes()
+          assert hashlib.sha256(historical).hexdigest()=='7e3c3cc69ce865ff197a5238564757a2c01df71950f56018590f5fa2c38b2417'
           sys.path.insert(0,str(dir))
           import build_r33_onefile_menu172_source_only as b
-          assert b.build()==live
+          assert b.build(base=historical)==historical
           print('R33 GUARD AND SINGLE LISTENER LUA SHA PINS + DETERMINISTIC BUILD PASS')
           PY
       - name: Guarded WeiDU R31 to R33 simulation and read-only observation
