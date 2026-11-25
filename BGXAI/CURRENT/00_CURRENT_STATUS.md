@@ -1,5 +1,20 @@
 # BGXAI — короткий актуальный статус на 25.11.2026
 
+## 25.11.2026 — R32 TABLE APR SOURCE CODE + CI PASS, игра не менялась
+
+**Сделана полезная ступень Weapon Priority V5, не второй скорер:** `BGXAI/BUILD/R32_APR_EET_TABLES_RO_20261125/` — READ ONLY code `BGXAI_R32_APR_EET_TABLES_RO.py` + `BGXAI_R32_EEEX_ENGINE_2DA_RO.lua` + 2 файла тестов и README_RU. Вспомогательный Python проверяет формат `WSPATCK.2DA` и `CLSWPBON.2DA` из точных файлов `override` с SHA256; при отсутствии возвращает HOLD и не имитирует BIFF. Lua-путь через официальный EEex `EEex_Resource_Load2DA` читает *через движок* соответствующие C2DArray (пока только SOURCE ONLY, без установки/слушателей).
+
+**Боевая механика:** WSPATCK возвращает только **добавочный** APR (`-1→+0.5`, `1→+1`, `-2→+1.5`), а CLSWPBON.GETS_PROF_APR указывает, имеет ли класс право на proficiency APR. НЕЛЬЗЯ принимать таблицу за финальный APR, складывать повторно с engine final APR или объявлять альтернативный слот готовым без проверенной weapon↔proficiency association, active class/dual/multi, предметов, заклинаний/эффектов и фактической частоты атак альтернативного оружия. Источники: [IESDP WSPATCK](https://burner1024.github.io/iesdp/files/2da/2da_tob/wspatck.htm), [IESDP CLSWPBON](https://burner1024.github.io/iesdp/files/2da/2da_bgee/clswpbon.htm), [EEex_Resource_Load2DA](https://github.com/Bubb13/EEex/blob/master/EEex/copy/EEex_scripts/EEex_Resource.lua).
+
+**TEST / CI:** [GitHub workflow 45643546399](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45643546399) = **SUCCESS**, Windows+Linux Python 3.12 и 17 native Lua тестов на Lua5.3/Lua5.4/LuaJIT с синтетическим EEex C2DArray. Никаких реальных данных из пользовательского BIFF ещё не получено и нативный EEex runtime R32 не проверен. CODE/CI PASS; DEPLOY R32 NO; LIVE R32 NO; ALT EFFECTIVE APR NO.
+
+**Не трогали:** пользовательский `BGXAI_UPDATE.cmd`, PIN, WeiDU, R31 R27V3 passive observer, V6/R29, EPS, EET, BG Voice RU, BG_EET_RU и сейвы. Один обновлятор обязателен; старые меню не повторять.
+
+**Следующий приоритет:** источник class/kit + weapon ability ↔ proficiency и runtime final-state каждого **альтернативного** слота, с корректным снимком целевых защит/эффектов и без потери действия. Не посылать команды на основании R31 `queuedActionsRaw=0`. Не назначать пользователю новый тест/установку R32, пока нет полного безопасного live-маршрута и существенного нового поведения.
+
+---
+
+
 **Regression после реального R31 боя:** в `test_weapon_noninterrupt_plan_v1.lua` добавлен конкретный реальный сценарий `actionRaw=3` + `queuedActionsRaw=0` + `ACTION_SOURCE_POINTER_UNAVAILABLE` → `CONTINUE_CURRENT_ACTION_SWITCH_PENDING` только advisory, `dispatchAuthorized=false`, `ordersSent=0`, `actionQueueCleared=false`, `currentActionPreserved=true`. Offline NONINTERRUPT 26/26; общий runner 443 сценария (ранее 442). **[GitHub CI 45641893884](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45641893884) SUCCESS:** native Lua 5.3/5.4/LuaJIT + Windows static. Никакой установленный Lua/BCS/PIN/WeiDU не менялся. R31 и V6 остаются как были.
 
 
