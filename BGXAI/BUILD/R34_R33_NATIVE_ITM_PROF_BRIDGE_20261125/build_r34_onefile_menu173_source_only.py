@@ -16,10 +16,10 @@ STAGE=HERE/"BGXAI_SYNC_R34_MENU173_SOURCE_ONLY.ps1"
 R34=HERE/"BGXAI_R34_NATIVE_PROF_BRIDGE_RO.py"
 R3=HERE.parents[1]/"patchsets"/"ranged_fighter_guarded_20261119"/"BGXAI_WEAPON_NATIVE_ITM_R3_RO.py"
 R33_BASE_SHA="7e3c3cc69ce865ff197a5238564757a2c01df71950f56018590f5fa2c38b2417"
-R34_SOURCE_SHA="48b763fee2d22d22002cbac7efebedd98904f8ee8f6128f82a324bcd3d5957da"
+R34_SOURCE_SHA="66cc118840418691e49a8b16fe190c3facab6dccc6f89bcecfe07686d7225208"
 R3_SOURCE_SHA="ed87a7a6618826c6d3901d2579a39bf280fcaeb09cd18b7b6ee159b9ebfcc74a"
-R34_STAGE_SHA="d131395cc7d3b5b9c265a8684994515eb6b7e72ba69c5ef4422597cc541de877"
-HANDLER = "'173' {$p='BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125/BGXAI_R34_NATIVE_PROF_BRIDGE_RO.py';$q='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_ITM_R3_RO.py';$a=Get-PinnedBytes $p;$b=Get-PinnedBytes $q;if((HashBytes $a)-cne '48b763fee2d22d22002cbac7efebedd98904f8ee8f6128f82a324bcd3d5957da' -or (HashBytes $b)-cne 'ed87a7a6618826c6d3901d2579a39bf280fcaeb09cd18b7b6ee159b9ebfcc74a'){throw 'R34 SOURCE PIN STOP'};ANR $zcd;$f=jp $zcd ('r34_'+[guid]::NewGuid().ToString('N')+'.py');$g=jp $zcd ('r3_'+[guid]::NewGuid().ToString('N')+'.py');try{[IO.File]::WriteAllBytes($f,$a);[IO.File]::WriteAllBytes($g,$b);$d=jp $env:USERPROFILE 'Documents\\BGXAI_LIVE_REPORTS';ANR $d;$l=jp $d 'BGXAI_R33_CONSOLE_20261125T161358491052Z.log';if((HashFile $l)-cne 'd510da7e5c15d1579266b37a89fdf91ceff91622714a142e1c137376ec239538'){throw 'R34 LIVE LOG PIN STOP'};$o=jp $d ('BGXAI_R34_NATIVE_PROF_'+(Get-Date -Format 'yyyyMMddTHHmmssfff')+'.json');& py -3 $f --game $gr --log $l --r3-source $g | Out-File -LiteralPath $o -Encoding utf8;$r=$LASTEXITCODE;Get-Content -LiteralPath $o;wh ('REPORT_FILE='+$o);if($r){throw 'R34 READONLY STOP'}}finally{Remove-Item -LiteralPath $f,$g -Force -ErrorAction SilentlyContinue};break}"
+R34_STAGE_SHA="68dadff31059cec588cb1e85e0b53f96493c1f4f87661261d9c920d2a0e324a8"
+HANDLER = "'173' {$p='BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125/BGXAI_R34_NATIVE_PROF_BRIDGE_RO.py';$q='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_ITM_R3_RO.py';$a=Get-PinnedBytes $p;$b=Get-PinnedBytes $q;if((HashBytes $a)-cne '66cc118840418691e49a8b16fe190c3facab6dccc6f89bcecfe07686d7225208' -or (HashBytes $b)-cne 'ed87a7a6618826c6d3901d2579a39bf280fcaeb09cd18b7b6ee159b9ebfcc74a'){throw 'R34 SOURCE PIN STOP'};ANR $zcd;$f=jp $zcd ('r34_'+[guid]::NewGuid().ToString('N')+'.py');$g=jp $zcd ('r3_'+[guid]::NewGuid().ToString('N')+'.py');try{[IO.File]::WriteAllBytes($f,$a);[IO.File]::WriteAllBytes($g,$b);$d=jp $env:USERPROFILE 'Documents\\BGXAI_LIVE_REPORTS';ANR $d;$o=jp $d ('BGXAI_R34_NATIVE_PROF_'+(Get-Date -Format 'yyyyMMddTHHmmssfff')+'.json');& py -3 $f --game $gr --reports-dir $d --r3-source $g | Out-File -LiteralPath $o -Encoding utf8;$r=$LASTEXITCODE;Get-Content -LiteralPath $o;wh ('REPORT_FILE='+$o);if($r){throw 'R34 READONLY STOP'}}finally{Remove-Item -LiteralPath $f,$g -Force -ErrorAction SilentlyContinue};break}"
 
 def sha(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
@@ -75,7 +75,7 @@ def build() -> bytes:
     assert target and post.count(target+"\n")==1
     post=post.replace(target+"\n",target+"\n"+HANDLER+"\n",1)
     out=(pre+marker+post).encode("ascii")
-    assert len(out)==79943, len(out)
+    assert len(out)==79775, len(out)
     assert sha(out)==R34_STAGE_SHA
     assert dispatches(out.decode())[:172]==older
     assert len(dispatches(out.decode()))==173
