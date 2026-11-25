@@ -1,5 +1,18 @@
 # BGXAI R34 — живой профиль R33 + актуальные ITM предметы, READ ONLY
 
+## HOTFIX 25.11.2026 — R34 LIVE LOG PIN STOP (точный SHA верен, поиск был хрупким)
+
+Пользователь при `BGXAI_UPDATE.cmd` (загружен `b678020a5dee`) выбрал меню 173, получил `R34 LIVE LOG PIN STOP`. По оригинальному пользовательскому файлу `BGXAI_R33_CONSOLE_20261125T161358491052Z.log` **реально пересчитан** SHA256 `d510da7e5c15d1579266b37a89fdf91ceff91622714a142e1c137376ec239538` (101981 байт). Следовательно, хардкод SHA был верен, но `HashFile` на ожидаемом локальном пути возвращал не этот хеш или пустую строку; отличить по старому STOP невозможно.
+
+**Новая логика безопасного READ ONLY выбора входа**: только собственная папка `Documents\BGXAI_LIVE_REPORTS`; до 128 нерекурсивных `BGXAI_R33_CONSOLE_*.log`. Прежде всего точное совпадение SHA загруженного файла. Если байты изменены/переименован файл, допускается ровно один структурно корректный 8-event R33 session с совпадением уже известного профиля и экипировки Халида; статус `STRUCTURAL_R33_FINGERPRINT_ONLY_DIFFERENT_SHA`, `sameBytesAsUserUploadedLogVerified=false`. Файл вне папки не ищем, непроверенные symlink/junction не читаем, при неоднозначности/подмене возвращается JSON HOLD. Любая информация по alternative APR, происхождению приказа и безопасному переключению остаётся HOLD; auto switch OFF. Никакого нового тестового боя и reinstall.
+
+**РЕЛИЗ:** `BGXAI/BGXAI_SYNC.ps1` 79 775 B SHA256 `9b44a5cf6ffd83c97c17c49ac9533b102bcdef7a004da4840636762a91cb2db5`, immutable `124add6624c4cfd054b2cee61f37d5af5f093bea`. BOOTSTRAP_PIN обновлён, старые пункты 1..172 нетронуты. [R34 исходники Windows+Linux 22/22 PASS](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45660217453); [R34 active CI 3/3 PASS, включая PS5.1 запуск до меню](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45660513142); [R33 historical guard regression 5/5 PASS](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45660551436). Это код и CI, новый выпуск **на ПК пользователя ещё не запускался**.
+
+**Единственное действие пользователя:** закрыть игру и InfinityLoader → старый `BGXAI_UPDATE.cmd` → дождаться `verified pinned script 124add6624c4 (SHA256 OK)` → **173** → прислать один `BGXAI_R34_NATIVE_PROF_*.json`. Если STOP, прислать JSON c причиной, без повторных запусков.
+
+---
+
+
 **Дата:** 25.11.2026. **Реализация:** `BGXAI_R34_NATIVE_PROF_BRIDGE_RO.py` + существующий, SHA-pinned `BGXAI_WEAPON_NATIVE_ITM_R3_RO.py`. В единый `BGXAI_UPDATE.cmd` добавлен пункт **173**. **Никакой установки в игру: WeiDU, BCS, Lua, сохранения, EPS, BG Voice RU, BG_EET_RU не изменяются.**
 
 ## Задача
