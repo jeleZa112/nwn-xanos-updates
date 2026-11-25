@@ -13,8 +13,8 @@ PIN=ROOT/"BGXAI/fox_new/BOOTSTRAP_PIN.json"
 SYNC=ROOT/"BGXAI/BGXAI_SYNC.ps1"
 SOURCE=ROOT/"BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_R19_INSTALLED_EEEX_AUDIT_RO.py"
 CANONICAL=ROOT/"BGXAI/BUILD/R19_INSTALLED_EEEX_STATIC_RO_20261123/BGXAI_R19_INSTALLED_EEEX_AUDIT_RO.py"
-RELEASE="bdff49dfb908798c9979cfe7e42f5179dd43c6c4"
-SYNC_SHA="913756757e54479f3e50ddd3d5068b58826220b7988f579bacaa6787e7715fcc"
+RELEASE="71b1d37db787a59ed16c8b92ac495314b3577e02"
+SYNC_SHA="10c9a7651096a45c3a5a694acf9800e9f651843321716438a4e37b6015245e42"
 R19_SHA="7426faaa18c1a7bb9a8437ee0733854bed0f868a419e96593c58c7ec71451300"
 
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
@@ -26,7 +26,7 @@ class R20SingleCMDPinTests(unittest.TestCase):
   self.assertEqual(p["script_path"],"BGXAI/BGXAI_SYNC.ps1")
   self.assertEqual(p["branch"],"bg-eet-ai")
   self.assertEqual(p["commit"],RELEASE)
-  self.assertEqual(p["script_size"],79871)
+  self.assertEqual(p["script_size"],79979)
   self.assertEqual(p["script_sha256"],SYNC_SHA)
  def test_actual_script_exact_sha(self):
   self.assertEqual(SYNC.stat().st_size,79871)
@@ -65,6 +65,16 @@ class R20SingleCMDPinTests(unittest.TestCase):
                  "Out-File -LiteralPath $o -Encoding utf8"):
    self.assertIn(marker,a.group(),marker)
   self.assertNotIn("WeiDU",a.group())
+ def test_menu170_is_readonly_and_sha_pinned(self):
+  x=SYNC.read_text(encoding="utf-8")
+  self.assertIn("'170' {RunR30ReadOnly;break}",x)
+  self.assertIn("function RunR30ReadOnly",x)
+  self.assertIn("BGXAI_R30_READONLY_",x)
+  self.assertIn("--candidate $g",x)
+  self.assertIn("61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929",x)
+  self.assertIn("88582abf17e919b9441795b8559cfe85b858fd3083672431eb36b60ba78981bd",x)
+  self.assertIn("R30 queue/deploy preflight",x)
+  self.assertNotIn("INSTALL_BGXQ30",x)
  def test_no_game_action_allowed_in_r19(self):
   x=SOURCE.read_text(encoding="utf-8")
   for marker in ("'safeToCallGetAbility':False",
