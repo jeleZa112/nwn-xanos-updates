@@ -20,12 +20,12 @@ class TestOneFile136(unittest.TestCase):
         code=UPDATER.read_text('utf8').split('\n',1)[1]
         self.ns={'__name__':'v136_test_non_main','__file__':str(UPDATER)}
         exec(compile(code,str(UPDATER),'exec'),self.ns)
-        self.assertIn(self.ns['SELF_VERSION'],(136,140))
-        self.live_label='v140_ro' if self.ns['SELF_VERSION']==140 else 'v136_ro'
-        self.live_entry='68_V140_EXACT_CALLEE_RO.json' if self.ns['SELF_VERSION']==140 else '67_V136_LIVE_JIT_TARGET_RO.json'
+        self.assertIn(self.ns['SELF_VERSION'],(136,140,142))
+        self.live_label=('v142_ro' if self.ns['SELF_VERSION']==142 else ('v140_ro' if self.ns['SELF_VERSION']==140 else 'v136_ro'))
+        self.live_entry=('69_V142_MESSAGE_DELIVERY_RO.json' if self.ns['SELF_VERSION']==142 else ('68_V140_EXACT_CALLEE_RO.json' if self.ns['SELF_VERSION']==140 else '67_V136_LIVE_JIT_TARGET_RO.json'))
         self.ns['WORKDIR']=self.work
         cache=self.work/'.BG_EET_RU_AUTOFIX_CACHE';cache.mkdir()
-        for version, filename in ((133,'v133_live_hit_inventory_ro.py'),(self.ns['SELF_VERSION'],'v140_ro.py' if self.ns['SELF_VERSION']==140 else 'v136_jit_provenance_ro.py')):
+        for version, filename in ((133,'v133_live_hit_inventory_ro.py'),(self.ns['SELF_VERSION'],'v142_ro.py' if self.ns['SELF_VERSION']==142 else ('v140_ro.py' if self.ns['SELF_VERSION']==140 else 'v136_jit_provenance_ro.py'))):
             src=SOURCES/filename
             dst=cache/(f'V{version}_RO.py')
             dst.write_bytes(src.read_bytes().replace(b'\r\n',b'\n'))
@@ -34,8 +34,10 @@ class TestOneFile136(unittest.TestCase):
         with zipfile.ZipFile(self.zip,'w',zipfile.ZIP_DEFLATED) as z:
             z.writestr('00_OLDER_REPORT.json','{"old":true}')
             z.writestr('66_V133_LIVE_HIT_INVENTORY.json','{"historical":true}')
-            if self.ns['SELF_VERSION']==140:
+            if self.ns['SELF_VERSION']>=140:
                 z.writestr('67_V136_LIVE_JIT_TARGET_RO.json','{"historical_v136":true}')
+            if self.ns['SELF_VERSION']==142:
+                z.writestr('68_V140_EXACT_CALLEE_RO.json','{"historical_v140":true}')
         self.called=[]
         def fake_exec(code,namespace):
             label=namespace['__name__']
@@ -44,7 +46,7 @@ class TestOneFile136(unittest.TestCase):
             namespace['run_game']=lambda *args:{
                 'schema':'BG_EET_RU_MOCK_ROUTING_ONLY',
                 'status':('V136_LIVE_PAIR_SITES_AND_EXECUTABLE_TARGET_OBSERVED_OWNER_HOLD'
-                          if label in ('v136_ro','v140_ro') else 'V133_MOCK_STATUS'),
+                          if label in ('v136_ro','v140_ro','v142_ro') else 'V133_MOCK_STATUS'),
                 'firstcall_owner_verified':False,
                 'native_hooks_installed':False,'game_files_written':0,
                 'gameplay_verified':False}
@@ -62,8 +64,10 @@ class TestOneFile136(unittest.TestCase):
         self.assertEqual(entry['game_files_written'],0)
         self.assertEqual(self.read('66_V133_LIVE_HIT_INVENTORY.json'),{'historical':True})
         self.assertEqual(self.read('00_OLDER_REPORT.json'),{'old':True})
-        if self.ns['SELF_VERSION']==140:
+        if self.ns['SELF_VERSION']>=140:
             self.assertEqual(self.read('67_V136_LIVE_JIT_TARGET_RO.json'),{'historical_v136':True})
+        if self.ns['SELF_VERSION']==142:
+            self.assertEqual(self.read('68_V140_EXACT_CALLEE_RO.json'),{'historical_v140':True})
         self.assertEqual(list(self.game.iterdir()),[])
         with zipfile.ZipFile(self.zip) as z:
             self.assertIsNone(z.testzip())
