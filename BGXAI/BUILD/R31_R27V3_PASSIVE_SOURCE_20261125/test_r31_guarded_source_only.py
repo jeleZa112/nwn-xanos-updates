@@ -121,6 +121,25 @@ class R31GuardedTests(TestCase):
                 self.assertEqual((root / "override/BDDEFAI.BCS").read_bytes(), paths["override/BDDEFAI.BCS"])
                 self.assertEqual((root / "override/DPLAYER.BCS").read_bytes(), paths["override/DPLAYER.BCS"])
                 self.assertEqual(native_calls, ["install"])
+                # Real capture is never executed here: fake InfinityLoader writes
+                # only a synthetic console log in the disposable home directory.
+                (root / 'InfinityLoader.exe').write_bytes(b'MZ' + b'\\0' * 2048)
+                class Child:
+                    def wait(self):
+                        return 0
+                def fake_popen(args, **kwargs):
+                    kwargs['stdout'].write(
+                        b'[BGXR27] {"type":"SESSION","observerCandidate":"R31_R27V3_PASSIVE"}\\n'
+                        b'[BGXR27] {"type":"R27_SINGLE_CALLBACK","queueSnapshotStable":true,"queueNonemptyObserved":true}\\n')
+                    return Child()
+                with mock.patch.object(g.subprocess, 'Popen', fake_popen):
+                    capture = g.capture_console(root)
+                self.assertEqual(capture['status'], 'R31_RUNTIME_RAW_QUEUE_LOG_READY_FOR_REVIEW')
+                self.assertEqual(capture['sessionMarkers'], 1)
+                self.assertEqual(capture['stableQueueSamples'], 1)
+                self.assertFalse(capture['queueBindingLiveVerified'])
+                self.assertFalse(capture['dispatchAuthorized'])
+                self.assertEqual(native_calls, ['install'])
                 # Never allow a rollback when a later WeiDU component is last.
                 with (root / "WeiDU.log").open("a", encoding="utf-8") as handle:
                     handle.write("~MOCKLATER/SETUP-MOCKLATER.TP2~ #0 #0 // later component\n")
