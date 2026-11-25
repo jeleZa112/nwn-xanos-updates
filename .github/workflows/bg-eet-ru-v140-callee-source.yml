@@ -49,7 +49,7 @@ jobs:
           assert '68_V140_EXACT_CALLEE_RO.json' in text
           assert '66_V133_LIVE_HIT_INVENTORY.json' in text
           assert '9=JIT+CALLEE-RO' in text
-          mod=Path('bg-eet-ru/native-correlation/v140_ro.py').read_bytes()
+          mod=Path('bg-eet-ru/native-correlation/v140_ro.py').read_bytes().replace(b'\r\n',b'\n')
           pin=hashlib.sha256(mod).hexdigest()
           assert "V140_PIN='"+pin+"'" in text
           assert "v140_ro.py" in text
