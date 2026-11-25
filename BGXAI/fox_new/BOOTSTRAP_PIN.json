@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "124add6624c4cfd054b2cee61f37d5af5f093bea",
+  "commit": "1404112c2889561b99416e48a4ba06ab947c4fee",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "9b44a5cf6ffd83c97c17c49ac9533b102bcdef7a004da4840636762a91cb2db5",
+  "script_sha256": "9131e29da59b7d3a62651eab3ff7deee514da426cfbe6a1267b54444e9c6f59a",
   "script_size": 79775,
-  "description": "R34 read-only native ITM + R33 selected profile; exact uploaded SHA preferred, else unique validated 8-event fingerprint with explicit different-source status; game unchanged, menus 1-172 preserved"
+  "description": "R34 archived R33 aggregate fall back (explicit historical provenance) plus current-game native ITM read only; no dispatch, menus 1-172 unchanged"
 }
