@@ -23,6 +23,7 @@ jobs:
         run: |
           python3 -m unittest discover -s BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125 -p test_r31_source_only.py -v
           python3 BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125/build_r31_v3_source_only.py
+          python3 -m unittest discover -s BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125 -p test_r31_guarded_source_only.py -v
       - name: Existing R27 V3 source and action-context regressions
         run: |
           python3 BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124/build_r27_r2_refresh_ro.py --check
@@ -42,3 +43,4 @@ jobs:
         run: |
           py -3 -m unittest discover -s BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125 -p test_r31_source_only.py -v
           py -3 BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125/build_r31_v3_source_only.py
+          py -3 -m unittest discover -s BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125 -p test_r31_guarded_source_only.py -v
