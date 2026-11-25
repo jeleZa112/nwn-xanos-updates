@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 136,
-  "sha256": "888186ef3caa69e84afd1281a849a0b89f7baaf46810dd9cc21c0e9fe5e3ceeb",
-  "mode": "V136_LIVE_FIRSTCALL_JIT_REGION_READONLY_OWNER_HOLD",
+  "version": 140,
+  "sha256": "0116ee1e48d2fd2d57a91b4fea5e9f75e973b48222cbff8395966d892b5e6352",
+  "mode": "V140_BOUNDED_DISPATCH_CALLEE_READONLY_SEMANTIC_HOLD",
   "game_writes_allowed": false,
-  "note": "V136 extends the existing one-file updater (menu 9 JIT-RO) with SHA-pinned Windows external ReadProcessMemory + VirtualQueryEx observation of existing FirstCall E9 target and post-prolog/exit Hit sites. No hook, no memory writes, no per-attack weapon identification, owner/ABI/unwind/visible row still HOLD. Same one ZIP entry 67_V136_LIVE_JIT_TARGET_RO.json. Requires Baldur.exe running; V133 option 8 and V126 kept unchanged."
+  "note": "One unchanged user updater CMD, existing menu 9 now captures pinned on-disk 0x398530 callee while preserving V136 runtime observation; new 68_V140_EXACT_CALLEE_RO.json added to existing ZIP, historical 67_V136 record preserved. No hook, no game writes, no claimed combatLog link or per-attempt weapon correlation."
 }
