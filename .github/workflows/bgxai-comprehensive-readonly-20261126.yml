@@ -83,6 +83,7 @@ jobs:
           run_case BGXAI/BUILD/R35_NATURAL_SELECTED_APR_RO_20261126 test_r35_natural_selected_apr_ro.py
           run_case BGXAI/BUILD/R36_R33_CONTEXT_INVALIDATION_RO_20261126 test_r36_r33_context_invalidation_ro.py
           run_case BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126 test_r37_source_integrity.py
+          run_case BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126 test_r37_guarded_install_mock.py
       - name: Original CMD and menus 1-173 unchanged; new R37 menu 174 SHA-pinned
         shell: bash
         run: |
