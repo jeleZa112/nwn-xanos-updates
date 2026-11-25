@@ -1,5 +1,18 @@
 # BGXAI — короткий актуальный статус на 25.11.2026
 
+## 25.11.2026 — R33 LIVE RAW 8/8 PASS; WEAPON SWITCH HOLD
+
+**НОВЫЙ ФАКТИЧЕСКИЙ СТАТУС (перекрывает устаревшее «R33 не установлен» ниже):** R33 **INSTALLED PASS / LIVE RAW OBSERVER PASS**. Реальный пользовательский файл `BGXAI_R33_INSTALL_20261125T155703049710Z.json` подтверждает `R33_PASSIVE_INSTALLED_AWAITING_RUNTIME` и внешний backup `C:\Users\Drevo\Documents\BGXAI_BACKUPS\PRE_BGXR33_crzl0r2l`. Реальный LIVE `BGXAI_R33_CONSOLE_20261125T161358491052Z.log` SHA256 `d510da7e5c15d1579266b37a89fdf91ceff91622714a142e1c137376ec239538`: сессия R33 ровно одна, 8/8 стабильных sample seq=1..8, обработчик same invocation, 46 raw WPROF значений 89..134, 0 engine orders, `dispatchAuthorized=false`, `weaponSwitchAuthorized=false`. Случай `actionRaw=3` реально записан.
+
+**Данные Халида:** raw профили: longsword=2, axe=1, longbow=1, shortbow=0. Быстрые слоты `SW1H04` (long sword), `BOW05` (shortbow в стандартном BGEE), `STAF01`, выбран `AROW01`; количество стрел 20→19. Фактический бой: бросок 14, попадание, 4 damage, больной гибберлинг убит; журнал подтверждает штраф за владение `-2` при выстреле из `BOW05`. Сведения об именах ванильных предметов требуют сверки с реальными EET ITM, если будет алгоритм выбора.
+
+**Нельзя разблокировать переключения:** `actionSourceReadStatus=ACTION_SOURCE_POINTER_UNAVAILABLE` **8/8**, нулевая очередь при `actionRaw=3` не подтверждает безопасный dispatch. Значение APR `2` — **сырой engine key**, НЕ итоговая скорость других слотов. `classRowVerified=false`, `actorPipsVerified=false`, `alternateEffectiveAPRVerified=false`. R33 — пассивный. **Не повторять R33 install и LIVE capture.**
+
+**Следующий CODE-only шаг:** read actual local modded ITM data for ability/group→proficiency, weapon eligibility, alternative effective APR (buffs and launcher+ammo), determine safe current action provenance before any switch. Preserve EPS, V6/R29, healing/AoE, BG_EET_RU, BG Voice RU. В этом логе отдельно присутствует `Error loading menu: ']' expected near 'icon'` — не приписывать его BGXAI без доказательств. [Полный зафиксированный LIVE вердикт](BGXAI_R33_LIVE_VERDICT_20261125.md).
+
+---
+
+
 ## 25.11.2026 — R33 ONE-CMD MENU 172 РЕЛИЗ ГОТОВ, ИГРА ПОКА R31
 
 **Фактическое положение:** R31 установлен и подтверждён в реальной игре (12 событий 12 стабильных очередей, ноль непустых; `actionRaw=3` во время атаки Халида, поэтому `queuedActionsRaw=0` НЕ безопасный рубеж). **R33 ЕЩЁ НЕ УСТАНОВЛЕН**: только опубликован защищённый upgrade R31→R33 в прежнем `BGXAI_UPDATE.cmd`, меню **172**. Релиз пассивный: сырые level1/2/3, kit, 46 WPROF-полей 89..134 и raw AI-class, никакой автоматической смены оружия. Обобщённый Weapon Priority V5/V4/V3 по альтернативным слотам не закончен.
