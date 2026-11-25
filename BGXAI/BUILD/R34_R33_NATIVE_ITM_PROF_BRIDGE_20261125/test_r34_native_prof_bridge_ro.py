@@ -6,6 +6,8 @@ import json
 import pathlib
 import struct
 import unittest
+import tempfile
+from unittest import mock
 
 HERE=pathlib.Path(__file__).resolve().parent
 modspec=importlib.util.spec_from_file_location("r34",HERE/"BGXAI_R34_NATIVE_PROF_BRIDGE_RO.py")
@@ -178,6 +180,54 @@ class Bridge(unittest.TestCase):
                     "actorClassRowVerified","targetProtectionsVerified",
                     "allBuffsAndEffectsVerified","ammoLauncherEngineBindingVerified"):
             self.assertIs(out[key],False)
+
+    def test_choose_reference_session_when_named_file_has_different_sha(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path=pathlib.Path(tmp)/r34.EXPECTED_R33_LOG_NAME
+            path.write_bytes(raw(self.s,self.events))
+            data,meta=r34.choose_r33_log(path.parent)
+            self.assertEqual(data,path.read_bytes())
+            self.assertEqual(meta["logSourceStatus"],"STRUCTURAL_R33_FINGERPRINT_ONLY_DIFFERENT_SHA")
+            self.assertFalse(meta["sameBytesAsUserUploadedLogVerified"])
+    def test_choose_exact_sha_preferred_when_renamed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            folder=pathlib.Path(tmp)
+            original=raw(self.s,self.events)
+            (folder/"BGXAI_R33_CONSOLE_000000000000000000000000Z.log").write_bytes(original)
+            with mock.patch.object(r34,"EXPECTED_R33_LOG_SHA",r34.sha(original)):
+                data,meta=r34.choose_r33_log(folder)
+            self.assertEqual(data,original)
+            self.assertTrue(meta["sameBytesAsUserUploadedLogVerified"])
+    def test_missing_report_refuses_but_no_recapture_required(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(r34.Hold,"MISSING_IN_REPORTS_NO_RECAPTURE"):
+                r34.choose_r33_log(pathlib.Path(tmp))
+    def test_tampered_fingerprint_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            events=copy.deepcopy(self.events)
+            for row in events:
+                row["proficiencyStat89to134Raw"][90-89]=3
+            (pathlib.Path(tmp)/r34.EXPECTED_R33_LOG_NAME).write_bytes(raw(self.s,events))
+            with self.assertRaisesRegex(r34.Hold,"DIFFERS_AND_FAILS_FINGERPRINT"):
+                r34.choose_r33_log(pathlib.Path(tmp))
+    def test_ambiguous_different_sha_fail_closed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            folder=pathlib.Path(tmp)
+            original=raw(self.s,self.events)
+            (folder/r34.EXPECTED_R33_LOG_NAME).write_bytes(original)
+            (folder/"BGXAI_R33_CONSOLE_OTHER.log").write_bytes(original+b"\n")
+            with self.assertRaisesRegex(r34.Hold,"AMBIGUOUS_STRUCTURAL"):
+                r34.choose_r33_log(folder)
+    def test_symlink_is_not_read(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            folder=pathlib.Path(tmp)
+            target=folder/"private.txt"
+            target.write_bytes(raw(self.s,self.events))
+            log=folder/r34.EXPECTED_R33_LOG_NAME
+            try: log.symlink_to(target)
+            except (OSError,NotImplementedError): self.skipTest("symlinks unavailable")
+            with self.assertRaisesRegex(r34.Hold,"R33_LOGS_EXIST_BUT_REFERENCE_SESSION_NOT_FOUND"):
+                r34.choose_r33_log(folder)
 
 if __name__=="__main__":
     unittest.main()
