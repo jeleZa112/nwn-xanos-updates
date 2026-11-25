@@ -1,5 +1,26 @@
 # BGXAI R30 — диагностика возможности безопасного обновления пассивного R27
 
+## 25.11.2026 — R30 подключён к единому обновлятору (CODE/CI PASS, пользовательский запуск ожидается)
+
+**Новый пункт меню: `170 — R30 queue/deploy preflight READ ONLY`.** Он добавлен в уже существующий `BGXAI/BGXAI_SYNC.ps1`, не создан второй CMD и не изменён `BGXAI_UPDATE.cmd`. Существующий embedded bootstrap динамически читает `BOOTSTRAP_PIN.json`, скачивает immutable script и проверяет SHA/size; новый backend **79 979 байт**, SHA256 `10c9a7651096a45c3a5a694acf9800e9f651843321716438a4e37b6015245e42`, pinned immutable script commit `71b1d37db787a59ed16c8b92ac495314b3577e02`. Лимит текущего CMD — 80 000 байт, оставлен запас 21 байт.
+
+Пункт 170 скачивает только два точных SHA-pinned source файла через существующий `Get-PinnedBytes`, проверяет их до и после staging, временно кладёт их в `%LOCALAPPDATA%\\BGXAI_UPDATER`, запускает `py -3 R30 --game ... --candidate ...` и сохраняет единственный JSON в `%USERPROFILE%\\Documents\\BGXAI_LIVE_REPORTS\\BGXAI_R30_READONLY_*.json`. Временные файлы удаляются. Принятый exit code 2 означает честный HOLD и сохранённый отчёт, не успешную установку. Ни BCS, ни Lua, ни WeiDU, ни EPS, ни сейвы не меняются.
+
+| Объект | Размер | SHA256 |
+|---|---:|---|
+| R30 read-only checker | 7 985 | `88582abf17e919b9441795b8559cfe85b858fd3083672431eb36b60ba78981bd` |
+| R27 ACTION_CONTEXT_V3 candidate | 44 805 | `61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929` |
+| One-file PowerShell backend | 79 979 | `10c9a7651096a45c3a5a694acf9800e9f651843321716438a4e37b6015245e42` |
+
+**Независимая проверка:**
+- [CI 45555311800](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45555311800) SUCCESS Windows + Ubuntu: pin exact, R19 unchanged, R30/R27 V3 actual bytes and SHA, embedded CMD PowerShell 5.1 AST.
+- [CI 45555311954](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45555311954) SUCCESS Windows + Ubuntu: PowerShell 5.1 parser, menu 170, existing dispatches 1–169 byte-for-byte unchanged.
+- **CI is not user-PC runtime proof.** `R30` has not yet been run on the user's EET. A PASS still returns `SOURCE_AND_HISTORY_READ_ONLY_PASS_INSTALL_STILL_UNAUTHORIZED`; it is not permission to install or to replace the live R27.
+
+**Следующее действие пользователя — ровно одно:** открыть прежний `BGXAI_UPDATE.cmd`, выбрать `170`, прислать полный `REPORT_FILE` JSON. Не запускать 165/167/168/169 и не вводить typed install consent. При HOLD — остановиться и анализировать только этот новый отчёт.
+
+---
+
 ## Актуальный контракт после согласования V3 (25.11.2026)
 
 **Текущий** неустановленный source-only R27+action context V3: SHA256 `61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929`, 44805 байт; независимая сборка [CI 45456677110](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45456677110) PASS. Исторический V2 SHA `7ca77abeb94363c75cc58986db4427d9f93edba25e09764be35008c2f0e0600b`, встречающийся в таблице ниже, **устарел**; запрещено выдавать его за текущий.
