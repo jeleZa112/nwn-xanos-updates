@@ -1,0 +1,47 @@
+name: BG EET RU V134 typed attempt to rendered-row source gate
+on:
+  pull_request:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v134_real_attempt_ui_ledger_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v134_real_attempt_ui_ledger_ro.py'
+      - '.github/workflows/bg-eet-ru-v134-real-attempt-ledger-ro.yml'
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v134_real_attempt_ui_ledger_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v134_real_attempt_ui_ledger_ro.py'
+      - '.github/workflows/bg-eet-ru-v134-real-attempt-ledger-ro.yml'
+jobs:
+  source-only:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify source-only strict model with all private-evidence tests skipped
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p test_v134_real_attempt_ui_ledger_ro.py -v
+      - name: Source controls, no runtime hooks, no claimed successful game correlation
+        shell: python
+        run: |
+          import ast
+          from pathlib import Path
+          p=Path('bg-eet-ru/native-correlation/v134_real_attempt_ui_ledger_ro.py')
+          t=p.read_text('utf8')
+          ast.parse(t)
+          assert 'REAL_EVIDENCE_PASS_SOURCE_ONLY_NO_ATTEMPT_ROW_JOIN' in t
+          assert 'MODEL_CANDIDATE_NOT_RUNTIME_PROOF' in t
+          assert "'gameplay_verified':False" in t
+          assert "'weapon_events_attached_to_any_ui_row':0" in t
+          assert '0x39E661' in t and '0x39E754' in t and '0x39E89E' in t
+          assert '0x39027B' in t and '0x3909A5' in t
+          assert 'V129_CONDITIONAL_BYPASS_DRIFT' in t
+          for forbidden in ('OpenProcess(', 'WriteProcessMemory(', 'VirtualProtect(', 'EEex_JITAt(', 'EEex_HookBefore('):
+              assert forbidden not in t,forbidden
+          print('V134_SOURCE_ONLY_NO_GAME_CHANGES_OR_NATIVE_CLAIMS_PASS')
