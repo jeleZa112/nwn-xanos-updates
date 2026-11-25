@@ -46,9 +46,9 @@ jobs:
           candidate=b.build()
           committed=(here/"BGXAI_SYNC_R33_MENU172_SOURCE_ONLY.ps1").read_bytes()
           assert candidate==committed
-          assert len(committed)==79874
-          assert hashlib.sha256(committed).hexdigest()=="4f04b43f69d4171e2686f017d334eac69f91d9389a18122110c2bfd44a2d5663"
-          print("R33 ONEFILE STAGED EXACT 79874B SHA PIN AND OLD 171 DISPATCHES PASS")
+          assert len(committed)==79920
+          assert hashlib.sha256(committed).hexdigest()=="7e3c3cc69ce865ff197a5238564757a2c01df71950f56018590f5fa2c38b2417"
+          print("R33 ONEFILE STAGED EXACT 79920B SHA PIN AND OLD 171 DISPATCHES PASS")
           PY
       - name: Windows PowerShell 5.1 parse the staged R33 backend (does not activate)
         if: runner.os == 'Windows'
