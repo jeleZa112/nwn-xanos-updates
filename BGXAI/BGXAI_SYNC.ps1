@@ -225,10 +225,10 @@ $motion=Join-Path $rr 'BGXFTRACE_V3_GUARDED.py'
 $enemy=Join-Path $rr 'BGXFENEMY_WTASIGHT_GUARDED.py'
 function RunR30ReadOnly {
 $p='BGXAI/BUILD/R30_QUEUE_DEPLOY_PREFLIGHT_RO_20261125/BGXAI_R30_QUEUE_DEPLOY_PREFLIGHT_RO.py';$c='BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124/BGXAI_R27_R2_REFRESH_SOURCE_ONLY.lua';$b=Get-PinnedBytes $p;$q=Get-PinnedBytes $c
-if($b.Length-ne 7985 -or (HashBytes $b)-cne 'ad8fa6139dc6c76c24be871e33743189d984dda4'){throw 'R30 PIN STOP'}
-if($q.Length-ne 44805 -or (HashBytes $q)-cne '61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929'){throw 'R27 V3 PIN STOP'}
+if($b.Length -ne 7985 -or (HashBytes $b) -cne 'ad8fa6139dc6c76c24be871e33743189d984dda4'){throw 'R30 PIN STOP'}
+if($q.Length -ne 44805 -or (HashBytes $q) -cne '61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929'){throw 'R27 V3 PIN STOP'}
 ANR $zcd;$f=Join-Path $zcd ('r30_'+[guid]::NewGuid().ToString('N')+'.py');$g=Join-Path $zcd ('r27v3_'+[guid]::NewGuid().ToString('N')+'.lua');$d=Join-Path $env:USERPROFILE 'Documents\BGXAI_LIVE_REPORTS';if(!(Test-Path -LiteralPath $d)){[IO.Directory]::CreateDirectory($d)|Out-Null};ANR $d;$o=Join-Path $d ('BGXAI_R30_READONLY_'+(Get-Date -Format 'yyyyMMddTHHmmssfff')+'.json')
-try{[IO.File]::WriteAllBytes($f,$b);[IO.File]::WriteAllBytes($g,$q);if((HashFile $f)-cne 'ad8fa6139dc6c76c24be871e33743189d984dda4' -or (HashFile $g)-cne '61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929'){throw 'R30 CACHE PIN STOP'};& py -3 $f --game $gr --candidate $g | Out-File -LiteralPath $o -Encoding utf8;$rc=$LASTEXITCODE;Get-Content -LiteralPath $o -Raw;Write-Host ('REPORT_FILE='+$o);if($rc-ne 0 -and $rc-ne 2){throw ('R30 ERROR '+$rc)}}finally{foreach($t in @($f,$g)){if(Test-Path -LiteralPath $t){Remove-Item -LiteralPath $t -Force}}}
+try{[IO.File]::WriteAllBytes($f,$b);[IO.File]::WriteAllBytes($g,$q);if((HashFile $f) -cne 'ad8fa6139dc6c76c24be871e33743189d984dda4' -or (HashFile $g) -cne '61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929'){throw 'R30 CACHE PIN STOP'};& py -3 $f --game $gr --candidate $g | Out-File -LiteralPath $o -Encoding utf8;$rc=$LASTEXITCODE;Get-Content -LiteralPath $o -Raw;Write-Host ('REPORT_FILE='+$o);if($rc -ne 0 -and $rc -ne 2){throw ('R30 ERROR '+$rc)}}finally{foreach($t in @($f,$g)){if(Test-Path -LiteralPath $t){Remove-Item -LiteralPath $t -Force}}}
 }
 function Get-PinnedBytes([string]$zrp) {
 if($zrp -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116|patchsets/priest_combat_eps_first_20261116|patchsets/priest_auto_attack_buffer_source_only_20261117|patchsets/priest_auto_priority_guard_source_20261117|patchsets/aoe_entangle_readonly_onefile_20261117|patchsets/ranged_fighter_guarded_20261119|BUILD/R27_R2_IDENTITY_REFRESH_20261124|BUILD/R30_QUEUE_DEPLOY_PREFLIGHT_RO_20261125|BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123)/[A-Za-z0-9_./-]+$' -or $zrp.Contains('..')) {
@@ -1103,6 +1103,7 @@ Write-Host ''
 Write-Host @'
  BGXAI ONE-FILE UPDATER
 1-116 legacy modules | 117-151 combat/ranged
+'@
 Write-Host '70-92 BGXAI legacy modules'
 echo ' 93 - 066S precheck'
 echo ' 94 - 066S install'
@@ -1116,6 +1117,7 @@ Write-Host @'
 152-155 enemy guard | 156-157 V5/V6 | 158 weapon RO | 159-164 EEex RO
 165 R27 | 166 V7 | 167 BAF RO | 168 batch RO | 169 R29 | 170 R30 RO
 0 Exit
+'@
 $choice=Read-Host 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
 if($choice -eq '0'){Write-Host 'No changes.';exit 0}
