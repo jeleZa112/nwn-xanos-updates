@@ -75,6 +75,13 @@ class R20SingleCMDPinTests(unittest.TestCase):
   self.assertIn("88582abf17e919b9441795b8559cfe85b858fd3083672431eb36b60ba78981bd",x)
   self.assertIn("170 R30 RO",x)
   self.assertNotIn("INSTALL_BGXQ30",x)
+ def test_r30_and_r27_v3_source_pins_are_exact(self):
+  r30=ROOT/"BGXAI/BUILD/R30_QUEUE_DEPLOY_PREFLIGHT_RO_20261125/BGXAI_R30_QUEUE_DEPLOY_PREFLIGHT_RO.py"
+  candidate=ROOT/"BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124/BGXAI_R27_R2_REFRESH_SOURCE_ONLY.lua"
+  self.assertEqual(r30.stat().st_size,7985)
+  self.assertEqual(sha(r30),"88582abf17e919b9441795b8559cfe85b858fd3083672431eb36b60ba78981bd")
+  self.assertEqual(candidate.stat().st_size,44805)
+  self.assertEqual(sha(candidate),"61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929")
  def test_no_game_action_allowed_in_r19(self):
   x=SOURCE.read_text(encoding="utf-8")
   for marker in ("'safeToCallGetAbility':False",
