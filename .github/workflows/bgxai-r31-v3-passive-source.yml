@@ -25,6 +25,7 @@ jobs:
           python3 BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125/build_r31_v3_source_only.py
           python3 -m unittest discover -s BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125 -p test_r31_guarded_source_only.py -v
           python3 -m unittest discover -s BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125 -p test_r31_onefile_menu_source_only.py -v
+          python3 BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125/build_r31_onefile_menu_source_only.py
           python3 -c "from pathlib import Path; import hashlib; x=Path('BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125/R31_GUARDED_SOURCE_ONLY.py').read_bytes(); print('R31_GUARD_SHA256='+hashlib.sha256(x).hexdigest()+' R31_GUARD_BYTES='+str(len(x)))"
       - name: Existing R27 V3 source and action-context regressions
         run: |
