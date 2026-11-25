@@ -66,7 +66,7 @@ jobs:
           for runtime in lua5.3 lua5.4 luajit; do
             "$runtime" BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_active_r4_readonly.lua
           done
-      - name: R30 readonly WeiDU stack preflight source contract (10 Python cases)
+      - name: R30 readonly WeiDU + current V3 context preflight (12 Python cases)
         shell: bash
         run: python3 -m unittest discover -s BGXAI/BUILD/R30_QUEUE_DEPLOY_PREFLIGHT_RO_20261125 -p 'test_r30_queue_deploy_preflight_ro.py' -q
       - name: 081 x64 engine queuedActions raw count only (441 assertions each of THREE Lua runtimes)
