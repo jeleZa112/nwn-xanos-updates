@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "38c7d2ee3bfc7a50631bb3375e5c1ee2141c0d7d",
+  "commit": "b678020a5deee2d1d7205eebd28840847cfbd2a8",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "c900e8aa6c4ec92bcb80cac1624cf1d6caa477dc961dd137555508e14e9d1f78",
-  "script_size": 79935,
-  "description": "R34 menu173 READ ONLY current native ITM+R33 proficiency evidence; same BGXAI_UPDATE.cmd, menus 1-172 byte-exact, pinned SHA, no game modification"
+  "script_sha256": "d131395cc7d3b5b9c265a8684994515eb6b7e72ba69c5ef4422597cc541de877",
+  "script_size": 79943,
+  "description": "R34 menu173 READ ONLY current ITM+R33 profiling; HOTFIX PowerShell wh alias fixed; same BGXAI_UPDATE.cmd, 172 dispatches preserved, 79943 bytes SHA-pinned"
 }
