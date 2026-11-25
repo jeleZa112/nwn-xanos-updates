@@ -1,20 +1,23 @@
 param([string]$GameRoot='.')
-Set-Alias wh Write-Host -Scope Script
+Set-Alias wh wh -Scope Script
 Set-Alias jp Join-Path -Scope Script
 Set-Alias tp Test-Path -Scope Script
+Set-Alias hf HashFile -Scope Script
+Set-Alias hb HashBytes -Scope Script
+Set-Alias rh Read-Host -Scope Script
 $gr=$GameRoot
 $ErrorActionPreference='Stop'
 $ProgressPreference='SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
-$gr=(Resolve-Path -LiteralPath $gr).Path
+$gr=(Resolve-Path -Lit $gr).Path
 $expectedRoot='C:\Games\BG_EET_FOXX_NEW'
-if($gr.TrimEnd('\') -ine $expectedRoot) {Write-Host 'STOP: wrong game folder';exit 2}
-if(!(tp -LiteralPath (jp $gr 'chitin.key') -PathType Leaf)) {Write-Host 'STOP: chitin.key missing';exit 2}
+if($gr.TrimEnd('\') -ine $expectedRoot) {wh 'STOP: wrong game folder';exit 2}
+if(!(tp -Lit (jp $gr 'chitin.key') -PathT Leaf)) {wh 'STOP: chitin.key missing';exit 2}
 $zcd=jp $env:LOCALAPPDATA 'BGXAI_UPDATER'
 $pinnedFile=jp $zcd 'head.txt'
-if(!(tp -LiteralPath $pinnedFile -PathType Leaf)){Write-Host 'STOP: pinned GitHub commit missing';exit 2}
+if(!(tp -Lit $pinnedFile -PathT Leaf)){wh 'STOP: pinned GitHub commit missing';exit 2}
 $commitId=[IO.File]::ReadAllText($pinnedFile).Trim()
-if($commitId -notmatch '^[a-fA-F0-9]{40}$'){Write-Host 'STOP: invalid pinned GitHub commit';exit 2}
+if($commitId -notmatch '^[a-fA-F0-9]{40}$'){wh 'STOP: invalid pinned GitHub commit';exit 2}
 $xrr='BGXAI/fox_new/'
 $b41=@{
 id='041';version='0.3.11';manifest=$xrr+'release_041/manifest.json';prefix=$xrr+'release_041/';
@@ -228,13 +231,13 @@ $motion=jp $rr 'BGXFTRACE_V3_GUARDED.py'
 $enemy=jp $rr 'BGXFENEMY_WTASIGHT_GUARDED.py'
 function RunR30ReadOnly {
 $p='BGXAI/BUILD/R30_QUEUE_DEPLOY_PREFLIGHT_RO_20261125/BGXAI_R30_QUEUE_DEPLOY_PREFLIGHT_RO.py';$c='BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124/BGXAI_R27_R2_REFRESH_SOURCE_ONLY.lua';$b=Get-PinnedBytes $p;$q=Get-PinnedBytes $c
-if($b.Length -ne 7985 -or (HashBytes $b) -cne '88582abf17e919b9441795b8559cfe85b858fd3083672431eb36b60ba78981bd'){throw 'R30 PIN STOP'}
-if($q.Length -ne 44805 -or (HashBytes $q) -cne '61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929'){throw 'R27 V3 PIN STOP'}
-ANR $zcd;$f=jp $zcd ('r30_'+[guid]::NewGuid().ToString('N')+'.py');$g=jp $zcd ('r27v3_'+[guid]::NewGuid().ToString('N')+'.lua');$d=jp $env:USERPROFILE 'Documents\BGXAI_LIVE_REPORTS';if(!(tp -LiteralPath $d)){[IO.Directory]::CreateDirectory($d)|Out-Null};ANR $d;$o=jp $d ('BGXAI_R30_READONLY_'+(Get-Date -Format 'yyyyMMddTHHmmssfff')+'.json')
-try{[IO.File]::WriteAllBytes($f,$b);[IO.File]::WriteAllBytes($g,$q);if((HashFile $f) -cne '88582abf17e919b9441795b8559cfe85b858fd3083672431eb36b60ba78981bd' -or (HashFile $g) -cne '61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929'){throw 'R30 CACHE PIN STOP'};& py -3 $f --game $gr --candidate $g | Out-File -LiteralPath $o -Encoding utf8;$rc=$LASTEXITCODE;Get-Content -LiteralPath $o -Raw;Write-Host ('REPORT_FILE='+$o);if($rc -ne 0 -and $rc -ne 2){throw ('R30 ERROR '+$rc)}}finally{foreach($t in @($f,$g)){if(tp -LiteralPath $t){Remove-Item -LiteralPath $t -Force}}}
+if($b.Length -ne 7985 -or (hb $b) -cne '88582abf17e919b9441795b8559cfe85b858fd3083672431eb36b60ba78981bd'){throw 'R30 PIN STOP'}
+if($q.Length -ne 44805 -or (hb $q) -cne '61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929'){throw 'R27 V3 PIN STOP'}
+ANR $zcd;$f=jp $zcd ('r30_'+[guid]::NewGuid().ToString('N')+'.py');$g=jp $zcd ('r27v3_'+[guid]::NewGuid().ToString('N')+'.lua');$d=jp $env:USERPROFILE 'Documents\BGXAI_LIVE_REPORTS';if(!(tp -Lit $d)){[IO.Directory]::CreateDirectory($d)|Out-Null};ANR $d;$o=jp $d ('BGXAI_R30_READONLY_'+(Get-Date -Format 'yyyyMMddTHHmmssfff')+'.json')
+try{[IO.File]::WriteAllBytes($f,$b);[IO.File]::WriteAllBytes($g,$q);if((hf $f) -cne '88582abf17e919b9441795b8559cfe85b858fd3083672431eb36b60ba78981bd' -or (hf $g) -cne '61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929'){throw 'R30 CACHE PIN STOP'};& py -3 $f --game $gr --candidate $g | Out-File -Lit $o -Encoding utf8;$rc=$LASTEXITCODE;gc -Lit $o -Raw;wh ('REPORT_FILE='+$o);if($rc -ne 0 -and $rc -ne 2){throw ('R30 ERROR '+$rc)}}finally{foreach($t in @($f,$g)){if(tp -Lit $t){Remove-Item -Lit $t -Force}}}
 }
 function Get-PinnedBytes([string]$zrp) {
-if($zrp -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116|patchsets/priest_combat_eps_first_20261116|patchsets/priest_auto_attack_buffer_source_only_20261117|patchsets/priest_auto_priority_guard_source_20261117|patchsets/aoe_entangle_readonly_onefile_20261117|patchsets/ranged_fighter_guarded_20261119|BUILD/R27_R2_IDENTITY_REFRESH_20261124|BUILD/R30_QUEUE_DEPLOY_PREFLIGHT_RO_20261125|BUILD/R31_R27V3_PASSIVE_SOURCE_20261125|BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125|BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123)/[A-Za-z0-9_./-]+$' -or $zrp.Contains('..')) {
+if($zrp -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116|patchsets/priest_combat_eps_first_20261116|patchsets/priest_auto_attack_buffer_source_only_20261117|patchsets/priest_auto_priority_guard_source_20261117|patchsets/aoe_entangle_readonly_onefile_20261117|patchsets/ranged_fighter_guarded_20261119|BUILD/R27_R2_IDENTITY_REFRESH_20261124|BUILD/R30_QUEUE_DEPLOY_PREFLIGHT_RO_20261125|BUILD/R31_R27V3_PASSIVE_SOURCE_20261125|BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125|BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125|BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123)/[A-Za-z0-9_./-]+$' -or $zrp.Contains('..')) {
 throw ('Remote source path blocked: '+$zrp)
 }
 $urls=@(
@@ -247,18 +250,18 @@ $failures=@()
 try {
 foreach($uri in $urls) {
 try {
-Invoke-WebRequest -Uri $uri -Headers @{'User-Agent'='BGXAI-Foxx-Onefile'} -TimeoutSec 60 -UseBasicParsing -OutFile $ztf -ErrorAction Stop | Out-Null
+Invoke-WebRequest -Uri $uri -Headers @{'User-Agent'='BGXAI-Foxx-Onefile'} -TimeoutSec 60 -UseBasicParsing -OutFile $ztf -Ea Stop | Out-Null
 $rawBytes=[IO.File]::ReadAllBytes($ztf)
 if($rawBytes.Length -lt 1 -or $rawBytes.Length -gt 500000) {throw ('Unexpected pinned source byte count: '+$zrp)}
 return ,$rawBytes
 } catch {
 $failures+=($_.Exception.Message)
-if(tp -LiteralPath $ztf){Remove-Item -LiteralPath $ztf -Force -ErrorAction SilentlyContinue}
+if(tp -Lit $ztf){Remove-Item -Lit $ztf -Force -Ea SilentlyContinue}
 }
 }
 throw ('Both raw source hosts failed for '+$zrp+': '+($failures -join '; '))
 } finally {
-if(tp -LiteralPath $ztf){Remove-Item -LiteralPath $ztf -Force -ErrorAction SilentlyContinue}
+if(tp -Lit $ztf){Remove-Item -Lit $ztf -Force -Ea SilentlyContinue}
 }
 }
 function HashBytes([byte[]]$payload) {
@@ -267,7 +270,7 @@ try {return ([BitConverter]::ToString($hasher.ComputeHash($payload))).Replace('-
 finally {$hasher.Dispose()}
 }
 function HashFile([string]$filePath) {
-if(!(tp -LiteralPath $filePath -PathType Leaf)){return ''}
+if(!(tp -Lit $filePath -PathT Leaf)){return ''}
 $hasher=[Security.Cryptography.SHA256]::Create()
 try {
 $stream=[IO.File]::OpenRead($filePath)
@@ -276,8 +279,8 @@ finally {$stream.Dispose()}
 } finally {$hasher.Dispose()}
 }
 function ANR([string]$item) {
-if(tp -LiteralPath $item){
-$node=Get-Item -LiteralPath $item -Force
+if(tp -Lit $item){
+$node=Get-Item -Lit $item -Force
 if(($node.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){throw ('Reparse path blocked: '+$item)}
 }
 }
@@ -304,7 +307,7 @@ $checked=VM $spec
 foreach($name in $spec.names) {
 $f=jp $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
 ANR $f
-if((HashFile $f) -cne $checked[$name].sha){throw ('Unverified BGX41 generator/source: '+$name)}
+if((hf $f) -cne $checked[$name].sha){throw ('Unverified BGX41 generator/source: '+$name)}
 }
 $manifest=[Text.Encoding]::UTF8.GetString((Get-PinnedBytes $spec.manifest)) | ConvertFrom-Json
 $expected=@('BGX41/BGX41IC.BAM','BGX41/BGX41ON.SPL','BGX41/BGX41OF.SPL')
@@ -323,7 +326,7 @@ foreach($name in $expected) {
 $dest=jp $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
 ANR (Split-Path -Parent $dest)
 ANR $dest
-if((HashFile $dest) -cne [string]$seen[$name].sha256) {$zcur=$false}
+if((hf $dest) -cne [string]$seen[$name].sha256) {$zcur=$false}
 }
 if(!$zcur) {
 wh 'BGX41: build icons from verified source.'
@@ -333,8 +336,8 @@ if($LASTEXITCODE -ne 0){throw ('BGX41: asset generator exited '+$LASTEXITCODE)}
 }
 foreach($name in $expected) {
 $dest=jp $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
-if(!(tp -LiteralPath $dest -PathType Leaf)){throw ('BGX41: generated binary missing '+$name)}
-if((Get-Item -LiteralPath $dest).Length -ne [int]$seen[$name].size -or (HashFile $dest) -cne [string]$seen[$name].sha256){
+if(!(tp -Lit $dest -PathT Leaf)){throw ('BGX41: generated binary missing '+$name)}
+if((Get-Item -Lit $dest).Length -ne [int]$seen[$name].size -or (hf $dest) -cne [string]$seen[$name].sha256){
 throw ('BGX41: generated checksum mismatch '+$name)
 }
 wh (' VERIFIED generated '+$name)
@@ -349,23 +352,23 @@ $list=VM $spec
 $payload=@{}
 foreach($name in $spec.names){
 $bytes=Get-PinnedBytes $list[$name].remote
-if($bytes.Length -ne $list[$name].size -or (HashBytes $bytes) -cne $list[$name].sha){throw ('SHA256 mismatch: '+$name)}
+if($bytes.Length -ne $list[$name].size -or (hb $bytes) -cne $list[$name].sha){throw ('SHA256 mismatch: '+$name)}
 $payload[$name]=$bytes
 wh (' VERIFIED '+$name)
 }
 $zcur=$true
 foreach($name in $spec.names){
 $dest=jp $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
-if((HashFile $dest) -cne $list[$name].sha){$zcur=$false}
+if((hf $dest) -cne $list[$name].sha){$zcur=$false}
 }
-if($zcur){Generate041Assets $spec;Write-Host ('BGXAI '+$spec.id+' verified; no changes.');return}
+if($zcur){Generate041Assets $spec;wh ('BGXAI '+$spec.id+' verified; no changes.');return}
 $stamp=(Get-Date -Format 'yyyyMMdd_HHmmss_fff')
 $oldCopy=jp $zcd ($spec.id+'_backup_'+$stamp)
 foreach($name in $spec.names){
 $dest=jp $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
 ANR (Split-Path -Parent $dest)
 ANR $dest
-if(tp -LiteralPath $dest){
+if(tp -Lit $dest){
 $oldFile=jp $oldCopy ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
 [IO.Directory]::CreateDirectory((Split-Path -Parent $oldFile))|Out-Null
 [IO.File]::Copy($dest,$oldFile,$false)
@@ -375,12 +378,12 @@ foreach($name in $spec.names){
 $dest=jp $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
 [IO.Directory]::CreateDirectory((Split-Path -Parent $dest))|Out-Null
 $temp=$dest+'.bgxsync.tmp'
-if(tp -LiteralPath $temp){throw ('Unresolved temp file, stop: '+$temp)}
+if(tp -Lit $temp){throw ('Unresolved temp file, stop: '+$temp)}
 [IO.File]::WriteAllBytes($temp,[byte[]]$payload[$name])
-if((HashFile $temp) -cne $list[$name].sha){throw ('Staged file hash failure: '+$name)}
-if(tp -LiteralPath $dest){[IO.File]::Delete($dest)}
+if((hf $temp) -cne $list[$name].sha){throw ('Staged file hash failure: '+$name)}
+if(tp -Lit $dest){[IO.File]::Delete($dest)}
 [IO.File]::Move($temp,$dest)
-if((HashFile $dest) -cne $list[$name].sha){throw ('Source file hash failure: '+$name)}
+if((hf $dest) -cne $list[$name].sha){throw ('Source file hash failure: '+$name)}
 }
 Generate041Assets $spec
 wh ('BGXAI '+$spec.id+' SOURCE SYNC DONE. Live scripts and WeiDU unchanged.')
@@ -390,7 +393,7 @@ $list=VM $spec
 foreach($name in $spec.names){
 $dest=jp $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
 ANR $dest
-if((HashFile $dest) -cne $list[$name].sha){throw ('Unverified local source; select source sync first: '+$name)}
+if((hf $dest) -cne $list[$name].sha){throw ('Unverified local source; select source sync first: '+$name)}
 }
 Generate041Assets $spec
 $installerPath=jp $spec.localPath $spec.installer
@@ -412,13 +415,13 @@ $files=VM $b60
 foreach($name in $b60.names){
 $dest=jp $b60.localPath $name
 ANR $dest
-if((HashFile $dest) -cne $files[$name].sha){throw ('BGXAI060 source SHA mismatch: '+$name)}
+if((hf $dest) -cne $files[$name].sha){throw ('BGXAI060 source SHA mismatch: '+$name)}
 }
 $ztok=if($mode -ceq 'install'){'INSTALL_BGXAI_060'}else{'ROLLBACK_BGXAI_060'}
 wh '060 EXPERIMENTAL: WeiDU game edit.'
 wh 'Close game/loader; SHA backup required.'
-$zcf=Read-Host ('Type '+$ztok+' exactly to authorize or press ENTER to cancel')
-if($zcf -cne $ztok){Write-Host '060 cancelled; no game change.';return}
+$zcf=rh ('Type '+$ztok+' exactly to authorize or press ENTER to cancel')
+if($zcf -cne $ztok){wh '060 cancelled; no game change.';return}
 & py -3 (jp $b60.localPath 'BGXAI60_INSTALL.py') $mode '--yes' '--confirm' 'BGXAI_060_EXPERIMENTAL'
 if($LASTEXITCODE -ne 0){throw ('BGXAI060 '+$mode+' STOP code '+$LASTEXITCODE+'. No automatic retry. Save output for review.')}
 wh ('BGXAI060 '+$mode+' completed; inspect WeiDU status and game behavior.')
@@ -430,14 +433,14 @@ $lua=jp $gr 'override\M_BX43.lua'
 ANR $log
 ANR $bcs
 ANR $lua
-if(!(tp -LiteralPath $log -PathType Leaf)){throw 'WeiDU.log missing'}
-$rows=@(Get-Content -LiteralPath $log -ErrorAction Stop | Where-Object {$_.TrimStart().StartsWith('~')})
+if(!(tp -Lit $log -PathT Leaf)){throw 'WeiDU.log missing'}
+$rows=@(gc -Lit $log -Ea Stop | Where-Object {$_.TrimStart().StartsWith('~')})
 if($rows.Count -lt 1){throw 'WeiDU.log has no active components'}
 $last=[string]$rows[-1]
 $is060=($last -match '(?i)BGX60[/\\]SETUP-BGX60[.]TP2~')
 $is056=($last -match '(?i)BGX56[/\\]SETUP-BGX56[.]TP2~')
-$actualBCS=HashFile $bcs
-$actualLua=HashFile $lua
+$actualBCS=hf $bcs
+$actualLua=hf $lua
 wh ('Last WeiDU component: '+$last)
 wh ('BGXAI060 is LAST: '+$is060)
 wh ('BGXAI056 is LAST: '+$is056)
@@ -447,8 +450,8 @@ wh ('056 BCS SHA correct: '+($actualBCS -ceq '054c1c8e99b4d8ef8fb541287844d46cb8
 } elseif($is060) {
 $stage=jp $gr 'BGX60\staged\BDDEFAI.BCS'
 ANR $stage
-wh ('060 staged BCS SHA matches installed: '+((HashFile $stage) -ceq $actualBCS -and $actualBCS.Length -eq 64))
-} else {Write-Host 'BGXAI060/056 is not last; do not install/rollback blindly.'}
+wh ('060 staged BCS SHA matches installed: '+((hf $stage) -ceq $actualBCS -and $actualBCS.Length -eq 64))
+} else {wh 'BGXAI060/056 is not last; do not install/rollback blindly.'}
 wh ('Installed BCS SHA256: '+$actualBCS)
 }
 function Test061ReadOnly {
@@ -457,7 +460,7 @@ $list=VM $spec
 foreach($name in $spec.names){
 $dest=jp $spec.localPath $name
 ANR $dest
-if((HashFile $dest) -cne $list[$name].sha){throw ('BGXAI061 unverified file: '+$name)}
+if((hf $dest) -cne $list[$name].sha){throw ('BGXAI061 unverified file: '+$name)}
 }
 wh '061 WeiDU BAF/Lua preflight (RO).'
 & py -3 (jp $spec.localPath 'BGXAI61_INSTALL.py') preflight
@@ -471,13 +474,13 @@ $list=VM $x61
 foreach($name in $x61.names){
 $dest=jp $x61.localPath $name
 ANR $dest
-if((HashFile $dest) -cne $list[$name].sha){throw ('BGXAI061 source SHA mismatch: '+$name)}
+if((hf $dest) -cne $list[$name].sha){throw ('BGXAI061 source SHA mismatch: '+$name)}
 }
 $ztok=if($mode -ceq 'install'){'INSTALL_BGXAI_061'}else{'ROLLBACK_BGXAI_061'}
 wh 'BGXAI061: guarded BCS+Lua via WeiDU.'
 wh 'Close game/loader; SHA backup required.'
-$zcf=Read-Host ('Type '+$ztok+' exactly to authorize or ENTER to cancel')
-if($zcf -cne $ztok){Write-Host '061 cancelled.';return}
+$zcf=rh ('Type '+$ztok+' exactly to authorize or ENTER to cancel')
+if($zcf -cne $ztok){wh '061 cancelled.';return}
 & py -3 (jp $x61.localPath 'BGXAI61_INSTALL.py') $mode '--yes' '--confirm' 'BGXAI_061_EXPERIMENTAL'
 if($LASTEXITCODE -ne 0){throw ('BGXAI 061 '+$mode+' STOP code '+$LASTEXITCODE+'. Do not retry blindly.')}
 wh ('BGXAI 061 '+$mode+' completed, inspect status 68.')
@@ -488,7 +491,7 @@ $list=VM $spec
 foreach($name in $spec.names){
 $dest=jp $spec.localPath $name
 ANR $dest
-if((HashFile $dest) -cne $list[$name].sha){throw ('BGXAI064G source SHA mismatch: '+$name)}
+if((hf $dest) -cne $list[$name].sha){throw ('BGXAI064G source SHA mismatch: '+$name)}
 }
 }
 function Test064GuardedReadOnly {
@@ -518,8 +521,8 @@ if($LASTEXITCODE -ne 0){throw ('BGXAI064 pre-authorization CHECK FAILED '+$LASTE
 $ztok=if($mode -ceq 'install'){'INSTALL_BGXAI_064'}else{'ROLLBACK_BGXAI_064'}
 wh '064: verified backup; Lua changes via WeiDU.'
 wh 'Close game/loader; BCS and EPS unchanged.'
-$zcf=Read-Host ('Type '+$ztok+' exactly to authorize or ENTER to cancel')
-if($zcf -cne $ztok){Write-Host '064 cancelled; game unchanged.';return}
+$zcf=rh ('Type '+$ztok+' exactly to authorize or ENTER to cancel')
+if($zcf -cne $ztok){wh '064 cancelled; game unchanged.';return}
 & py -3 (jp $x64.localPath 'BGXAI64_INSTALL_SOURCE_ONLY.py') $mode '--yes' '--confirm' $ztok
 if($LASTEXITCODE -ne 0){throw ('BGXAI064 '+$mode+' STOP code '+$LASTEXITCODE+'; do NOT retry blindly')}
 wh ('BGXAI064 '+$mode+' completed; check guarded read-only STATUS menu 75.')
@@ -530,7 +533,7 @@ $checked=VM $spec
 foreach($name in $spec.names){
 $dest=jp $spec.localPath $name
 ANR $dest
-if((HashFile $dest) -cne $checked[$name].sha){throw ('BGXAI066 source SHA mismatch: '+$name)}
+if((hf $dest) -cne $checked[$name].sha){throw ('BGXAI066 source SHA mismatch: '+$name)}
 }
 }
 function Verify066SGuardedSource {
@@ -539,7 +542,7 @@ $items=VM $spec
 foreach($name in $spec.names){
 $file=jp $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
 ANR $file
-if((HashFile $file) -cne $items[$name].sha){throw ('BGXAI066S source SHA mismatch: '+$name)}
+if((hf $file) -cne $items[$name].sha){throw ('BGXAI066S source SHA mismatch: '+$name)}
 }
 }
 function Test066SReadOnly {
@@ -563,8 +566,8 @@ Verify066SGuardedSource
 $ztok=if($mode -ceq 'install'){'INSTALL_BGXAI_066S'}else{'ROLLBACK_BGXAI_066S'}
 wh '066S: pinned scripts, verified backup.'
 wh 'Close game/loader. No auto-retry.'
-$zcf=Read-Host ('Type '+$ztok+' exactly to authorize, or ENTER to cancel')
-if($zcf -cne $ztok){Write-Host '066S cancelled.';return}
+$zcf=rh ('Type '+$ztok+' exactly to authorize, or ENTER to cancel')
+if($zcf -cne $ztok){wh '066S cancelled.';return}
 & py -3 (jp $x6s.localPath 'BGXAI66S_INSTALL.py') $mode '--yes' '--confirm' $ztok
 if($LASTEXITCODE -ne 0){throw ('BGXAI066S '+$mode+' STOP '+$LASTEXITCODE+'. DO NOT AUTO-RETRY')}
 wh 'BGXAI066S action completed. Verify via menu 85.'
@@ -576,7 +579,7 @@ $items=VM $spec
 foreach($name in $spec.names){
 $file=jp $spec.localPath ($name.Replace('/',[IO.Path]::DirectorySeparatorChar))
 ANR $file
-if((HashFile $file) -cne $items[$name].sha){throw ('BGXAI067 source SHA mismatch: '+$name)}
+if((hf $file) -cne $items[$name].sha){throw ('BGXAI067 source SHA mismatch: '+$name)}
 }
 }
 function Test067ReadOnly {
@@ -600,8 +603,8 @@ Verify067GuardedSource
 $ztok=if($mode -ceq 'install'){'INSTALL_BGXAI_067'}else{'ROLLBACK_BGXAI_067'}
 wh 'BGXAI067 guarded Lua/BCS; 066S baseline required.'
 wh 'CLOSE BALDUR + INFINITYLOADER. No retry after a failure.'
-$zcf=Read-Host ('Type '+$ztok+' exactly to authorize, or ENTER to cancel')
-if($zcf -cne $ztok){Write-Host 'BGXAI067 CANCELLED. Game unchanged.';return}
+$zcf=rh ('Type '+$ztok+' exactly to authorize, or ENTER to cancel')
+if($zcf -cne $ztok){wh 'BGXAI067 CANCELLED. Game unchanged.';return}
 & py -3 (jp $x67.localPath 'BGXAI67_INSTALL.py') $mode '--yes' '--confirm' $ztok
 if($LASTEXITCODE -ne 0){throw ('BGXAI067 '+$mode+' STOP '+$LASTEXITCODE+'. DO NOT AUTO-RETRY')}
 wh 'BGXAI067 action completed. Read-only status via menu 90.'
@@ -614,7 +617,7 @@ $items=VM $spec
 foreach($name in $spec.names){
 $file=jp $spec.localPath $name
 ANR $file
-if((HashFile $file) -cne $items[$name].sha){throw ('BGXAI IDLE source SHA mismatch: '+$name)}
+if((hf $file) -cne $items[$name].sha){throw ('BGXAI IDLE source SHA mismatch: '+$name)}
 }
 }
 function CheckIdleGuardReadOnly([string]$mode) {
@@ -636,8 +639,8 @@ if($LASTEXITCODE -ne 0){throw ('BGXAI IDLE pre-authorization STOP '+$LASTEXITCOD
 $ztok=if($mode -ceq 'install'){'INSTALL_BGXAI_IDLE_GUARD'}else{'ROLLBACK_BGXAI_IDLE_GUARD'}
 wh 'IDLE guard changes Lua only via WeiDU.'
 wh 'Close game/loader; backup+SHA required.'
-$approval=Read-Host ('Type '+$ztok+' exactly to authorize, or press ENTER to cancel')
-if($approval -cne $ztok){Write-Host 'BGXAI IDLE cancelled.';return}
+$approval=rh ('Type '+$ztok+' exactly to authorize, or press ENTER to cancel')
+if($approval -cne $ztok){wh 'BGXAI IDLE cancelled.';return}
 & py -3 $zin $mode '--yes' '--confirm' $ztok '--game-root' $gr
 if($LASTEXITCODE -ne 0){throw ('BGXAI IDLE '+$mode+' STOP '+$LASTEXITCODE+'. NO AUTOMATIC RETRY')}
 wh ('BGXAI IDLE '+$mode+' completed. Use menu 95 for status.')
@@ -649,7 +652,7 @@ $checked=VM $ao
 foreach($name in $ao.names) {
 $file=jp $ao.localPath $name
 ANR $file
-if((HashFile $file) -cne $checked[$name].sha){throw ('AOE117 source SHA mismatch: '+$name)}
+if((hf $file) -cne $checked[$name].sha){throw ('AOE117 source SHA mismatch: '+$name)}
 }
 wh 'AOE117 READ ONLY.'
 & py -3 (jp $ao.localPath $ao.installer) '--game' $gr
@@ -660,12 +663,12 @@ function BGXTest6Safe {
 SyncRelease $ao
 $ztok='CREATE_BGXAI_TEST6_NO_PRIEST1'
 wh '118 NEW TEST SAVE ONLY; game unchanged.'
-if((Read-Host ('Type '+$ztok+' to authorize, ENTER cancels')) -cne $ztok){Write-Host 'Cancelled';return}
+if((rh ('Type '+$ztok+' to authorize, ENTER cancels')) -cne $ztok){wh 'Cancelled';return}
 & py -3 (jp $ao.localPath 'BGXAI_TEST6_SAFE_COPY.py') --game-root $gr --yes --confirm $ztok
 if($LASTEXITCODE -ne 0){throw ('BGXAI 118 SAFE COPY STOP '+$LASTEXITCODE)}
 }
 function BGXOneFileLastWeiDU {
-$rows=@(Get-Content -LiteralPath (jp $gr 'WeiDU.log') -ErrorAction Stop | Where-Object {$_.TrimStart().StartsWith('~')})
+$rows=@(gc -Lit (jp $gr 'WeiDU.log') -Ea Stop | Where-Object {$_.TrimStart().StartsWith('~')})
 if($rows.Count -lt 1){throw 'No WeiDU components'}
 return [string]$rows[-1]
 }
@@ -676,43 +679,43 @@ $expected=VM $spec
 foreach($name in $spec.names){
 $file=jp $spec.localPath $name
 ANR $file
-if((HashFile $file) -cne $expected[$name].sha){throw ('BGX source SHA invalid: '+$name)}
+if((hf $file) -cne $expected[$name].sha){throw ('BGX source SHA invalid: '+$name)}
 }
 $zin=jp $spec.localPath $spec.installer
 $last=BGXOneFileLastWeiDU
 $rx=if($spec.id -ceq 'BGXPR'){'BGXPRIEST[/\\]SETUP-BGXPRIEST[.]TP2~'}elseif($spec.id -ceq 'BGXP2'){'BGXP2[/\\]SETUP-BGXP2[.]TP2~'}elseif($spec.id -ceq 'BGXP3'){'BGXP3[/\\]SETUP-BGXP3[.]TP2~'}elseif($spec.id -ceq 'BGXP5'){'BGXP5[/\\]SETUP-BGXP5[.]TP2~'}else{'BGXTEAM[/\\]SETUP-BGXTEAM[.]TP2~'}
 $installed=($last -match $rx)
 if($spec.id -ceq 'BGXP3' -and $last -match 'BGXP5[/\\]SETUP-BGXP5[.]TP2~'){
-if($mode -ceq 'status'){Write-Host 'BGXP3 below BGXP5; use 113.';return}
+if($mode -ceq 'status'){wh 'BGXP3 below BGXP5; use 113.';return}
 throw 'BGXP5 installed; rollback via 116 before BGXP3 change.'
 }
 if($spec.id -ceq 'BGXP2' -and $last -match 'BGXP3[/\\]SETUP-BGXP3[.]TP2~|BGXP5[/\\]SETUP-BGXP5[.]TP2~'){
-if($mode -ceq 'status'){Write-Host 'BGXP2 below BGXP3; select 109.';return}
+if($mode -ceq 'status'){wh 'BGXP2 below BGXP3; select 109.';return}
 throw 'BGXP3 installed; rollback via 112 before changing BGXP2.'
 }
 if($spec.id -ceq 'BGXPR' -and $last -match 'BGXP2[/\\]SETUP-BGXP2[.]TP2~|BGXP3[/\\]SETUP-BGXP3[.]TP2~|BGXP5[/\\]SETUP-BGXP5[.]TP2~'){
-if($mode -ceq 'status'){Write-Host 'BGXPR below BGXP2; select 105.';return}
+if($mode -ceq 'status'){wh 'BGXPR below BGXP2; select 105.';return}
 throw 'BGXP2 installed; rollback via 108 before BGXPR change.'
 }
 if($spec.id -ceq 'BGXTEAM' -and ($last -match 'BGXPRIEST[/\\]SETUP-BGXPRIEST[.]TP2~' -or $last -match 'BGXP2[/\\]SETUP-BGXP2[.]TP2~' -or $last -match 'BGXP3[/\\]SETUP-BGXP3[.]TP2~' -or $last -match 'BGXP5[/\\]SETUP-BGXP5[.]TP2~')){
-if($mode -ceq 'status'){Write-Host 'BGXTEAM under BGXPR; menu 97.';return}
+if($mode -ceq 'status'){wh 'BGXTEAM under BGXPR; menu 97.';return}
 throw 'BGXPR is last in WeiDU. Use menu 100 rollback first to change BGXTEAM.'
 }
 if($mode -ceq 'status' -or ($installed -and ($mode -ceq 'install' -or $mode -ceq 'preflight'))){
 & py -3 $zin status '--game-root' $gr
 if($LASTEXITCODE -ne 0){throw ('BGX status STOP '+$LASTEXITCODE)}
-if($installed -and $mode -cne 'status'){Write-Host 'Already installed; no reinstall.'}
+if($installed -and $mode -cne 'status'){wh 'Already installed; no reinstall.'}
 return
 }
 if($mode -ceq 'rollback' -and !$installed){throw ('BGX '+$spec.id+' not last in WeiDU; rollback blocked')}
 $pre=if($mode -ceq 'rollback'){'status'}else{'preflight'}
 & py -3 $zin $pre '--game-root' $gr
 if($LASTEXITCODE -ne 0){throw ('BGX '+$spec.id+' '+$pre+' STOP '+$LASTEXITCODE)}
-if($mode -ceq 'preflight'){Write-Host 'Preflight PASS; no game change.';return}
+if($mode -ceq 'preflight'){wh 'Preflight PASS; no game change.';return}
 $ztok=if($mode -ceq 'install'){$yesInstall}else{$yesRollback}
 wh 'Close game/loader/WeiDU. Backup required.'
-$reply=Read-Host ('Type '+$ztok+' exactly to authorize, or ENTER to cancel')
-if($reply -cne $ztok){Write-Host 'Cancelled; game unchanged.';return}
+$reply=rh ('Type '+$ztok+' exactly to authorize, or ENTER to cancel')
+if($reply -cne $ztok){wh 'Cancelled; game unchanged.';return}
 & py -3 $zin $mode '--yes' '--confirm' $ztok '--game-root' $gr
 if($LASTEXITCODE -ne 0){throw ('BGX '+$spec.id+' '+$mode+' STOP '+$LASTEXITCODE+'. NO AUTOMATIC RETRY')}
 wh ('BGX '+$spec.id+' '+$mode+' finished, verified.')
@@ -748,8 +751,8 @@ if($LASTEXITCODE -ne 0){throw ('BGXAI066 pre-authorization STOP '+$LASTEXITCODE)
 $ztok=if($mode -ceq 'install'){'INSTALL_BGXAI_066'}else{'ROLLBACK_BGXAI_066'}
 wh '066 updates M_BX43 with verified backup.'
 wh 'Close game/loader/WeiDU; exact baseline needed.'
-$zcf=Read-Host ('Type '+$ztok+' exactly to authorize or ENTER to cancel')
-if($zcf -cne $ztok){Write-Host '066 cancelled.';return}
+$zcf=rh ('Type '+$ztok+' exactly to authorize or ENTER to cancel')
+if($zcf -cne $ztok){wh '066 cancelled.';return}
 & py -3 (jp $x66.localPath 'BGXAI66_INSTALL.py') $mode '--yes' '--confirm' $ztok
 if($LASTEXITCODE -ne 0){throw ('BGXAI066 '+$mode+' STOP '+$LASTEXITCODE+'; do NOT retry automatically')}
 wh 'BGXAI066 action complete. Check status with option 80.'
@@ -764,7 +767,7 @@ $list=VM $spec
 foreach($name in $spec.names){
 $dest=jp $spec.localPath $name
 ANR $dest
-if((HashFile $dest) -cne $list[$name].sha){throw ('BGXAI064 source SHA mismatch: '+$name)}
+if((hf $dest) -cne $list[$name].sha){throw ('BGXAI064 source SHA mismatch: '+$name)}
 }
 wh '064 SHA-checked 061 status; read only.'
 & py -3 (jp $spec.localPath 'BGXAI64_PREFLIGHT_READONLY.py') '--game-root' $gr
@@ -778,14 +781,14 @@ $lua=jp $gr 'override\M_BX43.lua'
 ANR $log
 ANR $bcs
 ANR $lua
-if(!(tp -LiteralPath $log -PathType Leaf)){throw 'WeiDU.log missing'}
-$rows=@(Get-Content -LiteralPath $log -ErrorAction Stop | Where-Object {$_.TrimStart().StartsWith('~')})
+if(!(tp -Lit $log -PathT Leaf)){throw 'WeiDU.log missing'}
+$rows=@(gc -Lit $log -Ea Stop | Where-Object {$_.TrimStart().StartsWith('~')})
 if($rows.Count -lt 1){throw 'WeiDU.log has no installed components'}
 $last=[string]$rows[-1]
 $is061=($last -match '(?i)BGX61[/\\]SETUP-BGX61[.]TP2~')
 $is060=($last -match '(?i)BGX60[/\\]SETUP-BGX60[.]TP2~')
-$bhash=HashFile $bcs
-$lhash=HashFile $lua
+$bhash=hf $bcs
+$lhash=hf $lua
 wh ('Last WeiDU: '+$last)
 wh ('061 is LAST: '+$is061)
 wh ('060 is LAST: '+$is060)
@@ -794,12 +797,12 @@ $sourceBCS=jp $gr 'BGX61\staged\BDDEFAI.BCS'
 $sourceLua=jp $gr 'BGX61\staged\M_BX43.lua'
 ANR $sourceBCS
 ANR $sourceLua
-wh ('061 BCS staged SHA matches live: '+((HashFile $sourceBCS) -ceq $bhash -and $bhash.Length -eq 64))
-wh ('061 Lua staged SHA matches live: '+((HashFile $sourceLua) -ceq $lhash -and $lhash.Length -eq 64))
+wh ('061 BCS staged SHA matches live: '+((hf $sourceBCS) -ceq $bhash -and $bhash.Length -eq 64))
+wh ('061 Lua staged SHA matches live: '+((hf $sourceLua) -ceq $lhash -and $lhash.Length -eq 64))
 } elseif($is060) {
 wh ('060 BCS SHA correct: '+($bhash -ceq '038b41c529fb45bb75528722577beef7b474e1ce55e280dc5fca4d6ed9e72841'))
 wh ('060 Lua SHA correct: '+($lhash -ceq '35e450b6600f0fc65d47e535126a52e0303c360033307fa920776faec3f581ab'))
-} else {Write-Host 'STOP: last WeiDU is not BGX60/BGX61.'}
+} else {wh 'STOP: last WeiDU is not BGX60/BGX61.'}
 wh ('Live BCS SHA: '+$bhash)
 wh ('Live Lua SHA: '+$lhash)
 }
@@ -809,7 +812,7 @@ $list=VM $spec
 foreach($name in $spec.names){
 $dest=jp $spec.localPath $name
 ANR $dest
-if((HashFile $dest) -cne $list[$name].sha){throw ('BGXAI060 unverified file: '+$name)}
+if((hf $dest) -cne $list[$name].sha){throw ('BGXAI060 unverified file: '+$name)}
 }
 wh 'BGXAI 060 - READ-ONLY Windows WeiDU compile (NO INSTALL).'
 & py -3 (jp $spec.localPath 'BGXAI60_INSTALL.py') preflight
@@ -820,8 +823,8 @@ function Test041ReadOnly {
 wh ''
 wh '041 precheck (RO)'
 $logPath=jp $gr 'WeiDU.log'
-if(!(tp -LiteralPath $logPath -PathType Leaf)){throw 'WeiDU.log missing'}
-$zln=@(Get-Content -LiteralPath $logPath -ErrorAction Stop)
+if(!(tp -Lit $logPath -PathT Leaf)){throw 'WeiDU.log missing'}
+$zln=@(gc -Lit $logPath -Ea Stop)
 $zact=@($zln | Where-Object { $_.TrimStart().StartsWith('~') })
 $has039=@($zact | Where-Object { $_ -match 'BGX39[^~]*[.]TP2~' }).Count -gt 0
 $has040=@($zact | Where-Object { $_ -match 'BGX40[^~]*[.]TP2~' }).Count -gt 0
@@ -834,13 +837,13 @@ wh ('BGX40 in WeiDU.log: '+$has040)
 wh ('BGX41 in WeiDU.log: '+$has041)
 wh ('BGX40 is LAST installed WeiDU mod: '+$is040Last)
 $stat=jp $gr 'override\STATDESC.2DA'
-wh ('STATDESC.2DA in override: '+(tp -LiteralPath $stat -PathType Leaf))
+wh ('STATDESC.2DA in override: '+(tp -Lit $stat -PathT Leaf))
 wh 'NOTE: STATDESC may exist in game archives even when not in override.'
 $bcs=jp $gr 'override\BDDEFAI.BCS'
-wh ('EPS script in override: '+(tp -LiteralPath $bcs -PathType Leaf))
-$toolsOk=(tp -LiteralPath (jp $gr 'setup-enhanced-powergaming-scripts.exe') -PathType Leaf)
+wh ('EPS script in override: '+(tp -Lit $bcs -PathT Leaf))
+$toolsOk=(tp -Lit (jp $gr 'setup-enhanced-powergaming-scripts.exe') -PathT Leaf)
 wh ('WeiDU executable available: '+$toolsOk)
-if($eps -and $has039 -and $has040 -and !$has041 -and $is040Last -and $toolsOk -and (tp -LiteralPath $bcs -PathType Leaf)) {
+if($eps -and $has039 -and $has040 -and !$has041 -and $is040Last -and $toolsOk -and (tp -Lit $bcs -PathT Leaf)) {
 wh '041 read-only PASS; icon compilation unproven.'
 } else {
 wh '041 precheck: REVIEW before install.'
@@ -851,7 +854,7 @@ function Test042EPSReadOnly {
 wh ''
 wh 'BGXAI 042 - EPS GUARD / AUTOATTACK AUDIT (READ ONLY)'
 $fileName=jp $gr 'override\BDDEFAI.BCS'
-if(!(tp -LiteralPath $fileName -PathType Leaf)){throw 'Current BDDEFAI.BCS missing'}
+if(!(tp -Lit $fileName -PathT Leaf)){throw 'Current BDDEFAI.BCS missing'}
 $bytes=[IO.File]::ReadAllBytes($fileName)
 if($bytes.Length -gt 8000000 -or $bytes.Length -lt 50){throw 'Unexpected compiled BCS size'}
 $bcs=[Text.Encoding]::GetEncoding(28591).GetString($bytes)
@@ -879,12 +882,12 @@ $interesting+=('  Block '+($i+1)+': mode='+$isMode+' guard='+$isGuard+
 ' idle='+$condition.Contains('16427 ')+' actions='+($actionIds -join ','))
 }
 }
-wh ('Live BDDEFAI.BCS SHA256: '+(HashBytes $bytes))
+wh ('Live BDDEFAI.BCS SHA256: '+(hb $bytes))
 wh ('Bytes: '+$bytes.Length+'; complete blocks: '+$blocks.Count)
 wh ('EPS attack-mode blocks: '+$modeCount+' (ActionListEmpty: '+$modeActionList+')')
 wh ('BGXAI guard-mode blocks: '+$guardCount)
 wh ('Actions: ProtectObject='+$protectCount+' AttackReevaluate='+$attackReeval+' AttackOneRound='+$attackOneRound)
-foreach($item in $interesting){Write-Host $item}
+foreach($item in $interesting){wh $item}
 wh 'Only live game sources; READ ONLY.'
 wh '042 audit only; no game files changed by this option.'
 }
@@ -892,19 +895,19 @@ function Test042BReadOnly {
 wh ''
 wh 'BGXAI 042B - LIVE EET READ-ONLY PREFLIGHT'
 $log=jp $gr 'WeiDU.log'
-if(!(tp -LiteralPath $log -PathType Leaf)){throw 'WeiDU.log missing'}
-$zact=@(Get-Content -LiteralPath $log | Where-Object { $_.TrimStart().StartsWith('~') })
+if(!(tp -Lit $log -PathT Leaf)){throw 'WeiDU.log missing'}
+$zact=@(gc -Lit $log | Where-Object { $_.TrimStart().StartsWith('~') })
 $has41=@($zact | Where-Object { $_ -match 'BGX41[^~]*[.]TP2~' }).Count -gt 0
 $has42=@($zact | Where-Object { $_ -match 'BGX42[^~]*[.]TP2~' }).Count -gt 0
 $last41=$zact.Count -gt 0 -and $zact[-1] -match 'BGX41[^~]*[.]TP2~'
 $last42=$zact.Count -gt 0 -and $zact[-1] -match 'BGX42[^~]*[.]TP2~'
 $eps=@($zact | Where-Object { $_.ToUpperInvariant().Contains('ENHANCED-POWERGAMING-SCRIPTS') }).Count -gt 0
 $bcs=jp $gr 'override\BDDEFAI.BCS'
-if(!(tp -LiteralPath $bcs -PathType Leaf)){throw 'BDDEFAI.BCS missing'}
-$hash=HashFile $bcs
+if(!(tp -Lit $bcs -PathT Leaf)){throw 'BDDEFAI.BCS missing'}
+$hash=hf $bcs
 $orig='86d80953be464a3f10da8e1dc031b907801860b7f1f15b3ea6fb9d25e485f3f5'
 $patched='8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0'
-$weidu=tp -LiteralPath (jp $gr 'setup-enhanced-powergaming-scripts.exe') -PathType Leaf
+$weidu=tp -Lit (jp $gr 'setup-enhanced-powergaming-scripts.exe') -PathT Leaf
 wh ('EPS installed: '+$eps+'; WeiDU available: '+$weidu)
 wh ('BGX41 present: '+$has41+'; 041 last: '+$last41)
 wh ('BGX42 present: '+$has42+'; 042 last: '+$last42)
@@ -922,19 +925,19 @@ function Test043PReadOnly {
 wh ''
 wh '043P EEex observer precheck (RO)'
 $logPath=jp $gr 'WeiDU.log'
-if(!(tp -LiteralPath $logPath -PathType Leaf)){throw 'WeiDU.log missing'}
-$zact=@(Get-Content -LiteralPath $logPath | Where-Object { $_.TrimStart().StartsWith('~') })
+if(!(tp -Lit $logPath -PathT Leaf)){throw 'WeiDU.log missing'}
+$zact=@(gc -Lit $logPath | Where-Object { $_.TrimStart().StartsWith('~') })
 $has42=@($zact | Where-Object { $_ -match 'BGX42[^~]*[.]TP2~' }).Count -gt 0
 $has43=@($zact | Where-Object { $_ -match 'BGX43[^~]*[.]TP2~' }).Count -gt 0
 $last42=$zact.Count -gt 0 -and $zact[-1] -match 'BGX42[^~]*[.]TP2~'
 $last43=$zact.Count -gt 0 -and $zact[-1] -match 'BGX43[^~]*[.]TP2~'
 $bcs=jp $gr 'override\BDDEFAI.BCS'
-if(!(tp -LiteralPath $bcs -PathType Leaf)){throw 'BDDEFAI.BCS missing'}
-$bcsSha=HashFile $bcs
+if(!(tp -Lit $bcs -PathT Leaf)){throw 'BDDEFAI.BCS missing'}
+$bcsSha=hf $bcs
 $expect='8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0'
-$eeex=tp -LiteralPath (jp $gr 'override\M___EEex.lua') -PathType Leaf
-$loader=tp -LiteralPath (jp $gr 'InfinityLoader.exe') -PathType Leaf
-$lua=tp -LiteralPath (jp $gr 'override\M_BGX43Probe.lua') -PathType Leaf
+$eeex=tp -Lit (jp $gr 'override\M___EEex.lua') -PathT Leaf
+$loader=tp -Lit (jp $gr 'InfinityLoader.exe') -PathT Leaf
+$lua=tp -Lit (jp $gr 'override\M_BGX43Probe.lua') -PathT Leaf
 wh ('BGX42 installed: '+$has42+'; 042 last: '+$last42)
 wh ('BGX43 installed: '+$has43+'; 043 last: '+$last43)
 wh ('EEex M___EEex.lua present: '+$eeex+'; InfinityLoader present: '+$loader)
@@ -953,20 +956,20 @@ function Test044ReadOnly {
 wh ''
 wh '044 hotkey precheck (RO)'
 $log=jp $gr 'WeiDU.log'
-if(!(tp -LiteralPath $log -PathType Leaf)){throw 'WeiDU.log missing'}
-$zln=@(Get-Content -LiteralPath $log | Where-Object { $_.TrimStart().StartsWith('~') })
+if(!(tp -Lit $log -PathT Leaf)){throw 'WeiDU.log missing'}
+$zln=@(gc -Lit $log | Where-Object { $_.TrimStart().StartsWith('~') })
 $has42=@($zln | Where-Object { $_ -match 'BGX42[^~]*[.]TP2~' }).Count -gt 0
 $has43=@($zln | Where-Object { $_ -match 'BGX43[^~]*[.]TP2~' }).Count -gt 0
 $has44=@($zln | Where-Object { $_ -match 'BGX44[^~]*[.]TP2~' }).Count -gt 0
 $last43=$zln.Count -gt 0 -and $zln[-1] -match 'BGX43[^~]*[.]TP2~'
 $last44=$zln.Count -gt 0 -and $zln[-1] -match 'BGX44[^~]*[.]TP2~'
-$bcs=HashFile (jp $gr 'override\BDDEFAI.BCS')
-$obs=HashFile (jp $gr 'override\M_BGX43Probe.lua')
+$bcs=hf (jp $gr 'override\BDDEFAI.BCS')
+$obs=hf (jp $gr 'override\M_BGX43Probe.lua')
 $goodBCS=$bcs -ceq '8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0'
 $goodObs=$obs -ceq 'f1e6fcc6989512bee5e217a66ef42ea48a828c407c7009e6012a90b95d5db19f'
-$loader=tp -LiteralPath (jp $gr 'InfinityLoader.exe') -PathType Leaf
-$eeex=tp -LiteralPath (jp $gr 'override\M___EEex.lua') -PathType Leaf
-$diag=tp -LiteralPath (jp $gr 'override\M_BGX44Diag.lua') -PathType Leaf
+$loader=tp -Lit (jp $gr 'InfinityLoader.exe') -PathT Leaf
+$eeex=tp -Lit (jp $gr 'override\M___EEex.lua') -PathT Leaf
+$diag=tp -Lit (jp $gr 'override\M_BGX44Diag.lua') -PathT Leaf
 wh ('042B installed='+$has42+'; 043P installed='+$has43+'; 043P last='+$last43)
 wh ('044 installed='+$has44+'; 044 last='+$last44+'; 044 lua exists='+$diag)
 wh ('042B exact BCS hash='+$goodBCS+'; 043P exact Lua hash='+$goodObs)
@@ -985,21 +988,21 @@ function Test045ReadOnly {
 wh ''
 wh '045 Lua RESREF preflight (RO)'
 $log=jp $gr 'WeiDU.log'
-if(!(tp -LiteralPath $log -PathType Leaf)){throw 'WeiDU.log missing'}
-$zln=@(Get-Content -LiteralPath $log | Where-Object { $_.TrimStart().StartsWith('~') })
+if(!(tp -Lit $log -PathT Leaf)){throw 'WeiDU.log missing'}
+$zln=@(gc -Lit $log | Where-Object { $_.TrimStart().StartsWith('~') })
 $has42=@($zln | Where-Object { $_ -match 'BGX42[^~]*[.]TP2~' }).Count -gt 0
 $has43=@($zln | Where-Object { $_ -match 'BGX43[^~]*[.]TP2~' }).Count -gt 0
 $has44=@($zln | Where-Object { $_ -match 'BGX44[^~]*[.]TP2~' }).Count -gt 0
 $has45=@($zln | Where-Object { $_ -match 'BGX45[^~]*[.]TP2~' }).Count -gt 0
 $last44=$zln.Count -gt 0 -and $zln[-1] -match 'BGX44[^~]*[.]TP2~'
 $last45=$zln.Count -gt 0 -and $zln[-1] -match 'BGX45[^~]*[.]TP2~'
-$base42=(HashFile (jp $gr 'override\BDDEFAI.BCS')) -ceq '8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0'
-$base43=(HashFile (jp $gr 'override\M_BGX43Probe.lua')) -ceq 'f1e6fcc6989512bee5e217a66ef42ea48a828c407c7009e6012a90b95d5db19f'
-$base44=(HashFile (jp $gr 'override\M_BGX44Diag.lua')) -ceq 'a7bdfba10cdb3cc26351072dac0c6f375e03b4ce3a288f0eb15db945411dd33f'
-$short43=tp -LiteralPath (jp $gr 'override\M_BX43.lua') -PathType Leaf
-$short44=tp -LiteralPath (jp $gr 'override\M_BX44.lua') -PathType Leaf
-$boot=tp -LiteralPath (jp $gr 'override\M___EEex.lua') -PathType Leaf
-$loader=tp -LiteralPath (jp $gr 'InfinityLoader.exe') -PathType Leaf
+$base42=(hf (jp $gr 'override\BDDEFAI.BCS')) -ceq '8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0'
+$base43=(hf (jp $gr 'override\M_BGX43Probe.lua')) -ceq 'f1e6fcc6989512bee5e217a66ef42ea48a828c407c7009e6012a90b95d5db19f'
+$base44=(hf (jp $gr 'override\M_BGX44Diag.lua')) -ceq 'a7bdfba10cdb3cc26351072dac0c6f375e03b4ce3a288f0eb15db945411dd33f'
+$short43=tp -Lit (jp $gr 'override\M_BX43.lua') -PathT Leaf
+$short44=tp -Lit (jp $gr 'override\M_BX44.lua') -PathT Leaf
+$boot=tp -Lit (jp $gr 'override\M___EEex.lua') -PathT Leaf
+$loader=tp -Lit (jp $gr 'InfinityLoader.exe') -PathT Leaf
 wh ('042B/043P/044 installed: '+$has42+'/'+$has43+'/'+$has44)
 wh ('044 last: '+$last44+'; 045 installed: '+$has45+'; 045 last: '+$last45)
 wh ('Original 042B/043P/044 SHA256 match: '+$base42+'/'+$base43+'/'+$base44)
@@ -1019,15 +1022,15 @@ function Test046ReadOnly {
 wh ''
 wh 'BGXAI 046 ATTACK FILTER - PRECHECK (READ ONLY)'
 $p=jp $gr 'WeiDU.log'
-if(!(tp -LiteralPath $p -PathType Leaf)){throw 'WeiDU.log missing'}
-$e=@(Get-Content -LiteralPath $p | Where-Object { $_.TrimStart().StartsWith('~') })
+if(!(tp -Lit $p -PathT Leaf)){throw 'WeiDU.log missing'}
+$e=@(gc -Lit $p | Where-Object { $_.TrimStart().StartsWith('~') })
 $last45=$e.Count -gt 0 -and $e[-1] -match 'BGX45[^~]*[.]TP2~'
 $last46=$e.Count -gt 0 -and $e[-1] -match 'BGX46[^~]*[.]TP2~'
 $present46=@($e | Where-Object { $_ -match 'BGX46[^~]*[.]TP2~' }).Count -gt 0
 $old='f1e6fcc6989512bee5e217a66ef42ea48a828c407c7009e6012a90b95d5db19f'
-$old45=(HashFile (jp $gr 'override\M_BX43.lua')) -ceq $old
-$bcs=(HashFile (jp $gr 'override\BDDEFAI.BCS')) -ceq '8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0'
-$other=(HashFile (jp $gr 'override\M_BX44.lua')) -ceq 'a7bdfba10cdb3cc26351072dac0c6f375e03b4ce3a288f0eb15db945411dd33f'
+$old45=(hf (jp $gr 'override\M_BX43.lua')) -ceq $old
+$bcs=(hf (jp $gr 'override\BDDEFAI.BCS')) -ceq '8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0'
+$other=(hf (jp $gr 'override\M_BX44.lua')) -ceq 'a7bdfba10cdb3cc26351072dac0c6f375e03b4ce3a288f0eb15db945411dd33f'
 wh ('045 last='+$last45+'; 046 present='+$present46+'; 046 last='+$last46)
 wh ('045 observer original='+$old45+'; 042B BCS='+$bcs+'; 044 short Lua='+$other)
 if($last45 -and !$present46 -and $old45 -and $bcs -and $other){
@@ -1043,63 +1046,63 @@ function Test047ReadOnly {
 wh ''
 wh '047 target precheck (RO)'
 $p=jp $gr 'WeiDU.log'
-if(!(tp -LiteralPath $p -PathType Leaf)){throw 'WeiDU.log missing'}
-$e=@(Get-Content -LiteralPath $p | Where-Object { $_.TrimStart().StartsWith('~') })
+if(!(tp -Lit $p -PathT Leaf)){throw 'WeiDU.log missing'}
+$e=@(gc -Lit $p | Where-Object { $_.TrimStart().StartsWith('~') })
 $last46=$e.Count -gt 0 -and $e[-1] -match 'BGX46[^~]*[.]TP2~'
 $last47=$e.Count -gt 0 -and $e[-1] -match 'BGX47[^~]*[.]TP2~'
 $present47=@($e | Where-Object { $_ -match 'BGX47[^~]*[.]TP2~' }).Count -gt 0
-$old46=(HashFile (jp $gr 'override\M_BX43.lua')) -ceq '1c1e314e1f14a693fa0b10d7450e737447a992e9d7900fb7112437f75c26a6a3'
-$bcs=(HashFile (jp $gr 'override\BDDEFAI.BCS')) -ceq '8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0'
-$diag=(HashFile (jp $gr 'override\M_BX44.lua')) -ceq 'a7bdfba10cdb3cc26351072dac0c6f375e03b4ce3a288f0eb15db945411dd33f'
+$old46=(hf (jp $gr 'override\M_BX43.lua')) -ceq '1c1e314e1f14a693fa0b10d7450e737447a992e9d7900fb7112437f75c26a6a3'
+$bcs=(hf (jp $gr 'override\BDDEFAI.BCS')) -ceq '8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0'
+$diag=(hf (jp $gr 'override\M_BX44.lua')) -ceq 'a7bdfba10cdb3cc26351072dac0c6f375e03b4ce3a288f0eb15db945411dd33f'
 wh ('046 last='+$last46+'; 047 installed='+$present47+'; 047 last='+$last47)
 wh ('046 Lua='+$old46+'; 042B BCS='+$bcs+'; 044 Lua='+$diag)
 if($last46 -and !$present47 -and $old46 -and $bcs -and $diag){
 wh 'BGXAI 047 PRECHECK: BASELINE OK. NOT INSTALLED.'
 } elseif($last47 -and $bcs -and $diag) {
 wh 'BGXAI 047 PRECHECK: PRESENT. Use 41 for checksum status.'
-} else {Write-Host '047 REVIEW before install.'}
+} else {wh '047 REVIEW before install.'}
 wh 'NO GAME WRITE.'
 }
 function Test048ReadOnly {
 wh ''
 wh '048 hit observer precheck (RO)'
 $p=jp $gr 'WeiDU.log'
-if(!(tp -LiteralPath $p -PathType Leaf)){throw 'WeiDU.log missing'}
-$e=@(Get-Content -LiteralPath $p | Where-Object { $_.TrimStart().StartsWith('~') })
+if(!(tp -Lit $p -PathT Leaf)){throw 'WeiDU.log missing'}
+$e=@(gc -Lit $p | Where-Object { $_.TrimStart().StartsWith('~') })
 $last47=$e.Count -gt 0 -and $e[-1] -match 'BGX47[^~]*[.]TP2~'
 $last48=$e.Count -gt 0 -and $e[-1] -match 'BGX48[^~]*[.]TP2~'
 $present48=@($e | Where-Object { $_ -match 'BGX48[^~]*[.]TP2~' }).Count -gt 0
-$old47=(HashFile (jp $gr 'override\M_BX43.lua')) -ceq 'c5b72a9bd22e120b38aa0d4f82fc9ce3532c31c8676e52cfdc855ee39521ddfd'
-$bcs=(HashFile (jp $gr 'override\BDDEFAI.BCS')) -ceq '8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0'
-$diag=(HashFile (jp $gr 'override\M_BX44.lua')) -ceq 'a7bdfba10cdb3cc26351072dac0c6f375e03b4ce3a288f0eb15db945411dd33f'
+$old47=(hf (jp $gr 'override\M_BX43.lua')) -ceq 'c5b72a9bd22e120b38aa0d4f82fc9ce3532c31c8676e52cfdc855ee39521ddfd'
+$bcs=(hf (jp $gr 'override\BDDEFAI.BCS')) -ceq '8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0'
+$diag=(hf (jp $gr 'override\M_BX44.lua')) -ceq 'a7bdfba10cdb3cc26351072dac0c6f375e03b4ce3a288f0eb15db945411dd33f'
 wh ('047 last='+$last47+'; 048 installed='+$present48+'; 048 last='+$last48)
 wh ('047 Lua='+$old47+'; 042B BCS unchanged='+$bcs+'; 044 Lua unchanged='+$diag)
 if($last47 -and !$present48 -and $old47 -and $bcs -and $diag) {
 wh 'BGXAI 048 PRECHECK: BASELINE OK. NOT INSTALLED.'
 } elseif($last48 -and $bcs -and $diag) {
 wh '048 present; status 46.'
-} else { Write-Host '048 REVIEW before install.' }
+} else { wh '048 REVIEW before install.' }
 wh 'NO GAME WRITE.'
 }
 function Test049ReadOnly {
 wh ''
 wh 'BGXAI 049 GUARD ADVISORY PRECHECK (READ ONLY)'
 $p=jp $gr 'WeiDU.log'
-if(!(tp -LiteralPath $p -PathType Leaf)){throw 'WeiDU.log missing'}
-$e=@(Get-Content -LiteralPath $p | Where-Object { $_.TrimStart().StartsWith('~') })
+if(!(tp -Lit $p -PathT Leaf)){throw 'WeiDU.log missing'}
+$e=@(gc -Lit $p | Where-Object { $_.TrimStart().StartsWith('~') })
 $last48=$e.Count -gt 0 -and $e[-1] -match 'BGX48[^~]*[.]TP2~'
 $last49=$e.Count -gt 0 -and $e[-1] -match 'BGX49[^~]*[.]TP2~'
 $present49=@($e | Where-Object { $_ -match 'BGX49[^~]*[.]TP2~' }).Count -gt 0
-$old48=(HashFile (jp $gr 'override\M_BX43.lua')) -ceq '7b7b613c736df4d7d8a360e9879486bfe26ca52b7f29242c64ab6b2a27c694ea'
-$bcs=(HashFile (jp $gr 'override\BDDEFAI.BCS')) -ceq '8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0'
-$diag=(HashFile (jp $gr 'override\M_BX44.lua')) -ceq 'a7bdfba10cdb3cc26351072dac0c6f375e03b4ce3a288f0eb15db945411dd33f'
+$old48=(hf (jp $gr 'override\M_BX43.lua')) -ceq '7b7b613c736df4d7d8a360e9879486bfe26ca52b7f29242c64ab6b2a27c694ea'
+$bcs=(hf (jp $gr 'override\BDDEFAI.BCS')) -ceq '8602e8853a9c0e8b1bd5733021e6dd9c9ac73e03beb6c9900ef6ebd09dacb9a0'
+$diag=(hf (jp $gr 'override\M_BX44.lua')) -ceq 'a7bdfba10cdb3cc26351072dac0c6f375e03b4ce3a288f0eb15db945411dd33f'
 wh ('048 last='+$last48+'; 049 present='+$present49+'; 049 last='+$last49)
 wh ('048 Lua='+$old48+'; 042B BCS unchanged='+$bcs+'; 044 Lua unchanged='+$diag)
 if($last48 -and !$present49 -and $old48 -and $bcs -and $diag) {
 wh 'BGXAI 049 PRECHECK: BASELINE OK. NOT INSTALLED.'
 } elseif($last49 -and $bcs -and $diag) {
 wh '049 present; status 51.'
-} else {Write-Host '049 REVIEW before install.'}
+} else {wh '049 REVIEW before install.'}
 wh 'NO GAME WRITE.'
 }
 wh ''
@@ -1118,12 +1121,12 @@ wh '123-130 ranged modules'
 wh '131-151 ranged/friendly/motion modules'
 wh @'
 152-164 enemy/weapon/EEex tools
-165 R27 | 166 V7 | 167 BAF RO | 168 batch RO | 169 R29 | 170 R30 RO | 171 R31 V3 | 172 R33
+165 R27 | 166 V7 | 167 BAF RO | 168 batch RO | 169 R29 | 170 R30 RO | 171 R31 V3 | 172 R33 | 173 R34 RO
 0 Exit
 '@
-$choice=Read-Host 'Choice [0]'
+$choice=rh 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
-if($choice -eq '0'){Write-Host 'No changes.';exit 0}
+if($choice -eq '0'){wh 'No changes.';exit 0}
 try {
 switch($choice){
 '1' {SyncRelease $b40;break}
@@ -1298,6 +1301,7 @@ switch($choice){
 '170' {RunR30ReadOnly;break}
 '171' {$p='BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125/';$a=Get-PinnedBytes ($p+'R31_GUARDED_SOURCE_ONLY.py');$b=Get-PinnedBytes ($p+'M_BGXR27_R31_SOURCE_ONLY.lua');if($a.Length -ne 20305 -or (HashBytes $a) -cne '0ac97a702c4ac5919549a5a54cf9ef6a01a8fbd582273fc556fe9c82a60950ee' -or $b.Length -ne 47550 -or (HashBytes $b) -cne '5a1f6b32db920a005161734605c8b3273614a1318d8b1b57dac79ed022a00f38'){throw 'R31 PIN STOP'};ANR $zcd;$f=Join-Path $zcd ('r31_'+[guid]::NewGuid().ToString('N')+'.py');$c=Join-Path $zcd ('r31_'+[guid]::NewGuid().ToString('N')+'.lua');try{[IO.File]::WriteAllBytes($f,$a);[IO.File]::WriteAllBytes($c,$b);if((HashFile $f)-cne '0ac97a702c4ac5919549a5a54cf9ef6a01a8fbd582273fc556fe9c82a60950ee' -or (HashFile $c)-cne '5a1f6b32db920a005161734605c8b3273614a1318d8b1b57dac79ed022a00f38'){throw 'R31 STAGE SHA'};$n=Read-Host 'R31 1=RO 2=install 3=status 4=rollback 5=capture [1]';if(!$n){$n='1'};if($n -eq '0'){break};$m=@{'1'='preflight';'2'='install';'3'='status';'4'='rollback';'5'='capture'}[$n];if(!$m){throw 'R31 BAD CHOICE'};& py -3 $f --game $gr --candidate $c --mode $m;if($LASTEXITCODE){throw 'R31 STOP'}}finally{Remove-Item -LiteralPath $f,$c -Force -ErrorAction SilentlyContinue};break}
 '172' {$p='BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/';$a=Get-PinnedBytes ($p+'R33_GUARDED_SOURCE_ONLY.py');$b=Get-PinnedBytes ($p+'M_BGXR27_R33_SOURCE_ONLY.lua');if($a.Length -ne 22132 -or (HashBytes $a) -cne '0815d173b276c0f990eb3ab66ac6f8f614a9a0f0f59fc301f94f5f8c890be653' -or $b.Length -ne 49438 -or (HashBytes $b) -cne '1420ef723df1090d56f8f6590fd82e5c69107ba97a39b2ca2ba73f93e0e77069'){throw 'R33 PIN STOP'};ANR $zcd;$f=jp $zcd ('r33_'+[guid]::NewGuid().ToString('N')+'.py');$c=jp $zcd ('r33_'+[guid]::NewGuid().ToString('N')+'.lua');try{[IO.File]::WriteAllBytes($f,$a);[IO.File]::WriteAllBytes($c,$b);if((HashFile $f)-cne '0815d173b276c0f990eb3ab66ac6f8f614a9a0f0f59fc301f94f5f8c890be653' -or (HashFile $c)-cne '1420ef723df1090d56f8f6590fd82e5c69107ba97a39b2ca2ba73f93e0e77069'){throw 'R33 STAGE SHA'};$n=Read-Host 'R33 1=RO 2=install 3=status 4=rollback 5=capture [1]';if(!$n){$n='1'};if($n -eq '0'){break};$m=@{'1'='preflight';'2'='install';'3'='status';'4'='rollback';'5'='capture'}[$n];if(!$m){throw 'R33 BAD CHOICE'};& py -3 $f --game $gr --candidate $c --mode $m;if($LASTEXITCODE){throw 'R33 STOP'}}finally{Remove-Item -LiteralPath $f,$c -Force -ErrorAction SilentlyContinue};break}
+'173' {$p='BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125/BGXAI_R34_NATIVE_PROF_BRIDGE_RO.py';$q='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_ITM_R3_RO.py';$a=Get-PinnedBytes $p;$b=Get-PinnedBytes $q;if((HashBytes $a)-cne '48b763fee2d22d22002cbac7efebedd98904f8ee8f6128f82a324bcd3d5957da' -or (HashBytes $b)-cne 'ed87a7a6618826c6d3901d2579a39bf280fcaeb09cd18b7b6ee159b9ebfcc74a'){throw 'R34 SOURCE PIN STOP'};ANR $zcd;$f=jp $zcd ('r34_'+[guid]::NewGuid().ToString('N')+'.py');$g=jp $zcd ('r3_'+[guid]::NewGuid().ToString('N')+'.py');try{[IO.File]::WriteAllBytes($f,$a);[IO.File]::WriteAllBytes($g,$b);$d=jp $env:USERPROFILE 'Documents\BGXAI_LIVE_REPORTS';ANR $d;$l=jp $d 'BGXAI_R33_CONSOLE_20261125T161358491052Z.log';if((HashFile $l)-cne 'd510da7e5c15d1579266b37a89fdf91ceff91622714a142e1c137376ec239538'){throw 'R34 LIVE LOG PIN STOP'};$o=jp $d ('BGXAI_R34_NATIVE_PROF_'+(Get-Date -Format 'yyyyMMddTHHmmssfff')+'.json');& py -3 $f --game $gr --log $l --r3-source $g | Out-File -LiteralPath $o -Encoding utf8;$r=$LASTEXITCODE;Get-Content -LiteralPath $o;wh ('REPORT_FILE='+$o);if($r){throw 'R34 READONLY STOP'}}finally{Remove-Item -LiteralPath $f,$g -Force -ErrorAction SilentlyContinue};break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0
