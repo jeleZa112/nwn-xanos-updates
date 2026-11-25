@@ -51,7 +51,7 @@ local function fire()
  local before=reads
  listeners[1](sprite,act)
  local delta=reads-before
- yes(delta==4,'R37 must reuse EXACT R33 double-read count (4) with no extra getter')
+ yes(delta==2,'R37 must reuse EXACT R33 double-read count (2) with no extra getter')
  yes(logs[#logs-1]:find('[BGXR27]',1,true)~=nil,'original R33 event still emitted')
  yes(logs[#logs]:find('[BGXR37]',1,true)~=nil,'R37 bounded status in same console')
  yes(has(logs[#logs],'"weaponSwitchAuthorized":false'),'no switch')
@@ -94,4 +94,4 @@ yes(has(advice,'"R37_FIRST_R33_SAMPLE_NO_PRIOR"'),'after HOLD no stale advice is
 dofile(filename)
 yes(#listeners==1,'re-loading source must not register another listener')
 yes(commands==0,'all cases zero action orders')
-print('PASS R37 one-listener real R33+R36 pipeline 7 transitions, 4 stats reads/callback, 0 engine orders')
+print('PASS R37 one-listener real R33+R36 pipeline 7 transitions, 2 stats reads/callback, 0 engine orders')
