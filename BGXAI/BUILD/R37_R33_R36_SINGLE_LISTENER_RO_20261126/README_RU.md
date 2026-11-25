@@ -1,3 +1,16 @@
+## АКТУАЛЬНОЕ ОБНОВЛЕНИЕ: 26.11.2026 — пункт 174 В ЕДИНОМ обновляторе
+
+Предыдущий текст ниже описывает состояние **до** выпуска меню 174. Сейчас **защищённая реализация подготовлена и включена в установленный пользователем единый путь обновления** `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`, но **R37 ещё НЕ установлен в игре**.
+
+- Меню **174 — R37**, по умолчанию режим **1: preflight / READ ONLY**. Доступны 2: typed install, 3: status, 4: typed last-only rollback. Старые пункты 1–173 сохранены побайтно.
+- Guard `R37_GUARDED_SOURCE_ONLY.py`: 19 107 байт, SHA256 `847d59d70f14274a005244b009850a8f563e2a302517e8237cdcb063bc23b9ab`. Подтверждение установки `INSTALL_BGXAI_R37_PASSIVE_ADVICE_AFTER_R33`, отката `ROLLBACK_BGXAI_R37_RESTORE_R33_ONLY`. Требует R33 installed last в WeiDU (152), проверяет SHA, создаёт внешнюю копию, использует native WeiDU; если установлен другой компонент, останавливается без правки игры.
+- Lua R37: 60 835 байт, SHA256 `5ece282270f0e6a1fa7a6086b7f13c57c77de98759637efa4b2ab0cc1e5744d6`.
+- **Фактический hard limit оригинального CMD 80 000 байт** учтён. Текущий SHA-pinned PS **79 701 байт**, SHA256 `5efb1648aa107f24bb785553e89f23bffa744c3220c1740e6b57d7303f64b71c`, immutable commit `52f73efaa2900b6cdee6ff0f428ae6744193fafd`. Для размера вынесены повторяющиеся константы манифестов; все 174 обработчика остались такими же.
+- [Source guard 17 тестов на Windows/Linux — PASS](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45675195682). [Windows PS5.1, pinned SHA, старая 173-менюшка и лимит оригинального CMD — PASS](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45677080408). [Комплексный CI BGXAI 7/7 — PASS](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45677090975).
+- **CODE/TEST PASS, DEPLOY/LIVE R37 NOT YET VERIFIED.** Важно: ни один тест выше не является доказательством работы в реальном бою. Переустановка R33, вторые CMD, ручное копирование в override и нетипизированная установка не нужны.
+
+---
+
 # BGXAI R37 — R36 внутри существующего единственного R33 обработчика, SOURCE ONLY
 
 **Дата:** 26 ноября 2026. **Статус:** CODE+SOURCE/CI PASS; **NOT INSTALLED**, новый LIVE не получен.
