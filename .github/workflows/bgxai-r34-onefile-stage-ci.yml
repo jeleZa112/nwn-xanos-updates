@@ -99,12 +99,12 @@ jobs:
             $harness=Join-Path $env:RUNNER_TEMP 'bgxai_r34_menu_exec.ps1'
             # A stub of the input function only. The real 79,943-byte
             # script is actually executed from its first line to exit 0.
-            $source="function global:Read-Host { param([string]\\$Prompt) '0' }"+[Environment]::NewLine+"& '$backend' -GameRoot '$root'"
+            $source='function global:Read-Host { param([string]$Prompt) ''0'' }'+[Environment]::NewLine+"& '$backend' -GameRoot '$root'"
             # The scriptblock interpolates no untrusted input; paths are test fixture paths.
             [IO.File]::WriteAllText($harness,$source)
             $output=(& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $harness 2>&1|Out-String)
             if($LASTEXITCODE -ne 0){throw ('BGXAI_MENU_EXEC_NONZERO '+$LASTEXITCODE+': '+$output)}
-            if($output -notmatch 'BGXAI ONE-FILE UPDATER' -or $output -notmatch 'No changes\\.'){
+            if($output -notmatch 'BGXAI ONE-FILE UPDATER' -or $output -notmatch 'No changes\.'){
               throw ('BGXAI_MENU_EXEC_OUTPUT_MISSING: '+$output)
             }
             if($output -match 'not recognized|AliasNotWritable|CommandNotFoundException'){
