@@ -190,5 +190,91 @@ class R37Guarded(unittest.TestCase):
         self.assertNotIn("ClearActions",calls)
         self.assertNotIn("SelectWeaponAbility",calls)
 
+    def _capture_fixture(self,mode="good"):
+        self.write("InfinityLoader.exe",b"MZ"+bytes(1400))
+        r33={"schema":"BGXAI_R27_SINGLE_CALLBACK_SELECTED_RO_V1",
+             "type":"R27_SINGLE_CALLBACK","seq":1,"partyIndex":2,
+             "readOnly":True,"dispatchAuthorized":False,
+             "weaponSwitchAuthorized":False}
+        r37={"schema":"BGXAI_R37_R33_R36_SINGLE_LISTENER_SOURCE_V1",
+             "type":"ADVISORY_CONTEXT","seq":1,"partyIndex":2,
+             "status":"R37_FIRST_R33_SAMPLE_NO_PRIOR",
+             "invalidateCachedAdvice":True,"readOnly":True,
+             "ordersSent":0,"actionOrigin":"UNKNOWN",
+             "safeActionBoundaryVerified":False,
+             "dispatchAuthorized":False,"weaponSwitchAuthorized":False}
+        session={"schema":"BGXAI_R37_R33_R36_SINGLE_LISTENER_SOURCE_V1",
+                 "type":"SESSION","readOnly":True}
+        if mode=="unpaired":
+            r37["seq"]=2
+        if mode=="unsafe":
+            r37["dispatchAuthorized"]=True
+        lines=[
+            "[BGXR37] "+json.dumps(session,separators=(",",":")),
+            "[BGXR27] "+json.dumps(r33,separators=(",",":")),
+            "[BGXR37] "+json.dumps(r37,separators=(",",":")),
+        ]
+        if mode=="no-session":
+            lines=lines[1:]
+        class FakeProcess:
+            def wait(self):
+                return 7 if mode=="bad-exit" else 0
+        def fake_launch(args,cwd,stdin,stdout,stderr,close_fds):
+            self.assertEqual(Path(args[0]),self.root/"InfinityLoader.exe")
+            self.assertEqual(cwd,self.root)
+            self.assertIs(stdin,G.subprocess.DEVNULL)
+            self.assertIs(stderr,G.subprocess.STDOUT)
+            stdout.write(("\n".join(lines)+"\n").encode())
+            return FakeProcess()
+        return fake_launch
+
+    def _capture(self,mode="good"):
+        fake=self._capture_fixture(mode)
+        with mock.patch.object(G,"last_r37",return_value=[]),\
+             mock.patch.object(G,"installed_proof",return_value={}),\
+             mock.patch.object(G,"subprocess") as proc:
+            proc.DEVNULL=G.subprocess.DEVNULL if False else -3
+            proc.STDOUT=-2
+            proc.Popen.side_effect=fake
+            return G.capture(self.root)
+
+    def test_r37_capture_real_shaped_one_report_only(self):
+        before=self.write(G.OVERRIDE,self.r33_bytes).read_bytes()
+        out=self._capture("good")
+        self.assertEqual(out["status"],"R37_RUNTIME_ADVICE_LOG_READY_FOR_REVIEW")
+        self.assertEqual(out["r37SessionMarkers"],1)
+        self.assertEqual(out["r33OriginalSamples"],1)
+        self.assertEqual(out["r37AdviceSamples"],1)
+        self.assertTrue(out["r37PairedBySequenceAndParty"])
+        self.assertEqual(out["r37InvalidationSamples"],1)
+        self.assertEqual(out["r37MalformedOrUnsafeRows"],0)
+        self.assertEqual(len(out["r37Events"]),1)
+        self.assertFalse(out["dispatchAuthorized"])
+        self.assertFalse(out["manualEpsOriginVerified"])
+        self.assertEqual((self.root/G.OVERRIDE).read_bytes(),before)
+    def test_r37_capture_unpaired_holds(self):
+        out=self._capture("unpaired")
+        self.assertEqual(out["status"],"R37_RUNTIME_HOLD_MANUAL_REVIEW")
+        self.assertFalse(out["r37PairedBySequenceAndParty"])
+    def test_r37_capture_unsafe_line_never_accepted(self):
+        out=self._capture("unsafe")
+        self.assertEqual(out["status"],"R37_RUNTIME_HOLD_MANUAL_REVIEW")
+        self.assertEqual(out["r37MalformedOrUnsafeRows"],1)
+    def test_r37_capture_no_session_holds(self):
+        out=self._capture("no-session")
+        self.assertEqual(out["status"],"R37_RUNTIME_HOLD_MANUAL_REVIEW")
+        self.assertEqual(out["r37SessionMarkers"],0)
+    def test_r37_capture_bad_exit_holds(self):
+        out=self._capture("bad-exit")
+        self.assertEqual(out["status"],"R37_RUNTIME_HOLD_MANUAL_REVIEW")
+        self.assertEqual(out["gameExitCode"],7)
+    def test_r37_capture_absent_loader_does_not_launch(self):
+        with mock.patch.object(G,"last_r37",return_value=[]),\
+             mock.patch.object(G,"installed_proof",return_value={}),\
+             mock.patch.object(G.subprocess,"Popen") as p:
+            with self.assertRaisesRegex(G.Hold,"R37_CAPTURE_LOADER"):
+                G.capture(self.root)
+            p.assert_not_called()
+
 if __name__=="__main__":
     unittest.main(verbosity=2)
