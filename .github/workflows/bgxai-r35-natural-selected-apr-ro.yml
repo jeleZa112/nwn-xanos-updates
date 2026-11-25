@@ -39,5 +39,28 @@ jobs:
           assert 'manualAndEPSOriginVerified":False' in s
           assert 'ammoLauncherEngineBindingVerified":False' in s
           assert p.stat().st_size < 16000
+          lua=Path('BGXAI/BUILD/R35_NATURAL_SELECTED_APR_RO_20261126/BGXAI_R35_SELECTED_ENGINE_STATS_RO.lua').read_text('utf-8')
+          assert 'EEex_Action_AddSpriteStartedActionListener(' not in lua
+          assert 'SelectWeaponAbility(' not in lua
+          assert 'ClearActions(' not in lua
+          assert 'Stop(' not in lua
+          assert 'SetGlobal(' not in lua
+          assert 'dispatchAuthorized=false' in lua
+          assert 'otherSlotEffectiveAPRVerified=false' in lua
+          assert 'm_bAllowEffectListCall' in lua
+          assert 'm_nTHAC0' in lua and 'm_nNumberOfAttacks' in lua
           print('R35 SAFE: no install, no orders, no writes, no alternate APR promotion')
           PY
+  lua-selected-observer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install EEex-compatible Lua 5.3, Lua 5.4 and LuaJIT
+        run: sudo apt-get update -qq && sudo apt-get install -y lua5.3 lua5.4 luajit
+      - name: R35 passive selected APR THAC0 double-read without gameplay actions
+        shell: bash
+        run: |
+          for runtime in lua5.3 lua5.4 luajit; do
+            "$runtime" BGXAI/BUILD/R35_NATURAL_SELECTED_APR_RO_20261126/test_r35_selected_engine_stats_ro.lua
+          done
