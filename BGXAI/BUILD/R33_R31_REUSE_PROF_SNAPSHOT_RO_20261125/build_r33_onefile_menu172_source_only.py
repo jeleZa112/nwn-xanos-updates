@@ -18,7 +18,7 @@ LIVE = REPO / "BGXAI/BGXAI_SYNC.ps1"
 GUARD = HERE / "R33_GUARDED_SOURCE_ONLY.py"
 CANDIDATE = HERE / "M_BGXR27_R33_SOURCE_ONLY.lua"
 R31_PIN = "c998ff6607ee3915b9cbb3c9b31955f715bee425b5ed882e04e1af1d515ed4aa"
-R33_PIN = "4f04b43f69d4171e2686f017d334eac69f91d9389a18122110c2bfd44a2d5663"
+R33_PIN = "7e3c3cc69ce865ff197a5238564757a2c01df71950f56018590f5fa2c38b2417"
 R31_ARCHIVE = HERE.parent / "R31_R27V3_PASSIVE_SOURCE_20261125" / "BGXAI_SYNC_R31_MENU171_SOURCE_ONLY.ps1"
 R33_LUA_SHA = "1420ef723df1090d56f8f6590fd82e5c69107ba97a39b2ca2ba73f93e0e77069"
 MENU = "BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/"
@@ -51,7 +51,7 @@ def build(base: bytes | None = None) -> bytes:
     current = LIVE.read_bytes() if base is None else base
     # Idempotent after the source-only release is pinned. Historical R31 is
     # frozen and still required to confirm every pre-existing menu case.
-    if len(current)==79874 and digest(current)==R33_PIN:
+    if len(current)==79920 and digest(current)==R33_PIN:
         old=R31_ARCHIVE.read_bytes()
         if len(old)!=79941 or digest(old)!=R31_PIN:
             raise Hold("IMMUTABLE_R31_ARCHIVE_DRIFT")
@@ -82,6 +82,14 @@ def build(base: bytes | None = None) -> bytes:
     before=before.replace("Set-Alias wh Write-Host -Scope Script\n",
          "Set-Alias wh Write-Host -Scope Script\nSet-Alias jp Join-Path -Scope Script\nSet-Alias tp Test-Path -Scope Script\n",1)
     before=before.replace("171 R31 V3\n", "171 R31 V3 | 172 R33\n",1)
+    # One precise source-folder exception for menu172. Never weaken the path
+    # validator itself, its traversal guard, or other allowlist alternatives.
+    old_allow="|BUILD/R31_R27V3_PASSIVE_SOURCE_20261125|BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123)"
+    new_allow="|BUILD/R31_R27V3_PASSIVE_SOURCE_20261125|BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125|BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123)"
+    if before.count(old_allow)!=1:
+        raise Hold("R33_FETCH_ALLOWLIST_ANCHOR_MISSING")
+    before=before.replace(old_allow,new_allow,1)
+
     gh=digest(g)
     handler=(
         "'172' {$p='"+MENU+"';"
