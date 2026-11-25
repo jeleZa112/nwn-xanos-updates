@@ -1,4 +1,4 @@
-name: BGXAI one-file EPS first SHA / Windows PowerShell AST
+name: BGXAI one-file updater SHA / Windows PowerShell AST / R30
 on:
   push:
     branches: [bg-eet-ai]
@@ -35,9 +35,9 @@ jobs:
             throw 'Invalid PowerShell AST'
           }
           Write-Host 'BGXAI PowerShell 5.1 AST PASS'
-      - name: Immutable one-file pin / sources / menu gate
+      - name: Immutable one-file pin / R19 and R30 menu170 gate
         shell: pwsh
-        run: python BGXAI/patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only/validate_onefile_channel.py
+        run: python -m unittest -v BGXAI.BUILD.R20_EEEX_STATIC_MENU_RO_20261123.test_r20_channel_pin
       # Legacy 066S idle-guard installer is superseded by installed BGXPR.
       # Its pinned source fixture currently fails its own SHA gate on checkout;
       # do not misreport that historical suite as a passing BGXP2 test.
