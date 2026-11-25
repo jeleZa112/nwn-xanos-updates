@@ -4,7 +4,7 @@
 
 **Новый пункт меню: `170 — R30 queue/deploy preflight READ ONLY`.** Он добавлен в уже существующий `BGXAI/BGXAI_SYNC.ps1`, не создан второй CMD и не изменён `BGXAI_UPDATE.cmd`. Существующий embedded bootstrap динамически читает `BOOTSTRAP_PIN.json`, скачивает immutable script и проверяет SHA/size; новый backend **79 979 байт**, SHA256 `10c9a7651096a45c3a5a694acf9800e9f651843321716438a4e37b6015245e42`, pinned immutable script commit `71b1d37db787a59ed16c8b92ac495314b3577e02`. Лимит текущего CMD — 80 000 байт, оставлен запас 21 байт.
 
-Пункт 170 скачивает только два точных SHA-pinned source файла через существующий `Get-PinnedBytes`, проверяет их до и после staging, временно кладёт их в `%LOCALAPPDATA%\\BGXAI_UPDATER`, запускает `py -3 R30 --game ... --candidate ...` и сохраняет единственный JSON в `%USERPROFILE%\\Documents\\BGXAI_LIVE_REPORTS\\BGXAI_R30_READONLY_*.json`. Временные файлы удаляются. Принятый exit code 2 означает честный HOLD и сохранённый отчёт, не успешную установку. Ни BCS, ни Lua, ни WeiDU, ни EPS, ни сейвы не меняются.
+Пункт 170 скачивает только два точных SHA-pinned source файла через существующий `Get-PinnedBytes`, проверяет их до и после staging, временно кладёт их в `%LOCALAPPDATA%\BGXAI_UPDATER`, запускает `py -3 R30 --game ... --candidate ...` и сохраняет единственный JSON в `%USERPROFILE%\\Documents\BGXAI_LIVE_REPORTS\BGXAI_R30_READONLY_*.json`. Временные файлы удаляются. Принятый exit code 2 означает честный HOLD и сохранённый отчёт, не успешную установку. Ни BCS, ни Lua, ни WeiDU, ни EPS, ни сейвы не меняются.
 
 | Объект | Размер | SHA256 |
 |---|---:|---|
