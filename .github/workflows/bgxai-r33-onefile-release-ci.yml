@@ -39,7 +39,7 @@ jobs:
           assert re.fullmatch('[a-f0-9]{64}',pin['script_sha256'])
           s=(here/pin['script_path']).read_bytes()
           assert len(s)==pin['script_size']==79775<=80000
-          assert hashlib.sha256(s).hexdigest()==pin['script_sha256']=='9b44a5cf6ffd83c97c17c49ac9533b102bcdef7a004da4840636762a91cb2db5'
+          assert hashlib.sha256(s).hexdigest()==pin['script_sha256']=='9131e29da59b7d3a62651eab3ff7deee514da426cfbe6a1267b54444e9c6f59a'
           immutable=subprocess.check_output(['git','show',pin['commit']+':'+pin['script_path']])
           assert immutable==s, 'released pin must reference exact immutable Git commit'
           original=subprocess.check_output(['git','show','fe992a60a4c7880912270cfed27be59c6a0bf359:BGXAI/BGXAI_SYNC.ps1'])
