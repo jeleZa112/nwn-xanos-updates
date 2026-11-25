@@ -157,13 +157,13 @@ def proof_r33(root:Path)->dict:
         d=json.loads(p.read_text(encoding="utf-8"))
     except (UnicodeError,ValueError) as exc:
         raise Hold("R33_PROOF_INVALID_JSON") from exc
-    if not isinstance(d,dict) or d.get("schema")!=R33_SCHEMA or
+    if (not isinstance(d,dict) or d.get("schema")!=R33_SCHEMA or
         d.get("status")!="R33_PASSIVE_INSTALLED_AWAITING_RUNTIME" or
         d.get("sourceSha256")!=R33_SHA or
         d.get("typedInstallApproved") is not True or
         d.get("installationPerformed") is not True or
         d.get("dispatchAuthorized") is not False or
-        d.get("weaponSwitchAuthorized") is not False:
+        d.get("weaponSwitchAuthorized") is not False):
         raise Hold("R33_INSTALLED_PROOF_INCONSISTENT")
     snap=d.get("baselineSnapshot")
     if not isinstance(snap,dict) or snap.get(OVERRIDE)!="5a1f6b32db920a005161734605c8b3273614a1318d8b1b57dac79ed022a00f38":
@@ -198,8 +198,8 @@ def preflight(root:Path,candidate:Path,live:bool=True)->dict:
     if sha(safe(root,OVERRIDE))!=R33_SHA:
         raise Hold("R33_LIVE_MODULE_SHA_CHANGED")
     proof_r33(root)
-    if sha(safe(root,"setup-enhanced-powergaming-scripts.exe"))!=NATIVE_SHA or
-       sha(safe(root,"BGXR33/setup-BGXR33.exe"))!=NATIVE_SHA:
+    if (sha(safe(root,"setup-enhanced-powergaming-scripts.exe"))!=NATIVE_SHA or
+       sha(safe(root,"BGXR33/setup-BGXR33.exe"))!=NATIVE_SHA):
         raise Hold("NATIVE_WEIDU_BINARY_SHA_CHANGED")
     for rel,digest in BASELINE_SHA.items():
         if sha(safe(root,rel))!=digest:
@@ -303,11 +303,11 @@ def installed_proof(root:Path)->dict:
     if not p.is_file() or p.stat().st_size>1_000_000:
         raise Hold("R37_PROOF_MISSING")
     d=json.loads(p.read_text(encoding="utf-8"))
-    if not isinstance(d,dict) or d.get("schema")!=SCHEMA or
+    if (not isinstance(d,dict) or d.get("schema")!=SCHEMA or
        d.get("status")!="R37_PASSIVE_INSTALLED_AWAITING_RUNTIME" or
        d.get("sourceSha256")!=SOURCE_SHA or
        d.get("typedInstallApproved") is not True or
-       d.get("installationPerformed") is not True:
+       d.get("installationPerformed") is not True):
         raise Hold("R37_INSTALLED_PROOF_INVALID")
     return d
 
@@ -322,8 +322,8 @@ def rollback(root:Path,token:str)->dict:
         raise Hold("USERPROFILE_MISSING")
     parent=Path(home)/"Documents"/"BGXAI_BACKUPS"
     back=Path(proof.get("externalBackup",""))
-    if back.parent!=parent or not back.name.startswith("PRE_BGXR37_") or
-       not back.is_dir() or back.is_symlink():
+    if (back.parent!=parent or not back.name.startswith("PRE_BGXR37_") or
+       not back.is_dir() or back.is_symlink()):
         raise Hold("R37_EXTERNAL_BACKUP_PROVENANCE_INVALID")
     expected=json.loads(safe(back,"SHA256.json").read_text(encoding="utf-8"))
     if expected!=proof.get("baselineSnapshot") or expected.get(OVERRIDE)!=R33_SHA:
