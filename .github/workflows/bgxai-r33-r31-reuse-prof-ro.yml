@@ -27,6 +27,9 @@ jobs:
       - name: R33 source generator and immutable R31 contract tests
         shell: bash
         run: python -m unittest discover -s BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125 -p 'test_r33_reuse_ro.py' -v
+      - name: Guarded R33 upgrade mock WeiDU install / last-only rollback / capture / refusal
+        shell: bash
+        run: python -m unittest discover -s BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125 -p 'test_r33_guarded_source_only.py' -v
       - name: Build exact R33 Lua in temporary CI directory, NOT the game
         shell: bash
         run: python BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/build_r33_r31_reuse_prof_ro.py --output "$RUNNER_TEMP/M_BGXR27_R33_SOURCE_ONLY.lua"
@@ -43,3 +46,17 @@ jobs:
           for runtime in lua5.3 lua5.4 luajit; do
             "$runtime" BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/test_r33_r31_runtime.lua "$RUNNER_TEMP/M_BGXR27_R33_SOURCE_ONLY.lua"
           done
+
+      - name: Compare committed exact 49,438B R33 Lua with generated, SHA256 pin
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          from pathlib import Path
+          root=Path('BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125')
+          src=(root/'M_BGXR27_R33_SOURCE_ONLY.lua').read_bytes()
+          generated=Path(__import__("os").environ["RUNNER_TEMP"])/"M_BGXR27_R33_SOURCE_ONLY.lua"
+          assert generated.is_file() and src==generated.read_bytes()
+          assert len(src)==49438
+          assert hashlib.sha256(src).hexdigest()=='1420ef723df1090d56f8f6590fd82e5c69107ba97a39b2ca2ba73f93e0e77069'
+          print('R33 IMMUTABLE SOURCE PIN VERIFIED; no game touched')
+          PY
