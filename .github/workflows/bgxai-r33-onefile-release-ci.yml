@@ -95,3 +95,37 @@ jobs:
           Set-Alias tp Test-Path -Scope Script
           if((Get-Alias jp).Definition -ne 'Join-Path' -or (Get-Alias tp).Definition -ne 'Test-Path'){throw 'R33 alias binding failed'}
           Write-Host 'R33 one CMD menu172 PowerShell 5.1 AST PASS; engine files unmodified'
+
+  native-tp2-linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download official WeiDU 251 Linux archive (SHA verified independently)
+        run: |
+          curl -fLsS --retry 3 --connect-timeout 15 --max-time 90 -o "$RUNNER_TEMP/weidu251.zip" "https://github.com/WeiDUorg/weidu/releases/download/v251.00/WeiDU-Linux-251.zip"
+      - name: Native 251 TP2 parse only on throwaway install path, no WeiDU game modifications
+        run: |
+          python BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/R33_NATIVE_TP2_PARSE_RO.py --release "$RUNNER_TEMP/weidu251.zip" --platform linux
+  native-tp2-windows:
+    runs-on: windows-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download official WeiDU 251 Windows archive (SHA verified independently)
+        shell: pwsh
+        run: |
+          $target=Join-Path $env:RUNNER_TEMP 'weidu251.zip'
+          Invoke-WebRequest -Uri 'https://github.com/WeiDUorg/weidu/releases/download/v251.00/WeiDU-Windows-251.zip' -OutFile $target -MaximumRedirection 8
+      - name: Native 251 TP2 parse only on throwaway install path, no WeiDU game modifications
+        shell: pwsh
+        run: |
+          $target=Join-Path $env:RUNNER_TEMP 'weidu251.zip'
+          & py -3 BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/R33_NATIVE_TP2_PARSE_RO.py --release $target --platform windows
+          if($LASTEXITCODE -ne 0){throw 'R33 OFFICIAL WEIDU 251 PARSE FAILED'}
