@@ -57,9 +57,9 @@ jobs:
           root=Path('bg-eet-ru/onefile')
           j=json.loads((root/'release.json').read_text('utf8'))
           d=(root/'BG_EET_RU_UPDATE.cmd').read_bytes()
-          assert j['version'] in (142,144) and j['game_writes_allowed'] is False
+          assert j['version'] in (142,144,146) and j['game_writes_allowed'] is False
           assert hashlib.sha256(d).hexdigest()==j['sha256']
           assert len(d)<=750000
-          assert (b"9=JIT+DOWNSTREAM-RO" if j["version"]==144 else b"9=JIT+ROUTING-RO") in d
-          assert (b"70_V144_DOWNSTREAM_SOURCE_RO.json" if j["version"]==144 else b"69_V142_MESSAGE_DELIVERY_RO.json") in d
+          assert (b"9=JIT+PRESENTATION-RO" if j["version"]==146 else (b"9=JIT+DOWNSTREAM-RO" if j["version"]==144 else b"9=JIT+ROUTING-RO")) in d
+          assert (b"71_V146_PRESENTATION_SOURCE_RO.json" if j["version"]==146 else (b"70_V144_DOWNSTREAM_SOURCE_RO.json" if j["version"]==144 else b"69_V142_MESSAGE_DELIVERY_RO.json")) in d
           print('SOURCE_REGRESSION_ONLY_NO_INSTALL_GAMEPLAY_UNVERIFIED')
