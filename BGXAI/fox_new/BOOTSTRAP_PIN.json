@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "10905c8138dc72b3febb6629d164d9c33a6d292f",
+  "commit": "11c07ffe1bc626246ce6bb59de10a19015deacc7",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "c55a5ebecc4e244e0fe263fc995b1e1b5d802b1d36c7b103475c7559bef78fbe",
-  "script_size": 79927,
-  "description": "One CMD menu169 R29: selects only exact SHA256-pinned weidu.exe or installed setup-enhanced-powergaming-scripts.exe; real 167 compiler SHA256 matches, V6 provenance retained, 53 fail-closed offline tests. Source-only until typed install."
+  "script_sha256": "ca02c847f2027cd06ce77a4f345990b6781b86f50c2656fcb39fb548c67d4e1c",
+  "script_size": 79977,
+  "description": "One CMD menu170 R30 read-only queue/deploy preflight, pinned current R27 ACTION_CONTEXT_V3; no install or game changes."
 }
