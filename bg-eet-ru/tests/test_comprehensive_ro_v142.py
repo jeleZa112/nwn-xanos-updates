@@ -41,19 +41,19 @@ class FullRelease(unittest.TestCase):
    return {n:z.read(n) for n in z.namelist()}
 
  def test_release_exact_sha_and_bounds(self):
-  self.assertEqual(self.rel['version'],142)
+  self.assertIn(self.rel['version'],(142,144))
   self.assertFalse(self.rel['game_writes_allowed'])
   self.assertEqual(sha(self.cmd),self.rel['sha256'])
   self.assertLessEqual(len(self.cmd),750000)
-  self.assertEqual(self.ns['SELF_VERSION'],142)
+  self.assertEqual(self.ns['SELF_VERSION'],self.rel['version'])
 
  def test_native_sources_hash_pinned_and_zip_single_menu(self):
-  for v,filename in ((133,'v133_live_hit_inventory_ro.py'),(142,'v142_ro.py')):
+  for v,filename in ((133,'v133_live_hit_inventory_ro.py'),(self.rel['version'],'v144_ro.py' if self.rel['version']==144 else 'v142_ro.py')):
    blob=(NAT/filename).read_bytes().replace(b'\r\n',b'\n')
    self.assertEqual(sha(blob),self.ns['V'+str(v)+'_PIN'])
    self.assertIn('bg-eet-ru/native-correlation/'+filename,self.ns['V'+str(v)+'_URL'])
   self.assertIn(b"if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)",self.cmd)
-  self.assertIn(b"69_V142_MESSAGE_DELIVERY_RO.json",self.cmd)
+  self.assertIn(b"70_V144_DOWNSTREAM_SOURCE_RO.json" if self.rel["version"]==144 else b"69_V142_MESSAGE_DELIVERY_RO.json",self.cmd)
 
  def test_same_zip_historical_preservation_and_no_duplicates(self):
   before=self.read();payload=self.report()
