@@ -1,5 +1,18 @@
 # BGXAI — короткий актуальный статус на 25.11.2026
 
+## 25.11.2026 — R34 menu173 стартовое падение wh: ИСПРАВЛЕНО
+
+**Факт пользователя:** `BGXAI_UPDATE.cmd` получил старый pinned `38c7d2ee3bfc (SHA256 OK)`, но до меню упал на строке `wh ''` (`CommandNotFoundException`). Ошибка в предыдущем R34-компрессоре: `Set-Alias wh wh -Scope Script` (самоссылка), вместо `Set-Alias wh Write-Host -Scope Script`. Это не ошибка игры/WeiDU/R33; установка/удаление/перезапись игры на этом шаге не запускались.
+
+**Исправлено:** активный `BGXAI/BGXAI_SYNC.ps1` **79 943 B**, SHA256 `d131395cc7d3b5b9c265a8684994515eb6b7e72ba69c5ef4422597cc541de877`, immutable Git commit `b678020a5deee2d1d7205eebd28840847cfbd2a8`, manifest `BGXAI/fox_new/BOOTSTRAP_PIN.json` обновлён. `BGXAI_UPDATE.cmd` без изменений, все handlers 1..172 побайтово сохранены. Исправлен builder `build_r34_onefile_menu173_source_only.py` и стадийный источник. Меню 173 остаётся READ ONLY. **Решена именно причина сбоя перед меню.**
+
+**Тесты после исправления:** [GitHub Actions R34 45656805908](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45656805908) **SUCCESS 3/3**: Windows/Linux SHA/immutable pin + 172 старых обработчика; PowerShell 5.1 AST; **действительный запуск полного скрипта PowerShell до отображения меню и выбора 0 на отдельной тестовой папке `C:\Games\BG_EET_FOXX_NEW` на Windows runner**, без изменения живой игры и сети. Это устраняет дефект старой проверки только синтаксиса.
+
+**Следующий шаг:** один штатный запуск прежнего `BGXAI_UPDATE.cmd` с `verified pinned script b678020a5dee (SHA256 OK)`, выбор **173** и один `BGXAI_R34_NATIVE_PROF_*.json` из `Documents\BGXAI_LIVE_REPORTS`. При STOP повторных попыток не делать, переслать текст. **Не повторять R33 install/capture.** R33 INSTALLED+LIVE 8/8 PASS, R34 REAL CURRENT ITM runtime PENDING, AUTOSWITCH OFF.
+
+---
+
+
 ## 25.11.2026 — R34 RELEASED in existing ONE CMD, menu173 READ ONLY
 
 **Актуальный статус:** R33 **INSTALLED+LIVE PASS 8/8** (см. ниже), R34 **CODE/CI PASS + ONEFILE MENU173 PUBLISHED**, **R34 RUN ON USER PC = PENDING**, **AUTONOMOUS WEAPON SWITCH OFF**. В одном `BGXAI_UPDATE.cmd` появился **173** (только READ ONLY): сверяет SHA уже полученного `BGXAI_R33_CONSOLE_20261125T161358491052Z.log` с 8 реальными R33 событиями, проверяет live R33 proof/Lua SHA, через **существующий** R3 KEY/BIFF/ITM парсер читает актуальные предметы из игры, сопоставляет `ITM.proficiencyIdRaw` (offset 0x31) с низшими 3 битами `proficiencyStat89to134Raw`. Выводит JSON `Documents\BGXAI_LIVE_REPORTS\BGXAI_R34_NATIVE_PROF_*.json`. Не меняет игру/WeiDU/BCS/Lua/EPS, не создаёт нового слушателя и не делает переключений.
