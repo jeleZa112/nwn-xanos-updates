@@ -1,5 +1,8 @@
 # BGXAI — единая точка продолжения, 24 ноября 2026
 
+**R32/V5 совместимость — окончательный native CI:** [run 45643810529](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45643810529) **SUCCESS во всех 3 задачах**: Windows Python, Ubuntu Python, Lua 5.3/5.4/LuaJIT. Добавлен cross-module unit: значения WSPATCK для `-3,-2,-1,0,1,2,3` у EEex-ридера R32 совпадают с `BGXAI_WEAPON_APR_PROVENANCE_V5.decode_wspatck`. В новой игре/WeiDU ничего не менялось, R32 остаётся source-only. Данный CI не является LIVE. К следующему этапу переходить от таблиц к **подтверждению текущего класса и weapon-group + альтернативным итоговым APR**; не требовать повторения R31 capture.
+
+
 ## 25.11.2026 — новая стадия R32: источник установленных APR 2DA (SOURCE ONLY)
 
 **Сделана полезная ступень Weapon Priority V5, не второй скорер:** `BGXAI/BUILD/R32_APR_EET_TABLES_RO_20261125/` — READ ONLY code `BGXAI_R32_APR_EET_TABLES_RO.py` + `BGXAI_R32_EEEX_ENGINE_2DA_RO.lua` + 2 файла тестов и README_RU. Вспомогательный Python проверяет формат `WSPATCK.2DA` и `CLSWPBON.2DA` из точных файлов `override` с SHA256; при отсутствии возвращает HOLD и не имитирует BIFF. Lua-путь через официальный EEex `EEex_Resource_Load2DA` читает *через движок* соответствующие C2DArray (пока только SOURCE ONLY, без установки/слушателей).
