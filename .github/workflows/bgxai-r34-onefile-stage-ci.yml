@@ -35,8 +35,8 @@ jobs:
           import hashlib,json,re,subprocess
           b=Path('BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125')
           src=(b/'BGXAI_SYNC_R34_MENU173_SOURCE_ONLY.ps1').read_bytes()
-          assert len(src)==79935, len(src)
-          assert hashlib.sha256(src).hexdigest()=='c900e8aa6c4ec92bcb80cac1624cf1d6caa477dc961dd137555508e14e9d1f78'
+          assert len(src)==79943, len(src)
+          assert hashlib.sha256(src).hexdigest()=='d131395cc7d3b5b9c265a8684994515eb6b7e72ba69c5ef4422597cc541de877'
           assert len(src)<=80000
           old=subprocess.check_output(['git','show','29e7dee1cae6dea41bb11f9286debca2e047f0a5:BGXAI/BGXAI_SYNC.ps1'])
           assert len(old)==79920
@@ -56,6 +56,8 @@ jobs:
                      'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_ITM_R3_RO.py']:
             assert allow.fullmatch(fn),fn
           assert not allow.fullmatch('BGXAI/BUILD/UNKNOWN/PAYLOAD.py')
+          assert "Set-Alias wh Write-Host -Scope Script" in src.decode()
+          assert "Set-Alias wh wh " not in src.decode()
           assert "Set-Alias hf HashFile -Scope Script" in src.decode()
           assert "Set-Alias hb HashBytes -Scope Script" in src.decode()
           assert "Set-Alias gc Get-Content" not in src.decode()
@@ -63,13 +65,13 @@ jobs:
           live=Path('BGXAI/BGXAI_SYNC.ps1').read_bytes()
           assert live==src, 'ACTIVE one-CMD backend must match reviewed source'
           pin=json.loads(Path('BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text('utf-8'))
-          assert pin['script_size']==79935 and pin['script_sha256']==hashlib.sha256(src).hexdigest()
+          assert pin['script_size']==79943 and pin['script_sha256']==hashlib.sha256(src).hexdigest()
           assert pin['script_path']=='BGXAI/BGXAI_SYNC.ps1'
           assert pin['commit']=='38c7d2ee3bfc7a50631bb3375e5c1ee2141c0d7d'
           assert subprocess.check_output(['git','show',pin['commit']+':BGXAI/BGXAI_SYNC.ps1'])==src
           cmd=Path('BGXAI_UPDATE.cmd').read_bytes()
           assert cmd==subprocess.check_output(['git','show','71b1d37db787a59ed16c8b92ac495314b3577e02:BGXAI_UPDATE.cmd'])
-          print('PASS R34 ACTIVE one-CMD 79935B PIN, 172 old cases intact, no game install')
+          print('PASS R34 ACTIVE one-CMD 79943B PIN, 172 old cases intact, no game install')
           PY
 
   ps51-ast-and-abbreviation:
@@ -80,6 +82,39 @@ jobs:
         shell: bash
         run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
+      - name: EXECUTE real onefile menu startup with isolated Windows fixture and choice 0
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $root='C:\Games\BG_EET_FOXX_NEW'
+          $cache=Join-Path $env:LOCALAPPDATA 'BGXAI_UPDATER'
+          if(Test-Path -LiteralPath $root){throw 'SMOKE_FIXTURE_ROOT_NOT_EMPTY'}
+          if(Test-Path -LiteralPath $cache){throw 'SMOKE_CACHE_ALREADY_PRESENT'}
+          New-Item -ItemType Directory -Path $root -Force|Out-Null
+          New-Item -ItemType Directory -Path $cache -Force|Out-Null
+          try {
+            [IO.File]::WriteAllBytes((Join-Path $root 'chitin.key'),[byte[]](0,1,2,3))
+            [IO.File]::WriteAllText((Join-Path $cache 'head.txt'),'38c7d2ee3bfc7a50631bb3375e5c1ee2141c0d7d')
+            $backend=(Resolve-Path 'BGXAI/BGXAI_SYNC.ps1').Path
+            $harness=Join-Path $env:RUNNER_TEMP 'bgxai_r34_menu_exec.ps1'
+            # A stub of the input function only. The real 79,943-byte
+            # script is actually executed from its first line to exit 0.
+            $source="function global:Read-Host { param([string]\\$Prompt) '0' }"+[Environment]::NewLine+"& '$backend' -GameRoot '$root'"
+            # The scriptblock interpolates no untrusted input; paths are test fixture paths.
+            [IO.File]::WriteAllText($harness,$source)
+            $output=(& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $harness 2>&1|Out-String)
+            if($LASTEXITCODE -ne 0){throw ('BGXAI_MENU_EXEC_NONZERO '+$LASTEXITCODE+': '+$output)}
+            if($output -notmatch 'BGXAI ONE-FILE UPDATER' -or $output -notmatch 'No changes\\.'){
+              throw ('BGXAI_MENU_EXEC_OUTPUT_MISSING: '+$output)
+            }
+            if($output -match 'not recognized|AliasNotWritable|CommandNotFoundException'){
+              throw ('BGXAI_MENU_ALIAS_EXEC_FAIL: '+$output)
+            }
+            Write-Host 'R34 POWERHELL EXECUTED START TO MENU CHOICE 0 PASS, isolated fixture only, no game/network operations'
+          } finally {
+            Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item -LiteralPath $cache -Recurse -Force -ErrorAction SilentlyContinue
+          }
       - name: Parse ACTIVE PowerShell 5.1 and exercise abbreviated literal-path cmdlet parameters
         shell: powershell
         run: |
