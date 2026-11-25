@@ -26,7 +26,7 @@ class TestOneFile136(unittest.TestCase):
         for version, filename in ((133,'v133_live_hit_inventory_ro.py'),(136,'v136_jit_provenance_ro.py')):
             src=SOURCES/filename
             dst=cache/(f'V{version}_RO.py')
-            shutil.copyfile(src,dst)
+            dst.write_bytes(src.read_bytes().replace(b'\r\n',b'\n'))
             self.assertEqual(self.ns['sha_path'](dst),self.ns[f'V{version}_PIN'])
         self.zip=self.work/self.ns['REPORT_NAME']
         with zipfile.ZipFile(self.zip,'w',zipfile.ZIP_DEFLATED) as z:

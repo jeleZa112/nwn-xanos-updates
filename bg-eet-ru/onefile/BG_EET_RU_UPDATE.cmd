@@ -8304,7 +8304,7 @@ def main(argv=None):
     if a=='6':return v130_audit(game,WORKDIR/REPORT_NAME)
     if a=='7':return v130_audit(game,WORKDIR/REPORT_NAME,132)
     if a=='8':return v133_audit(game,WORKDIR/REPORT_NAME)
-     if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)
+    if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)
     if mode:return v126_dispatch(game,WORKDIR/REPORT_NAME,mode)
     rc=v124_one_run(game,WORKDIR/REPORT_NAME,args.offline)
     return rc if rc else v126_dispatch(game,WORKDIR/REPORT_NAME,'status')
