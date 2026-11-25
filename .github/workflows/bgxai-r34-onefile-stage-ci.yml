@@ -1,4 +1,4 @@
-name: BGXAI R34 LOG FALLBACK stage CLI Windows PS5.1 safe
+name: BGXAI R34 ACTIVE onefile menu173 R33 log fallback PS5.1 safe
 on:
   push:
     branches: [bg-eet-ai]
@@ -66,14 +66,14 @@ jobs:
           assert "Set-Alias rh Read-Host -Scope Script" in src.decode()
           live=Path('BGXAI/BGXAI_SYNC.ps1').read_bytes()
           pin=json.loads(Path('BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text('utf-8'))
-          assert len(live)==79943
-          assert hashlib.sha256(live).hexdigest()==pin['script_sha256']=='d131395cc7d3b5b9c265a8684994515eb6b7e72ba69c5ef4422597cc541de877'
-          assert pin['commit']=='b678020a5deee2d1d7205eebd28840847cfbd2a8'
+          assert live==src, 'R34 active backend differs from approved source'
+          assert len(live)==pin['script_size']==79775
+          assert hashlib.sha256(live).hexdigest()==pin['script_sha256']=='9b44a5cf6ffd83c97c17c49ac9533b102bcdef7a004da4840636762a91cb2db5'
+          assert pin['commit']=='124add6624c4cfd054b2cee61f37d5af5f093bea'
           assert subprocess.check_output(['git','show',pin['commit']+':BGXAI/BGXAI_SYNC.ps1'])==live
-          assert live!=src, 'PRE-RELEASE STAGE is not supposed to be active'
           cmd=Path('BGXAI_UPDATE.cmd').read_bytes()
           assert cmd==subprocess.check_output(['git','show','71b1d37db787a59ed16c8b92ac495314b3577e02:BGXAI_UPDATE.cmd'])
-          print('PASS R34 log-fallback STAGE 79775B, 172 handlers identical, active script unchanged')
+          print('PASS R34 log-fallback ACTIVE 79775B immutable pin, 172 handlers preserved, no game write')
           PY
 
   ps51-ast-and-abbreviation:
@@ -96,10 +96,10 @@ jobs:
           New-Item -ItemType Directory -Path $cache -Force|Out-Null
           try {
             [IO.File]::WriteAllBytes((Join-Path $root 'chitin.key'),[byte[]](0,1,2,3))
-            [IO.File]::WriteAllText((Join-Path $cache 'head.txt'),'b678020a5deee2d1d7205eebd28840847cfbd2a8')
-            $backend=(Resolve-Path 'BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125/BGXAI_SYNC_R34_MENU173_SOURCE_ONLY.ps1').Path
+            [IO.File]::WriteAllText((Join-Path $cache 'head.txt'),'124add6624c4cfd054b2cee61f37d5af5f093bea')
+            $backend=(Resolve-Path 'BGXAI/BGXAI_SYNC.ps1').Path
             $harness=Join-Path $env:RUNNER_TEMP 'bgxai_r34_menu_exec.ps1'
-            # A stub of the input function only. The real 79,943-byte
+            # A stub of the input function only. The real 79,775-byte
             # script is actually executed from its first line to exit 0.
             $source='function global:Read-Host { param([string]$Prompt) ''0'' }'+[Environment]::NewLine+"& '$backend' -GameRoot '$root'"
             # The scriptblock interpolates no untrusted input; paths are test fixture paths.
@@ -120,7 +120,7 @@ jobs:
       - name: Parse ACTIVE PowerShell 5.1 and exercise abbreviated literal-path cmdlet parameters
         shell: powershell
         run: |
-          $p=(Resolve-Path 'BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125/BGXAI_SYNC_R34_MENU173_SOURCE_ONLY.ps1').Path
+          $p=(Resolve-Path 'BGXAI/BGXAI_SYNC.ps1').Path
           $tokens=$null
           $errors=$null
           [System.Management.Automation.Language.Parser]::ParseFile($p,[ref]$tokens,[ref]$errors)|Out-Null
