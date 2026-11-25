@@ -1,5 +1,8 @@
 # BGXAI R32 — реальный WSPATCK/CLSWPBON из EET, READ ONLY
 
+**R32/V5 совместимость — окончательный native CI:** [run 45643810529](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45643810529) **SUCCESS во всех 3 задачах**: Windows Python, Ubuntu Python, Lua 5.3/5.4/LuaJIT. Добавлен cross-module unit: значения WSPATCK для `-3,-2,-1,0,1,2,3` у EEex-ридера R32 совпадают с `BGXAI_WEAPON_APR_PROVENANCE_V5.decode_wspatck`. В новой игре/WeiDU ничего не менялось, R32 остаётся source-only. Данный CI не является LIVE. К следующему этапу переходить от таблиц к **подтверждению текущего класса и weapon-group + альтернативным итоговым APR**; не требовать повторения R31 capture.
+
+
 ## ДОПОЛНЕНИЕ: EEex engine-resolved 2DA и CI PASS (25.11.2026)
 
 **R32 engine API adapter уже реализован:** `BGXAI_R32_EEEX_ENGINE_2DA_RO.lua`. Использует документированный `EEex_Resource_Load2DA("WSPATCK")` и `EEex_Resource_Load2DA("CLSWPBON")`, считывает `C2DArray:getDimensions(), getColumnLabel(), getRowLabel(), getAtPoint()` с точными 0-based индексами; **EEex размер X включает столбец меток строк**, поэтому число значений = sizeX−1. Это позволяет читать и ресурсы BIFF внутри игрового движка. Официальный источник: [Bubb13/EEex EEex_Resource.lua](https://github.com/Bubb13/EEex/blob/master/EEex/copy/EEex_scripts/EEex_Resource.lua). API вызывается только в будущей игровой интеграции; здесь `M.observe(classRow,rank,level,loader)` является SOURCE ONLY. Нет ни новых слушателей EEex, ни оружейных приказов, ни изменения игровых файлов. Возвращает только `ENGINE_RESOLVED_APR_TABLE_CANDIDATE_READ_ONLY`, не подтверждает active dual class, equip-state, allEffects, effective APR других слотов и не даёт dispatch.
