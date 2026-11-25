@@ -31,6 +31,18 @@ jobs:
         shell: bash
         run: |
           python -m unittest discover -s BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126 -p 'test_r37_source_integrity.py' -v
+      - name: Publish source-only immutable R37 candidate SHA256 for next guarded release
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          p=Path('BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/M_BGXR27_R37_SOURCE_ONLY.lua')
+          b=p.read_bytes()
+          assert len(b)>60000 and len(b)<64000
+          print('R37_SOURCE_ONLY_LUA_BYTES='+str(len(b)))
+          print('R37_SOURCE_ONLY_LUA_SHA256='+hashlib.sha256(b).hexdigest())
+          PY
       - name: Confirm real R36 27 Python tests preserved
         shell: bash
         run: |
