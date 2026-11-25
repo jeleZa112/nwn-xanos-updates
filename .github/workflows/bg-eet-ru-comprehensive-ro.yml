@@ -1,0 +1,64 @@
+name: BG EET RU comprehensive regression READ ONLY V142
+on:
+  pull_request:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/tests/test_comprehensive_ro_v142.py'
+      - '.github/workflows/bg-eet-ru-comprehensive-ro.yml'
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/tests/test_comprehensive_ro_v142.py'
+      - '.github/workflows/bg-eet-ru-comprehensive-ro.yml'
+  workflow_dispatch:
+jobs:
+  all-native-and-onefile:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: x64
+      - name: Build Win64 native ledger COFF (not installed into game)
+        shell: bash
+        run: |
+          clang --target=x86_64-pc-windows-msvc -std=c11 -O2 -ffreestanding -funwind-tables -fno-stack-protector -c bg-eet-ru/native-correlation/v138_native_attempt_ledger.c -o bg-eet-ru/native-correlation/v138_native_attempt_ledger_win64.obj
+      - name: Complete native source test sweep V129 through V142
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p "test*.py" -v
+      - name: Comprehensive onefile mutation and historical ZIP preservation
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -m unittest discover -s bg-eet-ru/tests -p "test_comprehensive_ro_v142.py" -v
+      - name: V136 to V142 unchanged single CMD integration
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -m unittest discover -s bg-eet-ru/autofix -p "test_v136_onefile_readonly.py" -v
+      - name: Onefile published integrated selftest
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
+      - name: Assert no new release, user action or game installation
+        shell: python
+        run: |
+          from pathlib import Path
+          import hashlib,json
+          root=Path('bg-eet-ru/onefile')
+          j=json.loads((root/'release.json').read_text('utf8'))
+          d=(root/'BG_EET_RU_UPDATE.cmd').read_bytes()
+          assert j['version']==142 and j['game_writes_allowed'] is False
+          assert hashlib.sha256(d).hexdigest()==j['sha256']
+          assert len(d)<=750000
+          assert b"9=JIT+ROUTING-RO" in d and b"69_V142_MESSAGE_DELIVERY_RO.json" in d
+          print('SOURCE_REGRESSION_ONLY_NO_INSTALL_GAMEPLAY_UNVERIFIED')
