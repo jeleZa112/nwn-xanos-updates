@@ -44,4 +44,6 @@ jobs:
       - name: Preserve option 8; add option 9; one ZIP; bad SHA fails closed
         run: python -m unittest discover -s bg-eet-ru/autofix -p test_v136_onefile_readonly.py -v
       - name: Existing onefile selftest without game
+        env:
+          PYTHONIOENCODING: utf-8
         run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
