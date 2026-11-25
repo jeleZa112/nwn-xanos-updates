@@ -82,7 +82,11 @@ class LedgerSupport(unittest.TestCase):
         self.assertEqual(self.d.bgv138_reset(self.S),0)
 
     @classmethod
-    def tearDownClass(cls):cls.temp.cleanup()
+    def tearDownClass(cls):
+        # Windows holds a loaded DLL until the test process exits.  Do not
+        # unload a WinDLL behind ctypes function objects or try deleting it.
+        # Runner-managed TEMP is reclaimed after the Python process exits.
+        if os.name!='nt':cls.temp.cleanup()
     def enter(self,thread=7,frame=10,weapon=b'SW1H04',launcher=None,ammo=None,
               attacker=11,target=19,ability=0,session=None):
         s=C.c_uint64(0)
