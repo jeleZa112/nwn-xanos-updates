@@ -1,3 +1,13 @@
+## 26.11.2026 — результат проверки на реальных двух входных JSON
+
+Реально проверены предоставленные ранее пользователем R28 (24 строки) и R34 (5 текущих ITM): **4/4 совпадения SHA256 ITM и raw proficiency IDs**; R27 source SHA один, все 24 seq последовательны и принадлежат одному актёру; слоты 12/APR key2: **22**, 35/APR key7: **2**. Декодер raw APR (из уже имеющегося R33) превращает их в **2** и **1.5** соответственно. В отчёте больше нет оснований утверждать, что это текущая эффективная APR оценка разных слотов в одном кадре. Пользователь не должен повторять тест.
+
+**CI:** [R35 native Windows/Linux 13/13 tests each + game mutation denylist PASS](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45665814622). [Существующий R34 regression + новые R35 tests Windows/Linux PASS](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45665910474). Source-only, ни обновлятор, ни игра не изменены.
+
+**Проверен первоисточник EEex API:** в [Bubb13/EEex `EEex_Sprite.lua`](https://github.com/Bubb13/EEex/blob/master/EEex/copy/EEex_scripts/EEex_Sprite.lua) `EEex_Sprite_GetActiveStats(sprite)` возвращает `m_derivedStats` при `m_bAllowEffectListCall~=0` и `m_tempStats` при `==0` (work-in-progress effects); `EEex_Sprite_GetStat(sprite,id)` извлекает значение из *тех же активных stats*. Эти API **не** дают автоматически итоговый APR другого невыбранного оружия. Безопасный следующий источник — наблюдение естественно выбранных слотов через уже существующий callback и доказательство идентичного контекста, без искусственного переключения и без создания второго слушателя. Это вывод по просмотренным API, не гарантия отсутствия других EEex функций.
+
+---
+
 # BGXAI R35 — связываем уже полученный R27 APR с текущим R34 ITM (READ ONLY)
 
 ## Что это решает
