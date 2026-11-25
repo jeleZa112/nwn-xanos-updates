@@ -1,0 +1,45 @@
+name: BG EET RU V137 per-attempt direct render join source-only
+on:
+  pull_request:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v137_direct_render_join_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v137_direct_render_join_ro.py'
+      - 'bg-eet-ru/native-correlation/BG_EET_RU_V137_DIRECT_RENDER_JOIN_CONTRACT_RU.md'
+      - '.github/workflows/bg-eet-ru-v137-direct-join.yml'
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v137_direct_render_join_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v137_direct_render_join_ro.py'
+      - '.github/workflows/bg-eet-ru-v137-direct-join.yml'
+jobs:
+  pure-per-attempt-join:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Reject runtime patching and verify Python syntax
+        shell: python
+        run: |
+          from pathlib import Path
+          import ast
+          p=Path('bg-eet-ru/native-correlation/v137_direct_render_join_ro.py')
+          code=p.read_text(encoding='utf8')
+          ast.parse(code)
+          assert 'CONDITIONAL_MESSAGE_RVA = 0x39E84B' in code
+          assert 'BYPASS_BRANCH_RVA = 0x39E7B3' in code
+          assert "source_only: bool = True" in code
+          for banned in ('WriteProcessMemory(', 'VirtualProtectEx(', 'CreateRemoteThread(',
+                         'EEex_JITAt(', 'EEex_HookAfterCall(', 'EEex_HookBeforeRestore('):
+              assert banned not in code,banned
+          print('V137_SOURCE_ONLY_NO_GAME_MUTATION_PASS')
+      - name: Per-attempt direct render token join and fail-closed adversarial cases
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p test_v137_direct_render_join_ro.py -v
