@@ -1,0 +1,47 @@
+name: BG EET RU V136 onefile read-only JIT integration
+on:
+  pull_request:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - 'bg-eet-ru/onefile/release.json'
+      - 'bg-eet-ru/autofix/test_v136_onefile_readonly.py'
+      - '.github/workflows/bg-eet-ru-v136-onefile.yml'
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - 'bg-eet-ru/onefile/release.json'
+jobs:
+  integrated-onefile:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Unified CMD release integrity and no new game writes
+        shell: python
+        run: |
+          from pathlib import Path
+          import hashlib,json
+          root=Path('bg-eet-ru/onefile')
+          p=root/'BG_EET_RU_UPDATE.cmd'
+          data=p.read_bytes()
+          manifest=json.loads((root/'release.json').read_text(encoding='utf8'))
+          assert len(data)<=750000
+          assert manifest['version']==136 and manifest['game_writes_allowed'] is False
+          assert hashlib.sha256(data).hexdigest()==manifest['sha256']
+          assert b"SELF_VERSION = 136" in data
+          assert b"V136_PIN='3fd957df5794bd152f00cc17118921dd65da86d0d0569621ff54fa05e3be8739'" in data
+          assert b"if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)" in data
+          print('V136_ONEFILE_RELEASE_INTEGRITY_PASS')
+      - name: Preserve option 8; add option 9; one ZIP; bad SHA fails closed
+        run: python -m unittest discover -s bg-eet-ru/autofix -p test_v136_onefile_readonly.py -v
+      - name: Existing onefile selftest without game
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
