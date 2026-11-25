@@ -4,6 +4,7 @@ on:
     branches: [bg-eet-ai]
     paths:
       - 'BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125/**'
+      - 'BGXAI/BUILD/R35_NATURAL_SELECTED_APR_RO_20261126/**'
       - '.github/workflows/bgxai-r34-native-prof-bridge-ro.yml'
   workflow_dispatch:
 permissions:
@@ -27,6 +28,9 @@ jobs:
       - name: R34 bridge + prior SHA-pinned real native R3 on synthetic ITM fixtures
         shell: bash
         run: python -m unittest discover -s BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125 -p 'test_r34_native_prof_bridge_ro.py' -v
+      - name: R35 archived natural-selected APR witness + negative regressions (source only)
+        shell: bash
+        run: python -m unittest discover -s BGXAI/BUILD/R35_NATURAL_SELECTED_APR_RO_20261126 -p 'test_r35_natural_selected_apr_ro.py' -v
       - name: Check no game-order functions/new listeners/new updater
         shell: bash
         run: |
