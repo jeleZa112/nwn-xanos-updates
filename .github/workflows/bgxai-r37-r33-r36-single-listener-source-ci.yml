@@ -1,0 +1,54 @@
+name: BGXAI R37 R33+R36 one-listener advisory pilot SOURCE ONLY
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/**'
+      - '.github/workflows/bgxai-r37-r33-r36-single-listener-source-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  frozen-source:
+    name: Frozen R33+R36 composition integrity / ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 7
+    steps:
+      - name: Preserve LF bytes
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Strict SHA source and no duplicate EEex listener/stat read
+        shell: bash
+        run: |
+          python -m unittest discover -s BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126 -p 'test_r37_source_integrity.py' -v
+      - name: Confirm real R36 27 Python tests preserved
+        shell: bash
+        run: |
+          python -m unittest discover -s BGXAI/BUILD/R36_R33_CONTEXT_INVALIDATION_RO_20261126 -p 'test_r36_r33_context_invalidation_ro.py' -v
+  lua-engine:
+    name: Full R33-derived R37 single listener and R36 core / three Lua runtimes
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install native Lua 5.3 5.4 and LuaJIT
+        run: sudo apt-get update -qq && sudo apt-get install -y lua5.3 lua5.4 luajit
+      - name: Exercise full actual R37 source in strict isolated EEex Lua mock
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126
+          for lua in lua5.3 lua5.4 luajit; do
+            "$lua" "$p/test_r37_single_listener_runtime.lua" "$p/M_BGXR27_R37_SOURCE_ONLY.lua"
+            "$lua" BGXAI/BUILD/R36_R33_CONTEXT_INVALIDATION_RO_20261126/test_r36_r33_advice_invalidation.lua
+          done
