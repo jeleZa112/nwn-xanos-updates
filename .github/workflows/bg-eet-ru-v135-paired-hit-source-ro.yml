@@ -47,7 +47,7 @@ jobs:
           assert "'runtime_pairing_installed': False" in s
           assert "'game_files_written': 0" in s
           assert "'return_byte_always_maps_to_visible_d20_result': False" in s
-          assert hashlib.sha256(p.read_bytes()).hexdigest()=='51679654198b55df887d5e3d0118672a3bc5aad07c647e29da1755a0c1456e13'
+          assert hashlib.sha256(p.read_bytes().replace(b'\\r\\n',b'\\n')).hexdigest()=='51679654198b55df887d5e3d0118672a3bc5aad07c647e29da1755a0c1456e13'
           for forbidden in ('OpenProcess(', 'WriteProcessMemory(', 'EEex_JITAt(', 'VirtualProtect(', 'CreateRemoteThread('):
             assert forbidden not in s
           print('V135_SOURCE_ONLY_NO_RUNTIME_HOOK_PASS')
