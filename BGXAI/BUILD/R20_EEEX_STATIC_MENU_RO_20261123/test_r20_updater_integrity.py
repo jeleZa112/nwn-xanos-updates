@@ -22,7 +22,7 @@ def handler(s):
     return match.group(0)
 
 def dispatches(s):
-    return {int(n): line for n,line in re.findall(r"(?m)^'([0-9]+)' \{[^\n]*\}$", s)}
+    return {int(m.group(1)): m.group(0) for m in re.finditer(r"(?m)^'([0-9]+)' \\{[^\\n]*\\}$", s)}
 
 def baseline_script():
     import subprocess
