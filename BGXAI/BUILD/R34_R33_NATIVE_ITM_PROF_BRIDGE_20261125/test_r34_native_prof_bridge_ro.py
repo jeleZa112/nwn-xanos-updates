@@ -229,5 +229,23 @@ class Bridge(unittest.TestCase):
             with self.assertRaisesRegex(r34.Hold,"R33_LOGS_EXIST_BUT_REFERENCE_SESSION_NOT_FOUND"):
                 r34.choose_r33_log(folder)
 
+    def test_archived_user_r33_aggregate_can_join_without_local_log(self):
+        archived=r34.archived_reference_event()
+        self.assertTrue(r34._reference_fingerprint(archived))
+        result=r34.join(archived,self.source,r3.parse_itm)
+        self.assertEqual(result["r33EventCount"],8)
+        self.assertEqual(result["nativeResourceCount"],5)
+        self.assertFalse(result["weaponSwitchAuthorized"])
+        self.assertFalse(result["dispatchAuthorized"])
+        self.assertFalse(result["sameSessionItemResourcesVerified"])
+        self.assertEqual(result["observedActionIdsRaw"],[3,23])
+        self.assertFalse(result["alternateEffectiveAPRVerified"])
+
+    def test_archived_tampering_rejected(self):
+        archived=r34.archived_reference_event()
+        archived["stats"][90-89]=3
+        with self.assertRaisesRegex(r34.Hold,"ARCHIVED_R33_REFERENCE_MISMATCH"):
+            r34.join(archived,self.source,r3.parse_itm)
+
 if __name__=="__main__":
     unittest.main()
