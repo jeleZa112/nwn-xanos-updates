@@ -1,5 +1,15 @@
 # BGXAI — единая точка продолжения, 24 ноября 2026
 
+## 25.11.2026 — R34 RO MENU173 RELEASED, R33 LIVE 8/8, AUTOSWITCH HOLD
+
+**НЕ повторять готовое:** проверенные user install R33 (`BGXAI_R33_INSTALL_20261125T155703049710Z.json`), live capture R33 (`BGXAI_R33_CONSOLE_20261125T161358491052Z.log`, SHA256 `d510da7e5c15d1579266b37a89fdf91ceff91622714a142e1c137376ec239538`), 8/8 observer samples, 46 WPROF values, BOW05 shot, штраф владения −2. R33 active/passive; R33 weaponSwitchAuthorized=false. Содержимое старых разделов «R33 не установлен» устарело.
+
+**НОВОЕ:** R34 read-only join `BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125/`. Реализован новый безопасный read-only парсер-связка (не второй парсер ITM): reuse pinned native R3, current game KEY/BIFF/override, сопоставление ITM 0x31 proficiencyId с R33 46 stat 89..134 (lower 3 bits). Не рассчитывает фальшивый APR других слотов, не считает навыки доступностью предмета и не даёт переключений без подтверждённого action origin. Source CI Windows+Linux, onefile pinned Stage CI, PS 5.1 ABI and active CI **PASS**. Backend `BGXAI/BGXAI_SYNC.ps1` 79935 SHA256 `c900e8aa6c4ec92bcb80cac1624cf1d6caa477dc961dd137555508e14e9d1f78`, immutable commit `38c7d2ee3bfc7a50631bb3375e5c1ee2141c0d7d`; manifest pin updated. 172 old handlers byte-identical; old CMD unaffected.
+
+**ЕДИНСТВЕННЫЙ СЛЕДУЮЩИЙ ШАГ:** в закрытой игре обычный `BGXAI_UPDATE.cmd` → **173**, получить `Documents\BGXAI_LIVE_REPORTS\BGXAI_R34_NATIVE_PROF_*.json`. Прислать один файл. Если STOP — прислать точный вывод, ни повторных запусков, ни installs, ни rollback. В R34 CODE+CI+RELEASE PASS, user PC runtime **PENDING**. После этого использовать доказанные реальные ITM prof ID и единый V5 pipeline для дальнейшего weapon selection; не включать активную смену до proven manual/EPS origin + full active effects + alternative effective APR. [R34 README](../BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125/README_RU.md).
+
+---
+
 ## 25.11.2026 — R33 меню 172 безопасно опубликовано, CODE/CI PASS, DEPLOY/LIVE NO
 
 **Фактическое положение:** R31 установлен и подтверждён в реальной игре (12 событий 12 стабильных очередей, ноль непустых; `actionRaw=3` во время атаки Халида, поэтому `queuedActionsRaw=0` НЕ безопасный рубеж). **R33 ЕЩЁ НЕ УСТАНОВЛЕН**: только опубликован защищённый upgrade R31→R33 в прежнем `BGXAI_UPDATE.cmd`, меню **172**. Релиз пассивный: сырые level1/2/3, kit, 46 WPROF-полей 89..134 и raw AI-class, никакой автоматической смены оружия. Обобщённый Weapon Priority V5/V4/V3 по альтернативным слотам не закончен.
