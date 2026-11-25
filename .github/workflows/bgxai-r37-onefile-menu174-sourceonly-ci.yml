@@ -1,0 +1,78 @@
+name: BGXAI single updater menu 174 R37 guarded pinned check (NO GAME)
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BGXAI_SYNC.ps1'
+      - 'BGXAI/fox_new/BOOTSTRAP_PIN.json'
+      - 'BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/**'
+      - '.github/workflows/bgxai-r37-onefile-menu174-sourceonly-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  menu174-source-integrity:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    timeout-minutes: 8
+    steps:
+      - name: Preserve exact downloaded PowerShell source bytes
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check R37 source pins, immutable menu 1-173, sole updater, bootstrap SHA
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib,re,subprocess,json
+          p=Path('BGXAI/BGXAI_SYNC.ps1')
+          s=p.read_bytes()
+          old=subprocess.check_output(['git','show','1404112c2889561b99416e48a4ba06ab947c4fee:BGXAI/BGXAI_SYNC.ps1'])
+          assert old!=s and len(old)==79775
+          def actions(b):
+            return dict((int(n),line) for n,line in (
+              (m.group(1),m.group(0)) for m in re.finditer(rb"(?m)^'(\d+)'\s+\{[^\r\n]*$",b)))
+          a,b=actions(old),actions(s)
+          assert len(a)==173 and set(a)==set(range(1,174)),(len(a),list(a)[-3:])
+          assert len(b)==174 and set(b)==set(range(1,175)),(len(b),list(b)[-3:])
+          assert all(a[k]==b[k] for k in range(1,174)),'existing handlers MUST be byte identical'
+          assert b[174].count(b'R37_GUARDED_SOURCE_ONLY.py')==1
+          assert b[174].count(b'M_BGXR27_R37_SOURCE_ONLY.lua')==1
+          assert b[174].count(b"= 'install'")==0
+          assert b"174 R37" in s
+          assert b"BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126" in s
+          guard=Path('BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/R37_GUARDED_SOURCE_ONLY.py').read_bytes()
+          candidate=Path('BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/M_BGXR27_R37_SOURCE_ONLY.lua').read_bytes()
+          assert len(guard)==19107 and hashlib.sha256(guard).hexdigest()=='847d59d70f14274a005244b009850a8f563e2a302517e8237cdcb063bc23b9ab'
+          assert len(candidate)==60835 and hashlib.sha256(candidate).hexdigest()=='5ece282270f0e6a1fa7a6086b7f13c57c77de98759637efa4b2ab0cc1e5744d6'
+          pin=json.loads(Path('BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text())
+          if pin['script_size']==len(s):
+            assert pin['script_sha256']==hashlib.sha256(s).hexdigest()
+            assert subprocess.check_output(['git','show',pin['commit']+':BGXAI/BGXAI_SYNC.ps1'])==s
+            print('PASS new immutable bootstrap pinned')
+          else:
+            print('PENDING_BOOTSTRAP_UPDATE_ONLY previous pin still intact')
+          assert len(s)<=82000,'new menu must not grow unbounded'
+          print('R37_MENU174_SCRIPT_BYTES='+str(len(s)))
+          print('R37_MENU174_SCRIPT_SHA256='+hashlib.sha256(s).hexdigest())
+          print('PASS source-only menu 1-173 byte IDENTICAL; 174 SHA-pinned guarded')
+          PY
+      - name: Windows PowerShell 5.1 full AST parse
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $f=(Resolve-Path 'BGXAI/BGXAI_SYNC.ps1').Path
+          $tokens=$null;$errors=$null
+          $ast=[System.Management.Automation.Language.Parser]::ParseFile($f,[ref]$tokens,[ref]$errors)
+          if($errors.Count -ne 0){$errors|Format-List;throw 'PS51 AST errors'}
+          if($null -eq $ast){throw 'PS51 AST missing'}
+          Write-Host 'PASS Windows PowerShell 5.1 full parse; no game accessed'
