@@ -31,7 +31,7 @@ jobs:
           assert b"'170' {RunR30ReadOnly;break}" in b
           assert b"function RunR30ReadOnly" in b
           assert b"BGXAI_R30_READONLY_" in b
-          assert b"R30 queue/deploy preflight" in b
+          assert b"170 R30 RO" in b
           assert b"61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929" in b
           assert b"88582abf17e919b9441795b8559cfe85b858fd3083672431eb36b60ba78981bd" in b
           assert b"BGXRANGED_V7_GUARDED_INSTALL.py" in b
