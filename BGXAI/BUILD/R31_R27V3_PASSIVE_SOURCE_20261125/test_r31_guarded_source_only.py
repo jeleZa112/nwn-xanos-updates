@@ -78,6 +78,21 @@ class R31GuardedTests(TestCase):
                 with self.assertRaisesRegex(g.Hold, "WEIDU_BASELINE_SHA_DRIFT"):
                     g.baseline(root, SOURCE, live=False)
 
+    def test_external_report_is_one_json_and_never_game_write(self):
+        with TemporaryDirectory() as td:
+            root=Path(td)
+            home=root/'user'
+            home.mkdir()
+            with mock.patch.dict(os.environ, {'USERPROFILE':str(home)}):
+                result=g.save_report('preflight', {'status':'R31_SOURCE_PREFLIGHT_PASS_INSTALL_STILL_UNAUTHORIZED',
+                                                    'gameModified':False})
+            self.assertTrue(result['reportFile'].endswith('.json'))
+            reported=Path(result['reportFile'])
+            self.assertTrue(reported.is_file())
+            self.assertEqual(json.loads(reported.read_text())['status'], result['status'])
+            self.assertEqual(len(list(reported.parent.glob('BGXAI_R31_PREFLIGHT_*.json'))),1)
+            self.assertFalse(result['gameModified'])
+
     def test_protected_paths_reject_symlink_and_traversal(self):
         with TemporaryDirectory() as td:
             root = Path(td)
