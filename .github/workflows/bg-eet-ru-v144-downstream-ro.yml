@@ -35,17 +35,17 @@ jobs:
           from pathlib import Path
           import hashlib,json,ast
           root=Path('bg-eet-ru')
-          mod=(root/'native-correlation/v144_ro.py').read_bytes().replace(b'\r\n',b'\n')
+          mod=(root/'native-correlation'/('v146_ro.py' if manifest['version']==146 else 'v144_ro.py')).read_bytes().replace(b'\r\n',b'\n')
           cmd=(root/'onefile/BG_EET_RU_UPDATE.cmd').read_bytes()
           manifest=json.loads((root/'onefile/release.json').read_text('utf8'))
-          assert len(mod)<=20000,len(mod)
+          assert len(mod)<=24000,len(mod)
           assert len(cmd)<=750000,len(cmd)
-          assert manifest['version']==144 and manifest['game_writes_allowed'] is False
+          assert manifest['version'] in (144,146) and manifest['game_writes_allowed'] is False
           assert hashlib.sha256(cmd).hexdigest()==manifest['sha256']
-          assert ("V144_PIN='"+hashlib.sha256(mod).hexdigest()+"'").encode() in cmd
-          assert b"SELF_VERSION = 144" in cmd
-          assert b"70_V144_DOWNSTREAM_SOURCE_RO.json" in cmd
-          assert b"9=JIT+DOWNSTREAM-RO" in cmd
+          assert ("V"+str(manifest["version"])+"_PIN='"+hashlib.sha256(mod).hexdigest()+"'").encode() in cmd
+          assert ("SELF_VERSION = "+str(manifest["version"])).encode() in cmd
+          assert (b"71_V146_PRESENTATION_SOURCE_RO.json" if manifest["version"]==146 else b"70_V144_DOWNSTREAM_SOURCE_RO.json") in cmd
+          assert (b"9=JIT+PRESENTATION-RO" if manifest["version"]==146 else b"9=JIT+DOWNSTREAM-RO") in cmd
           assert b"V133_PIN=" in cmd
           ast.parse(mod.decode('utf8'))
           for forbidden in (b'WriteProcessMemory(',b'VirtualProtectEx(',b'CreateRemoteThread(',b'EEex_JITAt(',b'EEex_HookBefore(',b'DllMain('):
