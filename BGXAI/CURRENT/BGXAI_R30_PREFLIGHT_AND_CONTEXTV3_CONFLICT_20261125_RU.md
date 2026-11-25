@@ -1,5 +1,15 @@
 # BGXAI R30 — новая контрольная точка на 25.11.2026
 
+## Обновление 25.11.2026 — КОНФЛИКТ УСТРАНЁН (дальше историческая запись)
+
+После описанного ниже несовпадения R27 source pin общий R27 с `ACTION_CONTEXT_V3` приведён к единому чистому CI ([45456677110](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45456677110), SUCCESS). Установлен **новый source-only кандидат** `BGXAI_R27_R2_REFRESH_SOURCE_ONLY.lua` 44805 байт, SHA256 `61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929`. Это не изменение игрового Lua.
+
+R30 preflight обновлён на этот SHA. Добавлена проверка V3 action-context markers помимо хеша, отрицательный тест отсекает queue-only V2 даже при mocked SHA. Тесты R30 12/12 и общий [CI 45553690490](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45553690490) SUCCESS Windows/Linux. **Осталось:** встроить read-only R30 в единый обновлятор (без установки), затем подтвердить реальные WeiDU/EPS/EEex источники через один отчёт; до этого не просить user запускать отдельный Python.
+
+**CODE/TEST PASS, DEPLOY NO, LIVE NO.** Предыдущий статус FAILURE ниже приведён как история диагностики и больше не является актуальным. Старые hash-кандидаты из него не применять как текущие.
+
+---
+
 ## Фактически выполнено
 
 Создан **read-only** SHA-pinned Python preflight `BGXAI_R30_QUEUE_DEPLOY_PREFLIGHT_RO.py` и десять отдельных регрессионных тестов. Скрипт принимает игровой корень EET и файл **неустановленного source-only кандидата**; до запуска установки он только читает:
