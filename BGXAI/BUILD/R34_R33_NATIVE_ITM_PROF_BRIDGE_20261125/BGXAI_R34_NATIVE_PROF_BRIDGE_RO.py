@@ -176,7 +176,13 @@ def validate_game(root: Path) -> None:
 
 def join(log: bytes, source, parse_itm, *, game_identity_verified: bool=False) -> dict:
     """No root or files written; source injected for deterministic/mock tests."""
-    event=read_session(log)
+    # A historical aggregate is permitted ONLY for this read-only join.
+    # It is never passed off as a freshly authenticated local R33 log.
+    if type(log) is dict:
+        must(log==archived_reference_event(),"ARCHIVED_R33_REFERENCE_MISMATCH")
+        event=log
+    else:
+        event=read_session(log)
     result={"schema":SCHEMA,"status":"HOLD","readOnly":True,
             "gameModified":False,"ordersSent":0,"dispatchAuthorized":False,
             "weaponSwitchAuthorized":False,"adviceOnly":True,
@@ -265,6 +271,31 @@ def _reference_fingerprint(event: dict) -> bool:
                 11:None,12:"AROW01",13:None,14:None}
             and slots["offhand"]=={9:"SHLD03A"})
 
+def archived_reference_event() -> dict:
+    """The previously uploaded R33 eight-event aggregate, not a live replay.
+
+    Reconstructed from the verified 2026-11-25 user-uploaded R33 log.
+    No actor identifier, private path, raw user log or game order is shipped.
+    This can only support READ ONLY item/proficiency comparison.
+    """
+    stats=[0]*46
+    stats[90-89]=2
+    stats[92-89]=1
+    stats[104-89]=1
+    event={"archivedSnapshot":True,
+           "sourceLogSha256":EXPECTED_R33_LOG_SHA,
+           "sampleCount":8,
+           "levelsAndKitRaw":{"level1":1,"level2":1,"level3":1,"kitRaw":16384},
+           "stats":stats,
+           "loadout":{"weapons":{35:"SW1H04",36:"BOW05",37:None,38:"STAF01"},
+                      "ammo":{11:None,12:"AROW01",13:None,14:None},
+                      "offhand":{9:"SHLD03A"}},
+           "selectedAprKeysRaw":[2],
+           "actionRawValues":[3,23],
+           "rawStatReads":8*46}
+    must(_reference_fingerprint(event),"ARCHIVED_R33_REFERENCE_DRIFT")
+    return event
+
 def choose_r33_log(reports: Path) -> tuple[bytes,dict]:
     """Read only from the known reports folder; no more game capture.
 
@@ -325,11 +356,38 @@ def main() -> int:
     args=cli.parse_args()
     try:
         validate_game(args.game)
-        raw, provenance=choose_r33_log(args.reports_dir)
+        try:
+            raw, provenance=choose_r33_log(args.reports_dir)
+        except Hold as err:
+            # The user's real R33 was independently supplied and parsed.
+            # A local log mismatch must not force another game capture.
+            reason=str(err)
+            if reason not in (
+                "R34_R33_NAMED_LOG_DIFFERS_AND_FAILS_FINGERPRINT",
+                "R34_R33_LOG_MISSING_IN_REPORTS_NO_RECAPTURE",
+                "R34_R33_LOGS_EXIST_BUT_REFERENCE_SESSION_NOT_FOUND"):
+                raise
+            raw=archived_reference_event()
+            provenance={"sourceLogFilename":None,
+                        "referenceUploadedLogSha256":EXPECTED_R33_LOG_SHA,
+                        "sameBytesAsUserUploadedLogVerified":False,
+                        "sameEightEventFingerprintCandidate":False,
+                        "localLogBytesAuthenticated":False,
+                        "historicalR33Snapshot":True,
+                        "logSourceStatus":"HISTORICAL_USER_UPLOAD_AGGREGATE_LOCAL_LOG_REJECTED",
+                        "localLogFailureReason":reason,
+                        "fileFoundUnderReports":reason!="R34_R33_LOG_MISSING_IN_REPORTS_NO_RECAPTURE"}
         r3=load_r3(args.r3_source)
         out=join(raw,r3.NativeSource(args.game),
                  r3.parse_itm,game_identity_verified=True)
         out.update(provenance)
+        if type(raw) is dict:
+            out["status"]="HISTORICAL_R33_PROFILE_CURRENT_ITM_JOINED_RO_NO_SWITCH"
+            out["sourceLogSha256"]=None
+            out["historicalReferenceLogSha256"]=EXPECTED_R33_LOG_SHA
+            out["historicalProfileOnly"]=True
+            out["sameSessionItemResourcesVerified"]=False
+            out["sessionTemporalAlignmentVerified"]=False
         print(json.dumps(out,ensure_ascii=False,indent=2))
         return 0
     except (Hold,OSError,ValueError) as err:
