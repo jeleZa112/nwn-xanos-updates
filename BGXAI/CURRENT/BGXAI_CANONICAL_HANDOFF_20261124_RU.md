@@ -1,5 +1,7 @@
 # BGXAI — единая точка продолжения, 24 ноября 2026
 
+**CI FINAL 25.11.2026:** R34 source-only 22/22 Windows/Linux PASS (run 45660217453); R34 79775B active pin + real PS5.1 menu boot 3/3 PASS (run 45660513142); historical R33 source/proof/WeiDU 5/5 PASS (run 45660551436). Exact user live R34 after hotfix still PENDING. No game writes.
+
 ## 25.11.2026 — R34 REAL USER LOG PIN STOP resolved in 124add6624c4 (read only)
 
 Новый реальный пользовательский вывод: `BGXAI_UPDATE.cmd` verified immutable `b678020a5dee`, меню 173, STOP `R34 LIVE LOG PIN STOP`. Это **не** ошибка исходного SHA: загруженный настоящим пользователем `BGXAI_R33_CONSOLE_20261125T161358491052Z.log` в чате содержит 101981 байт, SHA256 `d510da7e5c15d1579266b37a89fdf91ceff91622714a142e1c137376ec239538` и 8 валидных событий R33. Ранее использовался неинформативный тест SHA на одном единственном имени; он не отличал отсутствующий файл от изменённого, и ещё до чтения реальных ITM запрещал продолжение.
