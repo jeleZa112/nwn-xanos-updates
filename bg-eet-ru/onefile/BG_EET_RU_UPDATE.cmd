@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 133
+SELF_VERSION = 136
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -8124,9 +8124,11 @@ def v130_audit(game,path,v=130):
  except Exception as e:print('V130 ZIP STOP',type(e).__name__,str(e)[:140]);return 2
  print('V'+str(v)+':',report['status'],'| game writes: 0 | one ZIP:',path)
  return 0
+V136_PIN='3fd957df5794bd152f00cc17118921dd65da86d0d0569621ff54fa05e3be8739'
+V136_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/0e3fe14cbb3a6fa926240f2bbd472e68f50c9060/bg-eet-ru/native-correlation/v136_jit_provenance_ro.py'
 V133_PIN='b3f22f56550d951483863fb59e84f2e543b2473d7bb2e51f8fd03fed4e58f624'
 V133_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/6e1922fcfbb73a43c1b97fc82ea848cd05369c4b/bg-eet-ru/native-correlation/v133_live_hit_inventory_ro.py'
-def v133_audit(game,path):
+def v133_audit(game,path,v136=False):
  report={'schema':'BG_EET_RU_V133_WINDOWS_RUNTIME_READONLY','status':'RUNTIME_MEMORY_HOLD','game_files_written':0,'native_hook_install_allowed':False,'firstcall_owner_verified':False,'gameplay_verified':False}
  try:
     p=v121_cache(game)/'V133_RO.py'
@@ -8137,13 +8139,26 @@ def v133_audit(game,path):
       v121_write(game,p,data)
     m=types.ModuleType('v133_ro');sys.modules[m.__name__]=m
     exec(compile(p.read_bytes(),str(p),'exec'),m.__dict__)
-    report['windows_api_selftest']=m.selftest_windows()
-    report.update(m.run_game(Path(game)))
- except Exception as e:report['hold_reason']=type(e).__name__+':'+str(e)[:160]
+    if v136:
+       p=v121_cache(game)/'V136_RO.py'
+       if p.is_symlink() or (p.exists() and not p.is_file()):raise RuntimeError('V136_CACHE_UNSAFE')
+       if not p.is_file() or sha_path(p)!=V136_PIN:
+         with urllib.request.urlopen(V136_URL,timeout=20) as r:data=r.read(20001)
+         if digest(data)!=V136_PIN:raise RuntimeError('V136_SOURCE_SHA_HOLD')
+         v121_write(game,p,data)
+       t=types.ModuleType('v136_ro');exec(compile(p.read_bytes(),str(p),'exec'),t.__dict__)
+       report['windows_api_selftest']=t.selftest_windows()
+       report.update(t.run_game(Path(game),m))
+    else:
+       report['windows_api_selftest']=m.selftest_windows()
+       report.update(m.run_game(Path(game)))
+ except Exception as e:
+    report['hold_reason']=type(e).__name__+':'+str(e)[:160]
+    if v136:report['status']='V136_RUNTIME_OWNER_AND_GAMEPLAY_HOLD'
  report['game_files_written']=0;report['native_hook_install_allowed']=False
- try:v116_zip(game,path,report,entry='66_V133_LIVE_HIT_INVENTORY.json')
+ try:v116_zip(game,path,report,entry='67_V136_LIVE_JIT_TARGET_RO.json' if v136 else '66_V133_LIVE_HIT_INVENTORY.json')
  except Exception as e:print('V133 ZIP STOP',type(e).__name__,str(e)[:140]);return 2
- print('V133:',report['status'],'| game writes: 0 | one ZIP:',path)
+ print('V136' if v136 else 'V133',report['status'],'| game writes: 0 | one ZIP:',path)
  if report.get('reason'):print('V133 HOLD:',report['reason'])
  return 0
 def v122_selftest():
@@ -8283,12 +8298,13 @@ def main(argv=None):
  try:v121_snapshot(game,WORKDIR/REPORT_NAME)
  except Exception as exc:print('V121 EVIDENCE SNAPSHOT HOLD:',type(exc).__name__,str(exc)[:140])
  if not (argv if argv is not None else sys.argv[1:]):
-    try:a=input('1=audit 2=install 3=undo 4=play 5=status 6=unwind 7=abi 8=live-RO [1]: ').strip()
+    try:a=input('1=audit 2=install 3=undo 4=play 5=status 6=unwind 7=abi 8=live-RO 9=JIT-RO [1]: ').strip()
     except EOFError:a=''
     mode={'2':'install','3':'rollback','4':'capture','5':'status'}.get(a)
     if a=='6':return v130_audit(game,WORKDIR/REPORT_NAME)
     if a=='7':return v130_audit(game,WORKDIR/REPORT_NAME,132)
     if a=='8':return v133_audit(game,WORKDIR/REPORT_NAME)
+    if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)
     if mode:return v126_dispatch(game,WORKDIR/REPORT_NAME,mode)
     rc=v124_one_run(game,WORKDIR/REPORT_NAME,args.offline)
     return rc if rc else v126_dispatch(game,WORKDIR/REPORT_NAME,'status')

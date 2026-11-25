@@ -37,13 +37,13 @@ jobs:
           v133=(root/'native-correlation/v133_live_hit_inventory_ro.py').read_bytes()
           release=json.loads((root/'onefile/release.json').read_text('utf8'))
           assert 10000<len(updater)<=750000, ('AUTOUPDATE_SIZE',len(updater))
-          assert release['version']==133 and release['game_writes_allowed'] is False
+          assert release['version']>=133 and release['game_writes_allowed'] is False
           assert hashlib.sha256(updater).hexdigest()==release['sha256']
           assert hashlib.sha256(v133).hexdigest()=='b3f22f56550d951483863fb59e84f2e543b2473d7bb2e51f8fd03fed4e58f624'
           code=updater.split(b'\n',1)[1]
           ast.parse(code.decode('utf8'))
           ast.parse(v133.decode('utf8'))
-          assert b"SELF_VERSION = 133" in code
+          assert ("SELF_VERSION = "+str(release["version"])).encode() in code
           assert b"66_V133_LIVE_HIT_INVENTORY.json" in code
           assert b"V133_PIN='b3f22f56550d951483863fb59e84f2e543b2473d7bb2e51f8fd03fed4e58f624'" in code
           assert b"if a=='8':return v133_audit" in code
