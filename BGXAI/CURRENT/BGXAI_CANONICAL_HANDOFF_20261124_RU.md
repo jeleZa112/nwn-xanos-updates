@@ -1,5 +1,15 @@
 # BGXAI — единая точка продолжения, 24 ноября 2026
 
+## 25.11.2026 — R34 REAL USER LOG PIN STOP resolved in 124add6624c4 (read only)
+
+Новый реальный пользовательский вывод: `BGXAI_UPDATE.cmd` verified immutable `b678020a5dee`, меню 173, STOP `R34 LIVE LOG PIN STOP`. Это **не** ошибка исходного SHA: загруженный настоящим пользователем `BGXAI_R33_CONSOLE_20261125T161358491052Z.log` в чате содержит 101981 байт, SHA256 `d510da7e5c15d1579266b37a89fdf91ceff91622714a142e1c137376ec239538` и 8 валидных событий R33. Ранее использовался неинформативный тест SHA на одном единственном имени; он не отличал отсутствующий файл от изменённого, и ещё до чтения реальных ITM запрещал продолжение.
+
+Выполнено: R34 Python `choose_r33_log` — ограниченное обнаружение `Documents\BGXAI_LIVE_REPORTS\BGXAI_R33_CONSOLE_*.log`, prefer exact SHA; единственный альтернативный 8-event fingerprint допускается только как candidate (байтовый SHA explicitly unverified), ambiguity/missing/symlink fail closed, output read-only JSON. Current-game ITM остаётся live-read через штатный R3, не повторён. R34 тесты Windows/Linux PASS (включая старое имя, новый файл, fingerprint mismatch, ambiguity), stage PS 5.1 и предыдущие menu handlers PASS. Единственный updater опубликован: backend **79 775 байт**, SHA256 `9b44a5cf6ffd83c97c17c49ac9533b102bcdef7a004da4840636762a91cb2db5`, immutable `124add6624c4cfd054b2cee61f37d5af5f093bea`; BOOTSTRAP_PIN указывает туда, CMD не тронут. Прежний R33 **INSTALLED + LIVE 8/8 PASS**. Новое R34 локальное выполнение ожидается. В игре ничего не менялось. Нельзя заявлять autonomous weapon switch / actor-class-verified / exact alternate APR.
+
+После подтверждения release CI, **один следующий шаг**: закрытая игра → обычный `BGXAI_UPDATE.cmd` → **173**, убедиться префикс `124add6624c4`, отправить единственный отчёт `BGXAI_R34_NATIVE_PROF_*.json`. При STOP файл JSON с reason или вывод; не повторять и не переустанавливать R33.
+
+---
+
 ## 25.11.2026 — R34 WH ALIAS HOTFIX: REAL MENU STARTUP CI PASS, NEXT 173
 
 ФАКТ пользователя: `BGXAI_UPDATE.cmd` verified pin `38c7d2ee3bfc`, но R34 до меню упал `wh : The term 'wh' is not recognized` на строке 1108. Причина: builder R34 ошибочно преобразовал `Set-Alias wh Write-Host -Scope Script` в рекурсивное `Set-Alias wh wh -Scope Script`. Никакой установки/изменения игры не было.
