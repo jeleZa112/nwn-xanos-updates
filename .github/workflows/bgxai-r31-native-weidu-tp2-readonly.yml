@@ -1,0 +1,50 @@
+name: BGXAI R31 native WeiDU v251 TP2 parser READ ONLY
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125/R31_NATIVE_TP2_PARSE_RO.py'
+      - 'BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125/R31_GUARDED_SOURCE_ONLY.py'
+      - '.github/workflows/bgxai-r31-native-weidu-tp2-readonly.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-tp2-ubuntu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download official WeiDU v251 Linux release (SHA256 checked by test)
+        run: |
+          curl -fLsS --retry 3 --connect-timeout 15 --max-time 90 \
+            -o "$RUNNER_TEMP/weidu251.zip" \
+            "https://github.com/WeiDUorg/weidu/releases/download/v251.00/WeiDU-Linux-251.zip"
+      - name: Real WeiDU parser checks TP2 in disposable temp directory, no game
+        run: |
+          python BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125/R31_NATIVE_TP2_PARSE_RO.py \
+            --release "$RUNNER_TEMP/weidu251.zip" --platform linux
+  native-tp2-windows:
+    runs-on: windows-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download official WeiDU v251 Windows release (SHA256 checked by test)
+        shell: pwsh
+        run: |
+          $uri='https://github.com/WeiDUorg/weidu/releases/download/v251.00/WeiDU-Windows-251.zip'
+          $target=Join-Path $env:RUNNER_TEMP 'weidu251.zip'
+          Invoke-WebRequest -Uri $uri -OutFile $target -MaximumRedirection 8
+          if(!(Test-Path -LiteralPath $target)){throw 'WEIDU_RELEASE_DOWNLOAD_MISSING'}
+      - name: Real WeiDU parser checks TP2 in disposable temp directory, no game
+        shell: pwsh
+        run: |
+          $target=Join-Path $env:RUNNER_TEMP 'weidu251.zip'
+          & py -3 BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125/R31_NATIVE_TP2_PARSE_RO.py --release $target --platform windows
+          if($LASTEXITCODE -ne 0){throw 'R31_NATIVE_WEIDU_TP2_PARSE_FAILED'}
