@@ -5,12 +5,13 @@ on:
     paths:
       - '.github/workflows/bgxai-comprehensive-readonly-20261126.yml'
       - 'BGXAI/BUILD/COMPREHENSIVE_TEST_20261126/**'
+      - 'BGXAI/BUILD/R36_R33_CONTEXT_INVALIDATION_RO_20261126/**'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   weapon-lua:
-    name: Weapon V3/V4/V5 + R2/R32/R35 + EEex queues / 3 Lua runtimes
+    name: Weapon V3/V4/V5 + R2/R32/R35/R36 + EEex queues / 3 Lua runtimes
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -32,6 +33,7 @@ jobs:
             "$runtime" "$base/test_weapon_active_r4_readonly.lua"
             "$runtime" BGXAI/BUILD/R32_APR_EET_TABLES_RO_20261125/test_r32_eeex_engine_2da_ro.lua
             "$runtime" BGXAI/BUILD/R35_NATURAL_SELECTED_APR_RO_20261126/test_r35_selected_engine_stats_ro.lua
+            "$runtime" BGXAI/BUILD/R36_R33_CONTEXT_INVALIDATION_RO_20261126/test_r36_r33_advice_invalidation.lua
             "$runtime" BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124/test_r27_refresh_runtime.lua
             "$runtime" BGXAI/fox_new/experimental_081_eeex_action_provenance_readonly_source_only/test_081_queue_v2.lua
             "$runtime" BGXAI/fox_new/experimental_081_eeex_action_provenance_readonly_source_only/test_081_action_context_v3.lua
@@ -77,6 +79,7 @@ jobs:
           run_case BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125 test_r33_guarded_source_only.py
           run_case BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125 test_r34_native_prof_bridge_ro.py
           run_case BGXAI/BUILD/R35_NATURAL_SELECTED_APR_RO_20261126 test_r35_natural_selected_apr_ro.py
+          run_case BGXAI/BUILD/R36_R33_CONTEXT_INVALIDATION_RO_20261126 test_r36_r33_context_invalidation_ro.py
       - name: Original onefile and R34 source pin still immutable
         shell: bash
         run: |
@@ -203,7 +206,7 @@ jobs:
           echo '' >> "$GITHUB_STEP_SUMMARY"
           echo '| Suite | Outcome |' >> "$GITHUB_STEP_SUMMARY"
           echo '|---|---|' >> "$GITHUB_STEP_SUMMARY"
-          echo "| Weapon Lua V3–V5 R2 R32 R35 (3 runtimes) | $LUA |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Weapon Lua V3–V5 R2 R32 R35 R36 (3 runtimes) | $LUA |" >> "$GITHUB_STEP_SUMMARY"
           echo "| R27-R35 Python (Windows/Linux) | $NATIVE |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Party healing AoE friendly fire (Windows/Linux) | $PARTY |" >> "$GITHUB_STEP_SUMMARY"
           echo "| PowerShell 5.1 isolated onefile menu | $ONEFILE |" >> "$GITHUB_STEP_SUMMARY"
