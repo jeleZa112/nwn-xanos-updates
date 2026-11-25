@@ -1,5 +1,5 @@
 param([string]$GameRoot='.')
-Set-Alias wh wh -Scope Script
+Set-Alias wh Write-Host -Scope Script
 Set-Alias jp Join-Path -Scope Script
 Set-Alias tp Test-Path -Scope Script
 Set-Alias hf HashFile -Scope Script
