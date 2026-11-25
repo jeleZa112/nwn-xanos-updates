@@ -1,0 +1,42 @@
+name: BG EET RU V139 exact shared dispatch and PE pdata source-only
+on:
+  pull_request:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v139_combat_dispatch_producer_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v139_combat_dispatch_producer_ro.py'
+      - 'bg-eet-ru/native-correlation/BG_EET_RU_V139_DISPATCH_SOURCE_HANDOFF_RU.md'
+      - '.github/workflows/bg-eet-ru-v139-dispatch-source.yml'
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v139_combat_dispatch_producer_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v139_combat_dispatch_producer_ro.py'
+      - '.github/workflows/bg-eet-ru-v139-dispatch-source.yml'
+jobs:
+  exact-reader:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile source and ensure no game write or native hook
+        shell: python
+        run: |
+          from pathlib import Path
+          import ast
+          p=Path('bg-eet-ru/native-correlation/v139_combat_dispatch_producer_ro.py')
+          source=p.read_text('utf8')
+          ast.parse(source)
+          assert "'safe_to_install':False" in source
+          for forbidden in ('WriteProcessMemory(', 'VirtualProtect(', 'CreateRemoteThread(', 'EEex_JITAt(', 'EEex_HookBefore('):
+              assert forbidden not in source,forbidden
+          print('V139_SOURCE_READONLY_PASS')
+      - name: Exact PE32+ pdata and pinned-site adversarial tests
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p test_v139_combat_dispatch_producer_ro.py -v
