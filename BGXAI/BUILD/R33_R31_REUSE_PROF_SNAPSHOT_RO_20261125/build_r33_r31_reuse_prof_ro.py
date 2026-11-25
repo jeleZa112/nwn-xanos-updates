@@ -40,9 +40,9 @@ end""",
    a.aiClass==b.aiClass
 end""")
     s = exact(s,
-"""  -- Observe but never turn a selected-only APR into alternative-slot evidence.
-  -- The R2 slot data are still only raw candidates, not validated items.
-  return {schema=R27.schema""",
+""" -- Observe but never turn a selected-only APR into alternative-slot evidence.
+ -- The R2 slot data are still only raw candidates, not validated items.
+ return {schema=R27.schema""",
 """  -- Reuse the EXACT existing R4 double-read for 46 WPROF raw stat slots.
   -- No additional getActiveStats call or listener. False -> JSON null.
   local profRaw={}
@@ -58,11 +58,11 @@ end""")
   return {schema=R27.schema""")
     s = exact(s,
 """   m_nHitBonus=f.m_nHitBonus},
-   selectedDerivedStatsDoubleReadConsistent=true,""",
+  selectedDerivedStatsDoubleReadConsistent=true,""",
 """   m_nHitBonus=f.m_nHitBonus,m_nLevel1=f.m_nLevel1,
    m_nLevel2=f.m_nLevel2,m_nLevel3=f.m_nLevel3,m_nKit=f.m_nKit},
-   rawProficiencyStat89to134=profRaw,aiClassRawCandidate=b.aiClass,
-   selectedDerivedStatsDoubleReadConsistent=true,""")
+  rawProficiencyStat89to134=profRaw,aiClassRawCandidate=b.aiClass,
+  selectedDerivedStatsDoubleReadConsistent=true,""")
     s = exact(s,
 """function R27.toConsoleJson(sample)""",
 """-- JSON payload emits existing R4 evidence; never infer actor proficiency rank.
@@ -81,15 +81,15 @@ local function jlevels(s)
 end
 function R27.toConsoleJson(sample)""")
     s = exact(s,
-"""   ',"selectedStatsRaw":'..jstats(sample.sampledStatsRaw)..
-   ',"sameLuaListenerInvocation":'""",
-"""   ',"selectedStatsRaw":'..jstats(sample.sampledStatsRaw)..
-   ',"levelsAndKitRaw":'..jlevels(sample.sampledStatsRaw)..
-   ',"aiObjectClassRawCandidate":'..jnum(sample.aiClassRawCandidate,0,255)..
-   ',"proficiencyStat89to134Raw":'..jrawprof(sample.rawProficiencyStat89to134)..
-   ',"classRowVerified":false,"weaponToProficiencyVerified":false,'..
-   '"activeDualMultiClassVerified":false,"actorPipsVerified":false'..
-   ',"sameLuaListenerInvocation":'""")
+"""  ',"selectedStatsRaw":'..jstats(sample.sampledStatsRaw)..
+  ',"sameLuaListenerInvocation":'""",
+"""  ',"selectedStatsRaw":'..jstats(sample.sampledStatsRaw)..
+  ',"levelsAndKitRaw":'..jlevels(sample.sampledStatsRaw)..
+  ',"aiObjectClassRawCandidate":'..jnum(sample.aiClassRawCandidate,0,255)..
+  ',"proficiencyStat89to134Raw":'..jrawprof(sample.rawProficiencyStat89to134)..
+  ',"classRowVerified":false,"weaponToProficiencyVerified":false,'..
+  '"activeDualMultiClassVerified":false,"actorPipsVerified":false'..
+  ',"sameLuaListenerInvocation":'""")
     s = exact(s, "BGXAI_R31_R27V3_PASSIVE_CANDIDATE",
                  "BGXAI_R33_R27V3_PASSIVE_PROF_CANDIDATE")
     s = exact(s, '"observerCandidate":"R31_R27V3_PASSIVE"',
