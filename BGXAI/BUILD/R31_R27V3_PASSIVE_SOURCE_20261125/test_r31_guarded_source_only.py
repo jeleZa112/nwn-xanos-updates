@@ -123,11 +123,11 @@ class R31GuardedTests(TestCase):
                 self.assertEqual(native_calls, ["install"])
                 # Never allow a rollback when a later WeiDU component is last.
                 with (root / "WeiDU.log").open("a", encoding="utf-8") as handle:
-                    handle.write("~MOCKLATER/SETUP-MOCKLATER.TP2~ #0 #0 // later component\\n")
+                    handle.write("~MOCKLATER/SETUP-MOCKLATER.TP2~ #0 #0 // later component\n")
                 with self.assertRaisesRegex(g.Hold, "R31_NOT_LAST_NO_ROLLBACK"):
                     g.rollback(root, g.ROLLBACK_TOKEN)
                 lines = (root / "WeiDU.log").read_text(encoding="utf-8").splitlines()
-                (root / "WeiDU.log").write_text("\\n".join(lines[:-1]) + "\\n", encoding="utf-8")
+                (root / "WeiDU.log").write_text("\n".join(lines[:-1]) + "\n", encoding="utf-8")
                 state = g.rollback(root, g.ROLLBACK_TOKEN)
                 self.assertEqual(state["status"], "R31_ROLLBACK_R29_RESTORED")
                 self.assertEqual((root / g.OVERRIDE).read_bytes(), paths[g.OVERRIDE])
