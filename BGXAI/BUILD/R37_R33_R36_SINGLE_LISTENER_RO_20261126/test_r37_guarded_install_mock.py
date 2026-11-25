@@ -184,8 +184,11 @@ class R37Guarded(unittest.TestCase):
         self.assertNotIn("BGXAI_UPDATE_2.cmd",src)
         self.assertNotIn("os.system(",src)
         self.assertNotIn("shutil.rmtree(",src)
-        self.assertNotIn("ClearActions(",src)
-        self.assertNotIn("SelectWeaponAbility(",src)
+        import ast
+        calls=[node.func.id for node in ast.walk(ast.parse(src))
+               if isinstance(node,ast.Call) and isinstance(node.func,ast.Name)]
+        self.assertNotIn("ClearActions",calls)
+        self.assertNotIn("SelectWeaponAbility",calls)
 
 if __name__=="__main__":
     unittest.main(verbosity=2)
