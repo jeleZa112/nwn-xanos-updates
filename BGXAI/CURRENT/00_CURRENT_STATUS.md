@@ -1,5 +1,8 @@
 # BGXAI — короткий актуальный статус на 25.11.2026
 
+**Regression после реального R31 боя:** в `test_weapon_noninterrupt_plan_v1.lua` добавлен конкретный реальный сценарий `actionRaw=3` + `queuedActionsRaw=0` + `ACTION_SOURCE_POINTER_UNAVAILABLE` → `CONTINUE_CURRENT_ACTION_SWITCH_PENDING` только advisory, `dispatchAuthorized=false`, `ordersSent=0`, `actionQueueCleared=false`, `currentActionPreserved=true`. Offline NONINTERRUPT 26/26; общий runner 443 сценария (ранее 442). **[GitHub CI 45641893884](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45641893884) SUCCESS:** native Lua 5.3/5.4/LuaJIT + Windows static. Никакой установленный Lua/BCS/PIN/WeiDU не менялся. R31 и V6 остаются как были.
+
+
 ## 25.11.2026 — R31 LIVE подтвердил 12/12 событий; безопасность очереди НЕ доказана
 
 **Официальный проверенный вердикт:** [`BGXAI/CURRENT/BGXAI_R31_LIVE_VERDICT_20261125.json`](./BGXAI_R31_LIVE_VERDICT_20261125.json). От пользователя реально получены `BGXAI_R31_CAPTURE_20261125T150437014429Z.json` и `BGXAI_R31_CONSOLE_20261125T150300876807Z.log` (147793 байт, SHA256 `7f2705dde1eaf16e131f5ec1396837f8affaff8b4070292fd945447783c88c9e`). JSON: `status=R31_RUNTIME_RAW_QUEUE_LOG_READY_FOR_REVIEW`, exit 0, session 1, R31 samples 12, stable queue 12, nonempty 0. Источник — пользовательский настоящий gameplay, НЕ CI/mocks.
