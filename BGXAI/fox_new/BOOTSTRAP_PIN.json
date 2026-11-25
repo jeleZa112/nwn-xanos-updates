@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "52f73efaa2900b6cdee6ff0f428ae6744193fafd",
+  "commit": "1c0be1e444329c94b79fe7c1d630caf87d333d4c",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "5efb1648aa107f24bb785553e89f23bffa744c3220c1740e6b57d7303f64b71c",
-  "script_size": 79701,
-  "description": "R37 guarded menu174 79701B within immutable CMD 80000B cap; exact 1-173 handlers; no active dispatch"
+  "script_sha256": "19608a52f76bd81723278e4e9095c16865ef1d2b9e45aebd19a5112c205ecc2c",
+  "script_size": 79832,
+  "description": "R37 menu174 guarded R33->R37 passive install and option5 one-file read-only live capture; 79832B < 80000 CMD hard cap; original menus 1-173 unchanged"
 }
