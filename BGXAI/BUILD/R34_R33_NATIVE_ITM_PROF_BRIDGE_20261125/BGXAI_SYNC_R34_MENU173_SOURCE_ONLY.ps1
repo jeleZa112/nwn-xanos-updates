@@ -4,7 +4,6 @@ Set-Alias jp Join-Path -Scope Script
 Set-Alias tp Test-Path -Scope Script
 Set-Alias hf HashFile -Scope Script
 Set-Alias hb HashBytes -Scope Script
-Set-Alias gc Get-Content -Scope Script
 Set-Alias rh Read-Host -Scope Script
 $gr=$GameRoot
 $ErrorActionPreference='Stop'
