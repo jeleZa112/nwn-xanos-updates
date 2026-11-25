@@ -67,7 +67,7 @@ jobs:
           pin=json.loads(Path('BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text('utf-8'))
           assert pin['script_size']==79943 and pin['script_sha256']==hashlib.sha256(src).hexdigest()
           assert pin['script_path']=='BGXAI/BGXAI_SYNC.ps1'
-          assert pin['commit']=='38c7d2ee3bfc7a50631bb3375e5c1ee2141c0d7d'
+          assert pin['commit']=='b678020a5deee2d1d7205eebd28840847cfbd2a8'
           assert subprocess.check_output(['git','show',pin['commit']+':BGXAI/BGXAI_SYNC.ps1'])==src
           cmd=Path('BGXAI_UPDATE.cmd').read_bytes()
           assert cmd==subprocess.check_output(['git','show','71b1d37db787a59ed16c8b92ac495314b3577e02:BGXAI_UPDATE.cmd'])
@@ -94,7 +94,7 @@ jobs:
           New-Item -ItemType Directory -Path $cache -Force|Out-Null
           try {
             [IO.File]::WriteAllBytes((Join-Path $root 'chitin.key'),[byte[]](0,1,2,3))
-            [IO.File]::WriteAllText((Join-Path $cache 'head.txt'),'38c7d2ee3bfc7a50631bb3375e5c1ee2141c0d7d')
+            [IO.File]::WriteAllText((Join-Path $cache 'head.txt'),'b678020a5deee2d1d7205eebd28840847cfbd2a8')
             $backend=(Resolve-Path 'BGXAI/BGXAI_SYNC.ps1').Path
             $harness=Join-Path $env:RUNNER_TEMP 'bgxai_r34_menu_exec.ps1'
             # A stub of the input function only. The real 79,943-byte
