@@ -283,7 +283,7 @@ class R37Guarded(unittest.TestCase):
              mock.patch.object(G,"report",side_effect=lambda mode,data:data),\
              mock.patch("builtins.print") as printer:
             self.assertEqual(G.main(),2)
-            printer.assert_called_once()
+            self.assertEqual(printer.call_count,2)  # capture instruction + saved JSON
     def test_cli_capture_ready_exits_zero(self):
         with mock.patch("sys.argv",["r37_guard","--mode","capture"]),\
              mock.patch.object(G,"capture",return_value={"status":"R37_RUNTIME_ADVICE_LOG_READY_FOR_REVIEW"}),\
