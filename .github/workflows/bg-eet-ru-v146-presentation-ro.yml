@@ -1,0 +1,69 @@
+name: BG EET RU V146 five-target presentation source capture READ ONLY
+on:
+  pull_request:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v146_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v146_ro.py'
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - 'bg-eet-ru/onefile/release.json'
+      - '.github/workflows/bg-eet-ru-v146-presentation-ro.yml'
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v146_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v146_ro.py'
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - 'bg-eet-ru/onefile/release.json'
+      - '.github/workflows/bg-eet-ru-v146-presentation-ro.yml'
+jobs:
+  source-guard:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify onefile pin, size and no game writes
+        shell: python
+        run: |
+          import ast,hashlib,json
+          from pathlib import Path
+          root=Path('bg-eet-ru')
+          mod=(root/'native-correlation/v146_ro.py').read_bytes().replace(b'\r\n',b'\n')
+          cmd=(root/'onefile/BG_EET_RU_UPDATE.cmd').read_bytes()
+          j=json.loads((root/'onefile/release.json').read_text('utf8'))
+          assert 0<len(mod)<=24000
+          assert 0<len(cmd)<=750000
+          assert j['version']==146 and j['game_writes_allowed'] is False
+          assert hashlib.sha256(cmd).hexdigest()==j['sha256']
+          assert ("V146_PIN='"+hashlib.sha256(mod).hexdigest()+"'").encode() in cmd
+          assert b"V146_URL=" in cmd and b"71_V146_PRESENTATION_SOURCE_RO.json" in cmd
+          assert b"9=JIT+PRESENTATION-RO" in cmd and b"SELF_VERSION = 146" in cmd
+          assert b"V133_PIN=" in cmd
+          ast.parse(mod.decode('utf8'))
+          for bad in (b'WriteProcessMemory(',b'VirtualProtectEx(',b'CreateRemoteThread(',b'EEex_JITAt(',b'EEex_HookBefore(',b'DllMain('):
+              assert bad not in mod,bad
+          print('V146_SOURCE_ONLY_SHA_PINNED_NO_NATIVE_INSTALL_PASS')
+      - name: V146 five target synthetic/negative tests
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p test_v146_ro.py -v
+      - name: V144 three target regression
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p test_v144_ro.py -v
+      - name: V136-146 onefile preserves old ZIP and no duplicate entries
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -m unittest discover -s bg-eet-ru/autofix -p test_v136_onefile_readonly.py -v
+      - name: Existing CMD selftest no game
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
