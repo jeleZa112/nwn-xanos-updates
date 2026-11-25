@@ -153,7 +153,7 @@ def baseline(root: Path, candidate: Path, live: bool = True) -> dict:
         if not item.is_file() or sha(item) != expected:
             raise Hold("INSTALLED_SHA_DRIFT:" + rel)
     staged = candidate_data(candidate)
-    for rel in (TP2, SETUP, STAGED, PROOF):
+    for rel in (PACKAGE, TP2, SETUP, STAGED, PROOF):
         if safe(root, rel).exists():
             raise Hold("R31_STAGING_COLLISION:" + rel)
     exe = safe(root, "setup-enhanced-powergaming-scripts.exe")
