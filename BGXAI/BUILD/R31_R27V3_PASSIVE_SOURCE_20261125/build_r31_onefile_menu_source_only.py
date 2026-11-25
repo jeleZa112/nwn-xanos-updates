@@ -91,6 +91,10 @@ def produce(base: bytes, guard: bytes, candidate: bytes) -> bytes:
                             "'170' {RunR30ReadOnly;break}\n"+handler,1)
     if dispatches(compact) != old_dispatch + ["171"]:
         raise Hold("DISPATCH_REGRESSION")
+    original_lines = re.findall(r"(?m)^'[1-9][0-9]*' \\{[^\\n]+\\}$", raw)
+    updated_lines = re.findall(r"(?m)^'[1-9][0-9]*' \\{[^\\n]+\\}$", compact)
+    if len(original_lines) != 170 or updated_lines[:170] != original_lines:
+        raise Hold("DISPATCH_1_TO_170_BYTE_FOR_BYTE_CHANGED")
     new=compact.encode("utf-8")
     if len(new)>MAX_BYTES:
         raise Hold("BOOTSTRAP_80K_CAP_EXCEEDED:"+str(len(new)))
