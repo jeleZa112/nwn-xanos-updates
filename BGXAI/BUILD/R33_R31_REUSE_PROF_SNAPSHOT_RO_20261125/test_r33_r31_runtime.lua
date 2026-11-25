@@ -13,7 +13,8 @@ local stats=setmetatable({
  m_nKit=256,m_nProficiencyLongSword=3,m_nProficiencyLongBow=1,
  m_nProficiencyShortBow=0,m_nExtraProficiency2=16,
 },{__index=function()return 1 end})
-EEex_Sprite_GetActiveStats=function()return stats end
+local getStats=function()return stats end
+EEex_Sprite_GetActiveStats=function()return getStats() end
 local function check(ok,message)assert(ok,message)end
 local function has(s,fragment)return s:find(fragment,1,true)~=nil end
 dofile(file)
@@ -56,7 +57,7 @@ check(orders==0,"no commands issued")
 
 -- Unstable R4 double-read: no fabricated stable proficiency vector.
 local counter=0
-EEex_Sprite_GetActiveStats=function()
+getStats=function()
  counter=counter+1
  local value=counter%2==1 and 3 or 4
  return setmetatable({m_nNumberOfAttacks=7,m_nProficiencyLongSword=value},
@@ -73,7 +74,7 @@ local reads=0
 sprite.m_typeAI=setmetatable({}, {__index=function(_,key)
  if key=="m_Class" then reads=reads+1;return reads==1 and 2 or 3 end
  end})
-EEex_Sprite_GetActiveStats=function()return stats end
+getStats=function()return stats end
 listeners[1](sprite,action)
 check(#logs==4 and has(logs[4],'"status":"HOLD_SINGLE_CALLBACK_NO_DISPATCH"'),"class instability HOLD")
 check(orders==0,"class instability no actions")
