@@ -304,11 +304,82 @@ def rollback(root: Path, token: str) -> dict:
             "gameModified": True, "weaponSwitchAuthorized": False}
 
 
+
+def capture_console(root: Path) -> dict:
+    """Launch already installed passive observer through InfinityLoader, save one log.
+
+    No installation, no engine orders, no WeiDU changes. The user controls the
+    live game and exits it normally. Never treat log text as commands.
+    """
+    protected_root(root, True)
+    rows, _ = weidu_components(root)
+    if not R31.match(rows[-1]):
+        raise Hold("R31_NOT_WEIDU_LAST_FOR_CAPTURE")
+    module = safe(root, OVERRIDE)
+    if not module.is_file() or sha(module) != SOURCE_SHA:
+        raise Hold("R31_LIVE_MODULE_SHA_DRIFT")
+    proof = safe(root, PROOF)
+    if not proof.is_file():
+        raise Hold("R31_CAPTURE_PROOF_MISSING")
+    marker = json.loads(proof.read_text(encoding="utf-8"))
+    if marker.get("status") != "R31_PASSIVE_INSTALLED_AWAITING_RUNTIME" or marker.get("sourceSha256") != SOURCE_SHA:
+        raise Hold("R31_CAPTURE_PROOF_UNVERIFIED")
+    verify_processes()
+    loader = safe(root, "InfinityLoader.exe")
+    if not loader.is_file() or not 1024 < loader.stat().st_size < 70000000:
+        raise Hold("INFINITYLOADER_UNAVAILABLE")
+    with loader.open("rb") as handle:
+        if handle.read(2) != b"MZ":
+            raise Hold("INFINITYLOADER_INVALID_PE")
+    home = os.environ.get("USERPROFILE")
+    if not home:
+        raise Hold("USERPROFILE_MISSING")
+    reports = Path(home) / "Documents" / "BGXAI_LIVE_REPORTS"
+    if reports.is_symlink() or (hasattr(reports, "is_junction") and reports.is_junction()):
+        raise Hold("REPORT_DIR_REPARSE_POINT")
+    reports.mkdir(parents=True, exist_ok=True)
+    filename = "BGXAI_R31_CONSOLE_" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ") + ".log"
+    dest = reports / filename
+    if dest.exists() or dest.is_symlink():
+        raise Hold("REPORT_COLLISION")
+    with dest.open("xb") as output:
+        child = subprocess.Popen([str(loader)], cwd=root, stdin=subprocess.DEVNULL,
+                                 stdout=output, stderr=subprocess.STDOUT, close_fds=True)
+        exit_code = child.wait()
+        output.flush()
+    bytes_count = dest.stat().st_size
+    sessions = samples = stable = known_busy = 0
+    if bytes_count <= 64_000_000:
+        with dest.open("rb") as recorded:
+            for line in recorded:
+                if b"[BGXR27]" not in line:
+                    continue
+                if b'"type":"SESSION"' in line and b'R31_R27V3_PASSIVE' in line:
+                    sessions += 1
+                if b'"type":"R27_SINGLE_CALLBACK"' in line:
+                    samples += 1
+                    if b'"queueSnapshotStable":true' in line:
+                        stable += 1
+                    if b'"queueNonemptyObserved":true' in line:
+                        known_busy += 1
+    passed = exit_code == 0 and 0 < sessions <= 1 and samples > 0 and stable > 0
+    return {"schema": SCHEMA,
+            "status": "R31_RUNTIME_RAW_QUEUE_LOG_READY_FOR_REVIEW" if passed
+                      else "R31_RUNTIME_HOLD_LOG_REVIEW",
+            "reportFile": str(dest), "reportBytes": bytes_count,
+            "sessionMarkers": sessions, "selectedActionSamples": samples,
+            "stableQueueSamples": stable, "nonemptyQueueSamples": known_busy,
+            "gameExitCode": exit_code, "gameModifiedByCapture": False,
+            "ordersSentByObserver": 0, "dispatchAuthorized": False,
+            "queueBindingLiveVerified": False,
+            "manualEpsOriginVerified": False, "alternateEffectiveAPRVerified": False}
+
+
 def main() -> int:
     cli = argparse.ArgumentParser()
     cli.add_argument("--game", type=Path, default=GAME)
     cli.add_argument("--candidate", type=Path)
-    cli.add_argument("--mode", choices=["preflight", "status", "install", "rollback"],
+    cli.add_argument("--mode", choices=["preflight", "status", "install", "rollback", "capture"],
                      default="preflight")
     a = cli.parse_args()
     try:
@@ -322,6 +393,8 @@ def main() -> int:
             if not a.candidate:
                 raise Hold("CANDIDATE_REQUIRED")
             result = baseline(a.game, a.candidate, True)
+        elif a.mode == "capture":
+            result = capture_console(a.game)
         elif a.mode == "install":
             if not a.candidate:
                 raise Hold("CANDIDATE_REQUIRED")
