@@ -2,7 +2,7 @@
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
   "version": 140,
-  "sha256": "ae14c39e9f36d37bad8ed50f0b7b08a9ef9f3600b3a62c3ebbb72e9d848d614c",
+  "sha256": "0116ee1e48d2fd2d57a91b4fea5e9f75e973b48222cbff8395966d892b5e6352",
   "mode": "V140_BOUNDED_DISPATCH_CALLEE_READONLY_SEMANTIC_HOLD",
   "game_writes_allowed": false,
   "note": "One unchanged user updater CMD, existing menu 9 now captures pinned on-disk 0x398530 callee while preserving V136 runtime observation; new 68_V140_EXACT_CALLEE_RO.json added to existing ZIP, historical 67_V136 record preserved. No hook, no game writes, no claimed combatLog link or per-attempt weapon correlation."
