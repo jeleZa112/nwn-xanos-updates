@@ -4,7 +4,7 @@
   "branch": "bg-eet-ai",
   "commit": "11c07ffe1bc626246ce6bb59de10a19015deacc7",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "ca02c847f2027cd06ce77a4f345990b6781b86f50c2656fcb39fb548c67d4e1c",
+  "script_sha256": "aea67d6a13222e4d0754673bc1ea6295125b7ea39f7e9cff8504ee50a8677ded",
   "script_size": 79977,
   "description": "One CMD menu170 R30 read-only queue/deploy preflight, pinned current R27 ACTION_CONTEXT_V3; no install or game changes."
 }
