@@ -1,0 +1,72 @@
+{
+  "schema": "BGXAI_R31_LIVE_VERDICT_V1",
+  "date": "2026-11-25",
+  "status": "R31_PASSIVE_OBSERVER_LIVE_CONFIRMED_QUEUE_SAFETY_NOT_VERIFIED",
+  "sources": {
+    "capture": "BGXAI_R31_CAPTURE_20261125T150437014429Z.json",
+    "console": "BGXAI_R31_CONSOLE_20261125T150300876807Z.log",
+    "consoleSha256": "7f2705dde1eaf16e131f5ec1396837f8affaff8b4070292fd945447783c88c9e",
+    "consoleBytes": 147793
+  },
+  "live": {
+    "gameExitCode": 0,
+    "sessionMarkers": 1,
+    "selectedActionSamples": 12,
+    "stableQueueSamples": 12,
+    "stableActionContextSamples": 12,
+    "consistentInventoryReads": 12,
+    "consistentSelectedStatsReads": 12,
+    "actionRawCounts": {
+      "3": 1,
+      "23": 11
+    },
+    "selectedWeaponRaw": 12,
+    "selectedAprKeyRaw": 2,
+    "quickWeaponResrefsObserved": [
+      "SW1H04",
+      "BOW05",
+      "STAF01"
+    ],
+    "selectedQuiverResrefRaw": "AROW01",
+    "quiverCountBefore": 20,
+    "quiverCountAfter": 19,
+    "queuedActionsRawObserved": [
+      0
+    ],
+    "nonemptyQueueSamples": 0,
+    "actionSourcePointerUnavailable": 12,
+    "actionSourceStableSamples": 0,
+    "actionOriginVerified": false,
+    "manualEpsQueueVerified": false,
+    "alternateEffectiveAPRVerified": false,
+    "launcherAmmoPairVerifiedByR31": false,
+    "ordersSentByObserver": 0,
+    "dispatchAuthorized": false,
+    "weaponSwitchAuthorized": false
+  },
+  "combat": {
+    "actor": "Халид",
+    "target": "Больной гибберлинг",
+    "source": "separate combat journal and BG_EET_RU event",
+    "launcherResref": "BOW05",
+    "ammoResref": "AROW01",
+    "attackRoll": 20,
+    "criticalHit": true,
+    "damage": 6,
+    "damageType": "метательный",
+    "targetDied": true,
+    "sequence": "R31 seq4 recorded actionRaw3 on selected ammo slot12; subsequent R31 seq5 reflected ammunition count19"
+  },
+  "limits": [
+    "The current actionRaw3 occurred while queuedActionsRaw=0: zero does NOT prove idle/action-safe or player-vs-EPS provenance",
+    "Every action source pointer read was unavailable, so action origin is unverified",
+    "No queue-nonempty case occurred; raw queue binding and noninterrupt behavior during occupied queues remain unverified",
+    "No selected-weapon transition occurred in this session, so R29 bow-to-sword behavior not exercised",
+    "One selected-state APR raw key is not effective APR for each alternative slot",
+    "The UI menu parse error near 'icon' occurred in prior R27 logs too; not diagnosed as an R31-caused error"
+  ],
+  "nextSafeWork": "Use verified R31 observations as an immutable baseline. Continue source-only real alternate APR/THAC0/effects and noninterrupt integration, with deny-by-default on queue zero or unknown provenance. No new game test or reinstall until a concrete changed code path requires it.",
+  "gameModifiedByCapture": false,
+  "liveObserverPass": true,
+  "liveWeaponPriorityPass": false
+}
