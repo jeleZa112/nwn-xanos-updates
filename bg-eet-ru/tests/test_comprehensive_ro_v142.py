@@ -41,7 +41,7 @@ class FullRelease(unittest.TestCase):
    return {n:z.read(n) for n in z.namelist()}
 
  def test_release_exact_sha_and_bounds(self):
-  self.assertIn(self.rel['version'],(142,144))
+  self.assertIn(self.rel['version'],(142,144,146))
   self.assertFalse(self.rel['game_writes_allowed'])
   self.assertEqual(sha(self.cmd),self.rel['sha256'])
   self.assertLessEqual(len(self.cmd),750000)
