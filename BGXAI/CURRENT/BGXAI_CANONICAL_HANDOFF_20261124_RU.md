@@ -1,5 +1,15 @@
 # BGXAI — единая точка продолжения, 24 ноября 2026
 
+## 25.11.2026 — R34 WH ALIAS HOTFIX: REAL MENU STARTUP CI PASS, NEXT 173
+
+ФАКТ пользователя: `BGXAI_UPDATE.cmd` verified pin `38c7d2ee3bfc`, но R34 до меню упал `wh : The term 'wh' is not recognized` на строке 1108. Причина: builder R34 ошибочно преобразовал `Set-Alias wh Write-Host -Scope Script` в рекурсивное `Set-Alias wh wh -Scope Script`. Никакой установки/изменения игры не было.
+
+Исправлено и репиновано: активный BGXAI_SYNC.ps1 79943 байта SHA256 `d131395cc7d3b5b9c265a8684994515eb6b7e72ba69c5ef4422597cc541de877`; immutable commit `b678020a5deee2d1d7205eebd28840847cfbd2a8`. Исправлены stage/builder, обновлён BOOTSTRAP_PIN; исходный CMD неизменён. [R34 CI 45656805908](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45656805908) SUCCESS 3/3 и **реальное выполнение полного backend до отображения меню и пункта 0 на Windows CI fixture**, не только AST. [R33 historical preservation CI 45656991832](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45656991832) SUCCESS.
+
+**СЕЙЧАС:** R33 installed and live raw observer PASS 8/8; R34 source+release PASS, user PC read-only 173 NOT YET RUN. Следующее единственное действие пользователя: обычный `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`, проверить префикс `b678020a5dee`, выбрать `173`, переслать один `BGXAI_R34_NATIVE_PROF_*.json` или STOP. Если STOP — не повторять. Не просить R33 install/capture и не заявлять AUTOSWITCH.
+
+---
+
 ## 25.11.2026 — R34 RO MENU173 RELEASED, R33 LIVE 8/8, AUTOSWITCH HOLD
 
 **НЕ повторять готовое:** проверенные user install R33 (`BGXAI_R33_INSTALL_20261125T155703049710Z.json`), live capture R33 (`BGXAI_R33_CONSOLE_20261125T161358491052Z.log`, SHA256 `d510da7e5c15d1579266b37a89fdf91ceff91622714a142e1c137376ec239538`), 8/8 observer samples, 46 WPROF values, BOW05 shot, штраф владения −2. R33 active/passive; R33 weaponSwitchAuthorized=false. Содержимое старых разделов «R33 не установлен» устарело.
