@@ -35,9 +35,9 @@ jobs:
           import ast,hashlib,json
           from pathlib import Path
           root=Path('bg-eet-ru')
-          module=(root/'native-correlation'/('v144_ro.py' if j['version']==144 else 'v142_ro.py')).read_bytes().replace(b'\r\n',b'\n')
           cmd=(root/'onefile/BG_EET_RU_UPDATE.cmd').read_bytes()
           j=json.loads((root/'onefile/release.json').read_text('utf8'))
+          module=(root/'native-correlation'/('v144_ro.py' if j['version']==144 else 'v142_ro.py')).read_bytes().replace(b'\r\n',b'\n')
           sha=hashlib.sha256(module).hexdigest()
           assert len(module)<20001
           assert len(cmd)<750001
