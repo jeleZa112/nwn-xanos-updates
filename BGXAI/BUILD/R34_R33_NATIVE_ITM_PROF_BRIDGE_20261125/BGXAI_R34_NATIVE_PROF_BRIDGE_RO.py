@@ -188,6 +188,7 @@ def join(log: bytes, source, parse_itm, *, game_identity_verified: bool=False) -
             "observedActionIdsRaw":event["actionRawValues"],
             "levelsAndKitRaw":event["levelsAndKitRaw"],
             "liveGamePinVerified":game_identity_verified,
+            "sameSessionItemResourcesVerified":False,
             "resourceItems":[],
             "actionOwnershipStatus":"ACTION_SOURCE_POINTER_UNAVAILABLE"}
     names={}
@@ -233,7 +234,7 @@ def join(log: bytes, source, parse_itm, *, game_identity_verified: bool=False) -
             "weaponSwitchAuthorized":False})
     result["resourceItems"]=rows
     result["nativeResourceCount"]=len(rows)
-    result["status"]="CURRENT_NATIVE_ITM_PROF_GROUPS_JOINED_RO_NO_SWITCH"
+    result["status"]=("CURRENT_NATIVE_ITM_PROF_GROUPS_JOINED_RO_NO_SWITCH" if game_identity_verified else "R34_SOURCE_ONLY_SYNTHETIC_JOIN_NO_SWITCH")
     result["proficiencyMismatches"]=[{"resref":r["resref"],
         "slots":r["slots"],"proficiencyStatIdRaw":r["proficiencyStatIdRaw"]}
         for r in rows if any(s["kind"]=="weapons" for s in r["slots"])
