@@ -1,0 +1,50 @@
+name: BG EET RU V138 Native Attempt Ledger Source-Only
+on:
+  pull_request:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v138_*'
+      - '.github/workflows/bg-eet-ru-v138-native-ledger.yml'
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v138_*'
+      - '.github/workflows/bg-eet-ru-v138-native-ledger.yml'
+jobs:
+  native-source-model:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: 'x64'
+      - name: Compile real Win64 COFF with unwind tables
+        shell: bash
+        run: |
+          clang --target=x86_64-pc-windows-msvc -std=c11 -O2 -ffreestanding -funwind-tables -fno-stack-protector -c bg-eet-ru/native-correlation/v138_native_attempt_ledger.c -o bg-eet-ru/native-correlation/v138_native_attempt_ledger_win64.obj
+      - name: Verify real native executable ledger and negative COFF gates
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p test_v138_*.py -v
+      - name: Preserve single canonical V136 updater; no game hook install
+        shell: python
+        run: |
+          from pathlib import Path
+          import hashlib,json
+          root=Path('bg-eet-ru/onefile')
+          up=(root/'BG_EET_RU_UPDATE.cmd').read_bytes()
+          manifest=json.loads((root/'release.json').read_text(encoding='utf8'))
+          assert manifest['version']==136
+          assert hashlib.sha256(up).hexdigest()==manifest['sha256']
+          assert manifest['game_writes_allowed'] is False
+          model=Path('bg-eet-ru/native-correlation/v138_native_attempt_ledger.c').read_text(encoding='utf8')
+          for forbidden in ('WriteProcessMemory(', 'VirtualProtectEx(', 'CreateRemoteThread(', 'EEex_JITAt(', 'DllMain('):
+            assert forbidden not in model
+          print('V138_SOURCE_ONLY_NO_GAME_WRITES_SINGLE_UPDATER_136_PASS')
