@@ -1,0 +1,73 @@
+name: BG EET RU V144 downstream targets exact source read-only
+on:
+  pull_request:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v144_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v144_ro.py'
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - 'bg-eet-ru/onefile/release.json'
+      - '.github/workflows/bg-eet-ru-v144-downstream-ro.yml'
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v144_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v144_ro.py'
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - 'bg-eet-ru/onefile/release.json'
+      - '.github/workflows/bg-eet-ru-v144-downstream-ro.yml'
+jobs:
+  source-guard:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: V144 exact source and onefile release integrity
+        shell: python
+        run: |
+          from pathlib import Path
+          import hashlib,json,ast
+          root=Path('bg-eet-ru')
+          mod=(root/'native-correlation/v144_ro.py').read_bytes().replace(b'\r\n',b'\n')
+          cmd=(root/'onefile/BG_EET_RU_UPDATE.cmd').read_bytes()
+          manifest=json.loads((root/'onefile/release.json').read_text('utf8'))
+          assert len(mod)<=20000,len(mod)
+          assert len(cmd)<=750000,len(cmd)
+          assert manifest['version']==144 and manifest['game_writes_allowed'] is False
+          assert hashlib.sha256(cmd).hexdigest()==manifest['sha256']
+          assert ("V144_PIN='"+hashlib.sha256(mod).hexdigest()+"'").encode() in cmd
+          assert b"SELF_VERSION = 144" in cmd
+          assert b"70_V144_DOWNSTREAM_SOURCE_RO.json" in cmd
+          assert b"9=JIT+DOWNSTREAM-RO" in cmd
+          assert b"V133_PIN=" in cmd
+          ast.parse(mod.decode('utf8'))
+          for forbidden in (b'WriteProcessMemory(',b'VirtualProtectEx(',b'CreateRemoteThread(',b'EEex_JITAt(',b'EEex_HookBefore(',b'DllMain('):
+              assert forbidden not in mod,forbidden
+          print('V144_EXACT_SOURCE_SHA_AND_ONEFILE_READONLY_PASS')
+      - name: Three bounded destinations and all negative source protections
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p test_v144_ro.py -v
+      - name: Previous V142 V140 exact on-disk PE regressions
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p 'test_v14[02]_ro.py' -v
+      - name: Unified CMD existing options and historical ZIP preservation
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -m unittest discover -s bg-eet-ru/autofix -p test_v136_onefile_readonly.py -v
+      - name: Existing updater full selftest
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest

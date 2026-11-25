@@ -35,19 +35,19 @@ jobs:
           import ast,hashlib,json
           from pathlib import Path
           root=Path('bg-eet-ru')
-          module=(root/'native-correlation/v142_ro.py').read_bytes().replace(b'\r\n',b'\n')
           cmd=(root/'onefile/BG_EET_RU_UPDATE.cmd').read_bytes()
           j=json.loads((root/'onefile/release.json').read_text('utf8'))
+          module=(root/'native-correlation'/('v144_ro.py' if j['version']==144 else 'v142_ro.py')).read_bytes().replace(b'\r\n',b'\n')
           sha=hashlib.sha256(module).hexdigest()
           assert len(module)<20001
           assert len(cmd)<750001
-          assert j['version']==142 and j['game_writes_allowed'] is False
+          assert j['version'] in (142,144) and j['game_writes_allowed'] is False
           assert hashlib.sha256(cmd).hexdigest()==j['sha256']
-          assert ("V142_PIN='"+sha+"'").encode() in cmd
-          assert b"69_V142_MESSAGE_DELIVERY_RO.json" in cmd
+          assert ("V"+str(j["version"])+"_PIN='"+sha+"'").encode() in cmd
+          assert (b"70_V144_DOWNSTREAM_SOURCE_RO.json" if j["version"]==144 else b"69_V142_MESSAGE_DELIVERY_RO.json") in cmd
           assert b"if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)" in cmd
           assert b"V133_PIN=" in cmd
-          assert b"SELF_VERSION = 142" in cmd
+          assert ("SELF_VERSION = "+str(j["version"])).encode() in cmd
           ast.parse(module.decode('utf8'))
           for bad in (b'WriteProcessMemory(',b'VirtualProtect(',b'CreateRemoteThread(',b'EEex_JITAt(',b'EEex_HookBefore('):
               assert bad not in module,bad
