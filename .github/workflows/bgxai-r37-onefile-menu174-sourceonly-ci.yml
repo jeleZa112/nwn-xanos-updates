@@ -58,7 +58,7 @@ jobs:
           assert len(guard)==26210 and hashlib.sha256(guard).hexdigest()=='5dca3b0709a70687221e640a2fc8a4d1e3ca12e5ffa34baeeddb8d174479ba0e'
           assert len(candidate)==60835 and hashlib.sha256(candidate).hexdigest()=='5ece282270f0e6a1fa7a6086b7f13c57c77de98759637efa4b2ab0cc1e5744d6'
           pin=json.loads(Path('BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text())
-          if pin['script_size']==len(s):
+          if pin['script_size']==len(s) and pin['script_sha256']==hashlib.sha256(s).hexdigest():
             assert pin['script_sha256']==hashlib.sha256(s).hexdigest()
             assert subprocess.check_output(['git','show',pin['commit']+':BGXAI/BGXAI_SYNC.ps1'])==s
             print('PASS new immutable bootstrap pinned')
