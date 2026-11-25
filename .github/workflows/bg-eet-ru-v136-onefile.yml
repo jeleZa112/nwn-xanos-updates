@@ -46,7 +46,7 @@ jobs:
               assert b"68_V140_EXACT_CALLEE_RO.json" in data
           else:
               assert b"SELF_VERSION = 142" in data
-              assert b"V142_PIN='ce5a8c7e2610fcd30befba790dcc62840a7e8faedf67e7cfdccba5ceeb2b0a41'" in data
+              assert b"V142_PIN='aed90911dbc628b6be019594bb7804f90539029525b37dd570826d65084359d8'" in data
               assert b"69_V142_MESSAGE_DELIVERY_RO.json" in data
           assert b"if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)" in data
           print('V136_COMPATIBLE_ONEFILE_RELEASE_INTEGRITY_PASS')
