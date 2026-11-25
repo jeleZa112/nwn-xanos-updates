@@ -1,4 +1,4 @@
-name: BGXAI R34 one CMD menu173 ACTIVE immutable pin and PowerShell 5.1
+name: BGXAI R34 LOG FALLBACK stage CLI Windows PS5.1 safe
 on:
   push:
     branches: [bg-eet-ai]
@@ -35,8 +35,8 @@ jobs:
           import hashlib,json,re,subprocess
           b=Path('BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125')
           src=(b/'BGXAI_SYNC_R34_MENU173_SOURCE_ONLY.ps1').read_bytes()
-          assert len(src)==79943, len(src)
-          assert hashlib.sha256(src).hexdigest()=='d131395cc7d3b5b9c265a8684994515eb6b7e72ba69c5ef4422597cc541de877'
+          assert len(src)==79775, len(src)
+          assert hashlib.sha256(src).hexdigest()=='9b44a5cf6ffd83c97c17c49ac9533b102bcdef7a004da4840636762a91cb2db5'
           assert len(src)<=80000
           old=subprocess.check_output(['git','show','29e7dee1cae6dea41bb11f9286debca2e047f0a5:BGXAI/BGXAI_SYNC.ps1'])
           assert len(old)==79920
@@ -46,9 +46,11 @@ jobs:
           assert lines(src)[172].startswith("'173' {")
           module=(b/'BGXAI_R34_NATIVE_PROF_BRIDGE_RO.py').read_bytes()
           r3=Path('BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_ITM_R3_RO.py').read_bytes()
-          assert hashlib.sha256(module).hexdigest()=='48b763fee2d22d22002cbac7efebedd98904f8ee8f6128f82a324bcd3d5957da'
+          assert hashlib.sha256(module).hexdigest()=='b1c20f6b2ac6bea20d6e103d86eb62a5930965877c1816eb4945095c442687c4'
           assert hashlib.sha256(r3).hexdigest()=='ed87a7a6618826c6d3901d2579a39bf280fcaeb09cd18b7b6ee159b9ebfcc74a'
-          assert b'd510da7e5c15d1579266b37a89fdf91ceff91622714a142e1c137376ec239538' in src
+          assert b'd510da7e5c15d1579266b37a89fdf91ceff91622714a142e1c137376ec239538' in module
+          assert b'R34 LIVE LOG PIN STOP' not in src
+          assert b'--reports-dir $d' in src and b'--log $l' not in src
           match=re.search(r"function Get-PinnedBytes\(\[string\]\$zrp\)\s*\{\s*if\(\$zrp -notmatch '([^']+)' -or \$zrp.Contains\('\.\.'\)\)",src.decode('ascii'))
           assert match,'Get-PinnedBytes guard missing'
           allow=re.compile(match.group(1))
@@ -63,15 +65,15 @@ jobs:
           assert "Set-Alias gc Get-Content" not in src.decode()
           assert "Set-Alias rh Read-Host -Scope Script" in src.decode()
           live=Path('BGXAI/BGXAI_SYNC.ps1').read_bytes()
-          assert live==src, 'ACTIVE one-CMD backend must match reviewed source'
           pin=json.loads(Path('BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text('utf-8'))
-          assert pin['script_size']==79943 and pin['script_sha256']==hashlib.sha256(src).hexdigest()
-          assert pin['script_path']=='BGXAI/BGXAI_SYNC.ps1'
+          assert len(live)==79943
+          assert hashlib.sha256(live).hexdigest()==pin['script_sha256']=='d131395cc7d3b5b9c265a8684994515eb6b7e72ba69c5ef4422597cc541de877'
           assert pin['commit']=='b678020a5deee2d1d7205eebd28840847cfbd2a8'
-          assert subprocess.check_output(['git','show',pin['commit']+':BGXAI/BGXAI_SYNC.ps1'])==src
+          assert subprocess.check_output(['git','show',pin['commit']+':BGXAI/BGXAI_SYNC.ps1'])==live
+          assert live!=src, 'PRE-RELEASE STAGE is not supposed to be active'
           cmd=Path('BGXAI_UPDATE.cmd').read_bytes()
           assert cmd==subprocess.check_output(['git','show','71b1d37db787a59ed16c8b92ac495314b3577e02:BGXAI_UPDATE.cmd'])
-          print('PASS R34 ACTIVE one-CMD 79943B PIN, 172 old cases intact, no game install')
+          print('PASS R34 log-fallback STAGE 79775B, 172 handlers identical, active script unchanged')
           PY
 
   ps51-ast-and-abbreviation:
@@ -95,7 +97,7 @@ jobs:
           try {
             [IO.File]::WriteAllBytes((Join-Path $root 'chitin.key'),[byte[]](0,1,2,3))
             [IO.File]::WriteAllText((Join-Path $cache 'head.txt'),'b678020a5deee2d1d7205eebd28840847cfbd2a8')
-            $backend=(Resolve-Path 'BGXAI/BGXAI_SYNC.ps1').Path
+            $backend=(Resolve-Path 'BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125/BGXAI_SYNC_R34_MENU173_SOURCE_ONLY.ps1').Path
             $harness=Join-Path $env:RUNNER_TEMP 'bgxai_r34_menu_exec.ps1'
             # A stub of the input function only. The real 79,943-byte
             # script is actually executed from its first line to exit 0.
@@ -118,7 +120,7 @@ jobs:
       - name: Parse ACTIVE PowerShell 5.1 and exercise abbreviated literal-path cmdlet parameters
         shell: powershell
         run: |
-          $p=(Resolve-Path 'BGXAI/BGXAI_SYNC.ps1').Path
+          $p=(Resolve-Path 'BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125/BGXAI_SYNC_R34_MENU173_SOURCE_ONLY.ps1').Path
           $tokens=$null
           $errors=$null
           [System.Management.Automation.Language.Parser]::ParseFile($p,[ref]$tokens,[ref]$errors)|Out-Null
