@@ -1,3 +1,13 @@
+# CURRENT 26.11.2026 — supersedes dated instructions below
+
+**Source of truth:** `CURRENT/00_CURRENT_STATUS.md` first section, not older 24–25 Nov steps. The user already ran R34 with `124add6624c4`, received `R34_R33_NAMED_LOG_DIFFERS_AND_FAILS_FINGERPRINT` on 26.11 at 00:06 and no game changes. R33 installed and real 8/8 capture previously PASS. Do **NOT** ask for another battle, capture, R33 install or repeat 173 on the old pin.
+
+On 26.11 previous user-uploaded real R33 log was re-examined (1 SESSION, 8 consistent samples) and compared to real R28 native ITM report. Historical BOW05 is **shortbow** `proficiencyIdRaw=105` and Khalid has **0 shortbow pips**, despite 1 longbow pip (`stat104=1`). SW1H04 long sword prof90, Khalid 2 pips; staff prof102, Khalid 0. This is cross-date evidence, not proof of unchanged 26.11 game ITM.
+
+R34 source corrected to use one strictly validated archived historical 8-event aggregate if the local old log is rejected; all such outputs explicitly mark the archive provenance and never allow action dispatch. R34 `BGXAI_SYNC.ps1` remains 79,775 bytes and preserves 1..172 handlers; immutable `1404112c2889561b99416e48a4ba06ab947c4fee`, SHA256 `9131e29da59b7d3a62651eab3ff7deee514da426cfbe6a1267b54444e9c6f59a`, R34 source SHA256 `d40f7729ee84c576d08fe712b98adcd0704611def6385e976a50597b68c496c4`; BOOTSTRAP_PIN points to commit. CI [R34 3/3 active Windows/Linux PS5.1](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45662096145) and [R33 5/5 historical](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45662096366) **SUCCESS**, source R34 Windows/Linux tests PASS. **No new user-PC runtime R34 after fix**; no game modification/weapon switching. Action origin/manual/EPS, alternative effective APR, complete effects and safe boundary remain HOLD. Next focus use V3/V4/V5 with proven proficiency mapping and actual APR, not new bow-to-sword pilot. New single 173 read-only run is now optionally available only for CURRENT live ITM refresh; it does NOT make archived R33 stats contemporary.
+
+---
+
 # BGXAI — единая точка продолжения, 24 ноября 2026
 
 **CI FINAL 25.11.2026:** R34 source-only 22/22 Windows/Linux PASS (run 45660217453); R34 79775B active pin + real PS5.1 menu boot 3/3 PASS (run 45660513142); historical R33 source/proof/WeiDU 5/5 PASS (run 45660551436). Exact user live R34 after hotfix still PENDING. No game writes.
