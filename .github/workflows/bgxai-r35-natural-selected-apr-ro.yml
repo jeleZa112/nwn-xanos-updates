@@ -1,0 +1,43 @@
+name: BGXAI R35 historical natural-selected APR join SOURCE ONLY
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R35_NATURAL_SELECTED_APR_RO_20261126/**'
+      - '.github/workflows/bgxai-r35-natural-selected-apr-ro.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: R35 historical-only observations and fail-closed native hash tests
+        shell: bash
+        run: python -m unittest discover -s BGXAI/BUILD/R35_NATURAL_SELECTED_APR_RO_20261126 -p 'test_r35_natural_selected_apr_ro.py' -v
+      - name: Prove R35 has no live EEex, WeiDU, process or action calls
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('BGXAI/BUILD/R35_NATURAL_SELECTED_APR_RO_20261126/BGXAI_R35_NATURAL_SELECTED_APR_RO.py')
+          s=p.read_text(encoding='utf-8')
+          forbidden=('EEex_Action_AddSpriteStartedActionListener(', 'SelectWeaponAbility(',
+           'AttackReevaluate(', 'SetGlobal(', 'ClearActions(', 'Stop(', 'os.system(',
+           'subprocess.', 'ctypes.', 'shutil.', 'write_text(', 'write_bytes(')
+          assert all(x not in s for x in forbidden)
+          assert 'otherSlotEffectiveAPRVerified":False' in s
+          assert 'manualAndEPSOriginVerified":False' in s
+          assert 'ammoLauncherEngineBindingVerified":False' in s
+          assert p.stat().st_size < 16000
+          print('R35 SAFE: no install, no orders, no writes, no alternate APR promotion')
+          PY
