@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 140,
-  "sha256": "0116ee1e48d2fd2d57a91b4fea5e9f75e973b48222cbff8395966d892b5e6352",
-  "mode": "V140_BOUNDED_DISPATCH_CALLEE_READONLY_SEMANTIC_HOLD",
+  "version": 142,
+  "sha256": "6a110db029a074b78aa7da8990ffb27bdee29b9f8ddbeff9fdc4a5f4cbdf4f68",
+  "mode": "V142_PINNED_ON_DISK_MESSAGE_DELIVERY_SOURCE_CAPTURE_UI_HOLD",
   "game_writes_allowed": false,
-  "note": "One unchanged user updater CMD, existing menu 9 now captures pinned on-disk 0x398530 callee while preserving V136 runtime observation; new 68_V140_EXACT_CALLEE_RO.json added to existing ZIP, historical 67_V136 record preserved. No hook, no game writes, no claimed combatLog link or per-attempt weapon correlation."
+  "note": "Same one CMD and ZIP; menu 9 V142 reads exact SHA-pinned Baldur.exe on disk. Preserves V136 external JIT RO + V140 0x398530 capture, adds 69_V142_MESSAGE_DELIVERY_RO.json with bounded CMessageHandler::AddMessage RVA 0x204C60 code window/pdata and three message-object vtables (0x58E140, 0x597CD0, 0x5901F0) plus bounded method windows. No game file writes, no hook, no direct combatLog row or attack/weapon correlation proven; historical 67 and 68 ZIP entries preserved."
 }

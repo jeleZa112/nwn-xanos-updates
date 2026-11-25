@@ -1,0 +1,63 @@
+name: BG EET RU V142 bounded on-disk message delivery source only
+on:
+  pull_request:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v142_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v142_ro.py'
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - 'bg-eet-ru/onefile/release.json'
+      - '.github/workflows/bg-eet-ru-v142-delivery-ro.yml'
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v142_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v142_ro.py'
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - 'bg-eet-ru/onefile/release.json'
+      - '.github/workflows/bg-eet-ru-v142-delivery-ro.yml'
+jobs:
+  source-guard:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Exact SHA V142 and onefile preserves release contract
+        shell: python
+        run: |
+          import ast,hashlib,json
+          from pathlib import Path
+          root=Path('bg-eet-ru')
+          module=(root/'native-correlation/v142_ro.py').read_bytes().replace(b'\r\n',b'\n')
+          cmd=(root/'onefile/BG_EET_RU_UPDATE.cmd').read_bytes()
+          j=json.loads((root/'onefile/release.json').read_text('utf8'))
+          sha=hashlib.sha256(module).hexdigest()
+          assert len(module)<20001
+          assert len(cmd)<750001
+          assert j['version']==142 and j['game_writes_allowed'] is False
+          assert hashlib.sha256(cmd).hexdigest()==j['sha256']
+          assert ("V142_PIN='"+sha+"'").encode() in cmd
+          assert b"69_V142_MESSAGE_DELIVERY_RO.json" in cmd
+          assert b"if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)" in cmd
+          assert b"V133_PIN=" in cmd
+          assert b"SELF_VERSION = 142" in cmd
+          ast.parse(module.decode('utf8'))
+          for bad in (b'WriteProcessMemory(',b'VirtualProtect(',b'CreateRemoteThread(',b'EEex_JITAt(',b'EEex_HookBefore('):
+              assert bad not in module,bad
+          print('V142_PINNED_DISK_READONLY_PASS')
+      - name: V142 exact bounded window and vtable synthetic tests
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p test_v142_ro.py -v
+      - name: Preserve V139 V140 PE parser and V136 onefile tests
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p test_v140_ro.py -v
+      - name: Existing full onefile regression
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
