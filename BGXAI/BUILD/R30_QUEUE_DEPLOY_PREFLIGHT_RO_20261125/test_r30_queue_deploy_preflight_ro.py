@@ -9,6 +9,30 @@ spec = importlib.util.spec_from_file_location('r30_preflight', ROOT/'BGXAI_R30_Q
 p = importlib.util.module_from_spec(spec);spec.loader.exec_module(p)
 
 class Checks(unittest.TestCase):
+    def source_fixture(self):
+        return (b'local R27={}\n' +
+                b'\n'.join(p.REQUIRED_OBSERVER_MARKERS) +
+                b'\nreturn R27\n')
+
+    def test_actual_source_sha_and_context_gate_are_pinned(self):
+        candidate = ROOT.parent/'R27_R2_IDENTITY_REFRESH_20261124'/'BGXAI_R27_R2_REFRESH_SOURCE_ONLY.lua'
+        data = candidate.read_bytes()
+        self.assertEqual(len(data),44805)
+        self.assertEqual(hashlib.sha256(data).hexdigest(),p.SOURCE_CANDIDATE_SHA)
+        self.assertTrue(all(m in data for m in p.REQUIRED_OBSERVER_MARKERS))
+        self.assertNotIn(b'P.initialized=start()', data)
+        self.assertNotIn(b'EEex_Action_AddSpriteStartedActionListener(',data)
+
+    def test_unverified_queue_only_candidate_cannot_pass_even_with_patched_sha(self):
+        with TemporaryDirectory() as td:
+            root=self.make(td)
+            c=root.parent/'candidate_test.lua'
+            c.write_bytes(b'local R27={}\nqueueSnapshotStable=qStable\nreturn R27\n')
+            with mock.patch.object(p,'SOURCE_CANDIDATE_SHA',hashlib.sha256(c.read_bytes()).hexdigest()):
+                result=self.patched(root,c)
+            self.assertEqual(result['reason'],'CANDIDATE_V3_CONTEXT_CONTRACT_MISSING')
+            c.unlink()
+
     def make(self, folder, last='~OTHER/SETUP-OTHER.TP2~ #0 #0 // another component', r27=True):
         root=Path(folder)
         for path, data in {
@@ -78,7 +102,7 @@ class Checks(unittest.TestCase):
     def test_exact_candidate_accepted_only_as_source(self):
         with TemporaryDirectory() as td:
             root=self.make(td)
-            c=root.parent/'candidate_test.lua';c.write_bytes(b'local R27={}\nreturn R27\n')
+            c=root.parent/'candidate_test.lua';c.write_bytes(self.source_fixture())
             with mock.patch.object(p,'SOURCE_CANDIDATE_SHA',hashlib.sha256(c.read_bytes()).hexdigest()):
                 x=self.patched(root,c)
             self.assertTrue(x['candidateSourceVerified'])
