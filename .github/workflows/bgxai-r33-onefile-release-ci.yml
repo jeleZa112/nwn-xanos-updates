@@ -38,8 +38,8 @@ jobs:
           assert re.fullmatch('[a-f0-9]{40}',pin['commit'])
           assert re.fullmatch('[a-f0-9]{64}',pin['script_sha256'])
           s=(here/pin['script_path']).read_bytes()
-          assert len(s)==pin['script_size']==79874<=80000
-          assert hashlib.sha256(s).hexdigest()==pin['script_sha256']=='4f04b43f69d4171e2686f017d334eac69f91d9389a18122110c2bfd44a2d5663'
+          assert len(s)==pin['script_size']==79920<=80000
+          assert hashlib.sha256(s).hexdigest()==pin['script_sha256']=='7e3c3cc69ce865ff197a5238564757a2c01df71950f56018590f5fa2c38b2417'
           immutable=subprocess.check_output(['git','show',pin['commit']+':'+pin['script_path']])
           assert immutable==s, 'released pin must reference exact immutable Git commit'
           original=subprocess.check_output(['git','show','fe992a60a4c7880912270cfed27be59c6a0bf359:BGXAI/BGXAI_SYNC.ps1'])
@@ -55,6 +55,9 @@ jobs:
           assert cmd==subprocess.check_output(['git','show','71b1d37db787a59ed16c8b92ac495314b3577e02:BGXAI_UPDATE.cmd'])
           print('BGXAI R33 ONE CMD ACTIVE PIN SHA256 + ORIGINAL 171 DISPATCHES + 80KB PASS; no game install')
           PY
+      - name: Reproduce user's blocked path and ensure pinned guard and Lua now downloadable
+        shell: bash
+        run: python BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/test_r33_updater_remote_allowlist_ro.py
       - name: Guard code, Lua pin, staging script and manifest match exact
         shell: bash
         run: |
