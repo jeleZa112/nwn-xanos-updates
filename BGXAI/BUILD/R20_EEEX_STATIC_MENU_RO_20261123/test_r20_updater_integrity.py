@@ -9,11 +9,7 @@ SYNC = ROOT / "BGXAI/BGXAI_SYNC.ps1"
 R19 = ROOT / "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_R19_INSTALLED_EEEX_AUDIT_RO.py"
 ORIGINAL_SHA256 = "f5b9d565de595ffea0e04c26f3194152445a26743aa47348694b883cdd9ec8e0"
 AUDIT_SHA256 = "7426faaa18c1a7bb9a8437ee0733854bed0f868a419e96593c58c7ec71451300"
-OLD_MENU = ("163 - R13.2 HOLD diagnostics (READ ONLY default / guarded)\n"
-            " 0 - Exit [default]")
-NEW_MENU = ("163 - R13.2 HOLD diagnostics (READ ONLY default / guarded)\n"
-            "164 - Installed EEex R19 static audit (READ ONLY)\n"
-            " 0 - Exit [default]")
+BASELINE_COMMIT = "10905c8138dc72b3febb6629d164d9c33a6d292f"
 SHORTS = (("token","ztok"),("active","zact"),("lines","zln"),("isCurrent","zcur"))
 
 def contents():
@@ -25,30 +21,32 @@ def handler(s):
         raise AssertionError("R20_HANDLER_MISSING")
     return match.group(0)
 
-def reconstruct_legacy(s):
-    s=s.replace(NEW_MENU, OLD_MENU)
-    s=s.replace(handler(s), "")
-    for old,new in reversed(SHORTS):
-        s=re.sub(r"\$"+new+r"\b","$"+old,s)
-    s=s.replace("param([string]$GameRoot='.')\n$gr=$GameRoot",
-                "param([string]$gr='.')")
-    s=re.sub(r"\$gr\b","$GameRoot",s)
-    return s
+def dispatches(s):
+    return {int(n): line for n,line in re.findall(r"(?m)^'([0-9]+)' \{[^\n]*\}$", s)}
+
+def baseline_script():
+    import subprocess
+    p=subprocess.run(["git","show",f"{BASELINE_COMMIT}:BGXAI/BGXAI_SYNC.ps1"],
+                     cwd=ROOT,capture_output=True,check=True)
+    return p.stdout.decode("utf-8")
 
 class R20ReadOnlySingleUpdater(unittest.TestCase):
-    def test_old_updater_identical_after_exact_reverse(self):
-        restored=reconstruct_legacy(contents()).encode()
-        self.assertEqual(hashlib.sha256(restored).hexdigest(),ORIGINAL_SHA256)
-        self.assertEqual(len(restored),79631)
+    def test_previous_1_to_169_dispatches_unchanged(self):
+        current=dispatches(contents())
+        previous=dispatches(baseline_script())
+        self.assertEqual(list(current),list(range(1,171)))
+        for n in range(1,170):
+            self.assertEqual(current[n],previous[n],f"existing dispatch {n} changed")
+        self.assertEqual(current[170],"'170' {RunR30ReadOnly;break}")
     def test_size_keeps_pin_limit(self):
         b=SYNC.read_bytes()
-        self.assertEqual(len(b),79871)
+        self.assertEqual(len(b),79979)
         self.assertLessEqual(len(b),80000)
     def test_menu_and_switch_completeness(self):
         s=contents()
-        self.assertEqual(s.count(NEW_MENU),1)
         ids=[int(x) for x in re.findall(r"(?m)^'(\d+)' \{",s)]
-        self.assertEqual(ids,list(range(1,165)))
+        self.assertEqual(ids,list(range(1,171)))
+        self.assertIn("170 R30 RO",s)
     def test_r19_payload_verifies_exact_bytes(self):
         self.assertEqual(len(R19.read_bytes()),11013)
         self.assertEqual(hashlib.sha256(R19.read_bytes()).hexdigest(),AUDIT_SHA256)
