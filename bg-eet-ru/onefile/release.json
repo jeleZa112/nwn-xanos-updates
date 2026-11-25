@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 133,
-  "sha256": "280b09cadb2a2a92da02a77f91a67640620e0076d508428d1fb2adc12df8ab9c",
-  "mode": "V133_LIVE_HIT_READONLY_39DA6F_NO_NATIVE_HOOK",
+  "version": 136,
+  "sha256": "888186ef3caa69e84afd1281a849a0b89f7baaf46810dd9cc21c0e9fe5e3ceeb",
+  "mode": "V136_LIVE_FIRSTCALL_JIT_REGION_READONLY_OWNER_HOLD",
   "game_writes_allowed": false,
-  "note": "V133 reuses the single BG_EET_RU_UPDATE.cmd, adds menu 8=live-RO, exact SHA-pinned external Windows ReadProcessMemory inventory of CGameSprite::Hit() post-prolog site 0x39DA6F, FirstCall E9, AddMessage and exit. 15 mock tests including 500 corruptions; no injected hooks, no changes to game. Owner/ABI/unwind live correctness/visible journal row remain HOLD. Same canonical ZIP entry 66_V133_LIVE_HIT_INVENTORY.json. Requires Baldur.exe running for a useful process snapshot; no battle required. V126 preserved."
+  "note": "V136 extends the existing one-file updater (menu 9 JIT-RO) with SHA-pinned Windows external ReadProcessMemory + VirtualQueryEx observation of existing FirstCall E9 target and post-prolog/exit Hit sites. No hook, no memory writes, no per-attack weapon identification, owner/ABI/unwind/visible row still HOLD. Same one ZIP entry 67_V136_LIVE_JIT_TARGET_RO.json. Requires Baldur.exe running; V133 option 8 and V126 kept unchanged."
 }

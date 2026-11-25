@@ -1,0 +1,46 @@
+name: BG EET RU V136 JIT target memory probe READ ONLY
+on:
+  pull_request:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v136_jit_provenance_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v136_jit_provenance_ro.py'
+      - '.github/workflows/bg-eet-ru-v136-jit-ro.yml'
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v136_jit_provenance_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v136_jit_provenance_ro.py'
+jobs:
+  mocked-readonly:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: 'x64'
+      - name: Pinned V136 read-only bytes and Python syntax
+        shell: python
+        run: |
+          from pathlib import Path
+          import ast,hashlib
+          folder=Path('bg-eet-ru/native-correlation')
+          p=folder/'v136_jit_provenance_ro.py'
+          s=p.read_bytes().replace(b'\r\n',b'\n')
+          assert hashlib.sha256(s).hexdigest()=='3fd957df5794bd152f00cc17118921dd65da86d0d0569621ff54fa05e3be8739'
+          ast.parse(s.decode('utf8'))
+          assert b'firstcall_owner_verified' in s
+          for bad in (b'WriteProcessMemory(',b'VirtualProtectEx(',b'CreateRemoteThread(',b'SuspendThread(',b'EEex_JITAt('):
+              assert bad not in s,bad
+          print('V136_SOURCE_SHA_READONLY_PASS')
+      - name: 18 isolated negative/positive cases incl 500 mutations
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p test_v136_jit_provenance_ro.py -v
+      - name: Windows actual kernel32 read and VirtualQueryEx selftest
+        if: runner.os == 'Windows'
+        run: python bg-eet-ru/native-correlation/v136_jit_provenance_ro.py --selftest-windows
