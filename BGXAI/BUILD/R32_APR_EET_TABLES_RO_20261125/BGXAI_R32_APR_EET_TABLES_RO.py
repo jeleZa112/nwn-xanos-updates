@@ -13,10 +13,9 @@ This is a table-data interpretation only, NEVER weapon switch authorization.
 from __future__ import annotations
 
 import argparse
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 import hashlib
 import json
-import os
 from pathlib import Path
 import re
 import sys
@@ -50,11 +49,9 @@ class Table:
 def parse_2da(raw: bytes) -> Table:
     """Strict 2DA grammar: reject ambiguous/default-filled/misaligned entries."""
     try:
-        data = raw.decode("ascii-sig") if False else raw.decode("ascii")
+        data = raw.removeprefix(b"\xef\xbb\xbf").decode("ascii")
     except UnicodeError as exc:
         raise Hold("NOT_ASCII_2DA") from exc
-    if data.startswith("\ufeff"):
-        data = data[1:]
     lines = [line.split("//", 1)[0].strip()
              for line in data.replace("\r\n", "\n").replace("\r", "\n").split("\n")]
     lines = [line for line in lines if line]
