@@ -58,4 +58,7 @@ jobs:
           assert 'CreateRemoteThread(' not in mod.decode('utf8')
           print('V140_ONEFILE_PINNED_READONLY_PASS, bytes',len(cmd))
       - name: Existing full onefile regression
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
         run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
