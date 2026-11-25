@@ -30,6 +30,20 @@ jobs:
       - name: Guarded R33 upgrade mock WeiDU install / last-only rollback / capture / refusal
         shell: bash
         run: python -m unittest discover -s BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125 -p 'test_r33_guarded_source_only.py' -v
+      - name: R33 menu172 candidate source-only under 80 KB
+        shell: bash
+        run: |
+          python BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/build_r33_onefile_menu172_source_only.py --output "$RUNNER_TEMP/BGXAI_SYNC_R33_MENU172_SOURCE_ONLY.ps1"
+      - name: Windows PowerShell 5.1 parse the staged R33 backend (does not activate)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $p=Join-Path $env:RUNNER_TEMP 'BGXAI_SYNC_R33_MENU172_SOURCE_ONLY.ps1'
+          $tokens=$null
+          $errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile($p,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -ne 0){$errors|Out-String|Write-Host;throw 'R33 PS 5.1 AST STOP'}
+          Write-Host 'R33 PS5.1 candidate syntax PASS, no game writes'
       - name: Build exact R33 Lua in temporary CI directory, NOT the game
         shell: bash
         run: python BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/build_r33_r31_reuse_prof_ro.py --output "$RUNNER_TEMP/M_BGXR27_R33_SOURCE_ONLY.lua"
