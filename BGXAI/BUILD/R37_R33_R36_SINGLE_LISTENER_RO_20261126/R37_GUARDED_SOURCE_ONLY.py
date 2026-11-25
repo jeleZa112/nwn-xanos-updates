@@ -529,6 +529,10 @@ def main()->int:
             print("R37 capture: start game, load existing save and play normally; close game to receive report.")
             value=capture(args.game)
         print(json.dumps(report(args.mode,value),ensure_ascii=False,indent=2))
+        # Never return success for an incomplete/inconsistent gameplay log.
+        # The HOLD report was saved before this nonzero exit code.
+        if args.mode=="capture" and value.get("status")!="R37_RUNTIME_ADVICE_LOG_READY_FOR_REVIEW":
+            return 2
         return 0
     except (Hold,OSError,UnicodeError,ValueError,subprocess.TimeoutExpired) as err:
         output={"schema":SCHEMA,"status":"R37_STOP_MANUAL_REVIEW",
