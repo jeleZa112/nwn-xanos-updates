@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "11c07ffe1bc626246ce6bb59de10a19015deacc7",
+  "commit": "71b1d37db787a59ed16c8b92ac495314b3577e02",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "aea67d6a13222e4d0754673bc1ea6295125b7ea39f7e9cff8504ee50a8677ded",
-  "script_size": 79977,
-  "description": "One CMD menu170 R30 read-only queue/deploy preflight, pinned current R27 ACTION_CONTEXT_V3; no install or game changes."
+  "script_sha256": "10c9a7651096a45c3a5a694acf9800e9f651843321716438a4e37b6015245e42",
+  "script_size": 79979,
+  "description": "One CMD menu170 runs SHA-pinned R30 read-only queue/deploy preflight against current R27 ACTION_CONTEXT_V3; no game install."
 }
