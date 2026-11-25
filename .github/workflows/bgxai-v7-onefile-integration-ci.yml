@@ -1,4 +1,4 @@
-name: BGXAI V7 pinned onefile updater integration
+name: BGXAI onefile updater menu170 R30 integration
 on:
   push:
     branches: [bg-eet-ai]
@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: '3.11'}
-      - name: Pin exact sources and unique menu166
+      - name: Pin exact sources, preserve menu166, and require menu170 R30
         shell: python
         run: |
           from pathlib import Path
@@ -26,8 +26,14 @@ jobs:
           b=Path('BGXAI/BGXAI_SYNC.ps1').read_bytes()
           print('V7_BACKEND_SHA256',hashlib.sha256(b).hexdigest(),'BYTES',len(b))
           assert len(b) < 80000 and b.count(b"'166' {SyncRelease $rg") == 1
-          assert b"165 - R27 observer (guarded)" in b
-          assert b"166 - V7 DPLAYER close-fire fix (guarded)" in b
+          assert b"'165' {SyncRelease $r27" in b
+          assert b"'166' {SyncRelease $rg" in b
+          assert b"'170' {RunR30ReadOnly;break}" in b
+          assert b"function RunR30ReadOnly" in b
+          assert b"BGXAI_R30_READONLY_" in b
+          assert b"R30 queue/deploy preflight" in b
+          assert b"61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929" in b
+          assert b"88582abf17e919b9441795b8559cfe85b858fd3083672431eb36b60ba78981bd" in b
           assert b"BGXRANGED_V7_GUARDED_INSTALL.py" in b
           x=json.loads(Path('BGXAI/patchsets/ranged_fighter_guarded_20261119/manifest_updater.json').read_text())
           assert x['version']=='0.3.90-V7-R27-DPLAYER-FUNCTIONAL'
