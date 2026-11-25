@@ -1,5 +1,16 @@
 # BGXAI — короткий актуальный статус на 25.11.2026
 
+## 25.11.2026 — R34 RELEASED in existing ONE CMD, menu173 READ ONLY
+
+**Актуальный статус:** R33 **INSTALLED+LIVE PASS 8/8** (см. ниже), R34 **CODE/CI PASS + ONEFILE MENU173 PUBLISHED**, **R34 RUN ON USER PC = PENDING**, **AUTONOMOUS WEAPON SWITCH OFF**. В одном `BGXAI_UPDATE.cmd` появился **173** (только READ ONLY): сверяет SHA уже полученного `BGXAI_R33_CONSOLE_20261125T161358491052Z.log` с 8 реальными R33 событиями, проверяет live R33 proof/Lua SHA, через **существующий** R3 KEY/BIFF/ITM парсер читает актуальные предметы из игры, сопоставляет `ITM.proficiencyIdRaw` (offset 0x31) с низшими 3 битами `proficiencyStat89to134Raw`. Выводит JSON `Documents\BGXAI_LIVE_REPORTS\BGXAI_R34_NATIVE_PROF_*.json`. Не меняет игру/WeiDU/BCS/Lua/EPS, не создаёт нового слушателя и не делает переключений.
+
+**Одна последующая проверка:** при закрытой игре открыть существующий `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd` → **173**, прислать один `BGXAI_R34_NATIVE_PROF_*.json` или STOP. **НЕ** повторять R33 install/capture или R27/R28/R3 старые меню.
+
+**RELEASE PROOF:** active backend 79 935 байт (лимит 80 000), SHA256 `c900e8aa6c4ec92bcb80cac1624cf1d6caa477dc961dd137555508e14e9d1f78`; immutable Git commit `38c7d2ee3bfc7a50631bb3375e5c1ee2141c0d7d`, BOOTSTRAP_PIN обновлён, исходный BGXAI_UPDATE.cmd прежний, 172 старых меню побайтово совпали. R34 source/CI Linux+Windows PASS, onefile stage+active PowerShell 5.1 AST/параметры PASS: [R34 active CI 45654676537](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45654676537). [R34 README+sources](../BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125/README_RU.md). Только простое сравнение доступных ITM и навыков; альтернативный эффективный APR, полнота бафов, активный класс дуала, происхождение команд и безопасный момент переключения остаются HOLD.
+
+---
+
+
 ## 25.11.2026 — R33 LIVE RAW 8/8 PASS; WEAPON SWITCH HOLD
 
 **НОВЫЙ ФАКТИЧЕСКИЙ СТАТУС (перекрывает устаревшее «R33 не установлен» ниже):** R33 **INSTALLED PASS / LIVE RAW OBSERVER PASS**. Реальный пользовательский файл `BGXAI_R33_INSTALL_20261125T155703049710Z.json` подтверждает `R33_PASSIVE_INSTALLED_AWAITING_RUNTIME` и внешний backup `C:\Users\Drevo\Documents\BGXAI_BACKUPS\PRE_BGXR33_crzl0r2l`. Реальный LIVE `BGXAI_R33_CONSOLE_20261125T161358491052Z.log` SHA256 `d510da7e5c15d1579266b37a89fdf91ceff91622714a142e1c137376ec239538`: сессия R33 ровно одна, 8/8 стабильных sample seq=1..8, обработчик same invocation, 46 raw WPROF значений 89..134, 0 engine orders, `dispatchAuthorized=false`, `weaponSwitchAuthorized=false`. Случай `actionRaw=3` реально записан.
