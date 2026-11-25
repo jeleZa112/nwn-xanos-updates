@@ -54,7 +54,7 @@ def choose_binary(archive: zipfile.ZipFile, platform: str) -> tuple[str, bytes]:
     raw = archive.read(member)
     if platform == "windows" and raw[:2] != b"MZ":
         raise ValueError("WEIDU_WINDOWS_PE_INVALID")
-    if platform == "linux" and raw[:4] != b"\\x7fELF":
+    if platform == "linux" and raw[:4] != b"\x7fELF":
         raise ValueError("WEIDU_LINUX_ELF_INVALID")
     return member.filename, raw
 
@@ -70,7 +70,7 @@ def main() -> int:
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     tp2_text = mod.TP2_TEXT
-    if not (tp2_text.startswith("BACKUP ~BGXR31/backup~\\n")
+    if not (tp2_text.startswith("BACKUP ~BGXR31/backup~\n")
             and "BEGIN ~BGXR31 passive R27V3 observer only~" in tp2_text
             and tp2_text.count("COPY ~BGXR31/staged/M_BGXR27.lua~ ~override/M_BGXR27.lua~") == 1):
         raise ValueError("R31_TP2_CONTRACT_CHANGED")
@@ -93,7 +93,7 @@ def main() -> int:
         if completed.returncode != 0:
             raise RuntimeError(
                 "R31_NATIVE_WEIDU_PARSE_FAILED exit=" + str(completed.returncode)
-                + "\\n" + (completed.stdout+completed.stderr)[-2000:]
+                + "\n" + (completed.stdout+completed.stderr)[-2000:]
             )
         if not tp2.read_bytes() == tp2_text.encode("ascii"):
             raise RuntimeError("TP2_MUTATED")
