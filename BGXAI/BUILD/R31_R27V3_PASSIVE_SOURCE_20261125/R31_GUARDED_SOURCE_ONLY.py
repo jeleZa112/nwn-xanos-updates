@@ -375,6 +375,29 @@ def capture_console(root: Path) -> dict:
             "manualEpsOriginVerified": False, "alternateEffectiveAPRVerified": False}
 
 
+
+def save_report(mode: str, result: dict) -> dict:
+    """One standalone external JSON report; never writes into the game."""
+    home = os.environ.get("USERPROFILE")
+    if not home:
+        return {**result, "reportStatus": "USERPROFILE_MISSING"}
+    reports = Path(home) / "Documents" / "BGXAI_LIVE_REPORTS"
+    if reports.is_symlink() or (hasattr(reports, "is_junction") and reports.is_junction()):
+        return {**result, "reportStatus": "REPORT_DIRECTORY_REPARSE_STOP"}
+    try:
+        reports.mkdir(parents=True, exist_ok=True)
+        label = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+        filename = "BGXAI_R31_" + mode.upper() + "_" + label + ".json"
+        target = reports / filename
+        payload = {**result, "reportFile": str(target)}
+        with target.open("x", encoding="utf-8") as stream:
+            json.dump(payload, stream, ensure_ascii=False, indent=2)
+            stream.write("\n")
+        return payload
+    except (OSError, ValueError) as error:
+        return {**result, "reportStatus": "SAVE_FAILED:" + str(error)}
+
+
 def main() -> int:
     cli = argparse.ArgumentParser()
     cli.add_argument("--game", type=Path, default=GAME)
@@ -404,13 +427,13 @@ def main() -> int:
         else:
             token = input("Type " + ROLLBACK_TOKEN + " exactly (ENTER cancels): ").strip()
             result = rollback(a.game, token)
-        print(json.dumps(result, ensure_ascii=False, indent=2))
+        print(json.dumps(save_report(a.mode, result), ensure_ascii=False, indent=2))
         return 0
     except (Hold, OSError, UnicodeError, ValueError, subprocess.TimeoutExpired) as exc:
-        print(json.dumps({"schema": SCHEMA, "status": "R31_STOP_MANUAL_REVIEW",
-                          "reason": str(exc), "noAutoRetry": True,
-                          "gameModifiedUnknown": a.mode in ("install", "rollback")},
-                         ensure_ascii=False, indent=2))
+        result = {"schema": SCHEMA, "status": "R31_STOP_MANUAL_REVIEW",
+                  "reason": str(exc), "noAutoRetry": True,
+                  "gameModifiedUnknown": a.mode in ("install", "rollback")}
+        print(json.dumps(save_report(a.mode, result), ensure_ascii=False, indent=2))
         return 2
 
 
