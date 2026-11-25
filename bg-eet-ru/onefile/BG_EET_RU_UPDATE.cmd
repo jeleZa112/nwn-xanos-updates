@@ -8124,8 +8124,8 @@ def v130_audit(game,path,v=130):
  except Exception as e:print('V130 ZIP STOP',type(e).__name__,str(e)[:140]);return 2
  print('V'+str(v)+':',report['status'],'| game writes: 0 | one ZIP:',path)
  return 0
-V142_PIN='ce5a8c7e2610fcd30befba790dcc62840a7e8faedf67e7cfdccba5ceeb2b0a41'
-V142_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/c26ad9f0c478abe904ddf2a85f424c49ad38ab2d/bg-eet-ru/native-correlation/v142_ro.py'
+V142_PIN='aed90911dbc628b6be019594bb7804f90539029525b37dd570826d65084359d8'
+V142_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/91f877ba8f2ccfaca12ff0e26022824d7087a2b4/bg-eet-ru/native-correlation/v142_ro.py'
 V133_PIN='b3f22f56550d951483863fb59e84f2e543b2473d7bb2e51f8fd03fed4e58f624'
 V133_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/6e1922fcfbb73a43c1b97fc82ea848cd05369c4b/bg-eet-ru/native-correlation/v133_live_hit_inventory_ro.py'
 def v133_audit(game,path,v136=False):
