@@ -1,0 +1,64 @@
+name: BG EET RU V135 paired Hit source-only and Lua bridge
+on:
+  pull_request:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v135_hit_pair_contract_ro.py'
+      - 'bg-eet-ru/native-correlation/BG_EET_RU_V135_PURE_LUA_ATTEMPT_BRIDGE.lua'
+      - 'bg-eet-ru/native-correlation/test_v135_hit_pair_contract_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v135_pure_lua_attempt_bridge.lua'
+      - '.github/workflows/bg-eet-ru-v135-paired-hit-source-ro.yml'
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v135_hit_pair_contract_ro.py'
+      - 'bg-eet-ru/native-correlation/BG_EET_RU_V135_PURE_LUA_ATTEMPT_BRIDGE.lua'
+      - 'bg-eet-ru/native-correlation/test_v135_hit_pair_contract_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v135_pure_lua_attempt_bridge.lua'
+jobs:
+  static-native-contract:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: V135 typed native entry/exit source-only tests
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p test_v135_hit_pair_contract_ro.py -v
+      - name: V134 source-only strict join does not auto-promote V135
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p test_v134_real_attempt_ui_ledger_ro.py -v
+      - name: Assert pinned anchor constants and no native runtime claim
+        shell: python
+        run: |
+          from pathlib import Path
+          import ast,hashlib
+          root=Path('bg-eet-ru/native-correlation')
+          p=root/'v135_hit_pair_contract_ro.py'
+          s=p.read_text('utf8')
+          ast.parse(s)
+          assert 'EXIT_PRE_EPILOG = 0x39E99B' in s
+          assert 'ENTRY = 0x39DA6F' in s
+          assert 'return_0_is_miss_proven' in s and 'return_1_is_hit_proven' in s
+          assert "'runtime_pairing_installed': False" in s
+          assert "'game_files_written': 0" in s
+          assert "'return_byte_always_maps_to_visible_d20_result': False" in s
+          assert hashlib.sha256(p.read_bytes().replace(b'\r\n',b'\n')).hexdigest()=='51679654198b55df887d5e3d0118672a3bc5aad07c647e29da1755a0c1456e13'
+          for forbidden in ('OpenProcess(', 'WriteProcessMemory(', 'EEex_JITAt(', 'VirtualProtect(', 'CreateRemoteThread('):
+            assert forbidden not in s
+          print('V135_SOURCE_ONLY_NO_RUNTIME_HOOK_PASS')
+  native-lua-54:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install native Lua 5.4 test interpreter
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lua5.4
+      - name: 10042 deterministic assertions with reentrant and reused frames
+        run: |
+          lua5.4 bg-eet-ru/native-correlation/test_v135_pure_lua_attempt_bridge.lua bg-eet-ru/native-correlation | tee /tmp/v135-lua-test.txt
+          grep -q 'V135_LUA_PAIRING_PASS assertions=10042' /tmp/v135-lua-test.txt
