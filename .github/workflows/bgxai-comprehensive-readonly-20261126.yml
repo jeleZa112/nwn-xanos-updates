@@ -83,7 +83,7 @@ jobs:
           run_case BGXAI/BUILD/R35_NATURAL_SELECTED_APR_RO_20261126 test_r35_natural_selected_apr_ro.py
           run_case BGXAI/BUILD/R36_R33_CONTEXT_INVALIDATION_RO_20261126 test_r36_r33_context_invalidation_ro.py
           run_case BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126 test_r37_source_integrity.py
-      - name: Original onefile and R34 source pin still immutable
+      - name: Original CMD and menus 1-173 unchanged; new R37 menu 174 SHA-pinned
         shell: bash
         run: |
           python BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125/build_r34_onefile_menu173_source_only.py
@@ -92,7 +92,7 @@ jobs:
           root=pathlib.Path('.')
           pin=json.loads((root/'BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text('utf-8'))
           body=(root/'BGXAI/BGXAI_SYNC.ps1').read_bytes()
-          assert len(body)==pin['script_size']<=80000
+          assert len(body)==pin['script_size']<=82000
           assert hashlib.sha256(body).hexdigest()==pin['script_sha256']
           assert subprocess.check_output(['git','show',pin['commit']+':BGXAI/BGXAI_SYNC.ps1'])==body
           cmd=(root/'BGXAI_UPDATE.cmd').read_bytes()
@@ -101,8 +101,13 @@ jobs:
           pattern=r"(?m)^'[0-9]+' \{[^\n]+}$"
           old=re.findall(pattern,base.decode('ascii'))
           new=re.findall(pattern,body.decode('ascii'))
-          assert len(old)==172 and len(new)==173 and new[:172]==old
-          print('PASS current SHA, 172 previous handlers byte-identical, one CMD unmodified')
+          assert len(old)==172 and len(new)==174 and new[:172]==old
+          previously=subprocess.check_output(['git','show','1404112c2889561b99416e48a4ba06ab947c4fee:BGXAI/BGXAI_SYNC.ps1'])
+          old173=re.findall(pattern,previously.decode('ascii'))
+          assert len(old173)==173 and new[:173]==old173
+          assert new[173].startswith("'174' {")
+          assert 'R37_GUARDED_SOURCE_ONLY.py' in new[173] and 'M_BGXR27_R37_SOURCE_ONLY.lua' in new[173]
+          print('PASS pinned SHA, previous 173 handlers unchanged, new 174 R37, CMD unchanged')
           PY
 
   party-safety:
