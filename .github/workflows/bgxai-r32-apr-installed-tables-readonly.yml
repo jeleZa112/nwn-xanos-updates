@@ -40,3 +40,26 @@ jobs:
           assert all(x not in src for x in ('--force-install','--force-uninstall','SelectWeaponAbility(', 'ClearActions(', '.write_bytes(', '.write_text('))
           print('R32 PYTHON READ ONLY AST / NO GAME COMMANDS PASS')
           PY
+
+  eeex-lua:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install native Lua runtimes
+        run: sudo apt-get update -qq && sudo apt-get install -y lua5.3 lua5.4 luajit
+      - name: EEex C2DArray engine resolved 2DA candidate; synthetic native mock test
+        run: |
+          for runtime in lua5.3 lua5.4 luajit; do
+            "$runtime" BGXAI/BUILD/R32_APR_EET_TABLES_RO_20261125/test_r32_eeex_engine_2da_ro.lua
+          done
+      - name: No Lua engine actions or new listener
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('BGXAI/BUILD/R32_APR_EET_TABLES_RO_20261125/BGXAI_R32_EEEX_ENGINE_2DA_RO.lua')
+          s=p.read_text()
+          forbidden=('SelectWeaponAbility(', 'ClearActions(', 'ActionOverride(', 'EEex_Action_QueueScriptFileResponseOnAIBase(', 'EEex_Action_AddSpriteStartedActionListener(', 'SetGlobal(', 'setGlobal(', 'EEex_Write', 'array:free(', 'Infinity_Log(')
+          assert all(f not in s for f in forbidden)
+          print('R32 NATIVE EEEX ADAPTER NO DISPATCH/LISTENER/MUTATION PASS')
+          PY
