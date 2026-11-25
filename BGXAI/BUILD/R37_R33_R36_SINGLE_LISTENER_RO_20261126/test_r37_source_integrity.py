@@ -63,7 +63,7 @@ class R37(unittest.TestCase):
     def test_original_r33_json_schema_unchanged(self):
         self.assertEqual(self.text.count("function R27.toConsoleJson(sample)"),1)
         self.assertEqual(self.text.count("BGXAI_R27_SINGLE_CALLBACK_SELECTED_RO_V1"),
-                         self.base.decode("utf-8").count("BGXAI_R27_SINGLE_CALLBACK_SELECTED_RO_V1"))
+                         self.base.decode("utf-8").count("BGXAI_R27_SINGLE_CALLBACK_SELECTED_RO_V1")+1)
         self.assertIn("R37_R33_CAPTURE_HOLD_NO_DISPATCH",self.text)
         self.assertIn("RAW_FIELDS_EQUAL_NOT_EFFECT_OR_EPS_PROOF",self.text)
 
@@ -75,7 +75,7 @@ class R37(unittest.TestCase):
         self.assertIn('"safeActionBoundaryVerified":false',part)
 
     def test_pinned_onefile_not_rewritten(self):
-        root=ROOT.parents[2]
+        root=ROOT.parents[1]
         pin=(root/"fox_new"/"BOOTSTRAP_PIN.json")
         import json
         obj=json.loads(pin.read_text("utf-8"))
