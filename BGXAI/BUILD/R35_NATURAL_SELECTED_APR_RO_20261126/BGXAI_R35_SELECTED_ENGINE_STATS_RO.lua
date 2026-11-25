@@ -34,7 +34,7 @@ function M.observe(sprite,statsReader)
   out.reason='ACTOR_ID_UNREADABLE';return out
  end
  local guard1=raw(function()return sprite.m_bAllowEffectListCall end)
- if guard1~=1 then
+ if not integer(guard1,1,65535) then
   out.reason='ACTIVE_STATS_EFFECT_LIST_IN_PROGRESS_OR_UNVERIFIED';return out
  end
  local eq=raw(function()return sprite.m_equipment end)
@@ -64,7 +64,7 @@ function M.observe(sprite,statsReader)
  local ability2=raw(function()return eq.m_selectedWeaponAbility end)
  local guard2=raw(function()return sprite.m_bAllowEffectListCall end)
  local actor2=raw(function()return sprite.m_id end)
- if guard2~=1 or actor2~=actor or
+ if guard2~=guard1 or actor2~=actor or
     slot1~=slot2 or ability1~=ability2 or apr1~=apr2 or thac1~=thac2 then
   out.reason='SAME_CALLBACK_STATS_OR_EQUIPMENT_DRIFT';return out
  end
