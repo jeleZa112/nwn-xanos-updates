@@ -218,6 +218,9 @@ def run_game(game_root: Path, legacy_module) -> dict:
  return out
 
 
+TARGET_RVA=0x398530
+MAX_CALLEE_BYTES=16384
+
 class Hold(Exception):
     pass
 
