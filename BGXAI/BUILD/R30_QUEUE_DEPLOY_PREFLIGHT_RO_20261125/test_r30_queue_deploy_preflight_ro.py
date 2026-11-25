@@ -63,6 +63,37 @@ class Checks(unittest.TestCase):
             self.assertEqual(result['reason'],'CANDIDATE_PATH_REQUIRED_FOR_SOURCE_CHECK')
             self.assertFalse(result['typedInstallApproved'])
             self.assertFalse(result['queueBindingLiveVerified'])
+    def test_real_20261125_history_topology_r29_last_is_readonly_not_install(self):
+        # Synthetic reproduction of the USER-PC R30 report: 148 prior components,
+        # existing R27 in position 149, and R29 in position 150.
+        # No private WeiDU.log content or game paths are embedded.
+        with TemporaryDirectory() as td:
+            r29='~BGXR29/SETUP-BGXR29.TP2~ #0 #0 // BGXR29 fighter quickslot bow-to-sword rule'
+            root=self.make(td,last=r29)
+            prior=''.join('~BGXH%03d/SETUP-BGXH%03d.TP2~ #0 #0 // history\\n' % (i,i)
+                          for i in range(1,149))
+            # Use real line endings; R30 must respect the original installation order.
+            prior=prior.replace('\\n','\n')
+            history=(root/'WeiDU.log').read_text()
+            (root/'WeiDU.log').write_text(prior+history)
+            c=root.parent/'r27v3_test.lua'
+            c.write_bytes(self.source_fixture())
+            with mock.patch.object(p,'SOURCE_CANDIDATE_SHA',hashlib.sha256(c.read_bytes()).hexdigest()):
+                result=self.patched(root,c)
+            self.assertEqual(result['weiduComponentCount'],150)
+            self.assertEqual(result['r27ComponentPosition'],149)
+            self.assertFalse(result['r27IsLast'])
+            self.assertEqual(result['weiduLastComponent'],r29)
+            self.assertEqual(result['status'],'SOURCE_AND_HISTORY_READ_ONLY_PASS_INSTALL_STILL_UNAUTHORIZED')
+            self.assertTrue(result['candidateSourceVerified'])
+            self.assertFalse(result['installationPerformed'])
+            self.assertFalse(result['gameModified'])
+            self.assertFalse(result['dispatchAuthorized'])
+            self.assertFalse(result['typedInstallApproved'])
+            self.assertFalse(result['queueBindingLiveVerified'])
+            self.assertFalse(result['manualEpsOriginVerified'])
+            self.assertFalse(result['alternateEffectiveAPRVerified'])
+
     def test_installed_r27_must_be_exact(self):
         with TemporaryDirectory() as td:
             root=self.make(td)
