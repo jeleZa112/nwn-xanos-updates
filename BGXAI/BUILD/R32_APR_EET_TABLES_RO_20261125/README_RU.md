@@ -1,5 +1,16 @@
 # BGXAI R32 — реальный WSPATCK/CLSWPBON из EET, READ ONLY
 
+## ДОПОЛНЕНИЕ: EEex engine-resolved 2DA и CI PASS (25.11.2026)
+
+**R32 engine API adapter уже реализован:** `BGXAI_R32_EEEX_ENGINE_2DA_RO.lua`. Использует документированный `EEex_Resource_Load2DA("WSPATCK")` и `EEex_Resource_Load2DA("CLSWPBON")`, считывает `C2DArray:getDimensions(), getColumnLabel(), getRowLabel(), getAtPoint()` с точными 0-based индексами; **EEex размер X включает столбец меток строк**, поэтому число значений = sizeX−1. Это позволяет читать и ресурсы BIFF внутри игрового движка. Официальный источник: [Bubb13/EEex EEex_Resource.lua](https://github.com/Bubb13/EEex/blob/master/EEex/copy/EEex_scripts/EEex_Resource.lua). API вызывается только в будущей игровой интеграции; здесь `M.observe(classRow,rank,level,loader)` является SOURCE ONLY. Нет ни новых слушателей EEex, ни оружейных приказов, ни изменения игровых файлов. Возвращает только `ENGINE_RESOLVED_APR_TABLE_CANDIDATE_READ_ONLY`, не подтверждает active dual class, equip-state, allEffects, effective APR других слотов и не даёт dispatch.
+
+**CI:** [BGXAI R32 read-only Windows/Linux/EEex Lua CI 45643546399](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45643546399) — **SUCCESS**: Python 3.12 unit on Windows and Ubuntu и имитация C2DArray на Lua5.3/Lua5.4/LuaJIT. Отдельно проверены бонусы и значения `GETS_PROF_APR`, ошибки структуры, недоступные API и запрет engine orders. **Это не LIVE EEex runtime**, а синтетический native-language тест.
+
+**Незакрыто:** классы/мультиклассы/дуалы должны быть подтверждены в текущем состоянии реального актёра; связь weapon type→proficiency; учёт бафов/магических эффектов, предметов, APR двух рук и active engine stats каждого альтернативного слота. Не внедрять в боевую логику до решения этих блокеров. Старый live R31 оставить установленным, не повторять capture.
+
+---
+
+
 ## Цель без повторной разработки V3/V5
 
 Имеющийся `BGXAI_WEAPON_APR_PROVENANCE_V5.lua` уже проверяет итоговый APR и защиту от двойного добавления бонусов, но **не читает установленные WSPATCK.2DA и CLSWPBON.2DA**. R32 — только недостающее звено чтения и проверки таблиц EET. Он **не содержит второго механизма выбора оружия**, не меняет живой R31, WeiDU или EPS.
