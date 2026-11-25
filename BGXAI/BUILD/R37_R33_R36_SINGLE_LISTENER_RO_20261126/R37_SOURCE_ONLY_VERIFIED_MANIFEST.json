@@ -35,19 +35,19 @@
   "weaponSwitchAuthorized": false,
   "gameModified": false,
   "singleUpdaterChanged": false,
-  "nextStep": "Menu174 guarded source ready: explicit typed install through original onefile if user chooses; then R37 runtime game-log verification; active weapon switching still blocked",
+  "nextStep": "Await user exact typed install via existing BGXAI_UPDATE.cmd menu174/2, then same one CMD menu174/5 read-only capture, inspect 1 R37_CAPTURE JSON; no background install",
   "sourceCi": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45671377104",
   "onefileGuardedRelease": {
     "menu": 174,
     "cmdUnchanged": true,
     "gameInstalled": false,
-    "backendPinnedCommit": "52f73efaa2900b6cdee6ff0f428ae6744193fafd",
-    "backendSha256": "5efb1648aa107f24bb785553e89f23bffa744c3220c1740e6b57d7303f64b71c",
-    "backendBytes": 79701,
+    "backendPinnedCommit": "1c0be1e444329c94b79fe7c1d630caf87d333d4c",
+    "backendSha256": "19608a52f76bd81723278e4e9095c16865ef1d2b9e45aebd19a5112c205ecc2c",
+    "backendBytes": 79832,
     "cmdHardMaxBytes": 80000,
     "guardPath": "BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/R37_GUARDED_SOURCE_ONLY.py",
-    "guardBytes": 19107,
-    "guardSha256": "847d59d70f14274a005244b009850a8f563e2a302517e8237cdcb063bc23b9ab",
+    "guardBytes": 25946,
+    "guardSha256": "027932392848962a3f903cc50495df34c56f2a2943648c5ff625a8fd95789ab5",
     "preflightDefault": true,
     "typedInstallToken": "INSTALL_BGXAI_R37_PASSIVE_ADVICE_AFTER_R33",
     "typedRollbackToken": "ROLLBACK_BGXAI_R37_RESTORE_R33_ONLY",
@@ -55,7 +55,19 @@
     "requiresLastWeiDUComponent": "R33/152",
     "expectedPostInstallWeiDUComponent": "R37/153",
     "sourceSafetyCi": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45675195682",
-    "onefileCi": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45677080408",
-    "comprehensiveCi": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45677090975"
+    "onefileCi": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45678041977",
+    "comprehensiveCi": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45678133670",
+    "menuChoices": {
+      "1": "preflight_READONLY_default",
+      "2": "install_TYPED",
+      "3": "status_READONLY",
+      "4": "rollback_TYPED_LAST_ONLY",
+      "5": "capture_READONLY_launch_original_InfinityLoader_and_write_1_JSON_report"
+    },
+    "guardCi": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45677774149",
+    "runtimeReportName": "BGXAI_R37_CAPTURE_*.json",
+    "runtimeLogName": "BGXAI_R37_CONSOLE_*.log",
+    "userNextStep": "After typed install of R37 via existing one CMD, run 174→5, play one ordinary combat, close game, attach just BGXAI_R37_CAPTURE_*.json",
+    "gameplayVerified": false
   }
 }
