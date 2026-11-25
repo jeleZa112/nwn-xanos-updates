@@ -71,7 +71,7 @@ class R33(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             p = Path(temp) / r33.NAME
             s, _ = r33.build()
-            p.write_text(s)
+            p.write_text(s, encoding='utf-8', newline='\n')
             self.assertEqual(hashlib.sha256(p.read_bytes()).hexdigest(),
                              hashlib.sha256(s.encode()).hexdigest())
 
