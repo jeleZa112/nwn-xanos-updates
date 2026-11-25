@@ -1102,7 +1102,7 @@ Write-Host 'NO GAME WRITE.'
 Write-Host ''
 Write-Host @'
  BGXAI ONE-FILE UPDATER
-1-116 legacy modules | 117-151 combat/ranged
+1-151 existing modules
 '@
 Write-Host '70-92 BGXAI legacy modules'
 echo ' 93 - 066S precheck'
@@ -1114,7 +1114,7 @@ Write-Host '117-122 AOE modules'
 Write-Host '123-130 ranged modules'
 Write-Host '131-151 ranged/friendly/motion modules'
 Write-Host @'
-152-155 enemy guard | 156-157 V5/V6 | 158 weapon RO | 159-164 EEex RO
+152-164 enemy/weapon/EEex tools
 165 R27 | 166 V7 | 167 BAF RO | 168 batch RO | 169 R29 | 170 R30 RO
 0 Exit
 '@
