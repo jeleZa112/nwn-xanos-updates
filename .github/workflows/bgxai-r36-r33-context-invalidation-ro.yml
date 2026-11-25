@@ -1,0 +1,52 @@
+name: BGXAI R36 R33 raw-context advisory invalidation (SOURCE ONLY)
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R36_R33_CONTEXT_INVALIDATION_RO_20261126/**'
+      - '.github/workflows/bgxai-r36-r33-context-invalidation-ro.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-safety:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    timeout-minutes: 6
+    steps:
+      - name: Disable LF mutation on Windows
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run R36 positive+negative real-shaped R33 8-event regression
+        shell: bash
+        run: |
+          python -m unittest discover -s BGXAI/BUILD/R36_R33_CONTEXT_INVALIDATION_RO_20261126 -p 'test_r36_r33_context_invalidation_ro.py' -v
+      - name: Ensure deployed R33 and sole onefile source are not modified by R36
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import ast,hashlib,json,re
+          source=Path('BGXAI/BUILD/R36_R33_CONTEXT_INVALIDATION_RO_20261126/BGXAI_R36_R33_CONTEXT_INVALIDATION_RO.py')
+          data=source.read_text(encoding='utf-8')
+          ast.parse(data)
+          no=('EEex_Action_AddSpriteStartedActionListener(', 'SelectWeaponAbility(',
+              'ClearActions(', 'SetGlobal(', 'ActionOverride(', '.write_bytes(',
+              '.write_text(', 'subprocess.', 'os.system(')
+          assert not any(s in data for s in no)
+          assert 'weaponSwitchAuthorized":False' in data
+          assert 'manualEpsOriginVerified":False' in data
+          assert 'fullActiveEffectsVerified":False' in data
+          pin=json.loads(Path('BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text('utf-8'))
+          active=Path('BGXAI/BGXAI_SYNC.ps1').read_bytes()
+          assert hashlib.sha256(active).hexdigest()==pin['script_sha256']
+          assert len(active)==pin['script_size']
+          print('PASS R36 advisory only; R33 installed unchanged, one CMD SHA pin unchanged')
+          PY
