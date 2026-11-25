@@ -61,7 +61,11 @@ jobs:
           assert len(candidate)<=80000
           Path(os.environ["RUNNER_TEMP"]).joinpath("BGXAI_SYNC_R31_CANDIDATE.ps1").write_bytes(candidate)
           '@
-          py -3 -c $script
+          $temporaryPython=Join-Path $env:RUNNER_TEMP 'BGXAI_GEN_R31_CANDIDATE.py'
+          [IO.File]::WriteAllText($temporaryPython,$script,[Text.Encoding]::ASCII)
+          & py -3 $temporaryPython
+          if($LASTEXITCODE -ne 0){throw 'R31 Python candidate generation failed'}
+          if(!(Test-Path -LiteralPath $target -PathType Leaf)){throw 'R31 candidate missing'}
           $tokens=$null; $errors=$null
           [System.Management.Automation.Language.Parser]::ParseFile($target,[ref]$tokens,[ref]$errors) | Out-Null
           if($errors.Count -ne 0) { $errors | Out-String | Write-Host; throw 'R31 PS5.1 AST failed' }
