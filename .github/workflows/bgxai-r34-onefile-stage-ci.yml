@@ -30,8 +30,8 @@ jobs:
           import hashlib,json,re,subprocess
           b=Path('BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125')
           src=(b/'BGXAI_SYNC_R34_MENU173_SOURCE_ONLY.ps1').read_bytes()
-          assert len(src)==79974, len(src)
-          assert hashlib.sha256(src).hexdigest()=='2ab695a5e48997538a50e9230425641a5f7b4a8b6a2477887626e0f75ce61ef0'
+          assert len(src)==79935, len(src)
+          assert hashlib.sha256(src).hexdigest()=='c900e8aa6c4ec92bcb80cac1624cf1d6caa477dc961dd137555508e14e9d1f78'
           assert len(src)<=80000
           old=subprocess.check_output(['git','show','29e7dee1cae6dea41bb11f9286debca2e047f0a5:BGXAI/BGXAI_SYNC.ps1'])
           assert len(old)==79920
@@ -53,10 +53,10 @@ jobs:
           assert not allow.fullmatch('BGXAI/BUILD/UNKNOWN/PAYLOAD.py')
           assert "Set-Alias hf HashFile -Scope Script" in src.decode()
           assert "Set-Alias hb HashBytes -Scope Script" in src.decode()
-          assert "Set-Alias gc Get-Content -Scope Script" in src.decode()
+          assert "Set-Alias gc Get-Content" not in src.decode()
           assert "Set-Alias rh Read-Host -Scope Script" in src.decode()
           assert (Path('BGXAI/BGXAI_SYNC.ps1').read_bytes()==old), 'STAGE must not activate backend yet'
-          print('PASS R34 SOURCE-ONLY STAGE, 172 prior cases intact, 79974B SHA pin, source allowlist, no active backend change')
+          print('PASS R34 SOURCE-ONLY STAGE, 172 prior cases intact, 79935B SHA pin, source allowlist, no active backend change')
           PY
 
   ps51-ast-and-abbreviation:
@@ -86,7 +86,7 @@ jobs:
           function HashBytes([byte[]]$s){return $s.Length}
           Set-Alias hf HashFile -Scope Script
           Set-Alias hb HashBytes -Scope Script
-          Set-Alias gc Get-Content -Scope Script
+          if((Get-Alias gc).Definition -ne 'Get-Content'){throw 'gc built-in alias unavailable'}
           Set-Alias rh Read-Host -Scope Script
           if((hf 'test') -ne 4){throw 'hf alias failed'}
           if((hb ([byte[]](1,2))) -ne 2){throw 'hb alias failed'}
