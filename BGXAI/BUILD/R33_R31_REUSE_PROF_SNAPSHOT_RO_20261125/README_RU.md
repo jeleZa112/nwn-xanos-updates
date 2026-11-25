@@ -1,5 +1,21 @@
 # BGXAI R33 — использовать уже существующие R31/R4 profили, без второго наблюдателя
 
+## РЕЛИЗ 25.11.2026: Р33 ПУНКТ 172 ОПУБЛИКОВАН — УСТАНОВКА НЕ ВЫПОЛНЕНА
+
+**Уточнение к нижним историческим разделам:** теперь source-only R33 поставлен в **существующий один `BGXAI_UPDATE.cmd` (меню 172)** без изменения самого CMD. Это публикация проверенного установщика, **не** изменение установленной игры; R31 продолжает работать и уже прошёл 12/12 live samples. Старые ниже фразы «не интегрирован» описывают состояние ДО этого релиза.
+
+**Проверенная публикация:** `BGXAI/BGXAI_SYNC.ps1`, 79 874 байта, SHA256 `4f04b43f69d4171e2686f017d334eac69f91d9389a18122110c2bfd44a2d5663`, immutable commit `f383ad5ca3515f6fc166ca1a2337a88f9d2cad49`, `BGXAI/fox_new/BOOTSTRAP_PIN.json`. Меню 1–171 byte-for-byte сохранены. Новый пункт `172` предлагает `1=RO preflight, 2=typed install, 3=status, 4=typed last-only rollback, 5=capture`.
+
+**Артефакты:** кандидат `M_BGXR27_R33_SOURCE_ONLY.lua` 49 438 байт, SHA256 `1420ef723df1090d56f8f6590fd82e5c69107ba97a39b2ca2ba73f93e0e77069`; guard `R33_GUARDED_SOURCE_ONLY.py` 22 132 байта, SHA256 `0815d173b276c0f990eb3ab66ac6f8f614a9a0f0f59fc301f94f5f8c890be653`. Путь `R33_RELEASE_VERDICT_20261125.json` содержит все контрольные значения.
+
+**[GitHub Actions 45647273764](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45647273764) = SUCCESS во всех 5 задачах**, включая Win+Linux guard-mock, реальный разбор TP2 WeiDU 251 на Win+Linux, PS5.1 AST, SHA-проверку pinned source и неизменность исходного CMD/старых меню. Значит: **CODE/TEST/RELEASE PASS**, но **DEPLOY/LIVE R33 NO**.
+
+**Без повторного лишнего запуска:** при закрытой игре запускать только старый `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd` → `172` → `2`. Guard сам выполнит read-only preflight, затем предложит ввести `INSTALL_BGXAI_R33_PASSIVE_PROF_AFTER_R31`. ENTER вместо точной строки отменяет установку. При STOP — не повторять, прислать один `BGXAI_R33_INSTALL_*.json`. При PASS — прислать тот же JSON; тогда один игровой capture `172 → 5` после согласования теста. Смена оружия пока **не** разрешена этим модулем.
+
+**Безопасность:** R31 должен быть последним компонентом 151, после установки R33 — последний 152. Меняется только `override/M_BGXR27.lua` через новый WeiDU компонент; другие BCS, EPS/EEex, сейвы, BG Voice RU/BG_EET_RU не меняются. Внешняя SHA backup и last-only rollback при отдельном токене `ROLLBACK_BGXAI_R33_PASSIVE_PROF_ONLY`, но никаких автоматических откатов.
+
+---
+
 ## Состояние 25.11.2026
 
 **CODE / TEST / CI:** PASS. **DEPLOY / LIVE R33:** NO. R31 остаётся реально установленным и подтверждённым наблюдателем (12/12 событий). R33 не устанавливался, не менял EET, WeiDU, EPS, BG Voice RU, BG_EET_RU или сейвы.
