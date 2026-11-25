@@ -1,3 +1,19 @@
+## 26.11.2026 — добавлен реальный сбор журнала R37 через ТОТ ЖЕ пункт 174
+
+**Актуально:** R37 по-прежнему не установлен в игре, но защищённый маршрут полностью готов: `BGXAI_UPDATE.cmd → 174` и варианты **1 preflight (по умолчанию), 2 install (typed), 3 status, 4 rollback (typed), 5 capture (READ ONLY)**. Режим 5 запускает исходный `InfinityLoader.exe`, пишет лог `BGXAI_R37_CONSOLE_*.log`, по завершении игры формирует **один JSON-отчёт `BGXAI_R37_CAPTURE_*.json`** в `C:\Users\Drevo\Documents\BGXAI_LIVE_REPORTS`. Нет вторых CMD, PowerShell, отдельных ZIP или ручного поиска лога. JSON содержит до 64 пар `R33/R37` с очередными номерами, partyIndex, status, invalidateCachedAdvice, но **не** actor ID и **не** выдуманное EPS/manual происхождение. Raw лог сохраняется отдельно на случай диагностики и не нужен для первичной проверки, если JSON PASS.
+
+**Условия capture:** R37 последний WeiDU компонент (153), исходный Lua SHA строго совпадает, `R37_PROOF` установлен typed, игра закрыта до запуска capture и доступен оригинальный `InfinityLoader.exe` формата PE. Capturer ждёт нормального завершения игры пользователем. Сопоставляет session, оригинальные `[BGXR27]` и дополнительные `[BGXR37]` по seq/party; неизвестные/unsafe линии, пропуск session, несовпадение seq или exit code != 0 возвращают HOLD без разрешения на переключение. `capture` не меняет WeiDU, EPS, Lua или боевые приказы; отчёт и raw лог — единственные новые файлы.
+
+**Новая зафиксированная версия:**
+- `BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/R37_GUARDED_SOURCE_ONLY.py`: **25 946 байт, SHA256 `027932392848962a3f903cc50495df34c56f2a2943648c5ff625a8fd95789ab5`**. Lua R37 SHA не изменён: `5ece282270f0e6a1fa7a6086b7f13c57c77de98759637efa4b2ab0cc1e5744d6`.
+- `BGXAI/BGXAI_SYNC.ps1`: **79 832 байта, SHA256 `19608a52f76bd81723278e4e9095c16865ef1d2b9e45aebd19a5112c205ecc2c`**, под неизменным CMD hard limit 80 000. `BOOTSTRAP_PIN.json` закреплён на **`1c0be1e444329c94b79fe7c1d630caf87d333d4c`**. Все пункты 1–173 остаются побайтно неизменными.
+- Typed install остаётся `INSTALL_BGXAI_R37_PASSIVE_ADVICE_AFTER_R33`; rollback `ROLLBACK_BGXAI_R37_RESTORE_R33_ONLY`. Оба требуют точного подтверждения в отдельном меню.
+- [23 теста R37 guard/capture Windows+Linux PASS](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45677774149), [R37 menu174/windows/linux SHA/PS5.1 PASS](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45678041977).
+
+**Следующий обязательный P0 шаг не очередной CI**: с ведома пользователя запустить единственный CMD, выбрать 174 → 2 (если exact R33 last — guarded install), закрыть CMD и заново запустить 174 → 5; в запущенной игре загрузить существующий сейв, наблюдать обычное изменение действия/боеприпаса, выйти из игры, прикрепить **один `BGXAI_R37_CAPTURE_*.json`**. Ни один gameplay LIVE пока не подтверждён. Повторять старые R27/R33/R34 тесты и просить '+' не нужно.
+
+---
+
 ## АКТУАЛЬНОЕ ОБНОВЛЕНИЕ: 26.11.2026 — пункт 174 В ЕДИНОМ обновляторе
 
 Предыдущий текст ниже описывает состояние **до** выпуска меню 174. Сейчас **защищённая реализация подготовлена и включена в установленный пользователем единый путь обновления** `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`, но **R37 ещё НЕ установлен в игре**.
