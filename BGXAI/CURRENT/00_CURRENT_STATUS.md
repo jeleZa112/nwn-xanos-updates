@@ -1,4 +1,4 @@
-# 26.11.2026 — BGXAI R34: confirmed user HOLD, historic R33 fallback published (CI release pending)
+# 26.11.2026 — BGXAI R34: confirmed user HOLD, historical R33 fallback released (CI PASS)
 
 **LATEST USER EVIDENCE:** unchanged onefile `BGXAI_UPDATE.cmd` loaded immutable `124add6624c4` (SHA256 OK). User selected 173 and got `R34_HOLD: R34_R33_NAMED_LOG_DIFFERS_AND_FAILS_FINGERPRINT`, report `BGXAI_R34_NATIVE_PROF_20261126T000637588.json`. No game writes, no orders, no auto weapon switch. **Do not ask for another R33 capture, replay battle, R33 install, or immediate repeat of 173.** The failing local log was not independently inspected, so its actual difference must not be guessed.
 
