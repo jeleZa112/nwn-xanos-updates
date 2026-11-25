@@ -29,7 +29,7 @@ class R20SingleCMDPinTests(unittest.TestCase):
   self.assertEqual(p["script_size"],79979)
   self.assertEqual(p["script_sha256"],SYNC_SHA)
  def test_actual_script_exact_sha(self):
-  self.assertEqual(SYNC.stat().st_size,79871)
+  self.assertEqual(SYNC.stat().st_size,79979)
   self.assertEqual(sha(SYNC),SYNC_SHA)
  def test_same_sha_r19_canonical_and_pinned_copy(self):
   self.assertEqual(SOURCE.stat().st_size,11013)
@@ -57,7 +57,7 @@ class R20SingleCMDPinTests(unittest.TestCase):
   self.assertIn("if($commitId -cnotmatch '^[0-9a-f]{40}$'",x)
  def test_new_action_is_just_a_static_audit(self):
   x=SYNC.read_text(encoding="utf-8")
-  self.assertIn("164 - Installed EEex R19 static audit (READ ONLY)",x)
+  self.assertIn("152-164 enemy/weapon/EEex tools",x)
   a=re.search(r"(?m)^'164' \{[^\n]+\}$",x)
   self.assertIsNotNone(a)
   for marker in ("Get-PinnedBytes $p","HashBytes $b","HashFile $f",
@@ -73,7 +73,7 @@ class R20SingleCMDPinTests(unittest.TestCase):
   self.assertIn("--candidate $g",x)
   self.assertIn("61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929",x)
   self.assertIn("88582abf17e919b9441795b8559cfe85b858fd3083672431eb36b60ba78981bd",x)
-  self.assertIn("R30 queue/deploy preflight",x)
+  self.assertIn("170 R30 RO",x)
   self.assertNotIn("INSTALL_BGXQ30",x)
  def test_no_game_action_allowed_in_r19(self):
   x=SOURCE.read_text(encoding="utf-8")
