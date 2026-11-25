@@ -1,0 +1,40 @@
+{
+  "schema": "BGXAI_R37_R33_R36_SINGLE_LISTENER_SOURCE_VERDICT_V1",
+  "date": "2026-11-26",
+  "phase": "SOURCE_CI_ONLY_NOT_INSTALLED",
+  "sourcePath": "BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/M_BGXR27_R37_SOURCE_ONLY.lua",
+  "sourceBytes": 60835,
+  "sourceSha256": "5ece282270f0e6a1fa7a6086b7f13c57c77de98759637efa4b2ab0cc1e5744d6",
+  "sourceGitBlobSha": "4f4258f14c3e02b4fd2c1ca3e38dd17cc0f61db4",
+  "sourceR33": {
+    "path": "BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/M_BGXR27_R33_SOURCE_ONLY.lua",
+    "bytes": 49438,
+    "sha256": "1420ef723df1090d56f8f6590fd82e5c69107ba97a39b2ca2ba73f93e0e77069",
+    "gitBlobSha": "e53b5ca84699699da4da4c1b6c453acf9a0581c1"
+  },
+  "sourceR36": {
+    "path": "BGXAI/BUILD/R36_R33_CONTEXT_INVALIDATION_RO_20261126/BGXAI_R36_R33_ADVICE_INVALIDATION.lua",
+    "bytes": 8299,
+    "gitBlobSha": "f7d4e11a219cd254a52a0f53f18582c9415223af"
+  },
+  "reusedExistingEEexCallback": true,
+  "maxListeners": 1,
+  "originalR33SelectedStatsReadsPerValidCallback": 2,
+  "addedStatsReaderCalls": 0,
+  "addedEngineActionCalls": 0,
+  "addedGameWrites": 0,
+  "addedEvents": "bounded BGXR37 ADVISORY_CONTEXT lines in same existing console",
+  "status": "R37_R33_R36_COMPOSED_SOURCE_CI_PASS_NOT_INSTALLED",
+  "liveVerified": false,
+  "manualEPSActionOriginVerified": false,
+  "safeActionBoundaryVerified": false,
+  "sameBuffEffectsVerified": false,
+  "launcherAmmoBindingVerified": false,
+  "alternateSlotEffectiveAPRVerified": false,
+  "dispatchAuthorized": false,
+  "weaponSwitchAuthorized": false,
+  "gameModified": false,
+  "singleUpdaterChanged": false,
+  "nextStep": "Prepare guarded one-updater integration with external backup, hash preflight and typed installation; no active switch before action ownership verification",
+  "sourceCi": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45671377104"
+}
