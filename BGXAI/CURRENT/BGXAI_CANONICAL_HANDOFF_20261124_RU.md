@@ -1,5 +1,24 @@
 # BGXAI — единая точка продолжения, 24 ноября 2026
 
+## 25.11.2026 — R30 подключён в единственный обновлятор: menu170 READ ONLY (CODE/CI PASS)
+
+**Текущий шаг проекта завершён:** R30 preflight добавлен в уже существующий `BGXAI/BGXAI_SYNC.ps1`, пункт **170**. `BGXAI_UPDATE.cmd` не менялся и остаётся единственным launcher; он динамически читает текущий BOOTSTRAP_PIN, загружает immutable backend и сверяет SHA256/размер. Нового CMD/PowerShell файла от пользователя не требуется.
+
+- Backend immutable commit `71b1d37db787a59ed16c8b92ac495314b3577e02`, **79 979 bytes**, SHA256 `10c9a7651096a45c3a5a694acf9800e9f651843321716438a4e37b6015245e42`; bootstrap cap 80 000, оставлен 21 byte.
+- R30 checker 7 985 bytes, SHA256 `88582abf17e919b9441795b8559cfe85b858fd3083672431eb36b60ba78981bd`.
+- Candidate R27+ACTION_CONTEXT_V3 44 805 bytes, SHA256 `61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929`.
+- Menu 170 скачивает оба source по точным SHA, создаёт короткоживущие staging files в `%LOCALAPPDATA%\\BGXAI_UPDATER`, вызывает только R30 с `--game` и `--candidate`, сохраняет JSON в `Documents\\BGXAI_LIVE_REPORTS\\BGXAI_R30_READONLY_*.json`, затем удаляет staging. Exit 2/HOLD тоже сохраняет отчёт. Ни один игровой файл, BCS, Lua, WeiDU, EPS, LOCALS или сохранение не меняется.
+- Существующие switch dispatches **1–169 оставлены без изменений**. В compact menu сохранились категории/номера; 170 подписан R30 RO.
+- [CI 45555311800](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45555311800) Windows+Ubuntu SUCCESS: exact pin, R30/R27 V3 bytes, R19 fixture, CMD and PowerShell 5.1 AST.
+- [CI 45555311954](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45555311954) Windows+Ubuntu SUCCESS: PowerShell 5.1 parse, menu170 and unchanged 1–169 dispatches.
+- Это **не** означает, что R30 уже запускался на пользовательской EET или что Lua binding доказан в runtime. R30 PASS возвращает только `SOURCE_AND_HISTORY_READ_ONLY_PASS_INSTALL_STILL_UNAUTHORIZED`; никаких разрешений на установку/dispatch он не выдаёт.
+
+**Следующий шаг — один пользовательский запуск:** открыть прежний `BGXAI_UPDATE.cmd`, выбрать `170`, прислать JSON по `REPORT_FILE`. Не запускать 165/167/168/169, не устанавливать R27 V3 и не соглашаться на typed install. По одному новому отчёту принять решение; при HOLD — никаких автоматических повторов.
+
+Контрольная точка и инструкция: `BGXAI/BUILD/R30_QUEUE_DEPLOY_PREFLIGHT_RO_20261125/README_RU.md`.
+
+---
+
 ## 25.11.2026 — R30/CURRENT R27 V3 снова согласованы: только CODE/CI PASS
 
 Устранён зафиксированный ранее конфликт R30 с параллельно созданным `ACTION_CONTEXT_V3`. **Сначала** проверено, что актуальная чистая ветка собирает исходник R27 source-only: независимый GitHub [CI 45456677110](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45456677110) SUCCESS Windows+Linux, кандидат **44805 байт**, SHA256 **`61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929`**, источник из `BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124/BGXAI_R27_R2_REFRESH_SOURCE_ONLY.lua`.
