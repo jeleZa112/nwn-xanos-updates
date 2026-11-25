@@ -345,6 +345,128 @@ def rollback(root:Path,token:str)->dict:
             "gameModified":True,"ordersSent":0,"dispatchAuthorized":False,
             "weaponSwitchAuthorized":False}
 
+def capture(root:Path)->dict:
+    """Run original InfinityLoader with unchanged game; collect R37/R33 evidence.
+    Never install, dispatch, clear game queue or classify manual/EPS ownership.
+    Blocks until user closes the game; retains raw log for later diagnostics.
+    """
+    last_r37(root)
+    installed_proof(root)
+    verify_processes()
+    loader=safe(root,"InfinityLoader.exe")
+    if not loader.is_file() or loader.is_symlink() or not 1024<loader.stat().st_size<70_000_000:
+        raise Hold("R37_CAPTURE_LOADER_MISSING_OR_INVALID_SIZE")
+    with loader.open("rb") as stream:
+        if stream.read(2)!=b"MZ":
+            raise Hold("R37_CAPTURE_LOADER_NOT_PE")
+    home=os.environ.get("USERPROFILE")
+    if not home:
+        raise Hold("USERPROFILE_MISSING")
+    reports=Path(home)/"Documents"/"BGXAI_LIVE_REPORTS"
+    if reports.is_symlink() or (hasattr(reports,"is_junction") and reports.is_junction()):
+        raise Hold("REPORT_DIRECTORY_REPARSE_POINT")
+    reports.mkdir(parents=True,exist_ok=True)
+    console=reports/("BGXAI_R37_CONSOLE_"+datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")+".log")
+    if console.exists() or console.is_symlink():
+        raise Hold("R37_CAPTURE_LOG_COLLISION")
+    with console.open("xb") as output:
+        child=subprocess.Popen([str(loader)],cwd=root,stdin=subprocess.DEVNULL,
+                               stdout=output,stderr=subprocess.STDOUT,close_fds=True)
+        exit_code=child.wait()
+        output.flush()
+    # The log may contain unrelated messages: parse only our exact 2 prefixes.
+    sessions,legacy,advice,held,changed=0,{}, {},0,0
+    reasons={}
+    malformed=0
+    size=console.stat().st_size
+    if size<=64_000_000:
+        with console.open("rb") as stream:
+            for raw in stream:
+                kind=None
+                if b"[BGXR37] " in raw:
+                    kind="R37"
+                    payload=raw.split(b"[BGXR37] ",1)[1]
+                elif b"[BGXR27] " in raw:
+                    kind="R33"
+                    payload=raw.split(b"[BGXR27] ",1)[1]
+                else:
+                    continue
+                try:
+                    entry=json.loads(payload.decode("utf-8-sig",errors="strict").strip())
+                except (UnicodeError,ValueError):
+                    malformed+=1
+                    continue
+                if not isinstance(entry,dict):
+                    malformed+=1
+                    continue
+                if kind=="R37":
+                    if entry.get("schema")!="BGXAI_R37_R33_R36_SINGLE_LISTENER_SOURCE_V1":
+                        continue
+                    if entry.get("type")=="SESSION":
+                        sessions+=1
+                    elif entry.get("type")=="ADVISORY_CONTEXT":
+                        seq,party=entry.get("seq"),entry.get("partyIndex")
+                        if (type(seq) is not int or not 1<=seq<=64 or
+                            type(party) is not int or not 0<=party<=5 or
+                            seq in advice or entry.get("readOnly") is not True or
+                            entry.get("dispatchAuthorized") is not False or
+                            entry.get("weaponSwitchAuthorized") is not False or
+                            entry.get("ordersSent")!=0 or
+                            entry.get("actionOrigin")!="UNKNOWN" or
+                            entry.get("safeActionBoundaryVerified") is not False):
+                            malformed+=1
+                            continue
+                        label=entry.get("status")
+                        if label not in {
+                            "R37_FIRST_R33_SAMPLE_NO_PRIOR",
+                            "R37_R33_CAPTURE_HOLD_NO_DISPATCH",
+                            "HOLD_CONTEXT_COMPARISON",
+                            "RAW_FIELDS_EQUAL_NOT_EFFECT_OR_EPS_PROOF",
+                            "EQUIPMENT_OR_AMMO_CHANGED_INVALIDATE_ADVICE",
+                            "OBSERVED_STATS_CHANGED_INVALIDATE_ADVICE",
+                            "ACTION_CONTEXT_CHANGED_INVALIDATE_ADVICE",
+                            "NATURAL_SELECTION_CHANGED_INVALIDATE_ADVICE"}:
+                            malformed+=1
+                            continue
+                        if type(entry.get("invalidateCachedAdvice")) is not bool:
+                            malformed+=1
+                            continue
+                        advice[seq]={"seq":seq,"partyIndex":party,"status":label,
+                                     "invalidateCachedAdvice":entry["invalidateCachedAdvice"]}
+                        reasons[label]=reasons.get(label,0)+1
+                        held+=int(label in ("R37_R33_CAPTURE_HOLD_NO_DISPATCH","HOLD_CONTEXT_COMPARISON"))
+                        changed+=int(entry["invalidateCachedAdvice"])
+                elif (entry.get("schema")=="BGXAI_R27_SINGLE_CALLBACK_SELECTED_RO_V1" and
+                      entry.get("type")=="R27_SINGLE_CALLBACK"):
+                    seq,party=entry.get("seq"),entry.get("partyIndex")
+                    if (type(seq) is not int or not 1<=seq<=64 or seq in legacy or
+                        type(party) is not int or not 0<=party<=5 or
+                        entry.get("readOnly") is not True or
+                        entry.get("dispatchAuthorized") is not False or
+                        entry.get("weaponSwitchAuthorized") is not False):
+                        malformed+=1
+                    else:
+                        legacy[seq]=party
+    paired=bool(advice) and set(advice)==set(legacy) and all(
+        entry["partyIndex"]==legacy[seq] for seq,entry in advice.items())
+    ready=(exit_code==0 and size<=64_000_000 and malformed==0 and
+           sessions==1 and paired and len(legacy)==len(advice))
+    return {"schema":SCHEMA,
+            "status":"R37_RUNTIME_ADVICE_LOG_READY_FOR_REVIEW" if ready
+                     else "R37_RUNTIME_HOLD_MANUAL_REVIEW",
+            "rawConsoleFile":str(console),"rawConsoleBytes":size,
+            "gameExitCode":exit_code,"r37SessionMarkers":sessions,
+            "r33OriginalSamples":len(legacy),"r37AdviceSamples":len(advice),
+            "r37PairedBySequenceAndParty":paired,"r37MalformedOrUnsafeRows":malformed,
+            "r37InvalidationSamples":changed,"r37HeldSamples":held,
+            "r37Reasons":reasons,
+            "r37Events":[advice[k] for k in sorted(advice)],
+            "readOnly":True,"gameModifiedByCapture":False,"ordersSent":0,
+            "dispatchAuthorized":False,"weaponSwitchAuthorized":False,
+            "manualEpsOriginVerified":False,"safeActionBoundaryVerified":False,
+            "gameplayWeaponSwitchVerified":False}
+
+
 def status(root:Path)->dict:
     protected_root(root,live=False)
     rows,log_sha=history(root)
@@ -385,7 +507,7 @@ def main()->int:
     ap=argparse.ArgumentParser(description="BGXAI R37 passive one-listener guarded R33 upgrade")
     ap.add_argument("--game",type=Path,default=ROOT)
     ap.add_argument("--candidate",type=Path)
-    ap.add_argument("--mode",choices=("preflight","install","status","rollback"),default="preflight")
+    ap.add_argument("--mode",choices=("preflight","install","status","rollback","capture"),default="preflight")
     args=ap.parse_args()
     try:
         if args.mode=="status":
@@ -400,9 +522,12 @@ def main()->int:
             print("R37 replaces only the R33 passive observer. NO weapon switch.")
             token=input("Type "+INSTALL_TOKEN+" exactly (ENTER cancels): ").strip()
             value=install(args.game,args.candidate,token)
-        else:
+        elif args.mode=="rollback":
             token=input("Type "+ROLLBACK_TOKEN+" exactly (ENTER cancels): ").strip()
             value=rollback(args.game,token)
+        else:
+            print("R37 capture: start game, load existing save and play normally; close game to receive report.")
+            value=capture(args.game)
         print(json.dumps(report(args.mode,value),ensure_ascii=False,indent=2))
         return 0
     except (Hold,OSError,UnicodeError,ValueError,subprocess.TimeoutExpired) as err:
