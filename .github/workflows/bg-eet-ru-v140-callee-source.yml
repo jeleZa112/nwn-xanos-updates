@@ -1,0 +1,61 @@
+name: BG EET RU V140 exact dispatch callee source-only
+on:
+  pull_request:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v140_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v140_ro.py'
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - 'bg-eet-ru/onefile/release.json'
+      - '.github/workflows/bg-eet-ru-v140-callee-source.yml'
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v140_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v140_ro.py'
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - 'bg-eet-ru/onefile/release.json'
+      - '.github/workflows/bg-eet-ru-v140-callee-source.yml'
+jobs:
+  readonly:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: V139 PE and V140 wrapper synthetic regression
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p 'test_v14*_ro.py' -v
+      - name: V139 exact dispatch test
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p test_v139_combat_dispatch_producer_ro.py -v
+      - name: Validate onefile release and V140 pinned immutable source
+        shell: python
+        run: |
+          from pathlib import Path
+          import hashlib,ast,json,re
+          base=Path('bg-eet-ru/onefile')
+          cmd=(base/'BG_EET_RU_UPDATE.cmd').read_bytes()
+          release=json.loads((base/'release.json').read_text('utf8'))
+          assert len(cmd)<=750000,len(cmd)
+          assert hashlib.sha256(cmd).hexdigest()==release['sha256']
+          assert release['version']==140 and release['game_writes_allowed'] is False
+          text=cmd.decode('utf8')
+          assert 'SELF_VERSION = 140' in text
+          assert '68_V140_EXACT_CALLEE_RO.json' in text
+          assert '66_V133_LIVE_HIT_INVENTORY.json' in text
+          assert '9=JIT+CALLEE-RO' in text
+          mod=Path('bg-eet-ru/native-correlation/v140_ro.py').read_bytes()
+          pin=hashlib.sha256(mod).hexdigest()
+          assert "V140_PIN='"+pin+"'" in text
+          assert "v140_ro.py" in text
+          ast.parse('\n'.join(text.splitlines()[1:]))
+          assert 'WriteProcessMemory(' not in mod.decode('utf8')
+          assert 'CreateRemoteThread(' not in mod.decode('utf8')
+          print('V140_ONEFILE_PINNED_READONLY_PASS, bytes',len(cmd))
+      - name: Existing full onefile regression
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
