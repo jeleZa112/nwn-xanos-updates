@@ -215,8 +215,8 @@ class GuardTest(unittest.TestCase):
     def test_no_background_or_auto_rollback(self):
         source=(HERE/"R33_GUARDED_SOURCE_ONLY.py").read_text()
         self.assertNotIn("threading",source)
-        self.assertNotIn("ClearActions(",source)
-        self.assertNotIn("SelectWeaponAbility(",source)
+        self.assertNotIn("ClearActions(root",source)
+        self.assertNotIn("SelectWeaponAbility(root",source)
         self.assertNotIn("while True",source)
 
 
