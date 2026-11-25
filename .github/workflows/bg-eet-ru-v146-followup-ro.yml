@@ -1,0 +1,72 @@
+name: BG EET RU V146 follow-up message routing source only
+on:
+  pull_request:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v146_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v146_ro.py'
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - 'bg-eet-ru/onefile/release.json'
+      - '.github/workflows/bg-eet-ru-v146-followup-ro.yml'
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v146_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v146_ro.py'
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - 'bg-eet-ru/onefile/release.json'
+      - '.github/workflows/bg-eet-ru-v146-followup-ro.yml'
+jobs:
+  source-guard:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: x64
+      - name: V146 immutable source and onefile release SHA, no game mutations
+        shell: python
+        run: |
+          from pathlib import Path
+          import hashlib,ast,json
+          root=Path('bg-eet-ru')
+          code=(root/'native-correlation/v146_ro.py').read_bytes().replace(b'\r\n',b'\n')
+          cmd=(root/'onefile/BG_EET_RU_UPDATE.cmd').read_bytes()
+          j=json.loads((root/'onefile/release.json').read_text('utf8'))
+          assert len(code)<=20000 and len(cmd)<=750000,(len(code),len(cmd))
+          assert j['version']==146 and j['game_writes_allowed'] is False
+          assert hashlib.sha256(cmd).hexdigest()==j['sha256']
+          assert ("V146_PIN='"+hashlib.sha256(code).hexdigest()+"'").encode() in cmd
+          assert b"71_V146_FOLLOWUP_SOURCE_RO.json" in cmd
+          assert b"SELF_VERSION = 146" in cmd and b"9=JIT+FOLLOWUP-RO" in cmd
+          assert b"if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)" in cmd
+          ast.parse(code.decode('utf8'))
+          for x in (b'WriteProcessMemory(',b'VirtualProtectEx(',b'CreateRemoteThread(',b'EEex_JITAt(',b'EEex_HookBefore(',b'DllMain('):
+              assert x not in code,x
+          print('V146_SOURCE_ONLY_BOUNDED_FIVE_TARGETS_PASS')
+      - name: Five exact follow-up RVA tests plus hostile scenarios
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p test_v146_ro.py -v
+      - name: Previous V144 and V142 extraction tests
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p 'test_v14[24]_ro.py' -v
+      - name: Existing onefile and private ZIP history compatibility simulated
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -m unittest discover -s bg-eet-ru/autofix -p test_v136_onefile_readonly.py -v
+      - name: Onefile full selftest
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
