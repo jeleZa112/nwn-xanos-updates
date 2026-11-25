@@ -25,6 +25,9 @@ R33_SHA = "1420ef723df1090d56f8f6590fd82e5c69107ba97a39b2ca2ba73f93e0e77069"
 R33_SCHEMA = "BGXAI_R33_R31_PASSIVE_PROF_GUARDED_V1"
 MAX_LOG = 6_000_000
 MAX_EVENTS = 512
+EXPECTED_R33_LOG_NAME = "BGXAI_R33_CONSOLE_20261125T161358491052Z.log"
+EXPECTED_R33_LOG_SHA = "d510da7e5c15d1579266b37a89fdf91ceff91622714a142e1c137376ec239538"
+MAX_CANDIDATE_LOGS = 128
 REF = re.compile(r"^[A-Z0-9_#-]{1,8}$")
 WPROF = {90:"LONG_SWORD",92:"AXE",102:"QUARTERSTAFF",
          104:"LONG_BOW",105:"SHORT_BOW"}
@@ -241,19 +244,92 @@ def join(log: bytes, source, parse_itm, *, game_identity_verified: bool=False) -
         and r["noProficiencyInLiveActor"] is True]
     return result
 
+def _reference_fingerprint(event: dict) -> bool:
+    """Known non-private fingerprint from uploaded eight-event R33 source.
+
+    A matching fingerprint is SOURCE CANDIDATE only. It does NOT authenticate
+    the bytes of the uploaded file, game actor identity at a later time,
+    action origin, item effects, or alternate APR.
+    """
+    stats=event["stats"]
+    slots=event["loadout"]
+    return (event["sampleCount"]==8
+            and event["actionRawValues"]==[3,23]
+            and event["levelsAndKitRaw"]=={
+                "level1":1,"level2":1,"level3":1,"kitRaw":16384}
+            and stats[90-89]==2 and stats[92-89]==1
+            and stats[104-89]==1 and stats[105-89]==0
+            and slots["weapons"]=={
+                35:"SW1H04",36:"BOW05",37:None,38:"STAF01"}
+            and slots["ammo"]=={
+                11:None,12:"AROW01",13:None,14:None}
+            and slots["offhand"]=={9:"SHLD03A"})
+
+def choose_r33_log(reports: Path) -> tuple[bytes,dict]:
+    """Read only from the known reports folder; no more game capture.
+
+    Strongly prefer the exact uploaded log SHA. If it was copied,
+    re-encoded or renamed, accept only ONE fully parsed R33 session
+    with the independently recorded eight-event fingerprint and mark
+    exact-byte provenance as NOT verified. Fail closed on ambiguity.
+    """
+    must(reports.is_dir() and not reports.is_symlink()
+         and not (hasattr(reports,"is_junction") and reports.is_junction()),
+         "R34_REPORT_FOLDER_MISSING_OR_REPARSE")
+    found=list(reports.glob("BGXAI_R33_CONSOLE_*.log"))
+    must(len(found)<=MAX_CANDIDATE_LOGS,"R34_TOO_MANY_R33_LOG_CANDIDATES")
+    exact=reports / EXPECTED_R33_LOG_NAME
+    paths=sorted(found,key=lambda p:(p.name!=EXPECTED_R33_LOG_NAME,p.name))
+    matches=[]
+    for path in paths:
+        if path.is_symlink() or (hasattr(path,"is_junction") and path.is_junction()) or not path.is_file():
+            continue
+        if not 0<path.stat().st_size<=MAX_LOG:
+            continue
+        raw=path.read_bytes()
+        if not 0<len(raw)<=MAX_LOG:
+            continue
+        try:
+            event=read_session(raw)
+        except Hold:
+            continue
+        if not _reference_fingerprint(event):
+            continue
+        match_sha=sha(raw)==EXPECTED_R33_LOG_SHA
+        rec={"sourceLogFilename":path.name,
+             "sourceLogSha256":sha(raw),
+             "referenceUploadedLogSha256":EXPECTED_R33_LOG_SHA,
+             "sameBytesAsUserUploadedLogVerified":match_sha,
+             "sameEightEventFingerprintCandidate":True,
+             "logSourceStatus":("EXACT_UPLOADED_BYTES_VERIFIED" if match_sha
+                                else "STRUCTURAL_R33_FINGERPRINT_ONLY_DIFFERENT_SHA"),
+             "fileFoundUnderReports":True}
+        if match_sha:
+            return raw,rec
+        matches.append((raw,rec))
+    if len(matches)==1:
+        return matches[0]
+    if not found:
+        raise Hold("R34_R33_LOG_MISSING_IN_REPORTS_NO_RECAPTURE")
+    if matches:
+        raise Hold("R34_R33_LOG_AMBIGUOUS_STRUCTURAL_MATCHES_NO_RECAPTURE")
+    if exact.is_file():
+        raise Hold("R34_R33_NAMED_LOG_DIFFERS_AND_FAILS_FINGERPRINT")
+    raise Hold("R34_R33_LOGS_EXIST_BUT_REFERENCE_SESSION_NOT_FOUND")
+
 def main() -> int:
     cli=argparse.ArgumentParser()
     cli.add_argument("--game",type=Path,default=ROOT)
-    cli.add_argument("--log",type=Path,required=True)
-    cli.add_argument("--r3-source",type=Path,default=Path(__file__).resolve().parents[2] / R3_REL.relative_to("BGXAI"))
+    cli.add_argument("--reports-dir",type=Path,required=True)
+    cli.add_argument("--r3-source",type=Path,required=True)
     args=cli.parse_args()
     try:
         validate_game(args.game)
-        must(args.log.is_file() and not args.log.is_symlink() and
-             0<args.log.stat().st_size<=MAX_LOG, "R33_LOG_FILE_UNSAFE")
+        raw, provenance=choose_r33_log(args.reports_dir)
         r3=load_r3(args.r3_source)
-        out=join(args.log.read_bytes(),r3.NativeSource(args.game),
+        out=join(raw,r3.NativeSource(args.game),
                  r3.parse_itm,game_identity_verified=True)
+        out.update(provenance)
         print(json.dumps(out,ensure_ascii=False,indent=2))
         return 0
     except (Hold,OSError,ValueError) as err:
