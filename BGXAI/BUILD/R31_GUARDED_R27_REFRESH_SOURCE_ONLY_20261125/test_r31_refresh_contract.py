@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-REPO = ROOT.parents[2]
+REPO = ROOT.parents[3]
 CANDIDATE = REPO / "BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124/BGXAI_R27_R2_REFRESH_SOURCE_ONLY.lua"
 LEGACY_SHA = "e5eb400c56ffb1bc23344a0cf30dcc724d8d18fc2752fabd1c2c63cdcca73735"
 CANDIDATE_SHA = "7ca77abeb94363c75cc58986db4427d9f93edba25e09764be35008c2f0e0600b"
@@ -28,7 +28,10 @@ class RefreshContract(unittest.TestCase):
         self.assertIn("R27.makeListener", self.text)
         self.assertIn("R2_CORE.observe_sprite", self.text)
         self.assertIn("R4_CORE.observe", self.text)
-        self.assertEqual(self.text.count("EEex_Action_AddSpriteStartedActionListener("), 1)
+        self.assertIn("R27.prepareConsolePilot", self.text)
+        # Candidate is a module, not a bootstrap: preserve the existing single listener tail separately.
+        self.assertNotIn("EEex_Action_AddSpriteStartedActionListener(", self.text)
+        self.assertEqual(self.text.count("return R27\\n"), 1)
 
     def test_queue_observation_fails_closed(self):
         for marker in ("m_queuedActions", "m_nCount", "queueSnapshotStable",
