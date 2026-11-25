@@ -1,5 +1,20 @@
 # BGXAI — единая точка продолжения, 24 ноября 2026
 
+
+## 25.11.2026 — реальный R30 PASS на пользовательской EET (R29 в WeiDU)
+
+**Новое фактическое подтверждение:** R30 menu170 выполнен на пользовательской EET 25.11.2026. `status=SOURCE_AND_HISTORY_READ_ONLY_PASS_INSTALL_STILL_UNAUTHORIZED`, `readOnly=true`, `gameModified=false`, `installationPerformed=false`, `ordersSent=0`, `dispatchAuthorized=false`.
+
+**WeiDU:** 150 компонентов; R27 — позиция 149, `r27IsLast=false`; последний (150-й) — `~BGXR29/SETUP-BGXR29.TP2~ #0 #0 // BGXR29 fighter quickslot bow-to-sword rule`. Это впервые подтверждает запись об установке R29 в реальной истории WeiDU. Само наличие записи **не** подтверждает реальное поведение R29 в бою, итоговый SHA его BCS или полезность сравнительно с уже LIVE V6. Не повторять R29, не откатывать R29 вслепую, не использовать прежний R27-last installer.
+
+**Проверенная идентичность:** установленный `override/M_BGXR27.lua` SHA256 `e5eb400c56ffb1bc23344a0cf30dcc724d8d18fc2752fabd1c2c63cdcca73735`; R27 ACTION_CONTEXT_V3 source-only SHA256 `61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929`; `candidateSourceVerified=true`, `pinnedInstalledSourcesMatched=3`. Новый R27 V3 **не установлен**.
+
+**НЕ доказано:** `queueBindingLiveVerified=false`, `manualEpsOriginVerified=false`, `alternateEffectiveAPRVerified=false`, `typedInstallApproved=false`. R30 — статический read-only аудит, НЕ live queue telemetry и НЕ разрешение на обновление.
+
+**Следующий P0:** использовать этот результат как gate для SOURCE ONLY проектирования **нового защищённого WeiDU-компонента после R29** (без зависимости от R27 being last, без удаления R29), но не устанавливать без отдельного typed согласия, верифицированного backup/rollback и безопасной EEex/EPS-диагностики. Двигаться к runtime bindings и реальному APR/THAC0/эффектам альтернативных слотов, не повторять R27/R28/167/168/170 без конкретного нового основания. Единственный пользовательский CMD сохраняется. Частный полный JSON-отчёт не публиковать в открытом репозитории.
+
+---
+
 ## 25.11.2026 — R30 подключён в единственный обновлятор: menu170 READ ONLY (CODE/CI PASS)
 
 **Текущий шаг проекта завершён:** R30 preflight добавлен в уже существующий `BGXAI/BGXAI_SYNC.ps1`, пункт **170**. `BGXAI_UPDATE.cmd` не менялся и остаётся единственным launcher; он динамически читает текущий BOOTSTRAP_PIN, загружает immutable backend и сверяет SHA256/размер. Нового CMD/PowerShell файла от пользователя не требуется.
