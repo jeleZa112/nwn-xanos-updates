@@ -1,0 +1,45 @@
+name: BGXAI R37 guarded last-only WeiDU mock (NO GAME INSTALL)
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/R37_GUARDED_SOURCE_ONLY.py'
+      - 'BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/test_r37_guarded_install_mock.py'
+      - '.github/workflows/bgxai-r37-guarded-source-only-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  mocked-weiDU-guard:
+    name: R37 guard safe preflight typed install last-only rollback / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    timeout-minutes: 9
+    steps:
+      - name: Disable Windows automatic CRLF checkout
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Syntax check, offline mocked last-only install and rollback
+        shell: bash
+        run: |
+          python -m py_compile BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/R37_GUARDED_SOURCE_ONLY.py
+          python -m unittest discover -s BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126 -p test_r37_guarded_install_mock.py -v
+      - name: Print guarded installer SHA for future immutable single-updater handler
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, json
+          path=Path('BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/R37_GUARDED_SOURCE_ONLY.py')
+          blob=path.read_bytes()
+          print('R37_GUARD_BYTES='+str(len(blob)))
+          print('R37_GUARD_SHA256='+hashlib.sha256(blob).hexdigest())
+          print('R37_GUARD_CODE_ONLY=true, USER_GAME_DEPLOYED=false')
+          PY
