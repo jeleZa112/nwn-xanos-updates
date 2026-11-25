@@ -1,0 +1,45 @@
+name: BGXAI R33 R31 reuses R4 proficiency read-only
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/**'
+      - '.github/workflows/bgxai-r33-r31-reuse-prof-ro.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  python-build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 7
+    steps:
+      - name: Keep SHA-pinned LF source unchanged on checkout
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: R33 source generator and immutable R31 contract tests
+        shell: bash
+        run: python -m unittest discover -s BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125 -p 'test_r33_reuse_ro.py' -v
+      - name: Build exact R33 Lua in temporary CI directory, NOT the game
+        shell: bash
+        run: python BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/build_r33_r31_reuse_prof_ro.py --output "$RUNNER_TEMP/M_BGXR27_R33_SOURCE_ONLY.lua"
+  lua-mock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lua 5.3, 5.4 and LuaJIT
+        run: sudo apt-get update -qq && sudo apt-get install -y lua5.3 lua5.4 luajit
+      - name: Build and exercise R33 candidate, preserve 1 listener and 0 orders
+        run: |
+          python3 BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/build_r33_r31_reuse_prof_ro.py --output "$RUNNER_TEMP/M_BGXR27_R33_SOURCE_ONLY.lua"
+          for runtime in lua5.3 lua5.4 luajit; do
+            "$runtime" BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/test_r33_r31_runtime.lua "$RUNNER_TEMP/M_BGXR27_R33_SOURCE_ONLY.lua"
+          done
