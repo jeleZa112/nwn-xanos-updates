@@ -1,3 +1,9 @@
+# UPDATE 26.11.2026 — R34 real current-game ITM join verified
+
+Latest real result is **R34 5/5 CURRENT_GAME native ITM read-only PASS**. See first block of `CURRENT/00_CURRENT_STATUS.md` for exact no-private-path SHA provenance, output status, historical actor profile limitations and next P0. `BGXAI_R34_NATIVE_PROF_20261126T002126164.json` inspected; game unchanged, zero commands, no autoswitch. Four ITM SHA match previous R28; SHORT_BOW BOW05 statID105 is 0 historic pips, while historical longbow statID104 is 1. **Do not request repeat R34/R33, battles or old tests.** Next: effective alternate-slot APR/THAC0 & effect provenance + manual/EPS origin, then integrate existing V3/V4/V5, respecting one CMD / typed game-change consent.
+
+---
+
 # CURRENT 26.11.2026 — supersedes dated instructions below
 
 **Source of truth:** `CURRENT/00_CURRENT_STATUS.md` first section, not older 24–25 Nov steps. The user already ran R34 with `124add6624c4`, received `R34_R33_NAMED_LOG_DIFFERS_AND_FAILS_FINGERPRINT` on 26.11 at 00:06 and no game changes. R33 installed and real 8/8 capture previously PASS. Do **NOT** ask for another battle, capture, R33 install or repeat 173 on the old pin.
