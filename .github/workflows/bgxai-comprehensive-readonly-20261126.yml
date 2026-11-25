@@ -92,7 +92,7 @@ jobs:
           root=pathlib.Path('.')
           pin=json.loads((root/'BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text('utf-8'))
           body=(root/'BGXAI/BGXAI_SYNC.ps1').read_bytes()
-          assert len(body)==pin['script_size']<=82000
+          assert len(body)==pin['script_size']<=80000
           assert hashlib.sha256(body).hexdigest()==pin['script_sha256']
           assert subprocess.check_output(['git','show',pin['commit']+':BGXAI/BGXAI_SYNC.ps1'])==body
           cmd=(root/'BGXAI_UPDATE.cmd').read_bytes()
