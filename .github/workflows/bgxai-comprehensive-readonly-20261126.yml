@@ -1,0 +1,211 @@
+name: BGXAI comprehensive source regression 2026-11-26 (NO GAME WRITES)
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - '.github/workflows/bgxai-comprehensive-readonly-20261126.yml'
+      - 'BGXAI/BUILD/COMPREHENSIVE_TEST_20261126/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  weapon-lua:
+    name: Weapon V3/V4/V5 + R2/R32/R35 + EEex queues / 3 Lua runtimes
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Lua 5.3 5.4 LuaJIT
+        run: sudo apt-get update -qq && sudo apt-get install -y lua5.3 lua5.4 luajit
+      - name: Real complete weapon priority regression + other safe observers
+        shell: bash
+        run: |
+          set -euo pipefail
+          base=BGXAI/patchsets/ranged_fighter_guarded_20261119
+          for runtime in lua5.3 lua5.4 luajit; do
+            echo "::group::WEAPON PRIORITY AND SAFETY $runtime"
+            python "$base/run_weapon_priority_v3_regression.py" --lua "$runtime"
+            "$runtime" "$base/test_weapon_slots_r2_readonly.lua"
+            "$runtime" "$base/test_weapon_active_r4_readonly.lua"
+            "$runtime" BGXAI/BUILD/R32_APR_EET_TABLES_RO_20261125/test_r32_eeex_engine_2da_ro.lua
+            "$runtime" BGXAI/BUILD/R35_NATURAL_SELECTED_APR_RO_20261126/test_r35_selected_engine_stats_ro.lua
+            "$runtime" BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124/test_r27_refresh_runtime.lua
+            "$runtime" BGXAI/fox_new/experimental_081_eeex_action_provenance_readonly_source_only/test_081_queue_v2.lua
+            "$runtime" BGXAI/fox_new/experimental_081_eeex_action_provenance_readonly_source_only/test_081_action_context_v3.lua
+            echo "::endgroup::"
+          done
+
+  python-native:
+    name: R27-R35 Python source/regressions / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    timeout-minutes: 15
+    steps:
+      - name: Preserve exact LF SHA
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Regression suite from actual repository sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_case() {
+            dir="$1"
+            pattern="$2"
+            echo "::group::$dir/$pattern"
+            python -m unittest discover -s "$dir" -p "$pattern" -v
+            echo "::endgroup::"
+          }
+          run_case BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124 test_r27_r2_refresh_ro.py
+          run_case BGXAI/BUILD/R28_REAL_NATIVE_EFFECT_GATES_20261124 test_effect_gates_ro.py
+          run_case BGXAI/BUILD/R30_QUEUE_DEPLOY_PREFLIGHT_RO_20261125 test_r30_queue_deploy_preflight_ro.py
+          run_case BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125 test_r31_source_only.py
+          run_case BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125 test_r31_guarded_source_only.py
+          run_case BGXAI/BUILD/R32_APR_EET_TABLES_RO_20261125 test_r32_apr_eet_tables_ro.py
+          run_case BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125 test_r33_reuse_ro.py
+          run_case BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125 test_r33_guarded_source_only.py
+          run_case BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125 test_r34_native_prof_bridge_ro.py
+          run_case BGXAI/BUILD/R35_NATURAL_SELECTED_APR_RO_20261126 test_r35_natural_selected_apr_ro.py
+      - name: Original onefile and R34 source pin still immutable
+        shell: bash
+        run: |
+          python BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125/build_r34_onefile_menu173_source_only.py
+          python - <<'PY'
+          import pathlib,json,hashlib,re,subprocess
+          root=pathlib.Path('.')
+          pin=json.loads((root/'BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text('utf-8'))
+          body=(root/'BGXAI/BGXAI_SYNC.ps1').read_bytes()
+          assert len(body)==pin['script_size']<=80000
+          assert hashlib.sha256(body).hexdigest()==pin['script_sha256']
+          assert subprocess.check_output(['git','show',pin['commit']+':BGXAI/BGXAI_SYNC.ps1'])==body
+          cmd=(root/'BGXAI_UPDATE.cmd').read_bytes()
+          assert cmd==subprocess.check_output(['git','show','71b1d37db787a59ed16c8b92ac495314b3577e02:BGXAI_UPDATE.cmd'])
+          base=subprocess.check_output(['git','show','29e7dee1cae6dea41bb11f9286debca2e047f0a5:BGXAI/BGXAI_SYNC.ps1'])
+          pattern=r"(?m)^'[0-9]+' \{[^\n]+}$"
+          old=re.findall(pattern,base.decode('ascii'))
+          new=re.findall(pattern,body.decode('ascii'))
+          assert len(old)==172 and len(new)==173 and new[:172]==old
+          print('PASS current SHA, 172 previous handlers byte-identical, one CMD unmodified')
+          PY
+
+  party-safety:
+    name: Friendly fire + ranged + AoE + BGXP healer / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: AoE/Entangle/friendly-safe path mock regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          path=BGXAI/patchsets/aoe_entangle_readonly_onefile_20261117
+          for t in test_guard120.py test_party_hazard_coordinator_v1.py test_role_hazard_arbiter_v1.py test_aoe_audit.py test_121.py test_122.py; do
+            echo "::group::AOE $t"
+            python "$path/$t"
+            echo "::endgroup::"
+          done
+      - name: BGXP3/4/5 heal-priority and party safety mock regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          for item in             BGXAI/patchsets/priest_auto_guarded_20261117/test_bgxp3_auto_attack_buffer.py             BGXAI/patchsets/priest_auto_early_heal_source_20261117/test_bgxp4_early_heal.py             BGXAI/patchsets/priest_auto_priority_guard_source_20261117/test_bgxp5_source.py             BGXAI/patchsets/priest_auto_priority_guard_source_20261117/test_bgxp5_bcs_preflight.py             BGXAI/patchsets/priest_auto_priority_guard_source_20261117/test_bgxp5_installer_mock.py; do
+            echo "::group::HEAL $item"
+            python "$item"
+            echo "::endgroup::"
+          done
+      - name: Friendly retaliation, old ranged pilot and guarded install mocks
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=BGXAI/patchsets/ranged_fighter_guarded_20261119
+          for t in             test_friendly_aggro_readonly.py             test_friendly_protect_isolation.py             test_friendly_retaliation_guarded.py             test_ranged_v5_anticipatory_close_source_only.py             test_ranged_v6_dplayer_close_guard_source_only.py             test_ranged_v6_guarded_install_mock.py             test_ranged_v7_guarded_install_mock.py             test_saved_party_script_audit.py; do
+            echo "::group::FRIEND/RANGED $t"
+            python "$p/$t"
+            echo "::endgroup::"
+          done
+
+  windows-onefile:
+    name: PowerShell 5.1 active onefile parser and no-game menu startup
+    runs-on: windows-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse full PowerShell 5.1 with exact active pinned script
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $p=(Resolve-Path 'BGXAI/BGXAI_SYNC.ps1').Path
+          $tokens=$null
+          $errs=$null
+          [System.Management.Automation.Language.Parser]::ParseFile($p,[ref]$tokens,[ref]$errs)|Out-Null
+          if($errs.Count -ne 0){throw "ACTIVE_PS51_PARSE_FAILED: $errs"}
+          if((Get-Content -LiteralPath $p -Raw) -match 'Set-Alias wh wh '){throw 'SELF_ALIAS_REGRESSION'}
+          Write-Host 'PASS active PowerShell5.1 parser and alias regression'
+      - name: Execute startup until menu choice zero on ISOLATED dummy game
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $root='C:\Games\BG_EET_FOXX_NEW'
+          $cache=Join-Path $env:LOCALAPPDATA 'BGXAI_UPDATER'
+          if(Test-Path -LiteralPath $root){throw 'ISOLATED_TEST_GAME_ROOT_EXISTS'}
+          if(Test-Path -LiteralPath $cache){throw 'ISOLATED_TEST_UPDATER_CACHE_EXISTS'}
+          New-Item -ItemType Directory -Path $root -Force|Out-Null
+          New-Item -ItemType Directory -Path $cache -Force|Out-Null
+          try {
+            [IO.File]::WriteAllBytes((Join-Path $root 'chitin.key'),[byte[]](0,1,2,3))
+            $pin=Get-Content -Raw 'BGXAI/fox_new/BOOTSTRAP_PIN.json'|ConvertFrom-Json
+            [IO.File]::WriteAllText((Join-Path $cache 'head.txt'),$pin.commit)
+            $source=(Resolve-Path 'BGXAI/BGXAI_SYNC.ps1').Path
+            $driver=Join-Path $env:RUNNER_TEMP 'bgxai_full_menu_test.ps1'
+            [IO.File]::WriteAllText($driver,("function global:Read-Host { param([string]$Prompt) '0' }" + [Environment]::NewLine + "& '$source' -GameRoot '$root'"))
+            $output=(& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $driver 2>&1|Out-String)
+            if($LASTEXITCODE -ne 0 -or $output -notmatch 'BGXAI ONE-FILE UPDATER' -or $output -notmatch 'No changes\.'){throw ("MENU_SMOKE_FAILED "+$output)}
+            Write-Host 'PASS active onefile startup through choice 0 with throwaway fixture, no real game touched'
+          } finally {
+            Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item -LiteralPath $cache -Recurse -Force -ErrorAction SilentlyContinue
+          }
+
+  summary:
+    name: Unified SOURCE CI verdict (not gameplay)
+    if: always()
+    needs: [weapon-lua,python-native,party-safety,windows-onefile]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write one summary and enforce failing prerequisites
+        shell: bash
+        env:
+          LUA: ${{ needs.weapon-lua.result }}
+          NATIVE: ${{ needs.python-native.result }}
+          PARTY: ${{ needs.party-safety.result }}
+          ONEFILE: ${{ needs.windows-onefile.result }}
+        run: |
+          echo '## BGXAI COMPREHENSIVE SOURCE / CI ONLY' >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo '| Suite | Outcome |' >> "$GITHUB_STEP_SUMMARY"
+          echo '|---|---|' >> "$GITHUB_STEP_SUMMARY"
+          echo "| Weapon Lua V3–V5 R2 R32 R35 (3 runtimes) | $LUA |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| R27-R35 Python (Windows/Linux) | $NATIVE |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Party healing AoE friendly fire (Windows/Linux) | $PARTY |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| PowerShell 5.1 isolated onefile menu | $ONEFILE |" >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Gameplay LIVE / full alternative APR / EPS action ownership / safe weapon switch: NOT TESTED in CI.' >> "$GITHUB_STEP_SUMMARY"
+          test "$LUA" = success && test "$NATIVE" = success && test "$PARTY" = success && test "$ONEFILE" = success
