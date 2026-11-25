@@ -47,12 +47,15 @@ jobs:
           assert all(a[k]==b[k] for k in range(1,174)),'existing handlers MUST be byte identical'
           assert b[174].count(b'R37_GUARDED_SOURCE_ONLY.py')==1
           assert b[174].count(b'M_BGXR27_R37_SOURCE_ONLY.lua')==1
+          assert b"'5'='capture'" in b[174]
+          assert b'R37 STAGE HASH' in b[174]
+          assert b'5=capture' in b[174]
           assert b[174].count(b"= 'install'")==0
           assert b"174 R37" in s
           assert b"BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126" in s
           guard=Path('BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/R37_GUARDED_SOURCE_ONLY.py').read_bytes()
           candidate=Path('BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/M_BGXR27_R37_SOURCE_ONLY.lua').read_bytes()
-          assert len(guard)==19107 and hashlib.sha256(guard).hexdigest()=='847d59d70f14274a005244b009850a8f563e2a302517e8237cdcb063bc23b9ab'
+          assert len(guard)==25946 and hashlib.sha256(guard).hexdigest()=='027932392848962a3f903cc50495df34c56f2a2943648c5ff625a8fd95789ab5'
           assert len(candidate)==60835 and hashlib.sha256(candidate).hexdigest()=='5ece282270f0e6a1fa7a6086b7f13c57c77de98759637efa4b2ab0cc1e5744d6'
           pin=json.loads(Path('BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text())
           if pin['script_size']==len(s):
