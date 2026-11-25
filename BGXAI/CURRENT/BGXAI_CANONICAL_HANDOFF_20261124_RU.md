@@ -1,5 +1,18 @@
 # BGXAI — единая точка продолжения, 24 ноября 2026
 
+## 25.11.2026 — R33: реиспользование 46 профилей R31, проверено CI; установка NO
+
+**Фактический результат:** [R33 SOURCE ONLY](../BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/README_RU.md). Доказано на точном исходнике R31 SHA256 `5a1f6b32db920a005161734605c8b3273614a1318d8b1b57dac79ed022a00f38`, что R31/R4 **уже считывает** `m_nLevel1..3`, `m_nKit` и 46 полей proficiency 89..134. Они ранее намеренно не сериализовались в Console JSON. R33 не создаёт вторую точку сбора, а дополняет текущий `R27_SINGLE_CALLBACK` сырой структурой `levelsAndKitRaw`, массивом 46 `proficiencyStat89to134Raw`, необязательным `aiObjectClassRawCandidate` и fail-closed flags.
+
+**Точные safety-ограничения:** значения из `m_typeAI.m_Class` — только кандидат, не доказанный `CLSWPBON` class row и не подтверждение active dual/multiclass/kit. 46 профилей — raw, **не** автоматически «звёздочки» и не доказательство привязки к конкретному ITM/ability. `classRowVerified=false`, `weaponToProficiencyVerified=false`, `activeDualMultiClassVerified=false`, `actorPipsVerified=false`. `queuedActionsRaw=0` в действующей атаке Халида НЕ разрешает dispatch. Другие слоты final APR/THAC0/effects НЕ проверены. V6/R29, healer/AoE/bug-fixes остаются как были.
+
+**CODE / TEST:** R33 builder SHA-pinned source-only, выход 49 438 байт SHA256 `1420ef723df1090d56f8f6590fd82e5c69107ba97a39b2ca2ba73f93e0e77069`. [GitHub Actions 45645196992](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45645196992) **SUCCESS** — Windows + Ubuntu Python unit и Lua 5.3/5.4/LuaJIT runtime mock; same one listener, no orders, HOLD при изменении prof/class. Прошлые CI error Windows LF и тестовый захват EEex-ссылки в callback исправлены, **реальная игровая сборка не менялась**.
+
+**Критический статус:** `R31 LIVE PASSIVE=PASS`, `R32 SOURCE CI=PASS, LIVE NO`, `R33 SOURCE CI=PASS, DEPLOY NO, LIVE NO`, `WEAPON PRIORITY GENERAL LIVE=NO`. Не запускать существующий пункт меню 171→2 повторно (он устанавливает прежний R31, не R33). Следующий оформленный шаг — безопасный R31→R33 upgrade как последний WeiDU-компонент с отдельным буквальным подтверждением и единственным обновлятором (не готов), затем один runtime capture; только после этого — class/weapon/proficiency bind и effective APR альтернативных слотов. Никаких дополнительных тестов сейчас от пользователя не требовать.
+
+---
+
+
 **R32/V5 совместимость — окончательный native CI:** [run 45643810529](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45643810529) **SUCCESS во всех 3 задачах**: Windows Python, Ubuntu Python, Lua 5.3/5.4/LuaJIT. Добавлен cross-module unit: значения WSPATCK для `-3,-2,-1,0,1,2,3` у EEex-ридера R32 совпадают с `BGXAI_WEAPON_APR_PROVENANCE_V5.decode_wspatck`. В новой игре/WeiDU ничего не менялось, R32 остаётся source-only. Данный CI не является LIVE. К следующему этапу переходить от таблиц к **подтверждению текущего класса и weapon-group + альтернативным итоговым APR**; не требовать повторения R31 capture.
 
 
