@@ -58,6 +58,19 @@ class DeliveryTests(unittest.TestCase):
    self.assertEqual(out['game_files_written'],0)
    self.assertEqual(exe.read_bytes(),orig)
 
+
+ def test_new_capture_hold_preserves_successful_v140_callee_evidence(self):
+  with tempfile.TemporaryDirectory() as d:
+   exe=Path(d)/'Baldur.exe';exe.write_bytes(b'MZ'+b'\\0'*4096)
+   before=exe.read_bytes()
+   with patch.object(M,'_v136_run_game',return_value={'status':'V136_HISTORY_HOLD'}),patch.object(M,'extract_pdata_function',return_value={'source':'V140_VALID'}),patch.object(M,'v142_delivery',side_effect=M.Hold('NO_VTABLE_SECTION')):
+    out=M.run_game(Path(d),None)
+   self.assertEqual(out['status'],'V140_PINNED_FUNCTION_EXTRACTED_SEMANTIC_PROVENANCE_HOLD')
+   self.assertEqual(out['delivery_capture_hold'],'NO_VTABLE_SECTION')
+   self.assertEqual(out['callee']['source'],'V140_VALID')
+   self.assertEqual(out['game_files_written'],0)
+   self.assertEqual(exe.read_bytes(),before)
+
  def test_invalid_section_reason_never_pretends_success(self):
   data=self.fake()
   with patch.object(M,'GAME_EXE_SHA',M.digest(data)),patch.object(M,'_section_list',return_value=([],0,0)),patch.object(M,'_rva_to_raw',side_effect=M.Hold('NO_SECTION')):
