@@ -313,7 +313,7 @@ def choose_r33_log(reports: Path) -> tuple[bytes,dict]:
         raise Hold("R34_R33_LOG_MISSING_IN_REPORTS_NO_RECAPTURE")
     if matches:
         raise Hold("R34_R33_LOG_AMBIGUOUS_STRUCTURAL_MATCHES_NO_RECAPTURE")
-    if exact.is_file():
+    if exact.is_file() and not exact.is_symlink() and not (hasattr(exact,"is_junction") and exact.is_junction()):
         raise Hold("R34_R33_NAMED_LOG_DIFFERS_AND_FAILS_FINGERPRINT")
     raise Hold("R34_R33_LOGS_EXIST_BUT_REFERENCE_SESSION_NOT_FOUND")
 
