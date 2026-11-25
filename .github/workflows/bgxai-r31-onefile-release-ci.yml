@@ -1,0 +1,75 @@
+name: BGXAI R31 one-CMD menu171 immutable pin and regression
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BGXAI_SYNC.ps1'
+      - 'BGXAI/fox_new/BOOTSTRAP_PIN.json'
+      - 'BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125/**'
+      - '.github/workflows/bgxai-r31-onefile-release-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Pin manifest -> exact immutable backend -> source-only R31
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib,json,pathlib,subprocess,re
+          root=pathlib.Path('.')
+          pin=json.loads((root/'BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text())
+          path=root/pin['script_path']
+          actual=path.read_bytes()
+          assert pin['schema']==1 and pin['channel']=='bgxai-fox-new-onefile'
+          assert re.fullmatch('[a-f0-9]{40}',pin['commit'])
+          assert len(actual)==pin['script_size']==79941
+          assert len(actual)<=80000
+          assert hashlib.sha256(actual).hexdigest()==pin['script_sha256']=='c998ff6607ee3915b9cbb3c9b31955f715bee425b5ed882e04e1af1d515ed4aa'
+          immutable=subprocess.check_output(['git','show',pin['commit']+':'+pin['script_path']])
+          assert immutable==actual, 'pinned immutable source differs from checked-out backend'
+          old=subprocess.check_output(['git','show','71b1d37db787a59ed16c8b92ac495314b3577e02:BGXAI/BGXAI_SYNC.ps1']).decode()
+          now=actual.decode()
+          pattern=r"(?m)^'[1-9][0-9]*' {[^\n]+}$"
+          old_dispatch=re.findall(pattern,old)
+          new_dispatch=re.findall(pattern,now)
+          assert len(old_dispatch)==170 and new_dispatch[:170]==old_dispatch
+          assert len(new_dispatch)==171
+          assert new_dispatch[170].startswith("'171' {")
+          assert "Set-Alias wh Write-Host -Scope Script" in now
+          assert "171 R31 V3" in now
+          cmd=root/'BGXAI_UPDATE.cmd'
+          assert cmd.read_bytes()==subprocess.check_output(['git','show','71b1d37db787a59ed16c8b92ac495314b3577e02:BGXAI_UPDATE.cmd'])
+          print('R31 ONE-CMD PIN/IMMUTABLE/SHA/80KB/OLD 170 DISPATCH/CMD unchanged PASS')
+          PY
+      - name: R31 release regressions
+        shell: bash
+        run: |
+          python -m unittest discover -s BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125 -p test_r31_onefile_menu_source_only.py -q
+          python -m unittest discover -s BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125 -p test_r31_guarded_source_only.py -q
+  powershell51:
+    runs-on: windows-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Existing active backend PowerShell5.1 AST
+        shell: powershell
+        run: |
+          $path=(Resolve-Path 'BGXAI/BGXAI_SYNC.ps1').Path
+          $tokens=$null
+          $errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile($path,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -gt 0){$errors|Out-String|Write-Host;throw 'R31 active PS5.1 parse FAIL'}
+          Set-Alias wh Write-Host -Scope Script
+          if((Get-Alias wh).Definition -ne 'Write-Host'){throw 'wh alias not same cmdlet'}
+          Write-Host 'R31 ACTIVE PS5.1 AST PASS - game untouched'
