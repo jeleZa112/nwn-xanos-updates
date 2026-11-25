@@ -1,3 +1,13 @@
+# BGXAI CURRENT 26.11.2026 — R35 selected APR+raw THAC0 passive EEex source + all CI PASS
+
+**NEW CODE:** `BUILD/R35_NATURAL_SELECTED_APR_RO_20261126/BGXAI_R35_SELECTED_ENGINE_STATS_RO.lua` provides pure read-only `M.observe(sprite,statsReader)` and `M.compare(first,second)`. Intended to reuse already installed R33 callback; no new EEex listener, scripts, WeiDU, game writes, orders or weapon switch. `EEex_Sprite_GetActiveStats` source-verified and guarded against `m_bAllowEffectListCall==0` temporary work-in-progress stats; synchronous double-read selected slot/ability, raw `m_nNumberOfAttacks` and raw `m_nTHAC0`. Actual output is **selected-only** APR/THAC0 observation; it does **not** authenticate final other-slot APR, launcher binding, target hit probability, active class/dual, all buffs, origin of EPS/manual action or a safe switch. Compare can witness naturally different selected slots but retains `otherSlotEffectiveAPRVerified=false`, `matchedBuffContextVerified=false`, `weaponSwitchAuthorized=false`.
+
+**TEST:** 16 source-only Lua regression tests across **Lua 5.3 + Lua 5.4 + LuaJIT** (48 invocations) plus original **13 Python regressions on Windows and Ubuntu** and static no-action/mutation checks. [R35 CI all 3 jobs PASS](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45666482574); R34 source regression with R35 test [PASS](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45665910474). **DEPLOY/LIVE:** no R35 installation; R33 in-game unchanged, R34 live read-only PASS. No user operation needed now.
+
+**NEXT:** establish separately authenticated same-time effects/equipment/fingerprints + natural selected engine snapshots, link ammo to launcher and manual/EPS action ownership, then existing V3/V4/V5+NONINTERRUPT. Any active switching requires later typed install approval. Don't repeat R27/R33/R34/battles/old bow-sword pilot.
+
+---
+
 # BGXAI CURRENT 26.11.2026 — R35 real R27/R34 selected APR witness, source/CI PASS, no new game deployment
 
 **User instruction "+" after R34 5/5 PASS** followed; no new user questions and no repetitions of 173/R33/game battle. R35 now exists at `BGXAI/BUILD/R35_NATURAL_SELECTED_APR_RO_20261126/` with `BGXAI_R35_NATURAL_SELECTED_APR_RO.py`, 13 regression tests, README and CI. New source-only analytical bridge for historic engine-selected APR observations; **NOT a new weapon selector / new installer / live game module**.
