@@ -1,5 +1,19 @@
 # BGXAI — единая точка продолжения, 24 ноября 2026
 
+## 25.11.2026 — R31: R27/V3 passive observer assembled; guarded WeiDU SOURCE ONLY; CI PASS
+
+**Новая практическая разработка:** вместо второго наблюдателя собран exact R27 ACTION_CONTEXT_V3 плюс один пассивный EEex listener. Файл `BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125/M_BGXR27_R31_SOURCE_ONLY.lua` — 47 550 байт, SHA256 `5a1f6b32db920a005161734605c8b3273614a1318d8b1b57dac79ed022a00f38`. Известный исходный R27/V3 44 805 байт, SHA256 `61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929` сохранён без правок. Версия R31 не создаёт приказов, не сменяет оружие; протокол nonempty-queue предоставляет только отрицательное наблюдение.
+
+**Защищённый код установки подготовлен, но НЕ подключён к обновлятору.** `R31_GUARDED_SOURCE_ONLY.py` моделирует новый отдельный WeiDU-компонент BGXR31 *после* реального R29 (позиция 150), замену только `override/M_BGXR27.lua`, внешнюю проверенную копию, буквальное typed согласие и last-only rollback при R31 последним. Не применять старые R27/R29 installer/rollback. Реальный пользовательский `BGXAI_UPDATE.cmd` не менялся; его backend 79 979 / 80 000 байт, до добавления меню 171 нужно обеспечить ограничение и pinned checks. Не давать пользователю отдельный CMD/PowerShell/Python.
+
+**CODE/CI PASS, DEPLOY NO, LIVE NEW R31 NO.** Локальная сборка CI + 6/6 тестов R31; 5/5 synthetic guarded overlay/rollback; модель EEex с одной регистрацией и `queuedActionsRaw=2`, `ordersSent=0` проверена на Lua 5.3/5.4/LuaJIT; прежний R27 90/90 на всех трёх. GitHub Actions Windows + Ubuntu SUCCESS: https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45560352966 . В тестовой среде WeiDU вызов замещён mock: **это не native WeiDU install и не игровой runtime**.
+
+**Граница истины:** реальный R30 READ ONLY PASS 25.11, установленный R27 SHA `e5eb400c56ffb1bc23344a0cf30dcc724d8d18fc2752fabd1c2c63cdcca73735`, WeiDU R27 №149/R29 №150. R31 в EET не установлен, `queueBindingLiveVerified=false`, `manualEpsOriginVerified=false`, `alternateEffectiveAPRVerified=false`. Игру, V6, EPS, R27, R29, BG_EET_RU, BG Voice RU и сейвы не изменяли.
+
+**Следующий P0:** source-only интеграция нового R31 в прежний один CMD (native WeiDU и PS5.1 проверка, SHA-pinned immutable backend, без обхода 80 KB); только потом отдельное буквальное разрешение, один реальный passive queue capture. Никакой auto install от CI; затем real alternate APR/THAC0/effects и V5→V4→V3→NONINTERRUPT→BAF, а не повторная разработка bow→sword. Ссылка на рабочий пакет: `BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125/README_RU.md`.
+
+---
+
 
 ## 25.11.2026 — реальный R30 PASS на пользовательской EET (R29 в WeiDU)
 
