@@ -35,9 +35,9 @@ jobs:
           from pathlib import Path
           import hashlib,json,ast
           root=Path('bg-eet-ru')
-          mod=(root/'native-correlation'/('v146_ro.py' if manifest['version']==146 else 'v144_ro.py')).read_bytes().replace(b'\r\n',b'\n')
           cmd=(root/'onefile/BG_EET_RU_UPDATE.cmd').read_bytes()
           manifest=json.loads((root/'onefile/release.json').read_text('utf8'))
+          mod=(root/'native-correlation'/('v146_ro.py' if manifest['version']==146 else 'v144_ro.py')).read_bytes().replace(b'\r\n',b'\n')
           assert len(mod)<=20000,len(mod)
           assert len(cmd)<=750000,len(cmd)
           assert manifest['version'] in (144,146) and manifest['game_writes_allowed'] is False
