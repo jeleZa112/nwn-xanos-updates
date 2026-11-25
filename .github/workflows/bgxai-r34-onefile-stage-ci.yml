@@ -22,6 +22,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Rebuild exact staged candidate deterministically from pinned R33
+        shell: bash
+        run: python BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125/build_r34_onefile_menu173_source_only.py
       - name: Validate old 172 menu handlers byte-identical, stage under 80KB, exact source SHA
         shell: bash
         run: |
