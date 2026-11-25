@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "1404112c2889561b99416e48a4ba06ab947c4fee",
+  "commit": "377d9129c90b2346353e970da6d249068fd99e1f",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "9131e29da59b7d3a62651eab3ff7deee514da426cfbe6a1267b54444e9c6f59a",
-  "script_size": 79775,
-  "description": "R34 archived R33 aggregate fall back (explicit historical provenance) plus current-game native ITM read only; no dispatch, menus 1-172 unchanged"
+  "script_sha256": "7543664eb85dce767cf5d3800b13402fa3fe1e396b8ba86159c5cdcbfd5c88e4",
+  "script_size": 80806,
+  "description": "R37 menu174 guarded R33→R37 passive advice only, original menus 1-173 byte-identical; no active dispatch; two SHA-pinned R37 sources"
 }
