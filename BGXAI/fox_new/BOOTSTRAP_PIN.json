@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "29e7dee1cae6dea41bb11f9286debca2e047f0a5",
+  "commit": "38c7d2ee3bfc7a50631bb3375e5c1ee2141c0d7d",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "7e3c3cc69ce865ff197a5238564757a2c01df71950f56018590f5fa2c38b2417",
-  "script_size": 79920,
-  "description": "R33 menu172 SHA-pinned with exact R33 source path added to Get-PinnedBytes allowlist; same CMD, menus 1-171 preserved, guarded typed install only."
+  "script_sha256": "c900e8aa6c4ec92bcb80cac1624cf1d6caa477dc961dd137555508e14e9d1f78",
+  "script_size": 79935,
+  "description": "R34 menu173 READ ONLY current native ITM+R33 proficiency evidence; same BGXAI_UPDATE.cmd, menus 1-172 byte-exact, pinned SHA, no game modification"
 }
