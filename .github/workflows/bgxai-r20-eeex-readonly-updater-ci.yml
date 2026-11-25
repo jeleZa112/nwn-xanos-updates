@@ -1,4 +1,4 @@
-name: BGXAI R20 single-updater static EEex audit menu164 - candidate
+name: BGXAI onefile updater R30 menu170 integration regression
 on:
   push:
     branches: [bgxai-r20-eeex-static-menu-candidate, bg-eet-ai]
@@ -12,7 +12,7 @@ permissions:
   contents: read
 jobs:
   static:
-    name: R20 old menu regression + R19 36 fixtures (${{ matrix.os }})
+    name: R30 menu170 + preserved 1-169 dispatches (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -23,10 +23,12 @@ jobs:
         shell: bash
         run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: R20 fixed pin, 164 actions, exact original 163 handlers
+      - name: R30 pin, 170 menu actions, unchanged prior dispatches
         shell: bash
         run: |
           python -m unittest -v BGXAI/BUILD/R20_EEEX_STATIC_MENU_RO_20261123/test_r20_updater_integrity.py
@@ -52,7 +54,7 @@ jobs:
           [System.Management.Automation.Language.Parser]::ParseFile($p,[ref]$tok,[ref]$err)|Out-Null
           if($err.Count){throw ('BGXAI_R20_PS51_AST_FAIL '+(($err|ForEach-Object{$_.Message}) -join ';'))}
           $b=[IO.File]::ReadAllBytes($p)
-          if($b.Length -ne 79871 -or $b.Length -gt 80000){throw 'BGXAI_R20_BOOTSTRAP_SIZE_STOP'}
+          if($b.Length -ne 79979 -or $b.Length -gt 80000){throw 'BGXAI_R20_BOOTSTRAP_SIZE_STOP'}
           $hash=([BitConverter]::ToString([Security.Cryptography.SHA256]::Create().ComputeHash($b))).Replace('-','').ToLowerInvariant()
           Write-Host ('BGXAI_R20_SCRIPT_SHA256='+$hash)
           Write-Host ('BGXAI_R20_SCRIPT_BYTES='+$b.Length)
