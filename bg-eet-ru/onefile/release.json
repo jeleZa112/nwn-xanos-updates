@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 144,
-  "sha256": "86ff8c0f02b7ff8b48bad8c80da1201e7d3a1897fbbfd9de2b2ca6ec7ac80594",
-  "mode": "V144_PINNED_DOWNSTREAM_ROUTER_FUNCTION_READ_ONLY_UI_HOLD",
+  "version": 146,
+  "sha256": "ac1dc1314906531923d6192900c716507fb73a5c24437277236458a3c1c4543f",
+  "mode": "V146_SOURCE_ONLY_FIVE_PRESENTATION_GRAPH_TARGETS_UI_JOIN_HOLD",
   "game_writes_allowed": false,
-  "note": "Same user CMD, menu 9 V144 read-only collects bounded code windows and optional pdata for downstream RVA 0x209580,0x2195B0,0x406720 from exact EXE. Nested V136/V140/V142 evidence retained in new 70_V144_DOWNSTREAM_SOURCE_RO.json; old 67/68/69 historical ZIP entries unchanged. No game writes, hooks or gameplay/render row proof."
+  "note": "One existing CMD menu 9, exact SHA-pinned EXE. Preserves 67/68/69/70 history and nested V136/V140/V142/V144 in new 71_V146_PRESENTATION_SOURCE_RO.json. One bounded 512-byte window plus optional pdata per five source-proven target RVAs (0x40BC80,0x40A400,0x276490,0x4069F0,0x2197B0). No game write, new hook, UI-token or weapon/outcome join claim. On partial failure hold evidence."
 }
