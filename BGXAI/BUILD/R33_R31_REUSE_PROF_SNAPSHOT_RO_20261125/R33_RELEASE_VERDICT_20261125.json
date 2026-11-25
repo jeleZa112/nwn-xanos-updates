@@ -1,0 +1,64 @@
+{
+  "schema": "BGXAI_R33_ONEFILE_MENU172_RELEASE_VERDICT_V1",
+  "date": "2026-11-25",
+  "repository": "jeleZa112/nwn-xanos-updates",
+  "branch": "bg-eet-ai",
+  "status": "R33_PINNED_RELEASE_READY_INSTALL_NOT_PERFORMED",
+  "oneFileUpdater": {
+    "file": "C:\\Games\\BG_EET_FOXX_NEW\\BGXAI_UPDATE.cmd",
+    "cmdChanged": false,
+    "menu": "172",
+    "menuChoices": {
+      "1": "preflight_READONLY",
+      "2": "install_TYPED",
+      "3": "status_READONLY",
+      "4": "rollback_TYPED_LAST_ONLY",
+      "5": "capture_console_READONLY"
+    },
+    "backend": "BGXAI/BGXAI_SYNC.ps1",
+    "backendBytes": 79874,
+    "backendSha256": "4f04b43f69d4171e2686f017d334eac69f91d9389a18122110c2bfd44a2d5663",
+    "pinnedGitCommit": "f383ad5ca3515f6fc166ca1a2337a88f9d2cad49",
+    "pinFile": "BGXAI/fox_new/BOOTSTRAP_PIN.json",
+    "preservedMenus": "1-171",
+    "limitBytes": 80000
+  },
+  "r33": {
+    "sourcePath": "BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/M_BGXR27_R33_SOURCE_ONLY.lua",
+    "sourceBytes": 49438,
+    "sourceSha256": "1420ef723df1090d56f8f6590fd82e5c69107ba97a39b2ca2ba73f93e0e77069",
+    "guardPath": "BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/R33_GUARDED_SOURCE_ONLY.py",
+    "guardBytes": 22132,
+    "guardSha256": "0815d173b276c0f990eb3ab66ac6f8f614a9a0f0f59fc301f94f5f8c890be653",
+    "typedInstallToken": "INSTALL_BGXAI_R33_PASSIVE_PROF_AFTER_R31",
+    "typedRollbackToken": "ROLLBACK_BGXAI_R33_PASSIVE_PROF_ONLY",
+    "r31MustBeLastComponents": 151,
+    "r33PostWeiDUComponents": 152,
+    "gameAssetOnlyModifiedOnInstall": "override/M_BGXR27.lua",
+    "safeExternalBackup": true,
+    "postWeiDUHashAudit": true
+  },
+  "checks": {
+    "sourceOnlyNativeLua3Runtimes": "PASS",
+    "pythonWindowsUbuntu": "PASS",
+    "PS51AST": "PASS",
+    "original171Handlers": "PRESERVED_EXACT",
+    "immutablePinSha256": "PASS",
+    "officialNativeWeiDU251TP2Windows": "PASS",
+    "officialNativeWeiDU251TP2Linux": "PASS",
+    "workflowUrl": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45647273764",
+    "workflowRun": 45647273764,
+    "all5JobsSuccess": true,
+    "gameplayLiveR33": false
+  },
+  "userGame": {
+    "r31": "INSTALLED_PREVIOUSLY_LIVE_PASSIVE_OBSERVER_CONFIRMED",
+    "r33Installed": false,
+    "r33GameRuntimeVerified": false,
+    "weaponSwitchAuthorized": false,
+    "alternateEffectiveAprVerified": false,
+    "gameModifiedByThisReleaseWork": false
+  },
+  "continuity": "Next action can be one user-run of existing BGXAI_UPDATE.cmd menu 172 option 2, with exact typed token. That command internally preflights and fails closed, so no separate redundant option 1 required. Attach BGXAI_R33_INSTALL_*.json or STOP to continue. Never auto rollback or repeat on STOP.",
+  "caveat": "Other legacy GitHub workflows may still assert obsolete active updater SHA/menu size; R33 independent all-five-job release CI is green, but old workflows must be audited separately rather than treating their failure as gameplay evidence."
+}
