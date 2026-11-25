@@ -50,3 +50,33 @@ jobs:
           assert len(active)==pin['script_size']
           print('PASS R36 advisory only; R33 installed unchanged, one CMD SHA pin unchanged')
           PY
+  native-lua-composer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua 5.3, Lua 5.4 and LuaJIT
+        run: sudo apt-get update -qq && sudo apt-get install -y lua5.3 lua5.4 luajit
+      - name: R36 Lua direct-R33 raw snapshot advice-only test on three runtimes
+        shell: bash
+        run: |
+          for runtime in lua5.3 lua5.4 luajit; do
+            "$runtime" BGXAI/BUILD/R36_R33_CONTEXT_INVALIDATION_RO_20261126/test_r36_r33_advice_invalidation.lua
+          done
+      - name: No EEex listener, new action or installed-game writes
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('BGXAI/BUILD/R36_R33_CONTEXT_INVALIDATION_RO_20261126/BGXAI_R36_R33_ADVICE_INVALIDATION.lua').read_text('utf-8')
+          forbidden=('EEex_Action_AddSpriteStartedActionListener(', 'EEex_Sprite_GetActiveStats(',
+           'SelectWeaponAbility(', 'ClearActions(', 'ActionOverride(', 'SetGlobal(',
+           'Infinity_Log(', 'io.open(', 'os.execute(')
+          assert all(x not in s for x in forbidden)
+          assert 'installed=false' in s
+          assert 'dispatchAuthorized=false' in s
+          assert 'weaponSwitchAuthorized=false' in s
+          assert 'sameBuffContextVerified=false' in s
+          assert 'manualEpsOriginVerified=false' in s
+          print('PASS R36 NO listener, NO duplicated stats read, NO gameplay commands')
+          PY
