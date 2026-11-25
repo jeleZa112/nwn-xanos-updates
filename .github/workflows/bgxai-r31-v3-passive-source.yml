@@ -5,6 +5,9 @@ on:
     paths:
       - 'BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125/**'
       - 'BGXAI/BUILD/R27_R2_IDENTITY_REFRESH_20261124/BGXAI_R27_R2_REFRESH_SOURCE_ONLY.lua'
+      - 'BGXAI/BGXAI_SYNC.ps1'
+      - 'BGXAI/fox_new/BOOTSTRAP_PIN.json'
+      - 'BGXAI_UPDATE.cmd'
       - '.github/workflows/bgxai-r31-v3-passive-source.yml'
   workflow_dispatch:
 permissions:
@@ -25,6 +28,7 @@ jobs:
           python3 BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125/build_r31_v3_source_only.py
           python3 -m unittest discover -s BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125 -p test_r31_guarded_source_only.py -v
           python3 -m unittest discover -s BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125 -p test_r31_onefile_menu_source_only.py -v
+          python3 -m unittest discover -s BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125 -p test_r31_pinned_onefile_release.py -v
           python3 BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125/build_r31_onefile_menu_source_only.py
           python3 -c "from pathlib import Path; import hashlib; x=Path('BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125/R31_GUARDED_SOURCE_ONLY.py').read_bytes(); print('R31_GUARD_SHA256='+hashlib.sha256(x).hexdigest()+' R31_GUARD_BYTES='+str(len(x)))"
       - name: Existing R27 V3 source and action-context regressions
@@ -48,6 +52,7 @@ jobs:
           py -3 BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125/build_r31_v3_source_only.py
           py -3 -m unittest discover -s BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125 -p test_r31_guarded_source_only.py -v
           py -3 -m unittest discover -s BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125 -p test_r31_onefile_menu_source_only.py -v
+          py -3 -m unittest discover -s BGXAI/BUILD/R31_R27V3_PASSIVE_SOURCE_20261125 -p test_r31_pinned_onefile_release.py -v
 
       - name: Parse SOURCE-ONLY R31 menu171 backend with native Windows PowerShell 5.1 AST
         shell: powershell
