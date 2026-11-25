@@ -1,5 +1,20 @@
 # BGXAI — единая точка продолжения, 24 ноября 2026
 
+## 25.11.2026 — R33 меню 172 безопасно опубликовано, CODE/CI PASS, DEPLOY/LIVE NO
+
+**Фактическое положение:** R31 установлен и подтверждён в реальной игре (12 событий 12 стабильных очередей, ноль непустых; `actionRaw=3` во время атаки Халида, поэтому `queuedActionsRaw=0` НЕ безопасный рубеж). **R33 ЕЩЁ НЕ УСТАНОВЛЕН**: только опубликован защищённый upgrade R31→R33 в прежнем `BGXAI_UPDATE.cmd`, меню **172**. Релиз пассивный: сырые level1/2/3, kit, 46 WPROF-полей 89..134 и raw AI-class, никакой автоматической смены оружия. Обобщённый Weapon Priority V5/V4/V3 по альтернативным слотам не закончен.
+
+**Точная инфраструктура:** `BGXAI/BGXAI_SYNC.ps1` 79 874 байта SHA256 `4f04b43f69d4171e2686f017d334eac69f91d9389a18122110c2bfd44a2d5663`, immutable git commit `f383ad5ca3515f6fc166ca1a2337a88f9d2cad49`; `BGXAI/fox_new/BOOTSTRAP_PIN.json` обновлён, сам CMD не менялся, старые пункты 1–171 byte-for-byte сохранены. `R33_GUARDED_SOURCE_ONLY.py` 22 132 байта SHA256 `0815d173b276c0f990eb3ab66ac6f8f614a9a0f0f59fc301f94f5f8c890be653`; `M_BGXR27_R33_SOURCE_ONLY.lua` 49 438 байт SHA256 `1420ef723df1090d56f8f6590fd82e5c69107ba97a39b2ca2ba73f93e0e77069`.
+
+**CODE/TEST/CI/RELEASE PASS:** [5/5 R33 CI 45647273764](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45647273764) зелёный: pinned SHA + Python guards Windows/Linux, PowerShell 5.1 AST, настоящий WeiDU v251 `--parse-check TP2` Windows/Linux, настоящий Lua-мок 5.3/5.4/LuaJIT, guarded install/rollback/capture mock. Это НЕ игровая установка и НЕ LIVE тест R33. [Структурированный релизный вердикт](../BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/R33_RELEASE_VERDICT_20261125.json).
+
+**Единственный следующий пользовательский шаг без повторных RO-тестов:** закрыть игру и InfinityLoader, открыть обычный `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd` → **172** → **2 (install)**. Установщик САМ выполнит read-only preflight R31 last 151, SHA всех нужных файлов, создаст внешний backup, затем спросит буквальное `INSTALL_BGXAI_R33_PASSIVE_PROF_AFTER_R31` (другое/ENTER = отмена). Прислать ОДИН файл `C:\Users\Drevo\Documents\BGXAI_LIVE_REPORTS\BGXAI_R33_INSTALL_*.json` или STOP. При STOP ни повторять, ни откатывать самостоятельно. Далее после проверки результата один runtime capture 172→5, а не новое повторение старого R31.
+
+**Не затронуто:** EET/WeiDU реального ПК, R31, EPS 18.4, R29/V6/working guard-heal-AOE, BG_EET_RU, BG Voice RU, сохранения. **Остаточный CI-долг:** часть старых исторических проверок жёстко ожидает предыдущий активный SHA или 170/171 пункт меню и остаётся красной. Новая независимая R33 release CI полностью зелёная; не объявлять остальные ошибки исправленными, их надо адресно адаптировать к historical-pin модели, не скрывая реальные сбои.
+
+---
+
+
 ## 25.11.2026 — R33: реиспользование 46 профилей R31, проверено CI; установка NO
 
 **Фактический результат:** [R33 SOURCE ONLY](../BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/README_RU.md). Доказано на точном исходнике R31 SHA256 `5a1f6b32db920a005161734605c8b3273614a1318d8b1b57dac79ed022a00f38`, что R31/R4 **уже считывает** `m_nLevel1..3`, `m_nKit` и 46 полей proficiency 89..134. Они ранее намеренно не сериализовались в Console JSON. R33 не создаёт вторую точку сбора, а дополняет текущий `R27_SINGLE_CALLBACK` сырой структурой `levelsAndKitRaw`, массивом 46 `proficiencyStat89to134Raw`, необязательным `aiObjectClassRawCandidate` и fail-closed flags.
