@@ -35,6 +35,14 @@ class OnefileSourceOnly(unittest.TestCase):
         self.assertIn(b"'170' {RunR30ReadOnly;break}",out)
         self.assertEqual(m.BACKEND.read_bytes(),before)
 
+    def test_staged_backend_bytes_exactly_equal_deterministic_builder(self):
+        staged=ROOT/"BGXAI_SYNC_R31_MENU171_SOURCE_ONLY.ps1"
+        expected=m.build()
+        self.assertEqual(staged.read_bytes(),expected,
+                         "staged source must be identical to approved deterministic builder")
+        self.assertEqual(len(expected),79941)
+        self.assertEqual(m.digest(expected),"c998ff6607ee3915b9cbb3c9b31955f715bee425b5ed882e04e1af1d515ed4aa")
+
     def test_idempotent_on_proposed_backend(self):
         built=m.build()
         self.assertEqual(m.produce(built,m.GUARD.read_bytes(),m.LUA.read_bytes()),built)
