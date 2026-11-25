@@ -1,3 +1,22 @@
+# BGXAI CURRENT 26.11.2026 — R34 REAL USER PASS; next task per-slot APR/THAC0/action-origin
+
+**New authoritative user result:** the actual user-supplied R34 JSON `BGXAI_R34_NATIVE_PROF_20261126T002126164.json` (7,404 bytes, SHA256 `aab2fdf801627b1bb165dd5435644da0b50967f9269e351e58bec4deecc81c10`) was inspected. `schema=BGXAI_R34_R33_NATIVE_ITM_PROF_JOIN_RO_V1`, `status=HISTORICAL_R33_PROFILE_CURRENT_ITM_JOINED_RO_NO_SWITCH`, `liveGamePinVerified=true`, `nativeResourceCount=5`, `gameModified=false`, `ordersSent=0`, `dispatchAuthorized=false`, `weaponSwitchAuthorized=false`. **R34 read-only link on real user's installed EET is PASS; no repeat 173.** Previously documented R34 log failures are historical, already resolved by the archived R33 fallback; do not use old "R34 pending" as the current next instruction.
+
+**Real current-game item evidence** (IDs and SHA only, no user paths):
+- `BOW05` source `CURRENT_GAME_BIFF`, SHA256 `0bfc6680b759239052dcd1882a1d2f354e7bc840e535f0b9499a5c7a3c07d797`, `proficiencyStatIdRaw=105` (SHORT_BOW); historical R33 raw stat 105 is 0 pips.
+- `SW1H04` source `CURRENT_GAME_OVERRIDE`, SHA256 `73e3de6a07afc42f50d63b74c3235c1f9efdd773e280c501b481e876647eda88`, statID 90 LONG_SWORD, historical rank 2.
+- `STAF01` source `CURRENT_GAME_OVERRIDE`, SHA256 `c472bdf3a561144392249d45df67ae3b4e07d0faf5d30469177c318bc6857fd3`, statID 102 QUARTERSTAFF, historical rank 0.
+- `AROW01` source `CURRENT_GAME_BIFF`, SHA256 `52209dceddf99fec75e20a694b42906fa3f9ea74c6cacad5d62d33eff22f9d91`, proficiency ID 0 is unclassified rather than zero pips, launcher requirement raw 1.
+- `SHLD03A` source `CURRENT_GAME_BIFF`, SHA256 `f24085edd8bf24f79b9b09302bb719f5203d9fa175dbf352f94253ff2a48b7f1`; raw proficiency 0 unclassified; not previously in R28 report.
+
+**Independent cross-date source comparison:** R34 SHA for `AROW01`, `BOW05`, `STAF01`, `SW1H04` exactly match the four previously real-native-read ITM in R28 (23.11.2026). R33 historic Khalid stat 104 LONG_BOW was 1 pip and stat 105 SHORT_BOW was 0; this matters because BOW05 is SHORT_BOW. It is *not* proof of current 26.11 actor pips/equipment, or that longbow is better: BOW05 has item opcode 1 (fixed APR behavior) and ammo/target effectiveness must be compared under full active buffs.
+
+**Critical evidence boundaries:** `historicalProfileOnly=true`, `sameBytesAsUserUploadedLogVerified=false`, `localLogBytesAuthenticated=false`, `sameSessionItemResourcesVerified=false`, `sessionTemporalAlignmentVerified=false`. The R34 property `noProficiencyInLiveActor` refers to a historic R33 profile and must **NOT** be restated as verified live actor stats. `manualAndEPSOriginVerified=false`, `alternateEffectiveAPRVerified=false`, `allBuffsAndEffectsVerified=false`, `actorClassRowVerified=false`, `ammoLauncherEngineBindingVerified=false`, `safeDispatchTimeVerified=false`, `actionOwnershipStatus=ACTION_SOURCE_POINTER_UNAVAILABLE`. No scorer/executor deployment or new autonomous weapon switch is authorized.
+
+**Next real P0, no new 173/R33 and no repeat of V6/R29 bow-to-sword pilot:** investigate exact alternate-slot effective APR/THAC0/buff+item effect capture using proven EEex APIs without switching or actions, verify class/dual and actual ammo-launcher binding, prove manual/EPS origin and safe action boundary, then integrate existing V3/V4/V5 + NONINTERRUPT. Before issuing any order: independent user typed approval, SHA preflight, external backup, WeiDU last-only rollback, A/B LIVE. Preserve EPS18.4, BGXP5, BGX120, guard, all saves, translation and voice projects. One user-facing `BGXAI_UPDATE.cmd`.
+
+---
+
 # 26.11.2026 — BGXAI R34: confirmed user HOLD, historical R33 fallback released (CI PASS)
 
 **LATEST USER EVIDENCE:** unchanged onefile `BGXAI_UPDATE.cmd` loaded immutable `124add6624c4` (SHA256 OK). User selected 173 and got `R34_HOLD: R34_R33_NAMED_LOG_DIFFERS_AND_FAILS_FINGERPRINT`, report `BGXAI_R34_NATIVE_PROF_20261126T000637588.json`. No game writes, no orders, no auto weapon switch. **Do not ask for another R33 capture, replay battle, R33 install, or immediate repeat of 173.** The failing local log was not independently inspected, so its actual difference must not be guessed.
