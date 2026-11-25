@@ -168,4 +168,21 @@ test('WSPATCK duplicate level label and missing rank are holds',function()
  t.WSPATCK.getRowLabel=function(_,y) return y==2 and '7' or tostring(y) end
  eq(M.observe('FIGHTER',2,1,source(t)).reason,'WSPATCK_MISSING_RANK')
 end)
+test('R32 engine 2DA additive bonus encoding matches existing Weapon Priority V5',function()
+ local v5=dofile(root..'../../patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_APR_PROVENANCE_V5.lua')
+ for _,raw in ipairs({-3,-2,-1,0,1,2,3}) do
+  local data=sample()
+  local old=data.WSPATCK.getAtPoint
+  data.WSPATCK.getAtPoint=function(self,x,y)
+   if x==0 and y==2 then return tostring(raw) end
+   return old(self,x,y)
+  end
+  local result=M.observe('FIGHTER',2,1,source(data))
+  eq(result.status,'ENGINE_RESOLVED_APR_TABLE_CANDIDATE_READ_ONLY')
+  eq(result.wspatckRawValue,raw)
+  eq(result.tableBonusAPRIfActorClassVerified,v5.decode_wspatck(raw))
+  eq(result.engineFinalAPRVerified,false)
+  eq(result.otherSlotEffectiveAPRVerified,false)
+ end
+end)
 print('PASS R32 EEEX C2DARRAY RESOURCE READER '..count..'/'..count..' SOURCE ONLY')
