@@ -1,5 +1,13 @@
 # BGXAI R30 — диагностика возможности безопасного обновления пассивного R27
 
+## Актуальный контракт после согласования V3 (25.11.2026)
+
+**Текущий** неустановленный source-only R27+action context V3: SHA256 `61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929`, 44805 байт; независимая сборка [CI 45456677110](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45456677110) PASS. Исторический V2 SHA `7ca77abeb94363c75cc58986db4427d9f93edba25e09764be35008c2f0e0600b`, встречающийся в таблице ниже, **устарел**; запрещено выдавать его за текущий.
+
+R30 readonly-скрипт теперь закреплён на актуальном V3 SHA и дополнительно сверяет смысловые маркеры queue/action-context + `actionOriginVerified=false`, `manualEpsQueueVerified=false`. Его **12/12** Python checks (включая реальный текущий SHA+байты и отказ от устаревшей queue-only версии) проходят в [CI 45553690490](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45553690490) SUCCESS Windows/Linux. Файлы в будущем деплое не меняются автоматически; даже PASS означает только `SOURCE_AND_HISTORY_READ_ONLY_PASS_INSTALL_STILL_UNAUTHORIZED`. В единственный `BGXAI_UPDATE.cmd` R30 ещё не включён; игру не запускали и не модифицировали.
+
+---
+
 **Статус: SOURCE ONLY, READ ONLY. Это не установщик и не новая игровая функция.**
 
 ## Зачем создан
