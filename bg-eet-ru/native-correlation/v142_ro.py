@@ -343,6 +343,8 @@ def run_game(game_root: Path, legacy_module) -> dict:
         if (before.st_size,before.st_mtime_ns,before.st_ino)!=(after.st_size,after.st_mtime_ns,after.st_ino):
             raise Hold('GAME_EXE_CHANGED_DURING_READ')
         out['callee']=callee
+        out['status']='V140_PINNED_FUNCTION_EXTRACTED_SEMANTIC_PROVENANCE_HOLD'
+        out['reason']='CALL_CHAIN_TO_COMBATLOG_AND_DIRECT_RENDER_TOKEN_UNVERIFIED'
         try:
             out['delivery_capture']=v142_delivery(source)
             out['status']='V142_PINNED_DISPATCH_MESSAGE_ROUTING_CAPTURED_UI_HOLD'
@@ -350,8 +352,6 @@ def run_game(game_root: Path, legacy_module) -> dict:
         except (Hold,OSError,ValueError) as e:
             out['delivery_capture_hold']=str(e)[:140]
         out['game_exe_sha256']=GAME_EXE_SHA
-        out.setdefault('status','V140_PINNED_FUNCTION_EXTRACTED_SEMANTIC_PROVENANCE_HOLD')
-        out.setdefault('reason','CALL_CHAIN_TO_COMBATLOG_AND_DIRECT_RENDER_TOKEN_UNVERIFIED')
     except (Hold, OSError, ValueError) as e:
         out['reason']=str(e)[:150]
     return out
