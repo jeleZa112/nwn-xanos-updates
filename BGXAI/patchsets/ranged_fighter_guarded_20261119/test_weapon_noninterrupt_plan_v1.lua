@@ -268,4 +268,38 @@ test('R27 queued count must match actor, action and strict no-dispatch flags',fu
   assert(r.status~='PRESERVE_KNOWN_NONEMPTY_ACTION_QUEUE')
  end
 end)
+test('R31 real LIVE: action3 attack with raw queue zero is NOT safe idle',function()
+ -- Source: 25.11.2026 real R31 12/12 capture; actionRaw=3, queueRaw=0,
+ -- source pointer unavailable, origin UNKNOWN. This is NOT a claimed
+ -- proof that manual/EPS action queue is empty.
+ local s=sample()
+ s.actor.engineActorRaw=139266124
+ s.actor.currentActionRaw=3
+ s.actor.originVerified='UNKNOWN'
+ s.actor.manualOrderActive=nil
+ s.actor.epsBusy=nil
+ s.observedR27Queue={
+  schema='BGXAI_R27_SINGLE_CALLBACK_SELECTED_RO_V1',
+  status='CURRENT_SELECTED_SAME_CALLBACK_SOURCE_CANDIDATE',
+  actor=139266124,actionRaw=3,selectedWeaponRaw=12,
+  queuedActionsRaw=0,queueSnapshotStable=true,
+  actionContextSnapshotStable=true,
+  actionSourceReadStatus='ACTION_SOURCE_POINTER_UNAVAILABLE',
+  actionSourceStable=false,actionOriginVerified=false,
+  manualEpsQueueVerified=false,readOnly=true,
+  sameLuaListenerInvocation=true,ordersSent=0,dispatchAuthorized=false
+ }
+ s.activity={source='RAW_EEEX',snapshotId='F100',actorId='P1',tick=100,
+  rawActionId=3,queueCountRaw=0}
+ local first=M.step(s,nil,score)
+ eq(first.status,'CONTINUE_CURRENT_ACTION_RECALCULATING')
+ eq(first.dispatchAuthorized,false);eq(first.ordersSent,0)
+ local n=advance(s)
+ n.activity.tick=n.frame.tick;n.activity.snapshotId=n.frame.snapshotId
+ local second=M.step(n,first.next,score)
+ eq(second.status,'CONTINUE_CURRENT_ACTION_SWITCH_PENDING')
+ eq(second.proposedWeaponId,'SWORD') -- advisory only, not game dispatch
+ eq(second.dispatchAuthorized,false);eq(second.ordersSent,0)
+ eq(second.actionQueueCleared,false);eq(second.currentActionPreserved,true)
+end)
 print('PASS NONINTERRUPT SCHEDULER '..count..'/'..count..' SOURCE ONLY')
