@@ -31,7 +31,7 @@ class RefreshContract(unittest.TestCase):
         self.assertIn("R27.prepareConsolePilot", self.text)
         # Candidate is a module, not a bootstrap: preserve the existing single listener tail separately.
         self.assertNotIn("EEex_Action_AddSpriteStartedActionListener(", self.text)
-        self.assertEqual(self.text.count("return R27\\n"), 1)
+        self.assertEqual(self.text.count("return R27\n"), 1)
 
     def test_queue_observation_fails_closed(self):
         for marker in ("m_queuedActions", "m_nCount", "queueSnapshotStable",
