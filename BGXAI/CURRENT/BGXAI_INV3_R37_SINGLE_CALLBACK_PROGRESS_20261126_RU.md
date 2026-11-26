@@ -1,3 +1,15 @@
+# FOLLOW-UP 26.11.2026 — R37 INV3 composition corrected, no game changes
+
+**New regression safeguard:** Inventory V3 is now sampled **AFTER** R36's legacy compare/invalidation, and before the original emit. First composite captured inventory before the legacy compare; that timing introduced avoidable risk of subtly changing R37's original interpretation. Corrected source Git blob `ae5011dfdf132cb3cc29643acdb3c66da33f5412` (the latest branch may advance as documentation/tests change). No new listener, no action commands.
+
+Rechecked static invariants directly from actual GitHub content: exact unchanged original R33 and R37 JSON serializer blocks; exactly one `R27.makeListener` and one EEex registration call; one INV3 capture; original compare runs before INV3; original log emit after INV3; scanner only 18..33; 0 calls to equip/clear/Stop. **10/10 meaningful assertions PASS in source comparison**. Added independent regression source check enforcing R36→INV3→emit and R33→R37→INV3 output sequence, plus occupied/empty/duplicate counters in bounded third event. Unknown duplicates are serialized as JSON null, not false.
+
+Native local LuaTeX 5.3 V3 stand-alone 13/13 PASS in current session, SHA256 `2c5fb45dc8d1de970c19e0763c8880a9bd1b33b1c10ea13ae5be64f9eab5203f` for V3 source and `4be28476ebdbf2861da2036bc1569e85625495f1c69e9938b5449ea8acf42777` for V3 test. **Full combined R37+INV3 69KB Lua runtime test NOT VERIFIED in this session** because available connector could fetch sources but container had only mounted standalone V3 files; network download inaccessible; GitHub Actions run status unavailable through installed connector. Do not conflate static checks and executed bundled test.
+
+Current CODE=yes, standalone native Lua test=yes, combined static=yes, **combined executable Lua test=UNKNOWN, DEPLOY=no, LIVE=no**. Next gate is exact complete combined native test; onefile protected install only after explicit scoped typed authorization, SHA, external backup and last-only WeiDU. Do not repeat past R37 live 12/12 capture. No changes to BGXAI_UPDATE.cmd, installed R37/R29/V6, EPS, localization or game saves.
+
+---
+
 # BGXAI — P0 Weapon Inventory V3 → R37 same listener (26.11.2026)
 
 ## Why
