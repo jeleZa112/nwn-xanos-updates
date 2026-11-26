@@ -1,0 +1,76 @@
+name: BGXAI onefile 175 stage-only 80k Windows PS5.1 gate
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/**'
+      - '.github/workflows/bgxai-xequip-menu175-staged-onefile-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  stage-only-gate:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    timeout-minutes: 8
+    steps:
+      - name: Preserve exact LF bytes on Windows before checkout
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Require byte-identical menu 1-174, only 3 intentional edits, max 80000
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import re,hashlib
+          base=Path("BGXAI/BGXAI_SYNC.ps1").read_bytes()
+          path=Path("BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/STAGED_BGXAI_SYNC_MENU175.ps1")
+          candidate=path.read_bytes()
+          assert len(base)==79832,("BASELINE_BYTES_CHANGED",len(base))
+          assert len(candidate)<=80000,("ONEFILE_LIMIT",len(candidate))
+          def handlers(raw):
+              return {int(m.group(1)):m.group(0) for m in re.finditer(rb"(?m)^'(\d+)'\s+\{[^\r\n]*$",raw)}
+          old,new=handlers(base),handlers(candidate)
+          assert set(old)==set(range(1,175)) and set(new)==set(range(1,176))
+          assert all(old[k]==new[k] for k in range(1,175)), "OLD_MENU_ACTION_DRIFT"
+          assert b'--native-readonly' in new[175]
+          assert b"Get-PinnedBytes $p" in new[175]
+          assert b"if($LASTEXITCODE){throw '175 RO STOP'}" in new[175]
+          assert b'if(tp -Lit $f){Remove-Item -Lit $f -Force}' in new[175]
+          source=Path("BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONEFILE_175_RO_V1.py").read_bytes()
+          assert len(source)==8527
+          h=hashlib.sha256(source).hexdigest().encode()
+          assert h==b'5bbc5d5444562346df7e2766d5eee97f60b1e2a33a2c5a074272697c1ee4e2b0'
+          assert h in new[175]
+          prefix=base.split(b"function Get-PinnedBytes([string]$zrp)")[0]
+          assert prefix==candidate.split(b"function Get-PinnedBytes([string]$zrp)")[0]
+          assert b'|BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126|' in candidate
+          assert b"'175' {" not in base
+          assert b"False()" not in new[175], "False marker belongs to embedded Python BAF source"
+          assert b"BGXAI_UPDATE.cmd" not in new[175], "Never create extra launchers"
+          print("PASS preserved 174 exact handlers, 80k cap, child SHA, no live install")
+          print("STAGED_ONEFILE_BYTES="+str(len(candidate)))
+          print("STAGED_ONEFILE_SHA256="+hashlib.sha256(candidate).hexdigest())
+          PY
+      - name: Offline source-only coordinator with no network or EET game
+        shell: bash
+        run: |
+          python -m unittest -v BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/test_xequip_onefile_175_ro_v1.py
+      - name: Windows PowerShell 5.1 AST parse of actual staged script
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $f=(Resolve-Path 'BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/STAGED_BGXAI_SYNC_MENU175.ps1').Path
+          $tokens=$null;$errors=$null
+          $ast=[System.Management.Automation.Language.Parser]::ParseFile($f,[ref]$tokens,[ref]$errors)
+          if($errors.Count -ne 0){$errors|Format-List;throw 'STAGED PS5.1 AST FAILED'}
+          if($null -eq $ast){throw 'PS5.1 AST MISSING'}
+          Write-Host 'PASS STAGED PS5.1 AST with menu 175; no game accessed'
