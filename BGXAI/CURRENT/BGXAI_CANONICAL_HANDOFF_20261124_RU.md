@@ -1,3 +1,17 @@
+# 26.11.2026 — LATEST: V2 ARMABLE ONE-SHOT XEquipItem CODE + GAM SAVE READER CI SUCCESS
+
+**Do not request previous menu175 again**: actual user EET inert BAF compile passed and saved in `BGXAI/CURRENT/BGXAI_XEQUIP175_LOCAL_EET_NATIVE_PASS_20261126_RU.md`.
+
+**NEW tangible source code** (no EET changes): `BGXAI/BUILD/WEAPON_XEQUIP_ONESHOT_ARMED_SOURCE_V2_20261126/BGXAI_XEQUIP_ONE_SHOT_SOURCE_V2.py` generates a truly armable (not `False()`) one-shot (source 18..33 → empty quickslot 35..38) BAF, requires out-of-combat, action queue empty, exact actor/slots/resref, Global arm=1 and LOCALS try=0; first disarms and marks try, then `XEquipItem`. It does not arm/install itself, cannot assert no manual/EPS interruption. `BGXAI_ONESHOT_BCS_MERGE_RO_V1.py` preserves every old BCS block byte-identical using R29 verified structural method; **NOT INSTALLED**. Real independent Windows+Linux GitHub Actions [45775196163](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45775196163) **SUCCESS: 15 source + 16 BCS-preservation tests EACH OS**, synthetic only, not native EET V2 compile.
+
+**NEW ACTUAL INVENTORY EVIDENCE PATH**: `BGXAI/BUILD/WEAPON_SAVE_GAM_INVENTORY_RO_V1_20261126/BGXAI_GAM_INVENTORY_RO_V1.py`: *read-only* parser for uploaded `BALDUR.GAM` (GAMEV2.0/CRE V1.0), correct CRE inventory indexes 21–36 ↔ SLOTS.IDS 18–33 and CRE weapon indexes 9–12 ↔ SLOTS.IDS 35–38; flags and 3 charge counters extracted from actual embedded CRE. Implicit fist SLOT10 marked UNOBSERVED. Version unsupported => HOLD (especially V2.1 not guessed), no game change. CI [45775410995](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45775410995) **SUCCESS 15 synthetic fixtures each Windows+Linux**. **No real user's GAM processed yet.**
+
+**NOW ONE JUSTIFIED USER STEP** to stop fabricating items: provide **COPY of `BALDUR.GAM`** from a disposable or previously saved game (not EXE, no CMD, no previous log), as attachment to chat. Existing older `BGXAI_TEST_6_NO_PRIEST1` might be relevant but do not assume actual current inventory. With genuine saved data, choose expendable unique weapon and empty quickslot, authenticate EET/item/kit, then prepare typed guarded WeiDU last-only live pilot. Another special install authorization will be required before touching game. **Original `BGXAI_UPDATE.cmd`, installed V6/R29/R37/EPS, saves, BG Voice RU and BG_EET_RU UNCHANGED**.
+
+Full self-contained handoff: `BGXAI/CURRENT/BGXAI_XEQUIP_ONESHOT_V2_AND_GAM_RO_CI_20261126_RU.md`.
+
+---
+
 # 26.11.2026 — LATEST ACTUAL USER EET RESULT — MENU175 **PASS**, DO NOT RETEST
 
 The requested user report **HAS ARRIVED** and was parsed and checked (the filename contains `20261126T141634522316`; do not ask user to repeat menu175). **`status=NATIVE_INERT_WEIDU_COMPILE_PASS_TEMP_ONLY`**, `innerReport.status=NATIVE_WEIDU_COMPILED_TEMP_ONLY`, `nativeSymbolsAcceptedByCompiler=true`, WeiDU 25100 BG2 scripting style, BCS 1030 bytes SHA `c1dd6879cadc9817d56d65c96a6bb06fb790095cd258abbf1774958685054670`. Installed game resources changed: no watched files; `temporaryOutputRemoved=true`, `ordersSent=0`, `installPerformed=false`, `newGameFilesWrittenByThisRunner=0`. Inert BAF still has `False()`: **NO actual item movement, NO live behavior evidence, NO verified manual/EPS timing, NO whole-tree hash proof**.
