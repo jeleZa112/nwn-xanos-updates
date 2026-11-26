@@ -1,0 +1,11 @@
+{
+  "schema": "BGXAI_XEQUIP_ONE_SHOT_SOURCE_V2",
+  "actorId": 1248,
+  "partyIndex": 2,
+  "sourceSlot": 18,
+  "targetSlot": 36,
+  "resref": "SW1H04",
+  "weaponSlotCapacity": 4,
+  "sourceSnapshotSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "snapshotSession": "SESSION_TEST_20261126"
+}
