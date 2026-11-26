@@ -54,7 +54,7 @@ BASELINE_SHA={
     "override/BDDEFAI.BCS":
         "24d94062ebc7226dc3486ecad3786dca7e5edae424cef0f13d8a4577cff36331",
     "override/DPLAYER.BCS":
-        "4d640ed7f4c50ed10e30b9482940c6733196ded410405e64ed"
+        "4d640ed7f4c50ed10e30b9482940c6733196f3ad7ae1814516ded410405e64ed"
 }
 WATCHED=("WeiDU.log",OVERRIDE,R31_PROOF,R33_PROOF,*BASELINE_SHA)
 WLOG=re.compile(r"^~[^~]+~\s+#\d+\s+#\d+(?:\s|$)",re.I)
@@ -168,8 +168,9 @@ def proof_r33(root:Path)->dict:
     snap=d.get("baselineSnapshot")
     if not isinstance(snap,dict) or snap.get(OVERRIDE)!="5a1f6b32db920a005161734605c8b3273614a1318d8b1b57dac79ed022a00f38":
         raise Hold("R33_PREINSTALL_BASELINE_NOT_R31")
-    if any(snap.get(k)!=v for k,v in BASELINE_SHA.items()):
-        raise Hold("R33_PREINSTALL_RESOURCE_BASELINE_CHANGED")
+    for rel, digest in BASELINE_SHA.items():
+        if snap.get(rel)!=digest:
+            raise Hold("R33_PREINSTALL_RESOURCE_BASELINE_CHANGED:"+rel)
     return d
 
 def snapshot(root:Path)->dict[str,str]:
