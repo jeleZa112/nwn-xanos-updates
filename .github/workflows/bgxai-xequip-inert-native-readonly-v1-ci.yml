@@ -1,0 +1,32 @@
+name: BGXAI XEquipItem pinned native read-only preflight source tests
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/WEAPON_XEQUIP_NATIVE_INERT_PILOT_V1_20261126/**'
+      - '.github/workflows/bgxai-xequip-inert-native-readonly-v1-ci.yml'
+  workflow_dispatch:
+jobs:
+  pinned-native-readonly:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Source-only Python contract regression
+        run: |
+          set -euo pipefail
+          python3 -m unittest -v BGXAI/BUILD/WEAPON_XEQUIP_NATIVE_INERT_PILOT_V1_20261126/test_xequip_inert_probe_v1.py
+          python3 -m unittest -v BGXAI/BUILD/WEAPON_XEQUIP_NATIVE_INERT_PILOT_V1_20261126/test_xequip_native_preflight_ro_v1.py
+      - name: Generate proof with no access to actual EET
+        run: |
+          set -euo pipefail
+          base=BGXAI/BUILD/WEAPON_XEQUIP_NATIVE_INERT_PILOT_V1_20261126
+          python3 "$base/BGXAI_XEQUIP_NATIVE_PREFLIGHT_RO_V1.py" --manifest "$base/EXAMPLE_ONLY_NOT_USER_EET.json" > /tmp/bg_inert_preflight.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path("/tmp/bg_inert_preflight.json").read_text())
+          assert x['status']=='INERT_SOURCE_READY_NO_NATIVE_COMPILE'
+          assert x['installed'] is False and x['nativeSymbolsAcceptedByCompiler'] is False
+          assert x['ordersSent']==0 and x['inventoryMoveAuthorized'] is False
+          print('PASS source-only SHA and zero-game read-only default')
+          PY
