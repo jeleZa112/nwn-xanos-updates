@@ -1,0 +1,9 @@
+{
+  "schema": "BGXAI_XEQUIP_INERT_NATIVE_PROBE_MANIFEST_V1",
+  "actorId": 123,
+  "partyIndex": 2,
+  "sourceSlot": 18,
+  "targetSlot": 36,
+  "resref": "HAMM01",
+  "weaponSlotCapacity": 4
+}
