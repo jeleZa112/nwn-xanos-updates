@@ -59,6 +59,9 @@ def character(raw):
    used.add(ix)
    result[runtime]={"slot":runtime,"status":"PRESENT_RAW",
       **allitems[ix],"creItemIndex":ix}
+ # Slot 10 (SLOT_FIST) is an implicit engine slot, not one of the 40
+ # stored CRE item references; never report it as an observed empty cell.
+ result[10]={"slot":10,"status":"UNOBSERVED_IMPLICIT_FIST_SLOT"}
  # Note original raw CRE item slots have two additional entries:
  # selected weapon index and ability (not item table indices).
  selectedWeaponRaw=u16(slots,38*2)
@@ -107,7 +110,7 @@ def parse(raw):
    "saveMatchesCurrentlyLoadedSessionVerified":False,
    "classKitWeaponSlotCapacityVerified":False,
    "currentItemUniqueAcrossContainersVerified":False,
-   "partyActorEngineIdVerified":False,
+   "partyActorEngineIdVerified":False,\n   "implicitFistSlotObserved":False,
    "gameModified":False,"filesWritten":0,
    "ordersSent":0,"dispatchAuthorized":False}
 def main(argv=None):
