@@ -39,12 +39,12 @@ jobs:
           mod=(root/'native-correlation/v151_ro.py').read_bytes().replace(b'\r\n',b'\n')
           cmd=(root/'onefile/BG_EET_RU_UPDATE.cmd').read_bytes()
           manifest=json.loads((root/'onefile/release.json').read_text('utf8'))
-          assert manifest['version']==151 and manifest['game_writes_allowed'] is False
+          assert manifest['version'] in (151,153) and manifest['game_writes_allowed'] is False
           assert len(mod)<=24000 and len(cmd)<=750000
           assert hashlib.sha256(cmd).hexdigest()==manifest['sha256']
           assert ("V151_PIN='"+hashlib.sha256(mod).hexdigest()+"'").encode() in cmd
           assert b"72_V151_EXACT_UI_MENU_RO.json" in cmd
-          assert b"9=UI+JIT-RO" in cmd and b"SELF_VERSION = 151" in cmd
+          assert b"9=UI+JIT-RO" in cmd and ("SELF_VERSION = "+str(manifest["version"])).encode() in cmd
           assert b"r.read(24001)" in cmd and b"V133_PIN=" in cmd
           ast.parse(mod.decode('utf8'))
           for unsafe in (b'WriteProcessMemory(',b'VirtualProtectEx(',b'CreateRemoteThread(',b'EEex_JITAt(',b'EEex_HookBefore(',b'DllMain('):
