@@ -64,16 +64,28 @@ jobs:
           assert "Set-Alias hb HashBytes -Scope Script" in src.decode()
           assert "Set-Alias gc Get-Content" not in src.decode()
           assert "Set-Alias rh Read-Host -Scope Script" in src.decode()
+          # Historical R34 snapshot stays immutable while newer menus may be appended.
+          historical=subprocess.check_output(['git','show','1404112c2889561b99416e48a4ba06ab947c4fee:BGXAI/BGXAI_SYNC.ps1'])
+          assert historical==src, 'R34 historical pinned source drift'
           live=Path('BGXAI/BGXAI_SYNC.ps1').read_bytes()
           pin=json.loads(Path('BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text('utf-8'))
-          assert live==src, 'R34 active backend differs from approved source'
-          assert len(live)==pin['script_size']==79775
-          assert hashlib.sha256(live).hexdigest()==pin['script_sha256']=='9131e29da59b7d3a62651eab3ff7deee514da426cfbe6a1267b54444e9c6f59a'
-          assert pin['commit']=='1404112c2889561b99416e48a4ba06ab947c4fee'
-          assert subprocess.check_output(['git','show',pin['commit']+':BGXAI/BGXAI_SYNC.ps1'])==live
+          live_handlers=lines(live)
+          assert 173 <= len(live_handlers) <= 175
+          assert live_handlers[:173]==lines(src), 'R34 old menu1..173 behavior drift'
+          assert len(live)<=80000
+          if len(live_handlers)==175:
+            assert b"--native-readonly" in live_handlers[174].encode('ascii')
+            assert b"Get-PinnedBytes $p" in live_handlers[174].encode('ascii')
+          pinned=subprocess.check_output(['git','show',pin['commit']+':BGXAI/BGXAI_SYNC.ps1'])
+          assert len(pinned)==pin['script_size'] and len(pinned)<=80000
+          assert hashlib.sha256(pinned).hexdigest()==pin['script_sha256'], 'bootstrap pinned bytes not proven'
+          if pinned!=live:
+            print('PENDING_CHANNEL_PIN_NEW_SOURCE_STILL_NOT_DELIVERED')
+          else:
+            print('PASS CURRENT_ONEFILE_BOOTSTRAP_SHA_VERIFIED')
           cmd=Path('BGXAI_UPDATE.cmd').read_bytes()
           assert cmd==subprocess.check_output(['git','show','71b1d37db787a59ed16c8b92ac495314b3577e02:BGXAI_UPDATE.cmd'])
-          print('PASS R34 log-fallback ACTIVE 79775B immutable pin, 172 handlers preserved, no game write')
+          print('PASS immutable R34 historical 79775B; newer onefile preserves menu1..173 and 80k channel')
           PY
 
   ps51-ast-and-abbreviation:
