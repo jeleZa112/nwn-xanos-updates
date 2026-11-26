@@ -1,0 +1,5 @@
+# Byte-for-byte BCS candidate preservation, reused from R29
+
+The existing R29 installer uses a lossless split of WeiDU's `SC\nCR\nCO\n ... CR\nSC\n` compiled BCS output and inserts one new native-compiled block at the beginning. This pure module reproduces that algorithm, verifies both exact input SHA256 hashes, **all original old blocks unchanged**, and no accidental duplicate. It does **NOT** build a complete game install, nor run Windows/WeiDU, nor assert the current live BDDEFAI baseline; this only supplies a safety-critical mathematical merge for a future **typed** install. Never run the source directly against the user's override and never stage arbitrary BCS.
+
+Real test gate for an actual one-shot pilot still needs: authenticated user's current `override/BDDEFAI.BCS` hash (post-R29), protected R37 last-only WeiDU history, complete external backup, native-compiled **exact** V2 armed BAF (not prior inert 175 sample), disposable save, and independent before/after inventory conservation. No changes to installed game have been made.
