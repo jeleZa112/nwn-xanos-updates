@@ -1,9 +1,14 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 151,
-  "sha256": "4a6c56aae71b0e070704aaf9a0074f3e930e391c199a075740bec795ccdaf41a",
-  "mode": "V151_EXACT_INSTALLED_UI_MENU_BOUNDED_READONLY_CAPTURE",
+  "version": 153,
+  "sha256": "a1bc23b5bda376973dd0800072188ce818729c3473d2f4d142632aaccc2d9851",
+  "mode": "V153_GUARDED_COMBATLOG_OBSERVER_EXACT_UI_TYPED_ONLY",
   "game_writes_allowed": false,
-  "note": "One existing user CMD; menu 9 reads byte-exact current override/UI.MENU (<=3MiB) from game root using SHA256+original base64 and source anchor counts, writes 72_V151_EXACT_UI_MENU_RO.json inside historical ZIP with 67-71 records preserved. Nested V136/V140/V142/V144/V146 RO evidence retained. No UI edit, runtime hook, game writes, native attack row join or gameplay proof. Missing/ambiguous UI file HOLD."
+  "note": "Same CMD (749995 bytes) menu 10 default preflight READ ONLY; subchoices 2 typed-install, 3 typed last-only rollback, 4 status. Optional explicitly approved direct UI file patch is NOT a WeiDU component. Exact V152 UI.MENU SHA and candidate SHA, sidecar source SHA, external binary backup, closed-game gate, refuse changed files or later WeiDU installs. No automatic game changes; source/CI tests not gameplay. Menu 1-9 unchanged.",
+  "default_game_writes_allowed": false,
+  "typed_game_write_mode_available": true,
+  "requires_exact_typed_install_and_rollback": true,
+  "weidu_native_component": false,
+  "last_only_rollback_guard": "UI_SHA256_SIDECAR_SHA256_UNCHANGED_WEIDU_LOG_SHA256"
 }
