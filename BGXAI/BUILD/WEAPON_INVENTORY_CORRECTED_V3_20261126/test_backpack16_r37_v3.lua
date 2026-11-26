@@ -22,6 +22,7 @@ local r37={schema="BGXAI_R27_SINGLE_CALLBACK_SELECTED_RO_V1",
  status="CURRENT_SELECTED_SAME_CALLBACK_SOURCE_CANDIDATE",
  readOnly=true,ordersSent=0,dispatchAuthorized=false,
  weaponSwitchAuthorized=false,sameLuaListenerInvocation=true,
+ rawInventoryDoubleReadConsistent=true,selectedDerivedStatsDoubleReadConsistent=true,
  queueSnapshotStable=true,actionContextSnapshotStable=true,
  actor=123,partyIndex=2,actionRaw=105,selectedWeaponRaw=35,
  selectedAbilityRaw=0,queuedActionsRaw=0,currentScriptNumberRaw=3}
@@ -71,6 +72,19 @@ test("reject_unreadable_backpack",function()
  local s,t=sprite();t[18]={cResRef={get=function()return "HAMM01" end}}
  local out=M.observe(s)
  assert(out.status=="HOLD_BACKPACK16_UNREADABLE");check(out)
+end)
+test("reject_getter_error_as_data",function()
+ local s,t=sprite()
+ t[18].cResRef.get=function()error("BOGUS")end
+ local out=M.observe(s)
+ assert(out.status=="HOLD_BACKPACK16_UNREADABLE");check(out)
+end)
+test("reject_unverified_r37_double_read",function()
+ local s=sprite();local c={}
+ for k,v in pairs(r37) do c[k]=v end
+ c.selectedDerivedStatsDoubleReadConsistent=false
+ local out=M.capture(s,c,ctx)
+ assert(out.status=="HOLD_R37_CONTRACT");check(out)
 end)
 test("drift_during_double_read",function()
  local s,t=sprite(); local rawget=s.m_equipment.m_items.get;local k=0
