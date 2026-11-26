@@ -55,7 +55,7 @@ jobs:
           assert b"BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126" in s
           guard=Path('BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/R37_GUARDED_SOURCE_ONLY.py').read_bytes()
           candidate=Path('BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/M_BGXR27_R37_SOURCE_ONLY.lua').read_bytes()
-          assert len(guard)==26210 and hashlib.sha256(guard).hexdigest()=='5dca3b0709a70687221e640a2fc8a4d1e3ca12e5ffa34baeeddb8d174479ba0e'
+          assert len(guard)==26252 and hashlib.sha256(guard).hexdigest()=='b34c93a0315c578989079c3565c6f0704315b8cdeabfb15be06508e4b5367e2d'
           assert len(candidate)==60835 and hashlib.sha256(candidate).hexdigest()=='5ece282270f0e6a1fa7a6086b7f13c57c77de98759637efa4b2ab0cc1e5744d6'
           pin=json.loads(Path('BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text())
           if pin['script_size']==len(s) and pin['script_sha256']==hashlib.sha256(s).hexdigest():
