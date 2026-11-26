@@ -37,14 +37,14 @@ jobs:
           root=Path('bg-eet-ru')
           cmd=(root/'onefile/BG_EET_RU_UPDATE.cmd').read_bytes()
           j=json.loads((root/'onefile/release.json').read_text('utf8'))
-          module=(root/'native-correlation'/('v144_ro.py' if j['version']==144 else ('v151_ro.py' if j['version']==151 else ('v146_ro.py' if j['version']==146 else 'v142_ro.py')))).read_bytes().replace(b'\r\n',b'\n')
+          module=(root/'native-correlation'/('v144_ro.py' if j['version']==144 else ('v151_ro.py' if j['version'] in (151,153) else ('v146_ro.py' if j['version']==146 else 'v142_ro.py')))).read_bytes().replace(b'\r\n',b'\n')
           sha=hashlib.sha256(module).hexdigest()
-          assert len(module)<(24001 if j['version']==151 else 20001)
+          assert len(module)<(24001 if j['version'] in (151,153) else 20001)
           assert len(cmd)<750001
-          assert j['version'] in (142,144,146,151) and j['game_writes_allowed'] is False
+          assert j['version'] in (142,144,146,151,153) and j['game_writes_allowed'] is False
           assert hashlib.sha256(cmd).hexdigest()==j['sha256']
-          assert ("V"+str(j["version"])+"_PIN='"+sha+"'").encode() in cmd
-          assert (b"72_V151_EXACT_UI_MENU_RO.json" if j["version"]==151 else (b"71_V146_FOLLOWUP_SOURCE_RO.json" if j["version"]==146 else (b"70_V144_DOWNSTREAM_SOURCE_RO.json" if j["version"]==144 else b"69_V142_MESSAGE_DELIVERY_RO.json"))) in cmd
+          assert ("V"+str(151 if j["version"]==153 else j["version"])+"_PIN='"+sha+"'").encode() in cmd
+          assert (b"72_V151_EXACT_UI_MENU_RO.json" if j["version"] in (151,153) else (b"71_V146_FOLLOWUP_SOURCE_RO.json" if j["version"]==146 else (b"70_V144_DOWNSTREAM_SOURCE_RO.json" if j["version"]==144 else b"69_V142_MESSAGE_DELIVERY_RO.json"))) in cmd
           assert b"if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)" in cmd
           assert b"V133_PIN=" in cmd
           assert ("SELF_VERSION = "+str(j["version"])).encode() in cmd

@@ -35,7 +35,7 @@ jobs:
           data=p.read_bytes()
           manifest=json.loads((root/'release.json').read_text(encoding='utf8'))
           assert len(data)<=750000
-          assert manifest['version'] in (136,140,142,144,146,151) and manifest['game_writes_allowed'] is False
+          assert manifest['version'] in (136,140,142,144,146,151,153) and manifest['game_writes_allowed'] is False
           assert hashlib.sha256(data).hexdigest()==manifest['sha256']
           if manifest['version']==136:
               assert b"SELF_VERSION = 136" in data
@@ -56,9 +56,14 @@ jobs:
               assert b"SELF_VERSION = 146" in data
               assert b"V146_PIN='9437d948a5770bf32c97955955356edc7d752d5beead669f52beb6ba31fce823'" in data
               assert b"71_V146_FOLLOWUP_SOURCE_RO.json" in data
-          else:
+          elif manifest['version']==151:
               assert b"SELF_VERSION = 151" in data
               assert b"V151_PIN='fc2ad24fed61648d43622d6bf963af71f70d31d0677a2fca0ce2ee441733e440'" in data
+              assert b"72_V151_EXACT_UI_MENU_RO.json" in data
+          else:
+              assert b"SELF_VERSION = 153" in data
+              assert b"V153_PIN='ce54a4373a9b523877f2415cdc6503fb7d7e9824ba7c6d1a5fbaba148bd161f4'" in data
+              assert b"10=V153" in data
               assert b"72_V151_EXACT_UI_MENU_RO.json" in data
           assert b"if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)" in data
           print('V136_COMPATIBLE_ONEFILE_RELEASE_INTEGRITY_PASS')

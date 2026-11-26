@@ -43,7 +43,7 @@ jobs:
           release=json.loads((base/'release.json').read_text('utf8'))
           assert len(cmd)<=750000,len(cmd)
           assert hashlib.sha256(cmd).hexdigest()==release['sha256']
-          assert release['version'] in (140,142,144,146,151) and release['game_writes_allowed'] is False
+          assert release['version'] in (140,142,144,146,151,153) and release['game_writes_allowed'] is False
           text=cmd.decode('utf8')
           assert 'SELF_VERSION = '+str(release['version']) in text
           assert '66_V133_LIVE_HIT_INVENTORY.json' in text
@@ -70,7 +70,7 @@ jobs:
           assert report in text and menu in text
           mod=Path('bg-eet-ru/native-correlation',module_name).read_bytes().replace(b'\r\n',b'\n')
           pin=hashlib.sha256(mod).hexdigest()
-          assert "V"+str(release['version'])+"_PIN='"+pin+"'" in text
+          assert "V"+str(151 if release["version"]==153 else release["version"])+"_PIN='"+pin+"'" in text
           assert module_name in text
           ast.parse('\n'.join(text.splitlines()[1:]))
           assert 'WriteProcessMemory(' not in mod.decode('utf8')

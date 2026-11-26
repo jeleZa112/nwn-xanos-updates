@@ -1,0 +1,67 @@
+name: BG EET RU V153 SHA-guarded combatLog observer pilot
+on:
+  pull_request:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/ui-observer/v153/**'
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - 'bg-eet-ru/onefile/release.json'
+      - '.github/workflows/bg-eet-ru-v153-observer.yml'
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/ui-observer/v153/**'
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - 'bg-eet-ru/onefile/release.json'
+      - '.github/workflows/bg-eet-ru-v153-observer.yml'
+jobs:
+  guarded-source:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Pin all source files and release SHA within previous self-update cap
+        shell: python
+        run: |
+          from pathlib import Path
+          import hashlib,json,ast
+          root=Path('bg-eet-ru')
+          src=(root/'onefile/BG_EET_RU_UPDATE.cmd').read_bytes()
+          module=(root/'ui-observer/v153/v153_guarded.py').read_bytes().replace(b'\r\n',b'\n')
+          lua=(root/'ui-observer/v153/BGCL150.lua').read_bytes().replace(b'\r\n',b'\n')
+          rel=json.loads((root/'onefile/release.json').read_text('utf8'))
+          assert rel['version']==153
+          assert rel['default_game_writes_allowed'] is False and rel['game_writes_allowed'] is False
+          assert rel['typed_game_write_mode_available'] is True
+          assert rel['weidu_native_component'] is False
+          assert len(src)<=750000 and len(module)<=20000 and len(lua)==7898
+          assert hashlib.sha256(src).hexdigest()==rel['sha256']
+          assert hashlib.sha256(module).hexdigest()=='ce54a4373a9b523877f2415cdc6503fb7d7e9824ba7c6d1a5fbaba148bd161f4'
+          assert hashlib.sha256(lua).hexdigest()=='deffadc9fa9a0b0b9040127fa30abce2808833532618e4d9e7db7ed98c17d93b'
+          assert b"V153_PIN='ce54a4373a9b523877f2415cdc6503fb7d7e9824ba7c6d1a5fbaba148bd161f4'" in src
+          assert b"10=V153" in src
+          assert b"if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)" in src
+          assert b"if a=='10':" in src
+          assert b"73_V153_GUARDED_OBSERVER.json" in src
+          assert b"read(750001)" in src
+          ast.parse(module.decode('utf8'))
+          for bad in (b'WriteProcessMemory(',b'CreateRemoteThread(',b'EEex_HookBefore(',b'EEex_JITAt('):
+              assert bad not in module
+          print('V153_PINNED_TYPED_ONLY_CONTRACT_PASS')
+      - name: V153 synthetic safety and exact byte rollback tests
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -m unittest discover -s bg-eet-ru/ui-observer/v153 -p test_v153_public_ro.py -v
+      - name: Existing one-file end-to-end selftest
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest

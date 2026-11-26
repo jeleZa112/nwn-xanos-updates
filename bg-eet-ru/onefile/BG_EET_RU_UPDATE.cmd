@@ -21,11 +21,11 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 151
+SELF_VERSION = 153
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
-REVIEW_SEEDS = json.loads('{"317979":{"excerpt_ru":"[Уверенно и спокойно]Моё имя - [Share-in-kull]Шеринкаль, и я возглавляю силы Легиона Химеры в этом регионе. [Threat","triage":"DIALOGUE_POSSIBLY_VISIBLE_NEEDS_DLG_LINK"},"319734":{"excerpt_ru":"Нет. Порталы в цитадель [zah-HIN-dah]З\'хинда открываются только изнутри. Невольники откроют порталы только если оди","triage":"DIALOGUE_POSSIBLY_VISIBLE_NEEDS_DLG_LINK"},"100436":{"excerpt_ru":"[Faulty]Жезл лабиринтов","triage":"ITEM_SPELL_POSSIBLY_VISIBLE_NEEDS_RESOURCE_LINK"},"100438":{"excerpt_ru":"[Faulty]Проклятие Бездны +4","triage":"ITEM_SPELL_POSSIBLY_VISIBLE_NEEDS_RESOURCE_LINK"},"100440":{"excerpt_ru":"[Faulty]Кольцо защиты от зла","triage":"ITEM_SPELL_POSSIBLY_VISIBLE_NEEDS_RESOURCE_LINK"},"100446":{"excerpt_ru":"[Faulty]Водоворот","triage":"ITEM_SPELL_POSSIBLY_VISIBLE_NEEDS_RESOURCE_LINK"},"101807":{"excerpt_ru":"[else] Молчи, женщина! Прекрати это бесстыдство…","triage":"DIALOGUE_POSSIBLY_VISIBLE_NEEDS_DLG_LINK"},"267454":{"excerpt_ru":"[Movie]Мост Боарескир","triage":"MOVIE_LABEL_NEEDS_UI_LINK"},"267455":{"excerpt_ru":"[Movie]Убийство","triage":"MOVIE_LABEL_NEEDS_UI_LINK"},"267456":{"excerpt_ru":"[movie]Засада","triage":"MOVIE_LABEL_NEEDS_UI_LINK"},"270251":{"excerpt_ru":"[Movie]Чёрные Копи. Вступление.","triage":"MOVIE_LABEL_NEEDS_UI_LINK"},"300993":{"excerpt_ru":"[Movie]Вступление","triage":"MOVIE_LABEL_NEEDS_UI_LINK"},"300994":{"excerpt_ru":"[Movie]Лавина на Кулдахарском перевале","triage":"MOVIE_LABEL_NEEDS_UI_LINK"},"300995":{"excerpt_ru":"[Movie]Прорицание Камня-Сердце","triage":"MOVIE_LABEL_NEEDS_UI_LINK"},"300996":{"excerpt_ru":"[Movie]Возвращение в Восточную Гавань","triage":"MOVIE_LABEL_NEEDS_UI_LINK"},"300997":{"excerpt_ru":"[Movie]Разрушение кристаллической башни","triage":"MOVIE_LABEL_NEEDS_UI_LINK"},"300998":{"excerpt_ru":"[Movie]Эпилог Сердца Зимы","triage":"MOVIE_LABEL_NEEDS_UI_LINK"},"300999":{"excerpt_ru":"[Movie]Пролог Сердца Зимы","triage":"MOVIE_LABEL_NEEDS_UI_LINK"}}')
+REVIEW_SEEDS = json.loads('{"317979":{"excerpt_ru":"[Уверенно и спокойно]Моё имя - [Share-in-kull]Шеринкаль, и я возглавляю силы Легиона Химеры в этом регионе. [Threat","triage":"~A~"},"319734":{"excerpt_ru":"Нет. Порталы в цитадель [zah-HIN-dah]З\'хинда открываются только изнутри. Невольники откроют порталы только если оди","triage":"~A~"},"100436":{"excerpt_ru":"[Faulty]Жезл лабиринтов","triage":"~B~"},"100438":{"excerpt_ru":"[Faulty]Проклятие Бездны +4","triage":"~B~"},"100440":{"excerpt_ru":"[Faulty]Кольцо защиты от зла","triage":"~B~"},"100446":{"excerpt_ru":"[Faulty]Водоворот","triage":"~B~"},"101807":{"excerpt_ru":"[else] Молчи, женщина! Прекрати это бесстыдство…","triage":"~A~"},"267454":{"excerpt_ru":"[Movie]Мост Боарескир","triage":"~C~"},"267455":{"excerpt_ru":"[Movie]Убийство","triage":"~C~"},"267456":{"excerpt_ru":"[movie]Засада","triage":"~C~"},"270251":{"excerpt_ru":"[Movie]Чёрные Копи. Вступление.","triage":"~C~"},"300993":{"excerpt_ru":"[Movie]Вступление","triage":"~C~"},"300994":{"excerpt_ru":"[Movie]Лавина на Кулдахарском перевале","triage":"~C~"},"300995":{"excerpt_ru":"[Movie]Прорицание Камня-Сердце","triage":"~C~"},"300996":{"excerpt_ru":"[Movie]Возвращение в Восточную Гавань","triage":"~C~"},"300997":{"excerpt_ru":"[Movie]Разрушение кристаллической башни","triage":"~C~"},"300998":{"excerpt_ru":"[Movie]Эпилог Сердца Зимы","triage":"~C~"},"300999":{"excerpt_ru":"[Movie]Пролог Сердца Зимы","triage":"~C~"}}'.replace('~A~','DIALOGUE_POSSIBLY_VISIBLE_NEEDS_DLG_LINK').replace('~B~','ITEM_SPELL_POSSIBLY_VISIBLE_NEEDS_RESOURCE_LINK').replace('~C~','MOVIE_LABEL_NEEDS_UI_LINK'))
 LEGACY_REPORTS = Path.home() / 'Documents' / 'BG_EET_RU_REPORTS'
 URL_BASE = ('https://raw.githubusercontent.com/jeleZa112/'
       'nwn-xanos-updates/bg-eet-ai/bg-eet-ru/onefile/')
@@ -5986,10 +5986,6 @@ V105_STATUS_STAGE = WORKDIR/'BG_EET_RU_V105_WEAPON_STATUS.tsv'
 V105_EEEX_SPRITE_SHA = '4813ae620f0b472903848018d66488805db7ba2012e065019f4ea5f2a6afab28'
 V105_EEEX_PATCH_SHA = 'e301b46770477cf29e3d39d6591a5a9fba4f3aeafa03c3dbfa75f7ef6bc13b7f'
 V105_OBSERVER_SOURCE = r"""-- BG_EET_RU WEAPON EVENT OBSERVER V2: SOURCE ONLY, NOT INSTALLED.
--- Purpose: discover *available* context fields at base-weapon-damage events.
--- This is not an attack-log annotator, not a miss observer, and not a damage modifier.
--- Do not load this file or call Start without separate explicit installation approval.
--- No game/log/save writes, no disk writes, and no action/AI modification.
 
 BG_EET_RU_WEAPON_EVENT_OBSERVER_V1 = {
     enabled = false,
@@ -6017,7 +6013,6 @@ local function bounded_field_record(context)
             elseif kind == 'string' then
                 entry.primitive = value:sub(1, 120)
             end
-            -- Never dereference or stringify userdata (may be CItem/CGameSprite).
             fields[key] = entry
         end
     end
@@ -6032,7 +6027,6 @@ function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage(context)
         kind = 'base_weapon_damage',
         ordinal = st.total_seen,
         fields = bounded_field_record(context),
-        -- Actual weapon, ammo, target, and attack-to-log correlation are UNKNOWN.
         weapon_id_verified = false,
         ammo_id_verified = false,
         attack_log_row_correlated = false,
@@ -6040,7 +6034,6 @@ function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage(context)
     st.events[#st.events + 1] = record
     if #st.events > st.max_events then table.remove(st.events, 1) end
     st.total_recorded = st.total_recorded + 1
-    -- No context mutations. No combat state modifications. No return value.
 end
 
 function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()
@@ -6058,8 +6051,6 @@ function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Start()
 end
 
 function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Stop()
-    -- EEex listener-registration API has no verified removal API in this build.
-    -- Disable recording rather than pretending to detach the registered callback.
     BG_EET_RU_WEAPON_EVENT_OBSERVER_V1.enabled = false
 end
 
@@ -6079,8 +6070,6 @@ function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_Status()
 end
 
 
--- V2 source extension: bounded external evidence, only after authorized installation.
--- The configured report paths are generated from the single updater and are outside the game.
 local BG_EET_RU_V105_EXPORT_FILE = __V105_EVENTS_PATH__
 local BG_EET_RU_V105_STATUS_FILE = __V105_STATUS_PATH__
 local function BG_EET_RU_V105_SaveLine(path, line)
@@ -8128,6 +8117,25 @@ V151_PIN='fc2ad24fed61648d43622d6bf963af71f70d31d0677a2fca0ce2ee441733e440'
 V151_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/00d7ac738d5195bf8bd310bb76765d935b02ff1a/bg-eet-ru/native-correlation/v151_ro.py'
 V133_PIN='b3f22f56550d951483863fb59e84f2e543b2473d7bb2e51f8fd03fed4e58f624'
 V133_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/6e1922fcfbb73a43c1b97fc82ea848cd05369c4b/bg-eet-ru/native-correlation/v133_live_hit_inventory_ro.py'
+
+V153_PIN='ce54a4373a9b523877f2415cdc6503fb7d7e9824ba7c6d1a5fbaba148bd161f4'
+V153_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/f9cdace016818764eb61a21cece130453242fc5e/bg-eet-ru/ui-observer/v153/v153_guarded.py'
+def v153_dispatch(game,mode):
+ try:
+    p=v121_cache(game)/'V153_GUARDED.py'
+    if p.is_symlink() or (p.exists() and not p.is_file()):raise RuntimeError('V153_CACHE_UNSAFE')
+    if not p.is_file() or sha_path(p)!=V153_PIN:
+       with urllib.request.urlopen(V153_URL,timeout=20) as r:data=r.read(20001)
+       if digest(data)!=V153_PIN:raise RuntimeError('V153_SOURCE_SHA_HOLD')
+       v121_write(game,p,data)
+    m=types.ModuleType('v153')
+    exec(compile(p.read_bytes(),str(p),'exec'),m.__dict__)
+    report=m.run(mode,Path(game),WORKDIR)
+ except Exception as e:report={'status':'V153_DISPATCH_HOLD','reason':type(e).__name__+':'+str(e)[:140],'game_files_written_this_action':'UNKNOWN_IF_EXCEPTION_AFTER_ACTION'}
+ try:v116_zip(game,WORKDIR/REPORT_NAME,report,entry='73_V153_GUARDED_OBSERVER.json')
+ except Exception as e:print('V153_REPORT_ZIP_HOLD',type(e).__name__,str(e)[:110])
+ print('V153',report.get('status'))
+ return 2 if 'HOLD' in report.get('status','') or 'STOP' in report.get('status','') else 0
 def v133_audit(game,path,v136=False):
  report={'schema':'BG_EET_RU_V133_WINDOWS_RUNTIME_READONLY','status':'RUNTIME_MEMORY_HOLD','game_files_written':0,'native_hook_install_allowed':False,'firstcall_owner_verified':False,'gameplay_verified':False}
  try:
@@ -8298,13 +8306,17 @@ def main(argv=None):
  try:v121_snapshot(game,WORKDIR/REPORT_NAME)
  except Exception as exc:print('V121 EVIDENCE SNAPSHOT HOLD:',type(exc).__name__,str(exc)[:140])
  if not (argv if argv is not None else sys.argv[1:]):
-    try:a=input('1=audit 2=install 3=undo 4=play 5=status 6=unwind 7=abi 8=live-RO 9=UI+JIT-RO [1]: ').strip()
+    try:a=input('1=audit 2=install 3=undo 4=play 5=status 6=unwind 7=abi 8=live-RO 9=UI+JIT-RO 10=V153 [1]: ').strip()
     except EOFError:a=''
     mode={'2':'install','3':'rollback','4':'capture','5':'status'}.get(a)
     if a=='6':return v130_audit(game,WORKDIR/REPORT_NAME)
     if a=='7':return v130_audit(game,WORKDIR/REPORT_NAME,132)
     if a=='8':return v133_audit(game,WORKDIR/REPORT_NAME)
     if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)
+    if a=='10':
+       try:b=input('CL150 1=preflight 2=install(typed) 3=rollback(typed) 4=status [1]: ').strip()
+       except EOFError:b=''
+       return v153_dispatch(game,{'2':'install','3':'rollback','4':'status'}.get(b,'preflight'))
     if mode:return v126_dispatch(game,WORKDIR/REPORT_NAME,mode)
     rc=v124_one_run(game,WORKDIR/REPORT_NAME,args.offline)
     return rc if rc else v126_dispatch(game,WORKDIR/REPORT_NAME,'status')
