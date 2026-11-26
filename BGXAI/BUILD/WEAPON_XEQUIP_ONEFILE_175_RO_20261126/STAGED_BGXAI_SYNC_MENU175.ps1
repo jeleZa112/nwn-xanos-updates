@@ -1111,7 +1111,7 @@ wh '049 present; status 51.'
 } else {wh '049 REVIEW before install.'}
 wh 'NO GAME WRITE.'
 }
-wh 'BGXAI ONE-FILE: 1-174 existing | 175 XEquip native compile READ ONLY | 0 Exit'
+wh 'BGXAI ONE-FILE UPDATER: 1-174 existing | 175 XEquip native compile READ ONLY | 0 Exit'
 $choice=rh 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
 if($choice -eq '0'){wh 'No changes.';exit 0}
