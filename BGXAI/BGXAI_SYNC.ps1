@@ -243,7 +243,7 @@ ANR $zcd;$f=jp $zcd ('r30_'+[guid]::NewGuid().ToString('N')+'.py');$g=jp $zcd ('
 try{[IO.File]::WriteAllBytes($f,$b);[IO.File]::WriteAllBytes($g,$q);if((hf $f) -cne '88582abf17e919b9441795b8559cfe85b858fd3083672431eb36b60ba78981bd' -or (hf $g) -cne '61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929'){throw 'R30 CACHE PIN STOP'};& py -3 $f --game $gr --candidate $g | Out-File -Lit $o -Encoding utf8;$rc=$LASTEXITCODE;gc -Lit $o -Raw;wh ('REPORT_FILE='+$o);if($rc -ne 0 -and $rc -ne 2){throw ('R30 ERROR '+$rc)}}finally{foreach($t in @($f,$g)){if(tp -Lit $t){Remove-Item -Lit $t -Force}}}
 }
 function Get-PinnedBytes([string]$zrp) {
-if($zrp -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116|patchsets/priest_combat_eps_first_20261116|patchsets/priest_auto_attack_buffer_source_only_20261117|patchsets/priest_auto_priority_guard_source_20261117|patchsets/aoe_entangle_readonly_onefile_20261117|patchsets/ranged_fighter_guarded_20261119|BUILD/R27_R2_IDENTITY_REFRESH_20261124|BUILD/R30_QUEUE_DEPLOY_PREFLIGHT_RO_20261125|BUILD/R31_R27V3_PASSIVE_SOURCE_20261125|BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125|BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125|BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126|BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123)/[A-Za-z0-9_./-]+$' -or $zrp.Contains('..')) {
+if($zrp -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116|patchsets/priest_combat_eps_first_20261116|patchsets/priest_auto_attack_buffer_source_only_20261117|patchsets/priest_auto_priority_guard_source_20261117|patchsets/aoe_entangle_readonly_onefile_20261117|patchsets/ranged_fighter_guarded_20261119|BUILD/R27_R2_IDENTITY_REFRESH_20261124|BUILD/R30_QUEUE_DEPLOY_PREFLIGHT_RO_20261125|BUILD/R31_R27V3_PASSIVE_SOURCE_20261125|BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125|BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125|BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126|BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126|BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123)/[A-Za-z0-9_./-]+$' -or $zrp.Contains('..')) {
 throw ('Remote source path blocked: '+$zrp)
 }
 $urls=@(
@@ -1111,25 +1111,7 @@ wh '049 present; status 51.'
 } else {wh '049 REVIEW before install.'}
 wh 'NO GAME WRITE.'
 }
-wh ''
-wh @'
- BGXAI ONE-FILE UPDATER
-1-151 existing modules
-'@
-wh '70-92 BGXAI legacy modules'
-echo ' 93 - 066S precheck'
-echo ' 94 - 066S install'
-echo ' 95 - 066S status'
-echo ' 96 - 066S rollback'
-wh '97-116 BGXP / BGXTEAM modules'
-wh '117-122 AOE modules'
-wh '123-130 ranged modules'
-wh '131-151 ranged/friendly/motion modules'
-wh @'
-152-164 enemy/weapon/EEex tools
-165 R27 | 166 V7 | 167 BAF RO | 168 batch RO | 169 R29 | 170 R30 RO | 171 R31 V3 | 172 R33 | 173 R34 RO | 174 R37
-0 Exit
-'@
+wh 'BGXAI ONE-FILE: 1-174 existing | 175 XEquip native compile READ ONLY | 0 Exit'
 $choice=rh 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
 if($choice -eq '0'){wh 'No changes.';exit 0}
@@ -1309,6 +1291,7 @@ switch($choice){
 '172' {$p='BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/';$a=Get-PinnedBytes ($p+'R33_GUARDED_SOURCE_ONLY.py');$b=Get-PinnedBytes ($p+'M_BGXR27_R33_SOURCE_ONLY.lua');if($a.Length -ne 22132 -or (HashBytes $a) -cne '0815d173b276c0f990eb3ab66ac6f8f614a9a0f0f59fc301f94f5f8c890be653' -or $b.Length -ne 49438 -or (HashBytes $b) -cne '1420ef723df1090d56f8f6590fd82e5c69107ba97a39b2ca2ba73f93e0e77069'){throw 'R33 PIN STOP'};ANR $zcd;$f=jp $zcd ('r33_'+[guid]::NewGuid().ToString('N')+'.py');$c=jp $zcd ('r33_'+[guid]::NewGuid().ToString('N')+'.lua');try{[IO.File]::WriteAllBytes($f,$a);[IO.File]::WriteAllBytes($c,$b);if((HashFile $f)-cne '0815d173b276c0f990eb3ab66ac6f8f614a9a0f0f59fc301f94f5f8c890be653' -or (HashFile $c)-cne '1420ef723df1090d56f8f6590fd82e5c69107ba97a39b2ca2ba73f93e0e77069'){throw 'R33 STAGE SHA'};$n=Read-Host 'R33 1=RO 2=install 3=status 4=rollback 5=capture [1]';if(!$n){$n='1'};if($n -eq '0'){break};$m=@{'1'='preflight';'2'='install';'3'='status';'4'='rollback';'5'='capture'}[$n];if(!$m){throw 'R33 BAD CHOICE'};& py -3 $f --game $gr --candidate $c --mode $m;if($LASTEXITCODE){throw 'R33 STOP'}}finally{Remove-Item -LiteralPath $f,$c -Force -ErrorAction SilentlyContinue};break}
 '173' {$p='BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125/BGXAI_R34_NATIVE_PROF_BRIDGE_RO.py';$q='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_ITM_R3_RO.py';$a=Get-PinnedBytes $p;$b=Get-PinnedBytes $q;if((HashBytes $a)-cne 'd40f7729ee84c576d08fe712b98adcd0704611def6385e976a50597b68c496c4' -or (HashBytes $b)-cne 'ed87a7a6618826c6d3901d2579a39bf280fcaeb09cd18b7b6ee159b9ebfcc74a'){throw 'R34 SOURCE PIN STOP'};ANR $zcd;$f=jp $zcd ('r34_'+[guid]::NewGuid().ToString('N')+'.py');$g=jp $zcd ('r3_'+[guid]::NewGuid().ToString('N')+'.py');try{[IO.File]::WriteAllBytes($f,$a);[IO.File]::WriteAllBytes($g,$b);$d=jp $env:USERPROFILE 'Documents\BGXAI_LIVE_REPORTS';ANR $d;$o=jp $d ('BGXAI_R34_NATIVE_PROF_'+(Get-Date -Format 'yyyyMMddTHHmmssfff')+'.json');& py -3 $f --game $gr --reports-dir $d --r3-source $g | Out-File -LiteralPath $o -Encoding utf8;$r=$LASTEXITCODE;Get-Content -LiteralPath $o;wh ('REPORT_FILE='+$o);if($r){throw 'R34 READONLY STOP'}}finally{Remove-Item -LiteralPath $f,$g -Force -ErrorAction SilentlyContinue};break}
 '174' {$p='BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/';$a=Get-PinnedBytes ($p+'R37_GUARDED_SOURCE_ONLY.py');$b=Get-PinnedBytes ($p+'M_BGXR27_R37_SOURCE_ONLY.lua');if($a.Length -ne 26252 -or (hb $a) -cne 'b34c93a0315c578989079c3565c6f0704315b8cdeabfb15be06508e4b5367e2d' -or $b.Length -ne 60835 -or (hb $b) -cne '5ece282270f0e6a1fa7a6086b7f13c57c77de98759637efa4b2ab0cc1e5744d6'){throw 'R37 SOURCE PIN STOP'};ANR $zcd;$f=jp $zcd ('r37_'+[guid]::NewGuid().ToString('N')+'.py');$c=jp $zcd ('r37_'+[guid]::NewGuid().ToString('N')+'.lua');try{[IO.File]::WriteAllBytes($f,$a);[IO.File]::WriteAllBytes($c,$b);if((hf $f)-cne 'b34c93a0315c578989079c3565c6f0704315b8cdeabfb15be06508e4b5367e2d'){throw 'R37 STAGE HASH'};$n=rh 'R37 1=preflight 2=install 3=status 4=rollback 5=capture [1]';if(!$n){$n='1'};if($n -eq '0'){break};$m=@{'1'='preflight';'2'='install';'3'='status';'4'='rollback';'5'='capture'}[$n];if(!$m){throw 'R37 BAD CHOICE'};& py -3 $f --game $gr --candidate $c --mode $m;if($LASTEXITCODE){throw 'R37 STOP'}}finally{Remove-Item -LiteralPath $f,$c -Force -ErrorAction SilentlyContinue};break}
+'175' {$p='BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONEFILE_175_RO_V1.py';$b=Get-PinnedBytes $p;if($b.Length -ne 8527 -or (hb $b) -cne '5bbc5d5444562346df7e2766d5eee97f60b1e2a33a2c5a074272697c1ee4e2b0'){throw '175 PIN STOP'};$f=jp $zcd ('x175_'+[guid]::NewGuid().ToString('N')+'.py');try{[IO.File]::WriteAllBytes($f,$b);& py -3 $f --commit $commitId --game $gr --native-readonly;if($LASTEXITCODE){throw '175 RO STOP'}}finally{if(tp -Lit $f){Remove-Item -Lit $f -Force}};break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0
