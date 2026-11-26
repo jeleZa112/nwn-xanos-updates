@@ -1,3 +1,19 @@
+# 26.11.2026 — NEWEST BGXAI P0 CHECKPOINT — V4 PRIORITY + ITEM CONSERVATION TESTED
+
+**REAL INDEPENDENT CI NOW VERIFIED; older 'R37+INV3 composed runtime test unverified' statements below are superseded.** GitHub Actions [45770227906](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45770227906) **SUCCESS** on **Lua5.3/5.4/LuaJIT** with R37+Inventory V3 same listener, 7 legacy transitions and 0 orders. [45770826868](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45770826868) **SUCCESS**: new **corrected 16-cell backpack weapon-priority V4**, 20/20 synthetic scenarios on each of three Lua engines, no overwrite, rejects duplicate resrefs across top-level slots, target/curse/ammo/action-gated. [45771058355](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45771058355) **SUCCESS**: newly coded top-level item conservation postcondition V1, 19/19 synthetic cases on each Lua engine; exact same-session before/after, no missing item/changed flags/charges/other equipment. **CI is SOURCE test, NOT GAME LIVE.** Old superseded V2 backpack bridge [CI 45765546692](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45765546692) FAILED on unverified-item test — do not say all historic CI green.
+
+**CANONICAL NEW SOURCE PATHS**:
+- `BGXAI/BUILD/WEAPON_INVENTORY_PRIORITY_V4_20261126/BGXAI_BACKPACK16_PRIORITY_RO_V4.lua`
+- `BGXAI/BUILD/WEAPON_INVENTORY_CONSERVATION_V1_20261126/BGXAI_TRANSFER_CONSERVATION_RO_V1.lua`
+- existing `BGXAI/BUILD/R37_INVENTORY16_SINGLE_CALLBACK_SOURCEONLY_20261126/M_BGXR27_R37_INV3_SOURCE_ONLY.lua`
+- COMPLETE FACTUAL HANDOFF `BGXAI/CURRENT/BGXAI_WEAPON_INVENTORY_V4_CONSERVATION_CI_VERIFIED_20261126_RU.md`.
+
+**FUNCTIONAL GATE (the next thing to accomplish):** Genuine engine-native `XEquipItem` to **empty** allowed quickweapon slot for an actually present, validated unique weapon, with current action/manual/EPS non-interruption and real item conservation; first native EET preflight against IDS and WeiDU, then only after strict separate typed approval, external backup, last-only rollback, disposable save and GAME A/B. No fake `verified=true`, no `FillSlot` and no `Stop/ClearActions`. More passive-only observers are not the goal. The installed V6/R29/R37, EPS, game, saves, single `BGXAI_UPDATE.cmd`, BG Voice RU and BG_EET_RU were NOT changed by these repository commits.
+
+**STATUS:** corrected inventory V3/V4 and postcondition have CODE + offline TEST, **DEPLOY NO / LIVE NO**. Existing R37 older LIVE passive 12/12 remains valid; the new engine auto-equip is NOT YET implemented. User does not need to re-run previous Khalid V6/R37 tests or install anything now.
+
+---
+
 # LATEST BGXAI 1.2 CONTINUATION — 26.11.2026 — R37/Inventory V3 REGRESSION-ORDER FIX
 
 Combined source `BGXAI/BUILD/R37_INVENTORY16_SINGLE_CALLBACK_SOURCEONLY_20261126/M_BGXR27_R37_INV3_SOURCE_ONLY.lua` now reads backpack16 **after** the unchanged R36/R37 compare/invalidation, to preserve the old decision timeline. Exactly one EEex action-start listener, same R33/R37 emit serialization, a third bounded `[BGXINV3]` advisory; no orders and no equipment mutation. New tests cover (a) correct 16 slots 18..33; (b) backpack count=1; (c) charge drift between scans -> HOLD; (d) queue changed during scans -> HOLD; (e) legacy 7 event transitions and one listener. Existing local `luatex --luaonly` independent Inventory V3 13/13 PASS, actual GitHub source static comparisons 10/10 PASS. Full composed ~69KB Lua CI/runtime **NOT YET CONFIRMED**; do not assert CODE alone is gameplay.
