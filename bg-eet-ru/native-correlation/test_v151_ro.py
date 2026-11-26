@@ -47,7 +47,7 @@ class MenuCapture(unittest.TestCase):
  def test_duplicate_case_names_fail_closed_even_on_windows(self):
   original=Path.iterdir
   def two(override):
-   if override==self.override:
+   if override.name.casefold()=='override':
     return iter((self.ui,self.ui))
    return original(override)
   with patch.object(Path,'iterdir',two):
@@ -65,7 +65,7 @@ class MenuCapture(unittest.TestCase):
   original=Path.read_bytes
   def change(path):
    data=original(path)
-   if path==self.ui:
+   if path.name.casefold()=='ui.menu':
     with path.open('ab') as f:f.write(b'changed')
    return data
   with patch.object(Path,'read_bytes',change):
@@ -76,7 +76,7 @@ class MenuCapture(unittest.TestCase):
  def test_symlink_guard_holds_without_reading(self):
   original=Path.is_symlink
   def forged(path):
-   return True if path==self.ui else original(path)
+   return True if path.name.casefold()=='ui.menu' else original(path)
   with patch.object(Path,'is_symlink',forged):
    o=M.v151_exact_ui_menu(self.root)
   self.assertEqual(o['reason'],'UI_MENU_SYMLINK_OR_NONLOCAL_FORBIDDEN')
