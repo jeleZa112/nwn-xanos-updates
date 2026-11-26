@@ -20,9 +20,9 @@ class V154(unittest.TestCase):
   self.assertEqual(j['version'],154)
   self.assertEqual(j['sha256'],sha(b))
   self.assertLessEqual(len(b),750000)
-  self.assertEqual(sha(MOD.read_bytes()),'db636cad123194092b248ca4d073ab448c16c9801bb7879ce0c5d68b0eafb1c4')
-  self.assertEqual(sha(ORIG.read_bytes()),'ce54a4373a9b523877f2415cdc6503fb7d7e9824ba7c6d1a5fbaba148bd161f4')
-  self.assertEqual(sha(LUA.read_bytes()),m.SIDE_SHA)
+  self.assertEqual(sha(MOD.read_bytes().replace(b'\r\n',b'\n')),'db636cad123194092b248ca4d073ab448c16c9801bb7879ce0c5d68b0eafb1c4')
+  self.assertEqual(sha(ORIG.read_bytes().replace(b'\r\n',b'\n')),'ce54a4373a9b523877f2415cdc6503fb7d7e9824ba7c6d1a5fbaba148bd161f4')
+  self.assertEqual(sha(LUA.read_bytes().replace(b'\r\n',b'\n')),m.SIDE_SHA)
   self.assertFalse(j['game_writes_allowed'])
   self.assertFalse(j['default_game_writes_allowed'])
 
