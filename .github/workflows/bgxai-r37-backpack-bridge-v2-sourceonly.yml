@@ -26,6 +26,10 @@ jobs:
         run: lua${{ matrix.lua }} BGXAI/BUILD/WEAPON_INVENTORY_PREP_V2_R37_BRIDGE_20261126/test_r37_backpack_bridge_v2.lua
       - name: Deny engine commands or hooks in bridge
         run: |
-          if grep -En 'XEquipItem\\(|FillSlot\\(|ClearActions\\(|Stop\\(|SelectWeaponAbility\\(|EEex_.*Hook|Register.*Listener' BGXAI/BUILD/WEAPON_INVENTORY_PREP_V2_R37_BRIDGE_20261126/BGXAI_R37_BACKPACK_BRIDGE_RO_V2.lua; then
+          pattern='XEquipItem\(|FillSlot\(|ClearActions\(|Stop\(|SelectWeaponAbility\(|EEex_.*Hook|Register.*Listener'
+          if ! printf 'XEquipItem(\n' | grep -E "$pattern" >/dev/null; then
+            echo 'FAIL: denylist expression does not match banned code'; exit 1
+          fi
+          if grep -En "$pattern" BGXAI/BUILD/WEAPON_INVENTORY_PREP_V2_R37_BRIDGE_20261126/BGXAI_R37_BACKPACK_BRIDGE_RO_V2.lua; then
             echo "Unsafe command in source-only bridge"; exit 1
           fi
