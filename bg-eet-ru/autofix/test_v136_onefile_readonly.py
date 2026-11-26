@@ -20,12 +20,12 @@ class TestOneFile136(unittest.TestCase):
         code=UPDATER.read_text('utf8').split('\n',1)[1]
         self.ns={'__name__':'v136_test_non_main','__file__':str(UPDATER)}
         exec(compile(code,str(UPDATER),'exec'),self.ns)
-        self.assertIn(self.ns['SELF_VERSION'],(136,140,142,144,146,151))
-        self.live_label=('v151_ro' if self.ns['SELF_VERSION']==151 else ('v146_ro' if self.ns['SELF_VERSION']==146 else ('v144_ro' if self.ns['SELF_VERSION']==144 else ('v142_ro' if self.ns['SELF_VERSION']==142 else ('v140_ro' if self.ns['SELF_VERSION']==140 else 'v136_ro')))))
-        self.live_entry=('72_V151_EXACT_UI_MENU_RO.json' if self.ns['SELF_VERSION']==151 else ('71_V146_FOLLOWUP_SOURCE_RO.json' if self.ns['SELF_VERSION']==146 else ('70_V144_DOWNSTREAM_SOURCE_RO.json' if self.ns['SELF_VERSION']==144 else ('69_V142_MESSAGE_DELIVERY_RO.json' if self.ns['SELF_VERSION']==142 else ('68_V140_EXACT_CALLEE_RO.json' if self.ns['SELF_VERSION']==140 else '67_V136_LIVE_JIT_TARGET_RO.json')))))
+        self.assertIn(self.ns['SELF_VERSION'],(136,140,142,144,146,151,153))
+        self.live_label=('v151_ro' if self.ns['SELF_VERSION'] in (151,153) else ('v146_ro' if self.ns['SELF_VERSION']==146 else ('v144_ro' if self.ns['SELF_VERSION']==144 else ('v142_ro' if self.ns['SELF_VERSION']==142 else ('v140_ro' if self.ns['SELF_VERSION']==140 else 'v136_ro')))))
+        self.live_entry=('72_V151_EXACT_UI_MENU_RO.json' if self.ns['SELF_VERSION'] in (151,153) else ('71_V146_FOLLOWUP_SOURCE_RO.json' if self.ns['SELF_VERSION']==146 else ('70_V144_DOWNSTREAM_SOURCE_RO.json' if self.ns['SELF_VERSION']==144 else ('69_V142_MESSAGE_DELIVERY_RO.json' if self.ns['SELF_VERSION']==142 else ('68_V140_EXACT_CALLEE_RO.json' if self.ns['SELF_VERSION']==140 else '67_V136_LIVE_JIT_TARGET_RO.json')))))
         self.ns['WORKDIR']=self.work
         cache=self.work/'.BG_EET_RU_AUTOFIX_CACHE';cache.mkdir()
-        for version, filename in ((133,'v133_live_hit_inventory_ro.py'),(self.ns['SELF_VERSION'],'v151_ro.py' if self.ns['SELF_VERSION']==151 else ('v146_ro.py' if self.ns['SELF_VERSION']==146 else ('v144_ro.py' if self.ns['SELF_VERSION']==144 else ('v142_ro.py' if self.ns['SELF_VERSION']==142 else ('v140_ro.py' if self.ns['SELF_VERSION']==140 else 'v136_jit_provenance_ro.py')))))):
+        for version, filename in ((133,'v133_live_hit_inventory_ro.py'),((151 if self.ns['SELF_VERSION']==153 else self.ns['SELF_VERSION']),'v151_ro.py' if self.ns['SELF_VERSION'] in (151,153) else ('v146_ro.py' if self.ns['SELF_VERSION']==146 else ('v144_ro.py' if self.ns['SELF_VERSION']==144 else ('v142_ro.py' if self.ns['SELF_VERSION']==142 else ('v140_ro.py' if self.ns['SELF_VERSION']==140 else 'v136_jit_provenance_ro.py')))))):
             src=SOURCES/filename
             dst=cache/(f'V{version}_RO.py')
             dst.write_bytes(src.read_bytes().replace(b'\r\n',b'\n'))
