@@ -1,9 +1,9 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 146,
-  "sha256": "5376a7417fb8def89ef5743f59ba9af8f3c91ae6f8c8ca83a9da676b2598e671",
-  "mode": "V146_PINNED_FIVE_FOLLOWUP_FUNCTIONS_READ_ONLY_ROW_HOLD",
+  "version": 151,
+  "sha256": "4a6c56aae71b0e070704aaf9a0074f3e930e391c199a075740bec795ccdaf41a",
+  "mode": "V151_EXACT_INSTALLED_UI_MENU_BOUNDED_READONLY_CAPTURE",
   "game_writes_allowed": false,
-  "note": "One unchanged user CMD, menu 9; V146 reads exact SHA-pinned Baldur.exe on disk to capture five follow-up RVAs 0x40BC80/0x40A400/0x276490/0x4069F0/0x2197B0, along with nested V136/V140/V142/V144 evidence, and writes 71_V146_FOLLOWUP_SOURCE_RO.json in existing ZIP. Historical 67-70 entries preserved. No game write/hook/install/visible combatLog row identity claim."
+  "note": "One existing user CMD; menu 9 reads byte-exact current override/UI.MENU (<=3MiB) from game root using SHA256+original base64 and source anchor counts, writes 72_V151_EXACT_UI_MENU_RO.json inside historical ZIP with 67-71 records preserved. Nested V136/V140/V142/V144/V146 RO evidence retained. No UI edit, runtime hook, game writes, native attack row join or gameplay proof. Missing/ambiguous UI file HOLD."
 }
