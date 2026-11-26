@@ -4,6 +4,8 @@ on:
     branches: [bg-eet-ai]
     paths:
       - 'BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/**'
+      - 'BGXAI/BGXAI_SYNC.ps1'
+      - 'BGXAI/fox_new/BOOTSTRAP_PIN.json'
       - '.github/workflows/bgxai-xequip-menu175-staged-onefile-ci.yml'
   workflow_dispatch:
 permissions:
@@ -21,6 +23,8 @@ jobs:
         shell: bash
         run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -30,12 +34,15 @@ jobs:
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
-          import re,hashlib
-          base=Path("BGXAI/BGXAI_SYNC.ps1").read_bytes()
+          import re,hashlib,subprocess
+          base=subprocess.check_output(['git','show','c558aa5fcc301c868efd3c37478d29af32abca51:BGXAI/BGXAI_SYNC.ps1'])
+          live=Path("BGXAI/BGXAI_SYNC.ps1").read_bytes()
           path=Path("BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/STAGED_BGXAI_SYNC_MENU175.ps1")
           candidate=path.read_bytes()
           assert len(base)==79832,("BASELINE_BYTES_CHANGED",len(base))
           assert len(candidate)<=80000,("ONEFILE_LIMIT",len(candidate))
+          if live!=base:
+              assert live==candidate,"CURRENT_SCRIPT_DIFFERS_FROM_STAGED_MENU175"
           def handlers(raw):
               return {int(m.group(1)):m.group(0) for m in re.finditer(rb"(?m)^'(\d+)'\s+\{[^\r\n]*$",raw)}
           old,new=handlers(base),handlers(candidate)
