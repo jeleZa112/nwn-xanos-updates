@@ -1345,17 +1345,6 @@ function R27.makeListener(deps)
   local result=R27.observe(sprite,action,p,deps.getActiveStats)
   R27.recorded=R27.recorded+1
   result.collectorOrdinal=R27.recorded
-  -- Additional observation only, no dispatch and no second callback.
-  local invOK,invSample=pcall(R27.captureInventoryV3,sprite,action,result)
-  result.inventoryV3Status=(invOK and type(invSample)=='table' and
-    invSample.status) or 'HOLD_INVENTORY_V3_EXCEPTION'
-  if invOK and type(invSample)=='table' and
-    invSample.status=='BACKPACK16_AND_R37_RAW_CONTEXT_STABLE_ADVICE_ONLY' and
-    type(invSample.snapshot)=='table' then
-    result.inventoryV3PresentCount=invSample.snapshot.presentCount
-    result.inventoryV3EmptyCount=invSample.snapshot.emptyCount
-    result.inventoryV3DuplicateResref=(invSample.duplicateBackpackResrefObserved==true)
-  end
   result.r37AdviceStatus='R37_R33_CAPTURE_HOLD_NO_DISPATCH'
   result.r37InvalidateCachedAdvice=true
   -- Analyze only the already-captured R33 sample; no additional EEex calls.
@@ -1378,6 +1367,18 @@ function R27.makeListener(deps)
   else
    priorByParty[p+1]=nil -- a HOLD invalidates pending advisory context
   end
+  -- Additional observation only, no dispatch and no second callback.
+  local invOK,invSample=pcall(R27.captureInventoryV3,sprite,action,result)
+  result.inventoryV3Status=(invOK and type(invSample)=='table' and
+    invSample.status) or 'HOLD_INVENTORY_V3_EXCEPTION'
+  if invOK and type(invSample)=='table' and
+    invSample.status=='BACKPACK16_AND_R37_RAW_CONTEXT_STABLE_ADVICE_ONLY' and
+    type(invSample.snapshot)=='table' then
+    result.inventoryV3PresentCount=invSample.snapshot.presentCount
+    result.inventoryV3EmptyCount=invSample.snapshot.emptyCount
+    result.inventoryV3DuplicateResref=(invSample.duplicateBackpackResrefObserved==true)
+  end
+
   -- Existing R33 event line stays identical; extra bounded R37 status follows.
   local emitted=pcall(deps.emit,result)
   if not emitted then R27.errors=R27.errors+1 end
