@@ -9,7 +9,10 @@ import hashlib,re
 
 SCHEMA="BGXAI_ONESHOT_BCS_PREFIX_MERGE_SOURCE_V1"
 class Hold(ValueError):pass
-def sha(v:bytes)->str:return hashlib.sha256(v).hexdigest()
+def sha(v:bytes)->str:
+    if type(v) is not bytes:
+        raise Hold("HOLD_BCS_EXPECTED_IMMUTABLE_BYTES")
+    return hashlib.sha256(v).hexdigest()
 def ishash(x):return type(x) is str and re.fullmatch("[0-9a-f]{64}",x) is not None
 def split(raw:bytes):
     if type(raw) is not bytes or len(raw)<15 or len(raw)>40_000_000 or not raw.startswith(
