@@ -1,0 +1,36 @@
+name: BGXAI inventory weapon loadout V1 readonly (NO GAME)
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/WEAPON_INVENTORY_PREP_V1_20261126/**'
+      - '.github/workflows/bgxai-inventory-prep-v1-sourceonly-ci.yml'
+  workflow_dispatch:
+jobs:
+  lua-inventory-advisor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install native Lua 5.3 and 5.4
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.3 lua5.4
+      - name: Check syntax, backpack evidence, no destructive actions and run 18 tests on both Lua runtimes
+        shell: bash
+        run: |
+          set -euo pipefail
+          P=BGXAI/BUILD/WEAPON_INVENTORY_PREP_V1_20261126
+          for LUA in lua5.3 lua5.4; do
+            "$LUA" -e "assert(loadfile('$P/BGXAI_WEAPON_INVENTORY_PREP_RO_V1.lua'))"
+            "$LUA" "$P/test_inventory_prep_ro_v1.lua"
+          done
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('BGXAI/BUILD/WEAPON_INVENTORY_PREP_V1_20261126/BGXAI_WEAPON_INVENTORY_PREP_RO_V1.lua')
+          s=p.read_text(encoding='utf-8')
+          import re
+          for forbidden in ('Stop(', 'ClearActions(', 'SelectWeaponAbility(', 'XEquipItem(', 'FillSlot(', 'EquipItem(', 'Attack(', 'SetGlobal(', 'EEex_Sprite_AddAction('):
+              assert forbidden not in re.sub(r'^\s*--.*$', '', s, flags=re.M), forbidden
+          assert 'function M.observe(' in s and 'function M.plan(' in s
+          print('PASS no-game native Lua5.3+5.4, no live actions or source file mutation')
+          PY
