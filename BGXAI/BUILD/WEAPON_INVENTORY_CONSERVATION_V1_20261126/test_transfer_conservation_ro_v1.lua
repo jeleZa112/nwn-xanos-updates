@@ -8,7 +8,7 @@ local function item(s,r,count)
   useCount1Raw=count or 2,useCount2Raw=3,useCount3Raw=4}
 end
 local function snapshot()
- local x={status="TOPLEVEL_SLOTS_RAW_NOT_INSTANCE_PROOF",actorId=123,slots={}}
+ local x={status="TOPLEVEL_SLOTS_RAW_NOT_INSTANCE_PROOF",actorId=123,sessionToken="SESSA",sequence=10,slots={}}
  for s=0,38 do x.slots[s]={slot=s,status="EMPTY"} end
  x.slots[18]=item(18,"HAMM01")
  x.slots[35]=item(35,"BOW05")
@@ -16,7 +16,7 @@ local function snapshot()
  return x
 end
 local function clone(x)
- local y={status=x.status,actorId=x.actorId,slots={}}
+ local y={status=x.status,actorId=x.actorId,sessionToken=x.sessionToken,sequence=11,slots={}}
  for s,v in pairs(x.slots) do
   y.slots[s]={};for k,z in pairs(v) do y.slots[s][k]=z end
  end
@@ -27,7 +27,7 @@ local function data()
  a.slots[36]=a.slots[18];a.slots[36].slot=36
  -- Must mutate ONLY new snapshot to avoid corrupting before.
  a.slots[18]={slot=18,status="EMPTY"}
- return b,a,{actorId=123,sourceSlot=18,targetSlot=36,resref="HAMM01"}
+ return b,a,{actorId=123,sourceSlot=18,targetSlot=36,resref="HAMM01",sessionToken="SESSA",beforeSequence=10,afterSequence=11}
 end
 local function check(x)
  assert(x.ordersSent==0 and x.executable==false and x.dispatchAuthorized==false
@@ -100,5 +100,17 @@ end)
 t("unexpected_new_item",function()
  local b,a,e=data();a.slots[20]=item(20,"SW1H04")
  local x=M.verify(b,a,e);assert(x.status=="HOLD_UNRELATED_ITEM_CHANGED");check(x)
+end)
+ t("cross_session_snapshot",function()
+ local b,a,e=data();a.sessionToken="SESSB"
+ local x=M.verify(b,a,e);assert(x.status=="HOLD_INCOMPLETE_OR_CROSS_ACTOR");check(x)
+end)
+t("reversed_sequence",function()
+ local b,a,e=data();a.sequence=9;e.afterSequence=9
+ local x=M.verify(b,a,e);assert(x.status=="HOLD_INCOMPLETE_OR_CROSS_ACTOR");check(x)
+end)
+t("stale_expected_sequence",function()
+ local b,a,e=data();e.afterSequence=12
+ local x=M.verify(b,a,e);assert(x.status=="HOLD_INCOMPLETE_OR_CROSS_ACTOR");check(x)
 end)
 print("BGXAI item conservation "..n.." pure model tests PASS")
