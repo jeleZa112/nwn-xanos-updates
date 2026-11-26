@@ -1,3 +1,11 @@
+# LATEST BGXAI 1.2 CONTINUATION — 26.11.2026 — R37/Inventory V3 REGRESSION-ORDER FIX
+
+Combined source `BGXAI/BUILD/R37_INVENTORY16_SINGLE_CALLBACK_SOURCEONLY_20261126/M_BGXR27_R37_INV3_SOURCE_ONLY.lua` now reads backpack16 **after** the unchanged R36/R37 compare/invalidation, to preserve the old decision timeline. Exactly one EEex action-start listener, same R33/R37 emit serialization, a third bounded `[BGXINV3]` advisory; no orders and no equipment mutation. New tests cover (a) correct 16 slots 18..33; (b) backpack count=1; (c) charge drift between scans -> HOLD; (d) queue changed during scans -> HOLD; (e) legacy 7 event transitions and one listener. Existing local `luatex --luaonly` independent Inventory V3 13/13 PASS, actual GitHub source static comparisons 10/10 PASS. Full composed ~69KB Lua CI/runtime **NOT YET CONFIRMED**; do not assert CODE alone is gameplay.
+
+Check `BGXAI/CURRENT/BGXAI_INV3_R37_SINGLE_CALLBACK_PROGRESS_20261126_RU.md` for latest exact detail. **DEPLOY NO, LIVE NO** for INV3. Existing live R37 (12/12 passive), V6/R29, EPS, saves unchanged. Do not require user to run old captures again. Next action = verify exact full combined Lua mock and fail-closed safety, then validate item instance uniqueness/XEquipItem transfer behavior before even considering active equip. Never change installed game or a single updater without separate typed approval and backup.
+
+---
+
 # LATEST 26.11.2026 — Inventory V3 реально связан с R37 в SOURCE ONLY (ONE LISTENER)
 
 **Последнее действие (продолжение BGXAI 1.2):** Создан `BGXAI/BUILD/R37_INVENTORY16_SINGLE_CALLBACK_SOURCEONLY_20261126/M_BGXR27_R37_INV3_SOURCE_ONLY.lua` — R37+корректный 16-слотовый рюкзак (18..33) в ОДНОМ source-only callback. Сохраняет исходные R33/R37 JSON byte-identical; добавляет отдельное read-only событие `[BGXINV3]` с present/empty (0..16), флагом дублей и честным `actionOrigin=UNKNOWN` / `safeActionBoundaryVerified=false`. Применяется прежний Q81/before_after до/после чтения; никаких XEquipItem/Stop/ClearActions, нового listener, самостоятельного CMD или live-модификаций.
