@@ -75,7 +75,7 @@ THEN
     XEquipItem("{m["resref"]}",Myself,{target},EQUIP)
 END
 '''
-    if script.count("\\n  False()\\n") != 1:
+    if script.count("\n  False()\n") != 1:
         raise Hold("HOLD_FALSE_GUARD_MISSING")
     if script.count("XEquipItem(") != 1 or script.count("SetGlobal(") != 1:
         raise Hold("HOLD_PROBE_DRIFT")
