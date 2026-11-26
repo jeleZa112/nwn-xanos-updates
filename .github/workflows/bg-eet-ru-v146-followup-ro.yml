@@ -45,7 +45,7 @@ jobs:
           assert ("V"+str(151 if j["version"]==153 else j["version"])+"_PIN='"+hashlib.sha256(code).hexdigest()+"'").encode() in cmd
           assert (b"72_V151_EXACT_UI_MENU_RO.json" if j["version"] in (151,153) else b"71_V146_FOLLOWUP_SOURCE_RO.json") in cmd
           assert ("SELF_VERSION = "+str(j["version"])).encode() in cmd
-          assert (b"9=UI+JIT-RO" if j["version"]==151 else b"9=JIT+FOLLOWUP-RO") in cmd
+          assert (b"9=UI+JIT-RO" if j["version"] in (151,153) else b"9=JIT+FOLLOWUP-RO") in cmd
           assert b"if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)" in cmd
           ast.parse(code.decode('utf8'))
           for x in (b'WriteProcessMemory(',b'VirtualProtectEx(',b'CreateRemoteThread(',b'EEex_JITAt(',b'EEex_HookBefore(',b'DllMain('):
