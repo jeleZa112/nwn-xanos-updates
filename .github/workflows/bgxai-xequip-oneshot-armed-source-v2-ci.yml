@@ -34,11 +34,11 @@ jobs:
         run: |
           set -euo pipefail
           d=BGXAI/BUILD/WEAPON_XEQUIP_ONESHOT_ARMED_SOURCE_V2_20261126
-          python "$d/BGXAI_XEQUIP_ONE_SHOT_SOURCE_V2.py" --manifest "$d/SYNTHETIC_SAMPLE_NO_GAME_PROOF.json" > /tmp/bgxai_v2_candidate.json
+          python "$d/BGXAI_XEQUIP_ONE_SHOT_SOURCE_V2.py" --manifest "$d/SYNTHETIC_SAMPLE_NO_GAME_PROOF.json" > .bgxai_v2_candidate_ci.json
           python - <<'PY'
           import json
           from pathlib import Path
-          x=json.loads(Path('/tmp/bgxai_v2_candidate.json').read_text())
+          x=json.loads(Path('.bgxai_v2_candidate_ci.json').read_text())
           a=x['audit'];s=x['baf']
           assert a['status']=='ARMABLE_BAF_SOURCE_NOT_INSTALLED_NOT_AUTHORIZED'
           assert a['gameInventoryUniqueVerified'] is False
