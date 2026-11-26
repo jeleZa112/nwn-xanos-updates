@@ -1,0 +1,45 @@
+name: BGXAI actual-save GAM V2.0 CRE V1.0 inventory read-only parser
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/WEAPON_SAVE_GAM_INVENTORY_RO_V1_20261126/**'
+      - '.github/workflows/bgxai-gam-save-inventory-readonly-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-only-save-inventory:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Preserve exact file bytes
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 15 synthetic save fixtures and strict failure-on-unknown
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest -v BGXAI/BUILD/WEAPON_SAVE_GAM_INVENTORY_RO_V1_20261126/test_gam_inventory_ro_v1.py
+      - name: Confirm no imported save-writing or live game code
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import ast
+          from pathlib import Path
+          p=Path('BGXAI/BUILD/WEAPON_SAVE_GAM_INVENTORY_RO_V1_20261126/BGXAI_GAM_INVENTORY_RO_V1.py')
+          s=p.read_text()
+          ast.parse(s)
+          assert 'subprocess' not in s and 'XEquipItem(' not in s
+          assert 'saveMatchesCurrentlyLoadedSessionVerified' in s
+          assert 'CRE_TO_RUNTIME=' in s
+          print('PASS read-only GAM parser; no game action or installation')
+          PY
