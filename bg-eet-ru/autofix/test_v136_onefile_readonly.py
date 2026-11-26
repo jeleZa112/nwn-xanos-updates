@@ -92,7 +92,7 @@ class TestOneFile136(unittest.TestCase):
         self.assertEqual(self.read('66_V133_LIVE_HIT_INVENTORY.json')['status'],'V133_MOCK_STATUS')
         with zipfile.ZipFile(self.zip) as z:self.assertNotIn(self.live_entry,z.namelist())
     def test_bad_remote_source_sha_fails_closed_and_reports(self):
-        (self.work/'.BG_EET_RU_AUTOFIX_CACHE'/f"V{self.ns['SELF_VERSION']}_RO.py").write_text('corrupted',encoding='utf8')
+        (self.work/'.BG_EET_RU_AUTOFIX_CACHE'/f"V{151 if self.ns['SELF_VERSION']==153 else self.ns['SELF_VERSION']}_RO.py").write_text('corrupted',encoding='utf8')
         with mock.patch.object(self.ns['urllib'].request,'urlopen',return_value=io.BytesIO(b'unverified')):
             rc=self.ns['v133_audit'](self.game,self.zip,True)
         self.assertEqual(rc,0) # Still emits HOLD into the existing ZIP.
