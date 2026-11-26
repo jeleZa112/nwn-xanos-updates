@@ -16,6 +16,17 @@ jobs:
           set -euo pipefail
           python3 -m unittest -v BGXAI/BUILD/WEAPON_XEQUIP_NATIVE_INERT_PILOT_V1_20261126/test_xequip_inert_probe_v1.py
           python3 -m unittest -v BGXAI/BUILD/WEAPON_XEQUIP_NATIVE_INERT_PILOT_V1_20261126/test_xequip_native_preflight_ro_v1.py
+      - name: Publish source hash evidence for SHA-pinned onefile read-only staging
+        run: |
+          set -euo pipefail
+          sha256sum BGXAI/BUILD/WEAPON_XEQUIP_NATIVE_INERT_PILOT_V1_20261126/BGXAI_XEQUIP_INERT_PROBE_V1.py
+          sha256sum BGXAI/BUILD/WEAPON_XEQUIP_NATIVE_INERT_PILOT_V1_20261126/BGXAI_XEQUIP_NATIVE_PREFLIGHT_RO_V1.py
+          sha256sum BGXAI/BUILD/WEAPON_XEQUIP_NATIVE_INERT_PILOT_V1_20261126/EXAMPLE_ONLY_NOT_USER_EET.json
+          sha256sum BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py
+          wc -c BGXAI/BUILD/WEAPON_XEQUIP_NATIVE_INERT_PILOT_V1_20261126/BGXAI_XEQUIP_INERT_PROBE_V1.py
+          wc -c BGXAI/BUILD/WEAPON_XEQUIP_NATIVE_INERT_PILOT_V1_20261126/BGXAI_XEQUIP_NATIVE_PREFLIGHT_RO_V1.py
+          wc -c BGXAI/BUILD/WEAPON_XEQUIP_NATIVE_INERT_PILOT_V1_20261126/EXAMPLE_ONLY_NOT_USER_EET.json
+          wc -c BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py
       - name: Generate proof with no access to actual EET
         run: |
           set -euo pipefail
