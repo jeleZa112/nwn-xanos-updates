@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "3c869ebad84fecaac8a671aa0105069b5c9ccb54",
+  "commit": "7bcc496de93cd10155aadc6c5321fa68a1a26fbe",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "65e4c5fe29355cad35d4ef565042edf5cdbcd507e846e340056dcc5816246d43",
+  "script_sha256": "a9d788e00026bb41b21ed96b3aa3d5b5ca8517471b3b1f8755f460b8c9124e12",
   "script_size": 79832,
-  "description": "R37 menu174/5 read-only paired live capture + explicit HOLD exit2; 79832B under CMD 80000; no active dispatch"
+  "description": "R37 fixed inherited R33 DPLAYER.BCS SHA typo; menu174 typed last-only WeiDU and read-only capture; 79832B < original CMD 80000 cap"
 }
