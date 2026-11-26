@@ -1,0 +1,32 @@
+name: BG EET RU V154 read-only console capture
+on:
+  pull_request:
+    paths:
+      - "bg-eet-ru/**"
+      - ".github/workflows/bg-eet-ru-v154-console-capture.yml"
+  push:
+    branches:
+      - bg-eet-ai
+    paths:
+      - "bg-eet-ru/**"
+      - ".github/workflows/bg-eet-ru-v154-console-capture.yml"
+
+jobs:
+  v154-read-only:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONUTF8: '1'
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Verify single-updater selftest
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
+      - name: Verify V154 immutable capture source and no-write guards
+        run: python bg-eet-ru/ui-observer/v154/test_v154_public_ro.py
