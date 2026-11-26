@@ -1,0 +1,14 @@
+# BGXAI — Inventory Weapon Priority V4 corrected planner (2026-11-26)
+
+## Real new code and purpose
+**Model-based situational weapon candidate selection from the 16 true BG(2)EE backpack slots 18..33**, reusing V1's noninterrupting scoring contract, not writing another game observer. Takes corrected V3 raw backpack snapshot, R2-style quick weapon slots, other top-level equipped slots 0..17 and 34, externally modelled V3/V4/V5 utility/effect scores, target and context. Only recommends a *unique resref* to a *currently EMPTY, class-allowed* quick weapon slot; never overwrites. Validates whole top-level equipment visibility, excludes duplicate items in offhand, ammo/quick items, magic-weapon, other quickweapons, or backpack. No external item/container instance identity; bags-of-holding contents not enumerated.
+
+This module is **ADVISORY ONLY**, cannot equip or generate LOCALS, cannot assert real per-alternative APR. All results mark `executable=false`, `ordersSent=0`, `inventoryMoveAuthorized=false`, `manualEpsOriginVerified=false`, `engineFinalAlternativeStatsVerified=false`, `itemTransferSemanticsVerified=false`. In particular, source-only boolean `scene.*Verified=true` is a *mock contract*, not live verification. It never modifies current game or action queue.
+
+Evidence: IESDP BG(2)EE SLOTS.IDS `15-17` quick items, `18-33` backpack, `34` magical-weapon, `35-38` quickweapons. IESDP action 385 `XEquipItem` can target a slot, but does not guarantee unique *instance*, safe queue boundary or conserved inventory after action; `EquipItemEx` does not move item, `FillSlot` destroys target contents. No active command permitted.
+
+## What this removes as a blocker
+Previously V1 used **incorrect 15..34** backpack map and only checked duplicates in backpack+quickweapons; V4 corrects mapping, covers all top-level slots and strict no-overwrite, reuses existing external scorer. V4 is not yet plugged into R37 and is NOT actual automation; native EEex loaded ITM stats/provenance and execution transaction remain unproven.
+
+## Status
+CODE: new V4 pure Lua planner. TEST: `test_backpack16_priority_v4.lua` includes 20 synthetic positives/negatives; GitHub Actions Lua5.3/5.4/LuaJIT must be verified separately. DEPLOY/LIVE NO. No game files, scripts, one-CMD launcher or saves touched.
