@@ -1,6 +1,6 @@
 @echo off & py -3 -x "%~f0" %* & pause & exit /b
 # coding: utf-8
-"""BG_EET_RU single updater; read-only by default."""
+"""Updater."""
 from __future__ import annotations
 import argparse
 import base64
@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 153
+SELF_VERSION = 154
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -8118,8 +8118,8 @@ V151_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/00d7ac73
 V133_PIN='b3f22f56550d951483863fb59e84f2e543b2473d7bb2e51f8fd03fed4e58f624'
 V133_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/6e1922fcfbb73a43c1b97fc82ea848cd05369c4b/bg-eet-ru/native-correlation/v133_live_hit_inventory_ro.py'
 
-V153_PIN='ce54a4373a9b523877f2415cdc6503fb7d7e9824ba7c6d1a5fbaba148bd161f4'
-V153_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/f9cdace016818764eb61a21cece130453242fc5e/bg-eet-ru/ui-observer/v153/v153_guarded.py'
+V153_PIN='db636cad123194092b248ca4d073ab448c16c9801bb7879ce0c5d68b0eafb1c4'
+V153_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/c20bcb44991949e1f2f99438541b199412fd3439/bg-eet-ru/ui-observer/v154/v154_guarded_capture.py'
 def v153_dispatch(game,mode):
  try:
     p=v121_cache(game)/'V153_GUARDED.py'
@@ -8132,9 +8132,9 @@ def v153_dispatch(game,mode):
     exec(compile(p.read_bytes(),str(p),'exec'),m.__dict__)
     report=m.run(mode,Path(game),WORKDIR)
  except Exception as e:report={'status':'V153_DISPATCH_HOLD','reason':type(e).__name__+':'+str(e)[:140],'game_files_written_this_action':'UNKNOWN_IF_EXCEPTION_AFTER_ACTION'}
- try:v116_zip(game,WORKDIR/REPORT_NAME,report,entry='73_V153_GUARDED_OBSERVER.json')
+ try:v116_zip(game,WORKDIR/REPORT_NAME,report,entry='74_V154_CONSOLE_CAPTURE_RO.json' if mode=='capture' else '73_V153_GUARDED_OBSERVER.json')
  except Exception as e:print('V153_REPORT_ZIP_HOLD',type(e).__name__,str(e)[:110])
- print('V153',report.get('status'))
+ print('V154' if mode=='capture' else 'V153',report.get('status'))
  return 2 if 'HOLD' in report.get('status','') or 'STOP' in report.get('status','') else 0
 def v133_audit(game,path,v136=False):
  report={'schema':'BG_EET_RU_V133_WINDOWS_RUNTIME_READONLY','status':'RUNTIME_MEMORY_HOLD','game_files_written':0,'native_hook_install_allowed':False,'firstcall_owner_verified':False,'gameplay_verified':False}
@@ -8185,7 +8185,7 @@ def v121_selftest():
     finally:WORKDIR=previous
  return True
 def main(argv=None):
- p=argparse.ArgumentParser(description='BG_EET_RU one-file visible-only read-only auto-updater')
+ p=argparse.ArgumentParser(description='BG_EET_RU')
  p.add_argument('--game',default=DEFAULT_GAME)
  p.add_argument('--offline',action='store_true')
  p.add_argument('--force',action='store_true')
@@ -8317,6 +8317,7 @@ def main(argv=None):
        try:b=input('CL150 1=preflight 2=install(typed) 3=rollback(typed) 4=status [1]: ').strip()
        except EOFError:b=''
        return v153_dispatch(game,{'2':'install','3':'rollback','4':'status'}.get(b,'preflight'))
+    if mode=='capture' and sha_path(game/'override'/'UI.MENU')=='ce4a46cf32058295c221b9124916f46764780752f9611adc8319c4dda9653efe':return v153_dispatch(game,'capture')
     if mode:return v126_dispatch(game,WORKDIR/REPORT_NAME,mode)
     rc=v124_one_run(game,WORKDIR/REPORT_NAME,args.offline)
     return rc if rc else v126_dispatch(game,WORKDIR/REPORT_NAME,'status')
@@ -8745,7 +8746,7 @@ def main(argv=None):
     rc=v70_eeex_loader_diagnostic(game, WORKDIR/REPORT_NAME)
     if rc: return rc
     return v88_resume_after_cached(game, WORKDIR/REPORT_NAME, args.combat_only)
- print('BG_EET_RU v'+str(SELF_VERSION)+' — один отчёт; изменение игры только при отдельном подтверждении.')
+ print('BG_EET_RU v'+str(SELF_VERSION))
  print('Папка:',WORKDIR)
  print('Проверяю существующие отчёты (без повторных запусков)...')
  v28,v29,targets=load_scanners()
@@ -11334,7 +11335,7 @@ def selftest():
  assert full_audit_selftest() and callable(full_audit_run)
  assert v121_selftest() and callable(v121_run)
  assert v122_selftest() and callable(v122_run)
- print('SELFTEST: PASS. Один CMD, один ZIP, SHA, read-only, кэш, автообновление.')
+ print('SELFTEST: PASS')
  return 0
 if __name__=='__main__':
  try:raise SystemExit(main())
