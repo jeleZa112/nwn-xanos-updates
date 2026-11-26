@@ -37,15 +37,15 @@ jobs:
           root=Path('bg-eet-ru')
           cmd=(root/'onefile/BG_EET_RU_UPDATE.cmd').read_bytes()
           manifest=json.loads((root/'onefile/release.json').read_text('utf8'))
-          mod=(root/'native-correlation'/('v146_ro.py' if manifest['version']==146 else 'v144_ro.py')).read_bytes().replace(b'\r\n',b'\n')
-          assert len(mod)<=20000,len(mod)
+          mod=(root/'native-correlation'/('v146_ro.py' if manifest['version']==146 else ('v151_ro.py' if manifest['version']==151 else 'v144_ro.py'))).read_bytes().replace(b'\r\n',b'\n')
+          assert len(mod)<=(24000 if manifest['version']==151 else 20000),len(mod)
           assert len(cmd)<=750000,len(cmd)
-          assert manifest['version'] in (144,146) and manifest['game_writes_allowed'] is False
+          assert manifest['version'] in (144,146,151) and manifest['game_writes_allowed'] is False
           assert hashlib.sha256(cmd).hexdigest()==manifest['sha256']
           assert ("V"+str(manifest["version"])+"_PIN='"+hashlib.sha256(mod).hexdigest()+"'").encode() in cmd
           assert ("SELF_VERSION = "+str(manifest["version"])).encode() in cmd
-          assert (b"71_V146_FOLLOWUP_SOURCE_RO.json" if manifest["version"]==146 else b"70_V144_DOWNSTREAM_SOURCE_RO.json") in cmd
-          assert (b"9=JIT+FOLLOWUP-RO" if manifest["version"]==146 else b"9=JIT+DOWNSTREAM-RO") in cmd
+          assert (b"72_V151_EXACT_UI_MENU_RO.json" if manifest["version"]==151 else (b"71_V146_FOLLOWUP_SOURCE_RO.json" if manifest["version"]==146 else b"70_V144_DOWNSTREAM_SOURCE_RO.json")) in cmd
+          assert (b"9=UI+JIT-RO" if manifest["version"]==151 else (b"9=JIT+FOLLOWUP-RO" if manifest["version"]==146 else b"9=JIT+DOWNSTREAM-RO")) in cmd
           assert b"V133_PIN=" in cmd
           ast.parse(mod.decode('utf8'))
           for forbidden in (b'WriteProcessMemory(',b'VirtualProtectEx(',b'CreateRemoteThread(',b'EEex_JITAt(',b'EEex_HookBefore(',b'DllMain('):

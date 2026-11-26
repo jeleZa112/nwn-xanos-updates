@@ -35,7 +35,7 @@ jobs:
           data=p.read_bytes()
           manifest=json.loads((root/'release.json').read_text(encoding='utf8'))
           assert len(data)<=750000
-          assert manifest['version'] in (136,140,142,144,146) and manifest['game_writes_allowed'] is False
+          assert manifest['version'] in (136,140,142,144,146,151) and manifest['game_writes_allowed'] is False
           assert hashlib.sha256(data).hexdigest()==manifest['sha256']
           if manifest['version']==136:
               assert b"SELF_VERSION = 136" in data
@@ -52,10 +52,14 @@ jobs:
               assert b"SELF_VERSION = 144" in data
               assert b"V144_PIN='4cf34c6e5795e4121811681655523592f467cf9c9d29708987ff3e1705d76ac6'" in data
               assert b"70_V144_DOWNSTREAM_SOURCE_RO.json" in data
-          else:
+          elif manifest['version']==146:
               assert b"SELF_VERSION = 146" in data
               assert b"V146_PIN='9437d948a5770bf32c97955955356edc7d752d5beead669f52beb6ba31fce823'" in data
               assert b"71_V146_FOLLOWUP_SOURCE_RO.json" in data
+          else:
+              assert b"SELF_VERSION = 151" in data
+              assert b"V151_PIN='fc2ad24fed61648d43622d6bf963af71f70d31d0677a2fca0ce2ee441733e440'" in data
+              assert b"72_V151_EXACT_UI_MENU_RO.json" in data
           assert b"if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)" in data
           print('V136_COMPATIBLE_ONEFILE_RELEASE_INTEGRITY_PASS')
       - name: Preserve option 8; add option 9; one ZIP; bad SHA fails closed

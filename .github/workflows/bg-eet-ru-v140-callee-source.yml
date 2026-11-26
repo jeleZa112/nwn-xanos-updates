@@ -43,7 +43,7 @@ jobs:
           release=json.loads((base/'release.json').read_text('utf8'))
           assert len(cmd)<=750000,len(cmd)
           assert hashlib.sha256(cmd).hexdigest()==release['sha256']
-          assert release['version'] in (140,142,144,146) and release['game_writes_allowed'] is False
+          assert release['version'] in (140,142,144,146,151) and release['game_writes_allowed'] is False
           text=cmd.decode('utf8')
           assert 'SELF_VERSION = '+str(release['version']) in text
           assert '66_V133_LIVE_HIT_INVENTORY.json' in text
@@ -59,10 +59,14 @@ jobs:
               module_name='v144_ro.py'
               report='70_V144_DOWNSTREAM_SOURCE_RO.json'
               menu='9=JIT+DOWNSTREAM-RO'
-          else:
+          elif release['version']==146:
               module_name='v146_ro.py'
               report='71_V146_FOLLOWUP_SOURCE_RO.json'
               menu='9=JIT+FOLLOWUP-RO'
+          else:
+              module_name='v151_ro.py'
+              report='72_V151_EXACT_UI_MENU_RO.json'
+              menu='9=UI+JIT-RO'
           assert report in text and menu in text
           mod=Path('bg-eet-ru/native-correlation',module_name).read_bytes().replace(b'\r\n',b'\n')
           pin=hashlib.sha256(mod).hexdigest()
