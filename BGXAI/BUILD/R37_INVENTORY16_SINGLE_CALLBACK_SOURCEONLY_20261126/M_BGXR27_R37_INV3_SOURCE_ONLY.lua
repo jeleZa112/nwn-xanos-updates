@@ -1295,6 +1295,11 @@ function R27.toInventoryV3Json(sample)
    '"type":"BACKPACK16_ADVISORY","seq":'..jnum(sample.collectorOrdinal,1,64)..
    ',"partyIndex":'..jnum(sample.partyIndex,0,5)..
    ',"status":"'..s..'",'..
+   '"backpackFirstSlot":18,"backpackLastSlot":33,'..
+   '"backpackPresentCount":'..jnum(sample.inventoryV3PresentCount,0,16)..','..
+   '"backpackEmptyCount":'..jnum(sample.inventoryV3EmptyCount,0,16)..','..
+   '"duplicateResrefObserved":'..
+    (sample.inventoryV3DuplicateResref==true and 'true' or 'false')..','..
    '"readOnly":true,"ordersSent":0,"localsWritten":0,'..
    '"actionOrigin":"UNKNOWN","safeActionBoundaryVerified":false,'..
    '"dispatchAuthorized":false,"inventoryMoveAuthorized":false,'..
@@ -1343,6 +1348,13 @@ function R27.makeListener(deps)
   local invOK,invSample=pcall(R27.captureInventoryV3,sprite,action,result)
   result.inventoryV3Status=(invOK and type(invSample)=='table' and
     invSample.status) or 'HOLD_INVENTORY_V3_EXCEPTION'
+  if invOK and type(invSample)=='table' and
+    invSample.status=='BACKPACK16_AND_R37_RAW_CONTEXT_STABLE_ADVICE_ONLY' and
+    type(invSample.snapshot)=='table' then
+    result.inventoryV3PresentCount=invSample.snapshot.presentCount
+    result.inventoryV3EmptyCount=invSample.snapshot.emptyCount
+    result.inventoryV3DuplicateResref=(invSample.duplicateBackpackResrefObserved==true)
+  end
   result.r37AdviceStatus='R37_R33_CAPTURE_HOLD_NO_DISPATCH'
   result.r37InvalidateCachedAdvice=true
   -- Analyze only the already-captured R33 sample; no additional EEex calls.
