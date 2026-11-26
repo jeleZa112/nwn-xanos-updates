@@ -110,7 +110,8 @@ def parse(raw):
    "saveMatchesCurrentlyLoadedSessionVerified":False,
    "classKitWeaponSlotCapacityVerified":False,
    "currentItemUniqueAcrossContainersVerified":False,
-   "partyActorEngineIdVerified":False,\n   "implicitFistSlotObserved":False,
+   "partyActorEngineIdVerified":False,
+   "implicitFistSlotObserved":False,
    "gameModified":False,"filesWritten":0,
    "ordersSent":0,"dispatchAuthorized":False}
 def main(argv=None):
