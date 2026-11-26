@@ -1,0 +1,34 @@
+name: BGXAI inventory16 actual weapon-choice planner V4 pure source CI
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/WEAPON_INVENTORY_PRIORITY_V4_20261126/**'
+      - '.github/workflows/bgxai-backpack16-priority-v4-source-ci.yml'
+  workflow_dispatch:
+jobs:
+  weapon-choice-no-game:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua runtimes
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.3 lua5.4 luajit
+      - name: Verify V4 only recommends, never acts
+        run: |
+          set -euo pipefail
+          f=BGXAI/BUILD/WEAPON_INVENTORY_PRIORITY_V4_20261126/BGXAI_BACKPACK16_PRIORITY_RO_V4.lua
+          for luac in luac5.3 luac5.4; do "$luac" -p "$f"; done
+          pattern='(XEquipItem|EquipItemEx|FillSlot|ClearActions|Stop|SelectWeaponAbility|EEex_Action_QueueResponseStringOnAIBase)[[:space:]]*\('
+          printf 'FillSlot(' | grep -Eq "$pattern" || { echo "broken denylist"; exit 1; }
+          if grep -En "$pattern" "$f"; then echo 'Engine action in pure planner'; exit 1; fi
+      - name: Run existing V3 and new V4 on 3 independent Lua engines
+        run: |
+          set -euo pipefail
+          for cmd in lua5.3 lua5.4 luajit; do
+            echo "RUN $cmd"
+            "$cmd" BGXAI/BUILD/WEAPON_INVENTORY_CORRECTED_V3_20261126/test_backpack16_r37_v3.lua
+            "$cmd" BGXAI/BUILD/WEAPON_INVENTORY_PRIORITY_V4_20261126/test_backpack16_priority_v4.lua
+          done
