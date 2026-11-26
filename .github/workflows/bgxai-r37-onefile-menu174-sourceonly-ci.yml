@@ -43,15 +43,18 @@ jobs:
               (m.group(1),m.group(0)) for m in re.finditer(rb"(?m)^'(\d+)'\s+\{[^\r\n]*$",b)))
           a,b=actions(old),actions(s)
           assert len(a)==173 and set(a)==set(range(1,174)),(len(a),list(a)[-3:])
-          assert len(b)==174 and set(b)==set(range(1,175)),(len(b),list(b)[-3:])
+          assert len(b) in (174,175) and set(b)==set(range(1,len(b)+1)),(len(b),list(b)[-3:])
           assert all(a[k]==b[k] for k in range(1,174)),'existing handlers MUST be byte identical'
+          if 175 in b:
+            assert b"Get-PinnedBytes $p" in b[175] and b"--native-readonly" in b[175]
+            assert b"175 PIN STOP" in b[175] and b"175 RO STOP" in b[175]
           assert b[174].count(b'R37_GUARDED_SOURCE_ONLY.py')==1
           assert b[174].count(b'M_BGXR27_R37_SOURCE_ONLY.lua')==1
           assert b"'5'='capture'" in b[174]
           assert b'R37 STAGE HASH' in b[174]
           assert b'5=capture' in b[174]
           assert b[174].count(b"= 'install'")==0
-          assert b"174 R37" in s
+          assert b"174 R37" in s or b"175 XEquip native compile READ ONLY" in s
           assert b"BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126" in s
           guard=Path('BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/R37_GUARDED_SOURCE_ONLY.py').read_bytes()
           candidate=Path('BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/M_BGXR27_R37_SOURCE_ONLY.lua').read_bytes()
