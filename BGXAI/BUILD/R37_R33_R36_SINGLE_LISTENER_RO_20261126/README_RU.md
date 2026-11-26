@@ -1,3 +1,13 @@
+## ВАЖНО: ИСПРАВЛЕН РЕАЛЬНЫЙ STOP УСТАНОВКИ R37 (26.11.2026)
+
+При первой попытке `174 → 2` пользователь получил `R33_PREINSTALL_RESOURCE_BASELINE_CHANGED`. **Причина точно найдена в исходном коде R37**: SHA `override/DPLAYER.BCS` был ошибочно обрезан до 50 символов, тогда как оригинальный R33 хранит **64-символьный SHA256 `4d640ed7f4c50ed10e30b9482940c6733196f3ad7ae1814516ded410405e64ed`**. Остальные пять совпадают. Игру и файлы менять НЕ надо: STOP случился до резервирования и вызова WeiDU. Исправлены конкретный SHA и сообщение об ошибке (указывается имя файла).
+
+**АКТУАЛЬНЫЕ хеши вместо ВСЕХ исторических значений ниже:** guard `R37_GUARDED_SOURCE_ONLY.py` **26 252 B, SHA256 `b34c93a0315c578989079c3565c6f0704315b8cdeabfb15be06508e4b5367e2d`**; основной PowerShell `BGXAI_SYNC.ps1` **79 832 B, SHA256 `a9d788e00026bb41b21ed96b3aa3d5b5ca8517471b3b1f8755f460b8c9124e12`**, pinned commit `7bcc496de93cd10155aadc6c5321fa68a1a26fbe`; Lua R37 SHA прежний `5ece282270f0e6a1fa7a6086b7f13c57c77de98759637efa4b2ab0cc1e5744d6`. Только исходный один `BGXAI_UPDATE.cmd`, его 80 000 B limit соблюдён.
+
+[27 тестов установки R37 (Win+Linux) PASS, включая сравнение всех шести SHA с исходным R33](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45749902092). [Тест единого обновлятора Win+Linux PASS](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45749964204). R37 по-прежнему НЕ установлен пользователю. Следующий шаг по его разрешению: `174→2` typed install, затем при SUCCESS `174→5` capture. При новом STOP не повторять автоматически и прислать JSON.
+
+---
+
 ## ЗАФИКСИРОВАННЫЙ РЕЛИЗ R37 — 26.11.2026 (поверх исторических записей ниже)
 
 **ФИНАЛЬНЫЕ ДАННЫЕ:** `BGXAI_SYNC.ps1` **79 832 B**, SHA256 `65e4c5fe29355cad35d4ef565042edf5cdbcd507e846e340056dcc5816246d43`, bootstrap commit `3c869ebad84fecaac8a671aa0105069b5c9ccb54`. Guard `R37_GUARDED_SOURCE_ONLY.py` **26 210 B**, SHA256 `5dca3b0709a70687221e640a2fc8a4d1e3ca12e5ffa34baeeddb8d174479ba0e`. Lua R37 **60 835 B**, SHA256 `5ece282270f0e6a1fa7a6086b7f13c57c77de98759637efa4b2ab0cc1e5744d6`. Эти значения заменяют упоминания более ранних сборок R37 ниже — никогда не возвращаться к старым checksum.
