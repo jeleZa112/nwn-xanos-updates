@@ -1,0 +1,35 @@
+name: BGXAI onefile 175 child preflight offline SHA replay
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/**'
+      - '.github/workflows/bgxai-xequip-onefile175-orchestrator-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-only:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reuse exact pinned verified sources without game access or network
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest -v BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/test_xequip_onefile_175_ro_v1.py
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          p=Path("BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONEFILE_175_RO_V1.py")
+          print("ONEFILE175_CHILD_SHA256="+hashlib.sha256(p.read_bytes()).hexdigest())
+          print("ONEFILE175_CHILD_BYTES="+str(p.stat().st_size))
+          PY
