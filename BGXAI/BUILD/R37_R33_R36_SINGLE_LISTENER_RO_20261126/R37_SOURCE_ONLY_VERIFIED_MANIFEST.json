@@ -125,6 +125,15 @@
     "rawAprMappingReference": "https://gibberlings3.github.io/iesdp/opcodes/bgee.htm",
     "rawAprMappingReferenceSecondary": "https://docs.rs/infinitier_core/latest/infinitier_core/resource/cre/enum.NumberOfAttacks.html",
     "aprMappingVerifiedFromExternalRules": true,
-    "alternateWeaponAPRVerifiedByEngine": false
+    "alternateWeaponAPRVerifiedByEngine": false,
+    "offhandResrefObservedBeforeAndAfter": "SHLD03A",
+    "offhandSlot": 9,
+    "offhandRemainedEquippedInConsoleSnapshots": true,
+    "aiIssuedIndependentShieldSwitchVerified": false,
+    "shieldAutomaticallyEnabledByEEWeaponType": "Likely engine-native, not distinguishable as separate command from this trace",
+    "playerManualInputDuringCombat": false,
+    "playerManualInputBeforeCombat": true,
+    "weaponTransitionAutonomousDuringCombat": true,
+    "sourceProofCaveat": "R37 PASSIVE records sword selected and shield present throughout; no separate shield equip action logged"
   }
 }
