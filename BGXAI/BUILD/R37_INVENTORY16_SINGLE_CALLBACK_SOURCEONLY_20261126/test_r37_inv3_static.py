@@ -13,6 +13,11 @@ assert span(orig, "function R27.toR37AdviceJson(sample)", "-- Makes a passive co
 assert comp.count("function R27.makeListener(deps)")==1
 assert comp.count("EEex_Action_AddSpriteStartedActionListener,pilot.listener")==1
 assert comp.count("pcall(R27.captureInventoryV3,sprite,action,result)")==1
+assert comp.index("local capOk,cap=pcall(R36_CORE.capture,result)") < comp.index("local invOK,invSample=pcall(R27.captureInventoryV3,sprite,action,result)") < comp.index("local emitted=pcall(deps.emit,result)")
+assert comp.index("local line=R27.toConsoleJson(sample)") < comp.index("local advice=R27.toR37AdviceJson(sample)") < comp.index("local inv=R27.toInventoryV3Json(sample)")
+assert "'\"backpackPresentCount\":'" in comp
+assert "'\"backpackEmptyCount\":'" in comp
+assert "'\"duplicateResrefObserved\":'" in comp
 assert comp.count("INV3.capture(sprite,sample,contextReader)")==1
 assert "for slot=18,33 do" in comp and "for s=18,33 do" in comp
 assert "for slot=15,34 do" not in comp
