@@ -36,9 +36,9 @@ jobs:
           from pathlib import Path
           import hashlib,ast,json
           root=Path('bg-eet-ru')
-          code=(root/'native-correlation'/('v151_ro.py' if j['version']==151 else 'v146_ro.py')).read_bytes().replace(b'\r\n',b'\n')
           cmd=(root/'onefile/BG_EET_RU_UPDATE.cmd').read_bytes()
           j=json.loads((root/'onefile/release.json').read_text('utf8'))
+          code=(root/'native-correlation'/('v151_ro.py' if j['version']==151 else 'v146_ro.py')).read_bytes().replace(b'\r\n',b'\n')
           assert len(code)<=(24000 if j['version']==151 else 20000) and len(cmd)<=750000,(len(code),len(cmd))
           assert j['version'] in (146,151) and j['game_writes_allowed'] is False
           assert hashlib.sha256(cmd).hexdigest()==j['sha256']
