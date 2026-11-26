@@ -1,0 +1,31 @@
+name: BGXAI R37 backpack bridge V2 source-only
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/WEAPON_INVENTORY_PREP_V2_R37_BRIDGE_20261126/**'
+      - '.github/workflows/bgxai-r37-backpack-bridge-v2-sourceonly.yml'
+  workflow_dispatch:
+jobs:
+  lua-sourceonly:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        lua: ['5.3','5.4']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua${{ matrix.lua }}
+      - name: Syntax
+        run: |
+          luac${{ matrix.lua }} -p BGXAI/BUILD/WEAPON_INVENTORY_PREP_V2_R37_BRIDGE_20261126/BGXAI_R37_BACKPACK_BRIDGE_RO_V2.lua
+          luac${{ matrix.lua }} -p BGXAI/BUILD/WEAPON_INVENTORY_PREP_V2_R37_BRIDGE_20261126/test_r37_backpack_bridge_v2.lua
+      - name: Pure Lua mock tests
+        run: lua${{ matrix.lua }} BGXAI/BUILD/WEAPON_INVENTORY_PREP_V2_R37_BRIDGE_20261126/test_r37_backpack_bridge_v2.lua
+      - name: Deny engine commands or hooks in bridge
+        run: |
+          if grep -En 'XEquipItem\\(|FillSlot\\(|ClearActions\\(|Stop\\(|SelectWeaponAbility\\(|EEex_.*Hook|Register.*Listener' BGXAI/BUILD/WEAPON_INVENTORY_PREP_V2_R37_BRIDGE_20261126/BGXAI_R37_BACKPACK_BRIDGE_RO_V2.lua; then
+            echo "Unsafe command in source-only bridge"; exit 1
+          fi
