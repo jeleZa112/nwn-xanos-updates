@@ -36,15 +36,16 @@ jobs:
           from pathlib import Path
           import hashlib,ast,json
           root=Path('bg-eet-ru')
-          code=(root/'native-correlation/v146_ro.py').read_bytes().replace(b'\r\n',b'\n')
+          code=(root/'native-correlation'/('v151_ro.py' if j['version']==151 else 'v146_ro.py')).read_bytes().replace(b'\r\n',b'\n')
           cmd=(root/'onefile/BG_EET_RU_UPDATE.cmd').read_bytes()
           j=json.loads((root/'onefile/release.json').read_text('utf8'))
-          assert len(code)<=20000 and len(cmd)<=750000,(len(code),len(cmd))
-          assert j['version']==146 and j['game_writes_allowed'] is False
+          assert len(code)<=(24000 if j['version']==151 else 20000) and len(cmd)<=750000,(len(code),len(cmd))
+          assert j['version'] in (146,151) and j['game_writes_allowed'] is False
           assert hashlib.sha256(cmd).hexdigest()==j['sha256']
-          assert ("V146_PIN='"+hashlib.sha256(code).hexdigest()+"'").encode() in cmd
-          assert b"71_V146_FOLLOWUP_SOURCE_RO.json" in cmd
-          assert b"SELF_VERSION = 146" in cmd and b"9=JIT+FOLLOWUP-RO" in cmd
+          assert ("V"+str(j["version"])+"_PIN='"+hashlib.sha256(code).hexdigest()+"'").encode() in cmd
+          assert (b"72_V151_EXACT_UI_MENU_RO.json" if j["version"]==151 else b"71_V146_FOLLOWUP_SOURCE_RO.json") in cmd
+          assert ("SELF_VERSION = "+str(j["version"])).encode() in cmd
+          assert (b"9=UI+JIT-RO" if j["version"]==151 else b"9=JIT+FOLLOWUP-RO") in cmd
           assert b"if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)" in cmd
           ast.parse(code.decode('utf8'))
           for x in (b'WriteProcessMemory(',b'VirtualProtectEx(',b'CreateRemoteThread(',b'EEex_JITAt(',b'EEex_HookBefore(',b'DllMain('):
