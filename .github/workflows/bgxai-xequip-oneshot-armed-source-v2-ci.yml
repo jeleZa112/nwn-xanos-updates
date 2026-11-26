@@ -51,7 +51,7 @@ jobs:
           assert not any(a in s for a in ('ClearActions(','Stop(','FillSlot(','CreateItem('))
           print('PASS armable candidate rendered; NOT armed or deployed')
           PY
-      - name: Evidence: source hash SHA256 for future exact native compile
+      - name: "Evidence: source hash SHA256 for future exact native compile"
         shell: bash
         run: |
           set -euo pipefail
