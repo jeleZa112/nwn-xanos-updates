@@ -4,6 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 from unittest import mock
 import hashlib
+import ast
 import importlib.util
 import json
 import os
@@ -78,6 +79,43 @@ class R37Guarded(unittest.TestCase):
         else:
             self.write("WeiDU.log",history()+b"~BGXR37/SETUP-BGXR37.TP2~ #0 #0 // install\n")
             self.write(G.OVERRIDE,CAND.read_bytes())
+    def test_all_r37_baseline_hashes_match_actual_frozen_r33_guard(self):
+        # Regression for 26.11.2026 deployment STOP: accidentally truncated
+        # DPLAYER.BCS 64-character R33 SHA to 50 characters in R37.
+        r33_file=HERE.parent/"R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125"/"R33_GUARDED_SOURCE_ONLY.py"
+        original=ast.parse(r33_file.read_text(encoding="utf-8"))
+        baseline=None
+        for node in original.body:
+            if isinstance(node,ast.Assign) and any(
+                    isinstance(t,ast.Name) and t.id=="BASELINE_SHA" for t in node.targets):
+                baseline=ast.literal_eval(node.value)
+        self.assertIsInstance(baseline,dict)
+        current_ast=ast.parse(MOD.read_text(encoding="utf-8"))
+        current=None
+        for node in current_ast.body:
+            if isinstance(node,ast.Assign) and any(
+                    isinstance(t,ast.Name) and t.id=="BASELINE_SHA" for t in node.targets):
+                current=ast.literal_eval(node.value)
+        self.assertEqual(current,baseline,"Never hand-copy/truncate R33 inherited resource SHA again")
+        for rel,digest in current.items():
+            self.assertEqual(len(digest),64,f"Incomplete SHA256 for {rel}")
+            self.assertEqual(bytes.fromhex(digest).hex(),digest)
+        self.assertEqual(current["override/DPLAYER.BCS"],
+                         "4d640ed7f4c50ed10e30b9482940c6733196f3ad7ae1814516ded410405e64ed")
+
+    def test_r33_proof_failure_identifies_exact_changed_resource(self):
+        # Mismatched hashes must HOLD before any game write; include filename.
+        proof=G.safe(self.root,G.R33_PROOF)
+        data=json.loads(proof.read_text())
+        data["baselineSnapshot"]["override/DPLAYER.BCS"]="0"*64
+        proof.write_text(json.dumps(data),encoding="utf-8")
+        with mock.patch.object(G,"native_weidu") as weidu:
+            with self.assertRaisesRegex(
+                G.Hold,r"R33_PREINSTALL_RESOURCE_BASELINE_CHANGED:override/DPLAYER\.BCS"):
+                G.preflight(self.root,CAND,live=False)
+            weidu.assert_not_called()
+        self.assertFalse((self.root/G.R37_DIR).exists())
+
     def test_source_exact_real_sha_and_one_listener(self):
         original=G.candidate_bytes(CAND)
         self.assertEqual(len(original),60835)
