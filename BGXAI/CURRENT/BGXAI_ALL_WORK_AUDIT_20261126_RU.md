@@ -1,3 +1,8 @@
+# CORRECTION 26.11.2026 — FACT CHECKED ENGINE SLOT MAP
+Previous audit did not catch a critical bug: V1/V2 scanned slots 15–34 (20), but **BG(2)EE backpack is 18–33 (16)**; 15–17 quick item buttons, 34 magical weapon. The index 44–47 cited from `ITMSLOTS.2DA` is PSTEE-specific and must not be applied to EET. Correct V3 is source-only in `BGXAI/BUILD/WEAPON_INVENTORY_CORRECTED_V3_20261126/`, with post-backpack R37 raw action/selection/queue check, 13 local Lua 5.3 mock tests PASS, but NO game integration/real equipment move. Legacy V1/V2 scores/tests cannot justify future dispatch. A separate CI regex bug in V2 was fixed with a selftest. Original audit follows below as historical findings.
+
+---
+
 # BGXAI — сквозная ревизия наработок / продолжение 1.2 — 26.11.2026
 
 ## Охват и честность
