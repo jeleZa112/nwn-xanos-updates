@@ -1,3 +1,17 @@
+# NEXT VERIFIED STAGE — 26.11.2026: XEquipItem REAL ENGINE ACTION IN INERT NATIVE SOURCE PROBE
+
+**This supersedes older next-step instructions below, not their historical evidence.** IESDP BGEE: actual action `385 XEquipItem(item,object,slot,EQUIP)`, `CheckItemSlot` tests exact source, `!HasItemSlot` tests empty target, `ActionListEmpty` idle check, `CombatCounter(0)` indicates no combat but may be inaccurate in particular cases. `SLOTS.IDS` source 18..33 => `SLOT_MISC3..18`, destination 35..38 => `SLOT_WEAPON0..3`; `XEQUIP.IDS EQUIP=1`. These are documented mechanics **not native EET behavior/proven item conservation**. Never use `FillSlot`, `Stop`, `ClearActions`.
+
+**New CODE**: `BGXAI/BUILD/WEAPON_XEQUIP_NATIVE_INERT_PILOT_V1_20261126/BGXAI_XEQUIP_INERT_PROBE_V1.py` generates `IF False()` one-action **inert** BAF with source/destination/party/idle/one-shot LOCALS guard; no game installation or action. `BGXAI_XEQUIP_NATIVE_PREFLIGHT_RO_V1.py` reuses **existing** temp WeiDU backend pinned by Git blob SHA `0bd66e6f2fd97cf69291a7b3ae5463f7e3295995`, defaults source-only. Its optional separate native-readonly invocation is **not exposed in user's BGXAI_UPDATE.cmd yet** and has NOT been run on EET. No second CMD/PowerShell or live file written.
+
+**REAL CI**: [45771911979](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45771911979) **SUCCESS 11/11 Python tests** for impossible-to-activate BAF; [45772130570](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45772130570) **SUCCESS 11/11 source tests + 9/9 pinned backend tests**, no game accessed. Job logs verified, no native EET compile.
+
+**BLOCKER**: existing `BGXAI/BGXAI_SYNC.ps1` = **79,832 bytes**, user onefile size ceiling **80,000 bytes**. DO NOT just append menu175 and break bootstrap; need audited safe refactor/source-only integration with byte cap and Windows PS5.1 AST + existing menu174 regressions, preserve single pinned `BGXAI_UPDATE.cmd`. Next real player step only AFTER that is complete and automatic notification has a concrete requested safe action. Do not ask user to run a new tool, repeat Khalid fights or perform manual Lua edits now.
+
+**CURRENT STATUS**: BAF CODE yes; source-only CI PASS; **native compiler against user's EET UNKNOWN; game DEPLOY NO; game LIVE NO; safe autonomous equipped-instance move NOT WORKING YET.** Existing V6/R29/R37 game behavior preserved; no game, localization, EPS, saves or updater changed.
+
+---
+
 # BGXAI — Weapon Inventory priority V4 + conservation V1 — VERIFIED SOURCE CI — 26.11.2026
 
 ## MOST RECENT P0 STATUS — continue from HERE
