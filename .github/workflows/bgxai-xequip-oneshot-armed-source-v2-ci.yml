@@ -1,0 +1,59 @@
+name: BGXAI V2 armable one-shot source + lossless BCS merge (NO INSTALL)
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/WEAPON_XEQUIP_ONESHOT_ARMED_SOURCE_V2_20261126/**'
+      - '.github/workflows/bgxai-xequip-oneshot-armed-source-v2-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-review:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Use exact LF and byte-stable source on both OS
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: One-shot BAF guard and byte-preserving native BCS merge tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest -v BGXAI/BUILD/WEAPON_XEQUIP_ONESHOT_ARMED_SOURCE_V2_20261126/test_xequip_one_shot_source_v2.py
+          python -m unittest -v BGXAI/BUILD/WEAPON_XEQUIP_ONESHOT_ARMED_SOURCE_V2_20261126/test_oneshot_bcs_merge_ro_v1.py
+      - name: Build synthetic one-shot BAF and verify it cannot self-arm
+        shell: bash
+        run: |
+          set -euo pipefail
+          d=BGXAI/BUILD/WEAPON_XEQUIP_ONESHOT_ARMED_SOURCE_V2_20261126
+          python "$d/BGXAI_XEQUIP_ONE_SHOT_SOURCE_V2.py" --manifest "$d/SYNTHETIC_SAMPLE_NO_GAME_PROOF.json" > /tmp/bgxai_v2_candidate.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('/tmp/bgxai_v2_candidate.json').read_text())
+          a=x['audit'];s=x['baf']
+          assert a['status']=='ARMABLE_BAF_SOURCE_NOT_INSTALLED_NOT_AUTHORIZED'
+          assert a['gameInventoryUniqueVerified'] is False
+          assert a['userInstallAuthorizationReceived'] is False
+          assert a['installed'] is False and a['ordersSent']==0
+          assert s.count('XEquipItem(')==1
+          assert 'SetGlobal("BGXW2ARM","GLOBAL",1)' not in s
+          assert 'Global("BGXW2ARM","GLOBAL",1)' in s
+          assert 'ActionListEmpty()' in s and 'CombatCounter(0)' in s
+          assert not any(a in s for a in ('ClearActions(','Stop(','FillSlot(','CreateItem('))
+          print('PASS armable candidate rendered; NOT armed or deployed')
+          PY
+      - name: Evidence: source hash SHA256 for future exact native compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum BGXAI/BUILD/WEAPON_XEQUIP_ONESHOT_ARMED_SOURCE_V2_20261126/BGXAI_XEQUIP_ONE_SHOT_SOURCE_V2.py
+          sha256sum BGXAI/BUILD/WEAPON_XEQUIP_ONESHOT_ARMED_SOURCE_V2_20261126/BGXAI_ONESHOT_BCS_MERGE_RO_V1.py
