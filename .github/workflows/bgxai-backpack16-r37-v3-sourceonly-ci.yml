@@ -1,0 +1,41 @@
+name: BGXAI BG2EE backpack16 V3 safe-source regression
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/WEAPON_INVENTORY_CORRECTED_V3_20261126/**'
+      - '.github/workflows/bgxai-backpack16-r37-v3-sourceonly-ci.yml'
+  workflow_dispatch:
+jobs:
+  backpack16-source-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Native Lua 5.3 5.4 and LuaJIT
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.3 lua5.4 luajit
+          for engine in lua5.3 lua5.4 luajit; do
+            echo "TEST $engine"
+            "$engine" BGXAI/BUILD/WEAPON_INVENTORY_CORRECTED_V3_20261126/test_backpack16_r37_v3.lua
+          done
+      - name: Fail-closed slot mapping and dispatch denylist
+        run: |
+          set -euo pipefail
+          f=BGXAI/BUILD/WEAPON_INVENTORY_CORRECTED_V3_20261126/BGXAI_BACKPACK16_R37_RO_V3.lua
+          pattern='(XEquipItem|FillSlot|ClearActions|Stop|SelectWeaponAbility|EEex_Action_QueueResponseStringOnAIBase)[[:space:]]*\('
+          printf 'XEquipItem(' | grep -Eq "$pattern" || { echo "Denylist broken"; exit 1; }
+          if grep -En "$pattern" "$f"; then
+            echo 'Prohibited dispatch found in source-only module'; exit 1
+          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("BGXAI/BUILD/WEAPON_INVENTORY_CORRECTED_V3_20261126/BGXAI_BACKPACK16_R37_RO_V3.lua")
+          s=p.read_text(encoding="utf-8")
+          assert "for slot=18,33 do" in s and "for s=18,33 do" in s
+          assert "for slot=15,34 do" not in s and "for slot=15,33 do" not in s
+          assert "manualEpsOriginVerified=false" in s
+          assert "inventoryMoveAuthorized=false" in s
+          print("PASS source-only mapping/denylist")
+          PY
