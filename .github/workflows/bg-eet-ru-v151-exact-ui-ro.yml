@@ -1,0 +1,72 @@
+name: BG EET RU V151 exact installed UI.MENU read-only capture
+on:
+  pull_request:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v151_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v151_ro.py'
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - 'bg-eet-ru/onefile/release.json'
+      - '.github/workflows/bg-eet-ru-v151-exact-ui-ro.yml'
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/native-correlation/v151_ro.py'
+      - 'bg-eet-ru/native-correlation/test_v151_ro.py'
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - 'bg-eet-ru/onefile/release.json'
+      - '.github/workflows/bg-eet-ru-v151-exact-ui-ro.yml'
+jobs:
+  source-guard:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: x64
+      - name: Verify pinned script and strict read-only release
+        shell: python
+        run: |
+          import ast, hashlib, json
+          from pathlib import Path
+          root=Path('bg-eet-ru')
+          mod=(root/'native-correlation/v151_ro.py').read_bytes().replace(b'\r\n',b'\n')
+          cmd=(root/'onefile/BG_EET_RU_UPDATE.cmd').read_bytes()
+          manifest=json.loads((root/'onefile/release.json').read_text('utf8'))
+          assert manifest['version']==151 and manifest['game_writes_allowed'] is False
+          assert len(mod)<=24000 and len(cmd)<=750000
+          assert hashlib.sha256(cmd).hexdigest()==manifest['sha256']
+          assert ("V151_PIN='"+hashlib.sha256(mod).hexdigest()+"'").encode() in cmd
+          assert b"72_V151_EXACT_UI_MENU_RO.json" in cmd
+          assert b"9=UI+JIT-RO" in cmd and b"SELF_VERSION = 151" in cmd
+          assert b"r.read(24001)" in cmd and b"V133_PIN=" in cmd
+          ast.parse(mod.decode('utf8'))
+          for unsafe in (b'WriteProcessMemory(',b'VirtualProtectEx(',b'CreateRemoteThread(',b'EEex_JITAt(',b'EEex_HookBefore(',b'DllMain('):
+              assert unsafe not in mod,unsafe
+          print('V151_PINNED_SOURCE_AND_NO_GAME_WRITE_PASS')
+      - name: Exact UI source snapshot and adversarial scenarios
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p test_v151_ro.py -v
+      - name: Previous exact EXE source suite
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -m unittest discover -s bg-eet-ru/native-correlation -p test_v146_ro.py -v
+      - name: Preserved onefile and historical V136-V146 ZIP records
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -m unittest discover -s bg-eet-ru/autofix -p test_v136_onefile_readonly.py -v
+      - name: Onefile selftest
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
