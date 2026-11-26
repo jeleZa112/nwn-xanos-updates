@@ -1299,7 +1299,8 @@ function R27.toInventoryV3Json(sample)
    '"backpackPresentCount":'..jnum(sample.inventoryV3PresentCount,0,16)..','..
    '"backpackEmptyCount":'..jnum(sample.inventoryV3EmptyCount,0,16)..','..
    '"duplicateResrefObserved":'..
-    (sample.inventoryV3DuplicateResref==true and 'true' or 'false')..','..
+    (sample.inventoryV3DuplicateResref==nil and 'null' or
+     (sample.inventoryV3DuplicateResref and 'true' or 'false'))..','..
    '"readOnly":true,"ordersSent":0,"localsWritten":0,'..
    '"actionOrigin":"UNKNOWN","safeActionBoundaryVerified":false,'..
    '"dispatchAuthorized":false,"inventoryMoveAuthorized":false,'..
