@@ -119,6 +119,12 @@
     "liveEvidenceSummary": "BGXAI/CURRENT/R37_LIVE_PASSIVE_20261126_VERIFIED_RU.md",
     "rawUserFilesUploadedToPublicRepo": false,
     "separateUIError": "Error loading menu: ']' expected near 'icon' (unrelated to confirmed R37 observer, source unknown)",
-    "gameplayWeaponSwitchControlledByBGXAIVerified": false
+    "gameplayWeaponSwitchControlledByBGXAIVerified": false,
+    "rawAprFieldBeforeDecoded": 2,
+    "rawAprFieldAfterDecoded": 1.5,
+    "rawAprMappingReference": "https://gibberlings3.github.io/iesdp/opcodes/bgee.htm",
+    "rawAprMappingReferenceSecondary": "https://docs.rs/infinitier_core/latest/infinitier_core/resource/cre/enum.NumberOfAttacks.html",
+    "aprMappingVerifiedFromExternalRules": true,
+    "alternateWeaponAPRVerifiedByEngine": false
   }
 }
