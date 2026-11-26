@@ -93,6 +93,42 @@ yes(has(hold,'"R37_R33_CAPTURE_HOLD_NO_DISPATCH"'),'R37 clears cached advice on 
 getStats=function()return stats end
 _,advice=fire()
 yes(has(advice,'"R37_FIRST_R33_SAMPLE_NO_PRIOR"'),'after HOLD no stale advice is reused')
+-- Inventory-specific tests run after R37's existing 7-transition contract.
+equipment[18]=item('HAMM01',1)
+local _raw,_advice=fire()
+yes(has(logs[#logs],'"status":"BACKPACK16_AND_R37_RAW_CONTEXT_STABLE_ADVICE_ONLY"'),
+    'inventory V3 must capture the populated backpack in same listener')
+yes(has(logs[#logs],'"backpackPresentCount":1') and
+    has(logs[#logs],'"backpackEmptyCount":15'),'correct 16-slot totals')
+local originalGet=sprite.m_equipment.m_items.get
+local invReads=0
+sprite.m_equipment.m_items.get=function(self,slot)
+ if slot==18 then
+  invReads=invReads+1
+  if invReads==2 then equipment[18].m_useCount1=2 end
+ end
+ return originalGet(self,slot)
+end
+_raw,_advice=fire()
+yes(has(logs[#logs],'"status":"HOLD_BACKPACK_CHANGED"'),
+    'change between scans must HOLD without any orders')
+yes(has(logs[#logs],'"backpackPresentCount":null'),
+    'failed capture must not present verified item count')
+sprite.m_equipment.m_items.get=originalGet
+invReads=0
+sprite.m_equipment.m_items.get=function(self,slot)
+ if slot==18 then
+  invReads=invReads+1
+  if invReads==2 then sprite.m_queuedActions.m_nCount=1 end
+ end
+ return originalGet(self,slot)
+end
+_raw,_advice=fire()
+yes(has(logs[#logs],'"status":"HOLD_CONTEXT_AFTER"'),
+    'queue changed during capture must HOLD')
+yes(commands==0,'zero commands across backpack drift/queue drift')
+sprite.m_queuedActions.m_nCount=0
+sprite.m_equipment.m_items.get=originalGet
 dofile(filename)
 yes(#listeners==1,'re-loading source must not register another listener')
 yes(commands==0,'all cases zero action orders')
