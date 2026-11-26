@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 151
+SELF_VERSION = 153
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -8128,6 +8128,26 @@ V151_PIN='fc2ad24fed61648d43622d6bf963af71f70d31d0677a2fca0ce2ee441733e440'
 V151_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/00d7ac738d5195bf8bd310bb76765d935b02ff1a/bg-eet-ru/native-correlation/v151_ro.py'
 V133_PIN='b3f22f56550d951483863fb59e84f2e543b2473d7bb2e51f8fd03fed4e58f624'
 V133_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/6e1922fcfbb73a43c1b97fc82ea848cd05369c4b/bg-eet-ru/native-correlation/v133_live_hit_inventory_ro.py'
+
+V153_PIN='ce54a4373a9b523877f2415cdc6503fb7d7e9824ba7c6d1a5fbaba148bd161f4'
+V153_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/f9cdace016818764eb61a21cece130453242fc5e/bg-eet-ru/ui-observer/v153/v153_guarded.py'
+def v153_dispatch(game,mode):
+ report={'status':'V153_MODULE_HOLD','game_files_written_this_action':0}
+ try:
+    p=v121_cache(game)/'V153_GUARDED.py'
+    if p.is_symlink() or (p.exists() and not p.is_file()):raise RuntimeError('V153_CACHE_UNSAFE')
+    if not p.is_file() or sha_path(p)!=V153_PIN:
+       with urllib.request.urlopen(V153_URL,timeout=20) as r:data=r.read(20001)
+       if digest(data)!=V153_PIN:raise RuntimeError('V153_SOURCE_SHA_HOLD')
+       v121_write(game,p,data)
+    m=types.ModuleType('v153_guarded')
+    exec(compile(p.read_bytes(),str(p),'exec'),m.__dict__)
+    report=m.run(mode,Path(game),WORKDIR)
+ except Exception as e:report={'status':'V153_DISPATCH_HOLD','reason':type(e).__name__+':'+str(e)[:140],'game_files_written_this_action':'UNKNOWN_IF_EXCEPTION_AFTER_ACTION'}
+ try:v116_zip(game,WORKDIR/REPORT_NAME,report,entry='73_V153_GUARDED_OBSERVER.json')
+ except Exception as e:print('V153_REPORT_ZIP_HOLD',type(e).__name__,str(e)[:110])
+ print('V153',mode,report.get('status'),report.get('reason',''))
+ return 2 if 'HOLD' in report.get('status','') or 'STOP' in report.get('status','') else 0
 def v133_audit(game,path,v136=False):
  report={'schema':'BG_EET_RU_V133_WINDOWS_RUNTIME_READONLY','status':'RUNTIME_MEMORY_HOLD','game_files_written':0,'native_hook_install_allowed':False,'firstcall_owner_verified':False,'gameplay_verified':False}
  try:
@@ -8183,6 +8203,7 @@ def main(argv=None):
  p.add_argument('--force',action='store_true')
  p.add_argument('--selftest',action='store_true')
  p.add_argument('--live-hit-readonly',action='store_true')
+ p.add_argument('--v153-observer',choices=('preflight','status','install','rollback'))
  p.add_argument('--v133-live-inventory',action='store_true')
  p.add_argument('--weapon-source-audit',action='store_true')
  p.add_argument('--weapon-context-audit',action='store_true')
@@ -8298,16 +8319,21 @@ def main(argv=None):
  try:v121_snapshot(game,WORKDIR/REPORT_NAME)
  except Exception as exc:print('V121 EVIDENCE SNAPSHOT HOLD:',type(exc).__name__,str(exc)[:140])
  if not (argv if argv is not None else sys.argv[1:]):
-    try:a=input('1=audit 2=install 3=undo 4=play 5=status 6=unwind 7=abi 8=live-RO 9=UI+JIT-RO [1]: ').strip()
+    try:a=input('1=audit 2=install 3=undo 4=play 5=status 6=unwind 7=abi 8=live-RO 9=UI+JIT-RO 10=CL150-pilot [1]: ').strip()
     except EOFError:a=''
     mode={'2':'install','3':'rollback','4':'capture','5':'status'}.get(a)
     if a=='6':return v130_audit(game,WORKDIR/REPORT_NAME)
     if a=='7':return v130_audit(game,WORKDIR/REPORT_NAME,132)
     if a=='8':return v133_audit(game,WORKDIR/REPORT_NAME)
     if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)
+    if a=='10':
+       try:b=input('CL150 1=preflight 2=install(typed) 3=rollback(typed) 4=status [1]: ').strip()
+       except EOFError:b=''
+       return v153_dispatch(game,{'2':'install','3':'rollback','4':'status'}.get(b,'preflight'))
     if mode:return v126_dispatch(game,WORKDIR/REPORT_NAME,mode)
     rc=v124_one_run(game,WORKDIR/REPORT_NAME,args.offline)
     return rc if rc else v126_dispatch(game,WORKDIR/REPORT_NAME,'status')
+ if args.v153_observer:return v153_dispatch(game,args.v153_observer)
  if args.v133_live_inventory:return v133_audit(game,WORKDIR/REPORT_NAME)
  if args.live_hit_readonly:return v122_run(game,WORKDIR/REPORT_NAME,args.offline)
  if args.autofix_readonly:
