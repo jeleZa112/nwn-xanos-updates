@@ -1,0 +1,44 @@
+name: BGXAI XEquipItem inert native probe - source only
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/WEAPON_XEQUIP_NATIVE_INERT_PILOT_V1_20261126/**'
+      - '.github/workflows/bgxai-xequip-inert-native-probe-v1-ci.yml'
+  workflow_dispatch:
+jobs:
+  inert-baf-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python contract tests, all generated scripts inert
+        run: |
+          set -euo pipefail
+          python3 -m unittest -v BGXAI/BUILD/WEAPON_XEQUIP_NATIVE_INERT_PILOT_V1_20261126/test_xequip_inert_probe_v1.py
+      - name: Check sample stdout and proof fail-closed
+        run: |
+          set -euo pipefail
+          base=BGXAI/BUILD/WEAPON_XEQUIP_NATIVE_INERT_PILOT_V1_20261126
+          python3 "$base/BGXAI_XEQUIP_INERT_PROBE_V1.py" --manifest "$base/EXAMPLE_ONLY_NOT_USER_EET.json" > /tmp/inert_probe.json
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          r=json.loads(Path('/tmp/inert_probe.json').read_text())
+          s=r['baf_source_only']
+          assert s.count('False()')==2, s
+          assert '  False()\n  InParty(Myself)' in s
+          assert s.index('False()') < s.index('THEN')
+          assert 'XEquipItem("HAMM01",Myself,SLOT_WEAPON1,EQUIP)' in s
+          assert 'CheckItemSlot(Myself,"HAMM01",SLOT_MISC3)' in s
+          assert '!HasItemSlot(Myself,SLOT_WEAPON1)' in s
+          assert r['installed'] is False and r['nativeWeiDUCompileVerified'] is False
+          assert r['dispatchAuthorized'] is False and r['ordersSent']==0
+          Path('/tmp/BGXI1CHK.baf').write_text(s,encoding='ascii')
+          print('PASS actual inert BAF generated, no install')
+          PY
+      - name: Strictly no game/mod files emitted or engines invoked
+        run: |
+          set -euo pipefail
+          test ! -e BGXAI/BUILD/WEAPON_XEQUIP_NATIVE_INERT_PILOT_V1_20261126/setup-BGXI1CHK.tp2
+          test ! -e BGXAI/BUILD/WEAPON_XEQUIP_NATIVE_INERT_PILOT_V1_20261126/INSTALL.cmd
+          echo "PASS source-only, no native game compile or installation"
