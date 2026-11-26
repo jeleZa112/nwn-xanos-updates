@@ -31,7 +31,9 @@ local function at(items,slot)
  if item==nil then return {slot=slot,status="EMPTY"} end
  local rr=field(item,"cResRef")
  local rg=field(rr,"get")
- local name=(type(rg)=="function") and select(2,pcall(rg,rr)) or nil
+ local readOK,name=false,nil
+ if type(rg)=="function" then readOK,name=pcall(rg,rr) end
+ if not readOK then return nil end
  local flags=field(item,"m_flags")
  local a,b,c=field(item,"m_useCount1"),field(item,"m_useCount2"),field(item,"m_useCount3")
  if not res(name) or not valid(flags,0,4294967295) or
@@ -91,6 +93,8 @@ function M.capture(sprite,r37,contextReader)
     r37.readOnly~=true or r37.ordersSent~=0 or
     r37.dispatchAuthorized~=false or r37.weaponSwitchAuthorized~=false or
     r37.sameLuaListenerInvocation~=true or
+    r37.rawInventoryDoubleReadConsistent~=true or
+    r37.selectedDerivedStatsDoubleReadConsistent~=true or
     r37.queueSnapshotStable~=true or
     r37.actionContextSnapshotStable~=true or
     not valid(r37.partyIndex,0,5) or not valid(r37.actor,1,2147483647) then
