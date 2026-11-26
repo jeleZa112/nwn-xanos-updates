@@ -1,3 +1,13 @@
+# LATEST 26.11.2026 — Inventory V3 реально связан с R37 в SOURCE ONLY (ONE LISTENER)
+
+**Последнее действие (продолжение BGXAI 1.2):** Создан `BGXAI/BUILD/R37_INVENTORY16_SINGLE_CALLBACK_SOURCEONLY_20261126/M_BGXR27_R37_INV3_SOURCE_ONLY.lua` — R37+корректный 16-слотовый рюкзак (18..33) в ОДНОМ source-only callback. Сохраняет исходные R33/R37 JSON byte-identical; добавляет отдельное read-only событие `[BGXINV3]` с present/empty (0..16), флагом дублей и честным `actionOrigin=UNKNOWN` / `safeActionBoundaryVerified=false`. Применяется прежний Q81/before_after до/после чтения; никаких XEquipItem/Stop/ClearActions, нового listener, самостоятельного CMD или live-модификаций.
+
+**TEST:** точные локальные V3 Lua 13/13 PASS; **9/9 структурных сравнений реальных GitHub-исходников PASS**. Полный объединённый 69KB Lua runtime mock и workflow `bgxai-r37-inv3-single-listener-ci.yml` опубликованы, но их завершённый результат **пока НЕ подтверждён**. Не говорить, что новый наблюдатель уже работает в игре. **DEPLOY NO / LIVE NO**, установленный R37 остаётся старым рабочим 12/12 LIVE PASSIVE, V6/R29/EPS/сейвы не трогали.
+
+**Единая карточка:** `BGXAI/CURRENT/BGXAI_INV3_R37_SINGLE_CALLBACK_PROGRESS_20261126_RU.md`. Следом проверить новые source-only Lua5.3/5.4/LuaJIT mock и на ошибки сразу исправлять. Только после доказательства механики item conservation/безопасного EPS/manual boundary можно проектировать guarded `XEquipItem` в пустой quickslot и устанавливать с **отдельным typed согласием** через тот же BGXAI_UPDATE.cmd.
+
+---
+
 # LATEST CORRECTION — 26.11.2026: BG2EE BACKPACK = 16 SLOTS (18..33) — V3
 **THIS OVERRIDES OLDER INVENTORY V1/V2 STATUS ENTRIES BELOW.** IESDP BG(2)EE CRE V1 Item Slots confirms quick items 15..17, **ordinary backpack 18..33**, magical weapon 34, quick weapon 35..38. Previous scan 15..34 incorrectly counted non-backpack item slots and is forbidden as active equip input. The published `ITMSLOTS.2DA` page describing extra 44..47 is **PSTEE ONLY** and does NOT apply to EET. Sources: https://gibberlings3.github.io/iesdp/file_formats/ie_formats/cre_v1.htm and https://gibberlings3.github.io/iesdp/files/ids/bgee/slots.htm.
 
