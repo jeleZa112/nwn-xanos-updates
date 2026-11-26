@@ -34,6 +34,9 @@ local function fullMap(snapshot)
  if type(snapshot)~="table" or
    snapshot.status~="TOPLEVEL_SLOTS_RAW_NOT_INSTANCE_PROOF" or
    not integer(snapshot.actorId,1,2147483647) or
+   type(snapshot.sessionToken)~="string" or
+   #snapshot.sessionToken<1 or #snapshot.sessionToken>128 or
+   not integer(snapshot.sequence,1,1e12) or
    type(snapshot.slots)~="table" then return false end
  for s=0,38 do
   if not itemOK(snapshot.slots[s],s) then return false end
@@ -54,12 +57,18 @@ local function same(a,b)
 end
 -- Run after an independently observed attempt, never as action authorization.
 -- expected={actorId, sourceSlot in 18..33, targetSlot in 35..38,
---           resref, minSnapshotSequence, maxSnapshotSequence}.
+--           resref, sessionToken, beforeSequence, afterSequence}.
 -- This API intentionally has no dispatch-related input and output authority.
 function M.verify(before,after,expected)
  if not fullMap(before) or not fullMap(after) or
    type(expected)~="table" or
    not integer(expected.actorId,1,2147483647) or
+   type(expected.sessionToken)~="string" or
+   expected.sessionToken~=before.sessionToken or
+   expected.sessionToken~=after.sessionToken or
+   expected.beforeSequence~=before.sequence or
+   expected.afterSequence~=after.sequence or
+   before.sequence>=after.sequence or
    before.actorId~=after.actorId or
    expected.actorId~=before.actorId or
    not integer(expected.sourceSlot,18,33) or
