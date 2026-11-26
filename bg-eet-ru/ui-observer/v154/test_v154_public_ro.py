@@ -61,7 +61,8 @@ class V154(unittest.TestCase):
    (game/'override'/'UI.MENU').write_bytes(b'unexpected')
    with mock.patch.object(m.subprocess,'Popen',side_effect=AssertionError('must not launch')):
     r=m.run('capture',game,work,allow_non_windows_test=True)
-   self.assertIn('HOLD',r['status']+' '+str(r.get('reason')))
+   self.assertEqual(r['status'],'V153_SAFE_STOP_NO_UNAUTHORIZED_WRITE')
+   self.assertIn('BACKUP_LEDGER_MISSING',r['reason'])
    self.assertEqual(r['game_files_written_this_action'],0)
    self.assertEqual((game/'override'/'UI.MENU').read_bytes(),b'unexpected')
 
