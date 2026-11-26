@@ -1,0 +1,49 @@
+# BGXAI R37 — ПЕРВЫЙ LIVE PASSIVE ТЕСТ В ИГРЕ, 26.11.2026
+
+## Данные и уровни доказательства
+
+Файлы, предоставленные пользователем в чате (сами исходные пользовательские логи НЕ публиковать в репозитории):
+- `BGXAI_R37_CAPTURE_20261126T050723691038Z.json`
+- `BGXAI_R37_CONSOLE_20261126T050555209778Z.log`
+
+**LIVE/PASSIVE: подтверждено.** Из одного обычного боя EET + EEex с больным гибберлингом: `R37_RUNTIME_ADVICE_LOG_READY_FOR_REVIEW`, `gameExitCode=0`, **1** session R37, **12** original R33 events и **12** R37 events, **12/12** совпали по `seq+partyIndex`; 0 непарных / malformed / unsafe rows, 0 HOLD; `ordersSent=0`, `dispatchAuthorized=false`, `weaponSwitchAuthorized=false`; все 12 событий относятся к `partyIndex=2` (Халид). `rawConsoleBytes=184300`, `r37InvalidationSamples=7`: 1 инициализация первого образца + 6 последующих сбросов контекста (4 ACTION, 1 AMMO, 1 NATURAL_SELECTION). 5 раз RAW_FIELDS_EQUAL без изменений, но это не доказательство одинаковых бафов или APR.
+
+**CODE→TEST→DEPLOY→LIVE матрица:**
+- CODE: R37 Lua `M_BGXR27_R37_SOURCE_ONLY.lua` уже был создан и CI прошёл, исходный модуль 60835 B, SHA256 `5ece282270f0e6a1fa7a6086b7f13c57c77de98759637efa4b2ab0cc1e5744d6`.
+- TEST: guarded 27/27 + comprehensive 7/7 + menu174 CI previously PASS.
+- DEPLOY: guarded `BGXAI_UPDATE.cmd→174→5` **успешно запустил оригинальный InfinityLoader с R37** после проверки installed source/proof/WeiDU last в capture (сам JSON не содержит новых SHA замеров live game и отдельно не доказывает их). На пользовательской машине R37 выполняется.
+- LIVE/PASSIVE: 12/12 R37 observations during actual combat, correct change detection, safe zero orders. **LIVE/ACTIVE WEAPON SWITCH: NOT VERIFIED and NOT AUTHORIZED.**
+
+## Реальные последовательные события (R33 original и R37 new line pairs)
+
+| seq | `actionRaw` | selected weapon slot (RAW) | `AROW01` count | `m_nNumberOfAttacks` RAW | R37 status |
+|---:|---:|---:|---:|---:|---|
+| 1 | 23 | 12 (AROW01) | 20 | 2 | R37_FIRST_R33_SAMPLE_NO_PRIOR |
+| 2 | 23 | 12 | 20 | 2 | RAW_FIELDS_EQUAL_NOT_EFFECT_OR_EPS_PROOF |
+| 3 | 23 | 12 | 20 | 2 | RAW_FIELDS_EQUAL_NOT_EFFECT_OR_EPS_PROOF |
+| 4 | 23 | 12 | 20 | 2 | RAW_FIELDS_EQUAL_NOT_EFFECT_OR_EPS_PROOF |
+| 5 | 23 | 12 | 20 | 2 | RAW_FIELDS_EQUAL_NOT_EFFECT_OR_EPS_PROOF |
+| 6 | 23 | 12 | 20 | 2 | RAW_FIELDS_EQUAL_NOT_EFFECT_OR_EPS_PROOF |
+| 7 | 105 | 12 | 20 | 2 | ACTION_CONTEXT_CHANGED_INVALIDATE_ADVICE |
+| 8 | 92 | 12 | **18** | 2 | EQUIPMENT_OR_AMMO_CHANGED_INVALIDATE_ADVICE |
+| 9 | 134 | **35 (SW1H04)** | 18 | **7** | NATURAL_SELECTION_CHANGED_INVALIDATE_ADVICE |
+| 10 | 105 | 35 | 18 | 7 | ACTION_CONTEXT_CHANGED_INVALIDATE_ADVICE |
+| 11 | 134 | 35 | 18 | 7 | ACTION_CONTEXT_CHANGED_INVALIDATE_ADVICE |
+| 12 | 105 | 35 | 18 | 7 | ACTION_CONTEXT_CHANGED_INVALIDATE_ADVICE |
+
+Меч `SW1H04`, лук `BOW05`, стрелы `AROW01` действительно были в инвентаре. В журнале боя: стрела `AROW01` из `BOW05` попала и нанесла 1 метательный урон; затем был критический промах на близкой дистанции с **`Дистанция:-8`**; при `seq9` наблюдается естественный переход `selectedWeaponRaw 12→35`; после перехода произошло несколько попыток атаки длинным мечом, затем попадание `SW1H04` на **9 рубящего урона**, смерть больного гибберлинга и **8 опыта** за бой.
+
+**Не подменять факт:** выбор меча был сделан существующей игровой логикой/EPS/движком (точное происхождение команды не идентифицировано), не R37. `actionSourceReadStatus=ACTION_SOURCE_POINTER_UNAVAILABLE`, `actionOriginVerified=false`, `manualEpsQueueVerified=false`, `epsManualQueueVerified=false`; R37 `actionOrigin=UNKNOWN`, `safeActionBoundaryVerified=false`. `m_nNumberOfAttacks RAW 2→7` не переводить напрямую в «2/7 ударов в раунд», без документированной схемы APR движка нельзя строить рейтинг текущего/альтернативного оружия.
+
+## Отдельная найденная проблема, НЕ приписывать R37
+
+Во время загрузки игры console показывает `Error loading menu ... ']' expected near 'icon'` и 14 сообщений `UI string not found: ...` в русской локализации меню автосбора. Источник дефекта не исследован; вероятно часть стороннего UI/русской локализации, но по одному логу нет точного виновного файла. **Не изменять BG_EET_RU или UI из проекта BGXAI.** Факт целиком отделить от PASS R37.
+
+## Следующая конкретная работа по плану, без повторного игрового теста
+
+1. **Закрыт пункт проверки R37 GAME LIVE PASSIVE**: больше не просить запуск `174→5` для того же боя, нет необходимости возвращать ошибочный R33 или повторять источник R36.
+2. **P0 ACTIVE WEAPON SWITCH всё ещё blocked**: до первого активного dispatch нужны безопасный action boundary / происхождение ручного/EPS приказа, launcher↔ammo identity, effective APR альтернативного оружия и корректная обработка временных бафов/отмена очереди. Ни один из этих пунктов не следует считать PASS только по данной паре логов.
+3. Разбирать реальную уже существующую смену `AROW01+BOW05 → SW1H04` (действие `105→92→134→105`, `currentScriptNumberRaw 3→5→6`) чтобы не дублировать EPS и найти реальный пробел в производительности. Сохранять working EPS guard, безопасный откат через WeiDU, и единственный CMD. Приоритет — реально улучшить поведение, не очередной observer ради observer.
+4. Любую новую source-only разработку честно помечать CODE/TEST; при реальных изменениях игры нужен отдельный exact typed install и проверенный внешний backup. Не трогать BG Voice RU и BG_EET_RU.
+
+**Статус: LIVE PASSIVE VERIFIED, ACTIVE WEAPON SWITCH NOT AUTHORIZED.**
