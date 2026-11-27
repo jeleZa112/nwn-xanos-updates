@@ -1,3 +1,17 @@
+# 27.11.2026 — R39 EPS-FIRST ИСПРАВЛЕН, R40 LUA 22/22 ВЫПОЛНЕНЫ
+
+**Последняя доказанная точка; ссылки ниже — история, не список команд для повтора.**
+
+- **Исправлен существующий R39** (никаких новых конкурирующих веток): его 2 служебных BAF-блока `abort expired` и `warmup` ранее останавливали дальнейший просмотр правил EPS на срабатывании. В конце **только этих блоков** теперь `Continue()` (официальная семантика IE: последним действием разрешает проверять последующие блоки). **Активный одноразовый `XEquipItem` не изменён и не Continue.** Это CODE/OFFLINE, не доказанная приоритетность EPS в игре. Точный новый source-only BAF: **2079 байт SHA256 `7d57cecc77988764bff3de41379f71cabf8310b3b97dda91404f42555debd62c`**. Старый 2049B SHA `943c221684dde39662476f0514da48fadad6fc1ce90c565b5732afaa87673be8` архивный, НЕЛЬЗЯ использовать для новых пинов.
+- **Точные тесты заново выполнены в доступном окружении**: R39 **21/21** Python; R40 **13/13** Python + **22/22** `texlua test_session_reset_v1.lua`. Не утверждать, что Lua 5.3/5.4/LuaJIT GitHub CI, EET native BAF и gameplay прошли.
+- Из предыдущего R34/R3 **уже известен установленный `STAF01.ITM`**: `CURRENT_GAME_OVERRIDE`, SHA256 `c472bdf3a561144392249d45df67ae3b4e07d0faf5d30469177c318bc6857fd3`, itemType 26, flags 46, двуручный посох, min STR 5, отсутствует opcode319 среди пяти записанных equip effects (там opcode7). **Это НЕ доказывает kit/class/effects usability конкретного Джагана**. Не повторять старую R34.
+- R38 installed и capture 34/34 остается прежним; V3 native (176) PASS ранее; R39 **в изменённых байтах** native не проверен, не установлен/не ARM; R40 source-only не установлен; `ordersSent=0`. Штатный one-file updater не менялся.
+- **Следующий НЕПОВТОРНЫЙ функциональный этап**: точная native compile **2079-byte R39** + проверка actor/session-arming/loaded callback в установленном EEex, item usability kit, guarded release/backup/typed approval. До этого не активировать `XEquipItem`; не требовать старых отчётов.
+- IESDP: https://gibberlings3.github.io/iesdp/scripting/actions/bgeeactions.htm (Continue последним), https://gibberlings3.github.io/iesdp/scripting/triggers/bgeetriggers.htm (ActionListEmpty — мгновенное состояние, не атрибуция).
+- Глобальные воспроизводимые записи обновлены **в существующих** `/GLOBAL_PROJECT_RULES/METHOD_BGXAI_R39_TWO_STAGE_TIME_BOUNDED_XEQUIP_CANDIDATE_V1.json` и `METHOD_BGXAI_EEEX117_SESSION_LIFECYCLE_DISARM_BEFORE_BAF_V1.json`; прежние методы не продублированы.
+
+---
+
 > **НОВОЕ ГЛОБАЛЬНОЕ ПРАВИЛО 27.11.2026:** [ОБЯЗАТЕЛЬНЫЙ PRE-WORK GATE — прежде чем создавать очередную версию, проверить прежние решения](00_PRIOR_WORK_GATE_READ_FIRST.md). Любая новая реализация начинается с проверки уже сделанного, доказательств и недостающей дельты. Не повторять подтверждённые тесты.
 
 # 27.11.2026 — ПРОВЕРКА ИСТОРИИ ТЕСТОВ И УДАЛЕНИЕ ДУБЛЕЙ ИЗ ПЛАНА
