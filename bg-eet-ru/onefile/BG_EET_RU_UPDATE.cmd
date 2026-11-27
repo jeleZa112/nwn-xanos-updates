@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 160
+SELF_VERSION = 161
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -313,7 +313,7 @@ def published_update(path, offline=False):
  pending=WORKDIR/'_BG_EET_RU_UPDATE_PENDING.cmd'
  try:
     request=urllib.request.Request(RELEASE_URL,headers={'User-Agent':'BG-EET-RU-onefile/46'})
-    with urllib.request.urlopen(request,timeout=12) as response:
+    with urllib.request.urlopen(request,timeout=6) as response:
       if response.status!=200 or response.url!=RELEASE_URL:
         return 'STOP: некорректный адрес манифеста',False
       raw_manifest=response.read(8193)
@@ -8118,8 +8118,8 @@ V151_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/00d7ac73
 V133_PIN='b3f22f56550d951483863fb59e84f2e543b2473d7bb2e51f8fd03fed4e58f624'
 V133_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/6e1922fcfbb73a43c1b97fc82ea848cd05369c4b/bg-eet-ru/native-correlation/v133_live_hit_inventory_ro.py'
 
-V153_PIN='5554c5d9705d7bed1d2ca981cd7d231cdcb63574aa574b0c8ddbd728131cc217'
-V153_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/9a6e2ee318eaae5734a5a63edf79fcb2d11697bd/bg-eet-ru/bulk-v159/v159_combined.py'
+V153_PIN='c7118f29cc62cc59da130afd3206b811d06aa3bf2f3a166bbc1b324a616ea231'
+V153_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/fb38da91caaa002107a37e661768f29ffa125e9d/bg-eet-ru/bulk-v159/v159_combined.py'
 def v153_dispatch(game,mode):
  try:
     p=v121_cache(game)/'V153_GUARDED.py'
@@ -8134,7 +8134,7 @@ def v153_dispatch(game,mode):
  except Exception as e:report={'status':'V153_DISPATCH_HOLD','reason':str(e)[:140],'game_files_written_this_action':'UNKNOWN_AFTER_EXCEPTION'}
  try:v116_zip(game,WORKDIR/REPORT_NAME,report,entry='78_V160_HIT_ONLY.json' if mode.startswith('hit160_') else '77_V159_BATCH.json' if mode.startswith('batch159_') else '76_V158_BANTER_LIVE_RO.json' if mode=='bulk_status' else '75_V157_BULK_ONE_BATCH.json' if mode.startswith('bulk_') else '74_V154_CONSOLE_CAPTURE_RO.json' if mode=='capture' else '73_V153_GUARDED_OBSERVER.json')
  except Exception as e:print('ZIP_HOLD',str(e)[:90])
- print(report.get('status'))
+ print(report.get('status'), report.get('reason',''))
  return 2 if 'HOLD' in report.get('status','') or 'STOP' in report.get('status','') else 0
 def v133_audit(game,path,v136=False):
  report={'schema':'BG_EET_RU_V133_WINDOWS_RUNTIME_READONLY','status':'RUNTIME_MEMORY_HOLD','game_files_written':0,'native_hook_install_allowed':False,'firstcall_owner_verified':False,'gameplay_verified':False}

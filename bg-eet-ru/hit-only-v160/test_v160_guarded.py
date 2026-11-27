@@ -37,6 +37,7 @@ class GuardedV160Test(unittest.TestCase):
             item.parent.mkdir(parents=True,exist_ok=True)
             item.write_bytes(('CHECK_'+rel).encode())
             gamepins[rel]=sha(item.read_bytes())
+        (self.game/'WeiDU.log').write_bytes(b'// installed mod entry\n'*15)
         p=patch.object(v,'GAME_PINS',gamepins);p.start();self.addCleanup(p.stop)
         (self.work/'BG_EET_RU_V108_NATIVE_ITEM_STATE.json').write_text(
             json.dumps({'phase':'INSTALLED','candidate_sha256':sha(self.baseline)}),'utf8')
@@ -48,6 +49,31 @@ class GuardedV160Test(unittest.TestCase):
         self.assertNotIn(b'EEex_Sprite_AddAlterBaseWeaponDamageListener(',ADDITION)
         self.assertNotIn(b'os.execute',ADDITION)
         self.assertNotIn(b'io.open',ADDITION)
+
+    def test_weidu_may_change_before_preflight_but_is_captured(self):
+        data = b'// mod list updated yesterday\r\n' * 12
+        (self.game/'WeiDU.log').write_bytes(data)
+        result = v.run('preflight', self.game, self.work)
+        self.assertEqual(result['status'], 'V160_PREFLIGHT_PASS')
+        self.assertEqual(result['current_weidu_sha256'], sha(data))
+        self.assertEqual(self.target.read_bytes(), self.baseline)
+
+    def test_weidu_changes_during_confirmed_install_must_stop(self):
+        original_game_closed = v._game_closed
+        calls = []
+        def mutate_after_first():
+            calls.append(1)
+            if len(calls) == 2:
+                (self.game/'WeiDU.log').write_bytes(b'// changed during confirm\n'*10)
+        with patch.object(v, '_game_closed', side_effect=mutate_after_first):
+            r = v.run('install', self.game, self.work, ADDITION, approval=v.APPROVE_INSTALL)
+        self.assertEqual(r['status'], 'V160_SAFE_STOP')
+        self.assertEqual(self.target.read_bytes(), self.baseline)
+        self.assertFalse((self.work/v.STATE_NAME).exists())
+
+    def test_weidu_missing_denied(self):
+        (self.game/'WeiDU.log').unlink()
+        self.assertEqual(v.run('preflight',self.game,self.work)['status'],'V160_SAFE_STOP')
 
     def test_preflight_has_zero_writes(self):
         before=self.target.read_bytes()

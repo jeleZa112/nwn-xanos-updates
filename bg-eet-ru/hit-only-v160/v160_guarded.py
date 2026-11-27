@@ -36,7 +36,6 @@ GAME_PINS = {
     'EEex_scripts/EEex_Sprite_Patch.lua': 'e301b46770477cf29e3d39d6591a5a9fba4f3aeafa03c3dbfa75f7ef6bc13b7f',
     UI_REL: 'ce4a46cf32058295c221b9124916f46764780752f9611adc8319c4dda9653efe',
     'override/BGCL150.lua': 'deffadc9fa9a0b0b9040127fa30abce2808833532618e4d9e7db7ed98c17d93b',
-    'WeiDU.log': '3f838e42236898b63cacb3256e9fff4bcea1b9f2273baba4baff27e8883f4538',
     'lang/ru_RU/dialog.tlk': '7edebcaee0c8fd5ea19128893e6d8be43b58dd8526845ae641fcfa8ce9e9e536',
     'lang/ru_RU/dialogf.tlk': '80ad298977439fdd95f713aa534fa957c54761ce0ea4cad96ade07435775c530',
 }
@@ -91,6 +90,16 @@ def build_candidate(module: bytes, addition: bytes) -> bytes:
     return module + b'\n' + addition
 
 
+def current_weidu_sha(game: Path) -> str:
+    # WeiDU.log changes legitimately when another mod is installed. It is not
+    # one of the files V160 changes. Its *current* bytes must remain identical
+    # through typed installation and through the last-only rollback.
+    raw = read_file(game / 'WeiDU.log', 10_000_000)
+    if len(raw) < 100:
+        raise SafeStop('WEIDU_LOG_MISSING_OR_SUSPICIOUSLY_SHORT')
+    return digest(raw)
+
+
 def _status(game: Path, workdir: Path) -> dict:
     state = workdir / STATE_NAME
     if not state.exists():
@@ -117,6 +126,7 @@ def _preflight(game: Path, workdir: Path, mode: str = 'preflight') -> tuple[dict
     for rel, expected in GAME_PINS.items():
         if digest(read_file(game / rel)) != expected:
             raise SafeStop('BASELINE_SHA_MISMATCH:' + rel)
+    weidu_sha = current_weidu_sha(game)
     target = game / MODULE_REL
     module = read_file(target, 100_000)
     verify_baseline(module)
@@ -130,6 +140,7 @@ def _preflight(game: Path, workdir: Path, mode: str = 'preflight') -> tuple[dict
         raise SafeStop('V160_EXISTING_STATE_USE_STATUS_OR_ROLLBACK')
     return {'schema': SCHEMA, 'status': 'V160_PREFLIGHT_PASS',
             'current_module_sha256': digest(module),
+            'current_weidu_sha256': weidu_sha,
             'game_files_written': 0, 'new_native_hooks': 0,
             'misses_supported': False, 'same_journal_row_proven': False,
             'gameplay_verified': False,
@@ -189,6 +200,8 @@ def install(game: Path, workdir: Path, addition: bytes, approval: str | None = N
     if entered != APPROVE_INSTALL:
         raise SafeStop('TYPED_APPROVAL_NOT_GIVEN')
     _game_closed()
+    if current_weidu_sha(game) != report['current_weidu_sha256']:
+        raise SafeStop('WEIDU_CHANGED_DURING_CONFIRMATION')
     target = game / MODULE_REL
     if digest(read_file(target, 100_000)) != digest(original):
         raise SafeStop('BASELINE_CHANGED_DURING_CONFIRMATION')
@@ -204,7 +217,8 @@ def install(game: Path, workdir: Path, addition: bytes, approval: str | None = N
     state_path = workdir / STATE_NAME
     state = {'schema':SCHEMA,'phase':'PREPARED', 'backup':str(backed),
              'original_sha256':digest(original), 'candidate_sha256':digest(candidate),
-             'pinned_game_hashes': GAME_PINS, 'created_utc':dt.datetime.now(dt.timezone.utc).isoformat(),
+             'pinned_game_hashes': GAME_PINS, 'weidu_sha256':report['current_weidu_sha256'],
+             'created_utc':dt.datetime.now(dt.timezone.utc).isoformat(),
              'last_only': True}
     atomic_external_json(state_path, state)
     stage = target.with_name(target.name+'.v160.stage')
@@ -216,6 +230,8 @@ def install(game: Path, workdir: Path, addition: bytes, approval: str | None = N
             raise SafeStop('GAME_STAGE_SHA_FAILED')
         if digest(read_file(target,100_000)) != digest(original):
             raise SafeStop('LIVE_MODULE_DRIFT_BEFORE_SWAP')
+        if current_weidu_sha(game) != report['current_weidu_sha256']:
+            raise SafeStop('WEIDU_DRIFT_BEFORE_SWAP')
         os.replace(stage,target)
         if digest(read_file(target,100_000)) != digest(candidate):
             raise SafeStop('INSTALLED_SHA_MISMATCH_ROLLBACK_REQUIRED')
@@ -238,6 +254,8 @@ def rollback(game: Path, workdir: Path, approval: str | None = None) -> dict:
         raise SafeStop('V160_NO_ROLLBACKABLE_STATE')
     if state.get('pinned_game_hashes')!=GAME_PINS:
         raise SafeStop('V160_BACKUP_ENVIRONMENT_CHANGED')
+    if state.get('weidu_sha256') != current_weidu_sha(game):
+        raise SafeStop('ROLLBACK_WEIDU_DRIFT_SINCE_INSTALL')
     for rel, expected in GAME_PINS.items():
         if digest(read_file(game / rel)) != expected:
             raise SafeStop('ROLLBACK_GAME_BASELINE_DRIFT:'+rel)
@@ -257,6 +275,8 @@ def rollback(game: Path, workdir: Path, approval: str | None = None) -> dict:
         raise SafeStop('ROLLBACK_TYPED_APPROVAL_NOT_GIVEN')
     if digest(read_file(target,100_000)) != current_sha:
         raise SafeStop('ROLLBACK_LIVE_MODULE_DRIFT')
+    if current_weidu_sha(game) != state['weidu_sha256']:
+        raise SafeStop('ROLLBACK_WEIDU_CHANGED_DURING_CONFIRMATION')
     changed = current_sha != state['original_sha256']
     if changed:
         stage=target.with_name(target.name+'.v160.restore')
