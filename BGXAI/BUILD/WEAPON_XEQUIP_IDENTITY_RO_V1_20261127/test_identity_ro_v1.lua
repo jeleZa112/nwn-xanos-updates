@@ -1,4 +1,4 @@
-local ROOT='BGXAI/BUILD/WEAPON_XEQUIP_IDENTITY_RO_V1_20261127/'
+local ROOT=(arg and arg[0] and arg[0]:match('^(.*[/\\])')) or 'BGXAI/BUILD/WEAPON_XEQUIP_IDENTITY_RO_V1_20261127/'
 local M=dofile(ROOT..'BGXAI_XEQUIP_IDENTITY_RO_V1.lua')
 local N,P,F=0,0,0
 local function run(name,fn)
