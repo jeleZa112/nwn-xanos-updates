@@ -1,0 +1,27 @@
+name: BG EET RU V160 hit-only guarded source
+on:
+  pull_request:
+    paths:
+      - 'bg-eet-ru/hit-only-v160/**'
+      - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
+      - 'bg-eet-ru/onefile/release.json'
+      - '.github/workflows/bg-eet-ru-v160-hit-only.yml'
+  workflow_dispatch:
+jobs:
+  source-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Static python tests, fail-closed install and rollback
+        run: python -m unittest discover -s bg-eet-ru/hit-only-v160 -p "test_*.py" -v
+      - name: Existing onefile updater Python syntax and selftest
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
