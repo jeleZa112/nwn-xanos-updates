@@ -71,6 +71,20 @@ class Staged(unittest.TestCase):
     def test_warmup_and_deadline_correct_ids(self):
         self.assertIn('SetGlobalTimer("BGXW3QTM","LOCALS",ONE_ROUND)',self.b)
         self.assertIn('SetGlobalTimer("BGXW3MAX","LOCALS",TWO_ROUNDS)',self.b)
+    def test_eps_priority_housekeeping_only_continues(self):
+        # In a pre-pended EPS script, warmup/abort must not prevent following
+        # healing/buff blocks on the same scan; equipping remains one-shot.
+        blocks=self.b.split('\nIF\n')
+        self.assertEqual(len(blocks),4)
+        for block in (blocks[1],blocks[3]):
+            actions=block.split('THEN\n',1)[1]
+            self.assertTrue(actions.rstrip().endswith('Continue()\nEND'))
+            self.assertEqual(actions.count('Continue()'),1)
+            self.assertNotIn('XEquipItem(',actions)
+        equip=blocks[2].split('THEN\n',1)[1]
+        self.assertIn('XEquipItem(',equip)
+        self.assertNotIn('Continue()',equip)
+
     def test_no_baf_authorization(self):
         a=p.audit(self.m)
         for k in ('selfArmingPresent','sessionBoundArmerImplemented',
