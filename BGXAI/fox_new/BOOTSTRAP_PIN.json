@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "0a791e1d92aefd70d42d80b5d79b2dac9b3997a0",
+  "commit": "dc80f56b000978b63b4fa2562ba5f741f77ca067",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "51822d75ed0644ec10ee28af47141f1c38b40900e5a7409af9c319790037683b",
+  "script_sha256": "b3e006881ada7ced612dd3a126783abdbe4e03c178a52996ee57a4da7a3760e6",
   "script_size": 79996,
-  "description": "BGXAI 176 R38 hotfix: Enter now cancels instead of rerunning V3; SHA256-verified persistent R38 source cache with RAW/CDN/fastly fallback; typed install unchanged; game untouched by updater release."
+  "description": "BGXAI existing onefile176 option7: exact R39/ITM native read-only proof; R38 modes 1-6 and 175 unchanged; game untouched; 79996B pinned."
 }
