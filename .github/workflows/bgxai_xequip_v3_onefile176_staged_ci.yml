@@ -31,6 +31,9 @@ jobs:
       - name: New menu176 source-only tests; no game, no WeiDU
         shell: bash
         run: python -m unittest BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/test_xequip_onefile_176_staged_v1.py -v
+      - name: Reproduce actual menu176 KeyError with fake HTTP hosts, verify V3 and legacy 175 downloads
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/test_xequip_176_download_keyerror_regression.py -v
       - name: Exact source and size fingerprint for staged wrapper
         shell: bash
         run: |
