@@ -8,12 +8,12 @@ import unittest
 
 PIN=Path("BGXAI/fox_new/BOOTSTRAP_PIN.json")
 SCRIPT=Path("BGXAI/BGXAI_SYNC.ps1")
-STAGE=Path("BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/STAGED_BGXAI_SYNC_R38_FROM_176.ps1")
+STAGE=Path("BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/STAGED_BGXAI_SYNC_176_NET_HOTFIX.ps1")
 WRAPPER=Path("BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONEFILE_175_RO_V1.py")
-STAGED_WRAPPER=Path("BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONEFILE_176_R38_STAGE_ONLY.py")
+STAGED_WRAPPER=Path("BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_ONEFILE176_NET_AND_DEFAULT_HOTFIX_STAGE.py")
 BASE_PS=Path("BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/STAGED_BGXAI_SYNC_MENU175.ps1")
 OLD_BANNER="wh 'BGXAI ONE-FILE UPDATER: 1-174 existing | 175 XEquip native compile READ ONLY | 0 Exit'"
-NEW_BANNER="wh '175 inert | 176 V3 RO | 0 Exit'"
+NEW_BANNER="wh '175 inert | 176 R38 | 0 Exit'"
 OLD_HANDLER="'175' {$p="
 NEW_HANDLER="{$_ -match '^17[56]$'} {$p="
 def sha(data): return hashlib.sha256(data).hexdigest()
@@ -45,8 +45,8 @@ class Shipped(unittest.TestCase):
  def test_source_pins_and_never_arming(self):
   x=self.script.decode("ascii")
   w=WRAPPER.read_bytes()
-  self.assertEqual(len(w),16827)
-  self.assertEqual(sha(w),"c2fbefb877782047e2987b60fc517f1de11daec32da376893713b58e1fcbffcf")
+  self.assertEqual(len(w),19784)
+  self.assertEqual(sha(w),"c97fd9c22001395c5d3740cc20061f9ff6f62dc3819031bd95469f1d1f654b9c")
   self.assertIn(sha(w),x)
   self.assertIn("if($choice -eq '176'){$extra=@('--v3')}",x)
   self.assertNotIn("SetGlobal(\"BGXW3ARM\"",x)
