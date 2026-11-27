@@ -16,6 +16,7 @@ import subprocess
 import sys
 import tempfile
 import urllib.request
+import uuid
 
 SCHEMA = "BGXAI_XEQUIP_ONEFILE_175_READONLY_V1"
 REPO = "jeleZa112/nwn-xanos-updates"
@@ -73,6 +74,7 @@ def fetch_pinned(commit: str, path: str) -> bytes:
     for base in (
         "https://raw.githubusercontent.com/" + REPO + "/" + commit + "/",
         "https://cdn.jsdelivr.net/gh/" + REPO + "@" + commit + "/",
+        "https://fastly.jsdelivr.net/gh/" + REPO + "@" + commit + "/",
     ):
         try:
             req = urllib.request.Request(base + path,
@@ -91,6 +93,74 @@ def verify_file(path: str, raw: bytes) -> None:
         raise Hold("HOLD_SOURCE_NOT_ALLOWLISTED")
     if len(raw) != expected[0] or digest(raw) != expected[1]:
         raise Hold("HOLD_PINNED_SOURCE_SHA256_OR_SIZE_DRIFT:" + path.rsplit("/", 1)[-1])
+
+
+def cache_root_for_r38(game: Path) -> Path | None:
+    # Only for the real, exact Foxx game; never cache in the game directory.
+    if os.name != "nt" or str(game).rstrip("\\\\").casefold() != r"C:\Games\BG_EET_FOXX_NEW".casefold():
+        return None
+    local = os.environ.get("LOCALAPPDATA")
+    if not local:
+        return None
+    base = Path(local)
+    target = base / "BGXAI_UPDATER" / "VERIFIED_SOURCES_R38"
+    game_root = game.resolve(strict=False)
+    resolved = target.resolve(strict=False)
+    if resolved == game_root or game_root in resolved.parents or resolved in game_root.parents:
+        raise Hold("HOLD_R38_CACHE_INSIDE_GAME")
+    for p in (base,base / "BGXAI_UPDATER",target):
+        if p.is_symlink() or (hasattr(p,"is_junction") and p.is_junction()):
+            raise Hold("HOLD_R38_CACHE_REPARSE_POINT")
+    return target
+
+
+def fetch_r38_cached(commit: str, path: str, game: Path,
+                     cache_root: Path | None = None,
+                     downloader=None) -> bytes:
+    validate_pin(commit)
+    if path not in R38_SOURCES:
+        raise Hold("HOLD_R38_CACHE_PATH_NOT_ALLOWLISTED")
+    expect = R38_SOURCES[path]
+    if downloader is None:
+        downloader = fetch_pinned
+    if cache_root is None:
+        cache_root = cache_root_for_r38(game)
+    if cache_root is None:
+        return downloader(commit,path)
+    if cache_root.is_symlink() or (
+        hasattr(cache_root,"is_junction") and cache_root.is_junction()
+    ):
+        raise Hold("HOLD_R38_CACHE_REPARSE_POINT")
+    file = cache_root / (expect[1] + "_" + str(expect[0]) + ".bin")
+    if file.is_symlink() or (hasattr(file,"is_junction") and file.is_junction()):
+        raise Hold("HOLD_R38_CACHED_FILE_REPARSE_POINT")
+    if file.is_file():
+        try:
+            raw=file.read_bytes()
+            verify_file(path,raw)
+            return raw
+        except (OSError,Hold):
+            pass  # Corrupt/unreadable cache is NOT trusted, try verified network.
+    raw=downloader(commit,path)
+    verify_file(path,raw)  # Always check SHA before even attempting to cache.
+    try:
+        cache_root.mkdir(parents=True,exist_ok=True)
+        if cache_root.is_symlink() or (
+            hasattr(cache_root,"is_junction") and cache_root.is_junction()
+        ):
+            raise Hold("HOLD_R38_CACHE_REPARSE_POINT")
+        temp=cache_root / (file.name+"."+uuid.uuid4().hex+".tmp")
+        with temp.open("xb") as h:
+            h.write(raw)
+        try:
+            verify_file(path,temp.read_bytes())
+            os.replace(temp,file)
+        finally:
+            if temp.exists():
+                temp.unlink()
+    except OSError:
+        pass  # Verified source still usable even when optional cache is unwritable.
+    return raw
 
 def ensure_external(work: Path, game: Path) -> None:
     root = game.resolve(strict=False)
@@ -242,11 +312,11 @@ def ask_r38_mode(v3: bool, forced: str | None = None) -> str | None:
         return forced
     if not v3 or sys.stdin is None or not sys.stdin.isatty():
         return None  # Existing automated/menu176 V3 read-only behavior is unchanged.
-    print("BGXAI 176: 1=V3 native RO [default]; 2=R38 preflight; "
+    print("BGXAI 176: 0=exit [default]; 1=V3 native RO (already PASS); 2=R38 preflight; "
           "3=status; 4=install (typed); 5=rollback (typed); 6=capture; 0=exit",flush=True)
-    choice=input("R38 choice [1]: ").strip()
-    if choice in ("", "1"): return None
-    if choice == "0": return "cancel"
+    choice=input("R38 choice [0]: ").strip()
+    if choice in ("", "0"): return "cancel"
+    if choice == "1": return None
     mode = {"2":"preflight","3":"status","4":"install",
             "5":"rollback","6":"capture"}.get(choice)
     if mode is None: raise Hold("HOLD_R38_UNKNOWN_SUBMENU_CHOICE")
@@ -261,7 +331,8 @@ def run_r38(game: Path, commit: str, mode: str, fetcher=fetch_pinned,
     with tempfile.TemporaryDirectory(prefix="BGXAI_R38_ONEFILE_") as folder_name:
         folder=Path(folder_name).resolve(strict=True)
         ensure_external(folder,game)
-        pins=stage_sources(folder,commit,fetcher,R38_SOURCES)
+        use_fetcher = (lambda c,p: fetch_r38_cached(c,p,game)) if fetcher is fetch_pinned else fetcher
+        pins=stage_sources(folder,commit,use_fetcher,R38_SOURCES)
         script=folder.joinpath(*R38_PY.split("/"))
         candidate=folder.joinpath(*R38_LUA.split("/"))
         previous=folder.joinpath(*R38_R37_HELPER.split("/"))
