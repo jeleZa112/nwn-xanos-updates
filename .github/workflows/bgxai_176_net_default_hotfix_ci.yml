@@ -1,0 +1,40 @@
+name: BGXAI user regression: 176 Enter no V3, SHA cached R38 and 3rd RAW mirror
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/BGXAI_ONEFILE176_NET_AND_DEFAULT_HOTFIX_STAGE.py'
+      - 'BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/test_onefile176_net_default_hotfix.py'
+      - '.github/workflows/bgxai_176_net_default_hotfix_ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  focused-bug:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest,ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Keep source bytes exact
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test only reported bug and immutable-cache safety
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/test_onefile176_net_default_hotfix.py -v
+      - name: Pin candidate SHA
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib
+          from pathlib import Path
+          p=Path('BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/BGXAI_ONEFILE176_NET_AND_DEFAULT_HOTFIX_STAGE.py')
+          b=p.read_bytes()
+          print('FIXED_CHILD_BYTES',len(b))
+          print('FIXED_CHILD_SHA256',hashlib.sha256(b).hexdigest())
+          PY
