@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 154
+SELF_VERSION = 157
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -2534,7 +2534,7 @@ def v88_run(game,report_path,mode='status'):
  try:v88_zip_report(game,report_path,report)
  except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
     print('v88: report SAFE_STOP:',type(exc).__name__,str(exc)[:200]);return 2
- print('v88:',report['status'],'— изменений в игре:',report['game_files_written'])
+ print('v88:',report['status'],'правок:',report['game_files_written'])
  print('Единый ZIP:',report_path)
  return 2 if report['status']=='V88_SAFE_STOP' else 0
 def v88_selftest():
@@ -2819,7 +2819,7 @@ def v90_run(game, report_path, mode='status'):
  try:v90_zip_report(game,report_path,r)
  except (OSError,RuntimeError,ValueError,KeyError,zipfile.BadZipFile) as exc:
     print('v90: ZIP SAFE_STOP',type(exc).__name__,str(exc)[:180]);return 2
- print('v90:',r['status'],'— изменений в игре:',r['game_files_written'])
+ print('v90:',r['status'],'правок:',r['game_files_written'])
  print('Единый ZIP:',report_path)
  return 2 if r['status']=='V90_SAFE_STOP' else 0
 def v90_selftest():
@@ -3060,7 +3060,7 @@ def v91_run(game,report_path,mode='status'):
  try:v91_zip_report(game,report_path,report)
  except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
     print('v91: ZIP SAFE_STOP',type(exc).__name__,str(exc)[:180]);return 2
- print('v91:',report['status'],'— изменений в игре:',report['game_files_written'])
+ print('v91:',report['status'],'правок:',report['game_files_written'])
  print('Единый ZIP:',report_path)
  return 2 if report['status']=='V91_SAFE_STOP' else 0
 def v91_selftest():
@@ -3291,7 +3291,7 @@ def v92_run(game,report_path,mode='status'):
  try:v92_zip_report(game,report_path,report)
  except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
     print('v92: ZIP SAFE_STOP',type(exc).__name__,str(exc)[:200]);return 2
- print('v92:',report['status'],'— изменений в игре:',report['game_files_written'])
+ print('v92:',report['status'],'правок:',report['game_files_written'])
  print('Единый ZIP:',report_path)
  return 2 if report['status']=='V92_SAFE_STOP' else 0
 def v92_selftest():
@@ -3526,7 +3526,7 @@ def v93_run(game,report_path,mode='status'):
  try:v93_zip_report(game,report_path,report)
  except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
     print('v93: ZIP SAFE_STOP',type(exc).__name__,str(exc)[:200]);return 2
- print('v93:',report['status'],'— изменений в игре:',report['game_files_written'])
+ print('v93:',report['status'],'правок:',report['game_files_written'])
  print('Единый ZIP:',report_path)
  return 2 if report['status']=='V93_SAFE_STOP' else 0
 def v93_selftest():
@@ -3770,7 +3770,7 @@ def v95_run(game,report_path,mode='status'):
  try:v95_zip_report(game,report_path,report)
  except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
     print('v95: ZIP SAFE_STOP',type(exc).__name__,str(exc)[:200]);return 2
- print('v95:',report['status'],'— изменений в игре:',report['game_files_written'])
+ print('v95:',report['status'],'правок:',report['game_files_written'])
  print('Единый ZIP:',report_path)
  return 2 if report['status']=='V95_SAFE_STOP' else 0
 def v95_selftest():
@@ -4021,7 +4021,7 @@ def v96_run(game,report_path,mode='status'):
  try:v96_zip_report(game,report_path,report)
  except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
     print('v96: ZIP SAFE_STOP',type(exc).__name__,str(exc)[:200]);return 2
- print('v96:',report['status'],'— изменений в игре:',report['game_files_written'])
+ print('v96:',report['status'],'правок:',report['game_files_written'])
  print('Единый ZIP:',report_path)
  return 2 if report['status']=='V96_SAFE_STOP' else 0
 def v96_selftest():
@@ -4274,7 +4274,7 @@ def v97_run(game,report_path,mode='status'):
  try:v97_zip_report(game,report_path,report)
  except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
     print('v97: ZIP SAFE_STOP',type(exc).__name__,str(exc)[:200]);return 2
- print('v97:',report['status'],'— изменений в игре:',report['game_files_written'])
+ print('v97:',report['status'],'правок:',report['game_files_written'])
  print('Единый ZIP:',report_path)
  return 2 if report['status']=='V97_SAFE_STOP' else 0
 def v97_selftest():
@@ -4529,7 +4529,7 @@ def v98_run(game,report_path,mode='status'):
  try:v98_zip_report(game,report_path,report)
  except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
     print('v98: ZIP SAFE_STOP',type(exc).__name__,str(exc)[:200]);return 2
- print('v98:',report['status'],'— изменений в игре:',report['game_files_written'])
+ print('v98:',report['status'],'правок:',report['game_files_written'])
  print('Единый ZIP:',report_path)
  return 2 if report['status']=='V98_SAFE_STOP' else 0
 def v98_selftest():
@@ -4787,7 +4787,7 @@ def v99_run(game,report_path,mode='status'):
  try:v99_zip_report(game,report_path,report)
  except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
     print('v99: ZIP SAFE_STOP',type(exc).__name__,str(exc)[:200]);return 2
- print('v99:',report['status'],'— изменений в игре:',report['game_files_written'])
+ print('v99:',report['status'],'правок:',report['game_files_written'])
  print('Единый ZIP:',report_path)
  return 2 if report['status']=='V99_SAFE_STOP' else 0
 def v99_selftest():
@@ -5047,7 +5047,7 @@ def v100_run(game,report_path,mode='status'):
  try:v100_zip_report(game,report_path,report)
  except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
     print('v100: ZIP SAFE_STOP',type(exc).__name__,str(exc)[:200]);return 2
- print('v100:',report['status'],'— изменений в игре:',report['game_files_written'])
+ print('v100:',report['status'],'правок:',report['game_files_written'])
  print('Единый ZIP:',report_path)
  return 2 if report['status']=='V100_SAFE_STOP' else 0
 def v100_selftest():
@@ -5319,7 +5319,7 @@ def v101_run(game,report_path,mode='status'):
  try:v101_zip_report(game,report_path,report)
  except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
     print('v101: ZIP SAFE_STOP',type(exc).__name__,str(exc)[:200]);return 2
- print('v101:',report['status'],'— изменений в игре:',report['game_files_written'])
+ print('v101:',report['status'],'правок:',report['game_files_written'])
  print('Единый ZIP:',report_path)
  return 2 if report['status']=='V101_SAFE_STOP' else 0
 def v101_selftest():
@@ -5611,7 +5611,7 @@ def v102_run(game,report_path,mode='status'):
  try:v102_zip_report(game,report_path,report)
  except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
     print('v102: ZIP SAFE_STOP',type(exc).__name__,str(exc)[:200]);return 2
- print('v102:',report['status'],'— изменений в игре:',report['game_files_written'])
+ print('v102:',report['status'],'правок:',report['game_files_written'])
  print('Единый ZIP:',report_path)
  return 2 if report['status']=='V102_SAFE_STOP' else 0
 def v102_selftest():
@@ -5797,7 +5797,7 @@ def v103_run(game,report_path):
  except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
     print('v103: ZIP SAFE_STOP',type(exc).__name__,str(exc)[:200])
     return 2
- print('v103:',report['status'],'— изменений в игре: 0')
+ print('v103:',report['status'],'правок: 0')
  print('Единый ZIP:',report_path)
  return 2 if report['status']=='V103_SAFE_STOP' else 0
 def v103_selftest():
@@ -5944,7 +5944,7 @@ def v104_run(game,report_path):
  try:v104_zip_report(game,report_path,report)
  except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
     print('v104: ZIP SAFE_STOP',type(exc).__name__,str(exc)[:200]);return 2
- print('v104:',report['status'],'— изменений в игре: 0')
+ print('v104:',report['status'],'правок: 0')
  print('Единый ZIP:',report_path)
  return 2 if report['status']=='V104_SAFE_STOP' else 0
 def v104_selftest():
@@ -6383,7 +6383,7 @@ def v105_run(game,report_path,mode='status'):
  try:v105_zip_report(game,report_path,report)
  except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
     print('v105 ZIP SAFE_STOP:',type(exc).__name__,str(exc)[:210]);return 2
- print('v105:',report['status'],'— изменений в игре:',report['game_files_written'])
+ print('v105:',report['status'],'правок:',report['game_files_written'])
  print('Единый ZIP:',report_path)
  return 2 if report['status']=='V105_SAFE_STOP' else 0
 def v105_selftest():
@@ -6786,7 +6786,7 @@ def v106_run(game,report_path,mode='status'):
  except (OSError,RuntimeError,ValueError,zipfile.BadZipFile) as exc:
     print('v106: ZIP SAFE_STOP',type(exc).__name__,str(exc)[:180])
     return 2
- print('v106:',report['status'],'— изменений в игре:',report['game_files_written'])
+ print('v106:',report['status'],'правок:',report['game_files_written'])
  print('Единый ZIP:',report_path)
  return 2 if report['status']=='V106_SAFE_STOP' else 0
 def v106_selftest():
@@ -8118,23 +8118,23 @@ V151_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/00d7ac73
 V133_PIN='b3f22f56550d951483863fb59e84f2e543b2473d7bb2e51f8fd03fed4e58f624'
 V133_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/6e1922fcfbb73a43c1b97fc82ea848cd05369c4b/bg-eet-ru/native-correlation/v133_live_hit_inventory_ro.py'
 
-V153_PIN='db636cad123194092b248ca4d073ab448c16c9801bb7879ce0c5d68b0eafb1c4'
-V153_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/c20bcb44991949e1f2f99438541b199412fd3439/bg-eet-ru/ui-observer/v154/v154_guarded_capture.py'
+V153_PIN='96fb55e299f5986413504115a169572380749e67b9bbe0cd3038866d29e1bc83'
+V153_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/fed62ecb56a0cddc508429321f2a105cf680ad18/bg-eet-ru/bulk-v157/v157_combined.py'
 def v153_dispatch(game,mode):
  try:
     p=v121_cache(game)/'V153_GUARDED.py'
     if p.is_symlink() or (p.exists() and not p.is_file()):raise RuntimeError('V153_CACHE_UNSAFE')
     if not p.is_file() or sha_path(p)!=V153_PIN:
-       with urllib.request.urlopen(V153_URL,timeout=20) as r:data=r.read(20001)
+       with urllib.request.urlopen(V153_URL,timeout=20) as r:data=r.read(40001)
        if digest(data)!=V153_PIN:raise RuntimeError('V153_SOURCE_SHA_HOLD')
        v121_write(game,p,data)
     m=types.ModuleType('v153')
     exec(compile(p.read_bytes(),str(p),'exec'),m.__dict__)
     report=m.run(mode,Path(game),WORKDIR)
  except Exception as e:report={'status':'V153_DISPATCH_HOLD','reason':type(e).__name__+':'+str(e)[:140],'game_files_written_this_action':'UNKNOWN_IF_EXCEPTION_AFTER_ACTION'}
- try:v116_zip(game,WORKDIR/REPORT_NAME,report,entry='74_V154_CONSOLE_CAPTURE_RO.json' if mode=='capture' else '73_V153_GUARDED_OBSERVER.json')
+ try:v116_zip(game,WORKDIR/REPORT_NAME,report,entry='75_V157_BULK_ONE_BATCH.json' if mode.startswith('bulk_') else '74_V154_CONSOLE_CAPTURE_RO.json' if mode=='capture' else '73_V153_GUARDED_OBSERVER.json')
  except Exception as e:print('V153_REPORT_ZIP_HOLD',type(e).__name__,str(e)[:110])
- print('V154' if mode=='capture' else 'V153',report.get('status'))
+ print('V157' if mode.startswith('bulk_') else 'V154' if mode=='capture' else 'V153',report.get('status'))
  return 2 if 'HOLD' in report.get('status','') or 'STOP' in report.get('status','') else 0
 def v133_audit(game,path,v136=False):
  report={'schema':'BG_EET_RU_V133_WINDOWS_RUNTIME_READONLY','status':'RUNTIME_MEMORY_HOLD','game_files_written':0,'native_hook_install_allowed':False,'firstcall_owner_verified':False,'gameplay_verified':False}
@@ -8306,13 +8306,17 @@ def main(argv=None):
  try:v121_snapshot(game,WORKDIR/REPORT_NAME)
  except Exception as exc:print('V121 EVIDENCE SNAPSHOT HOLD:',type(exc).__name__,str(exc)[:140])
  if not (argv if argv is not None else sys.argv[1:]):
-    try:a=input('1=audit 2=install 3=undo 4=play 5=status 6=unwind 7=abi 8=live-RO 9=UI+JIT-RO 10=V153 [1]: ').strip()
+    try:a=input('1=audit 2=install 3=undo 4=play 5=status 6=unwind 7=abi 8=live-RO 9=UI+JIT-RO 10=V153 11=bulk [1]: ').strip()
     except EOFError:a=''
     mode={'2':'install','3':'rollback','4':'capture','5':'status'}.get(a)
     if a=='6':return v130_audit(game,WORKDIR/REPORT_NAME)
     if a=='7':return v130_audit(game,WORKDIR/REPORT_NAME,132)
     if a=='8':return v133_audit(game,WORKDIR/REPORT_NAME)
     if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)
+    if a=='11':
+       try:b=input('V157 1=check 2=install 3=rollback 4=status [1]: ').strip()
+       except EOFError:b=''
+       return v153_dispatch(game,'bulk_'+{'2':'install','3':'rollback','4':'status'}.get(b,'preflight'))
     if a=='10':
        try:b=input('CL150 1=preflight 2=install(typed) 3=rollback(typed) 4=status [1]: ').strip()
        except EOFError:b=''
