@@ -94,11 +94,14 @@ class GateTests(unittest.TestCase):
                 gate.status_evidence(s)
 
     def test_13_source_pin_rejects_modified_file(self):
-        # Source-only in-memory mutation; no file changes.
+        # Tamper a TEMP copy only; the pinned repository file is untouched.
         raw=gate.verified_file(gate.R38)
-        with patch.object(gate.R38,"read_bytes",return_value=raw+b"x"):
-            with self.assertRaises(gate.Hold):
-                gate.verified_file(gate.R38)
+        with tempfile.TemporaryDirectory() as folder:
+            p=Path(folder)/"candidate.lua"
+            p.write_bytes(raw+b"x")
+            with patch.dict(gate.PINS,{p:gate.PINS[gate.R38]}):
+                with self.assertRaises(gate.Hold):
+                    gate.verified_file(p)
 
     def test_14_extra_listener_guard(self):
         original=[gate.verified_file(p) for p in (gate.BASE,gate.R38,gate.IDENTITY)]
