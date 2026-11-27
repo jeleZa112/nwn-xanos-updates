@@ -1,0 +1,46 @@
+name: BGXAI XEquip V3 actor-local SOURCE ONLY
+
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/WEAPON_XEQUIP_LOCAL_ARM_SOURCEONLY_V3_20261127/**'
+      - '.github/workflows/bgxai_xequip_local_arm_v3_ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    name: Python 3.11 ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Preserve LF before checkout for byte-stable source
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run source-only fail-closed regression suite (no private GAM)
+        run: python -m unittest discover -s BGXAI/BUILD/WEAPON_XEQUIP_LOCAL_ARM_SOURCEONLY_V3_20261127 -p test_local_arm_v3.py -v
+      - name: Source has no automatic arm/installation
+        shell: python
+        run: |
+          from pathlib import Path
+          root=Path('BGXAI/BUILD/WEAPON_XEQUIP_LOCAL_ARM_SOURCEONLY_V3_20261127')
+          import json, sys
+          sys.path.insert(0,str(root.resolve()))
+          from BGXAI_XEQUIP_LOCAL_ARM_SOURCE_V3 import render
+          manifest=json.loads((root/'BGXAI_REAL_JAGAN_MANIFEST_V3.json').read_text(encoding='utf-8'))
+          baf=render(manifest)
+          assert 'SetGlobal("BGXW3ARM","LOCALS",1)' not in baf
+          assert '"BGXW3ARM","GLOBAL"' not in baf
+          assert 'ClearActions(' not in baf
+          assert 'FillSlot(' not in baf
+          assert 'BALDUR.GAM' not in '\n'.join(p.name for p in root.iterdir())
+          print('STATIC SOURCE-ONLY GUARD PASS; game unchanged')
