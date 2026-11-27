@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "35708d0594c8b50e58fea5c7386b0f0bf0d6b5db",
+  "commit": "0a791e1d92aefd70d42d80b5d79b2dac9b3997a0",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "d56ef12a986e2eb0628618b14d4d20b32ae5666fa0784a8d9444b06d7488a163",
-  "script_size": 79998,
-  "description": "BGXAI onefile: menu175 inert; menu176 V3 native RO default, optional R38 passive observer guarded preflight/status/typed install/last-only rollback/capture. PS51/CI pinned. No automatic game modification."
+  "script_sha256": "51822d75ed0644ec10ee28af47141f1c38b40900e5a7409af9c319790037683b",
+  "script_size": 79996,
+  "description": "BGXAI 176 R38 hotfix: Enter now cancels instead of rerunning V3; SHA256-verified persistent R38 source cache with RAW/CDN/fastly fallback; typed install unchanged; game untouched by updater release."
 }
