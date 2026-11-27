@@ -14,6 +14,10 @@ class Staged(unittest.TestCase):
         self.m = copy.deepcopy(p.REQUIRED)
         self.b = p.render(self.m)
 
+    def test_committed_candidate_baf_exact(self):
+        path = Path(__file__).with_name('BGXAI_R39_JAGAN_STAF01_SOURCE_ONLY.baf')
+        self.assertEqual(path.read_bytes(), self.b.encode('ascii'))
+
     def test_baseline_manifest(self):
         self.assertEqual(p.verified_manifest(self.m), self.m)
     def test_tag_matches_v3(self):
