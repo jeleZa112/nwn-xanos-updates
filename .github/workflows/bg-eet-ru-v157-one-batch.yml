@@ -1,0 +1,33 @@
+name: BG EET RU V157 one-batch guarded translations
+on:
+  pull_request:
+    paths:
+      - "bg-eet-ru/**"
+      - ".github/workflows/bg-eet-ru-v157-one-batch.yml"
+  push:
+    branches:
+      - bg-eet-ai
+    paths:
+      - "bg-eet-ru/**"
+      - ".github/workflows/bg-eet-ru-v157-one-batch.yml"
+jobs:
+  guarded-batch:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONUTF8: '1'
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Existing one-file updater selftest
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
+      - name: V157 exact-10-TLK and recovery tests
+        run: python bg-eet-ru/bulk-v157/test_v157_bulk_guarded.py
+      - name: V157 combined source and V154 regression guards
+        run: python bg-eet-ru/bulk-v157/test_v157_combined.py
