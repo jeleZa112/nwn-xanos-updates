@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 159
+SELF_VERSION = 160
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -8118,8 +8118,8 @@ V151_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/00d7ac73
 V133_PIN='b3f22f56550d951483863fb59e84f2e543b2473d7bb2e51f8fd03fed4e58f624'
 V133_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/6e1922fcfbb73a43c1b97fc82ea848cd05369c4b/bg-eet-ru/native-correlation/v133_live_hit_inventory_ro.py'
 
-V153_PIN='f5e3b527d3ed66dc8a5db847effb304c7d06d0d6a91f994519203901544e6bcd'
-V153_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/cc9002c843a2de9db2a5d87c5661e0b860a96ace/bg-eet-ru/bulk-v159/v159_combined.py'
+V153_PIN='5554c5d9705d7bed1d2ca981cd7d231cdcb63574aa574b0c8ddbd728131cc217'
+V153_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/9a6e2ee318eaae5734a5a63edf79fcb2d11697bd/bg-eet-ru/bulk-v159/v159_combined.py'
 def v153_dispatch(game,mode):
  try:
     p=v121_cache(game)/'V153_GUARDED.py'
@@ -8132,7 +8132,7 @@ def v153_dispatch(game,mode):
     exec(compile(p.read_bytes(),str(p),'exec'),m.__dict__)
     report=m.run(mode,Path(game),WORKDIR)
  except Exception as e:report={'status':'V153_DISPATCH_HOLD','reason':str(e)[:140],'game_files_written_this_action':'UNKNOWN_AFTER_EXCEPTION'}
- try:v116_zip(game,WORKDIR/REPORT_NAME,report,entry='77_V159_BATCH.json' if mode.startswith('batch159_') else '76_V158_BANTER_LIVE_RO.json' if mode=='bulk_status' else '75_V157_BULK_ONE_BATCH.json' if mode.startswith('bulk_') else '74_V154_CONSOLE_CAPTURE_RO.json' if mode=='capture' else '73_V153_GUARDED_OBSERVER.json')
+ try:v116_zip(game,WORKDIR/REPORT_NAME,report,entry='78_V160_HIT_ONLY.json' if mode.startswith('hit160_') else '77_V159_BATCH.json' if mode.startswith('batch159_') else '76_V158_BANTER_LIVE_RO.json' if mode=='bulk_status' else '75_V157_BULK_ONE_BATCH.json' if mode.startswith('bulk_') else '74_V154_CONSOLE_CAPTURE_RO.json' if mode=='capture' else '73_V153_GUARDED_OBSERVER.json')
  except Exception as e:print('ZIP_HOLD',str(e)[:90])
  print(report.get('status'))
  return 2 if 'HOLD' in report.get('status','') or 'STOP' in report.get('status','') else 0
@@ -8306,7 +8306,7 @@ def main(argv=None):
  try:v121_snapshot(game,WORKDIR/REPORT_NAME)
  except Exception as exc:print('V121 SNAPSHOT HOLD:',str(exc)[:120])
  if not (argv if argv is not None else sys.argv[1:]):
-    try:a=input('1=audit 2=install 3=undo 4=play 5=status 6=unwind 7=abi 8=live 9=JIT 10=V153 11=bulk [1]: ').strip()
+    try:a=input('1=audit 2=install 3=undo 4=play 5=status 6-9=diag 10=V153 11=bulk [1]: ').strip()
     except EOFError:a=''
     mode={'2':'install','3':'rollback','4':'capture','5':'status'}.get(a)
     if a=='6':return v130_audit(game,WORKDIR/REPORT_NAME)
@@ -8314,8 +8314,9 @@ def main(argv=None):
     if a=='8':return v133_audit(game,WORKDIR/REPORT_NAME)
     if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)
     if a=='11':
-       try:b=input('V157 1=check 2=install 3=undo 4=status | V159 5=check 6=install 7=undo 8=status [1]: ').strip()
+       try:b=input('V157:1-4 V159:5-8 V160:9=check 10=install 11=undo 12=status [1]: ').strip()
        except EOFError:b=''
+       if b in ('9','10','11','12'):return v153_dispatch(game,'hit160_'+('preflight','install','rollback','status')[int(b)-9])
        return v153_dispatch(game,('batch159_' if b in ('5','6','7','8') else 'bulk_')+{'2':'install','3':'rollback','4':'status','5':'preflight','6':'install','7':'rollback','8':'status'}.get(b,'preflight'))
     if a=='10':
        try:b=input('V153 1=check 2=install 3=undo 4=status [1]: ').strip()
@@ -8652,7 +8653,7 @@ def main(argv=None):
       print('V95_STOP: rollback v95 before older UI actions')
       return 2
     if args.upgrade_v93_journal_zeros:
-      print('V93_INSTALL_DISABLED_BAD_MENU_LUA: defective v93 is withdrawn; rollback remains available')
+      print('V93_INSTALL_DISABLED_BAD_MENU_LUA: withdrawn; rollback available')
       return 2
     return v93_run(game,WORKDIR/REPORT_NAME,mode='rollback')
  if args.upgrade_v92_journal_marker or args.rollback_v92_journal_marker:
@@ -9844,7 +9845,7 @@ def v70_eeex_loader_diagnostic(game, report_path):
     stable=dict(result);stable.pop('status',None)
     result['snapshot_sha256']=digest(json.dumps(stable,ensure_ascii=False,sort_keys=True).encode('utf-8'))
     if old.get('schema')==V70_PROBE_SCHEMA and old.get('snapshot_sha256')==result['snapshot_sha256'] and old.get('status')==result['status']:
-      print('v70: CACHE PASS — EEex M_Lua sources unchanged. Runtime still requires separate proof.')
+      print('v70: CACHE PASS; runtime HOLD')
       return 0
     if sha_path(exe)!=exe_sha or sha_path(db)!=db_sha:
       raise RuntimeError('GAME_CHANGED_DURING_READONLY_AUDIT')
@@ -10088,7 +10089,7 @@ def v71_pilot(game,report_path,mode='auto'):
           result['status']='V71_PROCESS_SAFETY_HOLD'
         else:
           print('v71: новый короткий M_BGERU.lua; только этот один файл будет создан в override.')
-          print('Пробный перевод: +Luck:%d -> +Удача:%d. При любой неопределённости безопасный STOP.')
+          print('Пробный перевод +Luck:%d -> +Удача:%d; при ошибке STOP.')
           try:consent=input('Чтобы установить пробный перевод, введи '+V71_CONSENT+' (Enter = пропуск): ').strip()
           except EOFError:consent=''
           if consent!=V71_CONSENT:
@@ -11180,7 +11181,7 @@ def v76_live_audit(game,report_path):
       print('v76: CACHE PASS — текущие два StrRef и UI.MENU не менялись; без записи.')
     else:
       v76_update_zip(report_path,result)
-      print('v76:',result['status'],'— адресная сверка 266659/273940 и UI.MENU. Игра не изменялась.')
+      print('v76:',result['status'],'— сверка 266659/273940 и UI.MENU. Без записей в игру.')
     print('Единый ZIP:',report_path)
     return 0
  except (OSError,ValueError,RuntimeError,zipfile.BadZipFile) as exc:
