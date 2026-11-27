@@ -1,0 +1,35 @@
+name: BGXAI R38 installed R37 identity offline gate (NO GAME)
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R38_R37_IDENTITY_UPGRADE_PREFLIGHT_SOURCEONLY_20261127/**'
+      - '.github/workflows/bgxai_r38_r37_identity_offline_gate_ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-readonly-gate:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest,ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Preserve exact UTF-8 bytes before checkout
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Adversarial R38 source-only preupgrade + exact R37 historical user-status gate
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/R38_R37_IDENTITY_UPGRADE_PREFLIGHT_SOURCEONLY_20261127/test_r38_preupgrade_offline_gate.py -v
+      - name: Verify combined R37 INV3 ID four marked blocks preserve previous source bytes
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/R37_XEQUIP_IDENTITY_SINGLE_LISTENER_SOURCEONLY_20261127/test_identity_integration_static.py -v
+      - name: Source-only positive dry run, no WeiDU, no game access
+        shell: bash
+        run: |
+          python BGXAI/BUILD/R38_R37_IDENTITY_UPGRADE_PREFLIGHT_SOURCEONLY_20261127/BGXAI_R38_R37_PREUPGRADE_OFFLINE_GATE.py --r37-status BGXAI/BUILD/R38_R37_IDENTITY_UPGRADE_PREFLIGHT_SOURCEONLY_20261127/R37_USER_STATUS_SANITIZED_20261127.json
