@@ -1,4 +1,4 @@
-name: BGXAI user regression: 176 Enter no V3, SHA cached R38 and 3rd RAW mirror
+name: BGXAI 176 safe choice and network regression
 on:
   push:
     branches: [bg-eet-ai]
