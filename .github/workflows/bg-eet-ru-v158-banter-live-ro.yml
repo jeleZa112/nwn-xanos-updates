@@ -1,0 +1,35 @@
+name: BG EET RU V158 read-only banter provenance
+on:
+  pull_request:
+    paths:
+      - "bg-eet-ru/**"
+      - ".github/workflows/bg-eet-ru-v158-banter-live-ro.yml"
+  push:
+    branches:
+      - bg-eet-ai
+    paths:
+      - "bg-eet-ru/**"
+      - ".github/workflows/bg-eet-ru-v158-banter-live-ro.yml"
+jobs:
+  v158-ro:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONUTF8: '1'
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Existing one-file updater smoke regression
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
+      - name: V157 regression unchanged
+        run: python bg-eet-ru/bulk-v157/test_v157_combined.py
+      - name: V158 full live read-only provenance unit tests
+        run: python bg-eet-ru/bulk-v158/test_v158_banter_live_ro.py
+      - name: V158 embedded source, legacy routes and release guards
+        run: python bg-eet-ru/bulk-v158/test_v158_combined_source.py
