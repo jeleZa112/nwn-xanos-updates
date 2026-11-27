@@ -66,7 +66,7 @@ def fetch_pinned(commit: str, path: str) -> bytes:
             req = urllib.request.Request(base + path,
                 headers={"User-Agent": "BGXAI-Onefile175-NoAPI"})
             with urllib.request.urlopen(req, timeout=25) as h:
-                raw = h.read(SOURCES[path][0] + 1)
+                raw = h.read((SOURCES.get(path) or V3_SOURCES[path])[0] + 1)
             verify_file(path, raw)
             return raw
         except (OSError, ValueError, Exception) as exc:
@@ -247,7 +247,8 @@ def main(argv=None) -> int:
         report = (prepare_v3(a.game, a.commit, a.native_readonly) if a.v3
                   else prepare(a.game, a.commit, a.native_readonly))
     except (Hold, ValueError, OSError, subprocess.TimeoutExpired) as exc:
-        report = {"schema": SCHEMA, "status": "HOLD_XEQUIP175",
+        report = {"schema": "BGXAI_XEQUIP_ONEFILE_176_V3_READONLY_V1" if a.v3 else SCHEMA,
+            "status": "HOLD_XEQUIP176_V3" if a.v3 else "HOLD_XEQUIP175",
             "reason": str(exc), "gameplayFeatureInstalled": False,
             "ordersSent": 0, "newGameFilesWrittenByThisRunner": 0}
     path = a.report
