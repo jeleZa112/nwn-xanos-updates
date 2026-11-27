@@ -35,7 +35,11 @@ def verified_module(repo: Path, relative: str, expected_blob_sha: str):
     if not cur.is_file() or cur.stat().st_size > 200000:
         raise SourceHold('SOURCE_MISSING_OR_OVERSIZED')
     data = cur.read_bytes()
-    blob = hashlib.sha1(b'blob ' + str(len(data)).encode('ascii') + b'\0' + data).hexdigest()
+    # Windows checkout may use CRLF; Git blob IDs refer to canonical LF bytes.
+    canonical = data.replace(b'\r\n', b'\n')
+    if b'\r' in canonical:
+        raise SourceHold('SOURCE_MIXED_LINE_ENDINGS')
+    blob = hashlib.sha1(b'blob ' + str(len(canonical)).encode('ascii') + b'\0' + canonical).hexdigest()
     if blob != expected_blob_sha:
         raise SourceHold('SOURCE_GIT_BLOB_MISMATCH')
     spec = importlib.util.spec_from_file_location('checked_' + blob[:12], cur)
@@ -86,6 +90,12 @@ def catalog_from_modules(game: Path, resrefs, r3, v111, source=None):
         raise SourceHold('RESREF_INVALID_OR_NOT_IN_V160_CONTRACT')
     names = list(dict.fromkeys(requested))
     src = source if source is not None else r3.NativeSource(game)
+    # Legacy V111 was embedded into a larger updater and has no import stanza.
+    # Bind its dependencies BEFORE the first v111_parse_itm() call.
+    v111.Path = Path
+    v111.struct = struct
+    v111.digest = lambda b: hashlib.sha256(b).hexdigest()
+    v111.sha_path = _hash_file
     entries, strrefs = {}, set()
     for name in names:
         try:
@@ -107,12 +117,6 @@ def catalog_from_modules(game: Path, resrefs, r3, v111, source=None):
             }
         except (ValueError, KeyError, TypeError, OSError, struct.error, AttributeError) as exc:
             entries[name] = {'status': 'ITEM_HOLD', 'reason': str(exc)[:120], 'autoDisplayName': None}
-    # V111 has historically been embedded by the updater, so explicit globals
-    # are supplied by the bridge instead of modifying its existing source.
-    v111.Path = Path
-    v111.struct = struct
-    v111.digest = lambda b: hashlib.sha256(b).hexdigest()
-    v111.sha_path = _hash_file
     try:
         tlks = {name: v111.v111_tlk_names(game, strrefs, name)
                 for name in ('dialog.tlk', 'dialogf.tlk')}
