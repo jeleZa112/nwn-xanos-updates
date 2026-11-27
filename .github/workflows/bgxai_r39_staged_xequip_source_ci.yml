@@ -1,0 +1,30 @@
+name: BGXAI R39 staged XEquipItem source-only
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/**'
+      - '.github/workflows/bgxai_r39_staged_xequip_source_ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-only:
+    name: R39 source-only tests on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    defaults:
+      run:
+        working-directory: BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Assert inert source-only guards and exact committed BAF
+        run: python -m unittest -v test_r39_staged_xequip_v1.py
