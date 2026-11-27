@@ -1,0 +1,13 @@
+{
+  "schema": "BGXAI_XEQUIP_LOCAL_ARM_SOURCE_V3",
+  "gamSha256": "7e926634c0972e90e25c975a18c9bf34b96f4d85184195c630555fdd43f7e19c",
+  "partyIndexSnapshot": 1,
+  "savedActorName": "*GCLERIC",
+  "savedClassRaw": 3,
+  "sourceResref": "STAF01",
+  "sourceSlot": 20,
+  "targetSlot": 35,
+  "sourceFlags": 1,
+  "sourceCharges": [0, 0, 0],
+  "sourceExpiry": 0
+}
