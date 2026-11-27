@@ -15,6 +15,7 @@ THEN
     SetGlobal("BGXW3ARM","LOCALS",3)
     SetGlobal("BGXW3TAG","LOCALS",0)
     SetGlobal("BGXW3QST","LOCALS",3)
+    Continue()
 END
 
 IF
@@ -65,4 +66,5 @@ THEN
     SetGlobal("BGXW3QST","LOCALS",1)
     SetGlobalTimer("BGXW3QTM","LOCALS",ONE_ROUND)
     SetGlobalTimer("BGXW3MAX","LOCALS",TWO_ROUNDS)
+    Continue()
 END
