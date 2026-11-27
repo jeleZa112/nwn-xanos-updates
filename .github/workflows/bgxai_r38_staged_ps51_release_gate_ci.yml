@@ -1,0 +1,50 @@
+name: BGXAI R38 staged onefile176 exact two-token PowerShell 5.1 release gate
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/STAGED_BGXAI_SYNC_R38_FROM_176.ps1'
+      - 'BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/test_r38_release_onefile.py'
+      - '.github/workflows/bgxai_r38_staged_ps51_release_gate_ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  staged-ps:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest,ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Preserve exact LF bytes
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Byte-level original menu 1 to 175 preservation, child SHA, 80000 cap
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/test_r38_release_onefile.py -v
+      - name: Native Windows PowerShell 5.1 AST of staged R38 submenu
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $p=(Resolve-Path 'BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/STAGED_BGXAI_SYNC_R38_FROM_176.ps1').Path
+          $t=$null;$e=$null
+          $a=[Management.Automation.Language.Parser]::ParseFile($p,[ref]$t,[ref]$e)
+          if(!$a -or $e.Count -ne 0){$e|ForEach-Object{Write-Host $_.ToString()};throw 'R38_PS51_PARSE_HOLD'}
+          Write-Host 'R38_STAGED_PS51_PARSE_PASS_NO_GAME_ACCESS'
+      - name: Report exact stage SHA-256 for pinned onefile bootstrap
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib
+          from pathlib import Path
+          p=Path('BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/STAGED_BGXAI_SYNC_R38_FROM_176.ps1')
+          print('R38_STAGED_PS_BYTES',len(p.read_bytes()))
+          print('R38_STAGED_PS_SHA256',hashlib.sha256(p.read_bytes()).hexdigest())
+          PY
