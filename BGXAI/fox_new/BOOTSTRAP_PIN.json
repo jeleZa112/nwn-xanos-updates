@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "5c5ead4af8c144db44e9e99c5052475ccd0c6944",
+  "commit": "60b9c40c05a76594d753bde5cf13b81ce0de32b8",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "81cedf0d90d1d9651183416ce9c1b11ffc148a3df79963e33b065b3c166d4467",
-  "script_size": 79973,
-  "description": "Menu175 SHA-pinned inert XEquipItem native WeiDU read-only preflight, legacy menu1-174 unchanged; PS5.1/CI verified; 79973B <= 80000. No game install."
+  "script_sha256": "6cc2af578c82fc06b19a13be0f0a26fff09e42650e2065cdf9be8e850629495e",
+  "script_size": 79999,
+  "description": "Menu175 unchanged inert behavior; NEW menu176 exact V3 XEquipItem native READ-ONLY compile, SHA/PS5.1/CI verified. No installation or gameplay dispatch."
 }
