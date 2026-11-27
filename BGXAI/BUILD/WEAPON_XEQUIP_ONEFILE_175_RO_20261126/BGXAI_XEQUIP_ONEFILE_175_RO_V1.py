@@ -55,7 +55,7 @@ R38_SOURCES = {
 R38_MODES = ("preflight", "status", "install", "rollback", "capture")
 # R39 exact native preflight is read-only and reuses the already pinned 176.
 R39_ONEFILE = "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_ONEFILE177_RO.py"
-R39_SOURCES = {R39_ONEFILE:(7751,"faf248d97d04a12ba3c78cfea1b8c573f76a7902de04b758c481ad1b17ecae5d")}
+R39_SOURCES = {R39_ONEFILE:(8777,"faf248d97d04a12ba3c78cfea1b8c573f76a7902de04b758c481ad1b17ecae5d")}
 COMMIT_RE = re.compile(r"^[a-f0-9]{40}$")
 
 class Hold(ValueError):
