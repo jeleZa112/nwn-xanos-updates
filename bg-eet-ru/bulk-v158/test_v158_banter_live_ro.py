@@ -1,4 +1,5 @@
 import hashlib
+import os
 import struct
 import pathlib
 import shutil
@@ -105,6 +106,7 @@ class TestV158Live(unittest.TestCase):
         self.assertEqual(r['game_files_written'],0)
 
     def test_duplicate_case_name_is_hold(self):
+        if os.name=='nt':self.skipTest('NTFS case-insensitive filenames cannot coexist')
         original=self.game/'override'/'DDAMIEN.DLG'
         (self.game/'override'/'ddamien.dlg').write_bytes(original.read_bytes())
         self.assertEqual(m.audit_game(self.game)['status'],'V158_READONLY_SOURCE_HOLD')
