@@ -4,7 +4,6 @@ from pathlib import Path
 SRC=Path(__file__).with_name('v159_tlk_bulk_guarded.py')
 spec=importlib.util.spec_from_file_location('v159_bulk',SRC)
 M=importlib.util.module_from_spec(spec);spec.loader.exec_module(M)
-ORIG=json.loads(Path(__file__).with_name('BATCH_V159_MANIFEST_SOURCE_ONLY.json').read_text(encoding='utf-8'))
 
 class V159Guarded(unittest.TestCase):
  @classmethod
