@@ -100,7 +100,7 @@ class BridgeTests(unittest.TestCase):
         alias=self.root/'alias.py';alias.symlink_to(p)
         with self.assertRaises(catalog.SourceHold):catalog.verified_module(self.root,'alias.py','0'*40)
     def test_source_has_no_game_mutation_api(self):
-        code=SRC.read_text()
+        code=SRC.read_text(encoding='utf-8')
         for forbidden in ('Infinity_DisplayString','XEquipItem(','.write_bytes(','.write_text(',"open('w'", "open('a'"):
             self.assertNotIn(forbidden,code)
 
