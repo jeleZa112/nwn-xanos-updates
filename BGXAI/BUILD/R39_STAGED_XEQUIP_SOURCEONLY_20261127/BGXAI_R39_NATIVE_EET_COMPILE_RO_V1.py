@@ -97,6 +97,12 @@ def static_item_preflight(game:Path):
         raise Hold('HOLD_ITM_RESTRICTS_CLERIC')
     if no_kit_restricted:
         raise Hold('HOLD_ITM_RESTRICTS_TRUECLASS')
+    # Actor race/alignment were not authenticated in the R38 capture.  Do not
+    # mislabel a class/kit pass as usable when these unknown filters are active.
+    if raw[0x1e] & 0x3f:
+        raise Hold('HOLD_ITM_ALIGNMENT_RESTRICTIONS_UNVERIFIED')
+    if raw[0x21] != 0:
+        raise Hold('HOLD_ITM_RACE_RESTRICTIONS_UNVERIFIED')
     # R38 observed STR12; other active stats and actual level were NOT
     # authenticated as item equip proof, so fail closed if item demands them.
     if u16(0x24)!=0 or raw[0x28]!=0 or any(raw[k]!=0 for k in (0x2a,0x2c,0x2e,0x30)) or u16(0x32)!=0:
@@ -104,6 +110,7 @@ def static_item_preflight(game:Path):
     return dict(itemResref='STAF01',sourceSha256=ITM_SHA,
         observedClericUsabilityRestriction=False,
         observedTrueclassKitRestriction=False,
+        raceAndAlignmentHeaderRestrictionsAbsent=True,
         headerMinStrength=5, priorLiveStrengthObserved=12,
         staticItemClassKitHeaderAllowed=True,
         currentSessionActorKitVerified=False,
