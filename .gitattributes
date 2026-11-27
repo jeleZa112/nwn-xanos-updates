@@ -4,3 +4,5 @@ bg-eet-ru/autofix/BG_EET_RU_AUTOFIX_BOT.py text eol=lf
 bg-eet-ru/autofix/trusted_sources.zip.b64 text eol=lf
 
 bg-eet-ru/live-inventory/*.py text eol=lf
+bg-eet-ru/hit-only-v160/*.lua text eol=lf
+bg-eet-ru/hit-only-v160/*.py text eol=lf
