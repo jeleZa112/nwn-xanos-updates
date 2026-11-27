@@ -15,11 +15,11 @@ class V160ReleaseContract(unittest.TestCase):
         cmd = BASE / 'onefile/BG_EET_RU_UPDATE.cmd'
         release = json.loads((BASE / 'onefile/release.json').read_text('utf-8'))
         blob = cmd.read_bytes()
-        self.assertEqual(release['version'], 160)
+        self.assertEqual(release['version'], 161)
         self.assertEqual(release['sha256'], sha(cmd))
         self.assertLessEqual(len(blob), 750000)
-        self.assertEqual(len(blob), 749970)
-        self.assertIn(b'SELF_VERSION = 160', blob)
+        self.assertEqual(len(blob), 749994)
+        self.assertIn(b'SELF_VERSION = 161', blob)
         self.assertIs(release['default_game_writes_allowed'], False)
         self.assertIs(release['game_writes_allowed'], False)
         self.assertIs(release['typed_game_write_mode_available'], True)
@@ -29,7 +29,7 @@ class V160ReleaseContract(unittest.TestCase):
         cmd = (BASE / 'onefile/BG_EET_RU_UPDATE.cmd').read_bytes()
         combined = BASE / 'bulk-v159/v159_combined.py'
         pin = sha(combined)
-        self.assertEqual(pin, '5554c5d9705d7bed1d2ca981cd7d231cdcb63574aa574b0c8ddbd728131cc217')
+        self.assertEqual(pin, 'c7118f29cc62cc59da130afd3206b811d06aa3bf2f3a166bbc1b324a616ea231')
         self.assertIn(("V153_PIN='"+pin+"'").encode('ascii'),cmd)
         self.assertIn(b"if b in ('9','10','11','12')",cmd)
         self.assertIn(b"mode.startswith('hit160_')",cmd)
@@ -39,13 +39,15 @@ class V160ReleaseContract(unittest.TestCase):
         self.assertIn(b'75_V157_BULK_ONE_BATCH.json',cmd)
         source=combined.read_bytes()
         self.assertIn(b"mode.startswith('hit160_')",source)
+        self.assertIn(b'read_pinned_cached',source)
+        self.assertIn(b'BG_EET_RU_V160_CODE_CACHE',source)
         self.assertIn(b"mode.startswith('batch159_')",source)
         self.assertIn(b"_V158_RUN_UNCHANGED",source)
         self.assertIn(b'INSTALL_BG_EET_RU_V160_HIT_ONLY', (BASE/'hit-only-v160/v160_guarded.py').read_bytes())
 
     def test_pinned_lua_and_installer_immutable(self):
         src=BASE/'hit-only-v160'
-        self.assertEqual(sha(src/'v160_guarded.py'), '3f5ef8f9d281238aaf91192451d303962068011329fdbc25adefd487e3aae1dd')
+        self.assertEqual(sha(src/'v160_guarded.py'), 'ccf02f4892bf0ed434ac97a1f0bb7d7da2a9abdde8fafe7a64b422386e82b2de')
         self.assertEqual(sha(src/'BG_EET_RU_V160_HIT_ONLY_APPEND.lua'), 'ad76b46df1359bfdeeb9400f6b10f2ecd104059bd17a12d737fa60dcd733445c')
         attrs=(ROOT/'.gitattributes').read_text('utf-8')
         self.assertIn('bg-eet-ru/hit-only-v160/*.lua text eol=lf',attrs)
