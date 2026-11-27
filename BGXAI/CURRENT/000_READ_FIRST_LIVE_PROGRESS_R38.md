@@ -1,3 +1,14 @@
+# 27.11.2026 — R39 SOURCE-ONLY: КОД ДВУХФАЗНОГО XEquipItem ГОТОВ, GAMEPLAY НЕ МЕНЯЛСЯ
+
+**Прочитать первым.** После реального R38 capture создан новый *активный по форме, но не установленный и не вооружённый* R39 BAF для одного посоха Джагана: `BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/`. Ветка `bg-eet-ai`. Существующие R37/R38, EPS, V6/R29, единственный `BGXAI_UPDATE.cmd`, WeiDU и сохранения не менялись.
+
+- Три BAF-блока: (1) просроченный arm → отказ, (2) одноразовый `XEquipItem("STAF01",Myself,SLOT_WEAPON0,EQUIP)` после второго полного набора проверок, (3) warmup с `ONE_ROUND` и `TWO_ROUNDS`. Исходное окно одноразовое, запрет самоустановки ARM, actor-local TAG прежнего V3. Подлинные GAM slot20→35 и runtime R38 actor identity (10 Jagan событий) не выдумывать и не переизмерять.
+- **20/20 локальных Python tests PASS** и SHA exact generated BAF `943c221684dde39662476f0514da48fadad6fc1ce90c565b5732afaa87673be8` (2049 байт); CI workflow `.github/workflows/bgxai_r39_staged_xequip_source_ci.yml` опубликован, исход его запуска **здесь не подтверждён**.
+- **Блокеры сохраняются:** ARM в actor LOCALS может пережить сохранение/перезагрузку → необходим независимый *session-bound*, fail-closed аутентификатор и отмена ARM до использования; таймер — cooldown, не доказательство непрерывной idle; manual/EPS origin и установленный `STAF01.ITM` + kit usability не проверены; точный native EET BAF не скомпилирован, backup/install approval не получены. **`dispatchAuthorized=false`, `ordersSent=0`, `installed=false`**, пользователь ничего не запускает.
+- **Реальный следующий инженерный шаг:** session-only armer + invalidation через уже существующий R38 one-listener и item usability proof без второго слушателя, затем native compile, guarded install через тот же one-file updater после отдельной typed авторизации, один игровой тест на расходном сохранении. Не повторять R38 install/capture или старые RO проверки.
+
+---
+
 # 27.11.2026 — R38 REAL LOG REPLAY: ДЖАГАН НАЙДЕН, НО ДВИЖЕНИЕ НЕ РАВНО IDLE
 
 **Наивысший приоритет, обновлено после фактического разбора исходного пользовательского журнала.** R38 установлен, предыдущий live capture завершён; НЕ повторять `176→4`/ `176→6`, native V3/175 или R37. Игра в этом исследовании не изменялась.
