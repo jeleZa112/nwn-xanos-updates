@@ -1,0 +1,48 @@
+name: BGXAI exact user incident hotfix stage PowerShell
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/STAGED_BGXAI_SYNC_176_NET_HOTFIX.ps1'
+      - 'BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/test_onefile176_net_release_static.py'
+      - '.github/workflows/bgxai_176_net_release_stage_ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  focused-stage:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest,ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Keep source bytes exact
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify only three onefile pin/UI changes
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/test_onefile176_net_release_static.py -v
+      - name: Windows PowerShell 5.1 AST
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $p=(Resolve-Path 'BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/STAGED_BGXAI_SYNC_176_NET_HOTFIX.ps1').Path
+          $t=$null;$e=$null
+          $ast=[Management.Automation.Language.Parser]::ParseFile($p,[ref]$t,[ref]$e)
+          if(!$ast -or $e.Count -ne 0){$e|ForEach-Object{Write-Host $_.ToString()};throw 'BGXAI_176_NET_HOTFIX_PS_HOLD'}
+          Write-Host 'BGXAI_176_NET_HOTFIX_PS51_PASS'
+      - name: Print final verified script pin
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib
+          from pathlib import Path
+          b=Path('BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/STAGED_BGXAI_SYNC_176_NET_HOTFIX.ps1').read_bytes()
+          print('FIXED_PS_BYTES',len(b))
+          print('FIXED_PS_SHA256',hashlib.sha256(b).hexdigest())
+          PY
