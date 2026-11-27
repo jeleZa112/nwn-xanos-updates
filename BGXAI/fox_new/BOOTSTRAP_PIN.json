@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "a4246f50f8d31b46459f77ae15c46a8342851994",
+  "commit": "bec4e774521129430a5ae204b94e434ef5555de1",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "b84ca58e1637aff439691b6afd0b40b1576c625fd3c382a1baf353d58ff50a5b",
+  "script_sha256": "d1746b78b6fb1d050a1cec6734395960f376e5e7c29772a5a8e8e8c81c960023",
   "script_size": 79996,
-  "description": "BGXAI 176→7 R39 native RO: correct class-vs-race ITM restrictions, independent safe native compile proof even if item usability HOLD; 41 local tests, one updater 79996B, no game writes."
+  "description": "BGXAI 176→7 R39 corrected transitive source-length pin: child 8777B, matching SHA, wrapper 21120B, PS1 79996B. Verified complete PS1→wrapper→R39→A/B/V/C cross-file pin graph. No game changes."
 }
