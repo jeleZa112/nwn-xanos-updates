@@ -108,8 +108,8 @@ def check_plan(plan: dict, policy: dict) -> list[str]:
             plan.get("explicit_human_audio_approval") and plan.get("explicit_game_install_authorization")
         ):
             bad.append("BGVOICE_TECH_PASS_NOT_AUDIO_PASS")
-    if action in {"game_install", "replace_master"}:
-        bad.append("EXTERNAL_INSTALL_OR_MASTER_WRITE_NEEDS_SEPARATE_GUARDED_AUTHORIZATION")
+    if action in {"game_install", "replace_master", "release", "approve_all", "promote"}:
+        bad.append("EXTERNAL_HUMAN_RELEASE_OR_INSTALL_NOT_VERIFIED_BY_THIS_GUARD")
     if project not in {"BGVOICE_IWINTRO", "BGVOICE_MINSC57", "BGVOICE_MINSC48"}:
         bad.append("UNKNOWN_PROJECT_NOT_VERIFIED")
     return bad
@@ -168,7 +168,11 @@ class RegressionTests(unittest.TestCase):
 
     def test_install_even_with_fake_flags_still_hold(self):
         plan = {"project": "BGVOICE_IWINTRO", "action": "game_install", "sound_id": "IWINTRO_G16", "explicit_human_audio_approval": True, "explicit_game_install_authorization": True}
-        self.assertIn("EXTERNAL_INSTALL_OR_MASTER_WRITE_NEEDS_SEPARATE_GUARDED_AUTHORIZATION", check_plan(plan, self.policy))
+        self.assertIn("EXTERNAL_HUMAN_RELEASE_OR_INSTALL_NOT_VERIFIED_BY_THIS_GUARD", check_plan(plan, self.policy))
+
+    def test_release_even_with_fake_flags_still_hold(self):
+        plan = {"project": "BGVOICE_IWINTRO", "action": "release", "release_scope": "single", "sound_id": "IWINTRO_G16", "explicit_human_audio_approval": True, "explicit_game_install_authorization": True}
+        self.assertIn("EXTERNAL_HUMAN_RELEASE_OR_INSTALL_NOT_VERIFIED_BY_THIS_GUARD", check_plan(plan, self.policy))
 
     def test_unknown_project_fail_closed(self):
         self.assertIn("UNKNOWN_PROJECT_NOT_VERIFIED", check_plan({"project": "BGXAI", "action": "game_install"}, self.policy))
