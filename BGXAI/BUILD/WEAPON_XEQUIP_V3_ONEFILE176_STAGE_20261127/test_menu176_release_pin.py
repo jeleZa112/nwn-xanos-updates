@@ -8,9 +8,9 @@ import unittest
 
 PIN=Path("BGXAI/fox_new/BOOTSTRAP_PIN.json")
 SCRIPT=Path("BGXAI/BGXAI_SYNC.ps1")
-STAGE=Path("BGXAI/BUILD/WEAPON_XEQUIP_V3_ONEFILE176_STAGE_20261127/STAGED_BGXAI_SYNC_MENU176.ps1")
+STAGE=Path("BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/STAGED_BGXAI_SYNC_R38_FROM_176.ps1")
 WRAPPER=Path("BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONEFILE_175_RO_V1.py")
-STAGED_WRAPPER=Path("BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONEFILE_175_RO_DUALMODE_STAGE_176.py")
+STAGED_WRAPPER=Path("BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONEFILE_176_R38_STAGE_ONLY.py")
 BASE_PS=Path("BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/STAGED_BGXAI_SYNC_MENU175.ps1")
 OLD_BANNER="wh 'BGXAI ONE-FILE UPDATER: 1-174 existing | 175 XEquip native compile READ ONLY | 0 Exit'"
 NEW_BANNER="wh '175 inert | 176 V3 RO | 0 Exit'"
@@ -45,8 +45,8 @@ class Shipped(unittest.TestCase):
  def test_source_pins_and_never_arming(self):
   x=self.script.decode("ascii")
   w=WRAPPER.read_bytes()
-  self.assertEqual(len(w),12783)
-  self.assertEqual(sha(w),"157d69466fdb5766822145299d64163190b5c9beb8849876b03c08f97f66c35f")
+  self.assertEqual(len(w),16827)
+  self.assertEqual(sha(w),"c2fbefb877782047e2987b60fc517f1de11daec32da376893713b58e1fcbffcf")
   self.assertIn(sha(w),x)
   self.assertIn("if($choice -eq '176'){$extra=@('--v3')}",x)
   self.assertNotIn("SetGlobal(\"BGXW3ARM\"",x)
