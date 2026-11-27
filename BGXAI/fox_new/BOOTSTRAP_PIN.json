@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "58001197c959fac13d6d530cb8cc4d678e0e14ba",
+  "commit": "35708d0594c8b50e58fea5c7386b0f0bf0d6b5db",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "e16acdb69231aa8723ce50d820ce75101d93494ac9f12d894ec63a3956ec461d",
+  "script_sha256": "d56ef12a986e2eb0628618b14d4d20b32ae5666fa0784a8d9444b06d7488a163",
   "script_size": 79998,
-  "description": "BGXAI menu176 V3 read-only: repaired V3 HTTP allowlist KeyError and 176 HOLD label; strict pins/PS5.1/CI; 175 legacy and 1-174 preserved. No installation."
+  "description": "BGXAI onefile: menu175 inert; menu176 V3 native RO default, optional R38 passive observer guarded preflight/status/typed install/last-only rollback/capture. PS51/CI pinned. No automatic game modification."
 }
