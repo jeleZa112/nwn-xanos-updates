@@ -1,0 +1,64 @@
+{
+  "schema": "GLOBAL_KNOWN_ERROR_GATES_V1",
+  "date": "2026-11-27",
+  "purpose": "Предварительная машинная проверка запретов, подтверждённых в прошлых проектах; не заменяет человеческое прослушивание и не устанавливает ничего в игру",
+  "approval_rules": {
+    "BGVOICE_IWINTRO": {
+      "approved_sound_ids": ["IWINTRO_G11", "IWINTRO_G12", "IWINTRO_G13", "IWINTRO_G14", "IWINTRO_G15", "IWINTRO_G16", "IWINTRO_G18"],
+      "cue_count": 19,
+      "unapproved_count": 12,
+      "must_preserve_originals": true,
+      "game_install_authorized": false,
+      "evidence": "/BG_VOICE_RU/CURRENT/BGVOICE_IWINTRO_V5_APPROVED7_CHECKPOINT_20261127.md"
+    },
+    "BGVOICE_MINSC57": {
+      "rejected_variants": ["A", "B", "C"],
+      "preserve_authentic_shout": true,
+      "game_install_authorized": false,
+      "evidence": "/BG_VOICE_RU/CURRENT/BGVOICE_MINSC57_REJECTED_ABC_CHECKPOINT_20261127.md"
+    },
+    "BGVOICE_MINSC48": {
+      "rejected_variants": ["Stable", "Per_line", "ESpeech_EN_reference", "ESpeech_RU_V2", "V4", "V5"],
+      "game_install_authorized": false,
+      "evidence": "/BG_VOICE_RU/CURRENT/BGVOICE_MINSC48_MULTI_ENGINE_AB_V1_CHECKPOINT_20261127.md"
+    }
+  },
+  "known_errors": [
+    {
+      "error_id": "BGVOICE_PS51_UNICODE_NO_BOM",
+      "trigger": "Windows PowerShell 5.1 .ps1 contains non-ASCII UTF-8 but lacks UTF-8 BOM",
+      "verdict": "BLOCK_DELIVERY",
+      "evidence": "/BG_VOICE_RU/CURRENT/BGVOICE_MINSC48_MULTI_ENGINE_PS51_BOM_FIX_CHECKPOINT_20261127.md",
+      "scope": "packaged PowerShell files only; ASCII-only files are allowed without BOM"
+    },
+    {
+      "error_id": "BGVOICE_APPROVED_AUDIO_REGEN",
+      "trigger": "already human-approved IWINTRO sound ID is scheduled for resynthesis or overwrite",
+      "verdict": "BLOCK_ACTION",
+      "evidence": "/BG_VOICE_RU/CURRENT/BGVOICE_IWINTRO_V5_APPROVED7_CHECKPOINT_20261127.md"
+    },
+    {
+      "error_id": "BGVOICE_HUMAN_REJECTED_PROMOTION",
+      "trigger": "rejected MINSC57/MINSC48 variant is reused as approved or installed",
+      "verdict": "BLOCK_ACTION",
+      "evidence": "/BG_VOICE_RU/CURRENT/BGVOICE_MINSC57_REJECTED_ABC_CHECKPOINT_20261127.md"
+    },
+    {
+      "error_id": "BGVOICE_TECH_PASS_NOT_AUDIO_PASS",
+      "trigger": "technical WAV/ZIP/source PASS is treated as human audio approval or authorization to install",
+      "verdict": "BLOCK_ACTION",
+      "evidence": "/BG_VOICE_RU/CURRENT/BGVOICE_ERROR_DISCOVERY_AND_REPAIR_PLAYBOOK_UPDATED_TRIPLE_20261126.md"
+    },
+    {
+      "error_id": "BGVOICE_R34_STRESS_RECOMPUTE",
+      "trigger": "rerunning RUAccent/Accentik on the same SHA-verified 19 cues without source changes",
+      "verdict": "BLOCK_ACTION",
+      "known_result_sha256": "d361d10e3851202e8c231d54f851e044052a9ee0fc79569ce4023c3ac652da47",
+      "evidence": "/BG_VOICE_RU/CURRENT/BGVOICE_IWINTRO_V5_APPROVED7_CHECKPOINT_20261127.md"
+    }
+  ],
+  "scope_limits": [
+    "Automated test cannot hear correct stress, evaluate acting, verify local user installation or rewrite live update scripts.",
+    "The guard is source-only; execution by a future updater must be wired and tested separately. No game/deployed scripts are modified by this release."
+  ]
+}
