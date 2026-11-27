@@ -13,7 +13,7 @@ WRAPPER=Path("BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONE
 STAGED_WRAPPER=Path("BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONEFILE_175_RO_DUALMODE_STAGE_176.py")
 BASE_PS=Path("BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/STAGED_BGXAI_SYNC_MENU175.ps1")
 OLD_BANNER="wh 'BGXAI ONE-FILE UPDATER: 1-174 existing | 175 XEquip native compile READ ONLY | 0 Exit'"
-NEW_BANNER="wh 'BGXAI: 175 inert, 176 V3 RO, 0 exit'"
+NEW_BANNER="wh '175 inert | 176 V3 RO | 0 Exit'"
 OLD_HANDLER="'175' {$p="
 NEW_HANDLER="{$_ -match '^17[56]$'} {$p="
 def sha(data): return hashlib.sha256(data).hexdigest()
@@ -45,8 +45,8 @@ class Shipped(unittest.TestCase):
  def test_source_pins_and_never_arming(self):
   x=self.script.decode("ascii")
   w=WRAPPER.read_bytes()
-  self.assertEqual(len(w),12657)
-  self.assertEqual(sha(w),"6645ca3c80860a4a740d9497f564ec8fa44385a4d1a57930e884a2641373e0e6")
+  self.assertEqual(len(w),12783)
+  self.assertEqual(sha(w),"157d69466fdb5766822145299d64163190b5c9beb8849876b03c08f97f66c35f")
   self.assertIn(sha(w),x)
   self.assertIn("if($choice -eq '176'){$extra=@('--v3')}",x)
   self.assertNotIn("SetGlobal(\"BGXW3ARM\"",x)
