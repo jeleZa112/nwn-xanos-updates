@@ -1,3 +1,15 @@
+# 27.11.2026 — R40 EEex LIFECYCLE DISARM SOURCE-ONLY; ИГРА НЕ МЕНЯЛАСЬ
+
+**Самая новая стадия, выше исторических записей ниже.** Реальный R38 установлен/уже захвачен, R39 source-only two-stage XEquipItem готов (20 локальных tests), **R40 source-only** решает узкую проблему *сохранённого actor-local ARM* через callbacks EEex v1.1.7. Исходники и тесты: `BGXAI/BUILD/R40_SESSION_RESET_SOURCEONLY_20261127/`; CI workflow `.github/workflows/bgxai_r40_session_reset_source_ci.yml`.
+
+- Проверено чтением *официального tag* `Bubb13/EEex@v1.1.7`: `EEex_GameState_AddDestroyedListener`, `EEex_Sprite_AddLoadedListener`, `EEex_Sprite_GetLocalInt/SetLocalInt`. Это наличие интерфейса в исходнике, а **не** доказательство порядка callbacks в текущей пользовательской сборке.
+- `M_BGXW3_SESSION_RESET_V1.lua` не регистрирует слушателей и не пишет в игру сам по себе. Только после отдельной защищённой явной активации он допускает два lifecycle callbacks, **без второго ActionStarted listener**; при loaded проверяет шесть actor-local полей и сначала обнуляет `BGXW3ARM` с readback, потом другие пять; при destroyed только сбрасывает временный Lua epoch.
+- Текущие факты: **13/13 static tests PASS локально**; **22 Lua adversarial tests написаны, но ещё НЕ подтверждены выполнением**, CI запущен публикацией workflow (итог CI пока неизвестен). Не выдавать CI, native compile, DEPLOY или LIVE за PASS.
+- **Существенные ограничения:** не доказан callback loaded до первого BAF script tick, нет current-session-only armer / защиты manual-EPS, не проверены actual installed `STAF01.ITM` и текущий kit/usability, R39 native EET BAF не скомпилирован, отдельного typed approval на установку нет. `armAuthorized=false`, `dispatchAuthorized=false`, `ordersSent=0`. Ни один игровой файл или единственный updater не менялся.
+- **Никаких действий пользователя сейчас.** Не повторять R38 install/capture, меню175, old V3 и R37; продолжить доказательством order of callbacks + exact installed EEex APIs и ITM/kit из доступного read-only preflight, затем guarded release в существующий единственный `BGXAI_UPDATE.cmd` и единственная typed установка / тест на расходном сохранении.
+
+---
+
 # 27.11.2026 — R39 SOURCE-ONLY: КОД ДВУХФАЗНОГО XEquipItem ГОТОВ, GAMEPLAY НЕ МЕНЯЛСЯ
 
 **Прочитать первым.** После реального R38 capture создан новый *активный по форме, но не установленный и не вооружённый* R39 BAF для одного посоха Джагана: `BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/`. Ветка `bg-eet-ai`. Существующие R37/R38, EPS, V6/R29, единственный `BGXAI_UPDATE.cmd`, WeiDU и сохранения не менялись.
