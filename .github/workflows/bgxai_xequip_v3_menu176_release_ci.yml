@@ -1,0 +1,47 @@
+name: BGXAI released menu176 bootstrap/pin SHA Windows Linux
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BGXAI_SYNC.ps1'
+      - 'BGXAI/fox_new/BOOTSTRAP_PIN.json'
+      - 'BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/**'
+      - 'BGXAI/BUILD/WEAPON_XEQUIP_V3_ONEFILE176_STAGE_20261127/**'
+      - '.github/workflows/bgxai_xequip_v3_menu176_release_ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest,ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Preserve exact LF bytes before checkout
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Immutable bootstrap SHA pinned to exact published onefile
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/WEAPON_XEQUIP_V3_ONEFILE176_STAGE_20261127/test_menu176_release_pin.py -v
+      - name: Old menu175 unchanged
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/test_xequip_onefile_175_ro_v1.py -v
+      - name: V3 new menu176 pure Python paths
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/test_xequip_onefile_176_staged_v1.py -v
+      - name: Exact source-level only transformations
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/WEAPON_XEQUIP_V3_ONEFILE176_STAGE_20261127/test_menu176_staged_ps_static.py -v
+      - name: Windows PowerShell 5.1 parser + dispatch and splatting
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          & powershell -NoProfile -ExecutionPolicy Bypass -File BGXAI/BUILD/WEAPON_XEQUIP_V3_ONEFILE176_STAGE_20261127/test_menu176_ps51_ast.ps1
