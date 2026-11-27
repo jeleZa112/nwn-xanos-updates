@@ -125,6 +125,48 @@ class NativeReuse(unittest.TestCase):
                 with self.assertRaisesRegex(p.Hold,'HOLD_ITM_RACE_RESTRICTIONS_UNVERIFIED'):
                     p.static_item_preflight(game)
 
+    def test_itm_monk_or_druid_bits_are_not_races(self):
+        # IESDP: 0x21 0x20=Monk, 0x40=Druid/Shaman, not racial bans.
+        for byte in (0x20,0x40,0x60):
+            with self.subTest(restrictions=hex(byte)),tempfile.TemporaryDirectory() as d:
+                game=Path(d); root=game/'override';root.mkdir()
+                item=bytearray(114);item[:8]=b'ITM V1  '
+                item[0x18:0x1c]=(46).to_bytes(4,'little')
+                item[0x1c:0x1e]=(26).to_bytes(2,'little')
+                item[0x26:0x28]=(5).to_bytes(2,'little')
+                item[0x21]=byte;(root/'STAF01.ITM').write_bytes(item)
+                with patch.object(p,'ITM_SHA',p.digest(bytes(item))):
+                    out=p.static_item_preflight(game)
+                    self.assertTrue(out['staticItemClassKitHeaderAllowed'])
+                    self.assertEqual(out['observedUnrelatedMonkDruidRestrictionMask'],byte)
+                    self.assertFalse(out['engineCanEquipVerified'])
+
+    def test_itm_real_racial_bits_still_hold_even_with_monk_druid(self):
+        # All six 4th-byte races stay denied as long as actor race is unknown.
+        for byte in (0x01,0x02,0x04,0x08,0x10,0x80,0xa0,0x41):
+            with self.subTest(restrictions=hex(byte)),tempfile.TemporaryDirectory() as d:
+                game=Path(d);root=game/'override';root.mkdir()
+                item=bytearray(114);item[:8]=b'ITM V1  '
+                item[0x18:0x1c]=(46).to_bytes(4,'little')
+                item[0x1c:0x1e]=(26).to_bytes(2,'little')
+                item[0x26:0x28]=(5).to_bytes(2,'little')
+                item[0x21]=byte;(root/'STAF01.ITM').write_bytes(item)
+                with patch.object(p,'ITM_SHA',p.digest(bytes(item))):
+                    with self.assertRaisesRegex(p.Hold,'HOLD_ITM_RACE_RESTRICTIONS_UNVERIFIED'):
+                        p.static_item_preflight(game)
+
+    def test_itm_elf_race_restriction_in_byte3_still_holds(self):
+        with tempfile.TemporaryDirectory() as d:
+            game=Path(d);root=game/'override';root.mkdir()
+            item=bytearray(114);item[:8]=b'ITM V1  '
+            item[0x18:0x1c]=(46).to_bytes(4,'little')
+            item[0x1c:0x1e]=(26).to_bytes(2,'little')
+            item[0x26:0x28]=(5).to_bytes(2,'little')
+            item[0x20]=0x80; (root/'STAF01.ITM').write_bytes(item)
+            with patch.object(p,'ITM_SHA',p.digest(bytes(item))):
+                with self.assertRaisesRegex(p.Hold,'HOLD_ITM_RACE_RESTRICTIONS_UNVERIFIED'):
+                    p.static_item_preflight(game)
+
     def test_itm_unknown_alignment_restrictions_fail(self):
         with tempfile.TemporaryDirectory() as d:
             game=Path(d);root=game/'override';root.mkdir()
