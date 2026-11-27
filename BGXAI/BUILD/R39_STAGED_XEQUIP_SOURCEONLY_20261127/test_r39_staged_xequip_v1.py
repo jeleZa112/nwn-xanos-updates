@@ -38,6 +38,15 @@ class Staged(unittest.TestCase):
         self.assertEqual(self.b.count('InPartySlot(Myself,1)'), 2)
         self.assertEqual(self.b.count('Global("BGXW3ARM","LOCALS",1)'),3)
         self.assertNotIn('"GLOBAL"',self.b)
+    def test_live_actor_slot_and_strength_are_fresh(self):
+        # Earlier R38 samples are history; these guards run at BAF evaluation.
+        for gate in ('Name("*GCLERIC",Myself)', 'Class(Myself,CLERIC)',
+                     'CheckStatGT(Myself,4,STR)',
+                     '!HasItemSlot(Myself,SLOT_SHIELD)'):
+            with self.subTest(gate=gate):
+                self.assertEqual(self.b.count(gate),2)
+        self.assertIn('Class(Myself,CLERIC)',self.b)
+
     def test_same_item_and_empty_target_twice(self):
         self.assertEqual(self.b.count('CheckItemSlot(Myself,"STAF01",SLOT_MISC5)'),2)
         self.assertEqual(self.b.count('!HasItemSlot(Myself,SLOT_WEAPON0)'),2)
