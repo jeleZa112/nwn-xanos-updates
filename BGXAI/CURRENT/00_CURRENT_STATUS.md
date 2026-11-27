@@ -1,3 +1,9 @@
+# 27.11.2026 — ПРИОРИТЕТ: НЕ ПОВТОРЯТЬ ТЕСТЫ; R38 ПРЕФЛАЙТ УЖЕ PASS
+
+**Обязательная актуальная контрольная точка:** [000_READ_FIRST_LIVE_PROGRESS_R38.md](000_READ_FIRST_LIVE_PROGRESS_R38.md). Пользователь прислал реальный `R38_PREFLIGHT_PASS_NO_INSTALL`, WeiDU №153 и SHA R37 PASS. **Следующий этап — typed установка пассивного R38 (176 → 4), затем реальный capture (176 → 6), не новые повторные тесты**. Нативный V3 BAF, R37 status, R38 CI, R38 actual preflight уже закрыты. До явного пользовательского ввода токена игра не меняется. Старые разделы ниже — исторические, НЕ приоритет над этим статусом.
+
+---
+
 # 26.11.2026 — USER PRIORITY CORRECTION: V6 ALREADY REDUCED CLOSE-RANGE SHOTS; ADD INVENTORY-AWARE AUTO-EQUIP
 
 **MOST RECENT USER INSTRUCTIONS, overrides older "remove remaining extra arrow" priorities:** The combat round has a duration; a shot queued/committed inside it may be mechanically impossible to cancel without breaking attacks. Earlier project already optimized this: **V5 observed up to 3 extra close-range shots, V6 installed 21 Nov cut to at most 1 shot then sword**, and R37 real 26 Nov verified autonomous bow→sword. **Do not touch / tune V6 or R29 unless direct evidence shows NEW attack orders AFTER contact**. Stop/ClearActions/cancel queue are not acceptable solutions; 6-second attack round and per-weapon initiative. V6 native DPLAYER two-block patch deliberately vetoes NEW duplicate `AttackOneRound` close range, cannot cancel prior actions. Reference `BGXAI/CURRENT/BGXAI_R29_V6_LINEAGE_REPAIR_20261124_RU.md`, `BGXAI/CURRENT/BGXRANGED7_FUNCTIONAL_DPLAYER_PILOT_RU.md`, live R37.
