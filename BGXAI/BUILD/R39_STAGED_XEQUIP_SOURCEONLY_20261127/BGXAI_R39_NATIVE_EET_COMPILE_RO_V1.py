@@ -101,8 +101,17 @@ def static_item_preflight(game:Path):
     # mislabel a class/kit pass as usable when these unknown filters are active.
     if raw[0x1e] & 0x3f:
         raise Hold('HOLD_ITM_ALIGNMENT_RESTRICTIONS_UNVERIFIED')
-    if raw[0x21] != 0:
-        raise Hold('HOLD_ITM_RACE_RESTRICTIONS_UNVERIFIED')
+    # ITM V1.0 header usability bytes 3 and 4 MIX races with classes.
+    # Byte 3 bit 7 (0x20 & 0x80) = Elf, NOT a class. Byte 4 bits
+    # 0..4,7 = Dwarf/Half-Elf/Halfling/Human/Gnome/Half-Orc;
+    # bits 5,6 = MONK/DRUID(+Shaman EE), unrelated to a trueclass CLERIC.
+    # R38 captured CLERIC but NOT race. Never clear a *real* race restriction.
+    unrelated_monk_druid_mask=raw[0x21] & 0x60
+    unknown_race_mask=(raw[0x21] & 0x9f) | (0x100 if raw[0x20] & 0x80 else 0)
+    if unknown_race_mask:
+        raise Hold('HOLD_ITM_RACE_RESTRICTIONS_UNVERIFIED:'+
+                   'BYTE3_ELF='+str(bool(raw[0x20] & 0x80))+','+
+                   'BYTE4_RACES=0x%02X'%(raw[0x21] & 0x9f))
     # R38 observed STR12; other active stats and actual level were NOT
     # authenticated as item equip proof, so fail closed if item demands them.
     if u16(0x24)!=0 or raw[0x28]!=0 or any(raw[k]!=0 for k in (0x2a,0x2c,0x2e,0x30)) or u16(0x32)!=0:
@@ -111,6 +120,9 @@ def static_item_preflight(game:Path):
         observedClericUsabilityRestriction=False,
         observedTrueclassKitRestriction=False,
         raceAndAlignmentHeaderRestrictionsAbsent=True,
+        observedUnrelatedMonkDruidRestrictionMask=unrelated_monk_druid_mask,
+        itmUsabilityRaceByte3ElfRestricted=False,
+        itmUsabilityRaceByte4RestrictedMask=0,
         headerMinStrength=5, priorLiveStrengthObserved=12,
         staticItemClassKitHeaderAllowed=True,
         currentSessionActorKitVerified=False,
