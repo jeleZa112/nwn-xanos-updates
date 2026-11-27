@@ -1,0 +1,44 @@
+name: BGXAI R37 XEquip identity same callback SOURCE ONLY
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R37_XEQUIP_IDENTITY_SINGLE_LISTENER_SOURCEONLY_20261127/**'
+      - 'BGXAI/BUILD/WEAPON_XEQUIP_IDENTITY_RO_V1_20261127/**'
+      - '.github/workflows/bgxai_r37_xequip_identity_same_listener_ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  linux-native:
+    runs-on: ubuntu-latest
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - name: Install native Lua
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.3 lua5.4 luajit
+      - name: Verify identical legacy bytes and zero new engine actions
+        run: python3 -m unittest discover -s BGXAI/BUILD/R37_XEQUIP_IDENTITY_SINGLE_LISTENER_SOURCEONLY_20261127 -p test_identity_integration_static.py -v
+      - name: Native full R37 + INV3 + identity same-callback regression
+        run: |
+          set -euo pipefail
+          f=BGXAI/BUILD/R37_XEQUIP_IDENTITY_SINGLE_LISTENER_SOURCEONLY_20261127/M_BGXR27_R37_INV3_IDENTITY_SOURCE_ONLY.lua
+          luac5.3 -p "$f"
+          luac5.4 -p "$f"
+          for runtime in lua5.3 lua5.4 luajit; do
+            echo "$runtime"
+            "$runtime" BGXAI/BUILD/WEAPON_XEQUIP_IDENTITY_RO_V1_20261127/test_identity_ro_v1.lua
+            "$runtime" BGXAI/BUILD/R37_XEQUIP_IDENTITY_SINGLE_LISTENER_SOURCEONLY_20261127/test_r37_inv3_identity_single_listener.lua "$f"
+          done
+  windows-static:
+    runs-on: windows-latest
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify identical legacy bytes and zero new engine actions
+        run: python -m unittest discover -s BGXAI/BUILD/R37_XEQUIP_IDENTITY_SINGLE_LISTENER_SOURCEONLY_20261127 -p test_identity_integration_static.py -v
