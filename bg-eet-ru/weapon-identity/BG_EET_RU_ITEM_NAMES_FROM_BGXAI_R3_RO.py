@@ -83,6 +83,9 @@ def catalog_from_modules(game: Path, resrefs, r3, v111, source=None):
     game = Path(game)
     if game.is_symlink() or not game.is_dir():
         raise SourceHold('GAME_ROOT_UNSAFE')
+    # V111 compares the raw parent chain with root.resolve(); canonicalize
+    # the argument first to avoid an endless parent walk on Windows aliases.
+    game = game.resolve(strict=True)
     requested = list(resrefs)
     if not requested or len(requested) > MAX_ITEMS:
         raise SourceHold('ITEM_COUNT_OUTSIDE_LIMIT')
