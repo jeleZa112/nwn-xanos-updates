@@ -360,19 +360,44 @@ _V159_BULK_Z='eNqtvGmT4siSLvy9fkX2MTtvZg45hRYQoqpzzLSCQBtagb5tadol0IZWYGz++w0Jcs
 def run(mode,game_root,external_root,offline=False,input_fn=input,allow_non_windows_test=False):
     if mode.startswith('hit160_'):
         try:
-            v160_url='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/452e4d197af363c9b09971afd2b1570886e964a1/bg-eet-ru/hit-only-v160/v160_guarded.py'
-            with urllib.request.urlopen(v160_url,timeout=20) as r:
-                body=r.read(20001)
-            if sha(body)!='3f5ef8f9d281238aaf91192451d303962068011329fdbc25adefd487e3aae1dd':
-                raise Hold('V160_PINNED_INSTALLER_SHA_HOLD')
-            ns={'__name__':'bg_eet_ru_v160_guarded'}
-            exec(compile(body,'<bg-eet-ru-v160-guarded>','exec'),ns)
+            def read_pinned_cached(name,url,pin,maximum):
+                root=Path(external_root)/'BG_EET_RU_V160_CODE_CACHE'
+                dst=root/name
+                if root.is_symlink() or (root.exists() and not root.is_dir()):
+                    raise Hold('V160_CODE_CACHE_DIRECTORY_UNSAFE')
+                if dst.is_symlink() or (dst.exists() and not dst.is_file()):
+                    raise Hold('V160_CODE_CACHE_FILE_UNSAFE')
+                if dst.exists():
+                    body=dst.read_bytes()
+                    if len(body)>maximum or sha(body)!=pin:
+                        raise Hold('V160_CODE_CACHE_CHANGED_SHA_HOLD')
+                    return body
+                with urllib.request.urlopen(url,timeout=8) as response:
+                    body=response.read(maximum+1)
+                if len(body)>maximum or sha(body)!=pin:
+                    raise Hold('V160_NETWORK_SOURCE_SHA_HOLD')
+                root.mkdir(parents=True,exist_ok=True)
+                stage=dst.with_suffix(dst.suffix+'.stage')
+                if stage.exists() or stage.is_symlink():
+                    raise Hold('V160_SOURCE_STAGE_COLLISION')
+                try:
+                    with stage.open('xb') as f:f.write(body)
+                    if sha(stage.read_bytes())!=pin:
+                        raise Hold('V160_CACHE_STAGE_SHA_HOLD')
+                    os.replace(stage,dst)
+                finally:
+                    if stage.exists():stage.unlink()
+                return body
+            body=read_pinned_cached('v161_guarded_sha.py',
+                'https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/f7e74c90aa9daf35994674ad24148538db8eabdd/bg-eet-ru/hit-only-v160/v160_guarded.py',
+                'ccf02f4892bf0ed434ac97a1f0bb7d7da2a9abdde8fafe7a64b422386e82b2de',20000)
+            ns={'__name__':'bg_eet_ru_v161_guarded'}
+            exec(compile(body,'<bg-eet-ru-v161-guarded>','exec'),ns)
             addon=None
             if mode=='hit160_install':
-                with urllib.request.urlopen('https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/452e4d197af363c9b09971afd2b1570886e964a1/bg-eet-ru/hit-only-v160/BG_EET_RU_V160_HIT_ONLY_APPEND.lua',timeout=20) as r:
-                    addon=r.read(4001)
-                if sha(addon)!='ad76b46df1359bfdeeb9400f6b10f2ecd104059bd17a12d737fa60dcd733445c':
-                    raise Hold('V160_PINNED_LUA_SHA_HOLD')
+                addon=read_pinned_cached('v160_lua_sha.lua',
+                    'https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/452e4d197af363c9b09971afd2b1570886e964a1/bg-eet-ru/hit-only-v160/BG_EET_RU_V160_HIT_ONLY_APPEND.lua',
+                    'ad76b46df1359bfdeeb9400f6b10f2ecd104059bd17a12d737fa60dcd733445c',4000)
             return ns['run'](mode[7:],Path(game_root),Path(external_root),addition=addon)
         except Exception as exc:
             return {'schema':'BG_EET_RU_V160_HIT_ONLY_GUARDED_V1',
