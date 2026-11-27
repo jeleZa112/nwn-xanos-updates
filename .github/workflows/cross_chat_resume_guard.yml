@@ -12,6 +12,8 @@ on:
       - 'bg-eet-ru/README.md'
       - 'bg-eet-ru/onefile/release.json'
       - 'project_tools/resume_guard.py'
+      - 'GLOBAL_PROJECT_RULES/known_error_guard.py'
+      - 'GLOBAL_PROJECT_RULES/KNOWN_ERROR_GATES_V1.json'
       - '.github/workflows/cross_chat_resume_guard.yml'
   pull_request:
     branches: [bg-eet-ai]
@@ -27,3 +29,4 @@ jobs:
         with:
           python-version: '3.11'
       - run: python project_tools/resume_guard.py
+      - run: python GLOBAL_PROJECT_RULES/known_error_guard.py --self-test
