@@ -1,0 +1,54 @@
+name: BGXAI exact V3 menu176 staged PS51 onefile regression
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/WEAPON_XEQUIP_V3_ONEFILE176_STAGE_20261127/**'
+      - 'BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONEFILE_175_RO_DUALMODE_STAGE_176.py'
+      - '.github/workflows/bgxai_xequip_v3_menu176_ps51_stage_ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  staged-onefile:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Preserve LF before checkout
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Exact byte preservation, onefile cap, no dispatcher fallback
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/WEAPON_XEQUIP_V3_ONEFILE176_STAGE_20261127/test_menu176_staged_ps_static.py -v
+      - name: Legacy menu175 source-only remains working
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/test_xequip_onefile_175_ro_v1.py -v
+      - name: Stage176 V3 read-only logic and pins
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/test_xequip_onefile_176_staged_v1.py -v
+      - name: Real Windows PowerShell 5.1 AST parser and 175 176 choice routing
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          & powershell -NoProfile -ExecutionPolicy Bypass -File BGXAI/BUILD/WEAPON_XEQUIP_V3_ONEFILE176_STAGE_20261127/test_menu176_ps51_ast.ps1
+      - name: Fingerprint only, no game writes
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          stage=Path('BGXAI/BUILD/WEAPON_XEQUIP_V3_ONEFILE176_STAGE_20261127/STAGED_BGXAI_SYNC_MENU176.ps1')
+          raw=stage.read_bytes()
+          print('STAGED_SYNC176_SIZE=',len(raw))
+          print('STAGED_SYNC176_SHA256=',hashlib.sha256(raw).hexdigest())
+          assert len(raw) <= 80000
+          assert b'XEquipItem(' not in raw
+          print('NO_GAME_ACTIONS_EXECUTED')
+          PY
