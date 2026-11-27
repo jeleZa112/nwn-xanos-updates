@@ -100,6 +100,7 @@ def render(m):
         f'SetGlobal("{ARM}","LOCALS",3)',
         f'SetGlobal("{TAG}","LOCALS",0)',
         f'SetGlobal("{STAGE}","LOCALS",3)',
+        'Continue()',  # let EPS keep scanning after housekeeping abort
     ])
     equip = _block(ready + [
         f'Global("{STAGE}","LOCALS",1)',
@@ -116,6 +117,7 @@ def render(m):
         f'SetGlobal("{STAGE}","LOCALS",1)',
         f'SetGlobalTimer("{WARM}","LOCALS",ONE_ROUND)',
         f'SetGlobalTimer("{DEADLINE}","LOCALS",TWO_ROUNDS)',
+        'Continue()',  # maintain EPS priority after staging only
     ])
     baf = ('// BGXAI R39 SOURCE ONLY; NOT INSTALLED; NO AUTO-ARM.\n'
            '// Stage-1 requires independently authorized actor-local LOCALS.\n'
@@ -140,6 +142,7 @@ def audit(m):
         'bafBytes': len(baf.encode('ascii')),
         'warmupId': 'ONE_ROUND', 'deadlineId': 'TWO_ROUNDS',
         'abortBeforeEquip': True, 'exactlyOneXEquipCommand': True,
+        'housekeepingContinuesToEPS': True,
         'selfArmingPresent': False, 'sessionBoundArmerImplemented': False,
         'currentSessionMatchesGamVerified': False,
         'kitItmUsabilityVerified': False, 'manualEpsOriginVerified': False,
