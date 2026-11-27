@@ -238,6 +238,44 @@ class NativeReuse(unittest.TestCase):
             self.assertFalse(out['dispatchAuthorized']);self.assertFalse(out['liveXEquipTransferVerified'])
             self.assertEqual(backend.TEMP_SOURCE_NAME,'old.baf')
 
+    def test_native_mock_compiles_even_if_item_race_unverified(self):
+        with tempfile.TemporaryDirectory() as d:
+            game=Path(d)/'game'; game.mkdir()
+            class FakeBackend:
+                TEMP_SOURCE_NAME='old.baf'
+                class Hold(ValueError): pass
+                def source_check(self,src,root):return None
+                def checked_file(self,path,required=False):return path.read_bytes()
+                def compile_readonly(self,root,src,compiler):
+                    assert self.source_check(src,root)['blocks']==3
+                    return {'status':'NATIVE_WEIDU_COMPILED_TEMP_ONLY',
+                            'nativeSymbolsAcceptedByCompiler':True,
+                            'watchedFilesChanged':False,'temporaryOutputRemoved':True}
+            class FakeHelper:
+                def close_game_proof(self):pass
+                def pinned_compiler(self,game):return game/'fake.exe'
+                def load_backend(self,src):return FakeBackend()
+            with patch.object(p,'exact_v3_helper',return_value=FakeHelper()),\
+                 patch.object(p,'static_item_preflight',side_effect=p.Hold('HOLD_ITM_RACE_RESTRICTIONS_UNVERIFIED:BYTE4_RACES=0x01')):
+                out=p.native_readonly(game,self.source,game/'helper',game/'backend')
+            self.assertEqual(out['status'],'R39_NATIVE_EET_TEMP_COMPILE_PASS_ITEM_HOLD_NO_INSTALL')
+            self.assertTrue(out['nativeWeiDUCompileVerified'])
+            self.assertFalse(out['itemStaticHeaderVerified'])
+            self.assertFalse(out['armAuthorized'])
+            self.assertFalse(out['dispatchAuthorized'])
+
+    def test_native_mock_does_not_compile_if_itm_hash_changed(self):
+        with tempfile.TemporaryDirectory() as d:
+            game=Path(d)/'game';game.mkdir()
+            class FakeHelper:
+                def close_game_proof(self):pass
+                def pinned_compiler(self,game):raise AssertionError('MUST_NOT_COMPILE')
+                def load_backend(self,src):raise AssertionError('MUST_NOT_COMPILE')
+            with patch.object(p,'exact_v3_helper',return_value=FakeHelper()),\
+                 patch.object(p,'static_item_preflight',side_effect=p.Hold('HOLD_ITM_CURRENT_RESOURCE_SHA_DRIFT')):
+                with self.assertRaisesRegex(p.Hold,'HOLD_ITM_CURRENT_RESOURCE_SHA_DRIFT'):
+                    p.native_readonly(game,self.source,game/'helper',game/'backend')
+
     def test_native_mock_rejects_bad_report(self):
         with tempfile.TemporaryDirectory() as d:
             game=Path(d)/'game';game.mkdir()
