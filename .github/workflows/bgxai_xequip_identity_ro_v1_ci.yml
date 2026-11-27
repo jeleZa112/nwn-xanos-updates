@@ -1,0 +1,44 @@
+name: BGXAI XEquip saved actor identity runtime preflight SOURCE ONLY
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/WEAPON_XEQUIP_IDENTITY_RO_V1_20261127/**'
+      - '.github/workflows/bgxai_xequip_identity_ro_v1_ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  linux-native-lua:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Preserve LF before checkout
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - name: Install Lua runtimes
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.3 lua5.4 luajit
+      - name: Native Lua syntax + adversarial tests
+        run: |
+          set -euo pipefail
+          f=BGXAI/BUILD/WEAPON_XEQUIP_IDENTITY_RO_V1_20261127/BGXAI_XEQUIP_IDENTITY_RO_V1.lua
+          luac5.3 -p "$f"
+          luac5.4 -p "$f"
+          for runtime in lua5.3 lua5.4 luajit; do
+            echo "RUNTIME=$runtime"
+            "$runtime" BGXAI/BUILD/WEAPON_XEQUIP_IDENTITY_RO_V1_20261127/test_identity_ro_v1.lua
+          done
+      - name: Static no-dispatch guard
+        run: python3 -m unittest discover -s BGXAI/BUILD/WEAPON_XEQUIP_IDENTITY_RO_V1_20261127 -p test_static_identity_ro_v1.py -v
+  windows-static:
+    runs-on: windows-latest
+    steps:
+      - name: Preserve LF before checkout
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Static no-dispatch guard
+        run: python -m unittest discover -s BGXAI/BUILD/WEAPON_XEQUIP_IDENTITY_RO_V1_20261127 -p test_static_identity_ro_v1.py -v
