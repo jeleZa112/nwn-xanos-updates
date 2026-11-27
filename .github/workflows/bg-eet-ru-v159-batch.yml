@@ -1,0 +1,34 @@
+name: BG EET RU V159 guarded 16-TLK editorial batch
+on:
+  pull_request:
+    paths:
+      - "bg-eet-ru/**"
+      - ".github/workflows/bg-eet-ru-v159-batch.yml"
+  push:
+    branches:
+      - bg-eet-ai
+    paths:
+      - "bg-eet-ru/**"
+      - ".github/workflows/bg-eet-ru-v159-batch.yml"
+
+jobs:
+  v159-bulk-guard:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONUTF8: '1'
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Existing one-CMD selftest
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
+      - name: Exact sixteen edits dual-TLK install-and-rollback tests
+        run: python bg-eet-ru/bulk-v159/test_v159_tlk_bulk.py
+      - name: Pinned-source and legacy compatibility regression
+        run: python bg-eet-ru/bulk-v159/test_v159_combined.py

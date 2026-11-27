@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 158
+SELF_VERSION = 159
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -8118,23 +8118,23 @@ V151_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/00d7ac73
 V133_PIN='b3f22f56550d951483863fb59e84f2e543b2473d7bb2e51f8fd03fed4e58f624'
 V133_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/6e1922fcfbb73a43c1b97fc82ea848cd05369c4b/bg-eet-ru/native-correlation/v133_live_hit_inventory_ro.py'
 
-V153_PIN='413764adb10af5cc7719bec7840e8a771d96e14181ed5152ff9ffb433d42432a'
-V153_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/04a8dc4c55c4410f7b81831616dc6953475242f9/bg-eet-ru/bulk-v158/v158_combined.py'
+V153_PIN='f5e3b527d3ed66dc8a5db847effb304c7d06d0d6a91f994519203901544e6bcd'
+V153_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/cc9002c843a2de9db2a5d87c5661e0b860a96ace/bg-eet-ru/bulk-v159/v159_combined.py'
 def v153_dispatch(game,mode):
  try:
     p=v121_cache(game)/'V153_GUARDED.py'
     if p.is_symlink() or (p.exists() and not p.is_file()):raise RuntimeError('V153_CACHE_UNSAFE')
     if not p.is_file() or sha_path(p)!=V153_PIN:
-       with urllib.request.urlopen(V153_URL,timeout=20) as r:data=r.read(40001)
+       with urllib.request.urlopen(V153_URL,timeout=20) as r:data=r.read(60001)
        if digest(data)!=V153_PIN:raise RuntimeError('V153_SOURCE_SHA_HOLD')
        v121_write(game,p,data)
     m=types.ModuleType('v153')
     exec(compile(p.read_bytes(),str(p),'exec'),m.__dict__)
     report=m.run(mode,Path(game),WORKDIR)
- except Exception as e:report={'status':'V153_DISPATCH_HOLD','reason':type(e).__name__+':'+str(e)[:140],'game_files_written_this_action':'UNKNOWN_IF_EXCEPTION_AFTER_ACTION'}
- try:v116_zip(game,WORKDIR/REPORT_NAME,report,entry='76_V158_BANTER_LIVE_RO.json' if mode=='bulk_status' else '75_V157_BULK_ONE_BATCH.json' if mode.startswith('bulk_') else '74_V154_CONSOLE_CAPTURE_RO.json' if mode=='capture' else '73_V153_GUARDED_OBSERVER.json')
- except Exception as e:print('V153_REPORT_ZIP_HOLD',type(e).__name__,str(e)[:110])
- print('V157' if mode.startswith('bulk_') else 'V154' if mode=='capture' else 'V153',report.get('status'))
+ except Exception as e:report={'status':'V153_DISPATCH_HOLD','reason':str(e)[:140],'game_files_written_this_action':'UNKNOWN_AFTER_EXCEPTION'}
+ try:v116_zip(game,WORKDIR/REPORT_NAME,report,entry='77_V159_BATCH.json' if mode.startswith('batch159_') else '76_V158_BANTER_LIVE_RO.json' if mode=='bulk_status' else '75_V157_BULK_ONE_BATCH.json' if mode.startswith('bulk_') else '74_V154_CONSOLE_CAPTURE_RO.json' if mode=='capture' else '73_V153_GUARDED_OBSERVER.json')
+ except Exception as e:print('ZIP_HOLD',str(e)[:90])
+ print(report.get('status'))
  return 2 if 'HOLD' in report.get('status','') or 'STOP' in report.get('status','') else 0
 def v133_audit(game,path,v136=False):
  report={'schema':'BG_EET_RU_V133_WINDOWS_RUNTIME_READONLY','status':'RUNTIME_MEMORY_HOLD','game_files_written':0,'native_hook_install_allowed':False,'firstcall_owner_verified':False,'gameplay_verified':False}
@@ -8304,9 +8304,9 @@ def main(argv=None):
     import subprocess
     return subprocess.call([sys.executable,'-x',str(canonical),*sys.argv[1:]])
  try:v121_snapshot(game,WORKDIR/REPORT_NAME)
- except Exception as exc:print('V121 EVIDENCE SNAPSHOT HOLD:',type(exc).__name__,str(exc)[:140])
+ except Exception as exc:print('V121 SNAPSHOT HOLD:',str(exc)[:120])
  if not (argv if argv is not None else sys.argv[1:]):
-    try:a=input('1=audit 2=install 3=undo 4=play 5=status 6=unwind 7=abi 8=live-RO 9=UI+JIT-RO 10=V153 11=bulk [1]: ').strip()
+    try:a=input('1=audit 2=install 3=undo 4=play 5=status 6=unwind 7=abi 8=live 9=JIT 10=V153 11=bulk [1]: ').strip()
     except EOFError:a=''
     mode={'2':'install','3':'rollback','4':'capture','5':'status'}.get(a)
     if a=='6':return v130_audit(game,WORKDIR/REPORT_NAME)
@@ -8314,11 +8314,11 @@ def main(argv=None):
     if a=='8':return v133_audit(game,WORKDIR/REPORT_NAME)
     if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)
     if a=='11':
-       try:b=input('V157 1=check 2=install 3=rollback 4=status [1]: ').strip()
+       try:b=input('V157 1=check 2=install 3=undo 4=status | V159 5=check 6=install 7=undo 8=status [1]: ').strip()
        except EOFError:b=''
-       return v153_dispatch(game,'bulk_'+{'2':'install','3':'rollback','4':'status'}.get(b,'preflight'))
+       return v153_dispatch(game,('batch159_' if b in ('5','6','7','8') else 'bulk_')+{'2':'install','3':'rollback','4':'status','5':'preflight','6':'install','7':'rollback','8':'status'}.get(b,'preflight'))
     if a=='10':
-       try:b=input('CL150 1=preflight 2=install(typed) 3=rollback(typed) 4=status [1]: ').strip()
+       try:b=input('V153 1=check 2=install 3=undo 4=status [1]: ').strip()
        except EOFError:b=''
        return v153_dispatch(game,{'2':'install','3':'rollback','4':'status'}.get(b,'preflight'))
     if mode=='capture' and sha_path(game/'override'/'UI.MENU')=='ce4a46cf32058295c221b9124916f46764780752f9611adc8319c4dda9653efe':return v153_dispatch(game,'capture')
