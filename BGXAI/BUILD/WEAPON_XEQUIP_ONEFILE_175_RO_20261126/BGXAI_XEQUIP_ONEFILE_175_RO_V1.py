@@ -91,7 +91,7 @@ def fetch_pinned(commit: str, path: str) -> bytes:
     raise Hold("HOLD_PINNED_DOWNLOAD_OR_HASH_FAILURE:" + ",".join(err))
 
 def verify_file(path: str, raw: bytes) -> None:
-    expected = SOURCES.get(path) or V3_SOURCES.get(path) or R38_SOURCES.get(path)
+    expected = SOURCES.get(path) or V3_SOURCES.get(path) or R38_SOURCES.get(path) or R39_SOURCES.get(path)
     if expected is None or not isinstance(raw, bytes):
         raise Hold("HOLD_SOURCE_NOT_ALLOWLISTED")
     if len(raw) != expected[0] or digest(raw) != expected[1]:
