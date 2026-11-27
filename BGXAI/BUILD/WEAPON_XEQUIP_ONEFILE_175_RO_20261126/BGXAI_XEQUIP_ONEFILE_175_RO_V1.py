@@ -30,6 +30,16 @@ SOURCES = {
     MANIFEST: (188, "2aef6c3b98ce147e3da388038583a217b6c3fa8155f6984765819758564cc8c7"),
     BACKEND: (9551, "27285b3d067eab2c67b075dc8654b9a0f74da0d7920b2e96339ced3e14bcd10a"),
 }
+# Separate V3 source allowlist; menu175's existing four pinned sources stay intact.
+V3_PREFIX = "BGXAI/BUILD/WEAPON_XEQUIP_V3_NATIVE_RO_20261127/"
+V3_WRAPPER = V3_PREFIX + "BGXAI_XEQUIP_V3_NATIVE_COMPILE_RO.py"
+V3_EVIDENCE = V3_PREFIX + "BGXAI_REAL_JAGAN_BUILD_AUDIT_AND_BAF_V3.json"
+V3_SOURCES = {
+    V3_WRAPPER: (10743, "b4a0789c568879a179e21cf50391afd999861e85f832f587aceb07cf816e055e"),
+    V3_EVIDENCE: (1942, "83a6865028336b9a2ebec5645ae34670832f1b07f372620f9c3961968a378b28"),
+    BACKEND: SOURCES[BACKEND],
+}
+V3_BAF_SHA256 = "996fd8896225ddbcd1ba2e260ca866acb70de09a6f91c9eb4338063fb7ae23e1"
 COMMIT_RE = re.compile(r"^[a-f0-9]{40}$")
 
 class Hold(ValueError):
@@ -45,7 +55,7 @@ def validate_pin(commit: str) -> str:
 
 def fetch_pinned(commit: str, path: str) -> bytes:
     validate_pin(commit)
-    if path not in SOURCES:
+    if path not in SOURCES and path not in V3_SOURCES:
         raise Hold("HOLD_SOURCE_NOT_ALLOWLISTED")
     err = []
     for base in (
@@ -64,7 +74,7 @@ def fetch_pinned(commit: str, path: str) -> bytes:
     raise Hold("HOLD_PINNED_DOWNLOAD_OR_HASH_FAILURE:" + ",".join(err))
 
 def verify_file(path: str, raw: bytes) -> None:
-    expected = SOURCES.get(path)
+    expected = SOURCES.get(path) or V3_SOURCES.get(path)
     if expected is None or not isinstance(raw, bytes):
         raise Hold("HOLD_SOURCE_NOT_ALLOWLISTED")
     if len(raw) != expected[0] or digest(raw) != expected[1]:
@@ -76,10 +86,10 @@ def ensure_external(work: Path, game: Path) -> None:
     if target == root or root in target.parents or target in root.parents:
         raise Hold("HOLD_TEMP_IN_GAME_OR_PARENT")
 
-def stage_sources(root: Path, commit: str, fetcher=fetch_pinned) -> dict:
+def stage_sources(root: Path, commit: str, fetcher=fetch_pinned, sources=None) -> dict:
     validate_pin(commit)
     out = {}
-    for path in SOURCES:
+    for path in (SOURCES if sources is None else sources):
         raw = fetcher(commit, path)
         verify_file(path, raw)
         p = root.joinpath(*path.split("/"))
@@ -87,9 +97,9 @@ def stage_sources(root: Path, commit: str, fetcher=fetch_pinned) -> dict:
             raise Hold("HOLD_SOURCE_STAGING_PATH")
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_bytes(raw)
-        if digest(p.read_bytes()) != SOURCES[path][1]:
+        if digest(p.read_bytes()) != (SOURCES.get(path) or V3_SOURCES.get(path))[1]:
             raise Hold("HOLD_LOCAL_SOURCE_SHA256_CHANGED")
-        out[path] = {"sha256": SOURCES[path][1], "bytes": len(raw)}
+        out[path] = {"sha256": (SOURCES.get(path) or V3_SOURCES.get(path))[1], "bytes": len(raw)}
     return out
 
 def check_report(inner: dict, native: bool) -> bool:
@@ -153,6 +163,65 @@ def prepare(game: Path, commit: str, native: bool,
             "newGameFilesWrittenByThisRunner": 0,
         }
 
+def check_report_v3(inner: dict, native: bool) -> bool:
+    if not isinstance(inner, dict) or inner.get("installed") is not False or (
+        type(inner.get("ordersSent")) is not int or inner["ordersSent"] != 0
+    ) or inner.get("dispatchAuthorized") is not False:
+        return False
+    if inner.get("bafSha256") != V3_BAF_SHA256 or inner.get("bafBytes") != 762:
+        return False
+    if inner.get("safeActionBoundaryVerified") is not False or (
+        inner.get("runtimeActorIdentityVerified") is not False
+    ):
+        return False
+    if native:
+        return (inner.get("status") == "V3_NATIVE_BAF_COMPILED_TEMP_ONLY"
+                and inner.get("nativeWeiDUCompileVerified") is True
+                and inner.get("watchedFilesChanged") is False
+                and inner.get("temporaryOutputRemoved") is True
+                and isinstance(inner.get("compiledBcsSha256"), str)
+                and re.fullmatch(r"[a-f0-9]{64}", inner["compiledBcsSha256"]) is not None)
+    return (inner.get("status") == "EXACT_V3_BAF_PIN_VERIFIED_NO_NATIVE_COMPILE"
+            and inner.get("nativeWeiDUCompileVerified") is False)
+
+def prepare_v3(game: Path, commit: str, native: bool,
+               fetcher=fetch_pinned, runner=subprocess.run) -> dict:
+    validate_pin(commit)
+    with tempfile.TemporaryDirectory(prefix="BGXAI_XEQUIP176_V3_RO_") as directory:
+        folder = Path(directory).resolve(strict=True)
+        ensure_external(folder, game)
+        sources = stage_sources(folder, commit, fetcher, V3_SOURCES)
+        script = folder.joinpath(*V3_WRAPPER.split("/"))
+        evidence = folder.joinpath(*V3_EVIDENCE.split("/"))
+        backend = folder.joinpath(*BACKEND.split("/"))
+        args = [sys.executable, str(script), "--game", str(game),
+                "--evidence", str(evidence), "--backend", str(backend)]
+        if native: args.append("--native-readonly")
+        proc = runner(args, cwd=str(folder), stdin=subprocess.DEVNULL,
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", timeout=120, check=False)
+        try:
+            inner = json.loads(proc.stdout)
+        except (ValueError,TypeError):
+            inner = {"status":"HOLD_INVALID_V3_WRAPPER_JSON"}
+        ok = proc.returncode == 0 and check_report_v3(inner, native)
+        return {
+            "schema": "BGXAI_XEQUIP_ONEFILE_176_V3_READONLY_V1",
+            "status": ("V3_NATIVE_TEMP_COMPILE_PASS_NO_INSTALL" if ok and native
+                else "V3_EXACT_SOURCE_PIN_PASS_NOT_NATIVE" if ok else
+                "HOLD_V3_NATIVE_OR_SOURCE_PREFLIGHT"),
+            "sourcePins": sources,
+            "innerReport": inner,
+            "nativePreflightRequested": bool(native),
+            "gameplayFeatureInstalled": False,
+            "gameplayLiveVerified": False,
+            "safeActionBoundaryVerified": False,
+            "runtimeActorIdentityVerified": False,
+            "gameplayMoveAuthorized": False,
+            "ordersSent": 0,
+            "newGameFilesWrittenByThisRunner": 0,
+        }
+
 def write_report(report: dict, target: Path) -> str:
     # A SINGLE external report file is the user's only upload when asked.
     target = target.expanduser()
@@ -171,17 +240,19 @@ def main(argv=None) -> int:
     parser.add_argument("--game", type=Path, default=Path(r"C:\Games\BG_EET_FOXX_NEW"))
     parser.add_argument("--commit", required=True)
     parser.add_argument("--native-readonly", action="store_true")
+    parser.add_argument("--v3", action="store_true", help="Use exact V3 BAF read-only preflight for menu176")
     parser.add_argument("--report", type=Path)
     a = parser.parse_args(argv)
     try:
-        report = prepare(a.game, a.commit, a.native_readonly)
+        report = (prepare_v3(a.game, a.commit, a.native_readonly) if a.v3
+                  else prepare(a.game, a.commit, a.native_readonly))
     except (Hold, ValueError, OSError, subprocess.TimeoutExpired) as exc:
         report = {"schema": SCHEMA, "status": "HOLD_XEQUIP175",
             "reason": str(exc), "gameplayFeatureInstalled": False,
             "ordersSent": 0, "newGameFilesWrittenByThisRunner": 0}
     path = a.report
     if path is None and os.name == "nt":
-        name = "BGXAI_XEQUIP175_RO_" + dt.datetime.now().strftime("%Y%m%dT%H%M%S%f") + ".json"
+        name = ("BGXAI_XEQUIP176_V3_RO_" if a.v3 else "BGXAI_XEQUIP175_RO_") + dt.datetime.now().strftime("%Y%m%dT%H%M%S%f") + ".json"
         path = Path.home() / "Documents" / "BGXAI_LIVE_REPORTS" / name
     if path is not None:
         try:
@@ -191,7 +262,9 @@ def main(argv=None) -> int:
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return 0 if report["status"] in (
         "NATIVE_INERT_WEIDU_COMPILE_PASS_TEMP_ONLY",
-        "INERT_SOURCE_PIN_VERIFIED_NO_NATIVE") else 3
+        "INERT_SOURCE_PIN_VERIFIED_NO_NATIVE",
+        "V3_NATIVE_TEMP_COMPILE_PASS_NO_INSTALL",
+        "V3_EXACT_SOURCE_PIN_PASS_NOT_NATIVE") else 3
 
 if __name__ == "__main__":
     raise SystemExit(main())
