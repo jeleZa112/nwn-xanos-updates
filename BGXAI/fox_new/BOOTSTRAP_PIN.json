@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "0696dfc811898a427174da503dd3513807b79760",
+  "commit": "a4246f50f8d31b46459f77ae15c46a8342851994",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "6de1e2a66ad3b462c807485b0d0e034256aaa2f5ef386a522da8fc0497a320c4",
+  "script_sha256": "b84ca58e1637aff439691b6afd0b40b1576c625fd3c382a1baf353d58ff50a5b",
   "script_size": 79996,
-  "description": "BGXAI 176→7 R39 native RO: fix ITM V1.0 race byte4 false-positive (Monk/Druid class bits), retain race fail-closed, 23 local tests, one updater 79996B, no game writes."
+  "description": "BGXAI 176→7 R39 native RO: correct class-vs-race ITM restrictions, independent safe native compile proof even if item usability HOLD; 41 local tests, one updater 79996B, no game writes."
 }
