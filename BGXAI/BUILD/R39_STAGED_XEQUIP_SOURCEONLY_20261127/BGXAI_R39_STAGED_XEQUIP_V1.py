@@ -66,6 +66,10 @@ def _base(tag):
         f'Global("{TRY}","LOCALS",0)',
         'InParty(Myself)',
         'InPartySlot(Myself,1)',
+        'Name("*GCLERIC",Myself)',  # exact saved actor script name, fail closed
+        'Class(Myself,CLERIC)',  # live class gate, not a kit proof
+        'CheckStatGT(Myself,4,STR)',  # live strength >= 5 for STAF01
+        '!HasItemSlot(Myself,SLOT_SHIELD)',  # 2h staff must not displace shield
         'ActionListEmpty()',
         'CombatCounter(0)',
         '!See([EVILCUTOFF])',
