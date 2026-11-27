@@ -1,0 +1,14 @@
+{
+  "schema": "BGXAI_R37_R33_R36_SINGLE_LISTENER_GUARDED_V1",
+  "status": "R37_PRESENT_LAST_PASSIVE",
+  "weiduComponents": 153,
+  "weiduLastComponent": "~BGXR37\\SETUP-BGXR37.TP2~ #0 #0 // BGXR37 passive reuse existing R33 callback",
+  "weiDULogSha256": "3f838e42236898b63cacb3256e9fff4bcea1b9f2273baba4baff27e8883f4538",
+  "liveModuleSha256": "5ece282270f0e6a1fa7a6086b7f13c57c77de98759637efa4b2ab0cc1e5744d6",
+  "r33SourceExact": false,
+  "r37SourceExact": true,
+  "gameModified": false,
+  "ordersSent": 0,
+  "dispatchAuthorized": false,
+  "weaponSwitchAuthorized": false
+}
