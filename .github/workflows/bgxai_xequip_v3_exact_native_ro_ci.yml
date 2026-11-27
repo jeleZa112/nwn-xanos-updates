@@ -1,0 +1,43 @@
+name: BGXAI exact V3 XEquip BAF pinned native preflight SOURCE ONLY
+'on':
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/WEAPON_XEQUIP_V3_NATIVE_RO_20261127/**'
+      - '.github/workflows/bgxai_xequip_v3_exact_native_ro_ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pinned-v3-source-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Preserve LF before checkout for hash-pinned bytes
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test fail-closed V3 evidence and mock native boundaries (NO REAL GAME)
+        shell: bash
+        run: |
+          python -m unittest discover -s BGXAI/BUILD/WEAPON_XEQUIP_V3_NATIVE_RO_20261127 -p test_v3_native_preflight_ro.py -v
+      - name: Verify fixed source-only status; never call native compile in CI
+        shell: bash
+        run: |
+          python BGXAI/BUILD/WEAPON_XEQUIP_V3_NATIVE_RO_20261127/BGXAI_XEQUIP_V3_NATIVE_COMPILE_RO.py > bgxai_v3_source_status.json
+          python - <<'PY'
+          import json
+          r=json.load(open('bgxai_v3_source_status.json',encoding='utf-8'))
+          assert r['status']=='EXACT_V3_BAF_PIN_VERIFIED_NO_NATIVE_COMPILE'
+          assert r['bafSha256']=='996fd8896225ddbcd1ba2e260ca866acb70de09a6f91c9eb4338063fb7ae23e1'
+          assert r['nativeWeiDUCompileVerified'] is False
+          assert r['dispatchAuthorized'] is False
+          assert r['installed'] is False and r['ordersSent']==0
+          print('SOURCE_ONLY_PIN_PASS; NATIVE_EET/DEPLOY/LIVE UNVERIFIED')
+          PY
