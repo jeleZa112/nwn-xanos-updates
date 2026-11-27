@@ -6,7 +6,7 @@
 
 Старый пункт `175` уже успешно проверил *инертный* BAF (`False()`) настоящим WeiDU 25100 в игре пользователя. Он **не проверял** активируемый V3 BAF для настоящего Джагана. Повторять `175` нельзя считать прогрессом.
 
-В исходном пакете V3 после реального `BALDUR(1).gam` уже есть файл `BGXAI_REAL_JAGAN_BUILD_AUDIT_AND_BAF_V3.json`. Из него берутся строго **762 байта** BAF SHA-256 `996fd8896225ddbcd1ba2e260ca866acb70de09a6f91c9eb4338063fb7ae23e1`, а JSON SHA-256 `8ccf80377c1a619d3f39e0e85922fb33846099de95f15facf15a98257135a73d`. BAF код: `STAF01` из `SLOT_MISC5` (slot 20) в `SLOT_WEAPON0` (slot 35), `BGXW3ARM/TAG/TRY` только `LOCALS`; сначала дезактивация, затем одна попытка `XEquipItem`. **Никакого кода включения `ARM=1`.**
+В исходном пакете V3 после реального `BALDUR(1).gam` уже есть файл `BGXAI_REAL_JAGAN_BUILD_AUDIT_AND_BAF_V3.json`. Из него берутся строго **762 байта** BAF SHA-256 `996fd8896225ddbcd1ba2e260ca866acb70de09a6f91c9eb4338063fb7ae23e1`, а JSON SHA-256 `83a6865028336b9a2ebec5645ae34670832f1b07f372620f9c3961968a378b28`. BAF код: `STAF01` из `SLOT_MISC5` (slot 20) в `SLOT_WEAPON0` (slot 35), `BGXW3ARM/TAG/TRY` только `LOCALS`; сначала дезактивация, затем одна попытка `XEquipItem`. **Никакого кода включения `ARM=1`.**
 
 ## Что реализовано
 
