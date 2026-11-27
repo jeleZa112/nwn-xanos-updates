@@ -1,3 +1,19 @@
+# 27.11.2026 — R39 HOLD, КОРЕНЬ ПОДТВЕРЖДЁН: НЕСОГЛАСОВАННЫЙ РАЗМЕР В ЦЕПОЧКЕ ПИНОВ
+
+**Последняя доказанная стадия, после пользовательского `a4246f50f8d3 → 176 → 7`.** Тот же `HOLD_PINNED_DOWNLOAD_OR_HASH_FAILURE:Hold,Hold,Hold` произошёл до запуска R39; `gameplayFeatureInstalled=false`, `ordersSent=0`, `newGameFilesWrittenByThisRunner=0`. Не перепроверять сеть, R38, старый V3 native или лук→меч. Эти функции отдельно не затронуты.
+
+**Точная ошибка предыдущих ассистентских выпусков:** wrapper `BGXAI_XEQUIP_ONEFILE_175_RO_V1.py` из immutable `a4246f50f8d31b46459f77ae15c46a8342851994` объявлял `R39_SOURCES={R39_ONEFILE:(7751,"faf248...")}`, однако фактический `BGXAI_R39_ONEFILE177_RO.py` в ТОМ ЖЕ commit имел **8777 байт** и ТОТ ЖЕ верный SHA256 `faf248d97d04a12ba3c78cfea1b8c573f76a7902de04b758c481ad1b17ecae5d`. Поэтому `verify_file()` законно выдавал `HOLD_PINNED_SOURCE_SHA256_OR_SIZE_DRIFT` на всех зеркалах; агрегатор скрывал реальный код за `Hold,Hold,Hold`. Все предыдущие `7/7 individual SHA PASS` были недостаточны: они **не проверяли transitive cross-file pin length**. Выпуск с этим дефектом был ошибкой разработки. Не требовать у пользователя повторить старый релиз.
+
+**Единственная новая дельта кода:** в wrapper `R39_SOURCES` **7751→8777**, SHA child не изменялся, сам child/native adapter/BAF, R38/V6/R29, WeiDU и игровой root без изменений. Wrapper остаётся 21120B, новый SHA `b548189a81d1a48b87951886931c025c5e5f478c4d612c632e5fb8b1713b4fdb`; основной `BGXAI_SYNC.ps1` изменил только SHA-пин wrapper и остался **79996B**, новый SHA `d1746b78b6fb1d050a1cec6734395960f376e5e7c29772a5a8e8e8c81c960023`.
+
+**Новая доказательная проверка:** до релиза отдельной процедурой GitHub fetch по неизменяемому commit верифицирована ВСЯ цепочка `PS1 79996B→wrapper 21120B→R39 child 8777B→native adapter 12458B, BAF 2303B, V3 wrapper 10743B, compiler backend 9551B`: каждому родительскому `(size,SHA)` соответствует реальный файл, все 6 cross-pin checks **PASS**. Это сильнее прежнего SHA каждого файла отдельно. Native R39 на пользовательской Windows всё ещё НЕ запускался; live item transfer тоже НЕТ. Не говорить «релиз испытан в Windows», CI Windows/Linux не подтверждён.
+
+**Выпуск в единственном user updater:** `BGXAI/fox_new/BOOTSTRAP_PIN.json` теперь закрепляет `bec4e774521129430a5ae204b94e434ef5555de1`, опубликован коммитом `4fdd658c3256a59e4f1492fee8bdce791198ef7e`. Ожидаемая строка загрузчика при следующем запуске: `BGXAI: verified pinned script bec4e7745211 (SHA256 OK)`. **Не давить на пользователя с новым запуском**: после трёх ошибок признать ущерб времени; при продолжении рабочий этап read-only native R39 только один запуск `176→7`, без установки/ARM. При следующем HOLD точно искать новый конкретный код; не выпускать ещё одну сомнительную версию и не просить повторов.
+
+**Реальный основной план:** рабочая часть V6/R29 (лук→меч) была уже ранее испытана; новая функциональность R39 (поднять STAF01 из рюкзака в слот) остаётся **SOURCE/TEST_ONLY**, никакого эффекта в игре, потому что инсталляция/actor binding/безопасность EPS не пройдены. Следующая ценность — один controlled live dispatch после всех условий безопасности, не продолжать бесконечные отчёты.
+
+---
+
 # 27.11.2026 — R39 HOLD_ITEM RACE/CLASS РАЗДЕЛЁН; НАТИВНЫЙ КОМПИЛЯТОР БОЛЬШЕ НЕ БЛОКИРУЕТСЯ ЭТИМ HOLD
 
 **САМАЯ НОВАЯ КОНТРОЛЬНАЯ ТОЧКА.** Пользователь реально выполнил **176→7**, выпуск `e804a34aacf36236c0429d80032fd041b37c4ab4`. Получен `HOLD_R39_NATIVE_OR_STATIC_ITEM_USABILITY`, `innerReport.reason=HOLD_ITM_RACE_RESTRICTIONS_UNVERIFIED`, `nativeWeiDUCompileVerified=false`, `gameModified=false`, `installed=false`, `ordersSent=0`. Частный отчёт `BGXAI_R39_NATIVE177_20261127T125635705524Z.json`. **Это не нативный BAF compile FAIL и не свидетельство запрета Джагану: код остановился раньше запуска WeiDU.**
