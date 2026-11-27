@@ -91,7 +91,7 @@ class BridgeTests(unittest.TestCase):
         self.assertIsNone(self.run_catalog(['BOW05'],v)['items']['BOW05']['autoDisplayName'])
     def test_blob_integrity_before_code_execution(self):
         p=self.root/'safe.py';p.write_text('MARK = 42\n')
-        data=p.read_bytes()
+        data=p.read_bytes().replace(b'\r\n',b'\n')
         sha=hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()
         self.assertEqual(catalog.verified_module(self.root,'safe.py',sha).MARK,42)
         with self.assertRaises(catalog.SourceHold):catalog.verified_module(self.root,'safe.py','0'*40)
