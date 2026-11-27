@@ -23,7 +23,7 @@
 5. Не записывает `ARM=1`, не вызывает `XEquipItem`, не работает с боевыми приказами и не меняет чужие локальные переменные.
 6. Если второй lifecycle hook не может быть зарегистрирован после первого, остаточный callback остаётся инертным (`enabled=false`).
 
-Проверка источника Python: **13/13 static tests PASS локально**. Встроенный `test_session_reset_v1.lua` — **22 отдельные adversarial mock-проверки**, которые должны пройти в Lua 5.3/5.4/LuaJIT в CI; локального интерпретатора Lua в текущем инструментальном контейнере нет. Не называть mock suite PASS до реального запуска.
+Проверка источника Python: **13/13 static tests PASS локально**. Встроенный `test_session_reset_v1.lua` — **22 отдельные adversarial mock-проверки**; 27.11.2026 они фактически **22/22 PASS в установленном `texlua`**. На Lua 5.3/5.4/LuaJIT GitHub CI отдельно пока без подтверждённого статуса; это не нативный EET runtime.
 
 ## Непроверенные блокеры
 
@@ -32,4 +32,4 @@
 - Установленный STAF01.ITM, класс/kit/эффекты Джагана и право экипировки движком не проверены.
 - Нет native EET compile и защищённой установки действующего R39 BAF, typed согласия, backup и rollback.
 
-**Фактический результат:** CODE YES; STATIC TEST 13/13; LUA MOCK NOT EXECUTED YET; NATIVE/DEPLOY/LIVE NO; GAME ORDERS 0; USER ACTION NOW NONE. Рабочие игровые файлы, сейвы, R37/R38, один CMD и EPS сохранены.
+**Фактический результат:** CODE YES; STATIC TEST 13/13; LUA MOCK 22/22 PASS via texlua; GitHub OS matrix not confirmed; NATIVE/DEPLOY/LIVE NO; GAME ORDERS 0; USER ACTION NOW NONE. Рабочие игровые файлы, сейвы, R37/R38, один CMD и EPS сохранены.
