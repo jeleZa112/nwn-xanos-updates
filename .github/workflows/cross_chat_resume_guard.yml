@@ -1,0 +1,29 @@
+name: Canonical project resume - prevent stale handoff
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/CURRENT/00_RESUME_CURRENT.md'
+      - 'BGXAI/CURRENT/00_CURRENT_STATUS.md'
+      - 'BGXAI/CURRENT/00_AUTO_CONTINUE_READ_FIRST.md'
+      - 'BGXAI/README_RU.md'
+      - 'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_JAGAN_STAF01_SOURCE_ONLY.baf'
+      - 'bg-eet-ru/CURRENT/00_RESUME_CURRENT.md'
+      - 'bg-eet-ru/README.md'
+      - 'bg-eet-ru/onefile/release.json'
+      - 'project_tools/resume_guard.py'
+      - '.github/workflows/cross_chat_resume_guard.yml'
+  pull_request:
+    branches: [bg-eet-ai]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  resume-consistency:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python project_tools/resume_guard.py
