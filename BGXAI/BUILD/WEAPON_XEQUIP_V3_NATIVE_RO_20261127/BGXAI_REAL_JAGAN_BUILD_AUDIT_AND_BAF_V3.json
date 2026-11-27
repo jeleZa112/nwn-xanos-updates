@@ -1,0 +1,33 @@
+{
+  "audit": {
+    "schema": "BGXAI_XEQUIP_LOCAL_ARM_BUILD_AUDIT_V3",
+    "status": "SOURCE_ONLY_LOCKED_RUNTIME_ACTOR_ID_AND_ARMER_NOT_PROVEN",
+    "gamSha256Verified": true,
+    "savedCandidateVerified": true,
+    "partyIndexSnapshot": 1,
+    "sourceResref": "STAF01",
+    "sourceSlot": 20,
+    "targetSlot": 35,
+    "localWitnessValue": 2110908191,
+    "bafSha256": "996fd8896225ddbcd1ba2e260ca866acb70de09a6f91c9eb4338063fb7ae23e1",
+    "bafBytes": 762,
+    "scope": "ACTOR_LOCALS_NOT_GLOBAL",
+    "automaticArmingCodePresent": false,
+    "actorIdInSaveKnown": false,
+    "runtimeActorIdentityVerified": false,
+    "currentSessionMatchesSaveVerified": false,
+    "classKitItmUsabilityVerified": false,
+    "safeActionBoundaryVerified": false,
+    "manualEpsOriginVerified": false,
+    "eetNativeActiveBafCompileVerified": false,
+    "legacyBcsBytePreservationVerified": false,
+    "externalBackupVerified": false,
+    "installAuthorizationReceived": false,
+    "engineMoveVerified": false,
+    "dispatchAuthorized": false,
+    "installed": false,
+    "ordersSent": 0,
+    "gameModified": false
+  },
+  "sourceOnlyBaf": "// BGXAI V3 SOURCE ONLY. INERT UNTIL EXACT ACTOR LOCALS ARE INDEPENDENTLY ARMED.\n// This source does NOT install, arm, prove runtime identity or authorize execution.\nIF\n  Global(\"BGXW3ARM\",\"LOCALS\",1)\n  Global(\"BGXW3TAG\",\"LOCALS\",2110908191)\n  Global(\"BGXW3TRY\",\"LOCALS\",0)\n  InParty(Myself)\n  InPartySlot(Myself,1)\n  ActionListEmpty()\n  CombatCounter(0)\n  !GlobalTimerNotExpired(\"MO_SpellCast\",\"LOCALS\")\n  ModalState(NONE)\n  !StateCheck(Myself,STATE_PANIC)\n  !StateCheck(Myself,STATE_HELPLESS)\n  CheckItemSlot(Myself,\"STAF01\",SLOT_MISC5)\n  !HasItemSlot(Myself,SLOT_WEAPON0)\nTHEN\n  RESPONSE #100\n    SetGlobal(\"BGXW3ARM\",\"LOCALS\",2)\n    SetGlobal(\"BGXW3TRY\",\"LOCALS\",1)\n    SetGlobal(\"BGXW3TAG\",\"LOCALS\",0)\n    XEquipItem(\"STAF01\",Myself,SLOT_WEAPON0,EQUIP)\nEND\n"
+}
