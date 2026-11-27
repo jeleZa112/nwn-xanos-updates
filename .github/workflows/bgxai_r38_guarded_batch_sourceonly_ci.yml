@@ -1,0 +1,60 @@
+name: BGXAI R38 full batch source-only guarded install and onefile176 regression
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/**'
+      - 'BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONEFILE_176_R38_STAGE_ONLY.py'
+      - '.github/workflows/bgxai_r38_guarded_batch_sourceonly_ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  guarded-offline:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest,ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Preserve exact LF bytes on Windows
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: R38 guarded preflight install rollback capture parser 30 tests
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/test_r38_guarded_batch.py -v
+      - name: Onefile175 + V3 + R38 submenu and full RAW network mocks 25 tests
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/test_onefile176_r38_staged.py -v
+      - name: Existing menu175 exact regression (must preserve)
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/test_xequip_onefile_175_ro_v1.py -v
+      - name: Existing menu176 preflight tests (must preserve)
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/test_xequip_onefile_176_staged_v1.py -v
+      - name: Existing real menu176 KeyError regression
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/test_xequip_176_download_keyerror_regression.py -v
+      - name: R38 Lua identity source four marked-block byte preservation
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/R37_XEQUIP_IDENTITY_SINGLE_LISTENER_SOURCEONLY_20261127/test_identity_integration_static.py -v
+      - name: Show exact R38 hashes for future pinned release (no writes)
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib
+          from pathlib import Path
+          for p in [
+           'BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/BGXAI_R38_GUARDED_FROM_R37.py',
+           'BGXAI/BUILD/R37_XEQUIP_IDENTITY_SINGLE_LISTENER_SOURCEONLY_20261127/M_BGXR27_R37_INV3_IDENTITY_SOURCE_ONLY.lua',
+           'BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONEFILE_176_R38_STAGE_ONLY.py',
+          ]:
+           b=Path(p).read_bytes()
+           print('R38_SOURCE_PIN',p,'BYTES',len(b),'SHA256',hashlib.sha256(b).hexdigest())
+           assert len(b)>10000
+          print('STAGED_SOURCE_ONLY_NO_USER_GAME')
+          PY
