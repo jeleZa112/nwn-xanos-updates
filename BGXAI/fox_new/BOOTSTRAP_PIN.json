@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "e804a34aacf36236c0429d80032fd041b37c4ab4",
+  "commit": "0696dfc811898a427174da503dd3513807b79760",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "a58deddc595bbd07e176d9977f78b6d22dd85dd00d377608377a77c51482edb3",
+  "script_sha256": "6de1e2a66ad3b462c807485b0d0e034256aaa2f5ef386a522da8fc0497a320c4",
   "script_size": 79996,
-  "description": "BGXAI 176→7 R39 native RO: FIX verify_file R39 allowlist Hold×3; exact 21120-byte child SHA, PowerShell 79996 bytes, original 175/176 menu preserved, no game writes."
+  "description": "BGXAI 176→7 R39 native RO: fix ITM V1.0 race byte4 false-positive (Monk/Druid class bits), retain race fail-closed, 23 local tests, one updater 79996B, no game writes."
 }
