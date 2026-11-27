@@ -1,0 +1,30 @@
+{
+  "actorRuntimeArmingImplemented": false,
+  "armAuthorized": false,
+  "classRaw3ClericObserved": true,
+  "currentEffectBlocksEquippingVerified": false,
+  "dispatchAuthorized": false,
+  "gameIdleAtDispatchVerified": false,
+  "gameModified": false,
+  "itemClassKitRestrictionBitsVerified": false,
+  "jaganMatchingEvents": 10,
+  "kitRaw16384Observed": true,
+  "liveXEquipTransferVerified": false,
+  "manualEpsActionOriginVerified": false,
+  "minimumStrengthFromItem": 5,
+  "observedPartyIndex": 1,
+  "observedStrengthRange": [
+    12,
+    12
+  ],
+  "offhandSlot9EmptyInAllJaganEvents": true,
+  "ordersSent": 0,
+  "otherActorEventsFiltered": 24,
+  "r38AlignedEvents": 34,
+  "sameJaganRuntimeActorAcrossObservations": true,
+  "sameSessionInstalledItemResourceVerified": false,
+  "schema": "BGXAI_R39_R38_R3_EXISTING_EVIDENCE_JOIN_V1",
+  "sourceResref": "STAF01",
+  "status": "PASS_OBSERVED_STRENGTH_AND_PHYSICAL_SLOTS_USABILITY_UNPROVEN",
+  "targetSlot35EmptyInAllJaganEvents": true
+}
