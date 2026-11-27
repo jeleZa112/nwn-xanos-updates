@@ -99,6 +99,65 @@ class BridgeTests(unittest.TestCase):
         p=self.root/'safe.py';p.write_text('MARK = 42\n')
         alias=self.root/'alias.py';alias.symlink_to(p)
         with self.assertRaises(catalog.SourceHold):catalog.verified_module(self.root,'alias.py','0'*40)
+    def test_actual_r3_and_v111_end_to_end_when_checkout_available(self):
+        # True integration: imported pinned BGXAI R3 + BG_EET_RU V111,
+        # synthetic installed-game KEY -> BIFF / BIFC -> ITM -> two RU TLKs.
+        repo = Path(__file__).resolve().parents[2]
+        if not (repo / catalog.R3_REL).is_file() or not (repo / catalog.V111_REL).is_file():
+            self.skipTest('Full repository checkout required for pinned-module integration')
+        import zlib
+        game = self.root / 'game'
+        (game/'data').mkdir(parents=True)
+        (game/'lang'/'ru_RU').mkdir(parents=True)
+        (game/'override').mkdir()
+        entries = [('AROW01',itm(11,10)), ('BOW05',itm(12,12,15)),
+                   ('SW1H04',itm(13,13,20))]
+        # Exact KEY V1 / BIFF V1 table shapes consumed by the proven R3 reader.
+        off=20+16*len(entries)
+        table=bytearray()
+        for i,(_,raw) in enumerate(entries):
+            table.extend(struct.pack('<IIIHH',i,off,len(raw),0x03ED,0))
+            off+=len(raw)
+        biff=(b'BIFFV1  '+struct.pack('<III',len(entries),0,20)
+              +bytes(table)+b''.join(raw for _,raw in entries))
+        bifname=b'data/Items.bif\0'
+        key=(b'KEY V1  '+struct.pack('<IIII',1,len(entries),24,36)
+             +struct.pack('<IIHH',len(biff),36+14*len(entries),len(bifname),0)
+             +b''.join(name.encode('ascii').ljust(8,b'\0')+struct.pack('<HI',0x03ED,i)
+                        for i,(name,_) in enumerate(entries))
+             +bifname)
+        (game/'chitin.key').write_bytes(key)
+        names={10:'Стрела',11:'Отличная стрела',12:'Короткий лук',13:'Длинный меч'}
+        def make_tlk(names):
+            count=max(names)+1
+            strings=bytearray();rows=[]
+            for i in range(count):
+                row=bytearray(26)
+                if i in names:
+                    data=names[i].encode('utf-8')
+                    struct.pack_into('<H',row,0,1)
+                    struct.pack_into('<II',row,18,len(strings),len(data))
+                    strings.extend(data)
+                rows.append(row)
+            return b'TLK V1  '+struct.pack('<HII',0,count,18+count*26)+b''.join(rows)+bytes(strings)
+        for tlk in ('dialog.tlk','dialogf.tlk'):
+            (game/'lang'/'ru_RU'/tlk).write_bytes(make_tlk(names))
+        for compressed in (False,True):
+            with self.subTest(compressed_bifc=compressed):
+                contents=biff
+                if compressed:
+                    packed=zlib.compress(biff)
+                    contents=(b'BIFCV1.0'+struct.pack('<I',len(biff))
+                              +struct.pack('<II',len(biff),len(packed))+packed)
+                (game/'data'/'Items.bif').write_bytes(contents)
+                data=catalog.build_catalog(repo,game,[name for name,_ in entries])
+                self.assertEqual(data['autoDisplayNamesReady'],2)
+                self.assertEqual(data['items']['BOW05']['autoDisplayName'],'Короткий лук')
+                self.assertEqual(data['items']['SW1H04']['autoDisplayName'],'Длинный меч')
+                self.assertIsNone(data['items']['AROW01']['autoDisplayName'])
+                self.assertEqual(data['gameFilesWritten'],0)
+                self.assertFalse(data['combatLogRowJoinVerified'])
+
     def test_source_has_no_game_mutation_api(self):
         code=SRC.read_text(encoding='utf-8')
         for forbidden in ('Infinity_DisplayString','XEquipItem(','.write_bytes(','.write_text(',"open('w'", "open('a'"):
