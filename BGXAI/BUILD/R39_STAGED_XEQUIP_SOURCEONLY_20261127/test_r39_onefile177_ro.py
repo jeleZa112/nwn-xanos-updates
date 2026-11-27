@@ -75,6 +75,34 @@ class Onefile177(unittest.TestCase):
             self.assertIs(out[f],False,f)
         self.assertEqual(out['ordersSent'],0)
 
+    def test_item_hold_does_not_erase_real_native_compile_proof(self):
+        inner=self.success_response()
+        # with_fake stages synthetic source pins, not the live published ones.
+        inner['sourceSha256']=self.fixtures()[1][p.B][1]
+        inner['sourceBytes']=self.fixtures()[1][p.B][0]
+        inner['status']='R39_NATIVE_EET_TEMP_COMPILE_PASS_ITEM_HOLD_NO_INSTALL'
+        inner['itemHeaderCheck']={'staticItemClassKitHeaderAllowed':False,
+               'engineCanEquipVerified':False,
+               'itemRestrictionHold':'HOLD_ITM_RACE_RESTRICTIONS_UNVERIFIED:BYTE4_RACES=0x01'}
+        result=self.with_fake(inner,returncode=3)
+        self.assertEqual(result['status'],'R39_NATIVE_TEMP_PASS_ITEM_USABILITY_HOLD_NO_INSTALL')
+        self.assertTrue(result['nativeWeiDUCompileVerified'])
+        self.assertFalse(result['itemStaticHeaderVerified'])
+        self.assertFalse(result['dispatchAuthorized'])
+        self.assertFalse(result['armAuthorized'])
+
+    def test_item_hold_cannot_mask_failed_native_compiler(self):
+        inner=self.success_response()
+        # with_fake stages synthetic source pins, not the live published ones.
+        inner['sourceSha256']=self.fixtures()[1][p.B][1]
+        inner['sourceBytes']=self.fixtures()[1][p.B][0]
+        inner['status']='R39_NATIVE_EET_TEMP_COMPILE_PASS_ITEM_HOLD_NO_INSTALL'
+        inner['itemHeaderCheck']={'staticItemClassKitHeaderAllowed':False,
+               'engineCanEquipVerified':False,'itemRestrictionHold':'HOLD_ITM_RACE_RESTRICTIONS_UNVERIFIED'}
+        inner['nativeWeiDUCompileVerified']=False
+        self.assertEqual(self.with_fake(inner,returncode=3)['status'],
+                         'HOLD_R39_NATIVE_OR_STATIC_ITEM_USABILITY')
+
     def test_reject_inner_missing_item_header(self):
         inner=self.success_response();del inner['itemHeaderCheck']
         self.assertEqual(self.with_fake(inner)['status'],'HOLD_R39_NATIVE_OR_STATIC_ITEM_USABILITY')
