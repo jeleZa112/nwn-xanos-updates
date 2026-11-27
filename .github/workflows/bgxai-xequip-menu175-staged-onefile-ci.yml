@@ -44,7 +44,8 @@ jobs:
           if live!=base:
               stage176=Path("BGXAI/BUILD/WEAPON_XEQUIP_V3_ONEFILE176_STAGE_20261127/STAGED_BGXAI_SYNC_MENU176.ps1").read_bytes()
               stageR38=Path("BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/STAGED_BGXAI_SYNC_R38_FROM_176.ps1").read_bytes()
-              assert live in (candidate,stage176,stageR38),"CURRENT_SCRIPT_DIFFERS_FROM_STAGED_RELEASE"
+              stageNet=Path("BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/STAGED_BGXAI_SYNC_176_NET_HOTFIX.ps1").read_bytes()
+              assert live in (candidate,stage176,stageR38,stageNet),"CURRENT_SCRIPT_DIFFERS_FROM_STAGED_RELEASE"
           def handlers(raw):
               return {int(m.group(1)):m.group(0) for m in re.finditer(rb"(?m)^'(\d+)'\s+\{[^\r\n]*$",raw)}
           old,new=handlers(base),handlers(candidate)
