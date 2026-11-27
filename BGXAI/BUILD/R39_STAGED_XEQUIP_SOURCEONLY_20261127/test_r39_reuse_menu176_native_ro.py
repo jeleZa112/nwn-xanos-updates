@@ -113,6 +113,30 @@ class NativeReuse(unittest.TestCase):
                 with self.assertRaisesRegex(p.Hold,'HOLD_ITM_RESTRICTS_TRUECLASS'):
                     p.static_item_preflight(game)
 
+    def test_itm_unknown_race_restrictions_fail(self):
+        with tempfile.TemporaryDirectory() as d:
+            game=Path(d);root=game/'override';root.mkdir()
+            item=bytearray(114);item[:8]=b'ITM V1  '
+            item[0x18:0x1c]=(46).to_bytes(4,'little')
+            item[0x1c:0x1e]=(26).to_bytes(2,'little')
+            item[0x26:0x28]=(5).to_bytes(2,'little')
+            item[0x21]=0x08; (root/'STAF01.ITM').write_bytes(item)
+            with patch.object(p,'ITM_SHA',p.digest(bytes(item))):
+                with self.assertRaisesRegex(p.Hold,'HOLD_ITM_RACE_RESTRICTIONS_UNVERIFIED'):
+                    p.static_item_preflight(game)
+
+    def test_itm_unknown_alignment_restrictions_fail(self):
+        with tempfile.TemporaryDirectory() as d:
+            game=Path(d);root=game/'override';root.mkdir()
+            item=bytearray(114);item[:8]=b'ITM V1  '
+            item[0x18:0x1c]=(46).to_bytes(4,'little')
+            item[0x1c:0x1e]=(26).to_bytes(2,'little')
+            item[0x26:0x28]=(5).to_bytes(2,'little')
+            item[0x1e]=0x02; (root/'STAF01.ITM').write_bytes(item)
+            with patch.object(p,'ITM_SHA',p.digest(bytes(item))):
+                with self.assertRaisesRegex(p.Hold,'HOLD_ITM_ALIGNMENT_RESTRICTIONS_UNVERIFIED'):
+                    p.static_item_preflight(game)
+
     def test_itm_rejects_nonbase_sha_and_demands_level_knowledge(self):
         with tempfile.TemporaryDirectory() as d:
             game=Path(d);root=game/'override';root.mkdir()
