@@ -1,14 +1,14 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 159,
-  "sha256": "b55624211d6cf28185ac02d1747a192145e6a4f6ba0ead977b01ff2613881cf9",
-  "mode": "V159_16_EXACT_PLAYER_TEXT_EDITORIAL_BATCH",
+  "version": 160,
+  "sha256": "3cd93a7ce4f18fa68e35a9ee163653fc22dcf9d71fab6857034ee1fc2f87aa2c",
+  "mode": "V160_HIT_ONLY_WEAPON_LABEL_EXPERIMENTAL_GUARDED",
   "game_writes_allowed": false,
-  "note": "Existing CMD 11 -> 5 preflight, 6 typed install of 16 exact TLK item/spell/ability descriptions, 7 typed rollback, 8 status. Source anchored to archived V83 real user TLK texts; requires installed V157 state and exact two current TLK SHA. No game writes by default. Separate V159 backup, CRC-preserved one ZIP report #77. Old V153/V154/V157/V158 source is preserved as byte-for-byte prefix.",
+  "note": "Same existing BG_EET_RU_UPDATE.cmd, 749970 bytes. Menu 11 then 9=preflight, 10=typed install, 11=typed rollback, 12=status. New separate Russian hit-only weapon notification; not misses or attack-row correlation. Requires exact V159 TLKs, V108 observer, V153 UI, original EEex hashes; external SHA backup. Old V159/V157 behavior preserved. SOURCE/CI tests are not gameplay proof. Default game writes forbidden.",
   "default_game_writes_allowed": false,
   "typed_game_write_mode_available": true,
   "requires_exact_typed_install_and_rollback": true,
   "weidu_native_component": false,
-  "last_only_rollback_guard": "UI_SHA256_SIDECAR_SHA256_UNCHANGED_WEIDU_LOG_SHA256"
+  "last_only_rollback_guard": "EXACT_EEEX_TLK_UI_WEIDU_SHA_AND_EXTERNAL_BACKUP"
 }
