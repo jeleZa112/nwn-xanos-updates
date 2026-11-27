@@ -1,0 +1,49 @@
+name: BGXAI R40 EEex lifecycle reset source-only
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/R40_SESSION_RESET_SOURCEONLY_20261127/**'
+      - '.github/workflows/bgxai_r40_session_reset_source_ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python-static:
+    name: Python source guards / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    defaults:
+      run:
+        working-directory: BGXAI/BUILD/R40_SESSION_RESET_SOURCEONLY_20261127
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Static no-dispatch regression
+        run: python -m unittest -v test_r40_source_static.py
+
+  lua-lifecycle-mocks:
+    name: Lua 5.3, 5.4 and LuaJIT lifecycle mocks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: BGXAI/BUILD/R40_SESSION_RESET_SOURCEONLY_20261127
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua runtimes
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.3 lua5.4 luajit
+      - name: Exact adversarial mock suite
+        run: |
+          for runtime in lua5.3 lua5.4 luajit; do
+            echo "Running ${runtime}"
+            "${runtime}" test_session_reset_v1.lua
+          done
