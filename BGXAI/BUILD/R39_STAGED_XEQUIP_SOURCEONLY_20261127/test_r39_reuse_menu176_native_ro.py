@@ -74,6 +74,75 @@ class NativeReuse(unittest.TestCase):
                       'backend.source_check=orig_check'):
             self.assertIn(token,src)
 
+    def test_itm_exact_checksum_and_header_flags(self):
+        with tempfile.TemporaryDirectory() as d:
+            game=Path(d); root=game/'override';root.mkdir()
+            item=bytearray(114)
+            item[:8]=b'ITM V1  '
+            item[0x18:0x1c]=(46).to_bytes(4,'little')
+            item[0x1c:0x1e]=(26).to_bytes(2,'little')
+            item[0x26:0x28]=(5).to_bytes(2,'little')
+            f=root/'STAF01.ITM';f.write_bytes(item)
+            with patch.object(p,'ITM_SHA',p.digest(bytes(item))):
+                out=p.static_item_preflight(game)
+                self.assertTrue(out['staticItemClassKitHeaderAllowed'])
+                self.assertFalse(out['engineCanEquipVerified'])
+                self.assertFalse(out['currentSessionActorKitVerified'])
+
+    def test_itm_cleric_restriction(self):
+        with tempfile.TemporaryDirectory() as d:
+            game=Path(d);root=game/'override';root.mkdir()
+            item=bytearray(114);item[:8]=b'ITM V1  '
+            item[0x18:0x1c]=(46).to_bytes(4,'little')
+            item[0x1c:0x1e]=(26).to_bytes(2,'little')
+            item[0x26:0x28]=(5).to_bytes(2,'little')
+            item[0x1e]=0x80; (root/'STAF01.ITM').write_bytes(item)
+            with patch.object(p,'ITM_SHA',p.digest(bytes(item))):
+                with self.assertRaisesRegex(p.Hold,'HOLD_ITM_RESTRICTS_CLERIC'):
+                    p.static_item_preflight(game)
+
+    def test_itm_trueclass_restriction(self):
+        with tempfile.TemporaryDirectory() as d:
+            game=Path(d);root=game/'override';root.mkdir()
+            item=bytearray(114);item[:8]=b'ITM V1  '
+            item[0x18:0x1c]=(46).to_bytes(4,'little')
+            item[0x1c:0x1e]=(26).to_bytes(2,'little')
+            item[0x26:0x28]=(5).to_bytes(2,'little')
+            item[0x2d]=0x40; (root/'STAF01.ITM').write_bytes(item)
+            with patch.object(p,'ITM_SHA',p.digest(bytes(item))):
+                with self.assertRaisesRegex(p.Hold,'HOLD_ITM_RESTRICTS_TRUECLASS'):
+                    p.static_item_preflight(game)
+
+    def test_itm_rejects_nonbase_sha_and_demands_level_knowledge(self):
+        with tempfile.TemporaryDirectory() as d:
+            game=Path(d);root=game/'override';root.mkdir()
+            item=bytearray(114);item[:8]=b'ITM V1  '
+            item[0x18:0x1c]=(46).to_bytes(4,'little')
+            item[0x1c:0x1e]=(26).to_bytes(2,'little')
+            item[0x26:0x28]=(5).to_bytes(2,'little')
+            f=root/'STAF01.ITM';f.write_bytes(item)
+            with self.assertRaisesRegex(p.Hold,'SHA_DRIFT'):
+                p.static_item_preflight(game)
+            item[0x24]=1;f.write_bytes(item)
+            with patch.object(p,'ITM_SHA',p.digest(bytes(item))):
+                with self.assertRaisesRegex(p.Hold,'OTHER_STATS_OR_LEVEL'):
+                    p.static_item_preflight(game)
+
+    def test_itm_rejects_symlink_and_incomplete(self):
+        with tempfile.TemporaryDirectory() as d:
+            game=Path(d);root=game/'override';root.mkdir()
+            (root/'STAF01.ITM').write_bytes(b'ITM V1  ')
+            with self.assertRaises(p.Hold):p.static_item_preflight(game)
+
+    def test_itm_static_only_never_grants_live(self):
+        src=Path(p.__file__).read_text('utf-8')
+        for key in ('engineCanEquipVerified=False',
+                    'currentSessionActorKitVerified=False',
+                    'HOLD_ITM_RESTRICTS_CLERIC',
+                    'HOLD_ITM_RESTRICTS_TRUECLASS',
+                    'HOLD_ITM_CURRENT_RESOURCE_SHA_DRIFT'):
+            self.assertIn(key,src)
+
     def test_native_mock_result_never_claims_install(self):
         with tempfile.TemporaryDirectory() as d:
             game=Path(d)/'game';game.mkdir()
@@ -95,7 +164,8 @@ class NativeReuse(unittest.TestCase):
                 def close_game_proof(self): pass
                 def pinned_compiler(self,game):return game/'fake.exe'
                 def load_backend(self,src):return backend
-            with patch.object(p,'exact_v3_helper',return_value=FakeHelper()):
+            with patch.object(p,'exact_v3_helper',return_value=FakeHelper()),\
+                 patch.object(p,'static_item_preflight',return_value={'staticItemClassKitHeaderAllowed':True}):
                 out=p.native_readonly(game,self.source,game/'helper',game/'backend')
             self.assertEqual(out['status'],'R39_NATIVE_EET_TEMP_COMPILE_PASS_NO_INSTALL')
             self.assertFalse(out['installed']);self.assertFalse(out['gameModified'])
@@ -118,7 +188,8 @@ class NativeReuse(unittest.TestCase):
                 def close_game_proof(self):pass
                 def pinned_compiler(self,game):return game/'fake.exe'
                 def load_backend(self,src):return FakeBackend()
-            with patch.object(p,'exact_v3_helper',return_value=FakeHelper()):
+            with patch.object(p,'exact_v3_helper',return_value=FakeHelper()),\
+                 patch.object(p,'static_item_preflight',return_value={'staticItemClassKitHeaderAllowed':True}):
                 out=p.native_readonly(game,self.source,game/'helper',game/'backend')
             self.assertEqual(out['status'],'HOLD_R39_NATIVE_EET_COMPILER')
             self.assertFalse(out['nativeWeiDUCompileVerified'])
