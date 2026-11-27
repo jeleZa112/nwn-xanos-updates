@@ -1,7 +1,15 @@
 name: BG EET RU V160 hit-only guarded source
 on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/weapon-identity/BG_EET_RU_ITEM_NAMES_FROM_BGXAI_R3_RO.py'
+      - 'bg-eet-ru/weapon-identity/test_BG_EET_RU_ITEM_NAMES_FROM_BGXAI_R3_RO.py'
+      - '.github/workflows/bg-eet-ru-v160-hit-only.yml'
   pull_request:
     paths:
+      - 'bg-eet-ru/weapon-identity/BG_EET_RU_ITEM_NAMES_FROM_BGXAI_R3_RO.py'
+      - 'bg-eet-ru/weapon-identity/test_BG_EET_RU_ITEM_NAMES_FROM_BGXAI_R3_RO.py'
       - 'bg-eet-ru/hit-only-v160/**'
       - 'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
       - 'bg-eet-ru/onefile/release.json'
@@ -23,5 +31,7 @@ jobs:
           python-version: '3.11'
       - name: Static python tests, fail-closed install and rollback
         run: python -m unittest discover -s bg-eet-ru/hit-only-v160 -p "test_*.py" -v
+      - name: BGXAI R3/V111 reuse name-catalog tests (SOURCE ONLY)
+        run: python -m unittest discover -s bg-eet-ru/weapon-identity -p "test_BG_EET_RU_ITEM_NAMES_FROM_BGXAI_R3_RO.py" -v
       - name: Existing onefile updater Python syntax and selftest
         run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
