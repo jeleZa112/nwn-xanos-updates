@@ -1,3 +1,15 @@
+# 27.11.2026 — R39 NATIVE АДАПТЕР ПОДГОТОВЛЕН НА ОСНОВЕ УЖЕ ПРОВЕРЕННОГО 176; GAMEPLAY НЕ МЕНЯЛСЯ
+
+**Последняя доказанная стадия.** Не создавать новый компилятор/второй updater. В существующей директории R39 создан `BGXAI_R39_NATIVE_EET_COMPILE_RO_V1.py`, который использует прежний успешный V3 menu176 helper (SHA256 `b4a0789c568879a179e21cf50391afd999861e85f832f587aceb07cf816e055e`) и его SHA-проверенный native backend. Вход — **текущий R39 2303-byte BAF** SHA256 `3b84d38a9df069e3dedfdaf8de6cbf6958a7252d43490fa64b829375cf7cd03d`; изменять R39 source без обновления pin нельзя.
+
+- Проведён **source-only** pin-check R39 BAF. Опциональный future `--native-readonly` исполняет Windows WeiDU только во временной внешней папке и при закрытой игре, проверяет watched files и удаление temp; compile не осуществлялся на машине пользователя и в текущем инструментальном окружении. **НЕ** устанавливает BCS/WeiDU и не выставляет ARM.
+- Новые **12/12 локальных offline/mock test PASS**, в том числе проверены возвраты PASS/HOLD, pin-drift, mock compile и запрет установки; предыдущие 41/41 тоже PASS, **53/53 всего в R39**. GitHub CI workflow дополнен; его удалённый результат пока не подтверждён.
+- Этот адаптер **НЕ подключён** к единственному `BGXAI_UPDATE.cmd`; не просить пользователя запускать новый CMD, PowerShell или отдельный Python. Из-за лимита подписанного `BGXAI_SYNC.ps1` 80000 B не расширять меню без строгого рефакторинга и точного SHA-pinned release/CI. Текущая ранее выпущенная точка 176 уже native V3 PASS, **но не native нового R39**.
+- Незакрытый `session-bound ARM` / защита ручной команды и EPS, kit/ITM engine-usability, actual R39 native EET compile и первый disposable-save gameplay transfer остаются HOLD. **INSTALL=false; ORDERS=0; LIVEXEQUIP=false.**
+- Продолжить только реальную недостающую дельту: безопасный life-cycle/actor armer + runnable guarded onefile integration, typed install и одно игровое испытание. Старые R3/R34/R38/175/176 результаты не перепроверять. Пользователю действий пока нет.
+
+---
+
 # 27.11.2026 — R39 EVIDENCE-JOIN РЕАЛЬНЫХ ИСТОЧНИКОВ И 4 НАТИВНЫХ БАРЬЕРА
 
 **Это самая новая проверенная стадия BGXAI.** Предыдущие блоки ниже — история. **Цель:** первый XEquipItem в одном контролируемом боевом сохранении, не повторять старые сборы.
