@@ -1,0 +1,46 @@
+name: BGXAI XEquip V3 menu176 staged read-only regression
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONEFILE_175_RO_DUALMODE_STAGE_176.py'
+      - 'BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/test_xequip_onefile_176_staged_v1.py'
+      - 'BGXAI/BUILD/WEAPON_XEQUIP_V3_NATIVE_RO_20261127/**'
+      - '.github/workflows/bgxai_xequip_v3_onefile176_staged_ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-regression:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Preserve LF before checkout for byte-stable SHA
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Old menu175 tests (unmodified source)
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/test_xequip_onefile_175_ro_v1.py -v
+      - name: New menu176 source-only tests; no game, no WeiDU
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/test_xequip_onefile_176_staged_v1.py -v
+      - name: Exact source and size fingerprint for staged wrapper
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          p=Path('BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONEFILE_175_RO_DUALMODE_STAGE_176.py')
+          b=p.read_bytes()
+          print('STAGED_176_BYTES=',len(b))
+          print('STAGED_176_SHA256=',hashlib.sha256(b).hexdigest())
+          assert b'XEquipItem("STAF01"' not in b
+          assert b'--v3' in b
+          PY
