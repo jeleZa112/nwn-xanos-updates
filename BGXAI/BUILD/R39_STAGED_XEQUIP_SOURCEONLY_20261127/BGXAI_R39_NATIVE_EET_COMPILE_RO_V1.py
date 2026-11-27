@@ -144,9 +144,27 @@ def native_readonly(game:Path, source:Path, v3_helper:Path, backend_path:Path):
     if game.is_symlink() or not game.is_dir():
         raise Hold('HOLD_GAME_ROOT_NOT_SAFE')
     game=game.resolve(strict=True)
-    # Same exact R3/R34 resource: validate class+trueclass unusability BEFORE
-    # invoking even a read-only compiler. No extra user capture is needed.
-    item_header=static_item_preflight(game)
+    # Item usability and native BAF syntax are INDEPENDENT read-only proofs.
+    # A known usability restriction must never authorize equipment, but it
+    # must also not hide an otherwise-safe native compile in TEMP.  Unknown
+    # file/hash/resource drift still fails CLOSED before launching WeiDU.
+    item_hold=None
+    try:
+        item_header=static_item_preflight(game)
+    except Hold as exc:
+        reason=str(exc)
+        advisory_holds=('HOLD_ITM_RACE_RESTRICTIONS_UNVERIFIED',
+                        'HOLD_ITM_ALIGNMENT_RESTRICTIONS_UNVERIFIED',
+                        'HOLD_ITM_RESTRICTS_CLERIC',
+                        'HOLD_ITM_RESTRICTS_TRUECLASS',
+                        'HOLD_ITM_OTHER_STATS_OR_LEVEL_UNVERIFIED')
+        if not any(reason.startswith(tag) for tag in advisory_holds):
+            raise
+        item_hold=reason
+        item_header={'staticItemClassKitHeaderAllowed':False,
+                     'engineCanEquipVerified':False,
+                     'itemRestrictionHold':reason,
+                     'sourceSha256':ITM_SHA}
     compiler=v3.pinned_compiler(game)
     backend=v3.load_backend(backend_path)
     with tempfile.TemporaryDirectory(prefix='BGXAI_R39_NATIVE_RO_') as folder:
@@ -178,9 +196,11 @@ def native_readonly(game:Path, source:Path, v3_helper:Path, backend_path:Path):
           result.get('nativeSymbolsAcceptedByCompiler') is True and
           result.get('watchedFilesChanged') is False and
           result.get('temporaryOutputRemoved') is True)
+    item_ok=item_hold is None and item_header.get('staticItemClassKitHeaderAllowed') is True
     return dict(schema=SCHEMA,
-        status='R39_NATIVE_EET_TEMP_COMPILE_PASS_NO_INSTALL' if good else
-               'HOLD_R39_NATIVE_EET_COMPILER',
+        status=('R39_NATIVE_EET_TEMP_COMPILE_PASS_NO_INSTALL' if good and item_ok else
+                'R39_NATIVE_EET_TEMP_COMPILE_PASS_ITEM_HOLD_NO_INSTALL' if good and not item_ok else
+                'HOLD_R39_NATIVE_EET_COMPILER'),
         sourceSha256=BAF_SHA,sourceBytes=BAF_LENGTH,
         nativeWeiDUCompileVerified=good,
         compiledBcsSha256=result.get('compiledSha256') if good else None,
@@ -190,6 +210,8 @@ def native_readonly(game:Path, source:Path, v3_helper:Path, backend_path:Path):
         temporaryOutputRemoved=result.get('temporaryOutputRemoved'),
         wholeGameTreeChecked=False,
         itemHeaderCheck=item_header,
+        itemStaticHeaderVerified=item_ok,
+        itemRestrictionHold=item_hold,
         classKitItmUsabilityVerified=False,
         currentSessionActorArmed=False,
         manualEpsProvenanceVerified=False,
