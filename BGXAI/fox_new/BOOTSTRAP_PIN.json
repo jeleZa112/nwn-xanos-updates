@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "dc80f56b000978b63b4fa2562ba5f741f77ca067",
+  "commit": "e804a34aacf36236c0429d80032fd041b37c4ab4",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "b3e006881ada7ced612dd3a126783abdbe4e03c178a52996ee57a4da7a3760e6",
+  "script_sha256": "a58deddc595bbd07e176d9977f78b6d22dd85dd00d377608377a77c51482edb3",
   "script_size": 79996,
-  "description": "BGXAI existing onefile176 option7: exact R39/ITM native read-only proof; R38 modes 1-6 and 175 unchanged; game untouched; 79996B pinned."
+  "description": "BGXAI 176→7 R39 native RO: FIX verify_file R39 allowlist Hold×3; exact 21120-byte child SHA, PowerShell 79996 bytes, original 175/176 menu preserved, no game writes."
 }
