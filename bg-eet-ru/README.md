@@ -1,3 +1,5 @@
+> **НОВОЕ ГЛОБАЛЬНОЕ ПРАВИЛО 27.11.2026:** [ОБЯЗАТЕЛЬНЫЙ PRE-WORK GATE — запрет на повтор уже выполненных задач](CURRENT/00_PRIOR_WORK_GATE_READ_FIRST.md). Любая новая реализация начинается с проверки уже сделанного, доказательств и недостающей дельты. Не повторять подтверждённые тесты.
+
 # BG EET RU — current entry point
 
 **Active project:** Russian **text** localization of the installed Baldur's Gate EET game, including the combat log. BG Voice RU and BGXAI are separate projects. This file is public project metadata; do not publish private user ZIPs, game binaries, logs, or saves.
