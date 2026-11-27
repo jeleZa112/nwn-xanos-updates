@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "60b9c40c05a76594d753bde5cf13b81ce0de32b8",
+  "commit": "58001197c959fac13d6d530cb8cc4d678e0e14ba",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "6cc2af578c82fc06b19a13be0f0a26fff09e42650e2065cdf9be8e850629495e",
-  "script_size": 79999,
-  "description": "Menu175 unchanged inert behavior; NEW menu176 exact V3 XEquipItem native READ-ONLY compile, SHA/PS5.1/CI verified. No installation or gameplay dispatch."
+  "script_sha256": "e16acdb69231aa8723ce50d820ce75101d93494ac9f12d894ec63a3956ec461d",
+  "script_size": 79998,
+  "description": "BGXAI menu176 V3 read-only: repaired V3 HTTP allowlist KeyError and 176 HOLD label; strict pins/PS5.1/CI; 175 legacy and 1-174 preserved. No installation."
 }
