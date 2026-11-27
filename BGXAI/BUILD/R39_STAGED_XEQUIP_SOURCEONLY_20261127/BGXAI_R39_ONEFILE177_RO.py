@@ -29,7 +29,7 @@ V='BGXAI/BUILD/WEAPON_XEQUIP_V3_NATIVE_RO_20261127/BGXAI_XEQUIP_V3_NATIVE_COMPIL
 C='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py'
 # Immutable specific bytes, not source branch HEAD, CI, or a filename assertion.
 SOURCES={
- A:(11303,'e58db94883e6b3ca6e7edfadb1b6749e2bf2ca38c517a1cebf7f21e5c1d6d206'),
+ A:(12458,'c07b486f6ba68899d023f2ee9bfc4587ad2b5f79b9630f7f8321d494bc5f07be'),
  B:(2303,'3b84d38a9df069e3dedfdaf8de6cbf6958a7252d43490fa64b829375cf7cd03d'),
  V:(10743,'b4a0789c568879a179e21cf50391afd999861e85f832f587aceb07cf816e055e'),
  C:(9551,'27285b3d067eab2c67b075dc8654b9a0f74da0d7920b2e96339ced3e14bcd10a'),
@@ -101,8 +101,23 @@ def run(game:Path,commit:str,fetcher=fetch,runner=subprocess.run,require_windows
                     capture_output=True,text=True,encoding='utf-8',errors='replace',timeout=150,check=False)
         try:inner=json.loads(call.stdout)
         except (ValueError,TypeError):raise Hold('HOLD_R39_NATIVE_JSON_INVALID')
-        safe=(call.returncode==0 and type(inner) is dict and
+        # Accept a native compile proof independently of a *known* ITM
+        # usability HOLD.  Never reinterpret a failed compiler as native PASS.
+        is_item_hold=(type(inner) is dict and
+              inner.get('status')=='R39_NATIVE_EET_TEMP_COMPILE_PASS_ITEM_HOLD_NO_INSTALL' and
+              call.returncode==3 and
+              type(inner.get('itemHeaderCheck')) is dict and
+              inner['itemHeaderCheck'].get('staticItemClassKitHeaderAllowed') is False and
+              inner['itemHeaderCheck'].get('engineCanEquipVerified') is False and
+              type(inner['itemHeaderCheck'].get('itemRestrictionHold')) is str and
+              inner['itemHeaderCheck']['itemRestrictionHold'].startswith('HOLD_ITM_'))
+        is_full_pass=(type(inner) is dict and
               inner.get('status')=='R39_NATIVE_EET_TEMP_COMPILE_PASS_NO_INSTALL' and
+              call.returncode==0 and
+              type(inner.get('itemHeaderCheck')) is dict and
+              inner['itemHeaderCheck'].get('staticItemClassKitHeaderAllowed') is True and
+              inner['itemHeaderCheck'].get('engineCanEquipVerified') is False)
+        native=(is_full_pass or is_item_hold) and (
               inner.get('nativeWeiDUCompileVerified') is True and
               inner.get('sourceSha256')==SOURCES[B][1] and
               inner.get('sourceBytes')==SOURCES[B][0] and
@@ -111,13 +126,13 @@ def run(game:Path,commit:str,fetcher=fetch,runner=subprocess.run,require_windows
               inner.get('installed') is False and
               inner.get('dispatchAuthorized') is False and
               inner.get('armAuthorized') is False and
-              inner.get('ordersSent')==0 and
-              type(inner.get('itemHeaderCheck')) is dict and
-              inner['itemHeaderCheck'].get('staticItemClassKitHeaderAllowed') is True and
-              inner['itemHeaderCheck'].get('engineCanEquipVerified') is False)
-        return {'schema':SCHEMA,'status':'R39_EXACT_NATIVE_AND_ITEM_HEADER_PASS_NO_INSTALL' if safe else
-                       'HOLD_R39_NATIVE_OR_STATIC_ITEM_USABILITY',
-                'nativeWeiDUCompileVerified':bool(safe),
+              type(inner.get('ordersSent')) is int and inner.get('ordersSent')==0)
+        safe=bool(native and is_full_pass)
+        item_blocked=bool(native and is_item_hold)
+        return {'schema':SCHEMA,'status':('R39_EXACT_NATIVE_AND_ITEM_HEADER_PASS_NO_INSTALL' if safe else
+                'R39_NATIVE_TEMP_PASS_ITEM_USABILITY_HOLD_NO_INSTALL' if item_blocked else
+                'HOLD_R39_NATIVE_OR_STATIC_ITEM_USABILITY'),
+                'nativeWeiDUCompileVerified':bool(native),
                 'itemStaticHeaderVerified':bool(safe),
                 'engineCanEquipVerified':False,
                 'manualEpsActionOriginVerified':False,
