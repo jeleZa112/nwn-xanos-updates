@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 157
+SELF_VERSION = 158
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -8118,8 +8118,8 @@ V151_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/00d7ac73
 V133_PIN='b3f22f56550d951483863fb59e84f2e543b2473d7bb2e51f8fd03fed4e58f624'
 V133_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/6e1922fcfbb73a43c1b97fc82ea848cd05369c4b/bg-eet-ru/native-correlation/v133_live_hit_inventory_ro.py'
 
-V153_PIN='96fb55e299f5986413504115a169572380749e67b9bbe0cd3038866d29e1bc83'
-V153_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/fed62ecb56a0cddc508429321f2a105cf680ad18/bg-eet-ru/bulk-v157/v157_combined.py'
+V153_PIN='413764adb10af5cc7719bec7840e8a771d96e14181ed5152ff9ffb433d42432a'
+V153_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/04a8dc4c55c4410f7b81831616dc6953475242f9/bg-eet-ru/bulk-v158/v158_combined.py'
 def v153_dispatch(game,mode):
  try:
     p=v121_cache(game)/'V153_GUARDED.py'
@@ -8132,7 +8132,7 @@ def v153_dispatch(game,mode):
     exec(compile(p.read_bytes(),str(p),'exec'),m.__dict__)
     report=m.run(mode,Path(game),WORKDIR)
  except Exception as e:report={'status':'V153_DISPATCH_HOLD','reason':type(e).__name__+':'+str(e)[:140],'game_files_written_this_action':'UNKNOWN_IF_EXCEPTION_AFTER_ACTION'}
- try:v116_zip(game,WORKDIR/REPORT_NAME,report,entry='75_V157_BULK_ONE_BATCH.json' if mode.startswith('bulk_') else '74_V154_CONSOLE_CAPTURE_RO.json' if mode=='capture' else '73_V153_GUARDED_OBSERVER.json')
+ try:v116_zip(game,WORKDIR/REPORT_NAME,report,entry='76_V158_BANTER_LIVE_RO.json' if mode=='bulk_status' else '75_V157_BULK_ONE_BATCH.json' if mode.startswith('bulk_') else '74_V154_CONSOLE_CAPTURE_RO.json' if mode=='capture' else '73_V153_GUARDED_OBSERVER.json')
  except Exception as e:print('V153_REPORT_ZIP_HOLD',type(e).__name__,str(e)[:110])
  print('V157' if mode.startswith('bulk_') else 'V154' if mode=='capture' else 'V153',report.get('status'))
  return 2 if 'HOLD' in report.get('status','') or 'STOP' in report.get('status','') else 0
