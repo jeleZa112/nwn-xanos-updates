@@ -24,6 +24,11 @@ BAF_LENGTH=2303
 V3_HELPER_NAME='BGXAI_XEQUIP_V3_NATIVE_COMPILE_RO.py'
 V3_HELPER_SHA='b4a0789c568879a179e21cf50391afd999861e85f832f587aceb07cf816e055e'
 V3_HELPER_BYTES=10743
+# R3/R34 already authenticated this CURRENT_GAME_OVERRIDE object; never re-scan
+# an entire game or infer default STAF01 resource in preference to override.
+ITM_RELATIVE='override/STAF01.ITM'
+ITM_SHA='c472bdf3a561144392249d45df67ae3b4e07d0faf5d30469177c318bc6857fd3'
+TRUECLASS_KIT_RAW=0x4000  # user R38 snapshot, not verified per new session
 
 class Hold(ValueError):
     pass
@@ -62,6 +67,49 @@ def exact_v3_helper(path:Path):
             raise Hold('HOLD_V3_HELPER_API_MISSING_'+k)
     return mod
 
+def static_item_preflight(game:Path):
+    """Verify *only* fixed ITM usability fields for observed trueclass Cleric.
+
+    This is no runtime item/effect or engine usability claim.  ITM V1 offsets:
+    class usability 0x1e (byte1 bit7 = CLERIC), trueclass kit usability
+    0x2d (kit byte3 bit6 = NO_KIT), level/stats 0x24..0x32.
+    Original current-game resource digest was already saved in R3/R34.
+    """
+    if not game.is_dir() or game.is_symlink():
+        raise Hold('HOLD_ITM_GAME_DIRECTORY_UNTRUSTED')
+    override=game/'override'
+    item=override/'STAF01.ITM'
+    if override.is_symlink() or item.is_symlink() or not item.is_file():
+        raise Hold('HOLD_ITM_MISSING_OR_REPARSE')
+    if not 114<=item.stat().st_size<=5_000_000:
+        raise Hold('HOLD_ITM_INVALID_SIZE')
+    raw=item.read_bytes()
+    if digest(raw)!=ITM_SHA:
+        raise Hold('HOLD_ITM_CURRENT_RESOURCE_SHA_DRIFT')
+    if raw[:4]!=b'ITM ' or raw[4:8]!=b'V1  ':
+        raise Hold('HOLD_ITM_NOT_V1_HEADER')
+    def u16(o):return int.from_bytes(raw[o:o+2],'little')
+    if u16(0x1c)!=26 or u16(0x26)!=5 or int.from_bytes(raw[0x18:0x1c],'little')!=46:
+        raise Hold('HOLD_ITM_BASELINE_TYPE_STRENGTH_FLAGS_DRIFT')
+    cleric_restricted=bool(raw[0x1e] & 0x80)
+    no_kit_restricted=bool(raw[0x2d] & 0x40)
+    if cleric_restricted:
+        raise Hold('HOLD_ITM_RESTRICTS_CLERIC')
+    if no_kit_restricted:
+        raise Hold('HOLD_ITM_RESTRICTS_TRUECLASS')
+    # R38 observed STR12; other active stats and actual level were NOT
+    # authenticated as item equip proof, so fail closed if item demands them.
+    if u16(0x24)!=0 or raw[0x28]!=0 or any(raw[k]!=0 for k in (0x2a,0x2c,0x2e,0x30)) or u16(0x32)!=0:
+        raise Hold('HOLD_ITM_OTHER_STATS_OR_LEVEL_UNVERIFIED')
+    return dict(itemResref='STAF01',sourceSha256=ITM_SHA,
+        observedClericUsabilityRestriction=False,
+        observedTrueclassKitRestriction=False,
+        headerMinStrength=5, priorLiveStrengthObserved=12,
+        staticItemClassKitHeaderAllowed=True,
+        currentSessionActorKitVerified=False,
+        currentSessionEquippedEffectsVerified=False,
+        engineCanEquipVerified=False)
+
 def source_only(source:Path):
     raw=exact_source(source)
     return dict(schema=SCHEMA,status='EXACT_R39_BAF_PIN_PASS_NO_NATIVE',
@@ -77,6 +125,9 @@ def native_readonly(game:Path, source:Path, v3_helper:Path, backend_path:Path):
     if game.is_symlink() or not game.is_dir():
         raise Hold('HOLD_GAME_ROOT_NOT_SAFE')
     game=game.resolve(strict=True)
+    # Same exact R3/R34 resource: validate class+trueclass unusability BEFORE
+    # invoking even a read-only compiler. No extra user capture is needed.
+    item_header=static_item_preflight(game)
     compiler=v3.pinned_compiler(game)
     backend=v3.load_backend(backend_path)
     with tempfile.TemporaryDirectory(prefix='BGXAI_R39_NATIVE_RO_') as folder:
@@ -119,6 +170,7 @@ def native_readonly(game:Path, source:Path, v3_helper:Path, backend_path:Path):
         watchedFilesChanged=result.get('watchedFilesChanged'),
         temporaryOutputRemoved=result.get('temporaryOutputRemoved'),
         wholeGameTreeChecked=False,
+        itemHeaderCheck=item_header,
         classKitItmUsabilityVerified=False,
         currentSessionActorArmed=False,
         manualEpsProvenanceVerified=False,
