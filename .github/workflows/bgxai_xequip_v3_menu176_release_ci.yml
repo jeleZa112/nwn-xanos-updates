@@ -37,6 +37,9 @@ jobs:
       - name: V3 new menu176 pure Python paths
         shell: bash
         run: python -m unittest BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/test_xequip_onefile_176_staged_v1.py -v
+      - name: Regression of real user menu176 KeyError via mocked RAW/CDN hosts, full V3 and legacy 175 pipeline
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/test_xequip_176_download_keyerror_regression.py -v
       - name: Exact source-level only transformations
         shell: bash
         run: python -m unittest BGXAI/BUILD/WEAPON_XEQUIP_V3_ONEFILE176_STAGE_20261127/test_menu176_staged_ps_static.py -v
