@@ -1,0 +1,59 @@
+name: BGXAI R38 production immutable single updater batch CI Windows Linux
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'BGXAI/BGXAI_SYNC.ps1'
+      - 'BGXAI/fox_new/BOOTSTRAP_PIN.json'
+      - 'BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/**'
+      - 'BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONEFILE_175_RO_V1.py'
+      - '.github/workflows/bgxai_r38_published_release_ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  full-release:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest,ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Preserve exact LF bytes
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Pinned immutable onefile bootstrap and exact promoted R38 coordinator
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/test_r38_published_release.py -v
+      - name: R38 guarded preflight/install/rollback/capture unit regression
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/test_r38_guarded_batch.py -v
+      - name: Existing menu175/V3 and R38 submenu regression
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/test_onefile176_r38_staged.py -v
+      - name: Original inert menu175 unit regression
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/test_xequip_onefile_175_ro_v1.py -v
+      - name: Original V3 source-only and real KeyError regression
+        shell: bash
+        run: |
+          python -m unittest BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/test_xequip_onefile_176_staged_v1.py -v
+          python -m unittest BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/test_xequip_176_download_keyerror_regression.py -v
+      - name: R38 Lua marker-byte preservation
+        shell: bash
+        run: python -m unittest BGXAI/BUILD/R37_XEQUIP_IDENTITY_SINGLE_LISTENER_SOURCEONLY_20261127/test_identity_integration_static.py -v
+      - name: Windows PowerShell 5.1 AST parser for exact RELEASED updater
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $p=(Resolve-Path 'BGXAI/BGXAI_SYNC.ps1').Path
+          $t=$null;$e=$null
+          $a=[Management.Automation.Language.Parser]::ParseFile($p,[ref]$t,[ref]$e)
+          if(!$a -or $e.Count -ne 0){$e|ForEach-Object{Write-Host $_.ToString()};throw 'R38_PUBLISHED_PS51_AST_HOLD'}
+          Write-Host 'R38_PUBLISHED_PS51_AST_PASS'
