@@ -53,6 +53,9 @@ R38_SOURCES = {
     R38_R37_HELPER: (26252, "b34c93a0315c578989079c3565c6f0704315b8cdeabfb15be06508e4b5367e2d"),
 }
 R38_MODES = ("preflight", "status", "install", "rollback", "capture")
+# R39 exact native preflight is read-only and reuses the already pinned 176.
+R39_ONEFILE = "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_ONEFILE177_RO.py"
+R39_SOURCES = {R39_ONEFILE:(7751,"527599e9dc30845d19426b914bbb691181f2c5d5919d14e68ced8645b0bb65fa")}
 COMMIT_RE = re.compile(r"^[a-f0-9]{40}$")
 
 class Hold(ValueError):
@@ -68,7 +71,7 @@ def validate_pin(commit: str) -> str:
 
 def fetch_pinned(commit: str, path: str) -> bytes:
     validate_pin(commit)
-    if path not in SOURCES and path not in V3_SOURCES and path not in R38_SOURCES:
+    if path not in SOURCES and path not in V3_SOURCES and path not in R38_SOURCES and path not in R39_SOURCES:
         raise Hold("HOLD_SOURCE_NOT_ALLOWLISTED")
     err = []
     for base in (
@@ -80,7 +83,7 @@ def fetch_pinned(commit: str, path: str) -> bytes:
             req = urllib.request.Request(base + path,
                 headers={"User-Agent": "BGXAI-Onefile175-NoAPI"})
             with urllib.request.urlopen(req, timeout=25) as h:
-                raw = h.read((SOURCES.get(path) or V3_SOURCES.get(path) or R38_SOURCES[path])[0] + 1)
+                raw = h.read((SOURCES.get(path) or V3_SOURCES.get(path) or R38_SOURCES.get(path) or R39_SOURCES[path])[0] + 1)
             verify_file(path, raw)
             return raw
         except (OSError, ValueError, Exception) as exc:
@@ -179,9 +182,9 @@ def stage_sources(root: Path, commit: str, fetcher=fetch_pinned, sources=None) -
             raise Hold("HOLD_SOURCE_STAGING_PATH")
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_bytes(raw)
-        if digest(p.read_bytes()) != (SOURCES.get(path) or V3_SOURCES.get(path) or R38_SOURCES[path])[1]:
+        if digest(p.read_bytes()) != (SOURCES.get(path) or V3_SOURCES.get(path) or R38_SOURCES.get(path) or R39_SOURCES[path])[1]:
             raise Hold("HOLD_LOCAL_SOURCE_SHA256_CHANGED")
-        out[path] = {"sha256": (SOURCES.get(path) or V3_SOURCES.get(path) or R38_SOURCES[path])[1], "bytes": len(raw)}
+        out[path] = {"sha256": (SOURCES.get(path) or V3_SOURCES.get(path) or R38_SOURCES.get(path) or R39_SOURCES[path])[1], "bytes": len(raw)}
     return out
 
 def check_report(inner: dict, native: bool) -> bool:
@@ -313,12 +316,12 @@ def ask_r38_mode(v3: bool, forced: str | None = None) -> str | None:
     if not v3 or sys.stdin is None or not sys.stdin.isatty():
         return None  # Existing automated/menu176 V3 read-only behavior is unchanged.
     print("BGXAI 176: 0=exit [default]; 1=V3 native RO (already PASS); 2=R38 preflight; "
-          "3=status; 4=install (typed); 5=rollback (typed); 6=capture; 0=exit",flush=True)
+          "3=status; 4=install (typed); 5=rollback (typed); 6=capture; 7=R39 native RO; 0=exit",flush=True)
     choice=input("R38 choice [0]: ").strip()
     if choice in ("", "0"): return "cancel"
     if choice == "1": return None
     mode = {"2":"preflight","3":"status","4":"install",
-            "5":"rollback","6":"capture"}.get(choice)
+            "5":"rollback","6":"capture","7":"r39-native"}.get(choice)
     if mode is None: raise Hold("HOLD_R38_UNKNOWN_SUBMENU_CHOICE")
     return mode
 
@@ -344,6 +347,20 @@ def run_r38(game: Path, commit: str, mode: str, fetcher=fetch_pinned,
         # Child prompts for exact typed install/rollback token. Keep a real
         # console; never pipe, invent or auto-answer approval.
         result=runner(args,cwd=str(folder),stdin=None,
+                      stdout=None,stderr=None,check=False)
+        return int(result.returncode)
+
+def run_r39(game: Path, commit: str, fetcher=fetch_pinned, runner=subprocess.run) -> int:
+    """One new read-only native proof; old 175/176 V3/R38 remain untouched."""
+    validate_pin(commit)
+    with tempfile.TemporaryDirectory(prefix="BGXAI_R39_ONEFILE_176_7_") as folder_name:
+        folder=Path(folder_name).resolve(strict=True)
+        ensure_external(folder,game)
+        stage_sources(folder,commit,fetcher,R39_SOURCES)
+        script=folder.joinpath(*R39_ONEFILE.split("/"))
+        argv=[sys.executable,str(script),"--game",str(game),"--commit",commit]
+        print("BGXAI R39 native exact source and current STAF01 ITM: READ ONLY.",flush=True)
+        result=runner(argv,cwd=str(folder),stdin=subprocess.DEVNULL,
                       stdout=None,stderr=None,check=False)
         return int(result.returncode)
 
@@ -374,6 +391,8 @@ def main(argv=None) -> int:
         if mode == "cancel":
             print("BGXAI R38 cancelled. No changes.")
             return 0
+        if mode == "r39-native":
+            return run_r39(a.game,a.commit)
         if mode in R38_MODES:
             return run_r38(a.game,a.commit,mode)
     except (Hold,OSError,ValueError,subprocess.TimeoutExpired,EOFError) as exc:
