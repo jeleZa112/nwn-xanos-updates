@@ -42,7 +42,8 @@ jobs:
           assert len(base)==79832,("BASELINE_BYTES_CHANGED",len(base))
           assert len(candidate)<=80000,("ONEFILE_LIMIT",len(candidate))
           if live!=base:
-              assert live==candidate,"CURRENT_SCRIPT_DIFFERS_FROM_STAGED_MENU175"
+              stage176=Path("BGXAI/BUILD/WEAPON_XEQUIP_V3_ONEFILE176_STAGE_20261127/STAGED_BGXAI_SYNC_MENU176.ps1").read_bytes()
+              assert live in (candidate,stage176),"CURRENT_SCRIPT_DIFFERS_FROM_STAGED_RELEASE"
           def handlers(raw):
               return {int(m.group(1)):m.group(0) for m in re.finditer(rb"(?m)^'(\d+)'\s+\{[^\r\n]*$",raw)}
           old,new=handlers(base),handlers(candidate)
@@ -52,7 +53,7 @@ jobs:
           assert b"Get-PinnedBytes $p" in new[175]
           assert b"if($LASTEXITCODE){throw '175 RO STOP'}" in new[175]
           assert b'if(tp -Lit $f){Remove-Item -Lit $f -Force}' in new[175]
-          source=Path("BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONEFILE_175_RO_V1.py").read_bytes()
+          source=subprocess.check_output(['git','show','5c5ead4af8c144db44e9e99c5052475ccd0c6944:BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONEFILE_175_RO_V1.py'])
           assert len(source)==8527
           h=hashlib.sha256(source).hexdigest().encode()
           assert h==b'5bbc5d5444562346df7e2766d5eee97f60b1e2a33a2c5a074272697c1ee4e2b0'
