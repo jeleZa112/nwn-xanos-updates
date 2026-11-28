@@ -321,4 +321,72 @@ function M.preview(scene,previous)
  out.dispatchAuthorized=false
  return out
 end
+-- Score ONE actual backpack location against the SAME actor and enemy model.
+-- This reuses scored_weapon; it does not smuggle an unequipped item into a
+-- quickslot or declare its counterfactual APR native-authenticated. The caller
+-- must independently prove real engine stats before any future dispatch.
+function M.scoreBackpackCandidate(scene,weapon)
+ local problem=verified_scene(scene,true)
+ if problem then return issue(problem,{sourceOnly=true}) end
+ local f,a=scene.frame,scene.actor
+ if type(weapon)~='table' or weapon.slot~='BACKPACK' or
+    not between(weapon.sourceSlot,18,33) or weapon.sourceSlot%1~=0 or
+    not ident(weapon.id) or not ident(weapon.resRef) or #weapon.resRef>8 or
+    weapon.resRef:find('[^%w_]') or
+    weapon.snapshotId~=f.snapshotId or
+    weapon.modFingerprint~=a.traitProfile.modFingerprint or
+    weapon.modelProvenance~='V3_V4_V5' or
+    weapon.counterfactualBasis~='MODEL_ONLY_NOT_NATIVE_EFFECTIVE' or
+    weapon.alternativeEffectiveStatsLiveVerified~=false or
+    weapon.usableVerified~=true or weapon.identifiedVerified~=true or
+    weapon.notCursedVerified~=true or weapon.notQuestItemVerified~=true or
+    weapon.offhandCompatibilityVerified~=true or
+    weapon.ammoAndLauncherVerified~=true or
+    weapon.protectionsAccountedVerified~=true or
+    weapon.finalCombatStatsVerified~=true or
+    weapon.allRaceClassKitProficiencyBonusesIncluded~=true or
+    weapon.statBasis~='FINAL_EFFECTIVE' or
+    weapon.combatCostsVerified~=true then
+  return issue('HOLD_BACKPACK_COUNTERFACTUAL_MODEL_INCOMPLETE',
+               {sourceOnly=true})
+ end
+ for _,w in ipairs(scene.weapons) do
+  if w.id==weapon.id then return issue('HOLD_BACKPACK_DUPLICATE_QUICKSLOT_ID',
+                                     {sourceOnly=true}) end
+ end
+ if weapon.mode=='RANGED' then
+  if weapon.ammoVerified~=true or
+     (weapon.ammunitionModel~='QUIVER' and weapon.ammunitionModel~='SELF') or
+     not between(weapon.ammoCount,0,1000000) or
+     weapon.ammoCount%1~=0 or
+     (weapon.ammunitionModel=='QUIVER' and not ident(weapon.ammoResRef)) then
+   return issue('HOLD_BACKPACK_LAUNCHER_AMMO_UNVERIFIED',
+                {sourceOnly=true})
+  end
+ end
+ if a.handsMode=='DUAL' and weapon.mode=='MELEE' and
+    weapon.dualWieldStatsVerified~=true then
+  return issue('HOLD_BACKPACK_OFFHAND_RATE_UNKNOWN',{sourceOnly=true})
+ end
+ local score,err=scored_weapon(weapon,a,scene.enemy)
+ if not score then
+  return issue('HOLD_BACKPACK_TARGET_SCORE_INCOMPLETE',
+               {reason=err,sourceOnly=true})
+ end
+ if score.available~=true then
+  return issue('HOLD_BACKPACK_CANDIDATE_INELIGIBLE',
+               {reason=score.reason,sourceOnly=true})
+ end
+ return issue('BACKPACK_TARGET_UTILITY_MODEL_ONLY',{
+  sourceOnly=true,readOnly=true,weaponSwitchAuthorized=false,
+  inventoryMoveAuthorized=false,ordersSent=0,
+  engineFinalAlternativeStatsVerified=false,liveReadVerified=false,
+  sourceSlot=weapon.sourceSlot,candidateResref=weapon.resRef,
+  snapshotId=f.snapshotId,actorId=f.actorId,targetId=f.enemyId,
+  estimatedUtility=score.value,estimatedDpr=score.dpr,
+  hitChanceModel=score.hitChance,attackACType=score.attackACType,
+  attackACModel=score.attackACModel,
+  candidateIneffectiveReason=score.ineffectiveReason,
+  targetTypeSpecific=true})
+end
 return M
