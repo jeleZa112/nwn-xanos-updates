@@ -793,6 +793,17 @@
             "manualEpsActionOriginVerified": false,
             "noAutoRetry": false
           }
+        },
+        {
+          "delta_id": "BGXAI_R48_REAL_XEQUIP_ORIGINAL_ONEFILE_179_23_TO25_20261128",
+          "recorded_before_source_edit": true,
+          "already_done": "BGXAI original onefile179 at immutable f2827f25da5 still has 1–22: 1–16 R42–R44 read-only, 17 R46 real native compiled, 18–22 R47 real typed install last158 and first passive live witness HOLD, no redo. New R48 849B real action BAF from exact pinned original R39 2407B already native compiled in user EET, one BGX48TRY LOCALS flag, one XEquipItem(STAF01,Myself,SLOT_WEAPON0,EQUIP) only if actor exact *GCLERIC CLERIC party1 and ActionListEmpty+CombatCounter0, no enemy, item MISC5, target and offhand empty. New R48 guarded last158→159 WeiDU install/rollback source 15135B sha 6a4b934297cb5f20357c46d42eaf804a7bec748c59a878cd0c97ef481990e9e6, original code reuse. R48 18 mock-EET lifecycle tests WIN+UBUNTU PASS GitHub Actions 46140142723, no real game change yet.",
+          "missing_delta": "Add ONLY same onefile179 modes23=R48 typed one-shot real equip install (internal exact last158 source and BCS sha preflight, NO separate menu preflight), 24=R48 exact typed rollback last159, 25=status RO. Stage exact R37/R38/R42/R43/R44/R46/R47 sources and original R39 BAF, new R48 composer+guard with SHA pins. Preserve original 179 1–22, PS <=80000, no second CMD, no auto install. CI Win+Linux regression PASS before immutable release. User then ONE typed install action after reviewing risks, and ONE actual gameplay trial on expendable save; no further passive witness capture loops.",
+          "status": "PRIOR_WORK_BEFORE_R48_ONEFILE_EDIT",
+          "gameModified": false,
+          "autoConsent": false,
+          "safety": "R48 is actual gameplay-changing XEquipItem and may update live save if conditions match; requires explicit user typed approval, external SHA backup for BCS/WeiDU, separate rollback and no retry on failed install.",
+          "userFrustration": "User explicitly said how many more tests; do not ask for R47 raw log or repeat 179→22. Direct pilot only."
         }
       ],
       "project": "BGXAI",
