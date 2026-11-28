@@ -690,6 +690,39 @@
         "live": "NO"
       },
       "remaining": "Native installed EEex 1.1.7 function safety unverified; complete same-frame actor/target hypothetical final APR/THAC0 and manual EPS action boundary missing"
+    },
+    {
+      "error_id": "BGXAI_V4_EMPTY_BACKPACK_BLOCKED_STRONGER_READY_QUICKSLOT_20261128",
+      "project": "BGXAI",
+      "discovered_at": "2026-11-28",
+      "type": "EXISTING_PRIORITY_BRIDGE_FUNCTIONAL_GAP",
+      "status": "SOURCE_FIXED_IN_EXISTING_MODULE_GITHUB_CI_516_X3_PASS_LIVE_NOT_DEPLOYED",
+      "prior_work_gate": {
+        "already_done": "V3 actor→target scorer, V4 ready-vs-backpack planner, R37 real 16-slot map, R3 authentic static ITM reader, original R39 guarded XEquipItem",
+        "proof": "Current source blobs and prior GitHub test record 498/498 x3",
+        "missing_delta": "V4 empty-backpack list wrongly returns HOLD_NO_CANDIDATE even when another ready weapon is already superior; manual candidate discovery not automatic; no one-call decision+queue defer",
+        "minimal_change": "Extend EXISTING V4 with no-candidate quickslot fallback, R3-bound enumerate 16 and consolidated planAutoBatch; preserve source-only no orders"
+      },
+      "description": "In V4 planWithV3, count==0 short-circuited prior to preferring the best already-equipped quickslot. Caller had to hand-build candidate list, so physical 16-slot R37+R3 map was not actually used to assemble candidate scores. Runtime queue safety was not coupled to one-call decision route.",
+      "fix": "Existing BGXAI_BACKPACK16_PRIORITY_RO_V4.lua adds prepare16FromR3, planBattleDecision and planAutoBatch; loop 18..33, match full 0..38 item-map against R3, check ITM attackType and reject forged native proofs, preserve better ready quickslot when no backpack, skip all read/rank if native queue known busy. No engine calls or updater changes.",
+      "evidence": {
+        "v4SourceBlob": "f0208b6f0a409ec67d640dd478ce13c9f6f0ea3d",
+        "v4TestBlob": "81f86ac725c3657b7d49305a6ab129a502857625",
+        "oldTests": 42,
+        "newTests": 60,
+        "fullRegression": "516/516 on EACH Lua5.3, Lua5.4, LuaJIT; native R3 Python 35/35; Windows static PASS",
+        "v4CIRun": 46151362781,
+        "fullCIRun": 46151362864,
+        "verifiedCommit": "6d24366f41c76914db5142801e00e5e2738de84b",
+        "githubStatus": "BGXAI/source-only/516-lua-plus-r3 success"
+      },
+      "no_repeat": "Do not repeat V3/V4/R3 model tests or old R47 witness capture unless actual relevant source diff; next gate only authentic EEex 1.1.7 alternate effective APR/THAC0 and EPS/manual/round permission, then guarded typed deploy via existing onefile.",
+      "tiers": {
+        "code": "GITHUB_EXISTING_MODULE_INTEGRATED_SOURCE",
+        "test": "GITHUB_ACTIONS_516_PER_LUA_X3_R3_35_WINDOWS_PASS",
+        "deploy": "NO",
+        "live": "NO"
+      }
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
