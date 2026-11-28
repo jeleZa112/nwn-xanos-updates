@@ -28,4 +28,4 @@ jobs:
         with:
           python-version: '3.11'
       - name: Assert inert source-only guards and exact committed BAF
-        run: python -m unittest -v test_r39_staged_xequip_v1.py test_r39_existing_evidence_join_ro.py test_r39_reuse_menu176_native_ro.py test_r39_onefile177_ro.py test_176_option7_ro.py
+        run: python -m unittest -v test_r39_staged_xequip_v1.py test_r39_existing_evidence_join_ro.py test_r39_reuse_menu176_native_ro.py test_r39_onefile177_ro.py test_176_option7_ro.py test_r39_explicit_gesture_contract.py
