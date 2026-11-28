@@ -8,7 +8,7 @@
       "label": "Saved party ITM catalog source RO",
       "language": "python",
       "mode": "readonly",
-      "commit": "b27419d50298e1beef3e53d18837d97080ef8a0c",
+      "commit": "d22d518103b304a7d7a209d51b0272b47b1df63f",
       "entry": "BGXAI/UPDATER_V2/BGXAI_MODULE180_SAVED_PARTY_CATALOG_RO.py",
       "files": [
         {
@@ -23,8 +23,8 @@
         },
         {
           "path": "BGXAI/BUILD/WEAPON_SAVE_GAM_INVENTORY_RO_V1_20261126/BGXAI_GAM_INVENTORY_RO_V1.py",
-          "size": 5760,
-          "sha256": "084e6be1b2ef7dbc7997026cf3cdceedb440f8b99930f4469307d41ec349f9f1"
+          "size": 5762,
+          "sha256": "ca56577b552f2f3438e6448ab315ce40cb8220741bcf526f1fe10b885e5a134c"
         }
       ]
     }
