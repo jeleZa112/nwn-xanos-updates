@@ -1,5 +1,20 @@
 # BGXAI R13.1 — защита цели: сопротивление стрелковому урону
 
+## 28.11.2026 — ИСПРАВЛЕНЫ РЕАЛЬНЫЕ БОЕВЫЕ ACTION 105/134, EEex 1.1.7 tempStats guard
+
+**GLOBAL PRIOR WORK GATE:** R13 уже существовал, имел свой *один* started-action listener и двойное чтение защиты конкретной цели. Реальные логи BGXAI/R27 наблюдали `105 AttackOneRound` и `134 AttackReevaluate`, а старый R13 принимал **только 3 и 30**, поэтому штатная атака Халида могла не попасть в наблюдение защиты. Официальные значения: [IESDP BGEE Actions](https://iesdp.bgforge.net/scripting/actions/bgeeactions). Кода новых наблюдателей нет.
+
+**КОД:** ТОЛЬКО существующие `BGXAI_R13_TARGET_DEFENSE_OBSERVER.lua` и `M_BGXTDEF13.lua` теперь допускают 105/134 как **кандидаты привязки к цели**; `92 SelectWeaponAbility`, заклинания и небоевые действия по-прежнему HOLD. Привязка к source/actee/selectedSlot/ability и двойной снимок не удалены. До чтения `GetActiveStats` для врага и после него проверяется `target.m_bAllowEffectListCall` — источник EEex 1.1.7 может возвращать `m_tempStats` при обработке списка эффектов. При нуле, ошибке либо дрейфе — HOLD. Это чтение **текущих** AC/сопротивлений, не иммунитетов, не истинной вероятности попадания и не доказательство конца раунда.
+
+**Исходники:** R13 core Git blob `4a805b71fff522c4ead6b81e385ccb8618058066`; тот же старый runtime-wrapper `58542acdf74b5db8f24fbe296eb8a59ec64dcfbf`. Тесты core `43/43` и runtime `18/18` на Lua 5.3, 5.4 и LuaJIT; GitHub Actions [run 46152292273](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46152292273) PASS.
+
+**В существующем V4:** `planAutoBatchWithR13` переносит в копию модели V3 настоящий R13 base AC + модификатор каждого attack type, а также четыре процента физических сопротивлений (если все лежат в поддерживаемом диапазоне 0..100); другая цель/действие/слот/снимок и меняющийся target — HOLD. `planAutoBatchWithActorTarget` дополнительно вызывает СУЩЕСТВУЮЩИЙ R35 для текущего выбранного APR/THAC0 до и после R13/R3; если APR выбранного оружия не совпадает с моделью или изменился, результат отбрасывается. Ни одна функция не выдаёт гипотетические APR/THAC0 невыбранного предмета за измеренные.
+
+**Статус:** CODE SOURCE ONLY; TEST 43/43 + 18/18 x3 PASS; DEPLOY NO; LIVE NEW VERSION NO. Исходный R13.2 overlay в пользовательской игре не переписывался. Не ставить новый EEex listener, не повторять R47 179→22 HOLD. Установка — только отдельным проверенным typed updater и только после явной готовности/разрешения.
+
+---
+
+
 Дата: 22.11.2026. Статус: SOURCE ONLY, OFFLINE TEST PASS; runtime и установка в игре не проверялись.
 
 Основание: пользователь выполнил BGXAI_UPDATE.cmd → 161 → 2. Получено `BGXTD13_PREFLIGHT_PASS_NO_INSTALL`, baselineVerified=5; текущий последний WeiDU — BGXW4. Повторять проверку предыдущей версии не нужно.
