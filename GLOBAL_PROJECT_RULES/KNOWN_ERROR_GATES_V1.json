@@ -177,8 +177,8 @@
       "closure_condition": "Boot channel points to immutable commit 6ae745332d314d6bacd8ad883cdf808ae7a866f5 and exact script SHA256 04a3ffa6b53792f14bb878930f553ecd4809f17302091e1da3b04bb30e1fd00a at 79792 bytes; 50/50 Python tests on Ubuntu and Windows, Windows PowerShell AST syntax and generated Lua syntax PASS. Live installation and current CLASS BCS name remain separately unverified.",
       "evidence": [
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46122393283",
-        "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/README_RU.md",
-        "BGXAI/CURRENT/00_RESUME_CURRENT.md"
+        "/BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/README_RU.md",
+        "/BGXAI/CURRENT/00_RESUME_CURRENT.md"
       ],
       "enforcement": "source-only onefile release static SHA test, 80000B cap test, 175/176 preserved with 179 explicit branch, Windows AST parse, zero game write"
     },
