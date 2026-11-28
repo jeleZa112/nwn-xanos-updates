@@ -1059,6 +1059,37 @@
         "nativeRunStatus": "USER_REAL_RUNTIME_PENDING",
         "actualSelectedSave": "UNKNOWN"
       }
+    },
+    {
+      "error_id": "BGXAI_V2_MODULE180_ALL_OR_NOTHING_NATIVE_R3_COVERAGE_HOLD_20261128",
+      "project": "BGXAI",
+      "type": "KNOWN_RISK",
+      "status": "MITIGATED_SOURCE_ONLY",
+      "discovered_at": "2026-11-28",
+      "trigger": "Third actual V2 menu180 on user's Windows after exact GAM parser #/- fix. status=HOLD_SAVED_PARTY_CATALOG_PREPARATION, failureStage=BUILD_INERT_LUA_CATALOG, reason=HOLD_R3_CURRENT_GAME_RESOURCE_COVERAGE, noAutoRetry=true, gameModified=false, ordersSent=0.",
+      "observed_failure": "Full GAM parsing and R3 native audit completed without an unhandled exception; module180 build_source rejected audit coverage. Its old contract requires no missing ITM or linked spells and exact item coverage for ALL saved-party inventory entries. The specific actual resource(s) causing the incomplete coverage remain UNKNOWN; never claim named missing files.",
+      "cause": "CONFIRMED SOURCE DESIGN GAP: older module180's all-or-nothing catalog build discards every otherwise parsed R3 item when ANY saved inventory ITM or opcode146 linked SPL cannot be read/parsed. The exact root cause of the user's incomplete audit is UNKNOWN because the public console does not identify which resources were missing.",
+      "do_not_repeat": "Do not call original pin module180 again, redo original GAM resref fix, re-run R47 witness, reset cache, install/rollback WeiDU/EPS, invent absent ITMs/SPLs, replace the same CMD, or request previously analyzed BALDUR(1).gam.",
+      "safe_action": "Reuse existing R3 audit returned items/missingItemsOrLinkedSpells/linkedSpells; require exact status/provenance and missing-record consistency. Stage a passive partial catalogue with only verified ITM plus present linked SPL, quarantine absent ITM and opcode146-linked items with missing SPL, keep complete GAM inventory as source-only raw slots and no native actor claim, all dispatch/equip false. If no safe item remains, retain HOLD. Tests Windows+Ubuntu; exact new immutable module180 SHA in existing V2 manifest. A subsequent single changed readonly menu180 run may verify current saved source, not gameplay.",
+      "closure_condition": "Windows and Ubuntu CI PASS existing V2/source test contract incl missing ITM, broken linked SPL, forged audit rejection and zero-file mutation; changed pinned module180 returns FULL or PARTIAL catalog on genuine user Windows save with no game/party actions. Missing resource causality needs actual evidence; general autoequip remains uninstalled.",
+      "evidence": [
+        "/BGXAI/UPDATER_V2/BGXAI_MODULE180_SAVED_PARTY_CATALOG_RO.py",
+        "/BGXAI/UPDATER_V2/test_module180_saved_party_catalog_ro.py",
+        "/BGXAI/UPDATER_V2/MODULES_V1.json",
+        "https://github.com/jeleZa112/nwn-xanos-updates/commit/c01ea94c079229687d6db29f8f808d63ebd86b6d",
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46158535358"
+      ],
+      "enforcement": "Partial source catalog does not infer item availability in active game, usable weapon type, APR, THAC0, target defense, manual/EPS action ownership, or permission to equip. Explicit `sourceResourceStatusByResref`, `nativeResourceCoverageComplete`, 0 orders/game writes; no retry on HOLD.",
+      "source_repair": {
+        "sourceFile": "BGXAI/UPDATER_V2/BGXAI_MODULE180_SAVED_PARTY_CATALOG_RO.py",
+        "immutableModuleCommit": "86489b0ed88e593a7451fcc551ceaa111bc2ed1d",
+        "pinnedModuleSha256": "30169724747e632fa2bf59ac05ed916bfac9c71ef0faf85376dd7f66ed868520",
+        "moduleSourceBytes": 19854,
+        "moduleManifestCommit": "c01ea94c079229687d6db29f8f808d63ebd86b6d",
+        "nativeWindowsRuntime": "PENDING_NOT_PROVEN",
+        "ciRun": 46158535358,
+        "ciStatus": "IN_PROGRESS_PENDING"
+      }
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
