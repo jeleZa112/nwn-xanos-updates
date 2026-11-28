@@ -124,4 +124,72 @@ test("never_executes_even_if_caller_claims_safe",function()
  s.safeActionBoundaryVerified=true;s.engineFinalAlternativeStatsVerified=true
  local x=run(b,q,o,s,c);assert(x.status=="ADVISE_BACKPACK16_TO_EMPTY_QUICKSLOT_DRYRUN_ONLY");contract(x)
 end)
+-- V3 already uses zero hysteresis for a provably useless current attack.
+-- The backpack planner must match that rule, without granting dispatch.
+test("verified_target_immune_allows_small_positive_backpack_alternative",function()
+ local b,q,o,s,c=data()
+ s.currentWeaponScore=0
+ s.currentWeaponUnusableVerified=true
+ s.currentWeaponUnusableReason="VERIFIED_TARGET_WEAPON_IMMUNITY"
+ c[1].predictedUtility=0.25
+ local x=run(b,q,o,s,c)
+ assert(x.status=="ADVISE_BACKPACK16_TO_EMPTY_QUICKSLOT_DRYRUN_ONLY"
+    and x.scoreMargin==0 and x.estimatedGain==0.25)
+ contract(x)
+end)
+test("unproven_zero_does_not_bypass_hysteresis",function()
+ local b,q,o,s,c=data()
+ s.currentWeaponScore=0
+ c[1].predictedUtility=0.25
+ local x=run(b,q,o,s,c)
+ assert(x.status=="KEEP_CURRENT_NO_MEANINGFUL_GAIN")
+ contract(x)
+end)
+test("caller_claim_without_v3_reason_is_hold",function()
+ local b,q,o,s,c=data()
+ s.currentWeaponScore=0
+ s.currentWeaponUnusableVerified=true
+ c[1].predictedUtility=0.25
+ local x=run(b,q,o,s,c)
+ assert(x.status=="HOLD_CURRENT_WEAPON_UNUSABLE_EVIDENCE_INCOMPLETE")
+ contract(x)
+end)
+test("unverified_reason_is_hold",function()
+ local b,q,o,s,c=data()
+ s.currentWeaponScore=0
+ s.currentWeaponUnusableVerified=false
+ s.currentWeaponUnusableReason="VERIFIED_TARGET_WEAPON_IMMUNITY"
+ local x=run(b,q,o,s,c)
+ assert(x.status=="HOLD_CURRENT_WEAPON_UNUSABLE_EVIDENCE_INCOMPLETE")
+ contract(x)
+end)
+test("inconsistent_positive_current_score_is_hold",function()
+ local b,q,o,s,c=data()
+ s.currentWeaponScore=3
+ s.currentWeaponUnusableVerified=true
+ s.currentWeaponUnusableReason="VERIFIED_TARGET_WEAPON_IMMUNITY"
+ local x=run(b,q,o,s,c)
+ assert(x.status=="HOLD_CURRENT_WEAPON_STATUS_INCONSISTENT")
+ contract(x)
+end)
+test("known_useless_but_negative_alternative_is_hold",function()
+ local b,q,o,s,c=data()
+ s.currentWeaponScore=-3
+ s.currentWeaponUnusableVerified=true
+ s.currentWeaponUnusableReason="VERIFIED_NO_EFFECTIVE_DAMAGE_OR_EFFECT"
+ c[1].predictedUtility=-0.5
+ local x=run(b,q,o,s,c)
+ assert(x.status=="HOLD_NO_POSITIVE_BACKPACK_ALTERNATIVE")
+ contract(x)
+end)
+test("unknown_unusable_reason_cannot_bypass_threshold",function()
+ local b,q,o,s,c=data()
+ s.currentWeaponScore=0
+ s.currentWeaponUnusableVerified=true
+ s.currentWeaponUnusableReason="POSSIBLY_RESISTANT"
+ c[1].predictedUtility=0.25
+ local x=run(b,q,o,s,c)
+ assert(x.status=="HOLD_CURRENT_WEAPON_UNUSABLE_EVIDENCE_INCOMPLETE")
+ contract(x)
+end)
 print("BGXAI BACKPACK16 PRIORITY V4 "..n.." synthetic tests PASS")
