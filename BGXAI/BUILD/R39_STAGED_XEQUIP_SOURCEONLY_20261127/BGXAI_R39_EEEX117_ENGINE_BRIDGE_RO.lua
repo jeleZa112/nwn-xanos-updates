@@ -161,7 +161,21 @@ end
 -- A script being assigned is not proof that the engine is evaluating it.
 local SCRIPT_LEVELS={0,1,2,4,5,6,7}
 local function validResref(s)
- return type(s)=='string' and #s<=8 and (s=='' or not s:find('[^%w_]'))
+ -- Prior real saved CRE contains C#GREY: '#' is a valid BCS resource character.
+ -- Still refuse path syntax, whitespace and 9+ chars.
+ return type(s)=='string' and #s<=8 and (s=='' or not s:find('[^%w_#*]'))
+end
+-- Stock EEex v1.1.7 EEex_Debug.lua (git blob ec8f6d1735d1e2e27fc2bae6dca26fd89c22eef5)
+-- prints a running action's script resref via getScriptLevelResRef(
+--   curScriptNum >= 3 and curScriptNum + 1 or curScriptNum).
+-- This is NOT a mapping from action origin to manual/EPS. -1 is not SCRLEV.
+local function currentScriptCursor(sprite)
+ local raw=prop(sprite,'m_curScriptNum')
+ local action=prop(prop(sprite,'m_curAction'),'m_actionID')
+ if raw==nil and action==nil then return {available=false} end
+ if not int(raw,-1,6) or not int(action,0,65535) then return nil end
+ return {available=true,index=raw,action=action,
+   scrlev=(raw>=0 and (raw>=3 and raw+1 or raw) or nil)}
 end
 function M.probeScriptAssignments(ports)
  if type(ports)~='table' or type(ports.getPortraitSprite)~='function' or
@@ -185,6 +199,8 @@ function M.probeScriptAssignments(ports)
    safe(ports.getSelectedIDs),portraitId)
  if not initialPhysical then
   return report('HOLD_SCRIPT_PILOT_PHYSICAL_CONTEXT',{reason=initialReason}) end
+ local cursorBefore=currentScriptCursor(sprite)
+ if not cursorBefore then return report('HOLD_SCRIPT_CURSOR_INVALID') end
  local function once()
   local out={}
   for _,level in ipairs(SCRIPT_LEVELS) do
@@ -213,6 +229,21 @@ function M.probeScriptAssignments(ports)
  for _,level in ipairs(SCRIPT_LEVELS) do
   if first[level]~=second[level] then return report('HOLD_SCRIPT_RESREF_CHANGED') end
  end
+ local cursorAfter=currentScriptCursor(sameActor)
+ if not cursorAfter then return report('HOLD_SCRIPT_CURSOR_INVALID') end
+ if cursorBefore.available~=cursorAfter.available or
+    cursorBefore.index~=cursorAfter.index or
+    cursorBefore.action~=cursorAfter.action then
+  return report('HOLD_SCRIPT_CURSOR_CHANGED') end
+ -- Only same-actor / same-action / same-index / same resref double-read.
+ -- A nonempty assignment linked by the upstream EEex debug formula is STILL
+ -- only a same-moment candidate: NOT authenticated BCS execution or command source.
+ local actionScriptCandidate=nil
+ if cursorBefore.available and cursorBefore.action>0 and
+    cursorBefore.scrlev~=nil then
+  local s=first[cursorBefore.scrlev]
+  if s~=nil and s~='' and s~='NONE' then actionScriptCandidate=s end
+ end
  local found={}
  for _,level in ipairs(SCRIPT_LEVELS) do
   if first[level]=='BDDEFAI' then found[#found+1]=level end
@@ -223,6 +254,12 @@ function M.probeScriptAssignments(ports)
     scriptLevelResrefs=first,portraitActorId=portraitId,
     bddefaiAssigned=(#found>0),bddefaiAssignedLevels=found,
     pilotPhysicalSnapshotDoubleMatched=true,
+    engineDebugScriptIndexRaw=cursorBefore.available and cursorBefore.index or nil,
+    engineDebugMappedScrlevCandidate=cursorBefore.available and cursorBefore.scrlev or nil,
+    observedCurrentActionIdRaw=cursorBefore.available and cursorBefore.action or nil,
+    assignedScriptForObservedActionCandidate=actionScriptCandidate,
+    engineDebugCursorDoubleReadStable=cursorBefore.available,
+    mappingVerifiedAgainstEEexDebugV117=true,
     nativeScriptNameVerified=false,
     actualBcsExecutionVerified=false,scriptSlotOwnershipVerified=false,
     actionOriginVerified=false,canArm=false})
