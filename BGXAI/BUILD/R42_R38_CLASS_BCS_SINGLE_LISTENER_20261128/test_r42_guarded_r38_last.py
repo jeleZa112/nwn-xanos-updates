@@ -122,9 +122,12 @@ class T(unittest.TestCase):
         self.assertEqual(sha(R38_PATH.read_bytes()),G.R38_TOOL_SHA)
         self.assertEqual(len(R37_PATH.read_bytes()),G.R37_TOOL_LEN)
         self.assertEqual(sha(R37_PATH.read_bytes()),G.R37_TOOL_SHA)
-        r38,old=G.load(R38_PATH,R37_PATH)
-        self.assertEqual(r38.SOURCE_SHA,G.R38_SHA)
-        self.assertEqual(old.NATIVE_SHA,G.WEIDU_SHA)
+        # setUp pins the fake native bytes for sandbox install tests; restore
+        # the genuine production SHA for independent helper-contract validation.
+        with patch.object(G,'WEIDU_SHA','0d17e26e3f3ef5b36796eb0ee8ae73cb851d8b62c9702c2e224da2945caafb75'):
+            r38,old=G.load(R38_PATH,R37_PATH)
+            self.assertEqual(r38.SOURCE_SHA,G.R38_SHA)
+            self.assertEqual(old.NATIVE_SHA,G.WEIDU_SHA)
 
     def test_02_real_composer_bytes_and_sha(self):
         self.assertEqual(len(CANDIDATE),G.CANDIDATE_BYTES)
