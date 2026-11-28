@@ -1,5 +1,23 @@
 # BGXAI — Inventory Weapon Priority V4 corrected planner (2026-11-26)
 
+## 28.11.2026 — AUTOBATCH R37→R3→V3/V4, ВСЕ 16 СЛОТОВ ЗА ОДИН ВЫЗОВ
+
+**PRIOR WORK GATE:** Повторно использованы *существующие* R37 `captureTopLevel`, R3 `audit_r37_top_level`/разбор ITM, V3 `preview`/`scoreBackpackCandidate`, V4 `planWithV3` и исходный guarded R39 `XEquipItem`. Никакого нового наблюдателя, интерпретатора ITM, отдельного updater или самостоятельного движкового исполнителя не создано.
+
+**Реализована конкретная дельта внутри старого файла `BGXAI_BACKPACK16_PRIORITY_RO_V4.lua`:**
+- `prepare16FromR3(raw, r3Audit, projectWeapon)` — в **одном** проходе 18..33 обнаруживает все реальные верхнеуровневые предметы, сверяет всю карту 0..38 с офлайн-аудитом R3, читает реальные ITM ability attack-type и отсекает неоружие / предметы без подтверждённого профиля; 16 из 16 сканируются, не требуется список, заполненный вручную. Входной `projectWeapon` обязан вернуть модель персонажа с отдельным `MODEL_ONLY_NOT_NATIVE_EFFECTIVE`; модель не выдаётся за измеренные APR/THAC0. Сложные эффекты, классовые ограничения, боеприпасы и навыки должны быть доказаны вызывающей стороной — флаги не подделываются.
+- Исправлено отсутствие кандидатов в рюкзаке: уже экипированное более сильное оружие теперь выбирается как `PREFER_ALREADY_EQUIPPED_QUICKSLOT_NO_INVENTORY_MOVE` вместо `HOLD_NO_CANDIDATE`.
+- `planBattleDecision(advice,r37,scene)` выдаёт единый `pendingWeaponChange`: `SELECT_ALREADY_EQUIPPED_QUICKSLOT` или `EQUIP_BACKPACK_TO_EMPTY_QUICKSLOT`. При известной непустой очереди только `DEFER_KNOWN_NONEMPTY_ACTION_QUEUE`. Даже нулевая очередь не означает `manualEpsOriginVerified` или конец текущей атаки.
+- `planAutoBatch(sprite,r37,contextReader,reader,r3,projectWeapon,scene,v3Scene,previousV3,v3)` соединяет всё выше **одним** вызовом с ровно одним `captureTopLevel` за проход и без сканирования при `queuedActionsRaw>0`. Во втором стабильном такте V3 формирует цель, модельного победителя и приоритетное ожидающее решение. `v3Next` возвращается для повторной стабилизации только при реально следующем игровом состоянии.
+- **Нет** `XEquipItem`/регистрации хуков/записи LOCALS/сброса действий. Никакого `dispatchAuthorized=true`. Исходный R39 не запускается из этого класса планов автоматически.
+
+**Подтверждённые автоматические проверки:** 기존 V4 42 → **60** тестов (+18 сценариев), включая 16/16 слотов, проверку содержимого ITM и типа атаки, более сильный готовый слот, исключение неоружия, отклонение подложных APR/другого оружия, обход тяжёлого сканирования при очереди, сквозное R37→R3→V3/V4→ожидающее решение. Общий существующий регрессионный пакет **516/516 на каждом Lua 5.3, 5.4, LuaJIT**, плюс Python R3 **35/35** и Windows static **PASS**, GitHub Actions [run 46151362864](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46151362864), V4-specific [run 46151362781](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46151362781). **Это только SOURCE/TEST; игре и файлам пользователя ничего не устанавливалось.**
+
+**Единственный следующий критический блокер перед LIVE:** текущая установленная EEex 1.1.7 должна предоставлять достоверную модель именно *невыбранного* оружия (APR, THAC0, эффекты, пользование классом/китом, боеприпасы) вместе с подтверждённым внешним арбитражем EPS/ручных команд/границы раунда. Нынешняя функция `projectWeapon` принимает модель, а не сама доказывает её. Готовый R39 XEquipItem — действие, не разрешение использовать его. Запрещено разворачивать «фактическую» автоэкипировку из смоделированных или просроченных полей. Игровую установку проводить только через уже существующий `BGXAI_UPDATE.cmd` с резервной копией, typed install, последним rollback; не повторять R47 179→22 HOLD.
+
+---
+
+
 ## Real new code and purpose
 **Model-based situational weapon candidate selection from the 16 true BG(2)EE backpack slots 18..33**, reusing V1's noninterrupting scoring contract, not writing another game observer. Takes corrected V3 raw backpack snapshot, R2-style quick weapon slots, other top-level equipped slots 0..17 and 34, externally modelled V3/V4/V5 utility/effect scores, target and context. Only recommends a *unique resref* to a *currently EMPTY, class-allowed* quick weapon slot; never overwrites. Validates whole top-level equipment visibility, excludes duplicate items in offhand, ammo/quick items, magic-weapon, other quickweapons, or backpack. No external item/container instance identity; bags-of-holding contents not enumerated.
 
