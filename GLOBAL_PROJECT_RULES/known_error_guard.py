@@ -30,6 +30,21 @@ def validate_universal_registry(policy: dict) -> None:
     procedure = policy.get("procedure")
     if not isinstance(procedure, dict) or procedure.get("applies_even_without_updater") is not True:
         raise ValueError("universal process missing or incorrectly requires updater")
+    contract = procedure.get("error_gate_contract_v1")
+    if not isinstance(contract, dict) or contract.get("no_updater_requirement") is not True:
+        raise ValueError("mandatory universal error read/write contract missing")
+    if contract.get("status") != "MANDATORY_PROCEDURAL_GATE_ALL_PROJECTS":
+        raise ValueError("universal error gate is not mandatory")
+    if not isinstance(contract.get("before_action"), list) or not {
+        "project", "sources_read", "matched_error_ids_or_none_found_in_checked_sources",
+        "gate_verdict_CHECKED_PARTIAL_HOLD"
+    }.issubset(contract["before_action"]):
+        raise ValueError("pre-action known-error receipt incomplete")
+    write = contract.get("after_confirmed_error", {})
+    if write.get("moment") != "before_retrying_same_operation" or (
+        write.get("same_error") != "update_existing_entry_and_evidence_without_creating_duplicate_id"
+    ) or not isinstance(write.get("required_fields"), list):
+        raise ValueError("post-error write-before-retry requirement missing")
     entries = policy.get("project_error_register")
     if not isinstance(entries, list) or not entries:
         raise ValueError("universal project error register missing")
@@ -176,6 +191,30 @@ class RegressionTests(unittest.TestCase):
         self.assertGreaterEqual(len(self.policy["project_error_register"]), 6)
         self.assertIsNone(validate_universal_registry(self.policy))
 
+    def test_error_read_write_contract_blocks_missing_instruction(self):
+        import copy
+        bad = copy.deepcopy(self.policy)
+        del bad["procedure"]["error_gate_contract_v1"]
+        with self.assertRaisesRegex(ValueError, "read/write contract missing"):
+            validate_universal_registry(bad)
+
+    def test_error_write_before_retry_cannot_be_removed(self):
+        import copy
+        bad = copy.deepcopy(self.policy)
+        bad["procedure"]["error_gate_contract_v1"]["after_confirmed_error"]["moment"] = "optional"
+        with self.assertRaisesRegex(ValueError, "write-before-retry"):
+            validate_universal_registry(bad)
+
+    def test_universal_new_record_with_missing_evidence_blocked(self):
+        import copy
+        bad = copy.deepcopy(self.policy)
+        template = copy.deepcopy(bad["project_error_register"][0])
+        template["error_id"] = "NEW_ERROR_EXAMPLE_20261128"
+        template["evidence"] = []
+        bad["project_error_register"].append(template)
+        with self.assertRaisesRegex(ValueError, "incomplete universal error record"):
+            validate_universal_registry(bad)
+
     def test_universal_registry_non_updater_projects(self):
         categories = {e["project"] for e in self.policy["project_error_register"]}
         self.assertIn("MARKETPLACE_NSK", categories)
@@ -262,6 +301,7 @@ def main(argv=None):
     parser.add_argument("--policy", type=Path, default=Path(__file__).with_name("KNOWN_ERROR_GATES_V1.json"))
     parser.add_argument("--check-zip", type=Path)
     parser.add_argument("--check-plan", type=Path)
+    parser.add_argument("--check-record", type=Path, help="validate proposed new record without writing it")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args(argv)
     try:
@@ -270,8 +310,17 @@ def main(argv=None):
             result = unittest.TextTestRunner(verbosity=2).run(suite)
             return 0 if result.wasSuccessful() else 2
         policy = load_policy(args.policy)
-        if (args.check_zip is None) == (args.check_plan is None):
-            parser.error("pass exactly one of --check-zip or --check-plan (or --self-test)")
+        if sum(v is not None for v in (args.check_zip, args.check_plan, args.check_record)) != 1:
+            parser.error("pass exactly one of --check-zip, --check-plan, --check-record (or --self-test)")
+        if args.check_record is not None:
+            proposed = json.loads(args.check_record.read_text(encoding="utf-8"))
+            # Validate proposed record against existing IDs. This is read-only.
+            composite = dict(policy)
+            composite["project_error_register"] = policy["project_error_register"] + [proposed]
+            validate_universal_registry(composite)
+            print(json.dumps({"status": "RECORD_FORMAT_PASS_NOT_SAVED", "id": proposed["error_id"],
+                              "registry_modified": False}, ensure_ascii=False))
+            return 0
         problems = check_zip(args.check_zip) if args.check_zip is not None else check_plan(json.loads(args.check_plan.read_text(encoding="utf-8")), policy)
         print(json.dumps({"status": "HOLD_KNOWN_ERROR" if problems else "PASS_KNOWN_ERROR_CHECKS_ONLY", "problems": problems, "audio_quality_verified": False, "game_modified": False}, ensure_ascii=False))
         return 2 if problems else 0
