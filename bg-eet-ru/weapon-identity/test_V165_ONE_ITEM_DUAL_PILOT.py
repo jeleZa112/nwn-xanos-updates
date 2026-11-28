@@ -235,6 +235,25 @@ class PilotTests(unittest.TestCase):
                 {'gamePins':{'Baldur.exe':'0'*64},'weiduSha':'0'*64},
                 {'itemPins':{}},FakeBatch,None)
 
+    def test_v166_published_onefile_backend_and_manifest_exact(self):
+        import json
+        base=ROOT.parent/'onefile'
+        cmd=(base/'BG_EET_RU_UPDATE.cmd').read_bytes()
+        manifest=json.loads((base/'release.json').read_text('utf-8'))
+        backend_sha=pilot.digest(P.read_bytes())
+        self.assertEqual(manifest['version'],166)
+        self.assertEqual(manifest['sha256'],pilot.digest(cmd))
+        self.assertEqual(len(cmd),747154)
+        self.assertLessEqual(len(cmd),750000)
+        self.assertEqual(manifest['v165_backend_sha256'],backend_sha)
+        self.assertIn(b'SELF_VERSION = 166',cmd)
+        self.assertIn(('V165_PIN=\''+backend_sha+'\'').encode('ascii'),cmd)
+        self.assertIn(b'14=dual',cmd)
+        self.assertIn(b'V166 AROW01:1=status 2=check 3=install 4=undo',cmd)
+        self.assertIn(b'V165_ONE_ITEM_DUAL_PILOT.py',cmd)
+        self.assertIn(b'ad4e7f9f8eb234aa9b8f707104355628555d43df',cmd)
+        self.assertIs(manifest['default_game_writes_allowed'],False)
+
     def test_pins_and_typed_windows_barrier(self):
         self.assertEqual(len(pilot.V163_DISPATCH_SHA),64)
         self.assertEqual(len(pilot.V107_SOURCE_SHA),64)
