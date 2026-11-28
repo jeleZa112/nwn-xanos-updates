@@ -130,6 +130,29 @@ class IdentificationSourceTests(unittest.TestCase):
         for k,v in self.state['events'][1].items():
             self.assertIn(type(v),(str,int,float,bool),f'user data retained: {k}')
 
+    def test_existing_v160_name_resolver_has_no_new_native_reads_or_listener(self):
+        resolve=self.lua.globals().BG_EET_RU_V107_ResolveName
+        item=FakeItem(0)
+        self.assertIsNone(resolve('SW1H04',item))
+        self.assertEqual(item.flag_reads,0)
+        self.all_gates()
+        self.assertIsNone(resolve('SW1H04',item))
+        self.assertEqual(item.flag_reads,1)
+        self.state['dual_name_catalog_verified']=True
+        self.state['explicit_dual_name_consent']=True
+        self.state['verified_dual_pairs']=self.lua.table_from({
+            'SW1H04': self.lua.table_from({
+               'identified':'Имя известное','unidentified':'Имя неизвестное',
+               'current_itm_and_tlks_verified':True})
+        })
+        self.assertEqual(resolve('SW1H04',FakeItem(0)),'Имя неизвестное')
+        self.assertEqual(resolve('SW1H04',FakeItem(1)),'Имя известное')
+        self.assertIsNone(resolve('BOW05',FakeItem(1)))
+        self.assertIsNone(resolve('SW1H04',FakeItem(-1)))
+        self.assertIsNone(resolve('SW1H04',FakeItem(throws=True)))
+        self.assertEqual(self.state['recorded'],0)
+        self.assertEqual(self.state['seen'],0)
+
     def test_dual_russian_name_selects_only_with_all_current_proof_gates(self):
         self.all_gates()
         item1=FakeItem(1)
