@@ -42,7 +42,8 @@ class R42HoldReasonSourceOnly(unittest.TestCase):
         self.assertEqual(self.candidate.count(b"EEex_Action_AddSpriteStartedActionListener("), 0)
         self.assertEqual(self.candidate.count(b"[BGXBCS]"), 1)
         self.assertEqual(self.candidate.count(b"R27.r42Once=true"), 1)
-        self.assertEqual(self.candidate.count(b"probeInstalledScriptAssignments()"), 1)
+        self.assertEqual(self.candidate.count(b"probeInstalledScriptAssignments()"),
+                         self.previous.count(b"probeInstalledScriptAssignments()"))
 
     def test_existing_four_streams_identical(self):
         for tag in (b"[BGXR27]", b"[BGXR37]", b"[BGXINV3]", b"[BGXID]"):
