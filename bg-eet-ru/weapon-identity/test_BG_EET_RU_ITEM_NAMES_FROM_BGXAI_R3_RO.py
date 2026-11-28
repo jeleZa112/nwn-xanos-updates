@@ -240,6 +240,72 @@ class BridgeTests(unittest.TestCase):
             with self.subTest(case=change),self.assertRaises(catalog.SourceHold):
                 catalog.catalog_from_r28(self.root,report,SimpleNamespace(),self.v111,source=self.src)
 
+
+    def test_dual_source_only_keeps_both_arrow_names(self):
+        result=catalog.dual_russian_names_source_only(self.run_catalog())
+        self.assertEqual(result['status'],'IDENTIFICATION_RUNTIME_HOLD')
+        self.assertEqual(result['pairsReadyForFutureResearch'],1)
+        self.assertEqual(set(result['pairs']),{'AROW01'})
+        row=result['pairs']['AROW01']
+        self.assertEqual(row['unidentified'],{'name':'Отличная стрела','strref':11})
+        self.assertEqual(row['identified'],{'name':'Стрела','strref':10})
+        self.assertIsNone(row['displayName'])
+        self.assertFalse(result['installAllowed'])
+        self.assertFalse(result['liveIdentificationFlagVerified'])
+        self.assertEqual(result['displayNamesSelected'],0)
+        self.assertEqual(result['engineListenersAdded'],0)
+        self.assertEqual(result['gameFilesWritten'],0)
+
+    def test_dual_excludes_common_names_without_changing_original_catalog(self):
+        original=self.run_catalog()
+        before=original['items']['BOW05']['autoDisplayName']
+        derived=catalog.dual_russian_names_source_only(original)
+        self.assertNotIn('BOW05',derived['pairs'])
+        self.assertNotIn('SW1H04',derived['pairs'])
+        self.assertEqual(original['items']['BOW05']['autoDisplayName'],before)
+
+    def test_dual_gender_difference_holds(self):
+        v=ExistingV111(
+            {10:'Стрела',11:'Отличная стрела'},
+            {10:'Стрела',11:'Превосходная стрела'})
+        derived=catalog.dual_russian_names_source_only(self.run_catalog(['AROW01'],v))
+        self.assertEqual(derived['pairsReadyForFutureResearch'],0)
+
+    def test_dual_english_variant_holds(self):
+        v=ExistingV111(
+            {10:'Стрела',11:'Great Arrow'},
+            {10:'Стрела',11:'Great Arrow'})
+        derived=catalog.dual_russian_names_source_only(self.run_catalog(['AROW01'],v))
+        self.assertEqual(derived['pairsReadyForFutureResearch'],0)
+
+    def test_dual_lua_injection_variant_holds(self):
+        malicious="Стрела'); os.execute('bad') --"
+        v=ExistingV111({10:'Стрела',11:malicious},{10:'Стрела',11:malicious})
+        derived=catalog.dual_russian_names_source_only(self.run_catalog(['AROW01'],v))
+        self.assertEqual(derived['pairsReadyForFutureResearch'],0)
+
+    def test_dual_requires_source_and_full_tlk_hashes(self):
+        original=self.run_catalog()
+        for change in (
+            lambda r:r.update(schema='OTHER'),
+            lambda r:r.update(gameFilesWritten=1),
+            lambda r:r['tlkSha256'].update({'dialogf.tlk':'0'*10}),
+            lambda r:r['tlkSha256'].pop('dialogf.tlk'),
+        ):
+            import copy
+            row=copy.deepcopy(original)
+            change(row)
+            with self.subTest(case=change),self.assertRaises(catalog.SourceHold):
+                catalog.dual_russian_names_source_only(row)
+
+    def test_dual_source_rejects_non_weapon_and_fake_identity_proof(self):
+        original=self.run_catalog()
+        original['items']['AROW01']['itemTypeRaw']=9  # Potion, no weapon label
+        self.assertEqual(catalog.dual_russian_names_source_only(original)['pairsReadyForFutureResearch'],0)
+        original=self.run_catalog()
+        original['items']['AROW01']['autoDisplayName']='Стрела'
+        self.assertEqual(catalog.dual_russian_names_source_only(original)['pairsReadyForFutureResearch'],0)
+
     def test_source_has_no_game_mutation_api(self):
         code=SRC.read_text(encoding='utf-8')
         for forbidden in ('Infinity_DisplayString','XEquipItem(','.write_bytes(','.write_text(',"open('w'", "open('a'"):
