@@ -172,9 +172,9 @@ def analyze_v120_callback(generated_cpp, cxx_callback, x64_citem_doc):
     body = cxx_callback[start:stop]
     def field(name, value):
         return bool(re.search(
-            r'setImmediateTableUsertype\\s*\\(\\s*L\\s*,\\s*["\\']'
-            + name + r'["\\']\\s*,\\s*' + value
-            + r'\\s*,\\s*["\\']CItem["\\']\\s*\\)',
+            r'setImmediateTableUsertype\s*\(\s*L\s*,\s*"'
+            + name + r'"\s*,\s*' + value
+            + r'\s*,\s*"CItem"\s*\)',
             body))
     sync = ('luaCallProtected(L, 1, 0,' in body and
             'EEex_Sprite_LuaHook_AlterBaseWeaponDamage' in body and
