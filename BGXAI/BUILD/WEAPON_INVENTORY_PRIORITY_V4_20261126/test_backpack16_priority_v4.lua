@@ -311,4 +311,44 @@ test('v3_v4_caller_current_score_cannot_launder_gain',function()
  assert(x.estimatedGain>7)
  contract(x)
 end)
+-- Regression: evaluate the backpack against the BEST available quickslot,
+-- not just the currently selected (possibly depleted or immune) weapon.
+local function equipped_sword(b,q,o,s,c,vm,apr,thac0,dmg)
+ q[36]=item(36,'SW1H04')
+ vm.quickslotIds[2]='SWORD'
+ local w={}
+ for k,v in pairs(vm.weapons[1]) do w[k]=v end
+ w.id='SWORD';w.quickslotIndex=1;w.resRef='SW1H04'
+ w.mode='MELEE';w.damageType='SLASHING';w.weaponGroup='LONG_SWORD'
+ w.finalTHAC0=thac0;w.apr=apr;w.avgDamageOnHit=dmg
+ w.enchantment=1;w.magical=true
+ vm.weapons[2]=w
+end
+test('already_equipped_stronger_than_backpack_no_inventory_move',function()
+ local b,q,o,s,c,vm=v3v4()
+ equipped_sword(b,q,o,s,c,vm,4,3,10)
+ local x=stable(b,q,o,s,c,vm)
+ assert(x.status=='PREFER_ALREADY_EQUIPPED_QUICKSLOT_NO_INVENTORY_MOVE')
+ assert(x.bestEquippedWeaponId=='SWORD' and x.suggestedQuickslotIndex==1)
+ assert(x.bestEquippedScoreModel>x.selectedScoreModel)
+ contract(x)
+end)
+test('backpack_stronger_than_all_already_equipped',function()
+ local b,q,o,s,c,vm=v3v4()
+ equipped_sword(b,q,o,s,c,vm,2,12,4)
+ local x=stable(b,q,o,s,c,vm)
+ assert(x.status=='ADVISE_BACKPACK16_TO_EMPTY_QUICKSLOT_DRYRUN_ONLY')
+ assert(x.bestEquippedWeaponId=='SWORD' and x.sourceSlot==18)
+ assert(x.estimatedGain>x.scoreMargin)
+ contract(x)
+end)
+test('immune_selected_still_prefers_effective_equipped_over_weak_backpack',function()
+ local b,q,o,s,c,vm=v3v4()
+ vm.enemy.protections.missilesBlocked=true
+ equipped_sword(b,q,o,s,c,vm,2,7,7)
+ local x=stable(b,q,o,s,c,vm)
+ assert(x.status=='PREFER_ALREADY_EQUIPPED_QUICKSLOT_NO_INVENTORY_MOVE')
+ assert(x.bestEquippedScoreModel>6)
+ contract(x)
+end)
 print("BGXAI BACKPACK16 PRIORITY V4 "..n.." synthetic tests PASS")
