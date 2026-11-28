@@ -232,4 +232,76 @@ def build_catalog_from_r28(repo: Path, game: Path, r28_report):
     r3 = verified_module(repo, R3_REL, R3_BLOB_SHA)
     v111 = verified_module(repo, V111_REL, V111_BLOB_SHA)
     return catalog_from_r28(game, r28_report, r3, v111)
+def dual_russian_names_source_only(catalog: dict) -> dict:
+    """Extract both verified RU variants; NEVER infer the item's identified flag.
+
+    Reuses the existing R3/V111 catalog rather than opening the game again.
+    The existing V160 damage callback supplies CItem but its x64 identification
+    flag / correct live StrRef has NOT been verified on the user's EEex build.
+    These pairs are therefore SOURCE-ONLY, NOT Lua labels and NOT install data.
+    """
+    if not isinstance(catalog, dict) or catalog.get('schema') != 'BG_EET_RU_REUSE_BGXAI_R3_V111_NAMES_RO_V1' \
+            or catalog.get('status') != 'READ_ONLY_SOURCE_CATALOG' \
+            or catalog.get('gameFilesWritten') != 0 \
+            or catalog.get('engineListenersAdded') != 0:
+        raise SourceHold('DUAL_CATALOG_UNTRUSTED')
+    tlk = catalog.get('tlkSha256')
+    if not isinstance(tlk, dict) or set(tlk) != {'dialog.tlk', 'dialogf.tlk'} \
+            or any(not isinstance(sha, str) or not re.fullmatch(r'[0-9a-f]{64}', sha)
+                   for sha in tlk.values()):
+        raise SourceHold('DUAL_CURRENT_TLK_SHA_UNPROVEN')
+    items = catalog.get('items')
+    if not isinstance(items, dict) or not 1 <= len(items) <= MAX_ITEMS:
+        raise SourceHold('DUAL_ITEM_COUNT_UNSAFE')
+    # Match the already deployed batch's whitelist; do not broaden it.
+    weapon_types = frozenset({5, 14, 15, 16, 18, 19, 20, 25, 26, 27, 31})
+    lua_safe = re.compile(r'[А-Яа-яЁёA-Za-z0-9 +,.()\-/]{1,90}\Z')
+    pairs = {}
+    for ref, row in items.items():
+        if not isinstance(ref, str) or not REF.fullmatch(ref) or not isinstance(row, dict):
+            raise SourceHold('DUAL_CATALOG_ROW_INVALID')
+        if row.get('status') != 'NAME_OR_IDENTIFICATION_HOLD':
+            continue
+        if row.get('autoDisplayName') is not None \
+                or type(row.get('itemTypeRaw')) is not int \
+                or row['itemTypeRaw'] not in weapon_types \
+                or row.get('origin') not in ('CURRENT_GAME_BIFF', 'CURRENT_GAME_OVERRIDE') \
+                or not isinstance(row.get('resourceSha256'), str) \
+                or not re.fullmatch(r'[0-9a-f]{64}', row['resourceSha256']):
+            continue
+        variants = {}
+        for variant in ('unidentified', 'identified'):
+            text = row.get(variant + 'RuByTlk')
+            strref = row.get(variant + 'Strref')
+            if not isinstance(text, dict) or set(text) != {'dialog.tlk', 'dialogf.tlk'} \
+                    or type(strref) is not int or not 0 <= strref < 0xff000000:
+                variants = {}
+                break
+            a, b = text['dialog.tlk'], text['dialogf.tlk']
+            if a != b or not _names_safe(a) or not lua_safe.fullmatch(a) \
+                    or len(a.encode('utf-8')) > 180:
+                variants = {}
+                break
+            variants[variant] = {'name': a, 'strref': strref}
+        if len(variants) == 2 and variants['unidentified']['name'] != variants['identified']['name']:
+            pairs[ref] = {
+                'unidentified': variants['unidentified'],
+                'identified': variants['identified'],
+                'itmSha256': row['resourceSha256'],
+                'itmOrigin': row['origin'],
+                'displayName': None,
+                'identificationEvidence': 'NOT_PROVEN_FOR_CURRENT_X64_EEEX',
+            }
+    return {
+        'schema': 'BG_EET_RU_DUAL_RU_NAMES_SOURCE_ONLY_V1',
+        'status': 'IDENTIFICATION_RUNTIME_HOLD',
+        'pairsReadyForFutureResearch': len(pairs),
+        'pairs': pairs,
+        'tlkSha256': dict(tlk),
+        'gameFilesWritten': 0,
+        'engineListenersAdded': 0,
+        'installAllowed': False,
+        'liveIdentificationFlagVerified': False,
+        'displayNamesSelected': 0,
+    }
 
