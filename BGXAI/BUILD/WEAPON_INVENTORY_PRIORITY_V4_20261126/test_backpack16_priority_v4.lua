@@ -387,6 +387,7 @@ local function r37_fixture()
   rawInventoryDoubleReadConsistent=true,
   selectedDerivedStatsDoubleReadConsistent=true,
   queueSnapshotStable=true,actionContextSnapshotStable=true,
+  actionOriginVerified=false,manualEpsQueueVerified=false,
   actor=123,partyIndex=1,actionRaw=105,selectedWeaponRaw=35,
   selectedAbilityRaw=0,queuedActionsRaw=0,currentScriptNumberRaw=4,
   quickWeaponsRaw={},quiversRaw={}}
