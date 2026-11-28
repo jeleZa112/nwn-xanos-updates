@@ -8150,7 +8150,7 @@ def v162_dispatch(game,mode,offline=False):
   m=types.ModuleType('v162')
   exec(compile(p.read_bytes(),str(p),'exec'),m.__dict__)
   report=m.run(game,WORKDIR,mode,offline)
- except Exception as e:report={'status':'BATCH_SAFE_STOP','reason':type(e).__name__+': '+str(e)[:150],'gameFilesWritten':0}
+ except Exception as e:report={'status':'BATCH_SAFE_STOP','reason':type(e).__name__+': '+str(e)[:150],'gameFilesWritten':'UNKNOWN_AFTER_EXCEPTION' if mode in ('install','rollback') else 0}
  try:v116_zip(game,WORKDIR/REPORT_NAME,report,entry='79_V162_WEAPON_NAMES_BATCH.json')
  except Exception as e:print('V162_ZIP_HOLD',str(e)[:90]);return 2
  print('V162:',report.get('status'),report.get('reason',''))
