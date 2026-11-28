@@ -389,13 +389,13 @@
       "error_id": "BGXAI_R42_LIVE_CAPTURE_HOLD_DETAIL_MASKED_20261128",
       "project": "BGXAI",
       "type": "CONFIRMED_FAILURE",
-      "status": "R44_NATIVE_CLASS_ASSIGNMENT_PASS_R45_PREARM_SOURCE_CI_PASS_ACTION_NOT_VERIFIED",
+      "status": "R44_NATIVE_CLASS_AND_STAF01_LIVE_PASS_R46_NATIVE_RO_SOURCE_RELEASED_USER_TEST_PENDING",
       "discovered_at": "2026-11-28",
       "trigger": "Real Windows R42 one-file 179→6 capture after independently positive 179→2 guarded installed status",
       "observed_failure": "28-Nov 2026 first real R43 installed Windows capture 179→11 produced R43_CAPTURE_HOLD_REASON_OBSERVED, inner R42_CAPTURE_HOLD_CLASS_BCS_UNREADABLE, noAutoRetry=true, r39ProbeStatus=HOLD_SCRIPT_ACTOR_CHANGED, r39ClassSlotState=NOT_READ, classScriptResref=null, installed=true, ordersSent=0, dispatchAuthorized=false, armAuthorized=false, gameModified=false. Existing 46,109-byte raw console file local path C:\\Users\\Drevo\\Documents\\BGXAI_LIVE_REPORTS\\BGXAI_R43_CLASS_REASON_20261128T093349396112Z.log WAS NOT uploaded and has NOT been inspected. Two BG_EET_RU_V106 registration lines are not causal proof. Native process STOP code 1 is deliberate on hold.",
       "cause": "SOURCE-EXACT STOP LOCATION: R39 EEex 1.1.7 bridge probeScriptAssignments() checks `sameActor ~= sprite or sameId ~= portraitId` immediately after first seven resref reads, returning HOLD_SCRIPT_ACTOR_CHANGED. The single observed reason does NOT distinguish Lua userdata wrapper reference inequality (fresh typed wrapper returned by EEex_GameObject_Get / EEex_GameObject_CastUT) from an actual portrait actor ID change. Need not assert the actor actually switched. R43 successful identity matched earlier; class script not read. Proposed exclusive minimal source-only fix: compare stable numeric m_id with initial physical actorId and portrait ID, then second read using second object wrapper, and retain all previously existing exact physical/selection/script/cursor change HOLD gates; test same actor new wrapper vs changed ID without game installation. Not known which of two comparisons failed live.",
       "do_not_repeat": "Do not replay 179→11, reinstall R43 179→9, rerun old R42 179→6, old R39 compile, R38 capture, old GAM parsing, or unguarded rollback. Preserve original raw file. No duplicate listener, no new command/ARM, no assertion of CLASS name from 19-Nov GAM saved snapshot, no blame on BG_EET_RU without evidence.",
-      "safe_action": "Real user one R44 first live 179→16 PASS CLASS BDDEFAI, class assignment/same actor only. User has no action now. R45 source-only patched existing R39/R41 direct EEex sprite wrapper inequality and added bound numeric actor/portrait safety; 22703B SHA b714495a5caa155b9a58d3908209faf694041729dc6b6e25e2635b6b8ae76e3e CI 46136302716 WIN+UBUNTU PASS, 218/OS Python and 11 Lua new. NO R45 install, NO order, NO BAF execution. Existing R39 BAF 2407B natively compiled in earlier session, but not installed, and item source known from saved GAM not this live raw. Next source-only work must be FIRST guarded pilot using trusted live script execution + item active effects + action-safe boundary, NOT a new repeat R44 capture. Do not retry 179→16, older diagnostic menu or installed 179→14; do not install unguarded BAF/R41. Keep original onefile and exact SHA backup if/when deploy authorized.",
+      "safe_action": "Real R44 last #157 installed, one 179→16 live CLASS BDDEFAI and R39 exactPhysical positive proves one live STAF01 in backpack slot20 and weapon35/offhand9 empty (exact cached current actor/selected/kit/class/stats double read). R45 armer numeric ID source-only PASS, not installed. New R46 inert always-false BCS witness source-only BAF 223 bytes SHA af9c78..., Lua 2222B SHA 6f6f..., and V3 reusable TEMP native compiler source-only CI Windows/Ubuntu PASS; original onefile menu179 expanded by ONLY 17=R46 native BAF temp RO, immutable source commit 8ac04640, parent PS 79798B exact sha a52cf733..., child 41403B sha6db86250..., channel published. Source CI 46137423847 + postpin 46137529692 both OS PASS. Next ONE user-PC 179→17 native RO compile with game/InfinityLoader closed; DO NOT run old R44 179→13/14/16. If PASS later prepare new guarded last-only BCS witness install+rollback, then one live BCS execution proof, then R39 existing first XEquip under new separate approval. Neither witness BAF nor R39 XEquip installed yet. Do not equate source CI/native compile with BCS execution or equip.",
       "closure_condition": "Specific original source of R39 CLASS assignment read HOLD is identified without speculating from unrelated mods or retrying the same capture. A future narrow source-only fix must explicitly preserve existing listener, no command dispatch, exact script/backup/provenance checks, one updated existing updater and CI; any new installation requires separate typed approval. Class script remains UNKNOWN until real current-game evidence.",
       "evidence": [
         "user-provided 2026-11-28 BGXAI_UPDATE.cmd 179→6 console in current BGXAI conversation (R42_HOLD_ONEFILE_GUARDED, HOLD_R42_NATIVE_GUARD_OR_STATE)",
@@ -408,7 +408,7 @@
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46133473161",
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46133585010"
       ],
-      "enforcement": "R44 READONLY LIVE CLASS ASSIGNMENT PASS; R45 prearm source CI PASS only; R45 DEPLOY false; actual BCS execution unknown; action origin unknown; first XEquip not performed. No user action needed until separate guarded install choice is prepared, no background promises.",
+      "enforcement": "R44 user native CODE/DEPLOY/LIVE READONLY PASS, R45 source mock PASS, R46 SOURCE/NATIVE TEMP MOCK/CHANNEL PASS, R46 USER NATIVE/DEPLOY/LIVE NOT YET; NO XEquip. One existing CMD, never repeat previous captures or installed components.",
       "source_only_fix": {
         "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_CLASS_HOLD_REASON_SOURCE_ONLY.py",
         "tests": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_class_hold_reason_source_only.py",
@@ -493,7 +493,16 @@
         "r45CandidateSize": 22703,
         "r45CandidateSha256": "b714495a5caa155b9a58d3908209faf694041729dc6b6e25e2635b6b8ae76e3e",
         "r45GameInstalled": false,
-        "r45XEquipPerformed": false
+        "r45XEquipPerformed": false,
+        "r46PassiveBcsWitnessPrepared": true,
+        "r46NativeReadonlyMode17Published": true,
+        "r46OnefileImmutableCommit": "8ac04640f9960707498afc68bdcd2f1ebde317aa",
+        "r46PostpinCI": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46137529692",
+        "r46UserNativeCompileDone": false,
+        "r46Installed": false,
+        "r46ActualBCSExecution": false,
+        "r46XEquipPerformed": false,
+        "liveSTAF01ProvenByExactR39Physical": true
       }
     }
   ],
@@ -660,11 +669,22 @@
           "recorded_before_source_edit": true,
           "already_done": "R44 user native last #157 installed, one and only 179→16 live selected actor CLASS BDDEFAI and R39 exactPhysical unique STAF01 slot20 empty 35 and offhand9; R45 source corrected R39/R41 prearm numeric actor ID mock CI 218/OS PASS; R46 passive BCS EXTEND_TOP BAF 223 bytes SHA af9c78d00dd24806c694e7ee1d6fe882a65b8a9fd71acc90654f60188932a0d9 and Lua 2222B SHA 6f6f090c57ad2d3a5dca54ad474c5bb475bb16502c7d0af6ce3ab6fafad396c4; R46 native RO compiler reused original R39/V3 backend, 10 mocked tests pass Windows/Ubuntu, not user native. Existing same one-CMD 179 child 35283B SHA 281362f..., PS 79798B, immutable channel 668b... and menu 1..16.",
           "specific_missing_delta": "Add ONLY menu179→17 new R46 passive BAF native TEMP-only compile using SHA-pinned R46 builder/native helper and exactly previously proven R39/V3 source backend in existing parent one-CMD. Reuse earlier R44 status guard exact last #157 and installed proof before invoking native compilation. Stage fully outside EET with exact SHA/bytes; no new parent PowerShell functionality except child SHA length pin, PS retains 79798≤80000. New native result must prove zero game/WeiDU writes and compiler accepted EEex_LuaTrigger; NEVER assert BCS execution, auto arm, XEquip or item engine usability from this. Preserve 179 1..16 byte-for-byte, 175/176 and installed R44. Channel repin only after Windows+Linux CI PASS and immutable parent+child pin cross-check. Stop on any HOLD; no retry.",
-          "status": "PRIOR_WORK_REVIEWED_BEFORE_ONEFILE_CHANGE",
+          "status": "R46_SAME_ORIGINAL_ONEFILE_NATIVE_TEMP_RO_PUBLISHED_TWO_OS_POSTPIN_CI_PASS",
           "source_only": true,
           "gameModified": false,
           "autoConsent": false,
-          "targetFile": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py"
+          "targetFile": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py",
+          "sourceCommit": "8ac04640f9960707498afc68bdcd2f1ebde317aa",
+          "channelPublicationCommit": "45d249aa79555049ae4c7588d51193bf39d97cf1",
+          "parentPSSize": 79798,
+          "parentPSSha256": "a52cf7331fa746c7c501f81c5fee73bc427f1d90b721b79ea8aeafb6178a1665",
+          "childPythonBytes": 41403,
+          "childPythonSha256": "6db86250aebb5eeb1b7887958c0282b52cd313bb7c917c5cc40797c731155846",
+          "preReleaseCI": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46137423847",
+          "postReleaseCI": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46137529692",
+          "realGameModified": false,
+          "realR46NativeCompileDone": false,
+          "next": "User, game and InfinityLoader closed, same original BGXAI_UPDATE.cmd select 179→17 ONCE; expect verified pinned script 8ac04640f996 SHA OK and status R46_NATIVE_TEMP_COMPILE_EXACT_PASS_NOT_INSTALLED, zero game changes. On any HOLD STOP preserve output, no auto retry. DO NOT select 179→13/14/16 or legacy R38/R39 old tests."
         }
       ],
       "project": "BGXAI",
@@ -858,13 +878,24 @@
           "already_done": "R44 user native installed last157 and one 179→16 game PASS with real assigned CLASS BDDEFAI, single [BGXBCS] event; exact R39 numeric-ID `exactPhysical()` accepts only actor selected single, class3 kit16384, one STAF01 source backpack slot20 flags1 zero charges, weapon35 and offhand9 empty, double unchanged. Therefore R44 in conjunction with exact source proves live STAF01 even though its compact log does not print resref. R39 2407B BAF already native WeiDU compiled TEMP-only, never installed. R45 corrected combined R39/R40/R41 armer source-only 22703 bytes sha b714495a5caa155b9a58d3908209faf694041729dc6b6e25e2635b6b8ae76e3e CI 46136302716 pass both OS, no deployment. Existing R44 override M_BGXR27 read-only has no action dispatch. One original BGXAI_UPDATE.cmd still pinned 668b with menus 175/176/179 1-16.",
           "missing_delta": "Need prove actual BDDEFAI CLASS BCS code is evaluated by game for Jagan, independent of merely assigned BCS resref, before activating existing source-only R39 XEquip. Minimal safe mechanism: SOURCE-ONLY isolated BCS IF block with EEex_LuaTrigger read-only observer that always returns false and thus no response, placed via reversible WeiDU EXTEND_TOP on real BDDEFAI.BCS in a future separately guarded last-only component #158; bound Lua observer identifies Jagan via EEex_LuaTrigger_Object actor numeric m_id, portrait1 id, class3 kit and assigned live CLASS BDDEFAI, writes at most ONE no-private-data event. No extra action-start listener, no new CMD, no ARM/LOCALS/XEquip. First author and offline test exact candidate + reversible installer blueprint; don't install without confirmed game BCS baseline and single typed consent. Engine item usability/full effects and manual/EPS safe action boundary remain explicitly NOT resolved by this witness.",
           "rationale": "WeiDU manual and Gibberlings3 WeiDU course explicitly describe EXTEND_TOP of existing .BCS with a .BAF; source-only isolated false predicate cannot schedule gameplay responses. Current assigned CLASS is not BCS execution proof. R39 existing ITEM static native check did not verify all live effects/usability. Future pilot must use R45 and R39 BAF already built, not reimplement XEquip.",
-          "status": "PRIOR_WORK_REVIEWED_NO_SOURCE_WRITTEN",
+          "status": "INERT_BCS_WITNESS_SOURCE_ONLY_TWO_OS_CI_PASS_NOT_INSTALLED",
           "gameModified": false,
           "autoArm": false,
           "installed": false,
           "previousLogSha": "8dabbb5353b3eb834cbe685ccaee7fe22aa30c1c56018355cee325e1432837d4",
           "oneCmdOnly": true,
-          "noRepeatedCapture": true
+          "noRepeatedCapture": true,
+          "source": "BGXAI/BUILD/R46_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/BGXAI_R46_INERT_BDDEFAI_WITNESS_SOURCE_ONLY.py",
+          "reusedNativeCompiler": "BGXAI/BUILD/R46_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/BGXAI_R46_NATIVE_COMPILE_RO_REUSE_R39.py",
+          "compiledBafActuallyUserNative": false,
+          "witnessBafBytes": 223,
+          "witnessBafSha256": "af9c78d00dd24806c694e7ee1d6fe882a65b8a9fd71acc90654f60188932a0d9",
+          "witnessLuaBytes": 2222,
+          "witnessLuaSha256": "6f6f090c57ad2d3a5dca54ad474c5bb475bb16502c7d0af6ce3ab6fafad396c4",
+          "sourceOnlyTests": "12 Python static + 10 native backend mocks Windows/Linux + 14 Lua5.4 witness mocks on Ubuntu; all PASS CI 46137058642 and postrelease 46137529692; no BCS installation or game write.",
+          "validityNuance": "R39 installed R44 real one-time probe R39_SCRIPT_RESREFS_OBSERVED_NO_DEPLOY and exactPhysical succeeded ONLY if live STAF01 unique source slot20 and empty weapon35/offhand9, class3 kit16384, stable twice; compact log omission of name does not refute physical live proof. But full engine equip usability and all effects remain unknown.",
+          "methodEvidence": "WeiDU official EXTEND_TOP BCS BAF syntax; blueprint would prepend one 223B BAF with EEex_LuaTrigger pcall(fn); return false, so BAF RESPONSE Continue() can never execute; Lua function logs at most one [BGXBEX] after numeric actor ID, class3/kit16384, assigned BDDEFAI. This blueprint has NOT been installed and real BCS evaluation NOT VERIFIED.",
+          "requirementsBeforeDeploy": "User native R46 179→17 BAF compile only; if PASS then prepare separately guarded WeiDU 158-last with external backup of original BDDEFAI.BCS and exact R44 proof; typed approval; later one single game capture to witness execution. R45/R39 auto-XEquip still separately locked. No re-run R44 179→16."
         }
       ],
       "predecessor_sources": [
