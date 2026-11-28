@@ -271,7 +271,7 @@ class NativeFixture(unittest.TestCase):
         code=r3.export_r37_lua_cache(self.full_inventory_catalog())
         path=self.root/'staged_source_data_only.lua'
         path.write_text(code,encoding='ascii')
-        program=('local r=dofile(arg[0]);'
+        program=('local r=dofile('+json.dumps(str(path))+');'
                  'assert(type(r)=="table");'
                  'assert(r.inventoryRawMap[18].resref=="SW1H04");'
                  'assert(r.items.STAF01.item.proficiencyIdRaw==102);'
@@ -279,7 +279,7 @@ class NativeFixture(unittest.TestCase):
                  'assert(r.nativeCurrentAlternativeAPRVerified==false);'
                  'assert(r.items.SW1H04.item.abilities[1].attackTypeRaw==1);'
                  'print("R3_LUA_CATALOG_DATA_PASS")')
-        p=subprocess.run([cmd,'-e',program,str(path)],capture_output=True,
+        p=subprocess.run([cmd,'-e',program],capture_output=True,
                          text=True,timeout=10)
         self.assertEqual(p.returncode,0,p.stderr)
         self.assertIn('R3_LUA_CATALOG_DATA_PASS',p.stdout)
