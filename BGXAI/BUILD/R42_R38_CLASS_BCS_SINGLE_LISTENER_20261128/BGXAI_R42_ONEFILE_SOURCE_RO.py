@@ -103,17 +103,6 @@ SOURCES.update({
  R47_GUARD:(20399,"b61811e27afc57bb02db720027c43b46b1b021b6bf9d6e9003059f68e1bfa758"),
  R47_COMPOSE:(4309,"2c9f97820be8c83927498b9806f75dd59397c385e14407c835e2f46f64b62d0e"),
 })
-R48_ROOT="BGXAI/BUILD/R48_ONE_REAL_STAF01_EQUIP_AFTER_R47_20261128/"
-R48_COMPOSE=R48_ROOT+"BGXAI_R48_REUSE_R39_ONE_SHOT_BAF_SOURCE_ONLY.py"
-R48_GUARD=R48_ROOT+"BGXAI_R48_LAST158_TO159_ONE_ITEM_GUARDED.py"
-R48_INSTALL_CONFIRM="INSTALL_BGXAI_R48_ONE_STAF01_FROM_BACKPACK_TO_WEAPON_AFTER_R47"
-R48_ROLLBACK_CONFIRM="ROLLBACK_BGXAI_R48_RESTORE_R47_ONLY"
-R48_ACTION_BAF_SHA="002edfee81c8163aa71af7aef3cc311229300cea2578cefb41a4cf989eb87574"
-MODES.update({"23":"r48_install","24":"r48_rollback","25":"r48_status"})
-SOURCES.update({
- R48_COMPOSE:(5717,"6fbfb6eeed26e6e06ceb4714dd6fb398eb8bf6f65318fcaf566e73eb913b5d02"),
- R48_GUARD:(15135,"6a4b934297cb5f20357c46d42eaf804a7bec748c59a878cd0c97ef481990e9e6"),
-})
 INSTALL_CONFIRM = "INSTALL_BGXAI_R42_READONLY_CLASS_BCS_AFTER_R38"
 ROLLBACK_CONFIRM = "ROLLBACK_BGXAI_R42_RESTORE_R38_ONLY"
 
@@ -799,97 +788,6 @@ def run_r47_guarded(game: Path, commit: str, mode: str, *,
         return out
 
 
-
-def run_r48_real_equip(game: Path, commit: str, mode: str, *,
-                      fetcher=fetch, runner=subprocess.run,
-                      require_windows: bool=True, approved_token: str | None=None) -> dict:
-    """R48 ACTUAL STAF01 XEquip pilot, one existing CMD, separate typed consent."""
-    if mode not in ("r48_install","r48_rollback","r48_status"):
-        raise Hold("HOLD_R48_ONEFILE_UNSUPPORTED_MODE")
-    game=protected_root(game,require_windows)
-    commit=pin(commit)
-    native_mode=mode.split("_",1)[1]
-    typed=native_mode in ("install","rollback")
-    exact=R48_INSTALL_CONFIRM if native_mode=="install" else R48_ROLLBACK_CONFIRM
-    if typed and approved_token!=exact:
-        raise Hold("HOLD_R48_EXACT_TYPED_USER_CONSENT_REQUIRED")
-    with tempfile.TemporaryDirectory(prefix="BGXAI_R48_ONEFILE179_ACTION_") as folder:
-        workspace=Path(folder).resolve(strict=True)
-        realgame=game.resolve(strict=True)
-        if workspace==realgame or workspace in realgame.parents or realgame in workspace.parents:
-            raise Hold("HOLD_R48_WORKSPACE_OVERLAPS_GAME")
-        for path in (R37_GUARD,R38_GUARD,R42_GUARD,BUILDER,BRIDGE,LIVE_SOURCE,
-                     R43_DIAG,R43_GUARD,R39_NUMERIC_PATCH,R44_COMPOSE,R44_GUARD,
-                     R46_COMPOSE,R46_PREVIOUS_BAF,R47_COMPOSE,R47_GUARD,
-                     R48_COMPOSE,R48_GUARD):
-            data=verified(path,fetcher(commit,path))
-            target=workspace.joinpath(*path.split("/"))
-            if workspace not in target.parents or target.is_symlink():
-                raise Hold("HOLD_R48_STAGE_UNSAFE")
-            target.parent.mkdir(parents=True,exist_ok=True)
-            target.write_bytes(data)
-            if sha(target.read_bytes())!=SOURCES[path][1]:
-                raise Hold("HOLD_R48_STAGING_SHA")
-        command=[sys.executable,str(workspace.joinpath(*R48_GUARD.split("/"))),
-                 "--game",str(game),"--mode",native_mode,"--onefile-review-gate"]
-        result=runner(command,cwd=str(workspace),
-                      input=(approved_token+"\n") if typed else "",
-                      stdin=None,capture_output=True,text=True,encoding="utf-8",
-                      errors="replace",timeout=350,check=False)
-        try:
-            inner=json.loads(result.stdout[result.stdout.find("{"):])
-        except (TypeError,ValueError):
-            raise Hold("HOLD_R48_NATIVE_REPORT_INVALID")
-        if type(inner) is not dict:
-            raise Hold("HOLD_R48_NATIVE_REPORT_TYPE")
-        status=inner.get("status")
-        expected={
-          "status":("R48_NOT_INSTALLED_R47_LAST158",
-                    "R48_REAL_ONE_SHOT_STAF01_LAST159_PRESENT"),
-          "install":("R48_STAF01_REAL_ONE_SHOT_INSTALLED_AWAITING_GAME",),
-          "rollback":("R48_ROLLBACK_RESTORED_R47_LAST158",)}
-        if status not in expected[native_mode] or result.returncode!=0:
-            reason=inner.get("reason")
-            if type(reason) is not str or len(reason)>140 or re.fullmatch(r"[A-Z0-9_:.+-]+",reason) is None:
-                reason="HOLD_R48_NATIVE_INSTALL_OR_ROLLBACK_REVIEW"
-            return {"schema":SCHEMA,"status":"R48_NATIVE_HOLD_DETAILS",
-                "innerStatus":status if type(status) is str and status=="R48_STOP_MANUAL_REVIEW" else "UNCLASSIFIED",
-                "nativeReason":reason,"noAutoRetry":True,
-                "gameModifiedUnknown":native_mode in ("install","rollback"),
-                "installed":None,"actualXEquipPerformed":False,
-                "ordersSentAtInstall":0}
-        installed=(native_mode=="install" or
-                   (native_mode=="status" and status=="R48_REAL_ONE_SHOT_STAF01_LAST159_PRESENT"))
-        if inner.get("installed") is not installed or
-            inner.get("gameModified") is not (native_mode in ("install","rollback")):
-            raise Hold("HOLD_R48_INSTALLED_OR_MODIFIED_FLAG")
-        if native_mode=="install":
-            if (inner.get("candidateBafSHA256")!=R48_ACTION_BAF_SHA or
-                inner.get("sourceItem")!="STAF01" or
-                inner.get("sourceBackpackSlot")!=20 or
-                inner.get("targetWeaponSlot")!=35 or
-                inner.get("onceFlag")!="BGX48TRY" or
-                inner.get("userApprovedRealItemMove") is not True or
-                inner.get("ordersSentAtInstall")!=0 or
-                inner.get("actualXEquipPerformed") is not False):
-                raise Hold("HOLD_R48_GAMEPLAY_ACTION_SOURCE_CONTRACT")
-        if native_mode=="rollback" and inner.get("ordersSentAtInstall")!=0:
-            raise Hold("HOLD_R48_ROLLBACK_ACTION_CLAIM")
-        return {"schema":SCHEMA,
-            "status":"R48_"+native_mode.upper()+"_EXACT_GUARDED_PASS",
-            "innerStatus":status,
-            "sourceCommit":commit,
-            "expectedOneShotBAFSHA256":R48_ACTION_BAF_SHA,
-            "installed":installed,
-            "gameModified":native_mode in ("install","rollback"),
-            "userApprovedRealItemMove":native_mode=="install",
-            "ordersSentAtInstall":0,
-            "actualXEquipPerformed":False,
-            "automaticOneShotInGameAttemptArmedByInstall":native_mode=="install",
-            "onceFlag":"BGX48TRY",
-            "noAutoRetry":False}
-
-
 def choose_mode() -> str:
     print("R42 (single BGXAI_UPDATE.cmd): 1=source RO [default]; 2=status; "
           "3=preflight RO; 4=install (typed); 5=rollback (typed); 6=capture game RO; 0=exit",flush=True)
@@ -899,7 +797,6 @@ def choose_mode() -> str:
           "15=rollback typed; 16=capture game RO",flush=True)
     print("R46: 17=first inert BDDEFAI BAF native TEMP compile RO (NO INSTALL)",flush=True)
     print("R47: 18=preflight RO; 19=install typed; 20=status; 21=rollback typed; 22=capture game RO",flush=True)
-    print("R48 FIRST REAL EQUIP: 23=one STAF01 gameplay action install typed; 24=rollback typed; 25=status RO",flush=True)
     s=input("R42 choice [1]: ").strip()
     if not s:s="1"
     if s=="0":return "exit"
@@ -924,15 +821,6 @@ def main(argv=None) -> int:
             result=run(args.game,args.commit)
         elif mode=="r46_native_ro":
             result=run_r46_native_readonly(args.game,args.commit)
-        elif mode.startswith("r48_"):
-            token=None
-            if mode in ("r48_install","r48_rollback"):
-                correct=R48_INSTALL_CONFIRM if mode=="r48_install" else R48_ROLLBACK_CONFIRM
-                print("R48 "+mode+": this enables a REAL ONE-SHOT IN-GAME STAF01 INVENTORY TRANSFER.",flush=True)
-                print("Use expendable test save; close game. No auto retry.",flush=True)
-                token=input("Type "+correct+" exactly (ENTER cancels): ").strip()
-                if token!=correct:raise Hold("HOLD_R48_EXACT_TYPED_USER_CONSENT_REQUIRED")
-            result=run_r48_real_equip(args.game,args.commit,mode,approved_token=token)
         elif mode.startswith("r47_"):
             token=None
             if mode in ("r47_install","r47_rollback"):
