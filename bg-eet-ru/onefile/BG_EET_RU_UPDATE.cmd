@@ -8136,7 +8136,7 @@ def v153_dispatch(game,mode):
  except Exception as e:print('ZIP_HOLD',str(e)[:90])
  print(report.get('status'), report.get('reason',''))
  return 2 if 'HOLD' in report.get('status','') or 'STOP' in report.get('status','') else 0
-V162_PIN='e8c3a08f018e358e686fb5ec4ba506f6dae4141c7bf1ea51888c4598ea945b30'
+V162_PIN='b46a01274479fbe3c7e83cf847ef299ba41d12f4a1f051ac26cf7495b7e2ab00'
 V162_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/ca6fa6bbc29f74ebe2884de39eb0e970813a1d3a/bg-eet-ru/hit-only-v160/weapon_names_onefile_dispatch.py'
 def v162_dispatch(game,mode,offline=False):
  try:
