@@ -78,7 +78,7 @@ jobs:
           $all=Get-Content 'BGXAI/UPDATER_V2/MODULES_V1.json' -Raw | ConvertFrom-Json
           # Test actual unmodified V2 hub Check-Index on the entire
           # production manifest using PowerShell 5.1; NO game/root access.
-          $hub=[IO.File]::ReadAllText('BGXAI/UPDATER_V2/BGXAI_HUB_V2_STAGED.ps1')
+          $hub=[IO.File]::ReadAllText('BGXAI/UPDATER_V2/BGXAI_HUB_V2_STAGED.ps1').Replace("`r`n","`n")
           $anchor="try{`n  if(`$SelfTest)"
           $at=$hub.LastIndexOf($anchor)
           if($at -lt 0){throw 'Existing immutable V2 hub entrypoint changed'}
