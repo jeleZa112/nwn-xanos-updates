@@ -520,7 +520,7 @@
         },
         {
           "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py",
-          "git_blob_sha": "fb1c51a4fee5fa77882e63fcc60c6f12e4a9c4c9"
+          "git_blob_sha": "e26e1c51922e94be740f499c60dff197ee10d27a"
         }
       ],
       "already_implemented": [
@@ -669,7 +669,7 @@
       ],
       "project": "BGXAI",
       "source_path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py",
-      "source_git_blob_sha": "fb1c51a4fee5fa77882e63fcc60c6f12e4a9c4c9",
+      "source_git_blob_sha": "e26e1c51922e94be740f499c60dff197ee10d27a",
       "status": "PREWORK_REVIEWED_SOURCE_ONLY",
       "predecessor_sources": [
         {
