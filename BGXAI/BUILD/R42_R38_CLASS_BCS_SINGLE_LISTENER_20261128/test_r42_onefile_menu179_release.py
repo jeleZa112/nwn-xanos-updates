@@ -130,18 +130,3 @@ class T(unittest.TestCase):
         self.assertLess(channel['script_size'],80000)
 
 if __name__=='__main__':unittest.main()
-)
-
-    def test_published_source_only_claim_is_accurate(self):
-        import json
-        channel=json.loads((ROOT/'BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text(encoding='utf-8'))
-        self.assertIn('Default source RO',channel['description'])
-        self.assertIn('install typed',channel['description'])
-        self.assertIn('rollback typed',channel['description'])
-        self.assertIn('capture RO',channel['description'])
-        self.assertIn('CLASS4 Jagan',channel['description'])
-        self.assertIn('179',channel['description'])
-        self.assertIn('175/176',channel['description'])
-        self.assertLess(channel['script_size'],80000)
-
-if __name__=='__main__':unittest.main()
