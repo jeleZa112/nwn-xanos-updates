@@ -59,6 +59,92 @@ class NativeFixture(unittest.TestCase):
         path.write_bytes(b)
         ent=[('SW1H04',0x03ed,35),('SW1H04',0x03ee,36),('WSPATCK',0x03f4,37),('STAF01',0x03ed,38)]
         (self.root/'chitin.key').write_bytes(fixture_key(b,ent))
+    def make_r37_capture(self):
+        def empty(slot):
+            return {'slot':slot,'status':'EMPTY'}
+        def present(slot,resref):
+            return {'slot':slot,'status':'PRESENT_RAW','resref':resref,
+                    'flagsRaw':0,'useCount1Raw':0,'useCount2Raw':0,'useCount3Raw':0}
+        bag={str(i):empty(i) for i in range(18,34)}
+        quick={str(i):empty(i) for i in range(35,39)}
+        other={str(i):empty(i) for i in list(range(18))+[34]}
+        bag['18']=present(18,'SW1H04')
+        quick['35']=present(35,'STAF01')
+        return {'schema':'BGXAI_BACKPACK16_R37_DOUBLE_READ_RO_V3',
+            'status':'TOPLEVEL0_38_AND_R37_STABLE_ADVICE_ONLY',
+            'actorId':123,'readOnly':True,'sourceOnly':True,
+            'rawInventoryDoubleRead':True,
+            'r37QuickQuiverOffhandMatched':True,
+            'rawSnapshotDriftObserved':False,
+            'nativeInstanceIdentityVerified':False,
+            'alternativeAPRVerified':False,
+            'dispatchAuthorized':False,'inventoryMoveAuthorized':False,
+            'topLevelSlotsCount':39,
+            'backpack':{'status':'BACKPACK16_RAW_NOT_INSTANCE_PROOF',
+                        'actorId':123,'slots':bag},
+            'quick':quick,'other':other}
+
+    def test_r37_39slot_itm_join_reuses_installed_bif_source(self):
+        proof=r3.audit_r37_top_level(r3.NativeSource(self.root),self.make_r37_capture())
+        self.assertEqual(proof['sourceKind'],'CURRENT_GAME')
+        self.assertEqual(proof['requestedItems'],['STAF01','SW1H04'])
+        self.assertEqual(proof['inventoryRawMap'][18]['resref'],'SW1H04')
+        self.assertEqual(proof['items']['SW1H04']['item']['abilities'][0]['speedRaw'],5)
+        self.assertEqual(proof['itemAbilityStrideFromITMBytes'],56)
+        self.assertFalse(proof['dispatchAuthorized'])
+        self.assertFalse(proof['nativeCurrentAlternativeAPRVerified'])
+        self.assertFalse(proof['inventoryTransferAuthorized'])
+
+    def test_r37_repeated_resref_preserved_not_instance_identity(self):
+        snapshot=self.make_r37_capture()
+        snapshot['quick']['35']['resref']='SW1H04'
+        proof=r3.audit_r37_top_level(r3.NativeSource(self.root),snapshot)
+        self.assertEqual(proof['requestedItems'],['SW1H04'])
+        self.assertEqual(proof['duplicateTopLevelResrefs'],['SW1H04'])
+        self.assertFalse(proof['nativeRuntimeInventorySnapshotAuthenticated'])
+
+    def test_r37_missing_or_extra_slot_rejected(self):
+        snapshot=self.make_r37_capture()
+        snapshot['other'].pop('9')
+        with self.assertRaisesRegex(r3.Hold,'R37_SLOT_MAP_SHAPE_INVALID'):
+            r3.audit_r37_top_level(r3.NativeSource(self.root),snapshot)
+        snapshot=self.make_r37_capture()
+        snapshot['quick']['34']={'slot':34,'status':'EMPTY'}
+        with self.assertRaisesRegex(r3.Hold,'R37_SLOT_MAP_SHAPE_INVALID'):
+            r3.audit_r37_top_level(r3.NativeSource(self.root),snapshot)
+
+    def test_r37_forged_native_equip_or_invalid_ref_rejected(self):
+        snapshot=self.make_r37_capture()
+        snapshot['inventoryMoveAuthorized']=True
+        with self.assertRaisesRegex(r3.Hold,'R37_TOPLEVEL_CAPTURE_UNTRUSTED'):
+            r3.audit_r37_top_level(r3.NativeSource(self.root),snapshot)
+        snapshot=self.make_r37_capture()
+        snapshot['backpack']['slots']['18']['resref']='bad/path'
+        with self.assertRaisesRegex(r3.Hold,'R37_SLOT_RESREF_UNSAFE'):
+            r3.audit_r37_top_level(r3.NativeSource(self.root),snapshot)
+
+    def test_two_ability_itm_uses_56_byte_stride(self):
+        # Native format: main header 114B, each extended ability 56B.
+        # EEex upstream Resource.lua appears to multiply by Item_Header_st.sizeof,
+        # not Item_ability_st.sizeof; never rely on that pointer for ability 1+.
+        binary=bytearray(114+2*56)
+        binary[:8]=b'ITM V1  '
+        struct.pack_into('<I',binary,0x64,114)
+        struct.pack_into('<H',binary,0x68,2)
+        struct.pack_into('<I',binary,0x6a,len(binary))
+        for idx,speed in ((0,8),(1,2)):
+            pos=114+idx*56
+            binary[pos]=1
+            binary[pos+2]=1
+            binary[pos+0x12]=speed
+            binary[pos+0x16]=6
+            binary[pos+0x18]=1
+        itm=r3.parse_itm(bytes(binary))
+        self.assertEqual(len(itm['abilities']),2)
+        self.assertEqual([a['speedRaw'] for a in itm['abilities']],[8,2])
+        self.assertEqual([a['baseDamageMeanBeforeEffects']
+                          for a in itm['abilities']],[3.5,3.5])
+
     def test_actual_sword_item_dice(self):
         it=r3.parse_itm(SW1H04)
         self.assertEqual((it['abilities'][0]['diceCountRaw'],it['abilities'][0]['diceSidesRaw']),(1,8))
