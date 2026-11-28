@@ -1,5 +1,14 @@
 # BGXAI — ЕДИНСТВЕННАЯ КАНОНИЧЕСКАЯ ТОЧКА ВОССТАНОВЛЕНИЯ
 
+## 28.11.2026 — R43 LIVE PREFLIGHT USER-CONFIRMED; INSTALL NOT YET DONE
+
+**First-hand user Windows stdout, 28.11.2026, existing one-file BGXAI_UPDATE.cmd:** SHA-verified pinned `BGXAI_SYNC.ps1` from immutable `180ef997fd6cee7e3b12c03ecaae472340d9aac0`. User selected **179→8** and received `status=R43_PREFLIGHT_EXACT_GUARDED_PASS`, `innerStatus=R43_PREFLIGHT_LAST155_PASS_NO_INSTALL`, `expectedDiagnosticSHA256=8abdc5b1d2088d8c8e2f53b6e4502de5dd0b05225fc6fcca52ebe165253e7ce6`, `gameModified=false`, `installed=false`, `classScriptResrefAtLiveJaganVerified=false`, `classScriptResref=null`, `actualBcsExecutionVerified=false`, `manualEpsActionOriginVerified=false`, `ordersSent=0`, `dispatchAuthorized=false`, `armAuthorized=false`, `noAutoRetry=false`. Confirmed real-PC guarded preflight: original R42 last155, R43 diagnostic successor candidate/source integrity and exact checks PASS; **does not imply R43 is installed**. Do not repeat 179→8.
+
+**NEXT SINGLE USER ACTION:** Close Baldur's Gate and InfinityLoader; launch the SAME original BGXAI_UPDATE.cmd, choose **179→9 (install typed)**, explicitly type `INSTALL_BGXAI_R43_READONLY_REASON_AFTER_R42_LAST`. Require exact installed native receipt `R43_INSTALL_EXACT_GUARDED_PASS` and inner `R43_READONLY_REASON_INSTALLED_AWAITING_LIVE` before any 179→11 live capture. If STOP/HOLD or nonzero, preserve output, no auto retry and no auto rollback. This installs only the one-listener bounded read-only CLASS assignment diagnostic as last156 with SHA backup; does NOT install XEquip/ARM or verify current CLASS name. **No install output yet given.** R42 DEPLOY=YES; R43 CODE/TEST/SOURCE PUBLISHED/PREFLIGHT=PASS; R43 DEPLOY=NOT EVIDENCED; R43 LIVE=NOT STARTED; XEquip=NOT LIVE.
+
+---
+
+
 <!-- RESUME_GUARD_BGXAI_R39_BAF_BYTES=2303 -->
 <!-- RESUME_GUARD_BGXAI_R39_BAF_SHA256=3b84d38a9df069e3dedfdaf8de6cbf6958a7252d43490fa64b829375cf7cd03d -->
 
