@@ -304,13 +304,107 @@ def status(r38,old,root):
         'classScriptResrefAtLiveJaganVerified':False,
     }
 
+
+BCS_TAG=b'[BGXBCS] '
+BCS_SCHEMA='BGXAI_R42_CLASS_BCS_SINGLE_CALLBACK_RO_V1'
+
+def parse_bcs_console(log:Path,exit_code:int):
+    """Reuse the original R38 console format; one sanitized new tag, never infer action ownership."""
+    if log.is_symlink() or not log.is_file() or log.stat().st_size>64_000_000:
+        raise Hold('HOLD_R42_CAPTURE_LOG_UNTRUSTED')
+    parsed=[]
+    malformed=0
+    with log.open('rb') as stream:
+        for raw in stream:
+            if BCS_TAG not in raw:continue
+            if raw.count(BCS_TAG)!=1 or len(raw)>4096:
+                malformed+=1;continue
+            try:
+                data=json.loads(raw.split(BCS_TAG,1)[1].decode('utf-8-sig','strict').strip())
+            except (UnicodeError,ValueError):
+                malformed+=1;continue
+            if (type(data) is not dict or data.get('schema')!=BCS_SCHEMA or
+                data.get('type')!='CLASS_BCS_ONCE' or
+                type(data.get('seq')) is not int or
+                not 1<=data['seq']<=64 or data.get('partyIndex')!=1 or
+                data.get('scrlev')!=4 or data.get('sameR38Listener') is not True or
+                data.get('gameModified') is not False or
+                data.get('ordersSent')!=0 or data.get('localsWritten')!=0 or
+                data.get('armAuthorized') is not False or
+                data.get('dispatchAuthorized') is not False or
+                data.get('actualBcsExecutionVerified') is not False or
+                data.get('manualEpsActionOriginVerified') is not False):
+                malformed+=1;continue
+            status,name=data.get('status'),data.get('classScriptResref')
+            if status=='CLASS_BCS_RESREF_OBSERVED_NO_ARM':
+                if (type(name) is not str or len(name)>8 or len(name)<1 or
+                    re.fullmatch(r'[A-Z0-9_#*]+',name) is None or name=='NONE'):
+                    malformed+=1;continue
+            elif status=='HOLD_CLASS_BCS_NOT_READABLE':
+                if name is not None:malformed+=1;continue
+            else:
+                malformed+=1;continue
+            parsed.append((status,name))
+    if exit_code or malformed or len(parsed)!=1:
+        return {'schema':SCHEMA,'status':'R42_CAPTURE_HOLD_MANUAL_REVIEW',
+                'reason':'HOLD_BCS_ROW_COUNT_OR_EXIT_OR_FORMAT',
+                'validBcsRows':len(parsed),'malformedBcsRows':malformed,
+                'originalGameExitCode':exit_code,'ordersSent':0,
+                'classScriptResrefAtLiveJaganVerified':False,
+                'actualBcsExecutionVerified':False,'manualEpsActionOriginVerified':False,
+                'gameModified':False,'dispatchAuthorized':False,'armAuthorized':False}
+    status,name=parsed[0]
+    proved=status=='CLASS_BCS_RESREF_OBSERVED_NO_ARM'
+    return {'schema':SCHEMA,
+            'status':'R42_LIVE_CLASS_BCS_ASSIGNMENT_OBSERVED_NO_ARM' if proved
+                     else 'R42_CAPTURE_HOLD_CLASS_BCS_UNREADABLE',
+            'classScriptResref':name if proved else None,
+            'scrlev':4,'partyIndex':1,'validBcsRows':1,
+            'classScriptResrefAtLiveJaganVerified':proved,
+            'actualBcsExecutionVerified':False,
+            'manualEpsActionOriginVerified':False,
+            'ordersSent':0,'localsWritten':0,
+            'dispatchAuthorized':False,'armAuthorized':False,
+            'gameModified':False}
+
+def capture(r38,old,root):
+    r42_last(r38,old,root)
+    installed_proof(old,root)
+    check_processes(r38,old)
+    loader=old.safe(root,'InfinityLoader.exe')
+    if (loader.is_symlink() or not loader.is_file() or
+        not 1024<loader.stat().st_size<70_000_000):
+        raise Hold('HOLD_R42_INFINITY_LOADER_SIZE_OR_PATH')
+    with loader.open('rb') as f:
+        if f.read(2)!=b'MZ':raise Hold('HOLD_R42_INFINITY_LOADER_NOT_PE')
+    home=os.environ.get('USERPROFILE')
+    if not home:raise Hold('HOLD_USERPROFILE_MISSING')
+    reports=Path(home)/'Documents'/'BGXAI_LIVE_REPORTS'
+    if (reports.is_symlink() or
+        (hasattr(reports,'is_junction') and reports.is_junction())):
+        raise Hold('HOLD_R42_CAPTURE_REPORTS_REPARSE')
+    reports.mkdir(parents=True,exist_ok=True)
+    file=reports/('BGXAI_R42_CLASS_BCS_'+datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')+'.log')
+    with file.open('xb') as fd:
+        child=subprocess.Popen([str(loader)],cwd=root,stdin=subprocess.DEVNULL,
+                               stdout=fd,stderr=subprocess.STDOUT,close_fds=True)
+        exit_code=child.wait()
+        fd.flush()
+    # Do not silently use a captured name if WeiDU/Lua changed while running.
+    r42_last(r38,old,root)
+    out=parse_bcs_console(file,exit_code)
+    out['rawConsoleFile']=str(file)
+    out['rawConsoleBytes']=file.stat().st_size
+    return out
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--game',type=Path,default=ROOT)
     p.add_argument('--r38-tool',type=Path,required=True)
     p.add_argument('--r37-tool',type=Path,required=True)
     p.add_argument('--candidate',type=Path)
-    p.add_argument('--mode',choices=('status','preflight','install','rollback'),
+    p.add_argument('--mode',choices=('status','preflight','install','rollback','capture'),
                    default='status')
     args=p.parse_args(argv)
     try:
@@ -325,10 +419,16 @@ def main(argv=None):
             print('R42: READ-ONLY class script observer; no XEquipItem.',flush=True)
             token=input('Type '+INSTALL_TOKEN+' exactly (ENTER cancels): ').strip()
             result=install(r38,old,args.game,args.candidate,token)
-        else:
+        elif args.mode=='rollback':
             token=input('Type '+ROLLBACK_TOKEN+' exactly (ENTER cancels): ').strip()
             result=rollback(r38,old,args.game,token)
-        rc=3 if result['status']=='R42_HOLD_UNEXPECTED_WEIDU_OR_LUA' else 0
+        else:
+            print('R42: launches existing game; close after Jagan acts once.',flush=True)
+            result=capture(r38,old,args.game)
+        rc=3 if result['status'] in (
+            'R42_HOLD_UNEXPECTED_WEIDU_OR_LUA',
+            'R42_CAPTURE_HOLD_MANUAL_REVIEW',
+            'R42_CAPTURE_HOLD_CLASS_BCS_UNREADABLE') else 0
     except (OSError,ValueError,TypeError,UnicodeError,subprocess.TimeoutExpired,EOFError) as error:
         result={'schema':SCHEMA,'status':'R42_STOP_MANUAL_REVIEW',
                 'reason':str(error) if isinstance(error,Hold) else 'HOLD_RUNTIME_OR_IO',
