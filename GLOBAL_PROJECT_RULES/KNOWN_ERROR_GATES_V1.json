@@ -595,6 +595,37 @@
         ],
         "limitations": "Lua model/offline only. Existing V3 full 450-case runner and GitHub Actions have NOT been observed PASS. Actual in-game EEex R13 binding and alternate weapon stats unverified."
       }
+    },
+    {
+      "error_id": "BGXAI_V3V4_WEAK_BACKPACK_BEATS_READY_QUICKSLOT_20261128",
+      "project": "BGXAI",
+      "type": "CONFIRMED_TARGET_RANKING_LOGIC_DEFECT",
+      "status": "SOURCE_FIXED_LOCAL_LUA_REGRESSION_REPRODUCED_CI_LIVE_UNVERIFIED",
+      "discovered_at": "2026-11-28",
+      "trigger": "Existing V4.planWithV3 bound same actor/target and scored selected current plus backpack, but passed selected.currentScore to V4.plan without considering a higher-scoring equipped alternative quickslot already in V3.preview.candidates",
+      "observed_failure": "Old exact GitHub blob e79ed0040a49be93e92cb9e2edc6ff2e39579c71 fails best_equipped_beats_backpack_no_item_move regression: selected weak bow, stronger equipped sword, weaker backpack hammer; planner recommends an unnecessary backpack item move. No live game move; model-only source defect.",
+      "root_cause": "Comparison baseline was selectedWeapon rather than max(ready V3 quickslot scores), despite V3.preview already ranking all occupied quickslots against same actor and enemy",
+      "code_fix": "Reuse V3.preview.candidates to choose readyBest scoring among already-equipped available weapons; compare backpack to max(selectedScore,readyBest.value) under normal hysteresis unless the best available equipped weapon remains confirmed unusable. If backpack cannot meaningfully beat equipped alternative, prefer existing quickslot without inventory transaction. Do not mutate game, V6, R47, WeiDU or updater.",
+      "evidence": {
+        "original_v4_blob": "e79ed0040a49be93e92cb9e2edc6ff2e39579c71",
+        "corrected_v4_blob": "d8a93a095a89e4ae8d960084976f83bc396404cc",
+        "proof": "Local Lua on exact reconstructed historical and corrected Git blobs: old 7 existing tests PASS then FAIL on new best-equipped regression, fixed new integration tests 10/10 PASS; old V3 72/72 and R13 36/36 unaffected",
+        "source_commit": "https://github.com/jeleZa112/nwn-xanos-updates/commit/33a3b2525e5cfd534a43c7f8f43b61002f5d44be",
+        "test_commit": "https://github.com/jeleZa112/nwn-xanos-updates/commit/e8ef5a6c809ffd016dbaa17e3fde22e06e39be9a"
+      },
+      "no_repeat": "Do not introduce a new scorer or second action listener; reuse V3.preview and V4.plan. Never recommend backpack solely because it improves on selected, if ready alternative is better. No new R47 capture, no reinstall/rollback, no manual game action until separately authorized.",
+      "affected_files": [
+        "BGXAI/BUILD/WEAPON_INVENTORY_PRIORITY_V4_20261126/BGXAI_BACKPACK16_PRIORITY_RO_V4.lua",
+        "BGXAI/BUILD/WEAPON_INVENTORY_PRIORITY_V4_20261126/test_backpack16_priority_v4.lua",
+        "BGXAI/patchsets/ranged_fighter_guarded_20261119/run_weapon_priority_v3_regression.py"
+      ],
+      "tiers": {
+        "code": "FIXED_IN_GITHUB",
+        "test": "10/10 LOCAL_INTEGRATION_PASS_OLD_SOURCE_REGRESSION_REPRODUCED",
+        "deploy": "NO",
+        "live": "NO"
+      },
+      "remaining": "Full 37/37 exact GitHub V4 suite, 493-case CI and LIVE EET native target/effective alternate APR+manual/EPS safe window not observed PASS"
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
