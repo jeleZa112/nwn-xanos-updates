@@ -31,6 +31,8 @@ jobs:
         run: python project_tools/resume_guard.py --preflight BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_REUSE_R38_CLASS_BCS_RO.py
       - name: PREWORK before coding onefile 179 source-only helper
         run: python project_tools/resume_guard.py --preflight BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py
+      - name: PREWORK before coding R42 typed R38-last installer
+        run: python project_tools/resume_guard.py --preflight BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_GUARDED_FROM_R38.py
       - name: Existing immutable predecessor and canonical preflight
         run: python project_tools/resume_guard.py
       - name: Test composed R38/R39 read-only bridge (required)
