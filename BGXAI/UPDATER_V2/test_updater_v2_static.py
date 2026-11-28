@@ -126,7 +126,7 @@ class OnefileV2Compatibility(unittest.TestCase):
     def test_r48_guarded_181_182_exact_pins_and_no_new_cmd(self):
         index=json.loads(INDEX.read_text(encoding='ascii'))
         self.assertEqual([m['code'] for m in index['modules']],[180,181,182,183])
-        r181,r182=index['modules'][1:]
+        r181,r182=index['modules'][1:3]
         self.assertEqual(r181['mode'],'guarded')
         self.assertEqual(r182['mode'],'guarded')
         self.assertEqual(r181['language'],'python')
