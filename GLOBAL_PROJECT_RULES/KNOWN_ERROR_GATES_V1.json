@@ -389,22 +389,23 @@
       "error_id": "BGXAI_R42_LIVE_CAPTURE_HOLD_DETAIL_MASKED_20261128",
       "project": "BGXAI",
       "type": "CONFIRMED_FAILURE",
-      "status": "LIVE_CLASS_READ_HOLD_SOURCE_DIAG_TESTED_NOT_DEPLOYED",
+      "status": "SOURCE_RELEASED_PINNED_R43_NOT_INSTALLED_R42_LIVE_HOLD",
       "discovered_at": "2026-11-28",
       "trigger": "Real Windows R42 one-file 179→6 capture after independently positive 179→2 guarded installed status",
       "observed_failure": "Real 179→6 outer HOLD_R42_NATIVE_GUARD_OR_STATE. Original user-supplied BGXAI_R42_CLASS_BCS_20261128T084201129348Z.log (55,209 bytes, SHA256 5695aaacd4fb2da2f690188f46fb4241e5cad8961cd537dd3ee1c757ba452495) has exactly one well-formed [BGXBCS] row (line 354) with seq=1 partyIndex=1 scrlev=4 sameR38Listener=true, status=HOLD_CLASS_BCS_NOT_READABLE and classScriptResref=null. Exact Jagan identity callback [BGXID] match appears line 355; [BGXR27] actionRaw=23 seq=1 line 351. Listener and game ran, one row emitted. Separate menu Lua parsing error line 85 and BG_EET_RU_V150_HOLD line 397 also appear but are not proven causes of this BCS read failure.",
       "cause": "CONFIRMED_INNER_BCS_READ_HOLD: [BGXBCS] class resref null in exactly one valid event. The existing R42 bridge returns a generic unreadable status for several possible conditions (EEex API unavailable, selected IDs/physical probe, cursor instability, empty class assignment, etc.). SPECIFIC_R39_BRIDGE_REASON=UNKNOWN because installed R42 one-shot row discards the inner R39 status; outer onefile additionally masks all native non-PASS as HOLD_R42_NATIVE_GUARD_OR_STATE. Game process exit code is not recoverable from the raw log alone; with exit 0 original parser would return R42_CAPTURE_HOLD_CLASS_BCS_UNREADABLE, else R42_CAPTURE_HOLD_MANUAL_REVIEW.",
       "do_not_repeat": "Do not rerun 179→6 or 179→3/4, R38 capture, R39 native compile, reinstall or rollback. Do not infer the BG_EET_RU_V106 listener caused R42 failure, or assert a CLASS BCS name from historical GAM. Do not declare offline 103/103 CI a live proof.",
-      "safe_action": "Do not replay capture. Reuse authenticated original 55,209-byte logfile; compare exact R39 bridge and EEex v1.1.7 read APIs with already successful R37 physical identity. Current source inspection confirms the upstream EEex getScriptLevelResRef API returns string or empty string and portrait indices 0..5; it does not prove availability in this runtime. Next minimal development delta is expose a bounded R39 read-only hold reason in the already existing one-listener observation path and preserve native/outer fail reason, with source tests and exact guarded upgrade requirements before any new LIVE session. Alternatively, obtain contemporaneous GAM saved script assignment via already available read-only V3 parser without new observer, but saved assignment is NOT live execution.",
+      "safe_action": "Original 19-Nov GAM saved CLASS BDDEFAI (DPLAYER3 DEFAULT), but does NOT prove live assignment; no duplicate GAM parsing. Use now-published same original BGXAI_UPDATE.cmd menu 179→8 exactly ONCE with game/InfinityLoader closed to check R43 upgrade 155-last preflight. If exact R43_PREFLIGHT_EXACT_GUARDED_PASS, await separate user typed consent for 179→9 install; only then later 179→11 one new capture to obtain bounded R39 HOLD reason. No reinstall/retry of old 179→4/6, R39 native/old R38 tests, no XEquip authorization. If any HOLD preserve output and stop.",
       "closure_condition": "Specific original source of R39 CLASS assignment read HOLD is identified without speculating from unrelated mods or retrying the same capture. A future narrow source-only fix must explicitly preserve existing listener, no command dispatch, exact script/backup/provenance checks, one updated existing updater and CI; any new installation requires separate typed approval. Class script remains UNKNOWN until real current-game evidence.",
       "evidence": [
         "user-provided 2026-11-28 BGXAI_UPDATE.cmd 179→6 console in current BGXAI conversation (R42_HOLD_ONEFILE_GUARDED, HOLD_R42_NATIVE_GUARD_OR_STATE)",
         "https://github.com/jeleZa112/nwn-xanos-updates/blob/bg-eet-ai/BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py",
         "https://github.com/jeleZa112/nwn-xanos-updates/blob/bg-eet-ai/BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_GUARDED_FROM_R38.py",
         "Uploaded original BGXAI_R42_CLASS_BCS_20261128T084201129348Z.log, 55209 bytes, SHA256 5695aaacd4fb2da2f690188f46fb4241e5cad8961cd537dd3ee1c757ba452495, [BGXBCS] line 354",
-        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46127897683"
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46127897683",
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46129023635"
       ],
-      "enforcement": "Existing known-error record remains OPEN at LIVE tier; source diagnostic reviewed and passed Windows/Linux CI. First CI false positive counted both embedded R39 method definition and call as two events; fixed guard to compare count against immutable original candidate, rerun PASS. Do not retry game before separate approved guarded upgrade and necessity review.",
+      "enforcement": "Open at LIVE tier: source and pinned onefile code PASS Windows+Ubuntu; user PC R43 last-only preflight still pending, no installation consent or game mutation. Existing first raw log remains preserved. Any HOLD no retry.",
       "source_only_fix": {
         "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_CLASS_HOLD_REASON_SOURCE_ONLY.py",
         "tests": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_class_hold_reason_source_only.py",
@@ -415,7 +416,26 @@
         "gate": "SOURCE_ONLY_CI_116_EACH_OS_PASS_ON_20261128",
         "lastSuccessfulRun": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46127897683",
         "fix": "Two exact-only insertions into deterministic preexisting R42 callback: strictly allowlisted R39 probeStatus, allowlisted physical reason, sanitized CLASS slot state. Retains one [BGXBCS] and one original callback. No new game writes/ARM.",
-        "notClaimed": "Diagnostic not installed or observed live; first original R42 hold remains unresolved, no second capture approved."
+        "notClaimed": "Diagnostic not installed or observed live; first original R42 hold remains unresolved, no second capture approved.",
+        "sourceReleased": true,
+        "notInstalled": true,
+        "bootstrapPinPublicationCommit": "77ba071892a37c9586ed66bfdc85bed66a5199fb",
+        "immutableSourceCommit": "180ef997fd6cee7e3b12c03ecaae472340d9aac0",
+        "postReleaseCi": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46129023635",
+        "codeAndTest": "152/152 Windows and 152/152 Ubuntu PASS, Windows PS AST 79798B, original+diagnostic Lua syntax PASS",
+        "onefileCmdUnchanged": true,
+        "old179ModesPreserved": true,
+        "newR43Modes": [
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "exactTypedInstall": "INSTALL_BGXAI_R43_READONLY_REASON_AFTER_R42_LAST",
+        "r42Installed": true,
+        "r43Installed": false,
+        "liveClassResrefConfirmed": false
       }
     }
   ],
@@ -474,9 +494,11 @@
           "evidence": "BGXAI/CURRENT/00_RESUME_CURRENT.md; upload BGXAI_R42_CLASS_BCS_20261128T084201129348Z.log; CI 46127992980; BGXAI_R42_GUARDED_FROM_R38.py original unmodified; R42 reason composer unchanged",
           "exclusive_missing_delta": "A SOURCE_ONLY guarded last-only WeiDU successor that replaces ONLY 155th installed R42 one-listener Lua with EXACT prebuilt 95965B read-only reason-enabled candidate as a 156th last component. Reuse original R42 last/proof/status, R37/R38 unrelated-file snapshots and source hashes; original R42/onefile/PS pin untouched during source development. Add protected external SHA backup, typed-install and typed-last-only rollback, absolute local install path, no auto retry, no XEquip/orders/extra listener. Later integrate as another option inside same BGXAI_UPDATE.cmd menu 179, never a new updater, only after CI and separately typed user approval. Existing 179->4 is not an upgrade and must NEVER be repeated.",
           "safety": "Preflight must require original R42 155-last and active SHA d14bf5.., exact installed PROOF/typedApproved, no running game/loader or WeiDU. Snapshot all watched unrelated files + R42 proof and exact candidate. Fail-closed on drift and after WeiDU attempt don't auto retry/rollback; rollback only with R43 156-last, proof, external backup exact plus restoration of original R42 155-last SHA and watched files. Source-only test uses fake EET fixtures, never real game. No silent native install or action on '+'; the '+' permits safe offline development only.",
-          "status": "PREWORK_REVIEWED_BEFORE_SOURCE_ONLY_GUARD",
+          "status": "SOURCE_PUBLISHED_TEST_PASS_NOT_INSTALLED",
           "game_modified": false,
-          "install_approved": false
+          "install_approved": false,
+          "verified_ci": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46129023635",
+          "user_live_install_approval": false
         }
       ]
     },
@@ -508,9 +530,12 @@
           "already_implemented": "Same one BGXAI_UPDATE.cmd pinned BGXAI_SYNC.ps1 79798/80000 and menu179 source/status/preflight/typed install/rollback/RO capture for original R42; child already securely downloads immutable R38/R37/R42/bridge/composer, stages outside game and invokes native guarded helper with independent exact typed token. 175/176 menu/child untouched. The new source-only R43 successor and 18 fake EET tests already pass 134/134 each OS.",
           "exclusive_missing_delta": "Extend ONLY the existing R42 menu179 child to add bounded R43 status/preflight/typed install/typed rollback/capture modes as numbers 7..11, fetch SHA-verified existing diagnostic composer and R43 guarded source from immutable commit under same repo allowlist, copy only into temp outside EET, verify nested native JSON and retain exact original native HOLD reason even if nonzero; old modes 1..6 and 175/176 untouched. No silent install. Preserve parent PS <=80000 bytes by editing only pinned 179 child hash/size, then atomically repin immutable source commit and BGXAI_SYNC script after Windows+Ubuntu CI PASS. One CMD never replaced by new one. Do not equate release with LIVE install; typed token still necessary.",
           "safety": "DO NOT repin BOOTSTRAP_PIN or publish changed user onefile until staging and source/regression CI all PASS, Windows PS AST PASS, 80KB cap and original 175/176 SHA unaffected, source child size hash correct, old R42 179 modes untouched, and fail-closed HOLD always reported. On any failure leave old pinned b0586b.. channel. Game installer cannot run on chat '+'.",
-          "status": "PREWORK_REVIEWED_BEFORE_SOURCE_CHANGE",
+          "status": "IMMUTABLE_CHANNEL_PUBLISHED_CI_PASS_NOT_INSTALLED",
           "game_modified": false,
-          "install_approved": false
+          "install_approved": false,
+          "pinned_commit": "180ef997fd6cee7e3b12c03ecaae472340d9aac0",
+          "post_release_ci": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46129023635",
+          "native_live_preflight_proven": false
         }
       ],
       "project": "BGXAI",
