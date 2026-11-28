@@ -1185,6 +1185,45 @@
         "xEquipInGameObserved": false,
         "verifiedDate": "2026-11-28"
       }
+    },
+    {
+      "error_id": "BGXAI_R48_STAF01_ITEM_SAVED_SLOT22_VS_HARDCODED20_20261128",
+      "project": "BGXAI",
+      "type": "CONFIRMED_FAILURE",
+      "status": "MITIGATED_SOURCE_ONLY",
+      "discovered_at": "2026-11-28",
+      "trigger": "User installed R48 last WeiDU #159 and in game moved STAF01 to third visible backpack cell, toggled AI, but no XEquip occurred. User supplied exact BALDUR.GAM snapshot.",
+      "observed_failure": "Raw GAMEV2.0 party index1 (Jagan Battleforge) CRE V1.0 saved slot22 is STAF01, while slot20 is EMPTY. Installed immutable R48 BAF has CheckItemSlot(Myself,\"STAF01\",SLOT_MISC5), with SLOT_MISC5=20, so R48 condition is false in the saved configuration. GUI AI flag at save time bit0=0, which is not proof that AI was off throughout attempted runtime. Class BDDEFAI, CLERIC, STR12, empty weapon and shield matched.",
+      "cause": "Overly rigid source index20 from earlier R39 snapshot was incorrectly assumed to correspond to a particular visible inventory cell, but EET/lefreut inventory UI position does not prove stored slot index. Additional mistaken claim that Name(\"*GCLERIC\") must fail conflated embedded CRE death variable None with GAM NPC Character Name *GCLERIC; runtime Name truth remains unproven.",
+      "do_not_repeat": "No re-run of 180/181/182/183, no reinstall R48 or rollback last159, no new GAM request, no same visual manual item slot shuffling, no unverified NAME identity-guard removal, no old R47 witness capture loop, no blind unconditional equips or interrupting EPS/round.",
+      "safe_action": "Use already-existing read-only GAMEV2.0/CREV1.0 39-slot parser and script assignment reader first. R49 composer source-only reuses exact R48 Git-blob-pinned original R39 one-shot and replaces only hardcoded SLOT_MISC5 trigger with bounded OR(16) CheckItemSlot(MISC3..MISC18), retains every other guard and one XEquip, without installing. Require native compile and separately approved guarded last-only #159->#160 via same original V2 CMD before new gameplay attempt; never present source/mock as installed.",
+      "closure_condition": "Source failure reproduced from user GAM; candidate R49 source-only code and tests published. NOT runtime mitigated until guarded native upgrade and a single actual in-game equip observed. Do not mark gameplay success from CI.",
+      "evidence": [
+        "/BGXAI/BUILD/R49_R48_BACKPACK16_SOURCE_ONLY_20261128/BGXAI_R49_REUSE_R48_BACKPACK16_SOURCE_ONLY.py",
+        "/BGXAI/BUILD/R49_R48_BACKPACK16_SOURCE_ONLY_20261128/test_r49_reuse_r48_backpack16_source_only.py",
+        "/BGXAI/BUILD/R48_ONE_REAL_STAF01_EQUIP_AFTER_R47_20261128/BGXAI_R48_REUSE_R39_ONE_SHOT_BAF_SOURCE_ONLY.py",
+        "/BGXAI/BUILD/WEAPON_SAVE_GAM_INVENTORY_RO_V1_20261126/BGXAI_GAM_INVENTORY_RO_V1.py",
+        "/BGXAI/CURRENT/00_RESUME_CURRENT.md",
+        "https://gibberlings3.github.io/iesdp/file_formats/ie_formats/cre_v1.htm",
+        "https://gibberlings3.github.io/iesdp/file_formats/ie_formats/gam_v2.0.htm"
+      ],
+      "enforcement": "Original R48 #159 intact until separate secure install. Saved GAM snapshot's slot/source inventory and GUI flag do not prove live engine action evaluation; retain CODE/TEST/DEPLOY/LIVE distinction.",
+      "metadata": {
+        "userGameSaveSHA256": "e836b3c534dde5b058d0d4cab64e0b5b3b1837c9416a04f5d1a907b812d88c7b",
+        "savedJaganIndex": 1,
+        "actualItem": "STAF01",
+        "actualRuntimeSlot": 22,
+        "oldR48RequiredSlot": 20,
+        "oldR48RequiredSlotEmpty": true,
+        "savedAIEnabled": false,
+        "savedGAMCharacterID": "*GCLERIC",
+        "embeddedCreDeathVariable": "None",
+        "nameTriggerRuntimeVerified": false,
+        "sourceCandidateCommit": "49660511648fa498300503d67cb27075df836711",
+        "existingR48WeiDULast": 159,
+        "repairedR49WeiDUInstalled": false,
+        "repairedR49GameplayXEquipObserved": false
+      }
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
