@@ -74,6 +74,54 @@ class PilotTests(unittest.TestCase):
         self.assertEqual(call('AROW01',0,Item('BOW05',1)),
                          'Оружие при попадании: Отличная стрела (Короткий лук)')
 
+    def test_v168_actual_v160_source_third_wrapper_preserves_v108_chain_123_names(self):
+        actual=(ROOT.parent/'hit-only-v160/BG_EET_RU_V160_HIT_ONLY_APPEND.lua').read_bytes().replace(b'\r\n',b'\n')
+        self.assertEqual(pilot.digest(actual),
+                         'ad76b46df1359bfdeeb9400f6b10f2ecd104059bd17a12d737fa60dcd733445c')
+        target=b'function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage(context)'
+        prefix=(target+b'\n BG_EET_RU_V108_HITS=(BG_EET_RU_V108_HITS or 0)+1\n return nil\nend\n')*2
+        old="    BOW05='Короткий лук',\n".encode('utf-8')
+        self.assertEqual(actual.count(old),1)
+        added=b''.join(("    Z%04d='Сохраняемый перевод %d',\n"%(i,i)).encode('utf-8')
+                       for i in range(123))
+        original=prefix+b'\n'+actual.replace(old,old+added)
+        self.assertEqual(original.count(target),3)
+        with patch.object(pilot,'EXPECTED_V163_SHA',pilot.digest(original)):
+            candidate=pilot.compose(original,PAIR,V107)
+        marker=b'local BG_EET_RU_V160_previous = BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage'
+        self.assertEqual(candidate.split(marker,1)[0],original.split(marker,1)[0])
+        self.assertEqual(candidate.count(target),3)
+        self.assertEqual(candidate.count(b'local function BG_EET_RU_V165_pick('),1)
+        self.assertEqual(candidate.count(added),1)
+        lua=LuaRuntime(unpack_returned_tuples=True)
+        lua.execute('messages={}; Infinity_DisplayString=function(x) table.insert(messages,x) end')
+        lua.execute('EEex_IsBitSet=function(f,n) return (f%(2^(n+1)))>=(2^n) end')
+        lua.execute(candidate.decode('utf-8'))
+        cb=lua.globals().BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage
+        def call(ref,flags):
+            cb(lua.table_from({'weapon':Item(ref,flags)}))
+            return lua.globals().messages[len(lua.globals().messages)]
+        self.assertEqual(call('AROW01',0),'Оружие при попадании: Отличная стрела')
+        self.assertEqual(call('AROW01',1),'Оружие при попадании: Стрела')
+        self.assertEqual(call('BOW05',1),'Оружие при попадании: Короткий лук')
+        self.assertEqual(lua.globals().BG_EET_RU_V108_HITS,3)
+        self.assertEqual(lua.globals().BG_EET_RU_V160_HIT.shown,3)
+
+    def test_v168_missing_or_duplicated_real_v160_anchor_fails_closed(self):
+        real=(ROOT.parent/'hit-only-v160/BG_EET_RU_V160_HIT_ONLY_APPEND.lua').read_bytes().replace(b'\r\n',b'\n')
+        tag=b'local BG_EET_RU_V160_previous = BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage'
+        target=b'function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage(context)'
+        legacy=(target+b'\n return nil\nend\n')*2
+        original=legacy+real
+        for corrupted in (original.replace(tag,b''),original+tag,
+                          original.replace(target,b'function different(context)',1),
+                          original.replace(b'BG_EET_RU_V160_name(weapon)',
+                                           b'BG_EET_RU_V160_name(launcher)')):
+            with self.subTest(mutated=pilot.digest(corrupted)[:12]):
+                with patch.object(pilot,'EXPECTED_V163_SHA',pilot.digest(corrupted)):
+                    with self.assertRaises(pilot.Hold):
+                        pilot.compose(corrupted,PAIR,V107)
+
     def test_modifying_prior_v163_lua_must_stop(self):
         with self.assertRaises(pilot.Hold):
             pilot.compose(BASE+b'--drift',PAIR,V107)
