@@ -158,6 +158,7 @@ def run(game:Path,documents:Path,reports:Path,*,game_required:bool=True,
           "gameModified":False,"ordersSent":0,"dispatchAuthorized":False,
           "inventoryMoveAuthorized":False,"sourceOnly":True,
           "gameplayAIInstalled":False,"noAutoRetry":True}
+    stage="VERIFY_GAME_ROOT"
     try:
         if game_required and (os.name!="nt" or
             os.path.normcase(os.path.abspath(game))!=
@@ -171,27 +172,41 @@ def run(game:Path,documents:Path,reports:Path,*,game_required:bool=True,
             raise Hold("HOLD_REPORT_DIRECTORY_INSIDE_GAME")
         if reports.is_symlink():raise Hold("HOLD_REPORTS_DIRECTORY_REPARSE")
         # Create output directory ONLY outside the EET tree.
+        stage="PREPARE_OUTSIDE_GAME_REPORTS"
         reports.mkdir(parents=True,exist_ok=True)
+        stage="LOAD_EXISTING_GAM_READER"
         game_module=load(GAM_PATH,"bgxai_existing_saved_gam_parser_v1")
+        stage="LOAD_EXISTING_R3_READER"
         r3=load(R3_PATH,"bgxai_existing_r3_itm_parser_v3")
+        stage="LOCATE_EXISTING_SAVE"
         selected=source_path if source_path is not None else choose_gam(game,documents)
         if selected.is_symlink() or not selected.is_file() or (
             not 0<selected.stat().st_size<=50_000_000):
             raise Hold("HOLD_SELECTED_GAM_NOT_SAFE")
+        stage="READ_SAVED_GAM"
         saved=selected.read_bytes()
+        stage="PARSE_SAVED_GAM"
         gam=game_module.parse(saved)
+        stage="CHECK_SAVED_GAM_DIGEST"
         if gam["gamSha256"]!=hashlib.sha256(saved).hexdigest():
             raise Hold("HOLD_GAM_PARSER_SOURCE_DIGEST_MISMATCH")
+        stage="READ_CHITIN_KEY_DIGEST"
         key_before=hashlib.sha256(key.read_bytes()).hexdigest()
+        stage="VALIDATE_SAVED_PARTY_ITEMS"
         names=saved_names(gam)
+        stage="AUDIT_NATIVE_ITM_RESOURCES"
         audited=r3.audit(r3.NativeSource(game),sorted(names),
                          {"sourceKind":"SAVED_GAM_DOES_NOT_PROVE_LIVE"})
+        stage="BUILD_INERT_LUA_CATALOG"
         text=build_source(gam,audited,key_before,r3)
+        stage="VERIFY_SOURCE_BYTES_STABLE"
         if selected.read_bytes()!=saved or key_before!=hashlib.sha256(
                 key.read_bytes()).hexdigest():
             raise Hold("HOLD_GAME_OR_SAVED_SOURCE_CHANGED_DURING_AUDIT")
+        stage="ENCODE_CATALOG_ASCII"
         content=text.encode("ascii")
         digest=hashlib.sha256(content).hexdigest()
+        stage="PREPARE_INERT_OUTPUT_NAMES"
         stem="BGXAI_GAM_R3_"+gam["gamSha256"][:12]+"_"+digest[:12]
         output=reports/(stem+".lua")
         report=reports/(stem+".json")
@@ -207,6 +222,7 @@ def run(game:Path,documents:Path,reports:Path,*,game_required:bool=True,
               "r39EquipAuthorized":False}
         record=(json.dumps(done,ensure_ascii=True,indent=2,sort_keys=True)+"\n").encode("ascii")
         # Never silently overwrite an earlier staged catalog with new bytes.
+        stage="WRITE_OUTPUTS_OUTSIDE_GAME"
         for path,blob in ((output,content),(report,record)):
             if path.is_symlink():raise Hold("HOLD_REPORT_OUTPUT_REPARSE")
             if path.exists():
@@ -217,7 +233,20 @@ def run(game:Path,documents:Path,reports:Path,*,game_required:bool=True,
                     f.write(blob);f.flush();os.fsync(f.fileno())
         return done
     except (Hold,OSError,ValueError,TypeError,KeyError,AttributeError) as e:
-        info["reason"]=str(e) if isinstance(e,Hold) else "HOLD_R3_GAM_STAGE_IO_OR_SOURCE"
+        # Preserve named existing safety HOLD. For unexpected Python failures,
+        # only release a fixed stage and exception class: never a user path,
+        # private save content, item name or traceback. Never retry/install.
+        info["failureStage"]=stage
+        if isinstance(e,Hold):
+            info["reason"]=str(e)
+        else:
+            klass=type(e).__name__
+            safe_classes={"OSError","PermissionError","FileNotFoundError",
+                "FileExistsError","IsADirectoryError","NotADirectoryError",
+                "UnicodeDecodeError","UnicodeEncodeError","ValueError",
+                "TypeError","KeyError","AttributeError"}
+            info["exceptionType"]=klass if klass in safe_classes else "PYTHON_EXCEPTION"
+            info["reason"]="HOLD_MODULE180_UNEXPECTED_SOURCE_STAGE"
         return info
 
 def main(argv=None):
