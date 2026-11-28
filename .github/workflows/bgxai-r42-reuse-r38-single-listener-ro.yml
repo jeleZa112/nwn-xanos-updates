@@ -37,3 +37,25 @@ jobs:
           else
             echo "PREWORK ONLY: source not authored yet"
           fi
+
+      - name: Syntax-check generated R38+R39 class BCS observer (no runtime)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.4
+          python - <<'PY'
+          import importlib.util
+          from pathlib import Path
+          import json,subprocess,tempfile
+          root=Path('BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128')
+          spec=importlib.util.spec_from_file_location('r42_gen',root/'BGXAI_R42_REUSE_R38_CLASS_BCS_RO.py')
+          m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+          with tempfile.TemporaryDirectory(prefix='BGXAI_R42_SOURCEONLY_') as directory:
+              target=Path(directory)/'M_BGXR27.lua'
+              target.write_bytes(m.compose(m.verified(m.R38,m.R38_BYTES,m.R38_BLOB),
+                                           m.verified(m.R39,m.R39_BYTES,m.R39_BLOB)))
+              lua='assert(loadfile('+json.dumps(str(target))+'))'
+              subprocess.run(['lua5.4','-e',lua],check=True)
+          print('R42 composed Lua syntax PASS; no listener executed; game untouched')
+          PY
