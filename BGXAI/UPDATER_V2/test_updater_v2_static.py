@@ -125,7 +125,7 @@ class OnefileV2Compatibility(unittest.TestCase):
 
     def test_r48_guarded_181_182_exact_pins_and_no_new_cmd(self):
         index=json.loads(INDEX.read_text(encoding='ascii'))
-        self.assertEqual([m['code'] for m in index['modules']],[180,181,182])
+        self.assertEqual([m['code'] for m in index['modules']],[180,181,182,183])
         r181,r182=index['modules'][1:]
         self.assertEqual(r181['mode'],'guarded')
         self.assertEqual(r182['mode'],'guarded')
@@ -162,6 +162,31 @@ class OnefileV2Compatibility(unittest.TestCase):
         self.assertNotIn('XEquipItem(',((ROOT/r181['entry']).read_text(encoding='ascii')))
         self.assertNotIn(b'BGXAI_MODULE181_182',CMD.read_bytes())
         self.assertNotIn(b'R48_ONE_REAL_STAF01',CMD.read_bytes())
+
+    def test_r48_post_closed_console_status_183_is_readonly_and_sha_pinned(self):
+        index=json.loads(INDEX.read_text(encoding='ascii'))
+        r183=index['modules'][3]
+        self.assertEqual(r183['code'],183)
+        self.assertEqual(r183['label'],'R48 install state recovery RO')
+        self.assertEqual(r183['mode'],'readonly')
+        self.assertNotIn('approval',r183)
+        self.assertEqual(r183['entry'],'BGXAI/UPDATER_V2/BGXAI_MODULE183_R48_STATUS_RO.py')
+        self.assertEqual(len(r183['files']),19)
+        self.assertEqual(r183['files'][1:],index['modules'][1]['files'])
+        for entry in r183['files']:
+            p=ROOT/entry['path']
+            self.assertFalse(p.is_symlink())
+            self.assertEqual(len(p.read_bytes()),entry['size'])
+            self.assertEqual(hashlib.sha256(p.read_bytes()).hexdigest(),
+                             entry['sha256'],entry['path'])
+        reader=(ROOT/r183['entry']).read_text(encoding='ascii')
+        self.assertIn('native.status(',reader)
+        for danger in ('native.install(', 'native.rollback(', 'XEquipItem(',
+                       'ClearActions(', 'EXTEND_TOP', 'BGXAI_UPDATE2.cmd'):
+            self.assertNotIn(danger,reader)
+        hub=HUB.read_text(encoding='ascii')
+        self.assertIn('--onefile-hub-source-only',hub)
+        self.assertNotIn(b'BGXAI_MODULE183',CMD.read_bytes())
 
     def test_existing_pin_unchanged_during_staging(self):
         j=json.loads(PIN.read_text(encoding='utf-8'))
