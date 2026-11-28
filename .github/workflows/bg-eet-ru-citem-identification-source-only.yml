@@ -5,11 +5,15 @@ on:
     paths:
       - 'bg-eet-ru/weapon-identity/BG_EET_RU_V107_GUARDED_CALLBACK_SOURCE_ONLY.lua'
       - 'bg-eet-ru/weapon-identity/test_V107_CITEM_IDENTIFICATION_SOURCE_ONLY.py'
+      - 'bg-eet-ru/weapon-identity/V107_X64_BINDING_SOURCE_AUDIT_RO.py'
+      - 'bg-eet-ru/weapon-identity/test_V107_X64_BINDING_SOURCE_AUDIT_RO.py'
       - '.github/workflows/bg-eet-ru-citem-identification-source-only.yml'
   pull_request:
     paths:
       - 'bg-eet-ru/weapon-identity/BG_EET_RU_V107_GUARDED_CALLBACK_SOURCE_ONLY.lua'
       - 'bg-eet-ru/weapon-identity/test_V107_CITEM_IDENTIFICATION_SOURCE_ONLY.py'
+      - 'bg-eet-ru/weapon-identity/V107_X64_BINDING_SOURCE_AUDIT_RO.py'
+      - 'bg-eet-ru/weapon-identity/test_V107_X64_BINDING_SOURCE_AUDIT_RO.py'
       - '.github/workflows/bg-eet-ru-citem-identification-source-only.yml'
   workflow_dispatch:
 jobs:
@@ -30,5 +34,9 @@ jobs:
         run: python -m pip install --disable-pip-version-check "lupa==2.8"
       - name: Lua source-only CItem synthetic userdata tests
         run: python -m unittest discover -s bg-eet-ru/weapon-identity -p "test_V107_CITEM_IDENTIFICATION_SOURCE_ONLY.py" -v
+      - name: Local source gate tests without network
+        run: python -m unittest discover -s bg-eet-ru/weapon-identity -p 'test_V107_X64_BINDING_SOURCE_AUDIT_RO.py' -v
+      - name: Pinned public InfinityLoader generated x64 binding and EEex Docs proof
+        run: python bg-eet-ru/weapon-identity/V107_X64_BINDING_SOURCE_AUDIT_RO.py
       - name: Guard existing onefile remains untouched and selftest passes
         run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
