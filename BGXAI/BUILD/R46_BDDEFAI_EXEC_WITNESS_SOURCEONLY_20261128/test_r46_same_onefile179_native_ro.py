@@ -118,7 +118,7 @@ class OnefileR46NativeRO(unittest.TestCase):
         out=self.invoke(rc=3)
         self.assertEqual(out["status"],"R46_NATIVE_TEMP_COMPILE_HOLD")
 
-    def test_09_corrupt_fetched_source fails_closed(self):
+    def test_09_corrupt_fetched_source_fails_closed(self):
         def corrupt(commit,path):
             payload=(REPO/path).read_bytes()
             return payload+b"oops" if path==R.R46_NATIVE else payload
