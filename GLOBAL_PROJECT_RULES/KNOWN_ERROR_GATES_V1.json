@@ -4,7 +4,15 @@
   "purpose": "Предварительная машинная проверка запретов, подтверждённых в прошлых проектах; не заменяет человеческое прослушивание и не устанавливает ничего в игру",
   "approval_rules": {
     "BGVOICE_IWINTRO": {
-      "approved_sound_ids": ["IWINTRO_G11", "IWINTRO_G12", "IWINTRO_G13", "IWINTRO_G14", "IWINTRO_G15", "IWINTRO_G16", "IWINTRO_G18"],
+      "approved_sound_ids": [
+        "IWINTRO_G11",
+        "IWINTRO_G12",
+        "IWINTRO_G13",
+        "IWINTRO_G14",
+        "IWINTRO_G15",
+        "IWINTRO_G16",
+        "IWINTRO_G18"
+      ],
       "cue_count": 19,
       "unapproved_count": 12,
       "must_preserve_originals": true,
@@ -12,13 +20,24 @@
       "evidence": "/BG_VOICE_RU/CURRENT/BGVOICE_IWINTRO_V5_APPROVED7_CHECKPOINT_20261127.md"
     },
     "BGVOICE_MINSC57": {
-      "rejected_variants": ["A", "B", "C"],
+      "rejected_variants": [
+        "A",
+        "B",
+        "C"
+      ],
       "preserve_authentic_shout": true,
       "game_install_authorized": false,
       "evidence": "/BG_VOICE_RU/CURRENT/BGVOICE_MINSC57_REJECTED_ABC_CHECKPOINT_20261127.md"
     },
     "BGVOICE_MINSC48": {
-      "rejected_variants": ["Stable", "Per_line", "ESpeech_EN_reference", "ESpeech_RU_V2", "V4", "V5"],
+      "rejected_variants": [
+        "Stable",
+        "Per_line",
+        "ESpeech_EN_reference",
+        "ESpeech_RU_V2",
+        "V4",
+        "V5"
+      ],
       "game_install_authorized": false,
       "evidence": "/BG_VOICE_RU/CURRENT/BGVOICE_MINSC48_MULTI_ENGINE_AB_V1_CHECKPOINT_20261127.md"
     }
@@ -60,5 +79,148 @@
   "scope_limits": [
     "Automated test cannot hear correct stress, evaluate acting, verify local user installation or rewrite live update scripts.",
     "The guard is source-only; execution by a future updater must be wired and tested separately. No game/deployed scripts are modified by this release."
-  ]
+  ],
+  "updated_at": "2026-11-28",
+  "scope": "all_user_projects_with_or_without_updaters",
+  "procedure": {
+    "single_source_of_truth": "/GLOBAL_PROJECT_RULES/KNOWN_ERROR_GATES_V1.json",
+    "purpose": "Find a confirmed prior failure or user-approved constraint before an assistant repeats an action, across chat, code, document, spreadsheet, image, marketplace and other projects",
+    "applies_even_without_updater": true,
+    "prework_sequence": [
+      "Identify project and the specific proposed action/observable outcome",
+      "Read current project state and search this register by project, behavior and synonyms",
+      "Read the cited original evidence rather than trusting a memory-only summary",
+      "Compare previous failure and workaround with the current task; identify a minimal new delta",
+      "If trigger matches and mitigation evidence is missing: HOLD the unsafe or duplicate action; continue non-destructive research",
+      "After any confirmed new error: update the original project record and this register entry; retain original evidence"
+    ],
+    "without_updater": "Assistant uses registry as a compulsory checklist before delivering or revising an artifact. No CMD/installer may be invented solely to satisfy this rule.",
+    "with_updater": "Integrate executable guards only when an existing verified updater/pipeline supports the operation. CI PASS is not a user-machine PASS.",
+    "no_universal_machine_pass_claim": "Known-error coverage is partial; passing a schema lint or source test is never permission to install or claim output quality.",
+    "when_multiple_projects": "Search the relevant project plus ALL/global entries. Never blindly transfer project-specific mitigation to unrelated project.",
+    "resolution_policy": "Only mark resolved with exact corrective action, date, and primary evidence. Preserve retired IDs as aliases; never reuse an identifier.",
+    "entry_types": [
+      "CONFIRMED_FAILURE",
+      "USER_APPROVED_CONSTRAINT",
+      "KNOWN_RISK",
+      "SOURCE_STATE_DRIFT"
+    ],
+    "entry_statuses": [
+      "OPEN",
+      "MITIGATED_SOURCE_ONLY",
+      "MITIGATED_VERIFIED",
+      "GUARDED",
+      "HISTORY_INCOMPLETE"
+    ],
+    "minimum_feedback": "Already known: <error_id and evidence>. Current risk: <trigger>. New delta: <action>. Gate: <ALLOW_REVIEW or HOLD>; explain source limitations."
+  },
+  "project_error_register": [
+    {
+      "error_id": "BGXAI_RESUME_R39_STALE_PIN_20261127",
+      "project": "BGXAI",
+      "type": "SOURCE_STATE_DRIFT",
+      "status": "MITIGATED_VERIFIED",
+      "discovered_at": "2026-11-27",
+      "trigger": "A new chat takes an old 2079-byte R39 BAF SHA as current even though source was revised to 2303 bytes",
+      "observed_failure": "Previously published 00_RESUME_CURRENT referred to the old SHA and size while current source and detailed handoff had a later version",
+      "cause": "Two unsynchronized current checkpoints and old append-only next-action text",
+      "do_not_repeat": "Never pin, compile, or deploy a BAF from a snapshot without confirming actual file length and SHA against current source/commit",
+      "safe_action": "Use BGXAI/CURRENT/00_RESUME_CURRENT.md plus current BAF and actual last user evidence, reconcile any mismatch before further work",
+      "closure_condition": "Current resume markers match current BAF and dedicated read-only GitHub CI check passes; this does not prove installation or gameplay",
+      "evidence": [
+        "https://github.com/jeleZa112/nwn-xanos-updates/blob/bg-eet-ai/BGXAI/CURRENT/00_RESUME_CURRENT.md",
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/45999925357"
+      ],
+      "enforcement": "github_ci_for_source_identity; assistant_manual_check_of_live_results"
+    },
+    {
+      "error_id": "BG_EET_RU_V160_WEIDU_BASELINE_20261127",
+      "project": "BG_EET_RU",
+      "type": "CONFIRMED_FAILURE",
+      "status": "MITIGATED_SOURCE_ONLY",
+      "discovered_at": "2026-11-27",
+      "trigger": "Re-running the V160 guarded installer or treating a repository release as a local successful installation",
+      "observed_failure": "User report V160_SAFE_STOP with BASELINE_SHA_MISMATCH:WeiDU.log before typed approval",
+      "cause": "Stale pinned WeiDU.log baseline, not the separate network URLError",
+      "do_not_repeat": "Do not suggest repeating V160 install, reverting V159, or diagnosing unrelated URLError as the reason for this SAFE_STOP",
+      "safe_action": "Use current V161+ release and actual local evidence; V161 source changed WeiDU guard, but a successful user-game install must be proven independently",
+      "closure_condition": "A live user report proves V161 guarded preflight/install and gameplay results; source/CI alone are insufficient",
+      "evidence": [
+        "/BG_EET_RU/HISTORY/SUPERSEDED_ENTRYPOINTS_20261127/00_BG_EET_RU_V161_AFTER_SAFE_STOP_READ_FIRST.md",
+        "https://github.com/jeleZa112/nwn-xanos-updates/blob/bg-eet-ai/bg-eet-ru/onefile/release.json"
+      ],
+      "enforcement": "assistant_manual_resume_and_source_ci"
+    },
+    {
+      "error_id": "BG_VOICE_RU_FRAGMENTED_ENTRYPOINT_20261128",
+      "project": "BG_VOICE_RU",
+      "type": "KNOWN_RISK",
+      "status": "OPEN",
+      "discovered_at": "2026-11-28",
+      "trigger": "A new chat asserts that every voice task already uses only BG_VOICE_UPDATE.cmd or replaces the actual newer user CMD with the old public branch copy",
+      "observed_failure": "Confirmed partial integration: some IWINTRO and MINSC48 modules use one-off Python/PS1 setup; repository file is not proven identical to the users current CMD",
+      "cause": "Source branch, setup patches, and local current launcher diverged across chats",
+      "do_not_repeat": "No claims of single-entrypoint runtime PASS without source SHA and Windows evidence; no replacement of the actual updater from an older branch snapshot",
+      "safe_action": "Audit real CMD SHA and route coverage before integrating missing modules, preserve existing modules, WAV, models and approvals",
+      "closure_condition": "One real user entry point verified for all in-scope features with guarded source deployment and Windows test report",
+      "evidence": [
+        "https://github.com/jeleZa112/nwn-xanos-updates/blob/bg-voice-ru/BG_VOICE_RU_CONTINUOUS_WORK_RULES.md",
+        "/BG_VOICE_RU/CURRENT/BGVOICE_MINSC48_MULTI_ENGINE_AB_V1_CHECKPOINT_20261127.md"
+      ],
+      "enforcement": "assistant_manual_check; source_ci_for_known_errors_only"
+    },
+    {
+      "error_id": "MARKETPLACE_NSK_LEDGER_ID_COLLISION_20261128",
+      "project": "MARKETPLACE_NSK",
+      "type": "CONFIRMED_FAILURE",
+      "status": "OPEN",
+      "discovered_at": "2026-11-28",
+      "trigger": "Adding or citing an M-XXX ledger record solely by its identifier without checking whether the identifier is unique",
+      "observed_failure": "In CURRENT/PROJECT_LEDGER_RU.md the IDs M-031 and M-032 each appear twice as separate table records for different subjects; confirmed by scanning the actual file",
+      "cause": "Append-only additions reused earlier identifiers without uniqueness validation",
+      "do_not_repeat": "Do not append records with existing M-IDs or assume a legacy M-ID identifies exactly one fact",
+      "safe_action": "Until reconciled, cite file heading and exact content rather than ambiguous ID; on next ledger edit create new unique IDs and an old-to-new crosswalk without losing original facts",
+      "closure_condition": "Ledger has unique stable entry IDs, mapping from old ambiguous references, and a tested duplicate-ID audit",
+      "evidence": [
+        "/MARKETPLACE_NSK/CURRENT/PROJECT_LEDGER_RU.md"
+      ],
+      "enforcement": "assistant_manual_preflight_no_updater; optional_text_lint_only_after_source_reconciliation"
+    },
+    {
+      "error_id": "MARKETPLACE_NSK_MISSING_V18_SOURCE_20261128",
+      "project": "MARKETPLACE_NSK",
+      "type": "KNOWN_RISK",
+      "status": "HISTORY_INCOMPLETE",
+      "discovered_at": "2026-11-28",
+      "trigger": "Editing or using old unit-economics spreadsheet v1 as if it were the corrected v18_FINAL_FIXED",
+      "observed_failure": "Current project state names v18_FINAL_FIXED but states it was not found in the accessible library; older v1 exists",
+      "cause": "Missing confirmed primary artifact despite references in handoff",
+      "do_not_repeat": "Do not infer unseen v18 data or silently substitute v1; do not copy outdated assumptions as current costs",
+      "safe_action": "Search original named v18 source first; if unavailable use clearly labeled new scenario with dated inputs and no claimed continuity",
+      "closure_condition": "Exact v18 file and checksums are recovered or the user explicitly accepts a documented rebuilt replacement",
+      "evidence": [
+        "/MARKETPLACE_NSK/CURRENT/PROJECT_STATE_RU.md"
+      ],
+      "enforcement": "assistant_manual_preflight_no_updater"
+    },
+    {
+      "error_id": "IP_GONCHAROV_ACT_TEMPLATE_USER_CORRECTIONS_20261126",
+      "project": "IP_GONCHAROV_DOCUMENTS",
+      "type": "USER_APPROVED_CONSTRAINT",
+      "status": "GUARDED",
+      "discovered_at": "2026-11-26",
+      "trigger": "Creating a new service act with a stray invoice-reference line, wrong act number/date, duplicate output or incorrect signature placement",
+      "observed_failure": "User repeatedly corrected the act template and required act date to match associated invoice; the approved layout is documented",
+      "cause": "Recreating documents without starting from the approved template and the exact source invoice",
+      "do_not_repeat": "No line \"К счёту на оплату ...\"; do not invent facts; no arbitrary date; do not regenerate already delivered acts absent a named correction",
+      "safe_action": "Reuse approved DOCX template and invoice source; reconcile number/date/items/sum, one A4 page, left/right signatures; inspect the rendered PDF; special invoice 1 and 2 date instructions must be read from the latest primary invoice/user correction",
+      "closure_condition": "Source invoice matches the act, the approved template is preserved, and final DOCX/PDF rendering is checked",
+      "evidence": [
+        "/IP_GONCHAROV_DOCUMENTS/00_RULES/README_ДОКУМЕНТЫ_ИП_ГОНЧАРОВ.md",
+        "/IP_GONCHAROV_DOCUMENTS/00_RULES/Манифест_2026.json"
+      ],
+      "enforcement": "assistant_artifact_preflight_no_updater"
+    }
+  ],
+  "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed."
 }
