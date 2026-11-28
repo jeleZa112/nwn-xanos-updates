@@ -9,6 +9,10 @@ on:
       - 'BGXAI/BUILD/WEAPON_INVENTORY_PRIORITY_V4_20261126/BGXAI_BACKPACK16_PRIORITY_RO_V4.lua'
       - 'BGXAI/BUILD/WEAPON_INVENTORY_CORRECTED_V3_20261126/BGXAI_BACKPACK16_R37_RO_V3.lua'
       - 'BGXAI/BUILD/WEAPON_INVENTORY_PRIORITY_V4_20261126/test_backpack16_priority_v4.lua'
+      - 'BGXAI/BUILD/R13_1_TARGET_DEFENSE_SOURCE_ONLY/BGXAI_R13_TARGET_DEFENSE_OBSERVER.lua'
+      - 'BGXAI/BUILD/R13_1_TARGET_DEFENSE_SOURCE_ONLY/M_BGXTDEF13.lua'
+      - 'BGXAI/BUILD/R13_1_TARGET_DEFENSE_SOURCE_ONLY/test_r13.lua'
+      - 'BGXAI/BUILD/R13_1_TARGET_DEFENSE_SOURCE_ONLY/test_r13_runtime.lua'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_priority_lua_v3.lua'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_EFFECTS_V4.lua'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_APR_PROVENANCE_V5.lua'
@@ -50,7 +54,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install Lua 5.3, Lua 5.4 and LuaJIT (EEex-compatible source syntax)
         run: sudo apt-get update -qq && sudo apt-get install -y lua5.3 lua5.4 luajit
-      - name: Batch-test complete advisory and V3-to-V4 inventory model on three Lua runtimes (516 cases each)
+      - name: Batch-test complete advisory and V3-to-V4 inventory model on three Lua runtimes (524 cases each)
         shell: bash
         run: |
           result=0
@@ -62,6 +66,16 @@ jobs:
       - name: R3 native ITM/BIF + R37 39-slot join (35 read-only Python unit tests)
         shell: bash
         run: python3 -m unittest discover -s BGXAI/patchsets/ranged_fighter_guarded_20261119 -p 'test_weapon_native_itm_r3_ro.py' -q
+      - name: R13 existing target defense source plus same listener 105 and 134 (three Lua runtimes)
+        shell: bash
+        run: |
+          for runtime in lua5.3 lua5.4 luajit; do
+            (
+              cd BGXAI/BUILD/R13_1_TARGET_DEFENSE_SOURCE_ONLY
+              "$runtime" test_r13.lua
+              "$runtime" test_r13_runtime.lua
+            )
+          done
       - name: R2 real quickslot/quiver/offhand fingerprint invalidation on THREE Lua runtimes (39 cases each)
         shell: bash
         run: |
@@ -153,8 +167,8 @@ jobs:
           repo=os.environ['BGXAI_REPO']
           payload={
             'state':state,
-            'context':'BGXAI/source-only/516-lua-plus-r3',
-            'description':f'516 model cases x3 Lua; R3 35. linux={linux}, windows={windows}',
+            'context':'BGXAI/source-only/524-lua-plus-r3-r13',
+            'description':f'524 model cases x3 Lua; R3 35; R13 runtime+core. linux={linux}, windows={windows}',
             'target_url':f'https://github.com/{repo}/actions/runs/{run}',
           }
           url=f"https://api.github.com/repos/{repo}/statuses/{os.environ['BGXAI_SHA']}"
