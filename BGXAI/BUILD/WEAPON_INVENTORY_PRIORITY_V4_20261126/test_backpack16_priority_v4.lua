@@ -460,4 +460,168 @@ test('r37_v4_rejects_laundered_native_or_dispatch_claim',function()
  assert(x.status=='HOLD_R37_TOPLEVEL_RAW_MAP_UNVERIFIED')
  contract(x)
 end)
+-- Actual batch delta: enumerate R3 ITM for ALL 16 observed backpack slots;
+-- choose a stronger ready weapon even without a backpack candidate; produce
+-- one queued, noninterrupting source-only decision for either weapon route.
+local function r3_snapshot(raw,weaponName,attackType)
+ local map={}
+ for slot=0,38 do
+  local x=slot>=18 and slot<=33 and raw.backpack.slots[slot] or
+          slot>=35 and raw.quick[slot] or raw.other[slot]
+  map[tostring(slot)]={slot=slot,status=x.status,resref=x.resref}
+ end
+ local items={}
+ for slot=18,33 do
+  local x=raw.backpack.slots[slot]
+  if x.status=='PRESENT_RAW' then
+   items[x.resref]={item={schema='BGXAI_ITM_RAW_V1',
+      abilities={{attackTypeRaw=attackType or 1}}},
+      provenance={origin='CURRENT_GAME_BIFF'}}
+  end
+ end
+ return {inventoryLinkSchema='BGXAI_R3_R37_TOPLEVEL_ITM_JOIN_SOURCE_ONLY_V1',
+   sourceKind='CURRENT_GAME',status='ITM_NATIVE_ALL_ITEMS_RAW_READ',
+   nativeRuntimeInventorySnapshotAuthenticated=false,
+   nativeCurrentAlternativeAPRVerified=false,
+   dispatchAuthorized=false,inventoryTransferAuthorized=false,
+   inventoryRawMap=map,items=items}
+end
+local function modeled_from(fixture,force)
+ local base=fixture[9][1].weaponModel
+ return function(slot,observed,itm)
+  local w={}
+  for k,v in pairs(base) do w[k]=v end
+  w.sourceSlot=slot;w.resRef=observed.resref;w.id='BAG_'..tostring(slot)
+  if force then force(w) end
+  return {status='MODELED_WEAPON_CANDIDATE',abilityIndex=0,weaponModel=w,
+   usabilityVerified=true,identifiedVerified=true,notCursedVerified=true,
+   notQuestItemVerified=true,offhandCompatibilityVerified=true,
+   ammoAndLauncherVerified=true,protectionsAccountedVerified=true}
+ end
+end
+test('ready_slot_better_even_if_backpack_candidates_empty',function()
+ local b,q,o,s,c,vm=v3v4()
+ equipped_sword(b,q,o,s,c,vm,4,3,10)
+ local first=linked(b,q,o,s,{},vm,nil)
+ assert(first.status=='HOLD_V3_V4_TARGET_RANKING_UNSTABLE')
+ s.tick=101;vm.frame.tick=101
+ local x=linked(b,q,o,s,{},vm,first.v3Next)
+ assert(x.status=='PREFER_ALREADY_EQUIPPED_QUICKSLOT_NO_INVENTORY_MOVE')
+ assert(x.suggestedQuickslotIndex==1 and x.backpackCandidateCount==0)
+ contract(x)
+end)
+test('no_backpack_no_better_ready_keeps_current_without_hold',function()
+ local b,q,o,s,c,vm=v3v4()
+ local first=linked(b,q,o,s,{},vm,nil)
+ assert(first.status=='HOLD_V3_V4_TARGET_RANKING_UNSTABLE')
+ s.tick=101;vm.frame.tick=101
+ local x=linked(b,q,o,s,{},vm,first.v3Next)
+ assert(x.status=='KEEP_CURRENT_NO_BACKPACK_CANDIDATE')
+ contract(x)
+end)
+test('r3_auto_discovers_item_and_scores_without_external_score',function()
+ local sprite,obs,ctx,b,q,o,s,c,vm=r37_fixture()
+ local raw=R37Bag.captureTopLevel(sprite,obs,ctx)
+ local r3=r3_snapshot(raw)
+ local fixture={sprite,obs,ctx,b,q,o,s,c,vm}
+ local candidates,err=M.prepare16FromR3(raw,r3,modeled_from(fixture))
+ assert(err==nil and #candidates==1)
+ assert(candidates[1].resref=='HAMM01' and candidates[1].sourceSlot==18)
+ assert(candidates[1].predictedUtility==nil)
+ local first=M.planWithV3(raw.backpack,raw.quick,raw.other,s,candidates,vm,nil,V3)
+ assert(first.status=='HOLD_V3_V4_TARGET_RANKING_UNSTABLE')
+ s.tick=101;vm.frame.tick=101
+ local final=M.planWithV3(raw.backpack,raw.quick,raw.other,s,candidates,vm,first.v3Next,V3)
+ assert(final.status=='ADVISE_BACKPACK16_TO_EMPTY_QUICKSLOT_DRYRUN_ONLY')
+ contract(final)
+end)
+test('r3_enumerates_every_one_of_16_backpack_slots_in_one_batch',function()
+ local sprite,obs,ctx,b,q,o,s,c,vm,slots=r37_fixture()
+ for i=18,33 do slots[i]=item(i,string.format('H%05d',i)) end
+ local raw=R37Bag.captureTopLevel(sprite,obs,ctx)
+ assert(raw.status=='TOPLEVEL0_38_AND_R37_STABLE_ADVICE_ONLY')
+ local fixture={sprite,obs,ctx,b,q,o,s,c,vm}
+ local names,err=M.prepare16FromR3(raw,r3_snapshot(raw),modeled_from(fixture))
+ assert(err==nil and #names==16)
+ for i=1,16 do assert(names[i].sourceSlot==i+17) end
+end)
+test('r3_projector_can_skip_nonweapon_without_fake_candidate',function()
+ local sprite,obs,ctx=r37_fixture()
+ local raw=R37Bag.captureTopLevel(sprite,obs,ctx)
+ local names,err=M.prepare16FromR3(raw,r3_snapshot(raw),function()
+  return {status='CANNOT_USE_OR_NOT_WEAPON'}
+ end)
+ assert(err==nil and #names==0)
+end)
+test('r3_refuses_stale_weapon_map_with_correct_actor_but_wrong_weapon',function()
+ local sprite,obs,ctx,b,q,o,s,c,vm=r37_fixture()
+ local raw=R37Bag.captureTopLevel(sprite,obs,ctx)
+ local r3=r3_snapshot(raw);r3.inventoryRawMap['35'].resref='SW1H04'
+ local fixture={sprite,obs,ctx,b,q,o,s,c,vm}
+ local x,err=M.prepare16FromR3(raw,r3,modeled_from(fixture))
+ assert(x==nil and err=='HOLD_R3_TOPLEVEL_ITEM_CHANGED_OR_UNMAPPED')
+end)
+test('r3_rejects_forged_native_alternative_stats',function()
+ local sprite,obs,ctx,b,q,o,s,c,vm=r37_fixture()
+ local raw=R37Bag.captureTopLevel(sprite,obs,ctx)
+ local fixture={sprite,obs,ctx,b,q,o,s,c,vm}
+ local x,err=M.prepare16FromR3(raw,r3_snapshot(raw),modeled_from(fixture,function(w)
+  w.alternativeEffectiveStatsLiveVerified=true end))
+ assert(x==nil and err=='HOLD_R3_PROJECTED_WEAPON_NOT_SOURCE_BOUND')
+end)
+test('r3_actual_itm_attack_type_must_match_mode',function()
+ local sprite,obs,ctx,b,q,o,s,c,vm=r37_fixture()
+ local raw=R37Bag.captureTopLevel(sprite,obs,ctx)
+ local fixture={sprite,obs,ctx,b,q,o,s,c,vm}
+ local x,err=M.prepare16FromR3(raw,r3_snapshot(raw,nil,2),modeled_from(fixture))
+ assert(x==nil and err=='HOLD_R3_ITEM_ABILITY_MODE_MISMATCH')
+end)
+test('r3_refuses_unattested_or_partial_resource_audit',function()
+ local sprite,obs,ctx,b,q,o,s,c,vm=r37_fixture()
+ local raw=R37Bag.captureTopLevel(sprite,obs,ctx)
+ local r3=r3_snapshot(raw);r3.status='ITM_NATIVE_PARTIAL_HOLD'
+ local fixture={sprite,obs,ctx,b,q,o,s,c,vm}
+ local x,err=M.prepare16FromR3(raw,r3,modeled_from(fixture))
+ assert(x==nil and err=='HOLD_R3_16_SLOT_INPUT_OR_PROVENANCE_INCOMPLETE')
+end)
+test('battle_decision_ready_quickslot_never_dispatches',function()
+ local sprite,obs,ctx,b,q,o,s,c,vm=r37_fixture()
+ local x=M.planBattleDecision({status='PREFER_ALREADY_EQUIPPED_QUICKSLOT_NO_INVENTORY_MOVE',
+  readOnly=true,sourceOnly=true,executable=false,dispatchAuthorized=false,
+  inventoryMoveAuthorized=false,suggestedQuickslotIndex=1,
+  bestEquippedWeaponId='SWORD'},obs,s)
+ assert(x.status=='STAGE_DECISION_AWAIT_INDEPENDENT_MANUAL_EPS_ROUND_PROOF')
+ assert(x.pendingWeaponChange.kind=='SELECT_ALREADY_EQUIPPED_QUICKSLOT')
+ assert(x.pendingWeaponChange.targetSlot==1)
+ contract(x)
+end)
+test('battle_decision_backpack_deferred_when_engine_queue_nonempty',function()
+ local sprite,obs,ctx,b,q,o,s,c,vm=r37_fixture()
+ obs.queuedActionsRaw=2
+ local x=M.planBattleDecision({status='ADVISE_BACKPACK16_TO_EMPTY_QUICKSLOT_DRYRUN_ONLY',
+  readOnly=true,sourceOnly=true,executable=false,dispatchAuthorized=false,
+  inventoryMoveAuthorized=false,sourceSlot=18,targetSlot=36,
+  candidateResref='HAMM01',topLevelResrefOccurrences=1,
+  topLevelItemMappingComplete=true},obs,s)
+ assert(x.status=='DEFER_KNOWN_NONEMPTY_ACTION_QUEUE')
+ assert(x.pendingWeaponChange.kind=='EQUIP_BACKPACK_TO_EMPTY_QUICKSLOT')
+ assert(x.pendingWeaponChange.sourceSlot==18 and x.queuedActionsRaw==2)
+ assert(x.engineActionCalls==0 and x.actionQueueCleared==false)
+ contract(x)
+end)
+test('battle_decision_forged_authority_or_origin_fails_closed',function()
+ local sprite,obs,ctx,b,q,o,s,c,vm=r37_fixture()
+ local bad={status='ADVISE_BACKPACK16_TO_EMPTY_QUICKSLOT_DRYRUN_ONLY',
+  readOnly=true,sourceOnly=true,executable=false,dispatchAuthorized=true,
+  inventoryMoveAuthorized=false,sourceSlot=18,targetSlot=36,
+  candidateResref='HAMM01',topLevelResrefOccurrences=1,
+  topLevelItemMappingComplete=true}
+ local x=M.planBattleDecision(bad,obs,s)
+ assert(x.status=='HOLD_BATTLE_EVIDENCE_OR_ACTION_CONTEXT_INCOMPLETE')
+ contract(x)
+ bad.dispatchAuthorized=false;obs.actionOriginVerified=true
+ local y=M.planBattleDecision(bad,obs,s)
+ assert(y.status=='HOLD_BATTLE_EVIDENCE_OR_ACTION_CONTEXT_INCOMPLETE')
+ contract(y)
+end)
 print("BGXAI BACKPACK16 PRIORITY V4 "..n.." synthetic tests PASS")
