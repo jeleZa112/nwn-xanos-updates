@@ -58,6 +58,27 @@ def patch_armer(ar:bytes)->bytes:
         b"local function ret(status)\n",
         ID_FUNCTION+b"local function ret(status)\n","AR_NUMERIC_ACTOR_HELPER")
     out=repl_exact(out,
+        b" if not first then return ret('HOLD_LIVE_IDENTITY_ITEM_OR_ACTION_UNSAFE') end",
+        b" if not first or not sameNumericActor(sprite,first.actorId) then\n"
+        b"  return ret('HOLD_LIVE_IDENTITY_ITEM_OR_ACTION_UNSAFE') end",
+        "AR_REQUEST_MATCH_SNAPSHOT_ACTOR_ID")
+    out=repl_exact(out,
+        b" local epochAgain=armingAllowed(ports)\n"
+        b" if not same(second,third) or epochAgain~=epoch or\n",
+        b" local epochAgain=armingAllowed(ports)\n"
+        b" local portraitOK,portrait=pcall(ports.getPortraitSprite,1)\n"
+        b" if not same(second,third) or epochAgain~=epoch or\n"
+        b"    not portraitOK or not sameNumericActor(portrait,first.actorId) or\n",
+        "AR_BEFORE_ARM_LIVE_PORTRAIT_ID")
+    out=repl_exact(out,
+        b" local fourth=snapshot(ports,sprite)\n"
+        b" if not same(third,fourth) or armingAllowed(ports)~=epoch then",
+        b" local fourth=snapshot(ports,sprite)\n"
+        b" local postOK,postPortrait=pcall(ports.getPortraitSprite,1)\n"
+        b" if not same(third,fourth) or armingAllowed(ports)~=epoch or\n"
+        b"    not postOK or not sameNumericActor(postPortrait,first.actorId) then",
+        "AR_AFTER_ARM_RECHECK_PORTRAIT_ID")
+    out=repl_exact(out,
         b"    state.volatileSprite~=aiBase then return false end",
         b"    not sameNumericActor(state.volatileSprite,state.volatileActorId) or\n"
         b"    not sameNumericActor(aiBase,state.volatileActorId) then return false end",
