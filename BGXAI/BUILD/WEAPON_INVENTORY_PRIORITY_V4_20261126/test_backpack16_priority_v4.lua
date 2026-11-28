@@ -192,4 +192,123 @@ test("unknown_unusable_reason_cannot_bypass_threshold",function()
  assert(x.status=="HOLD_CURRENT_WEAPON_UNUSABLE_EVIDENCE_INCOMPLETE")
  contract(x)
 end)
+-- Compose the ALREADY EXISTING V3 target ranker with the V4 16-slot planner.
+-- This is a modeled snapshot; all approvals remain forbidden.
+local V3=dofile('BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_PRIORITY_LUA_V3.lua')
+local function v3v4()
+ local b,q,o,s,c=data()
+ s.snapshotId='SNAP1';s.targetActorId=222
+ c[1].snapshotId='SNAP1';c[1].predictedUtility=nil
+ local vm={frame={tick=100,area='AR001',actorId='123',enemyId='222',
+    snapshotId='SNAP1',equipmentFingerprint='EQ1',protectionFingerprint='PR1',
+    combatFingerprint='C1',selectedWeaponId='BOW',
+    captureContract='COMPLETE_EFFECTIVE_SNAPSHOT',
+    completeEquipmentObserved=true,completeQuiverObserved=true,
+    completeTargetObserved=true},
+   actor={actorId='123',area='AR001',currentTargetId='222',
+    selectedWeaponId='BOW',observationVerified=true,handsMode='SINGLE',
+    nearRangedEnemy=false,canSustainMelee=true,pathSafeVerified=true,
+    manualOrderActive=false,epsBusy=false,healingReserved=false,
+    currentlyCasting=false,originVerified='AI',
+    traitProfile={verified=true,snapshotId='SNAP1',modFingerprint='EET',
+     activeClassesVerified=true,raceClassKitBonusesIncluded=true}},
+   enemy={enemyId='222',area='AR001',observationVerified=true,
+    hostileVerified=true,visibleVerified=true,armorClass=0,
+    protections={snapshotId='SNAP1',observed=true,
+     immuneDamageTypes={},minimumEnchantment=0,magicalWeaponsBlocked=false,
+     normalWeaponsBlocked=false,missilesBlocked=false,
+     resistance={SLASHING=0,PIERCING=0,CRUSHING=0,MISSILE=0}}},
+   quickslotIds={'BOW',false,false,false},
+   weapons={{id='BOW',slot='QUICKSLOT',quickslotIndex=0,resRef='BOW05',
+    snapshotId='SNAP1',modFingerprint='EET',mode='RANGED',damageType='MISSILE',
+    weaponGroup='LONG_BOW',usableVerified=true,equippedWeaponSlotVerified=true,
+    ammoVerified=true,ammunitionModel='SELF',ammoCount=20,
+    inRange=true,rangedClosePenaltyAccounted=true,
+    finalTHAC0=20,avgDamageOnHit=2,apr=1,enchantment=0,magical=false,
+    switchCost=0,resourceCost=0,retaliationRisk=0,movementCost=0,
+    extraEffectValue=0,combatCostsVerified=true,statBasis='FINAL_EFFECTIVE',
+    finalCombatStatsVerified=true,
+    allRaceClassKitProficiencyBonusesIncluded=true}}}
+ c[1].weaponModel={id='BAG_HAMM',slot='BACKPACK',sourceSlot=18,
+   resRef='HAMM01',snapshotId='SNAP1',modFingerprint='EET',
+   modelProvenance='V3_V4_V5',
+   counterfactualBasis='MODEL_ONLY_NOT_NATIVE_EFFECTIVE',
+   alternativeEffectiveStatsLiveVerified=false,
+   usableVerified=true,identifiedVerified=true,notCursedVerified=true,
+   notQuestItemVerified=true,offhandCompatibilityVerified=true,
+   ammoAndLauncherVerified=true,protectionsAccountedVerified=true,
+   mode='MELEE',weaponGroup='WAR_HAMMER',damageType='CRUSHING',
+   inRange=true,finalTHAC0=10,apr=2,avgDamageOnHit=7,
+   enchantment=0,magical=false,statBasis='FINAL_EFFECTIVE',
+   finalCombatStatsVerified=true,
+   allRaceClassKitProficiencyBonusesIncluded=true,
+   combatCostsVerified=true,switchCost=0,resourceCost=0,
+   retaliationRisk=0,movementCost=0,extraEffectValue=0}
+ return b,q,o,s,c,vm
+end
+local function linked(b,q,o,s,c,vm,p)
+ return M.planWithV3(b,q,o,s,c,vm,p,V3)
+end
+local function stable(b,q,o,s,c,vm)
+ local first=linked(b,q,o,s,c,vm,nil)
+ assert(first.status=='HOLD_V3_V4_TARGET_RANKING_UNSTABLE' and
+        type(first.v3Next)=='table')
+ contract(first)
+ s.tick=101;vm.frame.tick=101
+ return linked(b,q,o,s,c,vm,first.v3Next)
+end
+test('v3_v4_same_target_backpack_advice_only',function()
+ local b,q,o,s,c,vm=v3v4()
+ local x=stable(b,q,o,s,c,vm)
+ assert(x.status=='ADVISE_BACKPACK16_TO_EMPTY_QUICKSLOT_DRYRUN_ONLY')
+ assert(x.sourceSlot==18 and x.targetSlot==36 and x.candidateResref=='HAMM01')
+ assert(x.v3V4Link=='SAME_ACTOR_TARGET_BACKPACK_MODEL_ONLY')
+ assert(x.estimatedGain>7 and x.scoreMargin==2)
+ assert(c[1].predictedUtility==nil)
+ contract(x)
+end)
+test('v3_v4_target_id_changed_hold',function()
+ local b,q,o,s,c,vm=v3v4()
+ s.targetActorId=333
+ local x=linked(b,q,o,s,c,vm,nil)
+ assert(x.status=='HOLD_V3_V4_ACTOR_TARGET_FRAME_MISMATCH')
+ contract(x)
+end)
+test('v3_v4_external_score_cannot_overwrite_v3',function()
+ local b,q,o,s,c,vm=v3v4()
+ c[1].predictedUtility=999
+ local x=stable(b,q,o,s,c,vm)
+ assert(x.status=='HOLD_V3_V4_EXTERNAL_OR_MISMATCHED_SCORE')
+ contract(x)
+end)
+test('v3_v4_unknown_counterfactual_apr_hold',function()
+ local b,q,o,s,c,vm=v3v4()
+ c[1].weaponModel.apr=nil
+ local x=stable(b,q,o,s,c,vm)
+ assert(x.status=='HOLD_V3_V4_BACKPACK_TARGET_MODEL_UNVERIFIED')
+ contract(x)
+end)
+test('v3_v4_quickslot_identity_mismatch_hold',function()
+ local b,q,o,s,c,vm=v3v4()
+ vm.weapons[1].resRef='WRONG'
+ local x=linked(b,q,o,s,c,vm,nil)
+ assert(x.status=='HOLD_V3_V4_QUICKSLOT_IDENTITY_DRIFT')
+ contract(x)
+end)
+test('v3_v4_verified_current_missile_immunity_allows_positive_hammer',function()
+ local b,q,o,s,c,vm=v3v4()
+ vm.enemy.protections.missilesBlocked=true
+ local x=stable(b,q,o,s,c,vm)
+ assert(x.status=='ADVISE_BACKPACK16_TO_EMPTY_QUICKSLOT_DRYRUN_ONLY')
+ assert(x.scoreMargin==0 and x.estimatedGain>0)
+ contract(x)
+end)
+test('v3_v4_caller_current_score_cannot_launder_gain',function()
+ local b,q,o,s,c,vm=v3v4()
+ s.currentWeaponScore=99999;s.currentWeaponScoreVerified=true
+ local x=stable(b,q,o,s,c,vm)
+ assert(x.status=='ADVISE_BACKPACK16_TO_EMPTY_QUICKSLOT_DRYRUN_ONLY')
+ assert(x.estimatedGain>7)
+ contract(x)
+end)
 print("BGXAI BACKPACK16 PRIORITY V4 "..n.." synthetic tests PASS")
