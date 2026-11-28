@@ -145,6 +145,29 @@ class CatalogStage(unittest.TestCase):
         self.assertNotIn("PRIVATE",json.dumps(result))
         self.assertFalse(list(self.reports.glob("*.lua")))
 
+ def test_original_gam_and_r3_parser_hold_is_not_hidden_or_leaked(self):
+    # These are the exact already-imported native parser classes, NOT a
+    # fabricated new reader. The prefix is needed to avoid another game test.
+    tests=(
+       ("saved_names",gam.Hold("HOLD_UNSUPPORTED_GAM_VERSION_NOT_GUESSING"),
+        "VALIDATE_SAVED_PARTY_ITEMS",
+        "HOLD_EXISTING_READER_HOLD_UNSUPPORTED_GAM_VERSION_NOT_GUESSING"),
+       ("build_source",r3.Hold("CHITIN_KEY_DUPLICATE_RESOURCE:PRIVATE_ITEM_NAME"),
+        "BUILD_INERT_LUA_CATALOG",
+        "HOLD_EXISTING_READER_CHITIN_KEY_DUPLICATE_RESOURCE"),
+    )
+    for function,exc,stage,want in tests:
+      with self.subTest(function=function),patch.object(mod,function,side_effect=exc):
+        result=mod.run(self.game,self.docs,self.reports,game_required=False)
+        self.assertEqual(result["reason"],want)
+        self.assertEqual(result["failureStage"],stage)
+        self.assertEqual(result["exceptionType"],"KNOWN_READER_HOLD")
+        self.assertTrue(result["noAutoRetry"])
+        self.assertEqual(result["ordersSent"],0)
+        self.assertFalse(result["gameModified"])
+        self.assertNotIn("PRIVATE",json.dumps(result))
+        self.assertFalse(list(self.reports.glob("*.lua")))
+
  def test_existing_specific_hold_still_reports_original_reason_without_retries(self):
     self.gam.unlink()
     result=mod.run(self.game,self.docs,self.reports,game_required=False)
