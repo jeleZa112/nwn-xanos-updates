@@ -65,7 +65,7 @@ jobs:
             python3 BGXAI/patchsets/ranged_fighter_guarded_20261119/run_weapon_priority_v3_regression.py --lua "${runtime}" || result=1
           done
           exit "${result}"
-      - name: R3 native ITM/BIF + R37 39-slot join (35 read-only Python unit tests)
+      - name: R3 native ITM/BIF + R37 39-slot join + static Lua catalog (42 read-only Python unit tests)
         shell: bash
         run: python3 -m unittest discover -s BGXAI/patchsets/ranged_fighter_guarded_20261119 -p 'test_weapon_native_itm_r3_ro.py' -q
       - name: R13 existing target defense source plus same listener 105 and 134 (three Lua runtimes)
@@ -176,7 +176,7 @@ jobs:
           payload={
             'state':state,
             'context':'BGXAI/source-only/542-lua-r3-r13-r35-nativeITM0',
-            'description':f'542 model cases x3 Lua; R3 35; R13/R35 native-source and R37 CItem0. linux={linux}, windows={windows}',
+            'description':f'542 model cases x3 Lua; R3 42; R13/R35 native-source and R37 CItem0. linux={linux}, windows={windows}',
             'target_url':f'https://github.com/{repo}/actions/runs/{run}',
           }
           url=f"https://api.github.com/repos/{repo}/statuses/{os.environ['BGXAI_SHA']}"
