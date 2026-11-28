@@ -108,6 +108,19 @@ class BatchTests(unittest.TestCase):
         with self.assertRaisesRegex(batch.SafeStop,'CATALOG_ITEM_COUNT_UNSAFE'):
             batch.validate_catalog(x)
 
+    def test_historical_seed_candidates_are_not_names_or_runtime_proof(self):
+        seeds=batch.HISTORICAL_WEAPON_SEEDS_64
+        self.assertEqual(len(seeds),64)
+        self.assertEqual(len(set(seeds)),64)
+        self.assertIn('STAF01',seeds)
+        self.assertIn('DAGG01',seeds)
+        self.assertIn('AROW02',seeds)
+        for ref in seeds:
+            self.assertRegex(ref,batch.RESREF_RE)
+        # Seed list never unlocks any Lua insertion without current catalog.
+        with self.assertRaises(batch.SafeStop):
+            batch.validate_catalog({'items':{ref:{} for ref in seeds}})
+
     def test_patch_preserves_all_existing_code(self):
         names=batch.validate_catalog(self.catalog)
         x=batch.candidate_bytes(ORIGINAL,names['entries'],sha(ORIGINAL))
