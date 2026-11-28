@@ -1113,7 +1113,7 @@
     {
       "error_id": "BGXAI_V2_PINNED_LEGACY179_R48_GUARDED_ROUTING_GAP_20261128",
       "project": "BGXAI",
-      "type": "CONFIRMED_MISSING_DELIVERY_ROUTE",
+      "type": "CONFIRMED_FAILURE",
       "status": "MITIGATED_SOURCE_ONLY",
       "discovered_at": "2026-11-28",
       "trigger": "User's single original V2 CMD hub pinned 40cd303fdcf9 delegates legacy 179 to immutable f282 source which has no R48 menu 23/24/25. Later GitHub source R48 and mocks had anticipated 179->23 but are not present in the installed pinned legacy.",
