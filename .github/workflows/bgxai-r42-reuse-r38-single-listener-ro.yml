@@ -117,27 +117,6 @@ jobs:
       - name: Test R47 corrected witness reuses native-confirmed R46 inert BAF (SOURCE ONLY)
         run: python -m unittest -v BGXAI/BUILD/R47_GUARDED_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/test_r47_reuse_r46_exact_witness_port_source_only.py
 
-      - name: R47 witness exact Lua source SHA and global EEex port mocks (NO GAME)
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          python - <<'PY'
-          import hashlib,importlib.util,json,subprocess,tempfile
-          from pathlib import Path
-          folder=Path('BGXAI/BUILD/R47_GUARDED_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128')
-          spec=importlib.util.spec_from_file_location('r47_verified',folder/'BGXAI_R47_CORRECT_R46_EEEX_SCRIPT_PORT_SOURCE_ONLY.py')
-          m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
-          parts=m.source_only()
-          candidate=parts['LUA']
-          print('R47_LUA_CORRECTED_PIN',len(candidate),hashlib.sha256(candidate).hexdigest())
-          with tempfile.TemporaryDirectory(prefix='BGXAI_R47_NO_INSTALL_') as t:
-              file=Path(t)/'M_BGXR46_WITNESS.lua'
-              file.write_bytes(candidate)
-              subprocess.run(['lua5.4','-e','assert(loadfile('+json.dumps(str(file))+'))'],check=True)
-              subprocess.run(['lua5.4',str(folder/'test_r47_witness_global_EEex_class_port.lua'),str(file)],check=True)
-          print('R47 SOURCE_ONLY: R46 BAF UNCHANGED, NO BCS INSTALLED')
-          PY
-
       - name: Test R46 always-false BDDEFAI BCS witness source (NO GAME)
         run: python -m unittest -v BGXAI/BUILD/R46_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/test_r46_inert_bcs_witness_source_only.py
 
@@ -277,6 +256,27 @@ jobs:
               subprocess.run(['lua5.4',str(root/'test_r46_inert_bcs_witness_source_only.lua'),
                               str(target)],check=True)
           print('R46 BAF SOURCE ONLY; no native WeiDU install/BCS execution')
+          PY
+
+      - name: R47 witness exact Lua source SHA and global EEex port mocks (NO GAME)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib,importlib.util,json,subprocess,tempfile
+          from pathlib import Path
+          folder=Path('BGXAI/BUILD/R47_GUARDED_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128')
+          spec=importlib.util.spec_from_file_location('r47_verified',folder/'BGXAI_R47_CORRECT_R46_EEEX_SCRIPT_PORT_SOURCE_ONLY.py')
+          m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+          parts=m.source_only()
+          candidate=parts['LUA']
+          print('R47_LUA_CORRECTED_PIN',len(candidate),hashlib.sha256(candidate).hexdigest())
+          with tempfile.TemporaryDirectory(prefix='BGXAI_R47_NO_INSTALL_') as t:
+              file=Path(t)/'M_BGXR46_WITNESS.lua'
+              file.write_bytes(candidate)
+              subprocess.run(['lua5.4','-e','assert(loadfile('+json.dumps(str(file))+'))'],check=True)
+              subprocess.run(['lua5.4',str(folder/'test_r47_witness_global_EEex_class_port.lua'),str(file)],check=True)
+          print('R47 SOURCE_ONLY: R46 BAF UNCHANGED, NO BCS INSTALLED')
           PY
 
       - name: R45 existing R41 armer cross-wrapper safety and no-orders regression (NO GAME)
