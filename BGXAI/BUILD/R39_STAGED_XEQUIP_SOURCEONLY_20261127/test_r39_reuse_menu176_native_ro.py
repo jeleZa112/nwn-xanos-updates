@@ -17,6 +17,60 @@ class NativeReuse(unittest.TestCase):
         self.assertEqual(len(s),2303)
         self.assertEqual(hashlib.sha256(s).hexdigest(),p.BAF_SHA)
 
+    def test_2407_session_baf_exact_and_no_live_auth(self):
+        x=Path(__file__).with_name(p.SESSION_BAF_NAME)
+        raw=p.exact_source(x)
+        self.assertEqual(len(raw),p.SESSION_BAF_LENGTH)
+        self.assertEqual(p.digest(raw),p.SESSION_BAF_SHA)
+        self.assertEqual(raw.count(b'EEex_LuaTrigger('),2)
+        got=p.source_only(x)
+        self.assertEqual(got['status'],'EXACT_R39_BAF_PIN_PASS_NO_NATIVE')
+        self.assertEqual(got['bafVariant'],'EEEX_SESSION_SOURCE_ONLY')
+        self.assertFalse(got['nativeWeiDUCompileVerified'])
+        self.assertFalse(got['dispatchAuthorized'])
+
+    def test_2407_session_baf_injection_and_tamper_rejected(self):
+        raw=Path(__file__).with_name(p.SESSION_BAF_NAME).read_bytes()
+        with tempfile.TemporaryDirectory() as d:
+            x=Path(d)/p.SESSION_BAF_NAME
+            x.write_bytes(raw.replace(b'BGXW3_EEexSessionGate()',b'InjectedUnsafeLuaTrigger()'))
+            with self.assertRaises(p.Hold):p.exact_source(x)
+            x.write_bytes(raw[:-1])
+            with self.assertRaises(p.Hold):p.exact_source(x)
+
+    def test_2407_native_mock_uses_reused_backend_not_game(self):
+        with tempfile.TemporaryDirectory() as d:
+            game=Path(d)/'game';game.mkdir()
+            class FakeBackend:
+                TEMP_SOURCE_NAME='old.baf'
+                def source_check(self,src,root):return None
+                def checked_file(self,path,required=False):return path.read_bytes()
+                class Hold(ValueError):pass
+                def compile_readonly(self,root,src,compiler):
+                    check=self.source_check(src,root)
+                    assert check['sha256']==p.SESSION_BAF_SHA
+                    assert check['size']==p.SESSION_BAF_LENGTH
+                    assert self.TEMP_SOURCE_NAME==src.name
+                    return {'status':'NATIVE_WEIDU_COMPILED_TEMP_ONLY',
+                        'nativeSymbolsAcceptedByCompiler':True,
+                        'watchedFilesChanged':False,'temporaryOutputRemoved':True}
+            backend=FakeBackend()
+            class FakeHelper:
+                def close_game_proof(self):pass
+                def pinned_compiler(self,game):return game/'fake.exe'
+                def load_backend(self,src):return backend
+            with patch.object(p,'exact_v3_helper',return_value=FakeHelper()),\
+                 patch.object(p,'static_item_preflight',return_value={'staticItemClassKitHeaderAllowed':True}):
+                out=p.native_readonly(game,Path(__file__).with_name(p.SESSION_BAF_NAME),game/'helper',game/'backend')
+            self.assertEqual(out['status'],'R39_NATIVE_EET_TEMP_COMPILE_PASS_NO_INSTALL')
+            self.assertEqual(out['sourceSha256'],p.SESSION_BAF_SHA)
+            self.assertEqual(out['bafVariant'],'EEEX_SESSION_SOURCE_ONLY')
+            self.assertTrue(out['eeexLuaTriggerCompiledInNativeSource'])
+            self.assertFalse(out['eeexLuaTriggerBoundAtRuntime'])
+            self.assertFalse(out['installed'])
+            self.assertFalse(out['dispatchAuthorized'])
+            self.assertEqual(backend.TEMP_SOURCE_NAME,'old.baf')
+
     def test_native_missing_sources_fails_closed(self):
         self.assertEqual(p.main(['--native-readonly','--source',str(self.source)]),3)
 
