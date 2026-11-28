@@ -29,14 +29,8 @@ jobs:
         run: python project_tools/resume_guard.py --preflight BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_REUSE_R38_CLASS_BCS_RO.py
       - name: Existing immutable predecessor and canonical preflight
         run: python project_tools/resume_guard.py
-      - name: Test composed R38/R39 read-only bridge
-        shell: bash
-        run: |
-          if [ -f BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_reuse_r38_source_only.py ]; then
-            python -m unittest -v BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_reuse_r38_source_only.py
-          else
-            echo "PREWORK ONLY: source not authored yet"
-          fi
+      - name: Test composed R38/R39 read-only bridge (required)
+        run: python -m unittest -v BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_reuse_r38_source_only.py
 
       - name: Syntax-check generated R38+R39 class BCS observer (no runtime)
         if: runner.os == 'Linux'
