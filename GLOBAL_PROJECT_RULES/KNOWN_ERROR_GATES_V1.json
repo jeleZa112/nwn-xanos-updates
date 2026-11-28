@@ -765,6 +765,52 @@
         "deploy": "NO",
         "live": "NO"
       }
+    },
+    {
+      "error_id": "BGXAI_R3_PYTHON_AUDIT_CANNOT_RUN_IN_LIVE_EEEX_LUA_20261128",
+      "project": "BGXAI",
+      "discovered_at": "2026-11-28",
+      "type": "CROSS_LANGUAGE_RUNTIME_INTEGRATION_NOT_TEST_COVERAGE",
+      "status": "SOURCE_BRIDGE_IMPLEMENTED_542x3_PLUS_R3_42_CI_PASS_RUNTIME_CATALOG_NOT_DEPLOYED",
+      "prior_work_gate": {
+        "already_done": "R3 parses real EET ITM BIF/override+2DA with bounded Python; R37 already reads all 39 top-level slots; V4 models all 16 backpack items vs ready weapons; R35/R13 bind actor/target.",
+        "evidence": "canonical BGXAI current status 530x3; source V4.prepare16FromR3(raw,r3,projection) consumes Python-style r3 table but EEex runtime executes Lua, not Python",
+        "missing_delta": "provide native same-callback CItem item-ability/proficiency facts and a safe inert Lua data artifact from R3 without running Python inside EEex, no new EEex listener",
+        "minimal_step": "extend existing R37 + R3 + V4, test real Python->Lua file compiler and native CItem0 contract, keep game unchanged"
+      },
+      "code": {
+        "r37": "Existing captureNativeAbility0 reads EEex 1.1.7 CItem.pRes.pHeader abilityCount / first ability attackType and ITM header proficiency byte 0x31 for backpack 18..33 and quickslots 35..38; only getAbility(0), never i>=1; checks 39-slot R37 raw map and same context before/after, raw inventory recheck and no orders. Multi-ability items explicitly SKIP.",
+        "r3": "Existing export_r37_lua_cache(report) serializes bounded, provenance-filtered CURRENT_GAME ITM+effect raw facts to inert Lua table text, no game write; only source catalog must be staged to the existing updater in future.",
+        "v4": "Existing validateNativeAbility0AgainstR3 and planAutoBatchNativeAbility0 bind live source first header/proficiency to R3 bytes and current R37 39-slot map, exclude multi/nonphysical, reuse original V3/V4 ranking with negative authority; no new full stat ranker.",
+        "installNote": "No active updater source pinned to catalog export, no installed native CItem0 probe, no real full alternate APR/THAC0 provider, no EPS/manual/round permission: SOURCE ONLY."
+      },
+      "evidence": {
+        "validatedCodeCommits": [
+          "968bc684b40b6d25534e08f3eedf070035a634c7",
+          "81756b46424a2e21ca35346636c69b838f9d8b1f",
+          "e6b292a29aed34c3b5cf7f39f23315a768770810"
+        ],
+        "fullCIRun": 46153484727,
+        "checkoutCommit": "d439bfd4354733ba6c024dda2606c7ba60fc739f",
+        "statusContext": "BGXAI/source-only/542-lua-r3-r13-r35-nativeITM0",
+        "status": "success",
+        "fullLuaCasesPerEngine": 542,
+        "nativeSourceV4CasesPerEngine": 86,
+        "R3PythonTests": 42,
+        "existingR13CoreTests": 43,
+        "existingR13RuntimeTests": 18,
+        "existingR35Tests": 16,
+        "windowsStatic": "PASS",
+        "officialEEex117": "Bubb13/EEex v1.1.7 EEex_Resource.lua getAbility first index works while i>=1 uses Item_Header_st.sizeof stride rather than 56 byte Item_ability_st stride; never dereference >=1 without proof",
+        "itemLayout": "IESDP BGEE ITM V1 0x31 proficiency, extended ability byte0 attack type, 56-byte extended ability"
+      },
+      "no_repeat": "Do not create a duplicate Python parser/observer/updater, or repeat old 179→22 R47 witness, 530/542 model tests manually. New live gate is current installed EEex CItem0 feasibility and actual alternate effective APR/THAC0 with manual/EPS noninterrupt boundary, then typed install via existing updater.",
+      "tiers": {
+        "code": "IN_EXISTING_GITHUB_MODULES",
+        "test": "GITHUB_ACTIONS_542_EACH_3_LUA_R3_42_WINDOWS_PASS",
+        "deploy": "NO",
+        "live": "NO"
+      }
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
