@@ -360,8 +360,8 @@
           "git_blob_sha": "ada1ff628873e83a0b21296e5b5017bbc47510cd"
         },
         {
-          "path": "BGXAI/fox_new/experimental_081_eeex_action_provenance_readonly_source_only/BGXAI081_ACTION_CONTEXT_READONLY_V3.lua",
-          "git_blob_sha": "2034efe6cc00adf27885574c4642d9a04c33e572"
+          "path": "BGXAI/BUILD/WEAPON_XEQUIP_LOCAL_ARM_SOURCEONLY_V3_20261127/BGXAI_XEQUIP_LOCAL_ARM_SOURCE_V3.py",
+          "git_blob_sha": "c692607782c787d183daee76fe712d09f304e777"
         }
       ],
       "already_implemented": [
