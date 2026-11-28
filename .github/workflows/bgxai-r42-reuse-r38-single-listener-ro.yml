@@ -53,6 +53,9 @@ jobs:
       - name: Test composed R38/R39 read-only bridge (required)
         run: python -m unittest -v BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_reuse_r38_source_only.py
 
+      - name: Test R42 opt-in source-only bounded R39 HOLD diagnosis (no runtime)
+        run: python -m unittest -v BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_class_hold_reason_source_only.py
+
       - name: Test one-CMD source-only R42 child (pinned, isolated)
         run: python -m unittest -v BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_onefile_source_ro.py
       - name: Published 179 new guarded helper SHA before release pin
@@ -102,6 +105,14 @@ jobs:
                                            m.verified(m.R39,m.R39_BYTES,m.R39_BLOB)))
               lua='assert(loadfile('+json.dumps(str(target))+'))'
               subprocess.run(['lua5.4','-e',lua],check=True)
+          # Additional candidate is source-only; it is NOT the pinned installed R42.
+          dspec=importlib.util.spec_from_file_location('r42_diag',root/'BGXAI_R42_CLASS_HOLD_REASON_SOURCE_ONLY.py')
+          diag=importlib.util.module_from_spec(dspec);dspec.loader.exec_module(diag)
+          with tempfile.TemporaryDirectory(prefix='BGXAI_R42_HOLD_REASON_SOURCEONLY_') as directory:
+              extra=Path(directory)/'M_BGXR27_HOLD_REASON_SOURCE_ONLY.lua'
+              extra.write_bytes(diag.compose())
+              subprocess.run(['lua5.4','-e','assert(loadfile('+json.dumps(str(extra))+'))'],check=True)
+          print('R42 bounded R39 HOLD-reason Lua syntax PASS; original installed candidate unchanged')
           print('R42 composed Lua syntax PASS; no listener executed; game untouched')
           PY
 
