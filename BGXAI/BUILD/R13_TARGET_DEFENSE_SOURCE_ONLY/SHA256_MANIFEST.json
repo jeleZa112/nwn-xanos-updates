@@ -19,24 +19,24 @@
       "size": 3270
     },
     "BGXAI_R13_TARGET_DEFENSE_OBSERVER.lua": {
-      "sha256": "0002dfb06b4eb84ae514f464f21cd4a5219d4f7e31d8e0e6295265b71c306bb8",
-      "size": 6768
+      "sha256": "7c16dc267962d50fcff38e22b0de32b598d2a66fd8f654b6c7d48f3b6e477ed3",
+      "size": 8065
     },
     "M_BGXTDEF13.lua": {
       "sha256": "eb764346f0c523790658320938a2739d873dbbdb59a93479e4f47e1f0edac2f3",
       "size": 12217
     },
     "README_RU.md": {
-      "sha256": "102e4e66674f66932f0f431923de145ee81bb8bc322bde4f51607e4af4122f4f",
-      "size": 5684
+      "sha256": "adb9ad05475cceea4a2355ebebfa5750d5e3d858fb2d4af34a8bb1d2f7f922ca",
+      "size": 7944
     },
     "test_menu161.py": {
       "sha256": "6c85d809e04478ee1c5212f15227d52ac17faf4ac01c821295a902e46c9417bc",
       "size": 4235
     },
     "test_r13.lua": {
-      "sha256": "d96010c0d272ac646fd39fb10890da3a5e2f080346c429eac5362e8b95ab6b45",
-      "size": 7912
+      "sha256": "bc04b60e9849d48c63c0972754657880be5b62d796e2318e4bd17dd2ccc1e0cc",
+      "size": 9152
     },
     "test_r13_guarded.py": {
       "sha256": "1c5e7618084a581c12ea9eb686386f1fe84dd5d8da35694b227e8f5ef771e110",
