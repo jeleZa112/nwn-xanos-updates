@@ -24,7 +24,7 @@ BASE_CACHE = 'V162_WEAPON_NAMES_DISPATCH.py'
 SECOND_REF = 'b447162812c3cc0461052034834f3d27bee8875f'
 SECOND_REL = 'bg-eet-ru/hit-only-v160/weapon_names_cumulative_source.py'
 # Exact SHA256 of SECOND_REL from immutable SECOND_REF, verified by release CI.
-SECOND_SHA = 'PENDING_CI_SHA_FOR_CUMULATIVE_SOURCE'
+SECOND_SHA = '0f1afca5e805a1803f4bde2614dd9ce95dd95e2110e44f067e2bca34bcb4ee15'
 MAX_SOURCE = 50_000
 HEX = set('0123456789abcdef')
 
