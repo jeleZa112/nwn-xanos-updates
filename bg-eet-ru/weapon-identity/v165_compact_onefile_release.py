@@ -30,7 +30,9 @@ def build():
     rel=json.loads(RELEASE.read_text(encoding='utf-8'))
     if (sha(raw)!=V164_SHA or rel['version']!=164 or
             rel['sha256']!=V164_SHA):
-        if rel['version']==165 and rel['sha256']==sha(raw):
+        if rel['version']==165 and rel['sha256']==sha(raw) and (
+            sha(V165.read_bytes())==V165_SOURCE_SHA and
+            rel.get('v165_backend_sha256')==V165_SOURCE_SHA):
             print('V165_ALREADY_BUILT_PINNED')
             return
         raise RuntimeError('V165_V164_EXACT_BASELINE_HOLD')
