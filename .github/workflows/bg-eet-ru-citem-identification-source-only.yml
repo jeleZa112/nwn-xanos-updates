@@ -38,5 +38,11 @@ jobs:
         run: python -m unittest discover -s bg-eet-ru/weapon-identity -p 'test_V107_X64_BINDING_SOURCE_AUDIT_RO.py' -v
       - name: Pinned public InfinityLoader generated x64 binding and EEex Docs proof
         run: python bg-eet-ru/weapon-identity/V107_X64_BINDING_SOURCE_AUDIT_RO.py
+      - name: Official EEex v1.2.0 DLL SHA256 provenance vs V164 uploaded hashes
+        run: >-
+          python bg-eet-ru/weapon-identity/V107_X64_BINDING_SOURCE_AUDIT_RO.py
+          --compare-release-v120
+          b6c7c98804360cb46531db75ab9608e378fd403d60c29c0e29946a60a334276a
+          ba84c42fb4b045a585ed5cfd38c1dc487bb9d7052d11d5d4fec198f1155b2db7
       - name: Guard existing onefile remains untouched and selftest passes
         run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
