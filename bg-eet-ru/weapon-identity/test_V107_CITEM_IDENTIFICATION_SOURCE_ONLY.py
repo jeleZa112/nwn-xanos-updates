@@ -184,7 +184,7 @@ class IdentificationSourceTests(unittest.TestCase):
         self.assertEqual(self.state['events'][1]['weapon_dual_name'],
                          'DUAL_NAME_CURRENT_ITM_TLK_HOLD')
         self.state['verified_dual_pairs']['SW1H04']['current_itm_and_tlks_verified']=True
-        self.state['verified_dual_pairs']['SW1H04']['identified']='Многострочный\\nввод'
+        self.state['verified_dual_pairs']['SW1H04']['identified']='Многострочный\nввод'
         self.state['recorded']=0
         self.state['events']=self.lua.table()
         self.observe(self.context(FakeItem(1)))
