@@ -156,5 +156,69 @@ end
 -- An adapter to M_BGXW3_EXPLICIT_USER_ARM_SOURCE_ONLY.lua is intentionally
 -- NOT exported. This module cannot assert itemEngineUsable or all effects;
 -- substituting partial observations for these fields would be unsafe.
+-- Read the actor's current script *assignments* without any listener or action.
+-- EEex v1.1.7 provides EEex_AIBase_GetScriptLevelResRef() for SCRLEV.IDS.
+-- A script being assigned is not proof that the engine is evaluating it.
+local SCRIPT_LEVELS={0,1,2,4,5,6,7}
+local function validResref(s)
+ return type(s)=='string' and #s<=8 and (s=='' or not s:find('[^%w_]'))
+end
+function M.probeScriptAssignments(ports)
+ if type(ports)~='table' or type(ports.getPortraitSprite)~='function' or
+    type(ports.getPortraitID)~='function' or
+    type(ports.getScriptLevelResRef)~='function' then
+  return report('HOLD_SCRIPT_ASSIGNMENT_APIS_UNAVAILABLE') end
+ local sprite=safe(ports.getPortraitSprite,1)
+ local portraitId=safe(ports.getPortraitID,1)
+ if sprite==nil or not int(prop(sprite,'m_id'),1,2147483647) or
+    prop(sprite,'m_id')~=portraitId then
+  return report('HOLD_SCRIPT_ASSIGNMENT_ACTOR_ID') end
+ local ai=prop(sprite,'m_typeAI')
+ local stats=safe(prop(sprite,'getActiveStats'),sprite)
+ if prop(ai,'m_Class')~=3 or prop(stats,'m_nKit')~=16384 then
+  return report('HOLD_SCRIPT_ASSIGNMENT_CLASS_OR_KIT') end
+ local function once()
+  local out={}
+  for _,level in ipairs(SCRIPT_LEVELS) do
+   local value=safe(ports.getScriptLevelResRef,sprite,level)
+   if not validResref(value) then return nil end
+   out[level]=value:upper()
+  end
+  return out
+ end
+ local first=once()
+ if not first then return report('HOLD_SCRIPT_RESREF_UNREADABLE') end
+ local sameActor=safe(ports.getPortraitSprite,1)
+ local sameId=safe(ports.getPortraitID,1)
+ if sameActor~=sprite or sameId~=portraitId then
+  return report('HOLD_SCRIPT_ACTOR_CHANGED') end
+ local second=once()
+ if not second then return report('HOLD_SCRIPT_RESREF_UNREADABLE') end
+ for _,level in ipairs(SCRIPT_LEVELS) do
+  if first[level]~=second[level] then return report('HOLD_SCRIPT_RESREF_CHANGED') end
+ end
+ local found={}
+ for _,level in ipairs(SCRIPT_LEVELS) do
+  if first[level]=='BDDEFAI' then found[#found+1]=level end
+ end
+ -- Even when BDDEFAI appears, no conclusion about running AI, evaluation
+ -- order, script ownership, action provenance or eligibility to install.
+ return report('R39_SCRIPT_RESREFS_OBSERVED_NO_DEPLOY',{
+    scriptLevelResrefs=first,portraitActorId=portraitId,
+    bddefaiAssigned=(#found>0),bddefaiAssignedLevels=found,
+    actualBcsExecutionVerified=false,scriptSlotOwnershipVerified=false,
+    actionOriginVerified=false,canArm=false})
+end
+function M.probeInstalledScriptAssignments()
+ local g=_G
+ local gp=rawget(g,'EEex_Sprite_GetInPortrait')
+ local gi=rawget(g,'EEex_Sprite_GetInPortraitID')
+ local gs=rawget(g,'EEex_AIBase_GetScriptLevelResRef')
+ if type(gp)~='function' or type(gi)~='function' or type(gs)~='function' then
+  return report('HOLD_SCRIPT_ASSIGNMENT_APIS_UNAVAILABLE') end
+ return M.probeScriptAssignments({getPortraitSprite=gp,getPortraitID=gi,
+    getScriptLevelResRef=gs})
+end
+
 function M.getStatus()return report('SOURCE_ONLY_NOT_REGISTERED_OR_CONNECTED') end
 return M
