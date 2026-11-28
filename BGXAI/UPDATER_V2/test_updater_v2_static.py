@@ -78,7 +78,7 @@ class OnefileV2Compatibility(unittest.TestCase):
                 self.assertLessEqual(file['size'],1000000)
 
     def test_existing_pin_unchanged_during_staging(self):
-        j=json.loads(PIN.read_text(encoding='ascii'))
+        j=json.loads(PIN.read_text(encoding='utf-8'))
         self.assertEqual(j['commit'],'f2827f25da5a01215fcbdc0b9a48e3900d654384')
         self.assertEqual(j['script_size'],79798)
         self.assertEqual(j['script_sha256'],hashlib.sha256(ORIGINAL.read_bytes()).hexdigest())
