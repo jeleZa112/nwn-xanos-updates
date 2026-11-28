@@ -353,7 +353,7 @@
       "receipt_id": "BGXAI_R39_SCRIPT_OWNER_EXACT_PILOT_PREWORK_20261128",
       "project": "BGXAI",
       "source_path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_EEEX117_ENGINE_BRIDGE_RO.lua",
-      "source_git_blob_sha": "440dd8d7bff6f47775331040c7b1bf99723e18b9",
+      "source_git_blob_sha": "71411f7f6e4989a5237242b88e95166755a894df",
       "predecessor_sources": [
         {
           "path": "BGXAI/BUILD/R37_XEQUIP_IDENTITY_SINGLE_LISTENER_SOURCEONLY_20261127/M_BGXR27_R37_INV3_IDENTITY_SOURCE_ONLY.lua",
