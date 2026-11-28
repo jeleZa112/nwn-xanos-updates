@@ -105,23 +105,108 @@ def check_source_provenance(root, registry):
 
 
 def preflight_target(root, registry, proposed_source):
-    """Must run BEFORE editing a file; does not authorize deployment or prove novelty."""
+    """Run before edits: require reviewed predecessor, existing source or a planned new delta."""
     path = Path(proposed_source)
-    if path.is_absolute() or ".." in path.parts:
+    if path.is_absolute() or ".." in path.parts or path.as_posix().startswith("./"):
         return ["PREWORK HOLD: target must be a repo-relative path"]
     matches = [x for x in registry.get("source_provenance_receipts", [])
                if isinstance(x, dict) and x.get("source_path") == path.as_posix()]
     if len(matches) != 1:
-        return ["PREWORK HOLD: source has no single scoped predecessor receipt: " + path.as_posix()]
+        return ["PREWORK HOLD: no single scoped predecessor receipt: " + path.as_posix()]
     r = matches[0]
     if not r.get("predecessor_sources") or not r.get("already_implemented") or not r.get("exclusive_delta"):
         return ["PREWORK HOLD: predecessor, overlap and exclusive delta not documented"]
+    for parent in r["predecessor_sources"]:
+        parent_path = parent.get("path", "")
+        if not isinstance(parent_path, str) or ".." in Path(parent_path).parts or not parent_path.startswith("BGXAI/BUILD/"):
+            return ["PREWORK HOLD: invalid predecessor path"]
+        p = root / parent_path
+        if not p.is_file():
+            return ["PREWORK HOLD: missing existing source " + parent_path]
+        if blob_sha(p) != parent.get("git_blob_sha"):
+            return ["PREWORK HOLD: predecessor changed since review " + parent_path]
     source = root / path
     if not source.is_file() and r.get("status") != "PLANNED_SOURCE_ONLY":
         return ["PREWORK HOLD: source missing and no prospective plan recorded"]
     if source.is_file() and blob_sha(source) != r.get("source_git_blob_sha"):
-        return ["PREWORK HOLD: source identity changed before preflight"]
+        return ["PREWORK HOLD: source changed before preflight"]
+    if source.is_file() and r.get("status") == "PLANNED_SOURCE_ONLY":
+        return ["PREWORK HOLD: code exists but receipt still PLANNED"]
     return []
+
+
+def self_test_provenance():
+    from tempfile import TemporaryDirectory
+    with TemporaryDirectory(prefix="prior_work_gate_") as d:
+        root = Path(d)
+        base = "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/"
+        v3 = "BGXAI/BUILD/WEAPON_XEQUIP_LOCAL_ARM_SOURCEONLY_V3_20261127/BGXAI_XEQUIP_LOCAL_ARM_SOURCE_V3.py"
+        reset = "BGXAI/BUILD/R40_SESSION_RESET_SOURCEONLY_20261127/M_BGXW3_SESSION_RESET_V1.lua"
+        arm = base + "M_BGXW3_EXPLICIT_USER_ARM_SOURCE_ONLY.lua"
+        link = base + "M_BGXW3_R41_LINK_SOURCE_ONLY.lua"
+        def write(rel, data):
+            p = root / rel
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(data, encoding="utf-8")
+        write(v3, "BGXW3ARM BGXW3TAG BGXW3TRY XEquipItem(")
+        write(reset, "local Reset={status='SOURCE_ONLY'}")
+        write(arm, "local key='BGXW3ARM' -- controlled gesture")
+        write(link, "local Reset=(function()\n" + (root/reset).read_text() +
+              "\nend)()\nlocal Armer=(function()\n" + (root/arm).read_text() + "\nend)()")
+        def receipt(name, predecessors, embedded=None):
+            return {
+                "source_path": name, "source_git_blob_sha": blob_sha(root/name),
+                "predecessor_sources": [
+                    {"path": p, "git_blob_sha": blob_sha(root/p)} for p in predecessors],
+                "already_implemented": ["V3 actor-local one-shot arm, XEquipItem and queue guards"],
+                "exclusive_delta": "Only source-only integration with R40 load order, without duplicated inventory or action implementation",
+                "evidence": "BGXAI/CURRENT/00_RESUME_CURRENT.md",
+                "status": "RETROSPECTIVE_ACKNOWLEDGMENT_SOURCE_ONLY",
+                "embedded_sources": embedded or []
+            }
+        policy = {"source_provenance_receipts": [
+            receipt(arm,[v3]),receipt(link,[v3,arm,reset],[arm,reset])]}
+        checks = 0
+        def verify(condition, message):
+            nonlocal checks
+            checks += 1
+            if not condition:
+                raise AssertionError(message)
+        verify(not check_source_provenance(root,policy),"untouched fixture must PASS")
+        verify(not preflight_target(root,policy,arm),"existing exact armer preflight must PASS")
+        verify(bool(preflight_target(root,policy,base+"NEW_ARM.lua")),"new armer lacking receipt must HOLD")
+        write(arm,(root/arm).read_text()+"\n-- modified")
+        verify(any("changed" in e for e in check_source_provenance(root,policy)),
+               "changed armer must FAIL even if generated link unchanged")
+        verify(bool(preflight_target(root,policy,arm)),"stale source before-code gate must HOLD")
+        write(arm,"local key='BGXW3ARM' -- controlled gesture")
+        write(v3,"BGXW3ARM BGXW3TAG BGXW3TRY -- predecessor changed")
+        verify(any("prior source changed" in e for e in check_source_provenance(root,policy)),
+               "changed V3 predecessor must FAIL")
+        verify(bool(preflight_target(root,policy,arm)),"changed predecessor preflight must HOLD")
+        write(v3,"BGXW3ARM BGXW3TAG BGXW3TRY XEquipItem(")
+        write(link,"local Reset=(function() -- lost original embedded module\nend)()")
+        policy["source_provenance_receipts"][1]["source_git_blob_sha"] = blob_sha(root/link)
+        verify(any("no longer embeds unchanged source" in e for e in check_source_provenance(root,policy)),
+               "R41 replacement must FAIL even if new link hash is recorded")
+        write(link,"local Reset=(function()\n" + (root/reset).read_text() +
+              "\nend)()\nlocal Armer=(function()\n" + (root/arm).read_text() + "\nend)()")
+        policy["source_provenance_receipts"][1]["source_git_blob_sha"]=blob_sha(root/link)
+        write(base+"UNREVIEWED.lua","BGXW3ARM is present")
+        verify(any("HOLD_NEW_SOURCE" in e for e in check_source_provenance(root,policy)),
+               "new actor-arm implementation without receipt must FAIL")
+        (root/(base+"UNREVIEWED.lua")).unlink()
+        verify(not check_source_provenance(root,policy),"restored fixture must PASS")
+        planned=base+"FUTURE_ARM.lua"
+        planned_receipt=receipt(arm,[v3]).copy()
+        planned_receipt.update(source_path=planned,source_git_blob_sha=None,status="PLANNED_SOURCE_ONLY")
+        policy["source_provenance_receipts"].append(planned_receipt)
+        verify(not preflight_target(root,policy,planned),"precommitted plan may pass preflight")
+        write(planned,"BGXW3ARM newly written")
+        verify(bool(check_source_provenance(root,policy)),"written source still PLANNED must FAIL")
+        verify(bool(preflight_target(root,policy,planned)),"planned status after writing must HOLD")
+        print(f"PREWORK PROVENANCE SELFTEST PASS: {checks} positive and adversarial checks")
+
 
 def check():
     errors = []
@@ -171,6 +256,13 @@ def check():
     return errors
 
 if __name__ == "__main__":
+    if len(sys.argv) == 2 and sys.argv[1] == "--self-test":
+        try:
+            self_test_provenance()
+        except (OSError, ValueError, UnicodeError, AssertionError) as exc:
+            print("PREWORK PROVENANCE SELFTEST FAIL: " + str(exc), file=sys.stderr)
+            sys.exit(1)
+        sys.exit(0)
     if len(sys.argv) >= 2 and sys.argv[1] == "--preflight":
         if len(sys.argv) != 3:
             print("PREWORK HOLD: usage --preflight REPO_RELATIVE_SOURCE_PATH", file=sys.stderr)
