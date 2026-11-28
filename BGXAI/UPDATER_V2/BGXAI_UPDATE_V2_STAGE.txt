@@ -51,7 +51,7 @@ try {
         foreach($uri in $uris) {
             try {
                 if(Test-Path -LiteralPath $target){Remove-Item -LiteralPath $target -Force}
-                Invoke-WebRequest -Uri $uri -Headers @{'User-Agent'='BGXAI-Foxx-Onefile-NoAPI'} -OutFile $target -UseBasicParsing -TimeoutSec 60 -ErrorAction Stop | Out-Null
+                Invoke-WebRequest -Uri $uri -Headers @{'User-Agent'='BGXAI-Foxx-Onefile-NoAPI'} -OutFile $target -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop | Out-Null
                 $size=(Get-Item -LiteralPath $target).Length
                 if($size -lt 1 -or $size -gt $limit) {throw ('Unexpected response size: '+$size)}
                 return
