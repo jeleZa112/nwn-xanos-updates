@@ -729,7 +729,7 @@
       "project": "BGXAI",
       "discovered_at": "2026-11-28",
       "type": "EXISTING_NATIVE_ATTACK_OBSERVER_INCOMPLETE_FOR_REAL_AI_ACTIONS",
-      "status": "CODE_FIX_AND_UNIT_PASS_GITHUB_SOURCE_ONLY_NATIVE_LIVE_NOT_DEPLOYED",
+      "status": "GITHUB_SOURCE_FIXED_FULL_CI_530X3_PASS_NATIVE_DEPLOY_AND_LIVE_NOT_DONE",
       "prior_work_gate": {
         "already_done": "Existing R13 target defense reader and single R13 started-action listener, R35 selected-APR double-read, R3 native EET ITM parsing, V3 target type-specific AC and V4 16-slot auto-batch",
         "proof": "R13 target observer only accepted action raw 3/30; user R27 event raw action 105; original action ids confirmed by IESDP BG(2)EE scripting 105 AttackOneRound and 134 AttackReevaluate",
@@ -749,12 +749,19 @@
         "R13NewTests": "R13 core 43 total; original R13 runtime 18 total, each run 3 Lua engines",
         "V4NewTests": "V4 suite 74 total; existing model suite 530 total x3 Lua",
         "R3ExistingTests": "35 Python tests",
-        "reference": "https://iesdp.bgforge.net/scripting/actions/bgeeactions"
+        "reference": "https://iesdp.bgforge.net/scripting/actions/bgeeactions",
+        "verifiedGithubCIRun": 46152292273,
+        "verifiedGithubCICommit": "c547fe104d7552c1771eab1d6ef1e1f397b2ae6a",
+        "commitStatusContext": "BGXAI/source-only/530-lua-r3-r13-r35",
+        "commitStatus": "success",
+        "v4TotalCaseCount": 74,
+        "modelFullCaseCountPerRuntime": 530,
+        "sourceHarnessNote": "All tests use source Lua/Python mocks, not actual Windows EET runtime; native API names are from public official EEex v1.1.7 source, not a user's installed process"
       },
       "no_repeat": "Do not reinstall older R13 via separate listener. No more R47 179→22 witness capture. Do not use EEex v1.3+ B3AttackInfo in user's EEex v1.1.7. No BAF engine orders from V4 source. Never infer APR for not-selected weapon or safe command boundary from zero queue.",
       "tiers": {
         "code": "IN_EXISTING_GITHUB_MODULES",
-        "test": "R13/V4 targeted PASS; full CI pending verification at record creation",
+        "test": "REAL_GITHUB_ACTIONS_530_530_ON_3_LUA + R3_35 + R13_43_AND_LISTENER_18 + R35_16 + WINDOWS_STATIC_PASS",
         "deploy": "NO",
         "live": "NO"
       }
