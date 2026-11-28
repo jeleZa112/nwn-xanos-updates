@@ -156,6 +156,7 @@ function M.inspect(source,action,api,ctx)
    rawFields=second.fields,missingFields=second.missing,
    rawDefenseFieldsComplete=full,allDamageTypesModeled=false,
    targetArmorClassByAttackTypeCandidate=byAttack,
+   targetArmorClassBaseCandidate=byAttack and second.fields.m_nArmorClass or nil,
    targetTypeACModelStatus=byAttack and
      'R13_DERIVED_ATTACK_TYPE_AC_MODEL_ONLY' or 'HOLD_TYPE_AC_NOT_MODELABLE',
    targetTypeACModelSnapshotId=byAttack and ctx.snapshotId or nil,
