@@ -322,7 +322,7 @@
         "https://github.com/jeleZa112/nwn-xanos-updates/commit/64c56100dcb4de81eb624b644142da3dfd7a033e",
         "https://github.com/jeleZa112/nwn-xanos-updates/commit/6e0c32278358361749a6afa58e05f4786a696d34",
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46117471549",
-        "BGXAI/CURRENT/00_RESUME_CURRENT.md"
+        "/BGXAI/CURRENT/00_RESUME_CURRENT.md"
       ],
       "enforcement": "existing R39 CI clean-checkout generator equality, Lua mock false-return regression, original R39/R40 sha pins; no install permission",
       "status_detail": "SOURCE_FIXED_CI_PASS_RUNTIME_UNPROVEN"
