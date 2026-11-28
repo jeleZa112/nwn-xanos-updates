@@ -373,7 +373,7 @@
       "receipt_id": "BGXAI_R42_SINGLE_R38_LISTENER_CLASS_BCS_SOURCE_PREWORK_20261128",
       "project": "BGXAI",
       "source_path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_REUSE_R38_CLASS_BCS_RO.py",
-      "source_git_blob_sha": null,
+      "source_git_blob_sha": "1669bfb438449f15d07f93f5bca5693d5bbff50d",
       "predecessor_sources": [
         {
           "path": "BGXAI/BUILD/R37_XEQUIP_IDENTITY_SINGLE_LISTENER_SOURCEONLY_20261127/M_BGXR27_R37_INV3_IDENTITY_SOURCE_ONLY.lua",
@@ -397,7 +397,7 @@
       "exclusive_delta": "Source-only deterministic guard to COMPOSE the already-installed R38 exact 78927B source with unchanged existing R39 read-only bridge inside R38's original same single action listener. On first exact Jagan physical-context callback, observe stable class BCS resref, emit only one sanitized bounded [BGXBCS] evidence line; no second listener, gameplay action, LOCALS or EPS interference. Only later guarded typed WeiDU last-only R38 replacement through existing onefile channel, not an automatic install. Preserve exact existing R38 and R39 files/SHAs.",
       "evidence": "BGXAI/CURRENT/00_RESUME_CURRENT.md; authentic BGXAI_R38_CONSOLE_20261127T081433673320Z.log SHA256 2846ba45879d37a62f38d0e714d1dbdb0797458c263317d76f9e27dda9d04767; upstream EEex 1.1.7 Debug.lua ec8f6d1735d1e2e27fc2bae6dca26fd89c22eef5",
       "recorded_before_change": true,
-      "status": "PLANNED_SOURCE_ONLY",
+      "status": "PREWORK_REVIEWED_SOURCE_ONLY",
       "source_only": true,
       "game_modified": false,
       "installed": false
