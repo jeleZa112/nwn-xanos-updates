@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "bec4e774521129430a5ae204b94e434ef5555de1",
+  "commit": "cd3b131e4fa3473fa7bec0cb591fe74be4121cbf",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "d1746b78b6fb1d050a1cec6734395960f376e5e7c29772a5a8e8e8c81c960023",
+  "script_sha256": "c904c7a64d994e253706545ad6168be8d00acc424ac9011aca5f88e1cd0b8957",
   "script_size": 79996,
-  "description": "BGXAI 176→7 R39 corrected transitive source-length pin: child 8777B, matching SHA, wrapper 21120B, PS1 79996B. Verified complete PS1→wrapper→R39→A/B/V/C cross-file pin graph. No game changes."
+  "description": "BGXAI menu 176→7: read-only native temp compile of 2407B EEex-LuaTrigger session-gated R39 BAF; legacy 2303B source preserved. 8/8 immutable source bytes+SHA and 13/13 transitive cross-pin graph checks passed; 44/44 targeted Python local tests. No game installation, no orders."
 }
