@@ -271,7 +271,7 @@ class NativeFixture(unittest.TestCase):
         code=r3.export_r37_lua_cache(self.full_inventory_catalog())
         path=self.root/'staged_source_data_only.lua'
         path.write_text(code,encoding='ascii')
-        program=('local r=dofile(arg[1]);'
+        program=('local r=dofile(arg[0]);'
                  'assert(type(r)=="table");'
                  'assert(r.inventoryRawMap[18].resref=="SW1H04");'
                  'assert(r.items.STAF01.item.proficiencyIdRaw==102);'
