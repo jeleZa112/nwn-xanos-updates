@@ -277,4 +277,108 @@ class T(unittest.TestCase):
     def test_24_weidu_rollback_command_is_only_force_uninstall(self):
         self.assertIn("'--force-uninstall' if uninstall else '--force-install'", (HERE/'BGXAI_R42_GUARDED_FROM_R38.py').read_text())
 
+
+    @staticmethod
+    def bcs_line(**updates):
+        row={
+            'schema':G.BCS_SCHEMA,'type':'CLASS_BCS_ONCE',
+            'seq':3,'partyIndex':1,'classScriptResref':'BDDEFAI',
+            'scrlev':4,'status':'CLASS_BCS_RESREF_OBSERVED_NO_ARM',
+            'sameR38Listener':True,'gameModified':False,
+            'actualBcsExecutionVerified':False,
+            'manualEpsActionOriginVerified':False,
+            'armAuthorized':False,'dispatchAuthorized':False,
+            'ordersSent':0,'localsWritten':0,
+        }
+        row.update(updates)
+        return b'EEex prefix '+G.BCS_TAG+json.dumps(row).encode()+b'\n'
+
+    def log_for(self, *lines):
+        p=Path(self.tmp.name)/'test_R42_console.log'
+        p.write_bytes(b''.join(lines))
+        return p
+
+    def test_25_capture_exact_class4_resref(self):
+        r=G.parse_bcs_console(self.log_for(self.bcs_line()),0)
+        self.assertEqual(r['status'],'R42_LIVE_CLASS_BCS_ASSIGNMENT_OBSERVED_NO_ARM')
+        self.assertEqual(r['classScriptResref'],'BDDEFAI')
+        self.assertTrue(r['classScriptResrefAtLiveJaganVerified'])
+        self.assertFalse(r['actualBcsExecutionVerified'])
+        self.assertFalse(r['manualEpsActionOriginVerified'])
+
+    def test_26_capture_valid_hash_resref(self):
+        r=G.parse_bcs_console(self.log_for(self.bcs_line(classScriptResref='C#GREY')),0)
+        self.assertEqual(r['classScriptResref'],'C#GREY')
+
+    def test_27_capture_empty_log_holds(self):
+        r=G.parse_bcs_console(self.log_for(b'engine only\n'),0)
+        self.assertEqual(r['status'],'R42_CAPTURE_HOLD_MANUAL_REVIEW')
+        self.assertEqual(r['validBcsRows'],0)
+
+    def test_28_capture_duplicate_row_holds(self):
+        row=self.bcs_line()
+        r=G.parse_bcs_console(self.log_for(row,row),0)
+        self.assertEqual(r['status'],'R42_CAPTURE_HOLD_MANUAL_REVIEW')
+        self.assertEqual(r['validBcsRows'],2)
+
+    def test_29_capture_bad_visitor_rejected(self):
+        for bad in (0,2,5,-1):
+            with self.subTest(partyIndex=bad):
+                r=G.parse_bcs_console(self.log_for(self.bcs_line(partyIndex=bad)),0)
+                self.assertEqual(r['status'],'R42_CAPTURE_HOLD_MANUAL_REVIEW')
+
+    def test_30_capture_no_misleading_script3(self):
+        r=G.parse_bcs_console(self.log_for(self.bcs_line(scrlev=3)),0)
+        self.assertEqual(r['status'],'R42_CAPTURE_HOLD_MANUAL_REVIEW')
+
+    def test_31_capture_arm_or_orders_rejected(self):
+        for change in ({'armAuthorized':True},{'ordersSent':1},
+                       {'localsWritten':1},{'dispatchAuthorized':True},
+                       {'actualBcsExecutionVerified':True},
+                       {'manualEpsActionOriginVerified':True}):
+            with self.subTest(change=change):
+                r=G.parse_bcs_console(self.log_for(self.bcs_line(**change)),0)
+                self.assertEqual(r['status'],'R42_CAPTURE_HOLD_MANUAL_REVIEW')
+
+    def test_32_capture_invalid_resref_rejected(self):
+        for name in ('../evil','BAD SCRIPT','', '123456789','NONE'):
+            with self.subTest(name=name):
+                r=G.parse_bcs_console(self.log_for(self.bcs_line(classScriptResref=name)),0)
+                self.assertEqual(r['status'],'R42_CAPTURE_HOLD_MANUAL_REVIEW')
+
+    def test_33_capture_honest_hold_no_name(self):
+        r=G.parse_bcs_console(self.log_for(self.bcs_line(
+            status='HOLD_CLASS_BCS_NOT_READABLE',classScriptResref=None)),0)
+        self.assertEqual(r['status'],'R42_CAPTURE_HOLD_CLASS_BCS_UNREADABLE')
+        self.assertIsNone(r['classScriptResref'])
+        self.assertFalse(r['classScriptResrefAtLiveJaganVerified'])
+
+    def test_34_capture_nonzero_game_exit_holds(self):
+        r=G.parse_bcs_console(self.log_for(self.bcs_line()),1)
+        self.assertEqual(r['status'],'R42_CAPTURE_HOLD_MANUAL_REVIEW')
+
+    def test_35_capture_before_r42_last_rejected(self):
+        with self.assertRaisesRegex(G.Hold,'HOLD_R42_NOT_WEIDU_LAST_155'):
+            G.capture(self.r38,self.old,self.game)
+
+    def test_36_capture_fake_loader_after_install_writes_only_external_log(self):
+        self._install()
+        self._file('InfinityLoader.exe',b'MZ'+b'\0'*2048)
+        row=self.bcs_line()
+        class Child:
+            def wait(self):return 0
+        def fake_popen(argv,**kw):
+            self.assertEqual(Path(argv[0]).name,'InfinityLoader.exe')
+            kw['stdout'].write(row)
+            return Child()
+        with patch.object(G.subprocess,'Popen',side_effect=fake_popen):
+            output=G.capture(self.r38,self.old,self.game)
+        self.assertEqual(output['status'],'R42_LIVE_CLASS_BCS_ASSIGNMENT_OBSERVED_NO_ARM')
+        self.assertEqual(output['classScriptResref'],'BDDEFAI')
+        self.assertEqual(output['validBcsRows'],1)
+        self.assertTrue(Path(output['rawConsoleFile']).is_file())
+        self.assertTrue(str(output['rawConsoleFile']).startswith(str(self.home)))
+        self.assertEqual(self.old.sha(self.game/G.OVERRIDE),G.CANDIDATE_SHA)
+
+
 if __name__=='__main__':unittest.main()
