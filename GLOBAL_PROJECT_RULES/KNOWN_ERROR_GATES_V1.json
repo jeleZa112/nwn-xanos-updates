@@ -422,11 +422,41 @@
       "evidence": "BGXAI/CURRENT/00_RESUME_CURRENT.md; BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/README_RU.md; existing R38 guarded sha aaa9f182fec7e7800e382167d1666d8c85804ef8",
       "recorded_before_change": true,
       "game_modified": false,
-      "installed": false
+      "installed": false,
+      "reviewed_deltas": [
+        {
+          "delta_id": "BGXAI_R42_ONE_SHOT_LIVE_CLASS_CAPTURE_20261128",
+          "recorded_before_source_edit": true,
+          "current_source_blob": "e589b8fedae1e4681c07b42e8406fcc2a5c30bfb",
+          "already_done": "R42 guarded 154->155 install/rollback are fully sourced and 24 fake-EET tests PASS Ubuntu+Windows; existing R38 capture used original loader, logs and parse_console but hardcodes last R38=154 so cannot capture after last R42=155.",
+          "missing_delta": "Reuse existing R38 loader validation and console log format in a read-only R42 last=155 capture. Parse only the already-produced one-shot [BGXBCS] tag, require exact Jagan party index 1 and CLASS SCRLEV4, bounded resref and all no-arm/zero-order flags; save original log outside game. Do not register additional action listeners or infer actual BCS execution, EPS/manual origin.",
+          "safety": "Never capture if installer not R42-last or game running; no auto retry. Literal log capture outside game, one-shot parser fails closed on malformed/ambiguous record.",
+          "runtimeInstalled": false
+        }
+      ]
     },
     {
       "receipt_id": "BGXAI_R42_ONEFILE_REUSE_175_176_WITHOUT_NEW_CMD_PREWORK_20261128",
-      "reviewed_deltas": [{"delta_id":"BGXAI_R42_179_TYPED_GUARDED_MENU_20261128","recorded_before_source_edit":true,"current_source_blob":"03f9950eb6ad79743bd69d39aeca9c4790800998","already_done":"179 existing onefile child stages exact R38 and R39/R42 read-only sources outside game using immutable source SHA. R42 separate guarded installer now passes 24 fake-EET tests on both OS, using R38 last-154 proof, external backup and last-only typed WeiDU rollback; not yet routed to user updater.","missing_delta":"Extend only current 179 child to stage SHA-pinned existing R42 installer plus old R38/R37 helpers and offer status/preflight/install/rollback behind explicit subchoice, with source-only default. Existing code paths for 175/176 and existing BGXAI_UPDATE.cmd must be identical. First install requires separately typed exact token inside guarded process, no automatic installer on selecting 179. Source-only onefile must not trust a candidate without 93776B SHA d14bf5f6..., and rollback must work with 155th R42 game without requiring live R38 78927B.","required_implementation_checks":"Pin all imported helper byte lengths/SHA, stage only in temporary OUTSIDE EET, ensure new subcommand fails closed on unknown mode/noninteractive install, parse subprocess JSON status, never reissue a failed WeiDU transaction. Preserve default read-only behavior and boot limit 80000 bytes. Extend existing unit tests and Windows PowerShell AST CI before channel release.","scope":"SOURCE_CHILD_CODE_AND_TEST_ONLY","runtimeInstalled":false}],
+      "reviewed_deltas": [
+        {
+          "delta_id": "BGXAI_R42_179_TYPED_GUARDED_MENU_20261128",
+          "recorded_before_source_edit": true,
+          "current_source_blob": "03f9950eb6ad79743bd69d39aeca9c4790800998",
+          "already_done": "179 existing onefile child stages exact R38 and R39/R42 read-only sources outside game using immutable source SHA. R42 separate guarded installer now passes 24 fake-EET tests on both OS, using R38 last-154 proof, external backup and last-only typed WeiDU rollback; not yet routed to user updater.",
+          "missing_delta": "Extend only current 179 child to stage SHA-pinned existing R42 installer plus old R38/R37 helpers and offer status/preflight/install/rollback behind explicit subchoice, with source-only default. Existing code paths for 175/176 and existing BGXAI_UPDATE.cmd must be identical. First install requires separately typed exact token inside guarded process, no automatic installer on selecting 179. Source-only onefile must not trust a candidate without 93776B SHA d14bf5f6..., and rollback must work with 155th R42 game without requiring live R38 78927B.",
+          "required_implementation_checks": "Pin all imported helper byte lengths/SHA, stage only in temporary OUTSIDE EET, ensure new subcommand fails closed on unknown mode/noninteractive install, parse subprocess JSON status, never reissue a failed WeiDU transaction. Preserve default read-only behavior and boot limit 80000 bytes. Extend existing unit tests and Windows PowerShell AST CI before channel release.",
+          "scope": "SOURCE_CHILD_CODE_AND_TEST_ONLY",
+          "runtimeInstalled": false
+        },
+        {
+          "delta_id": "BGXAI_R42_ONEFILE179_CAPTURE_AFTER_TYPED_INSTALL_20261128",
+          "recorded_before_source_edit": true,
+          "current_source_blob": "4bb1dca5823aa0aa29586019b22ae726ee542453",
+          "already_done": "Onefile menu179 already has source RO(default), status, preflight, typed install/rollback; immutable main PS 79798/80000, no game writes until typed install; 85 tests PASS. It currently has no R42-last capture entry; old menu176 R38 capture requires last 154.",
+          "missing_delta": "Expose 6=capture through existing menu179 child and same pinned guarded R42 installer, without adding CMD, changing 175/176, or unnecessary R38 source download. On capture require exact installed R42 last 155, launch existing InfinityLoader and store/parse only bounded [BGXBCS] evidence, no commands. Re-pin old onefile child/new dependent R42 installer and sole PS immutable pin after two-OS CI.",
+          "runtimeInstalled": false
+        }
+      ],
       "project": "BGXAI",
       "source_path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py",
       "source_git_blob_sha": "4bb1dca5823aa0aa29586019b22ae726ee542453",
@@ -532,7 +562,7 @@
             "Bubb13/EEex v1.1.7 EEex/copy/EEex_scripts/EEex_AIBase.lua git blob 63b80e8f1479e0f7b201dc050b6058016feabef6 lines 43-71: class script is SCRLEV 4"
           ],
           "missing_delta": "Add a single source-only bounded current m_curScriptNum and m_curAction.m_actionID stable before-after read in the already-existing R39 probeScriptAssignments. Map engine raw index 3 to SCRLEV CLASS 4 using upstream stock EEex debug formula; return only actor-local currentAssignedScriptResrefCandidate when twice stable and not empty. Reject mutations/unknown raw values. No additional listeners, no new Lua autoload module, no actions, no game writes, no claims of authenticated execution or EPS/manual source. Also accept existing documented C#GREY-style '#' resref while retaining strict 8-char validation.",
-            "preexisting_valid_resref_issue": "Historical genuine saved GAME CRE contains C#GREY as an assigned BCS resref, but R39 validResref rejects '#'. Align existing read-only 8-byte resref validation with known valid '#' only; preserve rejection for slash, whitespace and path components. No new parser.",
+          "preexisting_valid_resref_issue": "Historical genuine saved GAME CRE contains C#GREY as an assigned BCS resref, but R39 validResref rejects '#'. Align existing read-only 8-byte resref validation with known valid '#' only; preserve rejection for slash, whitespace and path components. No new parser.",
           "stage": "PREWORK_RECORDED",
           "game_modified": false,
           "installed": false
