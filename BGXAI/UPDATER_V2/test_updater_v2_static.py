@@ -47,7 +47,7 @@ class OnefileV2Compatibility(unittest.TestCase):
         raw=(ROOT/'BGXAI/UPDATER_V2/BGXAI_UPDATE_V2_STAGE.txt').read_bytes()
         old=CMD.read_bytes()
         self.assertTrue(raw.startswith(old[:120]))
-        self.assertEqual(raw.count(b'# BEGIN_BGXAI_RAW_BOOTSTRAP_PS'),1)
+        self.assertEqual(raw.count(b'# BEGIN_BGXAI_RAW_BOOTSTRAP_PS'),2)
         self.assertIn(b'trusted_lastgood_v2.json',raw)
         self.assertIn(b'Offline cached script SHA or size mismatch',raw)
         self.assertIn(b'BGXAI OFFLINE: verified last good ',raw)
