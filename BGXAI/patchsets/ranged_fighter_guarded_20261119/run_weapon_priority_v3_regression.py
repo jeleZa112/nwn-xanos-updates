@@ -52,14 +52,14 @@ def _static() -> None:
         'BGXAI/BUILD/WEAPON_INVENTORY_PRIORITY_V4_20261126/BGXAI_BACKPACK16_PRIORITY_RO_V4.lua',
     ):
         source = (ROOT.parents[2] / relative).read_text(encoding='utf-8')
-        active = '\\n'.join(line.split('--', 1)[0] for line in source.splitlines())
+        active = '\n'.join(line.split('--', 1)[0] for line in source.splitlines())
         for pattern in (
-            r'\\bSelectWeaponAbility\\s*\\(', r'\\bXEquipItem\\s*\\(',
-            r'\\bAttack\\s*\\(', r'\\bClearActions\\s*\\(',
-            r'\\bActionOverride\\s*\\(', r'\\bSetGlobal\\s*\\(',
-            r'\\bEEex_Action_AddSpriteStartedActionListener\\s*\\(',
-            r'\\bEEex_LuaTrigger\\s*\\(',
-            r'\\bio\\.open\\s*\\(', r'\\bos\\.execute\\s*\\(',
+            r'\bSelectWeaponAbility\s*\(', r'\bXEquipItem\s*\(',
+            r'\bAttack\s*\(', r'\bClearActions\s*\(',
+            r'\bActionOverride\s*\(', r'\bSetGlobal\s*\(',
+            r'\bEEex_Action_AddSpriteStartedActionListener\s*\(',
+            r'\bEEex_LuaTrigger\s*\(',
+            r'\bio\.open\s*\(', r'\bos\.execute\s*\(',
         ):
             assert not re.search(pattern, active), (relative, pattern)
     # Preserve original BCS consumer and verify restricted native fallback source.
