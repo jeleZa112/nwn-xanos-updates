@@ -45,7 +45,7 @@ function Check-Pin([string]$Commit,[string]$Remote,[long]$Size,[string]$Sha) {
 function Download-Bounded([string]$Url,[int]$Limit) {
  $scratch=Join-Path $Cache ('fetch_'+[guid]::NewGuid().ToString('N')+'.tmp')
  try {
-  Invoke-WebRequest -Uri $Url -Headers @{'User-Agent'='BGXAI-Onefile-V2-NoREST'} -OutFile $scratch -UseBasicParsing -TimeoutSec 35 -ErrorAction Stop | Out-Null
+  Invoke-WebRequest -Uri $Url -Headers @{'User-Agent'='BGXAI-Onefile-V2-NoREST'} -OutFile $scratch -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop | Out-Null
   Stop-IfReparse $scratch
   $bytes=[IO.File]::ReadAllBytes($scratch)
   if($bytes.Length -lt 1 -or $bytes.Length -gt $Limit){
