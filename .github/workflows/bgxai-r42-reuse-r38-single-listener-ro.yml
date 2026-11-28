@@ -65,11 +65,26 @@ jobs:
       - name: 'V2 same original CMD offline last-good: Windows execution and negative tamper checks'
         if: runner.os == 'Windows'
         run: python -m unittest discover -s BGXAI/UPDATER_V2 -p test_onefile_cmd_offline_fallback_win.py -q
+      - name: V2 existing R48 one-shot guarded bridge 181 install 182 rollback mock source-only
+        run: python -m unittest discover -s BGXAI/UPDATER_V2 -p test_module181_182_r48_existing_guarded.py -q
       - name: V2 staged native Windows PowerShell 5.1 parser and negative contract tests
         if: runner.os == 'Windows'
         shell: powershell
         run: |
-          powershell.exe -NoProfile -ExecutionPolicy Bypass -File BGXAI/UPDATER_V2/BGXAI_HUB_V2_STAGED.ps1 -SelfTest -IndexFixturePath BGXAI/UPDATER_V2/MODULES_V1.json
+          # The old immutable hub SelfTest intentionally tests its original
+          # one-entry code180 fixture. Its runtime Check-Index supports 100.
+          # Preserve that backwards-compatible test while separately
+          # checking the FULL (180+181+182) immutable manifest in Python CI.
+          $all=Get-Content 'BGXAI/UPDATER_V2/MODULES_V1.json' -Raw | ConvertFrom-Json
+          $mods=@($all.modules)
+          $old=@($mods | Where-Object { $_.code -eq 180 })
+          if($old.Count -ne 1){throw 'Missing original safe readonly module180'}
+          if($mods.Count -ne 3){throw 'Wrong guarded R48 module count'}
+          $one=@{schema=1;channel='BGXAI_ONEFILE_MODULES_V2';branch='bg-eet-ai';modules=$old;notes='Original immutable hub exact one-entry selftest'}
+          $fixture=Join-Path $env:RUNNER_TEMP 'bgxai_v2_original_180_selftest.json'
+          $json=ConvertTo-Json -InputObject $one -Depth 20
+          [IO.File]::WriteAllText($fixture,$json,[Text.Encoding]::UTF8)
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File BGXAI/UPDATER_V2/BGXAI_HUB_V2_STAGED.ps1 -SelfTest -IndexFixturePath $fixture
 
       - name: Print staged R47 same-original-onefile179 child SHA before repin (NO GAME)
         shell: bash
