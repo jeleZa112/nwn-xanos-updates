@@ -180,7 +180,7 @@ class T(unittest.TestCase):
         self.assertIn(path,R.SOURCES)
         return (REPO/path).read_bytes()
 
-    def guarded_runner(self, expected_status, installed=False, rc=0):
+    def guarded_runner(self, expected_status, installed=False, rc=0, live_name=None, suspect=False):
         def runner(command, **kw):
             self.runner_calls.append((command,kw))
             self.assertIn('--r38-tool',command)
@@ -190,8 +190,12 @@ class T(unittest.TestCase):
             self.assertNotIn('--install',command)
             obj=dict(status=expected_status,ordersSent=0,
                      dispatchAuthorized=False,armAuthorized=False,
-                     classScriptResrefAtLiveJaganVerified=False,
+                     classScriptResrefAtLiveJaganVerified=(live_name is not None),
                      installed=installed)
+            if live_name is not None:
+                obj.update(classScriptResref=live_name,scrlev=4,partyIndex=1,
+                           actualBcsExecutionVerified=suspect,
+                           manualEpsActionOriginVerified=False)
             return type('Completed',(object,),{
                 'returncode':rc,'stdout':'R42 prompt captured\n'+json.dumps(obj)})()
         return runner
@@ -275,6 +279,52 @@ class T(unittest.TestCase):
     def test_guarded_does_not_infer_old_bddefai_is_live(self):
         self.assertNotIn('BDDEFAI',R.run_guarded.__code__.co_consts)
         self.assertIn('CANDIDATE_SHA',R.run_guarded.__code__.co_names)
+
+
+
+    def test_guarded_capture_exact_live_class_only(self):
+        o=R.run_guarded(self.game,COMMIT,'capture',fetcher=self.guarded_fetch,
+              runner=self.guarded_runner('R42_LIVE_CLASS_BCS_ASSIGNMENT_OBSERVED_NO_ARM',
+                                         live_name='BDDEFAI'),
+              require_windows=False)
+        self.assertEqual(o['status'],'R42_CAPTURE_EXACT_GUARDED_PASS')
+        self.assertEqual(o['classScriptResref'],'BDDEFAI')
+        self.assertTrue(o['classScriptResrefAtLiveJaganVerified'])
+        self.assertFalse(o['actualBcsExecutionVerified'])
+        self.assertFalse(o['gameModified'])
+        self.assertNotIn('--candidate',self.runner_calls[0][0])
+
+    def test_guarded_capture_existing_hash_script_name(self):
+        o=R.run_guarded(self.game,COMMIT,'capture',fetcher=self.guarded_fetch,
+             runner=self.guarded_runner('R42_LIVE_CLASS_BCS_ASSIGNMENT_OBSERVED_NO_ARM',
+                                        live_name='C#GREY'),require_windows=False)
+        self.assertEqual(o['classScriptResref'],'C#GREY')
+
+    def test_guarded_capture_unauthenticated_script_rejected(self):
+        with self.assertRaisesRegex(R.Hold,'HOLD_R42_NATIVE_GUARD_OR_STATE'):
+            R.run_guarded(self.game,COMMIT,'capture',fetcher=self.guarded_fetch,
+                 runner=self.guarded_runner('R42_LIVE_CLASS_BCS_ASSIGNMENT_OBSERVED_NO_ARM',
+                                            live_name='BDDEFAI',suspect=True),
+                 require_windows=False)
+
+    def test_guarded_capture_without_real_valid_tag_rejected(self):
+        with self.assertRaisesRegex(R.Hold,'HOLD_R42_NATIVE_GUARD_OR_STATE'):
+            R.run_guarded(self.game,COMMIT,'capture',fetcher=self.guarded_fetch,
+                 runner=self.guarded_runner('R42_LIVE_CLASS_BCS_ASSIGNMENT_OBSERVED_NO_ARM'),
+                 require_windows=False)
+
+    def test_guarded_capture_untrusted_script_path_rejected(self):
+        with self.assertRaisesRegex(R.Hold,'HOLD_R42_NATIVE_GUARD_OR_STATE'):
+            R.run_guarded(self.game,COMMIT,'capture',fetcher=self.guarded_fetch,
+                 runner=self.guarded_runner('R42_LIVE_CLASS_BCS_ASSIGNMENT_OBSERVED_NO_ARM',
+                                            live_name='../evil'),
+                 require_windows=False)
+
+    def test_guarded_six_options_one_existing_cmd(self):
+        self.assertEqual(R.MODES['6'],'capture')
+        self.assertEqual(R.MODES['1'],'source')
+        self.assertEqual(R.MODES['4'],'install')
+        self.assertEqual(R.MODES['5'],'rollback')
 
 
 if __name__ == '__main__':
