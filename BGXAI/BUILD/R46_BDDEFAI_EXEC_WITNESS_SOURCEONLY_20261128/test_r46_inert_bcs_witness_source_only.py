@@ -62,7 +62,7 @@ class R46InertWitness(unittest.TestCase):
         for marker in (b"field(actor,'m_id')",
                        b"field(portrait,'m_id')~=actorID",
                        b"portraitID~=actorID",
-                       b"field(ai,'m_Class')",
+                       b"field(field(actor,'m_typeAI'),'m_Class')",
                        b"field(stats,'m_nKit')",
                        b"getScriptLevelResRef",
                        b"assigned:upper()~='BDDEFAI'"):
