@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "4200fd84027b2937cb16400b3eddb2030d7b0634",
+  "commit": "b0586b2d0c3d00afdc9ff68ad944505476733ff6",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "d502bac10633dcd32835a7063e70cf3679bc50c635444c86e8b9a9b715010604",
+  "script_sha256": "de98827dbef5056755239f903ba0f7b4bb6106398d046b2d34a4d6c164747361",
   "script_size": 79798,
-  "description": "BGXAI single existing onefile: menu 179 R42 guarded class BCS observer, default SOURCE READ-ONLY, status/preflight, explicit typed install/rollback only when live R38 154-last and SHA/backup prerequisites pass. Other menus 175/176 unchanged. 179 install modifies only original one-listener override via guarded WeiDU; no XEquip/orders, no automatic install or retry. SOURCE CI PASS; game unchanged until explicit user action."
+  "description": "BGXAI sole original CMD, pinned PS 79798B: 179 R42 guarded one-listener script assignment probe. Default source RO; 2 status; 3 preflight; 4 install typed; 5 rollback typed; 6 existing InfinityLoader capture RO, exact one [BGXBCS] CLASS4 Jagan record. Install only if R38 WeiDU last154 and SHA backup pass; no auto install/retry, no XEquip/orders. 175/176 unchanged. R42 runtime/live class BCS still unverified until separately authorized installation/game capture."
 }
