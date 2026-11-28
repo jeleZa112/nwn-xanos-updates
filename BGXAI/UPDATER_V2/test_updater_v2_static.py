@@ -125,7 +125,7 @@ class OnefileV2Compatibility(unittest.TestCase):
 
     def test_r48_guarded_181_182_exact_pins_and_no_new_cmd(self):
         index=json.loads(INDEX.read_text(encoding='ascii'))
-        self.assertEqual([m['code'] for m in index['modules']],[180,181,182,183])
+        self.assertEqual([m['code'] for m in index['modules']],[180,181,182,183,184,185,186])
         r181,r182=index['modules'][1:3]
         self.assertEqual(r181['mode'],'guarded')
         self.assertEqual(r182['mode'],'guarded')
@@ -187,6 +187,50 @@ class OnefileV2Compatibility(unittest.TestCase):
         hub=HUB.read_text(encoding='ascii')
         self.assertIn('--onefile-hub-source-only',hub)
         self.assertNotIn(b'BGXAI_MODULE183',CMD.read_bytes())
+
+    def test_r49_184_185_186_exact_native_21_pins_and_distinct_consent(self):
+        index=json.loads(INDEX.read_text(encoding='ascii'))
+        self.assertEqual(len(index['modules']),7)
+        one,two,three=index['modules'][4:]
+        self.assertEqual([x['code'] for x in (one,two,three)],[184,185,186])
+        self.assertEqual([x['mode'] for x in (one,two,three)],
+                         ['readonly','guarded','guarded'])
+        self.assertNotIn('approval',one)
+        self.assertEqual(two['approval'],
+          'INSTALL_BGXAI_R49_BACKPACK16_ONE_STAF01_AFTER_R48_LAST159')
+        self.assertEqual(three['approval'],
+          'ROLLBACK_BGXAI_R49_RESTORE_R48_LAST159_ONLY')
+        self.assertEqual(one['commit'],two['commit'])
+        self.assertEqual(one['commit'],three['commit'])
+        self.assertEqual(one['entry'],two['entry'])
+        self.assertEqual(one['entry'],three['entry'])
+        self.assertEqual(one['files'],two['files'])
+        self.assertEqual(one['files'],three['files'])
+        self.assertEqual(one['files'][:18],index['modules'][1]['files'])
+        self.assertEqual(len(one['files']),21)
+        expected={
+          'BGXAI/BUILD/R49_R48_BACKPACK16_SOURCE_ONLY_20261128/BGXAI_R49_REUSE_R48_BACKPACK16_SOURCE_ONLY.py',
+          'BGXAI/BUILD/R49_R48_BACKPACK16_SOURCE_ONLY_20261128/BGXAI_R49_LAST159_TO160_GUARDED.py',
+          'BGXAI/UPDATER_V2/BGXAI_MODULE184_186_R49_ORIGINAL_GUARDED.py'}
+        self.assertEqual({x['path'] for x in one['files'][18:]},expected)
+        self.assertEqual(one['entry'],
+          'BGXAI/UPDATER_V2/BGXAI_MODULE184_186_R49_ORIGINAL_GUARDED.py')
+        for entry in one['files']:
+            f=ROOT/entry['path']
+            self.assertFalse(f.is_symlink())
+            self.assertEqual(f.stat().st_size,entry['size'],entry['path'])
+            self.assertEqual(hashlib.sha256(f.read_bytes()).hexdigest(),
+                             entry['sha256'],entry['path'])
+        self.assertLessEqual(INDEX.stat().st_size,32768)
+        original=HUB.read_text(encoding='ascii')
+        self.assertIn("Check-Index",original)
+        self.assertIn("if($typed -cne $approval)",original)
+        self.assertNotIn(b'BGXAI_MODULE184_186',CMD.read_bytes())
+        bridge=(ROOT/one['entry']).read_text(encoding='ascii')
+        self.assertNotIn('XEquipItem(',bridge)
+        self.assertIn("native.preflight(",bridge)
+        self.assertIn("native.install(",bridge)
+        self.assertIn("native.rollback(",bridge)
 
     def test_existing_pin_unchanged_during_staging(self):
         j=json.loads(PIN.read_text(encoding='utf-8'))
