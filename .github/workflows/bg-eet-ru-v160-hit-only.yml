@@ -5,6 +5,8 @@ on:
     paths:
       - 'bg-eet-ru/weapon-identity/BG_EET_RU_ITEM_NAMES_FROM_BGXAI_R3_RO.py'
       - 'bg-eet-ru/weapon-identity/test_BG_EET_RU_ITEM_NAMES_FROM_BGXAI_R3_RO.py'
+      - 'bg-eet-ru/hit-only-v160/weapon_names_batch_source.py'
+      - 'bg-eet-ru/hit-only-v160/test_weapon_names_batch_source.py'
       - '.github/workflows/bg-eet-ru-v160-hit-only.yml'
   pull_request:
     paths:
