@@ -95,7 +95,7 @@ jobs:
           python - <<'PY'
           import importlib.util
           from pathlib import Path
-          import json,subprocess,tempfile
+          import hashlib,json,subprocess,tempfile
           root=Path('BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128')
           spec=importlib.util.spec_from_file_location('r42_gen',root/'BGXAI_R42_REUSE_R38_CLASS_BCS_RO.py')
           m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
@@ -110,7 +110,9 @@ jobs:
           diag=importlib.util.module_from_spec(dspec);dspec.loader.exec_module(diag)
           with tempfile.TemporaryDirectory(prefix='BGXAI_R42_HOLD_REASON_SOURCEONLY_') as directory:
               extra=Path(directory)/'M_BGXR27_HOLD_REASON_SOURCE_ONLY.lua'
-              extra.write_bytes(diag.compose())
+              raw=diag.compose()
+              extra.write_bytes(raw)
+              print('R42_HOLD_REASON_SOURCEONLY_PIN',len(raw),hashlib.sha256(raw).hexdigest())
               subprocess.run(['lua5.4','-e','assert(loadfile('+json.dumps(str(extra))+'))'],check=True)
           print('R42 bounded R39 HOLD-reason Lua syntax PASS; original installed candidate unchanged')
           print('R42 composed Lua syntax PASS; no listener executed; game untouched')
