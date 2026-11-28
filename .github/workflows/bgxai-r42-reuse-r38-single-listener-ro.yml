@@ -85,13 +85,13 @@ jobs:
           $sourceOnly=$hub.Substring(0,$at)
           $probe=Join-Path $env:RUNNER_TEMP 'bgxai_v2_full_index_native_ro.ps1'
           $check=@'
-$all=Get-Content 'BGXAI/UPDATER_V2/MODULES_V1.json' -Raw | ConvertFrom-Json
-$mods=@(Check-Index $all)
-if($mods.Count -ne 3){throw 'Native V2 actual full manifest check failed'}
-if($mods[0].code -ne 180 -or $mods[1].code -ne 181 -or $mods[2].code -ne 182){throw 'Native V2 module ordering changed'}
-if($mods[1].mode -cne 'guarded' -or $mods[2].mode -cne 'guarded'){throw 'Native V2 R48 consent mode invalid'}
-Write-Host 'BGXAI V2 ORIGINAL HUB FULL 180-182 INDEX NATIVE PASS'
-'@
+          $all=Get-Content 'BGXAI/UPDATER_V2/MODULES_V1.json' -Raw | ConvertFrom-Json
+          $mods=@(Check-Index $all)
+          if($mods.Count -ne 3){throw 'Native V2 actual full manifest check failed'}
+          if($mods[0].code -ne 180 -or $mods[1].code -ne 181 -or $mods[2].code -ne 182){throw 'Native V2 module ordering changed'}
+          if($mods[1].mode -cne 'guarded' -or $mods[2].mode -cne 'guarded'){throw 'Native V2 R48 consent mode invalid'}
+          Write-Host 'BGXAI V2 ORIGINAL HUB FULL 180-182 INDEX NATIVE PASS'
+          '@
           [IO.File]::WriteAllText($probe,$sourceOnly+`"`n`"+$check,[Text.Encoding]::ASCII)
           powershell.exe -NoProfile -ExecutionPolicy Bypass -File $probe
           $mods=@($all.modules)
