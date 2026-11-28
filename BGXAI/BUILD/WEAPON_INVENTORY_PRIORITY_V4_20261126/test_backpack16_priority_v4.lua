@@ -915,6 +915,12 @@ end)
 
 -- Native runtime R37 item ability0/cProf evidence. Uses ONLY existing R37
 -- capture and R3 file parser; no Python execution or second EEex listener.
+local function native_r37_safety(x)
+ assert(x.readOnly==true and x.sourceOnly==true and
+  x.ordersSent==0 and x.dispatchAuthorized==false and
+  x.weaponSwitchAuthorized==false and x.inventoryMoveAuthorized==false and
+  x.gameModified==false and x.cachedAdvisoryCanBeExecuted==false)
+end
 local function native_ability_fixture()
  local sprite,obs,ctx,bag,quick,other,scene,c,vm=r37_fixture()
  local previous=sprite.m_equipment.m_items.get
@@ -975,7 +981,7 @@ test('native_r37_engine_citem_single_ability_16_plus_4_proof',function()
  assert(x.engineFinalAlternateAPRVerified==false and
   x.nativeResourceShaVerified==false and x.nativeItemInstanceAuthenticated==false)
  assert(f.getAbilityCalls()==2)
- contract(x)
+ native_r37_safety(x)
 end)
 test('native_r37_r3_v3v4_one_call_scores_actual_item_types',function()
  local f=native_ability_fixture()
@@ -1015,14 +1021,14 @@ test('native_r37_cannot_run_during_nonempty_action_queue',function()
  f.obs.queuedActionsRaw=1
  local x=R37Bag.captureNativeAbility0(f.sprite,f.obs,f.ctx,f.api)
  assert(x.status=='HOLD_NATIVE_ITM_EVENT_OR_QUEUE_NOT_QUIET')
- contract(x)
+ native_r37_safety(x)
 end)
 test('native_r37_missing_engine_read8_rejects_without_fake_values',function()
  local f=native_ability_fixture()
  local x=R37Bag.captureNativeAbility0(f.sprite,f.obs,f.ctx,{
   toPtr=f.api.toPtr,read8=false})
  assert(x.status=='HOLD_NATIVE_ITM_EEEX117_READER_MISSING')
- contract(x)
+ native_r37_safety(x)
 end)
 test('native_r37_second_ability_never_dereferenced',function()
  local f=native_ability_fixture()
@@ -1056,7 +1062,7 @@ test('native_r37_detects_proficiency_drift_midreading',function()
  end
  local out=R37Bag.captureNativeAbility0(f.sprite,f.obs,f.ctx,f.api)
  assert(out.status=='HOLD_NATIVE_ITM_ATTACK_OR_PROF_DRIFT')
- contract(out)
+ native_r37_safety(out)
 end)
 test('native_r37_resource_ability_count_not_matching_R3_hold',function()
  local f=native_ability_fixture()
@@ -1069,7 +1075,7 @@ test('native_r37_CItem_present_but_missing_pRes_holds',function()
  f.cached[18].pRes=nil
  local x=R37Bag.captureNativeAbility0(f.sprite,f.obs,f.ctx,f.api)
  assert(x.status=='HOLD_NATIVE_ITM_HEADER_UNREADABLE')
- contract(x)
+ native_r37_safety(x)
 end)
 test('native_r37_known_busy_skips_all_live_item_reading',function()
  local f=native_ability_fixture()
