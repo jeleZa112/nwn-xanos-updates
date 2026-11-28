@@ -14,6 +14,9 @@ class Onefile177(unittest.TestCase):
         x=Path(__file__).with_name('BGXAI_R39_JAGAN_STAF01_SOURCE_ONLY.baf').read_bytes()
         self.assertEqual(len(x),p.SOURCES[p.B][0])
         self.assertEqual(p.digest(x),p.SOURCES[p.B][1])
+        x2=Path(__file__).with_name('BGXAI_R39_JAGAN_STAF01_EEEX_SESSION_SOURCE_ONLY.baf').read_bytes()
+        self.assertEqual(len(x2),p.SOURCES[p.B2][0])
+        self.assertEqual(p.digest(x2),p.SOURCES[p.B2][1])
 
     def test_no_extra_executables_or_installers(self):
         s=Path(p.__file__).read_text('utf-8')
@@ -33,7 +36,7 @@ class Onefile177(unittest.TestCase):
 
     def test_sha_mismatch_denied(self):
         with self.assertRaisesRegex(p.Hold,'HOLD_SOURCE_SHA_DRIFT'):
-            p.verify(p.B,b'a'*p.SOURCES[p.B][0])
+            p.verify(p.B,b'a'*p.SOURCES[p.B2][0])
 
     def fixtures(self):
         raws={x:x.encode('ascii') for x in p.SOURCES}
@@ -43,8 +46,8 @@ class Onefile177(unittest.TestCase):
     def success_response(self):
         return {'status':'R39_NATIVE_EET_TEMP_COMPILE_PASS_NO_INSTALL',
                 'nativeWeiDUCompileVerified':True,
-                'sourceSha256':p.SOURCES[p.B][1],
-                'sourceBytes':p.SOURCES[p.B][0],
+                'sourceSha256':p.SOURCES[p.B2][1],
+                'sourceBytes':p.SOURCES[p.B2][0],
                 'watchedFilesChanged':False,
                 'temporaryOutputRemoved':True,
                 'installed':False, 'ordersSent':0,
@@ -58,6 +61,7 @@ class Onefile177(unittest.TestCase):
         def runfake(cmd,**kwargs):
             self.assertIn('--native-readonly',cmd)
             self.assertEqual(cmd.count('--native-readonly'),1)
+            self.assertTrue(str(cmd[cmd.index('--source')+1]).endswith('BGXAI_R39_JAGAN_STAF01_EEEX_SESSION_SOURCE_ONLY.baf'))
             self.assertEqual(len([s for s in cmd if s=='--game']),1)
             self.assertIs(kwargs['stdin'],p.subprocess.DEVNULL)
             self.assertIs(kwargs['capture_output'],True)
@@ -78,8 +82,8 @@ class Onefile177(unittest.TestCase):
     def test_item_hold_does_not_erase_real_native_compile_proof(self):
         inner=self.success_response()
         # with_fake stages synthetic source pins, not the live published ones.
-        inner['sourceSha256']=self.fixtures()[1][p.B][1]
-        inner['sourceBytes']=self.fixtures()[1][p.B][0]
+        inner['sourceSha256']=self.fixtures()[1][p.B2][1]
+        inner['sourceBytes']=self.fixtures()[1][p.B2][0]
         inner['status']='R39_NATIVE_EET_TEMP_COMPILE_PASS_ITEM_HOLD_NO_INSTALL'
         inner['itemHeaderCheck']={'staticItemClassKitHeaderAllowed':False,
                'engineCanEquipVerified':False,
@@ -94,8 +98,8 @@ class Onefile177(unittest.TestCase):
     def test_item_hold_cannot_mask_failed_native_compiler(self):
         inner=self.success_response()
         # with_fake stages synthetic source pins, not the live published ones.
-        inner['sourceSha256']=self.fixtures()[1][p.B][1]
-        inner['sourceBytes']=self.fixtures()[1][p.B][0]
+        inner['sourceSha256']=self.fixtures()[1][p.B2][1]
+        inner['sourceBytes']=self.fixtures()[1][p.B2][0]
         inner['status']='R39_NATIVE_EET_TEMP_COMPILE_PASS_ITEM_HOLD_NO_INSTALL'
         inner['itemHeaderCheck']={'staticItemClassKitHeaderAllowed':False,
                'engineCanEquipVerified':False,'itemRestrictionHold':'HOLD_ITM_RACE_RESTRICTIONS_UNVERIFIED'}
@@ -140,6 +144,6 @@ class Onefile177(unittest.TestCase):
             self.assertGreater(size,1)
             self.assertEqual(len(sha),64)
             self.assertNotIn('..',path)
-        self.assertEqual(len(p.SOURCES),4)
+        self.assertEqual(len(p.SOURCES),5)
 
 if __name__=='__main__':unittest.main()
