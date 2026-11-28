@@ -1,0 +1,80 @@
+// BGXAI R39 SOURCE ONLY; NOT INSTALLED; NO AUTO-ARM.
+// Stage-1 requires independently authorized actor-local LOCALS.
+// ONE_ROUND cooldown + TWO_ROUNDS deadline are not idle/session proof.
+// Actor ID, item usability and manual/EPS origin must be verified
+// by a future independent session-bound armer before deployment.
+IF
+  Global("BGXW3ARM","LOCALS",1)
+  Global("BGXW3TAG","LOCALS",2110908191)
+  Global("BGXW3QST","LOCALS",1)
+  GlobalTimerExpired("BGXW3MAX","LOCALS")
+  ActionListEmpty()
+  CombatCounter(0)
+THEN
+  RESPONSE #100
+    SetGlobal("BGXW3ARM","LOCALS",3)
+    SetGlobal("BGXW3TAG","LOCALS",0)
+    SetGlobal("BGXW3QST","LOCALS",3)
+    Continue()
+END
+
+IF
+  Global("BGXW3ARM","LOCALS",1)
+  Global("BGXW3TAG","LOCALS",2110908191)
+  Global("BGXW3TRY","LOCALS",0)
+  InParty(Myself)
+  InPartySlot(Myself,1)
+  Name("*GCLERIC",Myself)
+  Class(Myself,CLERIC)
+  CheckStatGT(Myself,4,STR)
+  !HasItemSlot(Myself,SLOT_SHIELD)
+  ActionListEmpty()
+  CombatCounter(0)
+  !See([EVILCUTOFF])
+  !GlobalTimerNotExpired("MO_SpellCast","LOCALS")
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_HELPLESS)
+  CheckItemSlot(Myself,"STAF01",SLOT_MISC5)
+  !HasItemSlot(Myself,SLOT_WEAPON0)
+  Global("BGXW3QST","LOCALS",1)
+  EEex_LuaTrigger("return BGXW3_EEexSessionGate()")
+  GlobalTimerExpired("BGXW3QTM","LOCALS")
+  GlobalTimerNotExpired("BGXW3MAX","LOCALS")
+THEN
+  RESPONSE #100
+    SetGlobal("BGXW3ARM","LOCALS",2)
+    SetGlobal("BGXW3TRY","LOCALS",1)
+    SetGlobal("BGXW3TAG","LOCALS",0)
+    SetGlobal("BGXW3QST","LOCALS",2)
+    XEquipItem("STAF01",Myself,SLOT_WEAPON0,EQUIP)
+END
+
+IF
+  Global("BGXW3ARM","LOCALS",1)
+  Global("BGXW3TAG","LOCALS",2110908191)
+  Global("BGXW3TRY","LOCALS",0)
+  InParty(Myself)
+  InPartySlot(Myself,1)
+  Name("*GCLERIC",Myself)
+  Class(Myself,CLERIC)
+  CheckStatGT(Myself,4,STR)
+  !HasItemSlot(Myself,SLOT_SHIELD)
+  ActionListEmpty()
+  CombatCounter(0)
+  !See([EVILCUTOFF])
+  !GlobalTimerNotExpired("MO_SpellCast","LOCALS")
+  ModalState(NONE)
+  !StateCheck(Myself,STATE_PANIC)
+  !StateCheck(Myself,STATE_HELPLESS)
+  CheckItemSlot(Myself,"STAF01",SLOT_MISC5)
+  !HasItemSlot(Myself,SLOT_WEAPON0)
+  Global("BGXW3QST","LOCALS",0)
+  EEex_LuaTrigger("return BGXW3_EEexSessionGate()")
+THEN
+  RESPONSE #100
+    SetGlobal("BGXW3QST","LOCALS",1)
+    SetGlobalTimer("BGXW3QTM","LOCALS",ONE_ROUND)
+    SetGlobalTimer("BGXW3MAX","LOCALS",TWO_ROUNDS)
+    Continue()
+END
