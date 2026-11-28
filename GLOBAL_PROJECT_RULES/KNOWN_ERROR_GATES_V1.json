@@ -401,6 +401,22 @@
       "project": "BGXAI",
       "source_path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_EEEX117_ENGINE_BRIDGE_RO.lua",
       "source_git_blob_sha": "71411f7f6e4989a5237242b88e95166755a894df",
+      "reviewed_deltas": [
+        {
+          "delta_id": "BGXAI_R39_EEEX117_DEBUG_SCRIPT_INDEX_MAP_20261128",
+          "recorded_before_source_edit": true,
+          "source_blob_before": "71411f7f6e4989a5237242b88e95166755a894df",
+          "already_done": "R39 read-only bridge already double-reads seven SCRLEV assignment resrefs, identity, exact STAF01 slot20 and empty weapon35. R38 true 34-event capture has Jagan raw m_curScriptNum=3 (five) and -1 (five). A November 21 real save audit identifies Jagan historical CLASS=BDDEFAI, NOT a currently proven class script.",
+          "independent_upstream_evidence": [
+            "Bubb13/EEex v1.1.7 EEex/copy/EEex_scripts/EEex_Debug.lua git blob ec8f6d1735d1e2e27fc2bae6dca26fd89c22eef5, lines 136-142: getScriptLevelResRef(curScriptNum >= 3 and curScriptNum + 1 or curScriptNum)",
+            "Bubb13/EEex v1.1.7 EEex/copy/EEex_scripts/EEex_AIBase.lua git blob 63b80e8f1479e0f7b201dc050b6058016feabef6 lines 43-71: class script is SCRLEV 4"
+          ],
+          "missing_delta": "Add a single source-only bounded current m_curScriptNum and m_curAction.m_actionID stable before-after read in the already-existing R39 probeScriptAssignments. Map engine raw index 3 to SCRLEV CLASS 4 using upstream stock EEex debug formula; return only actor-local currentAssignedScriptResrefCandidate when twice stable and not empty. Reject mutations/unknown raw values. No additional listeners, no new Lua autoload module, no actions, no game writes, no claims of authenticated execution or EPS/manual source.",
+          "stage": "PREWORK_RECORDED",
+          "game_modified": false,
+          "installed": false
+        }
+      ],
       "predecessor_sources": [
         {
           "path": "BGXAI/BUILD/R37_XEQUIP_IDENTITY_SINGLE_LISTENER_SOURCEONLY_20261127/M_BGXR27_R37_INV3_IDENTITY_SOURCE_ONLY.lua",
