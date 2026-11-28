@@ -170,8 +170,12 @@ def run(mode,game,workdir,batch,cumulative,bridge,catalog=None,resolver=None,v10
         if mode=='status':
             if not state.exists():return {'schema':SCHEMA,'status':'V165_NOT_INSTALLED','gameFilesWritten':0}
             data=json.loads(read(state,MAX_STATE))
-            if data.get('schema')!=SCHEMA or data.get('phase')!='INSTALLED':
-                raise Hold('V165_STATE_NOT_INSTALLED')
+            if data.get('schema')!=SCHEMA:raise Hold('V165_STATE_SCHEMA_INVALID')
+            if data.get('phase')=='ROLLED_BACK':
+                return {'schema':SCHEMA,'status':'V165_ROLLED_BACK_TO_V163_123','gameFilesWritten':0}
+            if data.get('phase')=='PREPARED':
+                return {'schema':SCHEMA,'status':'V165_PREPARED_RECOVERY_REQUIRED','gameFilesWritten':0}
+            if data.get('phase')!='INSTALLED':raise Hold('V165_STATE_NOT_INSTALLED')
             return {'schema':SCHEMA,'status':'V165_INSTALLED_AWAITING_GAMEPLAY' if digest(read(target))==data.get('candidateSha') else 'V165_SOURCE_DRIFT_HOLD','gameFilesWritten':0}
         if mode in ('preflight','install'):
             if catalog is None or resolver is None or v107 is None:
@@ -255,7 +259,17 @@ def run(mode,game,workdir,batch,cumulative,bridge,catalog=None,resolver=None,v10
             if digest(second_raw)!=record.get('secondStateSha'):
                 raise Hold('V163_RECEIPT_CHANGED_SINCE_PILOT')
             if current==EXPECTED_V163_SHA:
-                return {'schema':SCHEMA,'status':'V165_ALREADY_AT_V163_BASELINE','gameFilesWritten':0}
+                # A crash before game swap leaves PREPARED state; finalize
+                # receipt after typed rollback so a stale PREPARED cannot lock
+                # future recovery. V163 bytes remain untouched.
+                record['phase']='ROLLED_BACK'
+                new=state.with_suffix('.next')
+                if new.exists() or new.is_symlink():raise Hold('V165_ROLLBACK_STATE_COLLISION')
+                try:
+                    _write_json_new(new,record);os.replace(new,state)
+                finally:
+                    if new.exists():new.unlink()
+                return {'schema':SCHEMA,'status':'V165_ROLLED_BACK_TO_V163_123','gameFilesWritten':0}
             stage=target.with_name(target.name+'.v165.restore')
             if stage.exists() or stage.is_symlink():raise Hold('V165_ROLLBACK_STAGE_COLLISION')
             try:
