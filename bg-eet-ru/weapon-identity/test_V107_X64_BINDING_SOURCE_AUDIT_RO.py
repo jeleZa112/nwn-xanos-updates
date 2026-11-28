@@ -41,4 +41,28 @@ class SourceProofTests(unittest.TestCase):
     def test_getter_required(self):
         self.assertFalse(audit.analyze(GOOD.replace('tolua_get_CItem_m_flags','tolua_get_CItem_other'),DOC)['sourceOnlyPass'])
 
+    def test_pinned_release_binary_provenance_is_not_game_pass(self):
+        content = b'official-synthetic-dll'
+        size, gitsha = len(content), audit._git_blob_sha(content)
+        actual = __import__('hashlib').sha256(content).hexdigest()
+        good = audit.compare_pinned_binary(content, size, gitsha, actual)
+        self.assertTrue(good['pinnedSourceBytesVerified'])
+        self.assertTrue(good['installedSha256MatchesOfficial'])
+        wrong_hash = audit.compare_pinned_binary(content, size, gitsha, '0' * 64)
+        self.assertFalse(wrong_hash['installedSha256MatchesOfficial'])
+        wrong_source = audit.compare_pinned_binary(content + b'!', size, gitsha, actual)
+        self.assertFalse(wrong_source['pinnedSourceBytesVerified'])
+        self.assertFalse(wrong_source['installedSha256MatchesOfficial'])
+
+    def test_official_release_v120_size_sha1_pins(self):
+        self.assertEqual(len(audit.RELEASE_V120_COMMIT), 40)
+        names = [entry[0] for entry in audit.RELEASE_V120_BINARIES]
+        self.assertEqual(names, ['EEex.dll', 'LuaBindings.dll'])
+        self.assertEqual([entry[2] for entry in audit.RELEASE_V120_BINARIES],
+                         [1282048, 6432256])
+        for name, path, size, gitsha in audit.RELEASE_V120_BINARIES:
+            self.assertTrue(path.endswith('/' + name))
+            self.assertEqual(len(gitsha), 40)
+
+
 if __name__ == '__main__': unittest.main()
