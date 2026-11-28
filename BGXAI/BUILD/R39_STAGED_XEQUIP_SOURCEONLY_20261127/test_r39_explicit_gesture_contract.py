@@ -189,4 +189,12 @@ class RealContract(unittest.TestCase):
         self.assertEqual(run.returncode,0,run.stdout+'\n'+run.stderr)
         self.assertIn('18/18 PASS',run.stdout)
 
+ def test_21_r41_builder_clean_checkout_reproducibility(self):
+    # The R40 source is in the existing sibling BUILD folder, not this directory.
+    import runpy
+    builder=HERE/'build_r41_link_sourceonly.py'
+    expected=(HERE/'M_BGXW3_R41_LINK_SOURCE_ONLY.lua').read_bytes()
+    generated=runpy.run_path(str(builder))['render']().encode('ascii')
+    self.assertEqual(generated,expected)
+
 if __name__=='__main__':unittest.main()
