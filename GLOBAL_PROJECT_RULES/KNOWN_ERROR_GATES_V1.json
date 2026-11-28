@@ -962,7 +962,7 @@
       "error_id": "BGXAI_UNIVERSAL_ERROR_REGISTER_ENUM_DRIFT_CI_20261128",
       "project": "BGXAI",
       "type": "SOURCE_STATE_DRIFT",
-      "status": "MITIGATED_SOURCE_ONLY",
+      "status": "MITIGATED_VERIFIED",
       "discovered_at": "2026-11-28",
       "trigger": "Detailed BGXAI technical type/status states were added as values of shared controlled universal error-register enums.",
       "observed_failure": "GitHub Actions canonical resume run 46156031808 failed known_error_guard.py --self-test: ValueError unknown error class/status for BGXAI_R42_LIVE_CAPTURE_HOLD_DETAIL_MASKED_20261128.",
@@ -973,9 +973,17 @@
       "evidence": [
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46156031808",
         "/GLOBAL_PROJECT_RULES/known_error_guard.py",
-        "/GLOBAL_PROJECT_RULES/KNOWN_ERROR_GATES_V1.json"
+        "/GLOBAL_PROJECT_RULES/KNOWN_ERROR_GATES_V1.json",
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46156906413"
       ],
-      "enforcement": "Use existing schema CI as release gate. No game updater or gameplay changes."
+      "enforcement": "Use existing schema CI as release gate. No game updater or gameplay changes.",
+      "ci_verification": {
+        "commit": "3159e4bc0b4a4bc2bedd9f93e06bc6a5477f58b6",
+        "runId": 46156906413,
+        "conclusion": "success",
+        "job": "resume-consistency / known_error_guard.py --self-test",
+        "date": "2026-11-28"
+      }
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
