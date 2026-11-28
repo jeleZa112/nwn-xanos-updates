@@ -150,5 +150,5 @@ class V2OnefileR49(unittest.TestCase):
   if os.name!="nt":
    with self.assertRaisesRegex(m.Hold,"EXACT_WINDOWS_GAME"):
     m.run(self.game,loader=lambda:self.native)
- if __name__=="__main__":
-  unittest.main()
+if __name__=="__main__":
+ unittest.main()
