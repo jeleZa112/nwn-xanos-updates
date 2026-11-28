@@ -31,4 +31,5 @@ jobs:
         with:
           python-version: '3.11'
       - run: python project_tools/resume_guard.py
+      - run: python project_tools/resume_guard.py --self-test
       - run: python GLOBAL_PROJECT_RULES/known_error_guard.py --self-test
