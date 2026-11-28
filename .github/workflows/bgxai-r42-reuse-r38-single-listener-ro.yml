@@ -42,6 +42,22 @@ jobs:
         run: python project_tools/resume_guard.py --preflight BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_GUARDED_FROM_R38.py
       - name: Existing immutable predecessor and canonical preflight
         run: python project_tools/resume_guard.py
+      - name: Pin exact staged R44 last157 source files before release (NO GAME)
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          for n in (
+              'BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/BGXAI_R44_GUARDED_LAST156_SOURCE_ONLY.py',
+              'BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/BGXAI_R44_COMPOSE_FROM_R43_SOURCE_ONLY.py',
+              'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_ACTOR_ID_GUARD_SOURCE_ONLY.py',
+              'BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py',
+          ):
+              raw=Path(n).read_bytes()
+              print('R44_STAGE_SOURCE_PIN',n,len(raw),hashlib.sha256(raw).hexdigest())
+          PY
+
       - name: Pin capture sources SHA before offline regression execution
         shell: bash
         run: |
@@ -71,6 +87,9 @@ jobs:
 
       - name: Test R44 guarded last156→157 with mock WeiDU backup/rollback (NO GAME)
         run: python -m unittest -v BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/test_r44_guarded_last156_source_only.py
+
+      - name: Test R44 same original onefile179 modes 12..16 on mock native (NO GAME)
+        run: python -m unittest -v BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/test_r44_same_onefile179_stage_source_only.py
 
       - name: Test composed R38/R39 read-only bridge (required)
         run: python -m unittest -v BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_reuse_r38_source_only.py
