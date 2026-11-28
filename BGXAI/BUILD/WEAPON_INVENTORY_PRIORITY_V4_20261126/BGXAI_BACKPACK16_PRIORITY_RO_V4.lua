@@ -290,7 +290,23 @@ function M.planWithV3(backpack,quick,other,scene,candidates,v3Scene,previous,v3)
   if count>16 or not integer(k,1,16) then
    return result('HOLD_V3_V4_CANDIDATE_LIST_AMBIGUOUS') end
  end
- if count==0 then return result('HOLD_NO_CANDIDATE') end
+ if count==0 then
+  -- No backpack candidate need not block a superior READY quickslot.
+  if readyBest and readyBest.id~=current.id and readyBest.value>selectedScore then
+   return result('PREFER_ALREADY_EQUIPPED_QUICKSLOT_NO_INVENTORY_MOVE',{
+    v3V4Link='SAME_ACTOR_TARGET_BACKPACK_MODEL_ONLY',
+    v3Next=preview.next,selectedScoreModel=selectedScore,
+    bestEquippedScoreModel=readyBest.value,
+    bestEquippedWeaponId=readyBest.id,
+    suggestedQuickslotIndex=readyBest.slotIndex,
+    comparisonBasis='BEST_ALREADY_EQUIPPED_QUICKSLOT',
+    backpackCandidateCount=0})
+  end
+  return result('KEEP_CURRENT_NO_BACKPACK_CANDIDATE',{
+   v3Next=preview.next,selectedScoreModel=selectedScore,
+   comparisonBasis='BEST_ALREADY_EQUIPPED_QUICKSLOT',
+   backpackCandidateCount=0})
+ end
  local computed={}
  for i=1,count do
   local c=candidates[i]
