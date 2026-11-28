@@ -126,6 +126,7 @@ def v165_dispatch(game,mode,offline=False):
                               ("release['version'],164","release['version'],165"),
                               ("manifest['version'],164","manifest['version'],165"),
                               ("len(blob), 749937",f"len(blob), {len(b)}"),
+                              ("len(blob),749937",f"len(blob),{len(b)}"),
                               ("SELF_VERSION = 164","SELF_VERSION = 165")):
             data=data.replace(oldval,newval)
         path.write_text(data,encoding='utf8')
