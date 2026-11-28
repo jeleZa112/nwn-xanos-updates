@@ -64,6 +64,36 @@ class CatalogStage(unittest.TestCase):
     self.assertEqual(result['catalogHash'],hashlib.sha256(
         Path(result['catalogPath']).read_bytes()).hexdigest())
 
+ def test_moded_hash_and_dash_saved_items_join_existing_r3_without_game_writes(self):
+    # End-to-end using the original CRE/GAM + R3 native KEY/BIFF fixture.
+    # Names are legal in BOTH parsers; no separate reader or game action.
+    raw=bytearray(self.raw)
+    self.assertIn(b'STAF01\\0\\0',raw)
+    self.assertIn(b'SW1H04\\0\\0',raw)
+    raw=raw.replace(b'STAF01\\0\\0',b'C#GRTOO0',1)
+    raw=raw.replace(b'SW1H04\\0\\0',b'C-ITEM01',1)
+    self.gam.write_bytes(raw)
+    override=self.game/'override'
+    (override/'C#GRTOO0.ITM').write_bytes(r3test.STAF01)
+    (override/'C-ITEM01.ITM').write_bytes(r3test.STAF01)
+    before_save=self.gam.read_bytes()
+    before_resources={
+       name:(override/name).read_bytes()
+       for name in ('C#GRTOO0.ITM','C-ITEM01.ITM')}
+    result=mod.run(self.game,self.docs,self.reports,game_required=False)
+    self.assertEqual(result['status'],'SOURCE_CATALOG_READY_OUTSIDE_GAME',result)
+    self.assertIn(result['uniqueItemResources'],(3,))
+    lua=Path(result['catalogPath']).read_text(encoding='ascii')
+    self.assertIn('["C#GRTOO0"]',lua)
+    self.assertIn('["C-ITEM01"]',lua)
+    self.assertIn('["dispatchAuthorized"]=false',lua)
+    self.assertFalse(result['inventoryMoveAuthorized'])
+    self.assertFalse(result['gameModified'])
+    self.assertEqual(result['ordersSent'],0)
+    self.assertEqual(self.gam.read_bytes(),before_save)
+    for name,data in before_resources.items():
+      self.assertEqual((override/name).read_bytes(),data)
+
  def test_same_source_idempotent_not_overwritten(self):
     first=mod.run(self.game,self.docs,self.reports,game_required=False)
     self.assertEqual(first['status'],'SOURCE_CATALOG_READY_OUTSIDE_GAME')
