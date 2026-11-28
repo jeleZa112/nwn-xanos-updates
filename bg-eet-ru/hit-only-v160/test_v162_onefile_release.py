@@ -32,6 +32,7 @@ class OnefileV162ReleaseContract(unittest.TestCase):
         self.assertIn('11=bulk',cmd)
         self.assertIn('12=names',cmd)
         self.assertIn('def v153_dispatch',cmd)
+        self.assertIn("if digest(source)!=V162_PIN:raise RuntimeError('V162_PIN_CHANGED_BEFORE_EXEC')",cmd)
         self.assertEqual(cmd.count('def v162_dispatch('),1)
     def test_static_v69_byte_exact_compression_contract(self):
         cmd=CMD.read_text(encoding='utf-8')
