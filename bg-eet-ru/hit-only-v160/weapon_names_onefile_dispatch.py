@@ -18,11 +18,11 @@ COMMIT = '26a3a792af22257edf85da0877f306199d15ea43'
 BASE = 'https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/' + COMMIT + '/'
 # Set exact sha256 values only after byte-identical CI (never a moving ref).
 SOURCES = {
-    'batch': ('bg-eet-ru/hit-only-v160/weapon_names_batch_source.py', 'PIN_BATCH'),
-    'bridge': ('bg-eet-ru/weapon-identity/BG_EET_RU_ITEM_NAMES_FROM_BGXAI_R3_RO.py', 'PIN_BRIDGE'),
-    'r3': ('BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/BGXAI_WEAPON_NATIVE_ITM_R3_RO.py', 'PIN_R3'),
-    'v111': ('bg-eet-ru/weapon-identity/V111_ITEM_NAMES_READONLY_SOURCE_ONLY.py', 'PIN_V111'),
-    'v160': ('bg-eet-ru/hit-only-v160/v160_guarded.py', 'PIN_V160'),
+    'batch': ('bg-eet-ru/hit-only-v160/weapon_names_batch_source.py', '79ac47a9b1189502722eaf699238b67f930a0a6b4fdd05ebdb42fb567e930288'),
+    'bridge': ('bg-eet-ru/weapon-identity/BG_EET_RU_ITEM_NAMES_FROM_BGXAI_R3_RO.py', 'd0f13bb8e865da671a345bf68a0f6ee59cb52ca1d56e357d4731f5a3f4ff2634'),
+    'r3': ('BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/BGXAI_WEAPON_NATIVE_ITM_R3_RO.py', 'ed87a7a6618826c6d3901d2579a39bf280fcaeb09cd18b7b6ee159b9ebfcc74a'),
+    'v111': ('bg-eet-ru/weapon-identity/V111_ITEM_NAMES_READONLY_SOURCE_ONLY.py', 'bb9e9d39ed9c5d06c90930c8f3974cc22e5594e1c41e1024ce11c7c8e05600c0'),
+    'v160': ('bg-eet-ru/hit-only-v160/v160_guarded.py', 'ccf02f4892bf0ed434ac97a1f0bb7d7da2a9abdde8fafe7a64b422386e82b2de'),
 }
 MAX_SOURCE_BYTES = 100_000
 
