@@ -840,6 +840,20 @@
           "actualXEquipItemExecuted": false,
           "externalApprovalObtained": false,
           "missingDeltaAfterFix": "Need actual in-engine CLASS BCS execution/ownership and trusted item ITM usability + full current effects + queue/action boundary per real player. User 179→16 R44 read-only actionRaw23, currentScriptNumberRaw=-1, actionSource pointer unavailable. Never fake port booleans. Only after proof and new explicit typed safe last-only install of already-existing R39 BAF+R41 bundle can a single user-gesture XEquipItem be attempted. No automatic deployment."
+        },
+        {
+          "delta_id": "BGXAI_R46_INERT_BDDEFAI_EXECS_WITNESS_REUSE_R39_20261128",
+          "recorded_before_source_edit": true,
+          "already_done": "R44 user native installed last157 and one 179→16 game PASS with real assigned CLASS BDDEFAI, single [BGXBCS] event; exact R39 numeric-ID `exactPhysical()` accepts only actor selected single, class3 kit16384, one STAF01 source backpack slot20 flags1 zero charges, weapon35 and offhand9 empty, double unchanged. Therefore R44 in conjunction with exact source proves live STAF01 even though its compact log does not print resref. R39 2407B BAF already native WeiDU compiled TEMP-only, never installed. R45 corrected combined R39/R40/R41 armer source-only 22703 bytes sha b714495a5caa155b9a58d3908209faf694041729dc6b6e25e2635b6b8ae76e3e CI 46136302716 pass both OS, no deployment. Existing R44 override M_BGXR27 read-only has no action dispatch. One original BGXAI_UPDATE.cmd still pinned 668b with menus 175/176/179 1-16.",
+          "missing_delta": "Need prove actual BDDEFAI CLASS BCS code is evaluated by game for Jagan, independent of merely assigned BCS resref, before activating existing source-only R39 XEquip. Minimal safe mechanism: SOURCE-ONLY isolated BCS IF block with EEex_LuaTrigger read-only observer that always returns false and thus no response, placed via reversible WeiDU EXTEND_TOP on real BDDEFAI.BCS in a future separately guarded last-only component #158; bound Lua observer identifies Jagan via EEex_LuaTrigger_Object actor numeric m_id, portrait1 id, class3 kit and assigned live CLASS BDDEFAI, writes at most ONE no-private-data event. No extra action-start listener, no new CMD, no ARM/LOCALS/XEquip. First author and offline test exact candidate + reversible installer blueprint; don't install without confirmed game BCS baseline and single typed consent. Engine item usability/full effects and manual/EPS safe action boundary remain explicitly NOT resolved by this witness.",
+          "rationale": "WeiDU manual and Gibberlings3 WeiDU course explicitly describe EXTEND_TOP of existing .BCS with a .BAF; source-only isolated false predicate cannot schedule gameplay responses. Current assigned CLASS is not BCS execution proof. R39 existing ITEM static native check did not verify all live effects/usability. Future pilot must use R45 and R39 BAF already built, not reimplement XEquip.",
+          "status": "PRIOR_WORK_REVIEWED_NO_SOURCE_WRITTEN",
+          "gameModified": false,
+          "autoArm": false,
+          "installed": false,
+          "previousLogSha": "8dabbb5353b3eb834cbe685ccaee7fe22aa30c1c56018355cee325e1432837d4",
+          "oneCmdOnly": true,
+          "noRepeatedCapture": true
         }
       ],
       "predecessor_sources": [
