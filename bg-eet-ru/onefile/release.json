@@ -1,14 +1,14 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 161,
-  "sha256": "cbce7f0fdb519d6f5642d420d70f198f97d6479b6259c0709abf5a157e64238b",
-  "mode": "V161_WEIDU_DRIFT_GUARD_AND_PINNED_OFFLINE_CACHE_FIX",
+  "version": 162,
+  "sha256": "4e2c9135a918023f9dc7dd0d7db143d29a813de03a1916bf251b84b85127520a",
+  "mode": "V162_SHA_PINNED_WEAPON_NAME_BATCH_ONEFILE_MENU",
   "game_writes_allowed": false,
-  "note": "V161 repairs the V160 guarded hit-only installation blocker (stale WeiDU.log baseline) by capturing the current WeiDU SHA at preflight, verifying unchanged during typed install and at last-only rollback. Keeps all other exact EEex/UI/TLK game file pins. SHA-pinned V160 Python/Lua code cache stored only outside game; network only on cache miss. Single original BG_EET_RU_UPDATE.cmd, 749994 bytes, shorter update-manifest timeout 6s, SAFE_STOP reason visible. Use 11->9 preflight, 11->10 typed install, 11->11 typed rollback, 11->12 status. No auto game writes, no second updater or additional native hook; actual gameplay not proven.",
+  "note": "Single existing BG_EET_RU_UPDATE.cmd, 747945 bytes (<750000), unchanged V160 installed Lua by default. Menu 12 -> status/preflight/typed install/typed rollback of up to 64 current-game R3/V111-verified item names; historical seed list not accepted as proof. New backend loaded only from immutable commit and SHA256-checked external cache; all five source modules SHA256-checked. Typed game writes guarded by exact installed V160 SHA, pinned game and TLK, WeiDU and current ITM SHA, external backup, atomic swap, last-only rollback to V160. Default game writes forbidden. Release status SOURCE/CI until user confirms installation. Existing menus 1-11 retained.",
   "default_game_writes_allowed": false,
   "typed_game_write_mode_available": true,
   "requires_exact_typed_install_and_rollback": true,
   "weidu_native_component": false,
-  "last_only_rollback_guard": "EXACT_EEEX_TLK_UI_WEIDU_SHA_AND_EXTERNAL_BACKUP"
+  "last_only_rollback_guard": "EXACT_INSTALLED_V160_SHA_CURRENT_ITM_TLK_WEIDU_GAME_PINS_EXTERNAL_BACKUP"
 }
