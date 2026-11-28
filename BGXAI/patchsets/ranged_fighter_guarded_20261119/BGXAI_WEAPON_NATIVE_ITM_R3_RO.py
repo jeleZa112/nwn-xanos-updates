@@ -433,6 +433,90 @@ def audit_r37_top_level(source, capture:dict):
 
 
 
+def _r3_compact_items(report:dict, names:set) -> dict:
+    """Reuses the existing bounded R3 ITM projection; no second parser."""
+    items={}
+    for name in sorted(names):
+        row=report['items'][name]
+        if not isinstance(row,dict) or row.get('resource')!=name:
+            raise Hold('R3_LUA_EXPORT_WRONG_RESOURCE')
+        itm=row.get('item')
+        prov=row.get('provenance')
+        if not isinstance(itm,dict) or itm.get('schema')!='BGXAI_ITM_RAW_V1' or (
+            itm.get('rawOnly') is not True) or not isinstance(itm.get('abilities'),list) or (
+            len(itm['abilities'])>64) or not isinstance(prov,dict) or (
+            prov.get('origin') not in ('CURRENT_GAME_BIFF','CURRENT_GAME_OVERRIDE')):
+            raise Hold('R3_LUA_EXPORT_BAD_NATIVE_ITM')
+        # R3 already parsed and bounds-checked every ability from real ITM
+        # bytes. Keep its source-only raw fields; do not synthesize stats.
+        abilities=[]
+        for i,a in enumerate(itm['abilities']):
+            if not isinstance(a,dict) or a.get('abilityIndex')!=i or not (
+                type(a.get('attackTypeRaw')) is int and 0<=a['attackTypeRaw']<=4):
+                raise Hold('R3_LUA_EXPORT_BAD_ABILITY')
+            abilities.append({k:a.get(k) for k in (
+                'abilityIndex','attackTypeRaw','locationRaw','rangeRaw',
+                'launcherRequiredRaw','speedRaw','thac0BonusRaw',
+                'diceCountRaw','diceSidesRaw','damageBonusRaw',
+                'baseDamageMeanBeforeEffects','damageTypeRaw',
+                'abilityFlagsRaw','effects','effectiveDamageAndAPRVerified')})
+        items[name]={
+            'resource':name,'provenance':{
+                'origin':prov['origin'],
+                'sha256':prov.get('sha256')},
+            'item':{k:(abilities if k=='abilities' else itm.get(k)) for k in (
+                'schema','rawOnly','itemTypeRaw','itemFlagsRaw',
+                'twoHandedFlagRaw','proficiencyIdRaw','enchantmentRaw',
+                'minStrengthRaw','maxStackRaw','abilities',
+                'equippedEffects','activeBuffsVerified',
+                'engineEffectsAppliedVerified','characterCanEquipVerified',
+                'targetImmunityVerified')}}
+    return items
+
+def _r3_lua_source(catalog:dict, comment:str) -> str:
+    """Same inert serializer for R37 runtime and GAM saved-party catalogs."""
+    import math
+    count=[0]
+    def lua(v,depth=0):
+        count[0]+=1
+        if count[0]>100000 or depth>16:
+            raise Hold('R3_LUA_EXPORT_COMPLEXITY_EXCEEDED')
+        if v is None: return 'nil'
+        if v is True:return 'true'
+        if v is False:return 'false'
+        if type(v) is int:
+            if abs(v)>9007199254740991:
+                raise Hold('R3_LUA_EXPORT_INTEGER_OUTSIDE_SAFE_RANGE')
+            return str(v)
+        if type(v) is float:
+            if not math.isfinite(v) or abs(v)>1e12:
+                raise Hold('R3_LUA_EXPORT_FLOAT_UNSAFE')
+            return repr(v)
+        if type(v) is str:
+            if any(ord(c)<32 or ord(c)>126 for c in v):
+                raise Hold('R3_LUA_EXPORT_NONASCII_OR_CONTROL_CHAR')
+            return json.dumps(v,ensure_ascii=True)
+        if isinstance(v,(list,tuple)):
+            return '{'+','.join(lua(x,depth+1) for x in v)+'}'
+        if isinstance(v,dict):
+            fields=[]
+            for key in sorted(v,key=lambda x:(str(type(x)),str(x))):
+                if type(key) is int and 0<=key<=65535:
+                    label=f'[{key}]'
+                elif type(key) is str:
+                    label='['+lua(key,depth+1)+']'
+                else:
+                    raise Hold('R3_LUA_EXPORT_BAD_TABLE_KEY')
+                if v[key] is not None:fields.append(label+'='+lua(v[key],depth+1))
+            return '{'+','.join(fields)+'}'
+        raise Hold('R3_LUA_EXPORT_VALUE_TYPE_UNSUPPORTED')
+    result='-- BGXAI SOURCE-ONLY STAGED DATA. NOT AN ENGINE ARMER. NO LUA HOOKS.\n'
+    result+='-- '+comment+'\n'
+    result+='return '+lua(catalog)+'\n'
+    if len(result)>1000000:
+        raise Hold('R3_LUA_EXPORT_CATALOG_TOO_LARGE')
+    return result
+
 def export_r37_lua_cache(report:dict) -> str:
     """Compile an R3 R37 39-slot CURRENT_GAME audit to passive Lua table text.
 
@@ -475,42 +559,7 @@ def export_r37_lua_cache(report:dict) -> str:
         inventory[slot]={'slot':slot,'status':raw['status'],'resref':name}
     if set(report['items'])!=names:
         raise Hold('R3_LUA_EXPORT_ITEMS_NOT_SAME_INVENTORY')
-    items={}
-    for name in sorted(names):
-        row=report['items'][name]
-        if not isinstance(row,dict) or row.get('resource')!=name:
-            raise Hold('R3_LUA_EXPORT_WRONG_RESOURCE')
-        itm=row.get('item')
-        prov=row.get('provenance')
-        if not isinstance(itm,dict) or itm.get('schema')!='BGXAI_ITM_RAW_V1' or (
-            itm.get('rawOnly') is not True) or not isinstance(itm.get('abilities'),list) or (
-            len(itm['abilities'])>64) or not isinstance(prov,dict) or (
-            prov.get('origin') not in ('CURRENT_GAME_BIFF','CURRENT_GAME_OVERRIDE')):
-            raise Hold('R3_LUA_EXPORT_BAD_NATIVE_ITM')
-        # R3 already parsed and bounds-checked every ability from real ITM
-        # bytes. Keep its source-only raw fields; do not synthesize stats.
-        abilities=[]
-        for i,a in enumerate(itm['abilities']):
-            if not isinstance(a,dict) or a.get('abilityIndex')!=i or not (
-                type(a.get('attackTypeRaw')) is int and 0<=a['attackTypeRaw']<=4):
-                raise Hold('R3_LUA_EXPORT_BAD_ABILITY')
-            abilities.append({k:a.get(k) for k in (
-                'abilityIndex','attackTypeRaw','locationRaw','rangeRaw',
-                'launcherRequiredRaw','speedRaw','thac0BonusRaw',
-                'diceCountRaw','diceSidesRaw','damageBonusRaw',
-                'baseDamageMeanBeforeEffects','damageTypeRaw',
-                'abilityFlagsRaw','effects','effectiveDamageAndAPRVerified')})
-        items[name]={
-            'resource':name,'provenance':{
-                'origin':prov['origin'],
-                'sha256':prov.get('sha256')},
-            'item':{k:(abilities if k=='abilities' else itm.get(k)) for k in (
-                'schema','rawOnly','itemTypeRaw','itemFlagsRaw',
-                'twoHandedFlagRaw','proficiencyIdRaw','enchantmentRaw',
-                'minStrengthRaw','maxStackRaw','abilities',
-                'equippedEffects','activeBuffsVerified',
-                'engineEffectsAppliedVerified','characterCanEquipVerified',
-                'targetImmunityVerified')}}
+    items=_r3_compact_items(report,names)
     catalog={
         'schema':'BGXAI_R3_R37_LUA_STATIC_CATALOG_V1',
         'inventoryLinkSchema':'BGXAI_R3_R37_TOPLEVEL_ITM_JOIN_SOURCE_ONLY_V1',
@@ -529,46 +578,8 @@ def export_r37_lua_cache(report:dict) -> str:
         'manualAndEpsActionBoundaryProven':False,
         'ordersSent':0,
     }
-    count=[0]
-    def lua(v,depth=0):
-        count[0]+=1
-        if count[0]>100000 or depth>16:
-            raise Hold('R3_LUA_EXPORT_COMPLEXITY_EXCEEDED')
-        if v is None: return 'nil'
-        if v is True:return 'true'
-        if v is False:return 'false'
-        if type(v) is int:
-            if abs(v)>9007199254740991:
-                raise Hold('R3_LUA_EXPORT_INTEGER_OUTSIDE_SAFE_RANGE')
-            return str(v)
-        if type(v) is float:
-            if not math.isfinite(v) or abs(v)>1e12:
-                raise Hold('R3_LUA_EXPORT_FLOAT_UNSAFE')
-            return repr(v)
-        if type(v) is str:
-            if any(ord(c)<32 or ord(c)>126 for c in v):
-                raise Hold('R3_LUA_EXPORT_NONASCII_OR_CONTROL_CHAR')
-            return json.dumps(v,ensure_ascii=True)
-        if isinstance(v,(list,tuple)):
-            return '{'+','.join(lua(x,depth+1) for x in v)+'}'
-        if isinstance(v,dict):
-            fields=[]
-            for key in sorted(v,key=lambda x:(str(type(x)),str(x))):
-                if type(key) is int and 0<=key<=65535:
-                    label=f'[{key}]'
-                elif type(key) is str:
-                    label='['+lua(key,depth+1)+']'
-                else:
-                    raise Hold('R3_LUA_EXPORT_BAD_TABLE_KEY')
-                if v[key] is not None:fields.append(label+'='+lua(v[key],depth+1))
-            return '{'+','.join(fields)+'}'
-        raise Hold('R3_LUA_EXPORT_VALUE_TYPE_UNSUPPORTED')
-    result='-- BGXAI SOURCE-ONLY STAGED DATA. NOT AN ENGINE ARMER. NO LUA HOOKS.\n'
-    result+='-- Must be rejoined to SAME live R37/EEex117 inventory.\n'
-    result+='return '+lua(catalog)+'\n'
-    if len(result)>1000000:
-        raise Hold('R3_LUA_EXPORT_CATALOG_TOO_LARGE')
-    return result
+    return _r3_lua_source(catalog,'Must be rejoined to SAME live R37/EEex117 inventory.')
+
 
 def native_run(root:Path=GAME):
     if os.name!='nt' or os.path.normcase(os.path.abspath(root))!=os.path.normcase(os.path.abspath(GAME)):
