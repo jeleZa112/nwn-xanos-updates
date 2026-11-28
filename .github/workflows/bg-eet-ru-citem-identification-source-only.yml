@@ -44,5 +44,7 @@ jobs:
           --compare-release-v120
           b6c7c98804360cb46531db75ab9608e378fd403d60c29c0e29946a60a334276a
           ba84c42fb4b045a585ed5cfd38c1dc487bb9d7052d11d5d4fec198f1155b2db7
+      - name: Pinned v1.2.0-era generated CItem m_flags and synchronous Lua callback proof (READ-ONLY)
+        run: python bg-eet-ru/weapon-identity/V107_X64_BINDING_SOURCE_AUDIT_RO.py --audit-release-v120-source
       - name: Guard existing onefile remains untouched and selftest passes
         run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
