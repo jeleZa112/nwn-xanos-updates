@@ -15,11 +15,11 @@ class V160ReleaseContract(unittest.TestCase):
         cmd = BASE / 'onefile/BG_EET_RU_UPDATE.cmd'
         release = json.loads((BASE / 'onefile/release.json').read_text('utf-8'))
         blob = cmd.read_bytes()
-        self.assertEqual(release['version'], 165)
+        self.assertEqual(release['version'], 166)
         self.assertEqual(release['sha256'], sha(cmd))
         self.assertLessEqual(len(blob), 750000)
         self.assertEqual(len(blob), 747154)
-        self.assertIn(b'SELF_VERSION = 165', blob)
+        self.assertIn(b'SELF_VERSION = 166', blob)
         self.assertIs(release['default_game_writes_allowed'], False)
         self.assertIs(release['game_writes_allowed'], False)
         self.assertIs(release['typed_game_write_mode_available'], True)
