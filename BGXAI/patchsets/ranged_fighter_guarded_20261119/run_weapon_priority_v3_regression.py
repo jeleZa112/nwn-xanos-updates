@@ -45,6 +45,23 @@ def _static() -> None:
                         r'\bSetGlobal\s*\(', r'\bEEex_Action_Queue',
                         r'\bio\.open\s*\(', r'\bos\.execute\s*\('):
             assert not re.search(pattern, active), (name, pattern)
+    # Reuse the SAME safety audit for existing R37 / V4 inventory sources.
+    # No second EEex action listener, item move, engine command, or hidden I/O.
+    for relative in (
+        'BGXAI/BUILD/WEAPON_INVENTORY_CORRECTED_V3_20261126/BGXAI_BACKPACK16_R37_RO_V3.lua',
+        'BGXAI/BUILD/WEAPON_INVENTORY_PRIORITY_V4_20261126/BGXAI_BACKPACK16_PRIORITY_RO_V4.lua',
+    ):
+        source = (ROOT.parents[2] / relative).read_text(encoding='utf-8')
+        active = '\\n'.join(line.split('--', 1)[0] for line in source.splitlines())
+        for pattern in (
+            r'\\bSelectWeaponAbility\\s*\\(', r'\\bXEquipItem\\s*\\(',
+            r'\\bAttack\\s*\\(', r'\\bClearActions\\s*\\(',
+            r'\\bActionOverride\\s*\\(', r'\\bSetGlobal\\s*\\(',
+            r'\\bEEex_Action_AddSpriteStartedActionListener\\s*\\(',
+            r'\\bEEex_LuaTrigger\\s*\\(',
+            r'\\bio\\.open\\s*\\(', r'\\bos\\.execute\\s*\\(',
+        ):
+            assert not re.search(pattern, active), (relative, pattern)
     # Preserve original BCS consumer and verify restricted native fallback source.
     # This is NOT a WeiDU compile or installation approval.
     baf = subprocess.run([sys.executable, str(ROOT / 'test_weapon_native_recovery_baf_v1.py')],
@@ -93,7 +110,9 @@ def _lua(lua: str) -> None:
         passed = 0
         for path, marker in suites:
             run_cwd = ROOT.parents[2] if path.name == 'test_backpack16_priority_v4.lua' else ROOT
-            result = subprocess.run(([lua, '--luaonly'] if Path(lua).name.lower().startswith('luatex') else [lua]) + [str(path)], cwd=run_cwd, text=True,
+            lua_name = Path(lua).name.lower()
+            needs_luaonly = lua_name.startswith(('luatex', 'luahbtex', 'lualatex'))
+            result = subprocess.run(([lua, '--luaonly'] if needs_luaonly else [lua]) + [str(path)], cwd=run_cwd, text=True,
                                     capture_output=True, check=False, timeout=20)
             if result.returncode != 0 or marker not in result.stdout:
                 print(result.stdout, file=sys.stderr)
@@ -118,7 +137,7 @@ def main() -> int:
     args = parser.parse_args()
     _static()
     if not args.static_only:
-        selected = args.lua or next((c for c in ('lua5.3','lua5.4','lua','luatex') if shutil.which(c)), None)
+        selected = args.lua or next((c for c in ('lua5.3','lua5.4','lua','luahbtex','luatex') if shutil.which(c)), None)
         if not selected:
             raise RuntimeError('Lua 5.3/5.4 or LuaTeX required for native regression')
         args.lua = selected
