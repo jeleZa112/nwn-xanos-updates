@@ -1070,7 +1070,7 @@
       "observed_failure": "Full GAM parsing and R3 native audit completed without an unhandled exception; module180 build_source rejected audit coverage. Its old contract requires no missing ITM or linked spells and exact item coverage for ALL saved-party inventory entries. The specific actual resource(s) causing the incomplete coverage remain UNKNOWN; never claim named missing files.",
       "cause": "CONFIRMED SOURCE DESIGN GAP: older module180's all-or-nothing catalog build discards every otherwise parsed R3 item when ANY saved inventory ITM or opcode146 linked SPL cannot be read/parsed. The exact root cause of the user's incomplete audit is UNKNOWN because the public console does not identify which resources were missing.",
       "do_not_repeat": "Do not call original pin module180 again, redo original GAM resref fix, re-run R47 witness, reset cache, install/rollback WeiDU/EPS, invent absent ITMs/SPLs, replace the same CMD, or request previously analyzed BALDUR(1).gam.",
-      "safe_action": "Reuse existing R3 audit returned items/missingItemsOrLinkedSpells/linkedSpells; require exact status/provenance and missing-record consistency. Stage a passive partial catalogue with only verified ITM plus present linked SPL, quarantine absent ITM and opcode146-linked items with missing SPL, keep complete GAM inventory as source-only raw slots and no native actor claim, all dispatch/equip false. If no safe item remains, retain HOLD. Tests Windows+Ubuntu; exact new immutable module180 SHA in existing V2 manifest. A subsequent single changed readonly menu180 run may verify current saved source, not gameplay.",
+      "safe_action": "Reuse existing R3 audit returned items/missingItemsOrLinkedSpells/linkedSpells; require exact status/provenance and missing-record consistency. Stage a passive partial catalogue with only verified ITM plus present linked SPL, quarantine absent ITM and opcode146-linked items with missing SPL, keep complete GAM inventory as source-only raw slots and no native actor claim, all dispatch/equip false. If no safe item remains, retain HOLD. Tests Windows+Ubuntu PASS run 46158535358, 17/17 in each OS; exact new immutable module180 SHA in existing V2 manifest. A subsequent single changed readonly menu180 run may verify current saved source, not gameplay.",
       "closure_condition": "Windows and Ubuntu CI PASS existing V2/source test contract incl missing ITM, broken linked SPL, forged audit rejection and zero-file mutation; changed pinned module180 returns FULL or PARTIAL catalog on genuine user Windows save with no game/party actions. Missing resource causality needs actual evidence; general autoequip remains uninstalled.",
       "evidence": [
         "/BGXAI/UPDATER_V2/BGXAI_MODULE180_SAVED_PARTY_CATALOG_RO.py",
@@ -1086,9 +1086,9 @@
         "pinnedModuleSha256": "30169724747e632fa2bf59ac05ed916bfac9c71ef0faf85376dd7f66ed868520",
         "moduleSourceBytes": 19854,
         "moduleManifestCommit": "c01ea94c079229687d6db29f8f808d63ebd86b6d",
-        "nativeWindowsRuntime": "PENDING_NOT_PROVEN",
+        "nativeWindowsRuntime": "PENDING_NOT_PROVEN_AFTER_SOURCE_ONLY_CHANGE",
         "ciRun": 46158535358,
-        "ciStatus": "IN_PROGRESS_PENDING"
+        "ciStatus": "SUCCESS_WINDOWS_AND_UBUNTU_17_MODULE180_TESTS_EACH"
       }
     }
   ],
