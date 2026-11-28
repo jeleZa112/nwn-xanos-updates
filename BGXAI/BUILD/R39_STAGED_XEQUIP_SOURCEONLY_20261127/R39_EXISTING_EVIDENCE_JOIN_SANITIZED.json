@@ -3,8 +3,15 @@
   "actualBcsExecutionVerified": false,
   "armAuthorized": false,
   "classRaw3ClericObserved": true,
+  "classScriptAtHistoricalSave": "BDDEFAI",
+  "classScriptHistoricalGAMDateUTC": "2026-11-19T14:11:29Z",
+  "classScriptHistoricalGAMSHA256": "9e079459e2707b498a45cca01e17593a09fa3a87487a4bd7f9bafa0c61f898c3",
+  "classScriptHistoricalNotCurrentEvidence": true,
+  "classScriptHistoricalSourceReportSHA256": "8957fb9691304f2c60e7f0821f44fa42028ac847ddf0d6021ec6a6d3d597b1f2",
+  "classScriptResrefAtR38CaptureVerified": false,
   "currentEffectBlocksEquippingVerified": false,
   "dispatchAuthorized": false,
+  "executionOwnerCurrentBCSNameVerified": false,
   "gameIdleAtDispatchVerified": false,
   "gameModified": false,
   "itemClassKitRestrictionBitsVerified": false,
@@ -12,6 +19,20 @@
   "kitRaw16384Observed": true,
   "liveXEquipTransferVerified": false,
   "manualEpsActionOriginVerified": false,
+  "mappedCurrentScriptLevelObservations": [
+    {
+      "events": 5,
+      "internalIndex": -1,
+      "scrlev": null,
+      "reason": "NO_VALID_ACTIVE_INDEX"
+    },
+    {
+      "events": 5,
+      "internalIndex": 3,
+      "scrlev": 4,
+      "scriptLevel": "CLASS"
+    }
+  ],
   "minimumStrengthFromItem": 5,
   "observedPartyIndex": 1,
   "observedStrengthRange": [
@@ -38,6 +59,7 @@
   "sameJaganRuntimeActorAcrossObservations": true,
   "sameSessionInstalledItemResourceVerified": false,
   "schema": "BGXAI_R39_R38_R3_EXISTING_EVIDENCE_JOIN_V1",
+  "scriptRaw3EqualsSCRLEV3": false,
   "scriptSlotOwnershipVerified": false,
   "sourceLogBytes": 702973,
   "sourceLogSha256": "2846ba45879d37a62f38d0e714d1dbdb0797458c263317d76f9e27dda9d04767",
@@ -45,5 +67,8 @@
   "sourceResref": "STAF01",
   "status": "PASS_OBSERVED_STRENGTH_AND_PHYSICAL_SLOTS_USABILITY_UNPROVEN",
   "targetSlot35EmptyInAllJaganEvents": true,
-  "unclassifiedRawActionSourceAvailableEvents": 0
+  "unclassifiedRawActionSourceAvailableEvents": 0,
+  "upstreamEEexAIBaseV117SourceGitBlob": "63b80e8f1479e0f7b201dc050b6058016feabef6",
+  "upstreamEEexDebugV117SourceGitBlob": "ec8f6d1735d1e2e27fc2bae6dca26fd89c22eef5",
+  "upstreamEngineScriptIndexToSCRLEVFormulaVerified": true
 }
