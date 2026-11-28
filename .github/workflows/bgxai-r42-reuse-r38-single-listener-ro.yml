@@ -87,6 +87,9 @@ jobs:
       - name: Test R46 always-false BDDEFAI BCS witness source (NO GAME)
         run: python -m unittest -v BGXAI/BUILD/R46_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/test_r46_inert_bcs_witness_source_only.py
 
+      - name: Test R46 exact native WeiDU TEMP compile reused existing V3 backend with mocks (NO GAME)
+        run: python -m unittest -v BGXAI/BUILD/R46_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/test_r46_native_ro_reuse_existing_backend.py
+
       - name: Test source-only R45 numerically identity-bound R39/R41 armer (NO GAME)
         run: python -m unittest -v BGXAI/BUILD/R45_R41_ARMER_NUMERIC_ID_SOURCEONLY_20261128/test_r45_compose_r41_numeric_wrapper_source_only.py
 
