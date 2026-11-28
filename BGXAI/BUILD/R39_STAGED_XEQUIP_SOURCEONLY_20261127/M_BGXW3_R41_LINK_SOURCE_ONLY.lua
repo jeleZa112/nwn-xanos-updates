@@ -455,8 +455,16 @@ function M.prepare(ports,installerApproval)
   started=true
   M.registered=true
  end
+ -- R40 checks pcall(success), not the callback API's false return.
+ -- Reject explicit listener refusal here; nil (void-success) is allowed.
+ local function addDestroyedChecked(fn)
+  local ok,registrationStatus=pcall(ports.addDestroyed,fn)
+  if not ok or registrationStatus==false then
+   error('HOLD_DESTROYED_LISTENER_REJECTED')
+  end
+ end
  local function addLoadedResetFirst(fn)
-  ports.addLoaded(function(sprite)
+  local ok,registrationStatus=pcall(ports.addLoaded,function(sprite)
    -- Existing R40 is ALWAYS invoked before any R39 preparation or gate bind.
    fn(sprite)
    local s=Reset.getStatus()
@@ -467,11 +475,14 @@ function M.prepare(ports,installerApproval)
     bindAfterLoaded()
    end
   end)
+  if not ok or registrationStatus==false then
+   error('HOLD_LOADED_LISTENER_REJECTED')
+  end
  end
  -- R40 lifecycle callbacks are installed now. R39 keyboard and global gate
  -- are intentionally deferred until AFTER a confirmed Jagan load+reset.
  local rr=Reset.register({preGameStartupVerified=ports.preGameStartupVerified,
-  addDestroyed=ports.addDestroyed,addLoaded=addLoadedResetFirst,
+  addDestroyed=addDestroyedChecked,addLoaded=addLoadedResetFirst,
   getLocal=ports.getLocal,setLocal=ports.setLocal},R40_APPROVAL)
  if rr.status~='RESET_ONLY_LIFECYCLE_HOOKS_REGISTERED_NO_ARM' then
   return ret('HOLD_R40_REGISTER_FAILED') end
