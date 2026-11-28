@@ -24,7 +24,7 @@ BAF=(r'''// BGXAI R46 SOURCE ONLY, NOT INSTALLED; inert BCS-execution witness.
 IF
   InParty(Myself)
   InPartySlot(Myself,1)
-  EEex_LuaTrigger("return BGXAI_R46_BDDEFAI_Witness()")
+  EEex_LuaTrigger("pcall(BGXAI_R46_BDDEFAI_Witness); return false")
 THEN
   RESPONSE #100
     Continue()
