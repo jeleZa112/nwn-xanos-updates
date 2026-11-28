@@ -1109,6 +1109,41 @@
           "sourceReportOutsideEET": true
         }
       }
+    },
+    {
+      "error_id": "BGXAI_V2_PINNED_LEGACY179_R48_GUARDED_ROUTING_GAP_20261128",
+      "project": "BGXAI",
+      "type": "CONFIRMED_MISSING_DELIVERY_ROUTE",
+      "status": "MITIGATED_SOURCE_ONLY",
+      "discovered_at": "2026-11-28",
+      "trigger": "User's single original V2 CMD hub pinned 40cd303fdcf9 delegates legacy 179 to immutable f282 source which has no R48 menu 23/24/25. Later GitHub source R48 and mocks had anticipated 179->23 but are not present in the installed pinned legacy.",
+      "observed_failure": "Existing R48 native one-shot guarded installer and rollback code already existed and was CI-tested but was not reachable from installed V2 CMD. Source-only menu180 did not install or expose R48.",
+      "cause": "Later R48 source changes postdate immutable f282 legacy hub pin; incorrect to assume GitHub HEAD menu179 tests affect user's pinned old onefile runtime.",
+      "do_not_repeat": "Do not edit original CMD, change immutable f282 legacy, add a second updater, rewrite native R48 guard/composer, rerun module180 or R47 passive witness, or claim the first actual STAF01 move already happened.",
+      "safe_action": "Use existing V2 runtime modular manifest (up to 100 guarded modules) to add 181 original R48 real one-shot and 182 independent last-only rollback. Thin Python adapter only calls old R48 native original, no second installer; hub exact typed consent before file staging, all 18 upstream files pinned immutable SHA. Preserve old single-module hub selftest through a generated original 180 fixture in native CI, and independently validate FULL index asset pins. Require user exact typed consent for real WeiDU installation; no automatic retry.",
+      "closure_condition": "SOURCE/CI MITIGATED: existing modular V2 runtime 181/182 published; Windows+Ubuntu native CI PASS incl all 18 source SHA, guard and rollback mocked. USER LIVE menu 181 actual WeiDU install and XEquipItem runtime remain pending, so do not mark installed/live.",
+      "evidence": [
+        "BGXAI/UPDATER_V2/BGXAI_MODULE181_182_R48_ONE_SHOT_GUARDED.py",
+        "BGXAI/UPDATER_V2/MODULES_V1.json",
+        "BGXAI/BUILD/R48_ONE_REAL_STAF01_EQUIP_AFTER_R47_20261128/BGXAI_R48_LAST158_TO159_ONE_ITEM_GUARDED.py",
+        "BGXAI/UPDATER_V2/test_module181_182_r48_existing_guarded.py",
+        "BGXAI/UPDATER_V2/test_updater_v2_static.py",
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46159440300"
+      ],
+      "enforcement": "No game changes until host prompts exact token, native R48 last-only preflight/proof, external backup. Even successful install only arms one Jagan STAF01 specific XEquip; not general AI weapon auto-equip, no known manual/EPS round boundary for arbitrary combat.",
+      "metadata": {
+        "module181": "INSTALL_BGXAI_R48_ONE_STAF01_FROM_BACKPACK_TO_WEAPON_AFTER_R47",
+        "module182": "ROLLBACK_BGXAI_R48_RESTORE_R47_ONLY",
+        "immutableSourceCommit": "7525de95f5e543763243d72c6d0e23dadc68ce1d",
+        "pinnedManifestCommit": "d533c0e5d0a1882b240bbed6c463d2892af9c968",
+        "sourceSHA256": "f75ad56e5d87a53cb015d85f549c7551f83a20c4eb1e89327684310fa4eeb7cf",
+        "assetCount": 18,
+        "ci": "PASS_UBUNTU_AND_NATIVE_WINDOWS_46159440300",
+        "userGameInstalled": false,
+        "xEquipInGameObserved": false,
+        "oldCmdUnchanged": true,
+        "autoInstall": false
+      }
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
