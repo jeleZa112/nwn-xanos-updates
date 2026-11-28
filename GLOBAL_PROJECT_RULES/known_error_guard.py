@@ -21,6 +21,57 @@ import zipfile
 KNOWN_SCHEMA = "GLOBAL_KNOWN_ERROR_GATES_V1"
 
 
+def validate_universal_registry(policy: dict) -> None:
+    """Schema-only cross-project audit; NEVER authorizes a task or certifies live behavior.
+
+    This permits manual/non-updater projects to share the same registry without
+    pretending that the voice-only check_plan() can approve their operations.
+    """
+    procedure = policy.get("procedure")
+    if not isinstance(procedure, dict) or procedure.get("applies_even_without_updater") is not True:
+        raise ValueError("universal process missing or incorrectly requires updater")
+    entries = policy.get("project_error_register")
+    if not isinstance(entries, list) or not entries:
+        raise ValueError("universal project error register missing")
+    allowed_types = set(procedure.get("entry_types", []))
+    allowed_statuses = set(procedure.get("entry_statuses", []))
+    if not allowed_types or not allowed_statuses:
+        raise ValueError("registry type/status vocabulary missing")
+    already = set()
+    for legacy in policy.get("known_errors", []):
+        if not isinstance(legacy, dict) or not isinstance(legacy.get("error_id"), str):
+            raise ValueError("malformed legacy error ID")
+        if legacy["error_id"] in already:
+            raise ValueError("duplicate legacy error ID: " + legacy["error_id"])
+        already.add(legacy["error_id"])
+    required = ("error_id", "project", "type", "status", "discovered_at", "trigger",
+                "observed_failure", "cause", "do_not_repeat", "safe_action",
+                "closure_condition", "evidence", "enforcement")
+    for pos, entry in enumerate(entries):
+        if not isinstance(entry, dict):
+            raise ValueError(f"invalid universal error record at {pos}")
+        if any(not entry.get(k) for k in required):
+            raise ValueError("incomplete universal error record at " + str(pos))
+        identifier = entry["error_id"]
+        if not isinstance(identifier, str) or not identifier.replace("_", "").isalnum():
+            raise ValueError("invalid stable error ID")
+        if identifier in already:
+            raise ValueError("duplicate error ID: " + identifier)
+        already.add(identifier)
+        if entry["type"] not in allowed_types or entry["status"] not in allowed_statuses:
+            raise ValueError("unknown error class/status for " + identifier)
+        if not isinstance(entry["evidence"], list) or not entry["evidence"] or any(
+            not isinstance(source, str) or not (source.startswith("/") or source.startswith("https://"))
+            for source in entry["evidence"]
+        ):
+            raise ValueError("bad evidence link for " + identifier)
+    # A registry used by chat/document work must include at least one source-backed
+    # project without an updater, not only voice-specific technical checks.
+    no_updater = {"MARKETPLACE_NSK", "IP_GONCHAROV_DOCUMENTS"}
+    if not no_updater.intersection(x["project"] for x in entries):
+        raise ValueError("no evidence-backed non-updater coverage")
+
+
 def load_policy(path: Path) -> dict:
     policy = json.loads(path.read_text(encoding="utf-8"))
     if policy.get("schema") != KNOWN_SCHEMA:
@@ -31,6 +82,7 @@ def load_policy(path: Path) -> dict:
         raise ValueError("approved audio decisions missing/duplicated")
     if not rules["BGVOICE_MINSC57"].get("preserve_authentic_shout"):
         raise ValueError("MINSC57 authentic shout protection missing")
+    validate_universal_registry(policy)
     return policy
 
 
@@ -119,6 +171,33 @@ class RegressionTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.policy = load_policy(Path(__file__).with_name("KNOWN_ERROR_GATES_V1.json"))
+
+    def test_universal_registry_structured(self):
+        self.assertGreaterEqual(len(self.policy["project_error_register"]), 6)
+        self.assertIsNone(validate_universal_registry(self.policy))
+
+    def test_universal_registry_non_updater_projects(self):
+        categories = {e["project"] for e in self.policy["project_error_register"]}
+        self.assertIn("MARKETPLACE_NSK", categories)
+        self.assertIn("IP_GONCHAROV_DOCUMENTS", categories)
+
+    def test_duplicate_universal_ids_blocked(self):
+        import copy
+        bad = copy.deepcopy(self.policy)
+        bad["project_error_register"][1]["error_id"] = bad["project_error_register"][0]["error_id"]
+        with self.assertRaisesRegex(ValueError, "duplicate error ID"):
+            validate_universal_registry(bad)
+
+    def test_universal_registry_missing_evidence_blocked(self):
+        import copy
+        bad = copy.deepcopy(self.policy)
+        bad["project_error_register"][0]["evidence"] = []
+        with self.assertRaisesRegex(ValueError, "incomplete universal error record"):
+            validate_universal_registry(bad)
+
+    def test_registry_does_not_authorize_uncovered_artifacts(self):
+        # The existing narrow BGVOICE checker must not silently PASS another project.
+        self.assertIn("UNKNOWN_PROJECT_NOT_VERIFIED", check_plan({"project": "MARKETPLACE_NSK", "action": "release"}, self.policy))
 
     def test_bad_ps51_encoding(self):
         self.assertIn("BGVOICE_PS51_UNICODE_NO_BOM:x.ps1", lint_ps1("x.ps1", "Ошибка 'кавычки'".encode("utf-8")))
