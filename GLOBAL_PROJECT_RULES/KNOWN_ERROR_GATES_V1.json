@@ -260,6 +260,26 @@
         "/IP_GONCHAROV_DOCUMENTS/00_RULES/Манифест_2026.json"
       ],
       "enforcement": "assistant_artifact_preflight_no_updater"
+    },
+    {
+      "error_id": "BGXAI_R39_V3_PRIOR_WORK_GATE_BYPASS_20261128",
+      "project": "BGXAI",
+      "type": "CONFIRMED_FAILURE",
+      "status": "OPEN",
+      "discovered_at": "2026-11-28",
+      "trigger": "Before creating a new armer, one-shot equip controller or inventory guard for R39, the assistant fails to compare capability behavior against existing V3/R37/R38/R40/081-085 and weapon priority modules",
+      "observed_failure": "A new 8800-byte M_BGXW3_EXPLICIT_USER_ARM_SOURCE_ONLY.lua was written and presented as a new one-shot equip authorization mechanism; only after user challenged the work did the next audit acknowledge V3 already implemented actor-local BGXW3ARM/TAG/TRY, XEquipItem once-only gating and actor/slot/action checks",
+      "cause": "PRIOR WORK GATE and ERROR-READ were documented but not enforced as a source-before-code dependency; existing CI checked source syntax/logic and SHA freshness, not semantic feature ancestry; 33/33 plus 11/11 offline tests did not detect duplicate capability",
+      "do_not_repeat": "Do not write another actor-local armer, XEquipItem one-shot controller, EEex observer, priority engine or keyboard gate as new code until exact existing V3/R37/R38/R40/081-085 equivalents and the essential missing behavior have been checked and documented",
+      "safe_action": "Reuse existing V3 LOCALS and BAF semantics; retain experimental R39 hotkey as source-only first-test proposal, not autonomous equip. Verify only missing live session+actor identity, actual EEex ports, before-BAF lifecycle order, ITM/kit usability, native R39 compile, guarded install with separately typed consent and one live equipment transfer",
+      "closure_condition": "For the next R39-related source change, a source-specific PRIOR_WORK_RECEIPT cites exact predecessor path, overlapping behavior and exclusive delta BEFORE implementation; CI checks attribution and existing sources are unchanged except minimal reviewed delta. Only installed EET evidence can close live functionality, and this policy fix alone does not close the recurring behavioral defect",
+      "evidence": [
+        "https://github.com/jeleZa112/nwn-xanos-updates/blob/bg-eet-ai/BGXAI/BUILD/WEAPON_XEQUIP_LOCAL_ARM_SOURCEONLY_V3_20261127/README_RU.md",
+        "https://github.com/jeleZa112/nwn-xanos-updates/blob/bg-eet-ai/BGXAI/BUILD/WEAPON_XEQUIP_LOCAL_ARM_SOURCEONLY_V3_20261127/BGXAI_XEQUIP_LOCAL_ARM_SOURCE_V3.py",
+        "https://github.com/jeleZa112/nwn-xanos-updates/blob/bg-eet-ai/BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/M_BGXW3_EXPLICIT_USER_ARM_SOURCE_ONLY.lua",
+        "https://github.com/jeleZa112/nwn-xanos-updates/blob/bg-eet-ai/BGXAI/CURRENT/000_READ_FIRST_LIVE_PROGRESS_R38.md"
+      ],
+      "enforcement": "source_provenance_and_existing_CI_guard_after_commit; assistant_prework_receipt_before_new_code; no runtime installation or live guarantee"
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed."
