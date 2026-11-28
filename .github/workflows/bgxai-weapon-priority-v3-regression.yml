@@ -5,6 +5,7 @@ on:
     paths:
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_PRIORITY_LUA_V3.lua'
       - 'BGXAI/BUILD/WEAPON_INVENTORY_PRIORITY_V4_20261126/BGXAI_BACKPACK16_PRIORITY_RO_V4.lua'
+      - 'BGXAI/BUILD/WEAPON_INVENTORY_CORRECTED_V3_20261126/BGXAI_BACKPACK16_R37_RO_V3.lua'
       - 'BGXAI/BUILD/WEAPON_INVENTORY_PRIORITY_V4_20261126/test_backpack16_priority_v4.lua'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_priority_lua_v3.lua'
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_EFFECTS_V4.lua'
@@ -47,7 +48,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install Lua 5.3, Lua 5.4 and LuaJIT (EEex-compatible source syntax)
         run: sudo apt-get update -qq && sudo apt-get install -y lua5.3 lua5.4 luajit
-      - name: Batch-test complete advisory and V3-to-V4 inventory model on three Lua runtimes (490 cases each)
+      - name: Batch-test complete advisory and V3-to-V4 inventory model on three Lua runtimes (498 cases each)
         shell: bash
         run: |
           result=0
