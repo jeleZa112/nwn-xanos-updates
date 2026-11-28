@@ -465,6 +465,18 @@
           "missing_delta": "Reuse existing R38 loader validation and console log format in a read-only R42 last=155 capture. Parse only the already-produced one-shot [BGXBCS] tag, require exact Jagan party index 1 and CLASS SCRLEV4, bounded resref and all no-arm/zero-order flags; save original log outside game. Do not register additional action listeners or infer actual BCS execution, EPS/manual origin.",
           "safety": "Never capture if installer not R42-last or game running; no auto retry. Literal log capture outside game, one-shot parser fails closed on malformed/ambiguous record.",
           "runtimeInstalled": false
+        },
+        {
+          "delta_id": "BGXAI_R42_DIAG_155_TO_156_GUARDED_UPGRADE_20261128",
+          "recorded_before_source_edit": true,
+          "target_source": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_DIAG_UPGRADE_GUARDED_SOURCE_ONLY.py",
+          "already_implemented": "R42 native guarded 154->155 typed install, exact WeiDU 155 last/status, R37/R38 snapshot code, external SHA backup, onefile pinned 179 and capture. R42 diagnostic source-only candidate exact 95965B SHA256 8abdc5b1d2088d8c8e2f53b6e4502de5dd0b05225fc6fcca52ebe165253e7ce6, Windows/Linux source CI 116/116 each. V3 old saved GAM/CRE already reads CLASS BDDEFAI in 19 Nov 2026 and is NOT live proof. Prior one real R42 callback already ran, HOLD_CLASS_BCS_NOT_READABLE.",
+          "evidence": "BGXAI/CURRENT/00_RESUME_CURRENT.md; upload BGXAI_R42_CLASS_BCS_20261128T084201129348Z.log; CI 46127992980; BGXAI_R42_GUARDED_FROM_R38.py original unmodified; R42 reason composer unchanged",
+          "exclusive_missing_delta": "A SOURCE_ONLY guarded last-only WeiDU successor that replaces ONLY 155th installed R42 one-listener Lua with EXACT prebuilt 95965B read-only reason-enabled candidate as a 156th last component. Reuse original R42 last/proof/status, R37/R38 unrelated-file snapshots and source hashes; original R42/onefile/PS pin untouched during source development. Add protected external SHA backup, typed-install and typed-last-only rollback, absolute local install path, no auto retry, no XEquip/orders/extra listener. Later integrate as another option inside same BGXAI_UPDATE.cmd menu 179, never a new updater, only after CI and separately typed user approval. Existing 179->4 is not an upgrade and must NEVER be repeated.",
+          "safety": "Preflight must require original R42 155-last and active SHA d14bf5.., exact installed PROOF/typedApproved, no running game/loader or WeiDU. Snapshot all watched unrelated files + R42 proof and exact candidate. Fail-closed on drift and after WeiDU attempt don't auto retry/rollback; rollback only with R43 156-last, proof, external backup exact plus restoration of original R42 155-last SHA and watched files. Source-only test uses fake EET fixtures, never real game. No silent native install or action on '+'; the '+' permits safe offline development only.",
+          "status": "PREWORK_REVIEWED_BEFORE_SOURCE_ONLY_GUARD",
+          "game_modified": false,
+          "install_approved": false
         }
       ]
     },
