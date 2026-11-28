@@ -3,7 +3,7 @@
 
 No new native backend, installer, executable or alternate updater. This module
 only reuses the known V3 helper's process / compiler / backend proof and pins
-NEW 2303-byte R39 BAF.  Native engine execution still requires the installed
+the original 2303-byte R39 BAF plus optional 2407-byte EEex-session variant.  Native engine execution still requires the installed
 Windows EET; never claim it occurred from local Linux tests.
 """
 from __future__ import annotations
@@ -20,6 +20,9 @@ SCHEMA='BGXAI_R39_REUSE_MENU176_NATIVE_READONLY_V1'
 BAF_NAME='BGXAI_R39_JAGAN_STAF01_SOURCE_ONLY.baf'
 BAF_SHA='3b84d38a9df069e3dedfdaf8de6cbf6958a7252d43490fa64b829375cf7cd03d'
 BAF_LENGTH=2303
+SESSION_BAF_NAME='BGXAI_R39_JAGAN_STAF01_EEEX_SESSION_SOURCE_ONLY.baf'
+SESSION_BAF_SHA='6d39e72684548c7b1b900e80f1bdb4271044e9889364db958f52b0532d1b73f0'
+SESSION_BAF_LENGTH=2407
 # Exact already native-tested 176 wrapper; do not modify it or copy backend code.
 V3_HELPER_NAME='BGXAI_XEQUIP_V3_NATIVE_COMPILE_RO.py'
 V3_HELPER_SHA='b4a0789c568879a179e21cf50391afd999861e85f832f587aceb07cf816e055e'
@@ -36,11 +39,19 @@ class Hold(ValueError):
 def digest(raw:bytes):
     return hashlib.sha256(raw).hexdigest()
 
+def source_spec(path:Path):
+    if path.name==BAF_NAME:
+        return BAF_SHA,BAF_LENGTH,False
+    if path.name==SESSION_BAF_NAME:
+        return SESSION_BAF_SHA,SESSION_BAF_LENGTH,True
+    raise Hold('HOLD_EXACT_R39_BAF_REQUIRED')
+
 def exact_source(path:Path)->bytes:
-    if path.name!=BAF_NAME or not path.is_file() or path.is_symlink():
+    sha,size,session=source_spec(path)
+    if not path.is_file() or path.is_symlink():
         raise Hold('HOLD_EXACT_R39_BAF_REQUIRED')
     raw=path.read_bytes()
-    if len(raw)!=BAF_LENGTH or digest(raw)!=BAF_SHA:
+    if len(raw)!=size or digest(raw)!=sha:
         raise Hold('HOLD_R39_BAF_BYTES_OR_SHA')
     # Byte pin is authoritative, but these guards are useful to audit why.
     text=raw.decode('ascii')
@@ -50,6 +61,9 @@ def exact_source(path:Path)->bytes:
         if gate not in text: raise Hold('HOLD_R39_REQUIRED_TRIGGER_OR_ACTION')
     if text.count('XEquipItem(')!=1 or text.count('Continue()')!=2:
         raise Hold('HOLD_R39_STAGE_STRUCTURE')
+    trigger='EEex_LuaTrigger("return BGXW3_EEexSessionGate()")'
+    if text.count(trigger)!=(2 if session else 0) or text.count('EEex_LuaTrigger(')!=(2 if session else 0):
+        raise Hold('HOLD_R39_EXACT_SESSION_TRIGGER_GUARD')
     return raw
 
 def exact_v3_helper(path:Path):
@@ -132,6 +146,7 @@ def static_item_preflight(game:Path):
 def source_only(source:Path):
     raw=exact_source(source)
     return dict(schema=SCHEMA,status='EXACT_R39_BAF_PIN_PASS_NO_NATIVE',
+        bafVariant=('EEEX_SESSION_SOURCE_ONLY' if source.name==SESSION_BAF_NAME else 'LEGACY_SOURCE_ONLY'),
         sourceSha256=digest(raw),sourceBytes=len(raw),
         reusesAlreadyNativeTestedV3Backend=True,nativeWeiDUCompileVerified=False,
         gameModified=False,installed=False,ordersSent=0,
@@ -139,6 +154,7 @@ def source_only(source:Path):
 
 def native_readonly(game:Path, source:Path, v3_helper:Path, backend_path:Path):
     raw=exact_source(source)
+    source_sha,source_length,session=source_spec(source)
     v3=exact_v3_helper(v3_helper)
     v3.close_game_proof()
     if game.is_symlink() or not game.is_dir():
@@ -173,7 +189,7 @@ def native_readonly(game:Path, source:Path, v3_helper:Path, backend_path:Path):
             raise Hold('HOLD_R39_TEMP_OVERLAPS_GAME')
         candidate=tmp/'BGXW39.baf'  # 7-character resource name, temp only.
         candidate.write_bytes(raw)
-        if digest(candidate.read_bytes())!=BAF_SHA:
+        if digest(candidate.read_bytes())!=source_sha:
             raise Hold('HOLD_R39_TEMP_BAF_DRIFT')
         orig_check=backend.source_check
         orig_name=backend.TEMP_SOURCE_NAME
@@ -183,9 +199,9 @@ def native_readonly(game:Path, source:Path, v3_helper:Path, backend_path:Path):
                 if verified!=candidate or verified==game_root or game_root in verified.parents:
                     raise backend.Hold('HOLD_R39_UNTRUSTED_SOURCE_LOCATION')
                 content=backend.checked_file(Path(path),required=True)
-                if content!=raw or digest(content)!=BAF_SHA:
+                if content!=raw or digest(content)!=source_sha:
                     raise backend.Hold('HOLD_R39_SOURCE_CHANGED_DURING_COMPILE')
-                return {'sha256':BAF_SHA,'size':BAF_LENGTH,'blocks':3,'actionCount':14}
+                return {'sha256':source_sha,'size':source_length,'blocks':3,'actionCount':14}
             backend.source_check=exact_check
             backend.TEMP_SOURCE_NAME=candidate.name
             result=backend.compile_readonly(game,candidate,compiler)
@@ -201,7 +217,10 @@ def native_readonly(game:Path, source:Path, v3_helper:Path, backend_path:Path):
         status=('R39_NATIVE_EET_TEMP_COMPILE_PASS_NO_INSTALL' if good and item_ok else
                 'R39_NATIVE_EET_TEMP_COMPILE_PASS_ITEM_HOLD_NO_INSTALL' if good and not item_ok else
                 'HOLD_R39_NATIVE_EET_COMPILER'),
-        sourceSha256=BAF_SHA,sourceBytes=BAF_LENGTH,
+        sourceSha256=source_sha,sourceBytes=source_length,
+        bafVariant=('EEEX_SESSION_SOURCE_ONLY' if session else 'LEGACY_SOURCE_ONLY'),
+        eeexLuaTriggerCompiledInNativeSource=bool(good and session),
+        eeexLuaTriggerBoundAtRuntime=False,volatileSessionGateRuntimeVerified=False,
         nativeWeiDUCompileVerified=good,
         compiledBcsSha256=result.get('compiledSha256') if good else None,
         compilerSha256=result.get('compilerSha256'),
