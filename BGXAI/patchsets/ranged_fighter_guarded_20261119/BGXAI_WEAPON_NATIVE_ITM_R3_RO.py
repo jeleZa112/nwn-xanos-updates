@@ -344,6 +344,94 @@ def audit(source, names, snapshot=None):
       'manualAndEPSQueueVerified':False,'gameModified':False,
       'executable':False,'weaponSwitchAuthorized':False,'dispatchAuthorized':False}
 
+def audit_r37_top_level(source, capture:dict):
+    """Reuse R3's EXISTING ITM/2DA/BIF parser for R37's 39-slot raw map.
+
+    It is not an EEex callback, native observer, or live actor APR adapter.
+    Lua JSON numeric slot keys become strings; reject ambiguous aliases.
+    """
+    if not isinstance(capture,dict) or (
+        capture.get('schema')!='BGXAI_BACKPACK16_R37_DOUBLE_READ_RO_V3' or
+        capture.get('status')!='TOPLEVEL0_38_AND_R37_STABLE_ADVICE_ONLY' or
+        capture.get('sourceOnly') is not True or
+        capture.get('readOnly') is not True or
+        capture.get('rawInventoryDoubleRead') is not True or
+        capture.get('r37QuickQuiverOffhandMatched') is not True or
+        capture.get('rawSnapshotDriftObserved') is not False or
+        capture.get('nativeInstanceIdentityVerified') is not False or
+        capture.get('alternativeAPRVerified') is not False or
+        capture.get('dispatchAuthorized') is not False or
+        capture.get('inventoryMoveAuthorized') is not False or
+        capture.get('topLevelSlotsCount')!=39):
+        raise Hold('R37_TOPLEVEL_CAPTURE_UNTRUSTED_OR_INCOMPLETE')
+    actor=capture.get('actorId')
+    if type(actor) is not int or not 1<=actor<=2147483647:
+        raise Hold('R37_ACTOR_ID_INVALID')
+    bag=capture.get('backpack')
+    if not isinstance(bag,dict) or (
+        bag.get('status')!='BACKPACK16_RAW_NOT_INSTANCE_PROOF' or
+        bag.get('actorId')!=actor or
+        not isinstance(bag.get('slots'),dict)):
+        raise Hold('R37_BACKPACK_CONTEXT_INVALID')
+    groups=((bag['slots'],list(range(18,34)),'BACKPACK'),
+            (capture.get('quick'),list(range(35,39)),'QUICK'),
+            (capture.get('other'),list(range(0,18))+[34],'OTHER'))
+    all_slots={}; seen={}
+    for slots,indices,group in groups:
+        if not isinstance(slots,dict) or len(slots)!=len(indices):
+            raise Hold('R37_SLOT_MAP_SHAPE_INVALID:'+group)
+        for slot in indices:
+            a=slots.get(slot); b=slots.get(str(slot))
+            # If both Lua numeric and serialized string aliases occur, HOLD.
+            if a is not None and b is not None:
+                raise Hold('R37_SLOT_ALIAS_COLLISION:'+group)
+            item=a if a is not None else b
+            if not isinstance(item,dict) or type(item.get('slot')) is not int or item['slot']!=slot:
+                raise Hold('R37_SLOT_MISSING_OR_INDEX_CHANGED:'+group)
+            status=item.get('status')
+            if status=='EMPTY':
+                if item.get('resref') is not None:
+                    raise Hold('R37_EMPTY_SLOT_HAS_RESREF:'+group)
+                name=None
+            elif status=='PRESENT_RAW':
+                name=item.get('resref')
+                if not isinstance(name,str) or not RESREF.fullmatch(name) or name!=name.upper():
+                    raise Hold('R37_SLOT_RESREF_UNSAFE:'+group)
+                for field in ('flagsRaw','useCount1Raw','useCount2Raw','useCount3Raw'):
+                    value=item.get(field)
+                    upper=4294967295 if field=='flagsRaw' else 65535
+                    if type(value) is not int or not 0<=value<=upper:
+                        raise Hold('R37_SLOT_RAW_ITEM_INCOMPLETE:'+group)
+                seen[name]=seen.get(name,0)+1
+            else:
+                raise Hold('R37_SLOT_UNSUPPORTED_STATUS:'+group)
+            all_slots[slot]={'slot':slot,'status':status,'resref':name}
+        if {str(x) for x in slots} != {str(x) for x in indices}:
+            raise Hold('R37_SLOT_MAP_EXTRAS:'+group)
+    if len(all_slots)!=39:
+        raise Hold('R37_TOPLEVEL_COUNT_INCORRECT')
+    names=sorted(seen)
+    if len(names)>39:
+        raise Hold('R37_RESOURCE_COUNT_EXCESS')
+    report=audit(source,names,{'origin':'R37_39_SLOT_RAW_MAP_SOURCE_ONLY',
+                               'topLevelRawSlots':39,'distinctResrefs':len(names)})
+    report.update({
+        'inventoryLinkSchema':'BGXAI_R3_R37_TOPLEVEL_ITM_JOIN_SOURCE_ONLY_V1',
+        'inventoryRawMap':all_slots,
+        'duplicateTopLevelResrefs':sorted(k for k,v in seen.items() if v>1),
+        'itemAbilityStrideFromITMBytes':56,
+        'allAlternateItemEffectsVerified':False,
+        'nativeRuntimeInventorySnapshotAuthenticated':False,
+        'nativeCurrentAlternativeAPRVerified':False,
+        'actorTargetBound':False,
+        'safeManualEpsRoundBoundaryVerified':False,
+        'inventoryTransferAuthorized':False,
+        'dispatchAuthorized':False,
+        'gameModified':False,
+    })
+    return report
+
+
 def native_run(root:Path=GAME):
     if os.name!='nt' or os.path.normcase(os.path.abspath(root))!=os.path.normcase(os.path.abspath(GAME)):
         raise Hold('EXACT_WINDOWS_GAME_ROOT_ONLY')
