@@ -1,16 +1,17 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 165,
-  "sha256": "478c663294c43d328d23f250affb490c0a548433c2e36dd1980ace7becab9da9",
-  "mode": "V165_ONE_ITEM_AROW01_TYPED_DUAL_RU_PILOT",
+  "version": 166,
+  "sha256": "ddccbc456691015d36d541bbb750fafc04c9775ee917b84ef6576a1274146fa1",
+  "mode": "V166_V165_ONE_ITEM_AROW01_SCOPED_HISTORICAL_WEIDU_DRIFT",
   "game_writes_allowed": false,
-  "note": "One existing updater. V165 adds only menu 14 and immutable V165 backend for AROW01 identified/unidentified Russian names using existing V107 bit0 and V160 callback; exact V163 123-name baseline, fresh both RU TLKs and ITM SHA, official EEex 1.2.0 DLL SHA, external backup, typed install, last-only rollback. Default game writes disabled. V68 historical embedded source recompressed losslessly; unchanged bytes on decompression. Publishing the installer is not user deployment or LIVE proof. PREPARED rollback receipt recovery is verified in source unit tests.",
+  "note": "V166 fixes user-confirmed V165 14->2 FIRST_WEIDU_LOG_CHANGED: old V162 WeiDU snapshot is not the current install transaction. Existing single CMD, menu 14 and all V163 123 names preserved; new backend revalidates 123 current ITM SHA and origins, all stored gamePins (including current RU TLK/UI/EEex), official EEex+LuaBindings SHA, exact installed Lua and state receipts. Actual present WeiDU SHA is rechecked through preflight/install/rollback. Never edits the historic receipts or WeiDU. Same typed install and last-only rollback; zero game writes by default. Previous V165 reversible V68 zlib repack unchanged. Source/test/publish do not prove native runtime and do not install game files.",
   "default_game_writes_allowed": false,
   "typed_game_write_mode_available": true,
   "requires_exact_typed_install_and_rollback": true,
   "weidu_native_component": false,
-  "last_only_rollback_guard": "EXACT_V162_FIRST64_LUA_STATE_SHA_CURRENT_ITM_TLK_WEIDU_GAME_PINS_EXTERNAL_BACKUP",
+  "last_only_rollback_guard": "EXACT_V163_123_LUA_STATE_SHA_CURRENT_ITM_TLK_WEIDU_TRANSACTION_SHA_GAME_PINS_EXTERNAL_BACKUP",
   "v68_original_source_sha256": "c5fb02e40301384687b2a5c1662c6b04c040d92739cd2df4899d5ed4067f9068",
-  "v165_backend_sha256": "d882c235ee4c2f57d02d5fc3afd614dead1bc918cbd45077a22bea3baf715dea"
+  "v165_backend_sha256": "74af1a1df0f8cc1ea47d2cc79a894f850e6dc9b4e946fbe3d022d9466b8c0a27",
+  "weidu_drift_policy": "V166_ONLY: V162 original WeiDU SHA preserved; all 123 current ITM+origins and all original gamePins and DLLs verified; live WeiDU SHA pinned across preflight, typed approval, install and rollback; original V162/V163 strict checks unchanged"
 }

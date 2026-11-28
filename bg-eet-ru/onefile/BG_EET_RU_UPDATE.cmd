@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 165
+SELF_VERSION = 166
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -8179,8 +8179,8 @@ def v163_dispatch(game,mode,offline=False):
  except Exception as e:print('V163_ZIP_HOLD',str(e)[:90]);return 2
  print('V163:',report.get('status'),report.get('reason',''))
  return 0 if report.get('status') in ('CUMULATIVE_PREFLIGHT_PASS','CUMULATIVE_NOT_INSTALLED','CUMULATIVE_INSTALLED_AWAITING_GAMEPLAY','CUMULATIVE_ROLLED_BACK_TO_FIRST64') else 2
-V165_PIN='d882c235ee4c2f57d02d5fc3afd614dead1bc918cbd45077a22bea3baf715dea'
-V165_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/8864c9cbd711297e07ba95f0cf118c61a12f0fdb/bg-eet-ru/weapon-identity/V165_ONE_ITEM_DUAL_PILOT.py'
+V165_PIN='74af1a1df0f8cc1ea47d2cc79a894f850e6dc9b4e946fbe3d022d9466b8c0a27'
+V165_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/ad4e7f9f8eb234aa9b8f707104355628555d43df/bg-eet-ru/weapon-identity/V165_ONE_ITEM_DUAL_PILOT.py'
 def v165_dispatch(game,mode,offline=False):
  try:
   p=v121_cache(game)/'V165_DUAL_ONE_ITEM.py'
@@ -8199,7 +8199,7 @@ def v165_dispatch(game,mode,offline=False):
           'gameFilesWritten':0 if mode in ('preflight','status') else 'UNKNOWN_AFTER_EXCEPTION'}
  try:v116_zip(game,WORKDIR/REPORT_NAME,report,entry='81_V165_DUAL_ONE_ITEM.json')
  except Exception as e:print('V165_ZIP_HOLD',str(e)[:120]);return 2
- print('V165:',report.get('status'),report.get('reason',''))
+ print('V166:',report.get('status'),report.get('reason',''))
  return 0 if report.get('status') in ('V165_ONE_ITEM_PREFLIGHT_PASS','V165_NOT_INSTALLED',
         'V165_INSTALLED_AWAITING_GAMEPLAY','V165_ROLLED_BACK_TO_V163_123',
         'V165_ALREADY_AT_V163_BASELINE') else 2
@@ -8381,7 +8381,7 @@ def main(argv=None):
     if a=='8':return v133_audit(game,WORKDIR/REPORT_NAME)
     if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)
     if a=='14':
-       try:b=input('V165 AROW01:1=status 2=check 3=install 4=undo [1]: ').strip()
+       try:b=input('V166 AROW01:1=status 2=check 3=install 4=undo [1]: ').strip()
        except EOFError:b=''
        return v165_dispatch(game,{'2':'preflight','3':'install','4':'rollback'}.get(b,'status'),args.offline)
     if a=='13':

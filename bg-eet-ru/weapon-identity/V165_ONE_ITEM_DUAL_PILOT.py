@@ -56,7 +56,44 @@ def safe_paths(game,workdir):
     return g,w
 
 
-def state_and_pins(game,workdir,batch,cumulative):
+
+def verify_scoped_pins(game,first,second,batch,cumulative,resolver=None,
+                       expected_current_weidu=None):
+    """Use the V162 exact game pins and V163 123 ITM receipts without
+    demanding that today's WeiDU.log equal its months-old install hash.
+
+    Current WeiDU.log is STILL SHA-pinned against approval and final swap.
+    The old hash is never overwritten or silently rebaselined.
+    If any of the 123 previously installed ITMs or their source drifted,
+    fail closed. For rollback, an exact installed WeiDU fingerprint and
+    the target's byte-identical SHA guard replace item-source rechecks.
+    """
+    if not isinstance(first.get('gamePins'),dict) or not first['gamePins']:
+        raise Hold('V162_GAME_PINS_MISSING')
+    if not isinstance(second.get('itemPins'),dict) or len(second['itemPins'])!=123:
+        raise Hold('V163_123_ITEM_PINS_MISSING')
+    for rel,expected in first['gamePins'].items():
+        if not isinstance(rel,str) or not rel or '\\' in rel or ':' in rel or (
+            Path(rel).is_absolute()) or '..' in Path(rel).parts or (
+            not isinstance(expected,str) or not SHA.fullmatch(expected)):
+            raise Hold('V162_GAME_PIN_FORMAT_INVALID')
+        if batch.file_sha(game/rel)!=expected:
+            raise Hold('V162_GAME_PIN_DRIFT:'+rel)
+    weidu=batch.file_sha(game/'WeiDU.log',10_000_000)
+    if expected_current_weidu is not None and weidu!=expected_current_weidu:
+        raise Hold('WEIDU_CHANGED_SINCE_V165_PREFLIGHT')
+    if resolver is not None:
+        for ref,pin in second['itemPins'].items():
+            cumulative._verify_item(resolver,ref,pin,batch)
+    return {
+        'weiduSha256Current':weidu,
+        'weiduSha256HistoricalV162':first['weiduSha'],
+        'weiduHistoricalDrift':weidu!=first['weiduSha'],
+        'all123HistoricalItemPinsRechecked':resolver is not None,
+        'priorItemsChecked':len(second['itemPins']) if resolver is not None else 0,
+    }
+
+def state_and_pins(game,workdir,batch,cumulative,resolver=None,expected_current_weidu=None):
     first,first_raw=cumulative._read_first_state(game,workdir,batch)
     path=workdir/cumulative.SECOND_STATE
     second=json.loads(read(path,MAX_STATE))
@@ -72,10 +109,11 @@ def state_and_pins(game,workdir,batch,cumulative):
     current=read(game/GAME_REL)
     if digest(current)!=EXPECTED_V163_SHA:
         raise Hold('V163_NOT_CURRENT_LAST_MODIFICATION')
-    cumulative._verify_pins(game,first,batch)
+    pins=verify_scoped_pins(game,first,second,batch,cumulative,resolver,
+                            expected_current_weidu)
     for name,sha in EXPECTED_DLL.items():
         if batch.file_sha(game/name)!=sha: raise Hold('USER_OFFICIAL_EEEX_DLL_DRIFT:'+name)
-    return first,second,read(path,MAX_STATE),current
+    return first,second,read(path,MAX_STATE),current,pins
 
 
 def pairs_from_current(catalog, bridge, expected_tlks):
@@ -135,7 +173,8 @@ def compose(existing:bytes,names:dict,v107:bytes):
 
 
 def prepare(game,workdir,batch,cumulative,bridge,catalog,resolver,v107):
-    first,second,second_raw,existing=state_and_pins(game,workdir,batch,cumulative)
+    first,second,second_raw,existing,pins=state_and_pins(
+        game,workdir,batch,cumulative,resolver)
     if not isinstance(catalog,dict) or catalog.get('schema')!='BG_EET_RU_REUSE_BGXAI_R3_V111_NAMES_RO_V1':
         raise Hold('CATALOG_NOT_CURRENT')
     if catalog.get('tlkSha256')!=first['tlkSha256']:
@@ -150,7 +189,8 @@ def prepare(game,workdir,batch,cumulative,bridge,catalog,resolver,v107):
             'itemResref':USER_SEED,'names':names,'itmSha256':item['itmSha256'],
             'tlkSha256':first['tlkSha256'],'baselineSha':EXPECTED_V163_SHA,
             'candidateSha':digest(candidate),'externalBackupRequired':True,
-            'nativeFlagsRuntimeStillRequiresTypedPilot':True}
+            'nativeFlagsRuntimeStillRequiresTypedPilot':True,
+            **pins}
     return report,candidate,second,second_raw
 
 
@@ -200,6 +240,8 @@ def run(mode,game,workdir,batch,cumulative,bridge,catalog=None,resolver=None,v10
             with backup.open('xb') as f:f.write(previous);f.flush();os.fsync(f.fileno())
             if read(backup)!=previous:raise Hold('BACKUP_VERIFY_FAILED')
             record={'schema':SCHEMA,'phase':'PREPARED','baselineSha':EXPECTED_V163_SHA,
+                    'weiduSha256Current':report['weiduSha256Current'],
+                    'weiduSha256HistoricalV162':report['weiduSha256HistoricalV162'],
                     'candidateSha':report['candidateSha'],'backup':str(backup),
                     'secondStateSha':digest(second_raw),
                     'itemResref':USER_SEED,'itmSha256':report['itmSha256'],
@@ -212,7 +254,8 @@ def run(mode,game,workdir,batch,cumulative,bridge,catalog=None,resolver=None,v10
                 if read(stage)!=candidate or digest(read(target))!=EXPECTED_V163_SHA:
                     raise Hold('V165_STAGE_OR_BASELINE_DRIFT')
                 # Final same-file/tlk/WeiDU and exact AROW01 proof before atomic swap.
-                first,second2,second_raw2,_=state_and_pins(g,w,batch,cumulative)
+                first,second2,second_raw2,_,pins2=state_and_pins(
+                    g,w,batch,cumulative,resolver,report['weiduSha256Current'])
                 if digest(second_raw2)!=record['secondStateSha']:
                     raise Hold('V163_RECEIPT_CHANGED_BEFORE_SWAP')
                 new_raw,new_origin=resolver.get(USER_SEED,'.ITM')
@@ -254,7 +297,11 @@ def run(mode,game,workdir,batch,cumulative,bridge,catalog=None,resolver=None,v10
             previous=read(backup)
             if digest(previous)!=EXPECTED_V163_SHA:raise Hold('V165_BACKUP_SHA_INVALID')
             first,first_raw=cumulative._read_first_state(g,w,batch)
-            cumulative._verify_pins(g,first,batch)
+            second=json.loads(read(w/cumulative.SECOND_STATE,MAX_STATE))
+            verify_scoped_pins(g,first,second,batch,cumulative,
+                               expected_current_weidu=record.get('weiduSha256Current'))
+            for name,sha in EXPECTED_DLL.items():
+                if batch.file_sha(g/name)!=sha:raise Hold('V165_ROLLBACK_EEEX_DLL_DRIFT:'+name)
             second_raw=read(w/cumulative.SECOND_STATE,MAX_STATE)
             if digest(second_raw)!=record.get('secondStateSha'):
                 raise Hold('V163_RECEIPT_CHANGED_SINCE_PILOT')
