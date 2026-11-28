@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "180ef997fd6cee7e3b12c03ecaae472340d9aac0",
+  "commit": "668b0fe4ba3b9b7c49245b73a2ba9834aa8f4768",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "f286b0080e4de38ea61cba4493c41f8020d8b68dbd26a6d8478887495e76b5ca",
+  "script_sha256": "3e7c5574c88c5ac8e094d274dd9c789ee6b6c21b7211756e17669affa7b72d92",
   "script_size": 79798,
-  "description": "BGXAI sole original CMD, SHA-pinned PS 79798B, 175/176 unchanged. Menu179 old R42 1=Default source RO, 2=status, 3=preflight, 4=install typed, 5=rollback typed, 6=capture RO CLASS4 Jagan preserved; new R43 diagnostic 7=status, 8=preflight, 9=install typed, 10=rollback typed, 11=capture RO. R43 exact source-only reason extension 95965B, one original listener, 0 orders, no XEquip. No auto install/rollback/retry, exact WeiDU 155-last required for separately typed 155->156 upgrade. Source CI 152/152 Windows+Linux PASS 46128946627. Original R42 LIVE first capture HOLD. No game files changed by channel publication."
+  "description": "BGXAI one original BGXAI_UPDATE.cmd. 175/176 unchanged. Same menu179 old R42 1–6, installed R43 7–11, new R44 safe numeric actor-ID guard 12=status 13=preflight RO 14=typed last156→157 install 15=typed rollback 16=one-shot game RO capture. SHA-pinned child 35283B 281362f7a66e60053ffa03746caad9e826250870dac08b7a01b5f9efb07d208e; parent PS 79798B exact SHA. R44 Lua alternative 96410B bae25741c3ee620a184ddddcd0a7b59b82d835bd7f5766d5911459baedfe8600, exact R39 numeric actor ID-only patch in one preexisting listener; NO XEquip, no ARM/orders or automatic install/rollback/retry. 208 Python tests each Windows+Linux and 9 Lua R39 mocks pass CI 46133473161. Real user still has R43 last #156; first R43 179→11 HOLD_SCRIPT_ACTOR_CHANGED no re-run. Next 179→13 read-only one time; 179→14 only after separately examined user preflight PASS and typed approval."
 }
