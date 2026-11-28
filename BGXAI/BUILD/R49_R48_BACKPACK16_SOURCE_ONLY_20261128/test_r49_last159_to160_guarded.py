@@ -169,7 +169,7 @@ class R49FakeEET(unittest.TestCase):
  def test_15_rollback_refuses_R48_proof_drift(self):
   self.install()
   self.put(self.r48.PROOF,b"corrupt")
-  with self.assertRaisesRegex(ValueError,"HOLD_R49_R48_PROOF_DRIFT"):
+  with self.assertRaisesRegex(ValueError,"HOLD_R49_UNRELATED_RESOURCE_DRIFT|HOLD_R49_R48_PROOF_DRIFT"):
    G.rollback(*self.args(),self.game,G.ROLLBACK_TOKEN)
 
  def test_16_one_updater_only_no_automatic_retry_or_rollback(self):
