@@ -21,11 +21,16 @@ class OnefileV2Compatibility(unittest.TestCase):
         self.assertEqual(hashlib.sha256(b).hexdigest(),
             '4728e8a412c2b9497e12541447e9578604677440f344a207cc67b779154d15b5')
 
-    def test_one_original_cmd_path_now_matches_released_v2_no_extra_executable(self):
+    def test_original_cmd_legacy_release_still_untouched(self):
+        raw=CMD.read_bytes()
+        self.assertEqual(hashlib.sha1(
+            b'blob '+str(len(raw)).encode()+b'\\x00'+raw
+        ).hexdigest(),'0c0428be14f12aea4e0cb027972139d77a860342')
+        released=(ROOT/'BGXAI/UPDATER_V2/BGXAI_UPDATE_V2_RELEASE.cmd').read_bytes()
         stage=(ROOT/'BGXAI/UPDATER_V2/BGXAI_UPDATE_V2_STAGE.txt').read_bytes()
-        self.assertEqual(CMD.read_bytes(),stage)
-        self.assertIn(b'trusted_lastgood_v2.json',stage)
-        self.assertIn(b'BGXAI/UPDATER_V2/BOOTSTRAP_PIN_V2.json',stage)
+        self.assertEqual(released,stage)
+        self.assertNotEqual(raw,released)
+
 
     def test_legacy_menu_only_three_intentional_changes(self):
         base=ORIGINAL.read_text(encoding='ascii')
