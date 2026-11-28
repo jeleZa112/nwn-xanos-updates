@@ -373,7 +373,7 @@
       "receipt_id": "BGXAI_R39_JOIN_REUSE_R38_RAW_SCRIPT_FIELDS_PREWORK_20261128",
       "project": "BGXAI",
       "source_path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/R39_JOIN_EXISTING_R38_R3_RO.py",
-      "source_git_blob_sha": "e55894efe45ca22d7a127487ee92705457a5d305",
+      "source_git_blob_sha": "8a2aca77a6a8c413510273040c68797eccd89ee0",
       "predecessor_sources": [
         {
           "path": "BGXAI/BUILD/R37_XEQUIP_IDENTITY_SINGLE_LISTENER_SOURCEONLY_20261127/M_BGXR27_R37_INV3_IDENTITY_SOURCE_ONLY.lua",
