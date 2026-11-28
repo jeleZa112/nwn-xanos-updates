@@ -345,7 +345,7 @@ def run(mode:str,game:Path,workdir:Path,batch,
             return {'schema':SCHEMA,'status':'CUMULATIVE_ROLLED_BACK_TO_FIRST64',
                     'gameFilesWritten':int(change),'original64Preserved':True}
         raise Hold('UNKNOWN_CUMULATIVE_MODE')
-    except (Hold,OSError,ValueError,TypeError,KeyError,AttributeError,json.JSONDecodeError) as exc:
+    except (Hold,RuntimeError,OSError,ValueError,TypeError,KeyError,AttributeError,json.JSONDecodeError) as exc:
         return {'schema':SCHEMA,'status':'CUMULATIVE_SAFE_STOP',
                 'reason':type(exc).__name__+': '+str(exc)[:155],
                 'gameFilesWritten':0 if mode in ('status','preflight') else 'UNKNOWN_AFTER_EXCEPTION'}
