@@ -2,6 +2,32 @@
   "schema": 1,
   "channel": "BGXAI_ONEFILE_MODULES_V2",
   "branch": "bg-eet-ai",
-  "modules": [],
+  "modules": [
+    {
+      "code": 180,
+      "label": "Saved party ITM catalog source RO",
+      "language": "python",
+      "mode": "readonly",
+      "commit": "dd185a64a2120880a943f22b3e9108e8bbfbd5e9",
+      "entry": "BGXAI/UPDATER_V2/BGXAI_MODULE180_SAVED_PARTY_CATALOG_RO.py",
+      "files": [
+        {
+          "path": "BGXAI/UPDATER_V2/BGXAI_MODULE180_SAVED_PARTY_CATALOG_RO.py",
+          "size": 11520,
+          "sha256": "ff7bcd8c6f69c5af0a516dcc0c28291c02d89386e2f481a13539f1f986efec3c"
+        },
+        {
+          "path": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_ITM_R3_RO.py",
+          "size": 30390,
+          "sha256": "b2e57e4068ebb18194b9dd0453f72b8e70d6936efc51b2454a87c81f69c6c5d7"
+        },
+        {
+          "path": "BGXAI/BUILD/WEAPON_SAVE_GAM_INVENTORY_RO_V1_20261126/BGXAI_GAM_INVENTORY_RO_V1.py",
+          "size": 5760,
+          "sha256": "084e6be1b2ef7dbc7997026cf3cdceedb440f8b99930f4469307d41ec349f9f1"
+        }
+      ]
+    }
+  ],
   "notes": "Add module entries using immutable commit, byte-size, sha256. Existing 1-179 remain in pinned legacy. No new CMD or hub release required."
 }
