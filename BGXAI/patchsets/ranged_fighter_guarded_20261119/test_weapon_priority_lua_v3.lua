@@ -457,4 +457,57 @@ check('native proof cannot be invented by caller mock flag',function()
  eq(b.reason,'TARGET_TYPE_AC_EVIDENCE_INCONSISTENT')
  eq(b.dispatchAuthorized,false)
 end)
+local function mk_backpack_weapon()
+ local w=weapon('BAG_HAMM',nil,{slot='BACKPACK',sourceSlot=18,
+  resRef='HAMM01',modelProvenance='V3_V4_V5',
+  counterfactualBasis='MODEL_ONLY_NOT_NATIVE_EFFECTIVE',
+  alternativeEffectiveStatsLiveVerified=false,
+  identifiedVerified=true,notCursedVerified=true,notQuestItemVerified=true,
+  offhandCompatibilityVerified=true,ammoAndLauncherVerified=true,
+  protectionsAccountedVerified=true,mode='MELEE',damageType='CRUSHING',
+  inRange=true,avgDamageOnHit=12,apr=2,finalTHAC0=10})
+ return w
+end
+check('backpack V3 same-target model reuses existing scorer',function()
+ local s=mk(true)
+ local r=dofile(root..'BGXAI_WEAPON_PRIORITY_LUA_V3.lua').scoreBackpackCandidate(s,mk_backpack_weapon())
+ eq(r.status,'BACKPACK_TARGET_UTILITY_MODEL_ONLY')
+ eq(r.sourceSlot,18);eq(r.candidateResref,'HAMM01')
+ eq(r.estimatedUtility,12*2*0.55)
+ eq(r.attackACType,'CRUSHING')
+ eq(r.engineFinalAlternativeStatsVerified,false)
+ eq(r.dispatchAuthorized,false);eq(r.weaponSwitchAuthorized,false)
+end)
+check('backpack V3 model requires same target protection snapshot',function()
+ local s=mk(true)
+ s.enemy.protections.snapshotId='STALE'
+ local r=dofile(root..'BGXAI_WEAPON_PRIORITY_LUA_V3.lua').scoreBackpackCandidate(s,mk_backpack_weapon())
+ eq(r.status,'HOLD_STALE_ENEMY_PROTECTIONS')
+end)
+check('backpack V3 unknown alternate APR blocks model',function()
+ local s=mk(true);local w=mk_backpack_weapon();w.apr=nil
+ local r=dofile(root..'BGXAI_WEAPON_PRIORITY_LUA_V3.lua').scoreBackpackCandidate(s,w)
+ eq(r.status,'HOLD_BACKPACK_TARGET_SCORE_INCOMPLETE')
+ eq(r.reason,'ATTACK_STATS_UNVERIFIED');eq(r.dispatchAuthorized,false)
+end)
+check('backpack V3 cannot claim counterfactual stats are live',function()
+ local s=mk(true);local w=mk_backpack_weapon()
+ w.alternativeEffectiveStatsLiveVerified=true
+ local r=dofile(root..'BGXAI_WEAPON_PRIORITY_LUA_V3.lua').scoreBackpackCandidate(s,w)
+ eq(r.status,'HOLD_BACKPACK_COUNTERFACTUAL_MODEL_INCOMPLETE')
+end)
+check('backpack V3 uses same R13 type AC and enemy damage resistance',function()
+ local s=with_r13_type_ac(mk(true));local w=mk_backpack_weapon()
+ s.enemy.targetArmorClassByAttackTypeCandidate.CRUSHING=-6
+ s.enemy.protections.resistance.CRUSHING=0.5
+ local r=dofile(root..'BGXAI_WEAPON_PRIORITY_LUA_V3.lua').scoreBackpackCandidate(s,w)
+ eq(r.attackACType,'CRUSHING');eq(r.hitChanceModel,0.25)
+ eq(r.estimatedDpr,0.25*12*2*0.5)
+ eq(r.dispatchAuthorized,false)
+end)
+check('backpack V3 never treats duplicate quickslot ID as inventory',function()
+ local s=mk(true);local w=mk_backpack_weapon();w.id='SWORD'
+ local r=dofile(root..'BGXAI_WEAPON_PRIORITY_LUA_V3.lua').scoreBackpackCandidate(s,w)
+ eq(r.status,'HOLD_BACKPACK_DUPLICATE_QUICKSLOT_ID')
+end)
 print('PASS WEAPON PRIORITY NATIVE LUA '..count..'/'..count..' SOURCE ONLY')
