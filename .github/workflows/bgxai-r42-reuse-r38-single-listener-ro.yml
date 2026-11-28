@@ -56,6 +56,9 @@ jobs:
       - name: Test R42 opt-in source-only bounded R39 HOLD diagnosis (no runtime)
         run: python -m unittest -v BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_class_hold_reason_source_only.py
 
+      - name: Fake-EET R42 155-to-156 guarded reason upgrade / exact rollback (NO LIVE)
+        run: python -m unittest -v BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_diag_upgrade_guarded_source_only.py
+
       - name: Test one-CMD source-only R42 child (pinned, isolated)
         run: python -m unittest -v BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_onefile_source_ro.py
       - name: Published 179 new guarded helper SHA before release pin
