@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 162
+SELF_VERSION = 163
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -8157,6 +8157,26 @@ def v162_dispatch(game,mode,offline=False):
  except Exception as e:print('V162_ZIP_HOLD',str(e)[:90]);return 2
  print('V162:',report.get('status'),report.get('reason',''))
  return 0 if report.get('status') in ('BATCH_PREFLIGHT_PASS','BATCH_NOT_INSTALLED','BATCH_INSTALLED_AWAITING_GAMEPLAY','BATCH_ROLLED_BACK_TO_V160') else 2
+V163_PIN='b24bb80860103f31688d54c9d906b44619e01bcf50be1beb645fe8aa215d7426'
+V163_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/8ea2895b2e1167e7be8a226367e4b4af37968425/bg-eet-ru/hit-only-v160/weapon_names_cumulative_onefile_dispatch.py'
+def v163_dispatch(game,mode,offline=False):
+ try:
+  p=v121_cache(game)/'V163_CUMULATIVE_DISPATCH.py'
+  if p.is_symlink():raise RuntimeError('V163_SYMLINK')
+  if not p.is_file() or sha_path(p)!=V163_PIN:
+   if offline:raise RuntimeError('V163_OFFLINE_PIN_MISSING')
+   with urllib.request.urlopen(V163_URL,timeout=9) as r:data=r.read(9001)
+   if digest(data)!=V163_PIN:raise RuntimeError('V163_SOURCE_SHA_HOLD')
+   v121_write(game,p,data)
+  source=p.read_bytes()
+  if digest(source)!=V163_PIN:raise RuntimeError('V163_PIN_CHANGED_BEFORE_EXEC')
+  m=types.ModuleType('v163');exec(compile(source,str(p),'exec'),m.__dict__)
+  report=m.run(game,WORKDIR,mode,offline)
+ except Exception as e:report={'status':'CUMULATIVE_SAFE_STOP','reason':type(e).__name__+': '+str(e)[:150],'gameFilesWritten':0 if mode in ('preflight','status') else 'UNKNOWN_AFTER_EXCEPTION'}
+ try:v116_zip(game,WORKDIR/REPORT_NAME,report,entry='80_V163_CUMULATIVE_NAMES.json')
+ except Exception as e:print('V163_ZIP_HOLD',str(e)[:90]);return 2
+ print('V163:',report.get('status'),report.get('reason',''))
+ return 0 if report.get('status') in ('CUMULATIVE_PREFLIGHT_PASS','CUMULATIVE_NOT_INSTALLED','CUMULATIVE_INSTALLED_AWAITING_GAMEPLAY','CUMULATIVE_ROLLED_BACK_TO_FIRST64') else 2
 def v133_audit(game,path,v136=False):
  report={'schema':'BG_EET_RU_V133_WINDOWS_RUNTIME_READONLY','status':'RUNTIME_MEMORY_HOLD','game_files_written':0,'native_hook_install_allowed':False,'firstcall_owner_verified':False,'gameplay_verified':False}
  try:
@@ -8327,13 +8347,17 @@ def main(argv=None):
  try:v121_snapshot(game,WORKDIR/REPORT_NAME)
  except Exception as exc:print('V121 SNAPSHOT HOLD:',str(exc)[:120])
  if not (argv if argv is not None else sys.argv[1:]):
-    try:a=input('1=audit 2=install 3=undo 4=play 5=status 6-9=diag 10=V153 11=bulk 12=names [1]: ').strip()
+    try:a=input('1=audit 2=install 3=undo 4=play 5=status 6-9=diag 10=V153 11=bulk 12=names 13=next [1]: ').strip()
     except EOFError:a=''
     mode={'2':'install','3':'rollback','4':'capture','5':'status'}.get(a)
     if a=='6':return v130_audit(game,WORKDIR/REPORT_NAME)
     if a=='7':return v130_audit(game,WORKDIR/REPORT_NAME,132)
     if a=='8':return v133_audit(game,WORKDIR/REPORT_NAME)
     if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)
+    if a=='13':
+       try:b=input('V163 next names:1=status 2=check 3=install 4=undo [1]: ').strip()
+       except EOFError:b=''
+       return v163_dispatch(game,{'2':'preflight','3':'install','4':'rollback'}.get(b,'status'),args.offline)
     if a=='12':
        try:b=input('V162 names:1=status 2=check 3=install 4=undo [1]: ').strip()
        except EOFError:b=''

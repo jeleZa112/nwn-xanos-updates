@@ -9,6 +9,8 @@ on:
       - 'bg-eet-ru/hit-only-v160/test_weapon_names_onefile_dispatch.py'
       - 'bg-eet-ru/hit-only-v160/weapon_names_cumulative_source.py'
       - 'bg-eet-ru/hit-only-v160/test_weapon_names_cumulative_source.py'
+      - 'bg-eet-ru/hit-only-v160/weapon_names_cumulative_onefile_dispatch.py'
+      - 'bg-eet-ru/hit-only-v160/test_weapon_names_cumulative_onefile_dispatch.py'
       - '.github/workflows/bg-eet-ru-v162-stage.yml'
   workflow_dispatch:
 permissions:
@@ -55,6 +57,8 @@ jobs:
              'bg-eet-ru/weapon-identity/V111_ITEM_NAMES_READONLY_SOURCE_ONLY.py',
              'bg-eet-ru/hit-only-v160/v160_guarded.py',
              'bg-eet-ru/hit-only-v160/weapon_names_onefile_dispatch.py',
+             'bg-eet-ru/hit-only-v160/weapon_names_cumulative_source.py',
+             'bg-eet-ru/hit-only-v160/weapon_names_cumulative_onefile_dispatch.py',
              'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd',
           ]
           for name in paths:
