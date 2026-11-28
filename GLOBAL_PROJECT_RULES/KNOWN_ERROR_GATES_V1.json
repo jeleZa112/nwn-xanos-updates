@@ -1028,6 +1028,37 @@
         "fixedExternalHoldSubclass": true,
         "externalReaderHoldReason": "Only fixed status code prefix, no paths, item names or traceback; original source problem still unknown"
       }
+    },
+    {
+      "error_id": "BGXAI_V2_GAM_RESREF_R3_CHARSET_MISMATCH_HOLD_20261128",
+      "project": "BGXAI",
+      "type": "CONFIRMED_FAILURE",
+      "status": "MITIGATED_SOURCE_ONLY",
+      "discovered_at": "2026-11-28",
+      "trigger": "User's second actual V2 menu180 on Windows after stage-aware patch: failureStage=PARSE_SAVED_GAM, exceptionType=KNOWN_READER_HOLD, reason=HOLD_EXISTING_READER_HOLD_INVALID_RESREF_BYTES, exit 3.",
+      "observed_failure": "GAM save reader refuses resref name bytes outside [A-Za-z0-9_], while existing R3 native KEY/ITM resref reader and module180 saved_names allow # and -; prior user real save includes modded resref C#GRTOO0. Exact offending resref in latest selected Windows save not observed; do not claim identified.",
+      "cause": "CONFIRMED CODE DEFECT: GAM checkedres() accepted only letters/digits/underscore, inconsistent with existing native R3 RESREF [A-Z0-9_#-]. This can falsely reject legitimate modded EET resource IDs with #/-. EXACT latest saved-file offending bytes UNKNOWN.",
+      "do_not_repeat": "Do not rerun old unchanged menu180 pin; do not ask for prior GAM/file upload, run R47 capture again, reinstall mods, overwrite user's save, make another CMD/hub, clear caches or broaden grammar to arbitrary bytes. Do not assert game/save corruption.",
+      "safe_action": "Modify ONLY existing source GAM reader's positive regex to [A-Za-z0-9_#-]{1,8}; retain slash/backslash/dot/semicolon/control/non-ASCII rejection. Extend existing GAM reader and module180 R3 integration tests to include # and - and verify zero game writes. Pin exactly the revised GAM source via the existing V2 MODULES_V1.json to immutable commit and SHA256, keeping module180 and legacy unchanged. After Windows+Ubuntu CI PASS, one changed read-only 180 run is allowed; on HOLD/STOP analyze new reason without retry.",
+      "closure_condition": "CI passes Windows+Ubuntu for GAM parser and V2 module180 cross-reader source tests + pinned SHA, then user's next single V2/180 read-only run no longer reports original HOLD_INVALID_RESREF_BYTES (or exact invalid bytes source proven and handled safely). General autoequip remains out of scope.",
+      "evidence": [
+        "/BGXAI/BUILD/WEAPON_SAVE_GAM_INVENTORY_RO_V1_20261126/BGXAI_GAM_INVENTORY_RO_V1.py",
+        "/BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_ITM_R3_RO.py",
+        "/BGXAI/UPDATER_V2/MODULES_V1.json",
+        "https://github.com/jeleZa112/nwn-xanos-updates/commit/0f321e8f5957e03b0d64e9c07e89ec12d40d7d1e",
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46158072171"
+      ],
+      "enforcement": "Read-only, no silent in-game writes; same BGXAI_UPDATE.cmd, module180 code and existing native R3. Distinguish source mitigation from user's real save success. First failed CI originated from bad \\\\0 fixture serialization, corrected in existing tests; no GAME mutation.",
+      "source_repair": {
+        "source": "BGXAI/BUILD/WEAPON_SAVE_GAM_INVENTORY_RO_V1_20261126/BGXAI_GAM_INVENTORY_RO_V1.py",
+        "exactNewAllowlist": "[A-Za-z0-9_#-]{1,8}",
+        "newReaderSourceSha256": "ca56577b552f2f3438e6448ab315ce40cb8220741bcf526f1fe10b885e5a134c",
+        "readerSourceSize": 5762,
+        "pinnedExistingMenu180ManifestCommit": "0f321e8f5957e03b0d64e9c07e89ec12d40d7d1e",
+        "immutableReaderVersionCommit": "d22d518103b304a7d7a209d51b0272b47b1df63f",
+        "nativeRunStatus": "USER_REAL_RUNTIME_PENDING",
+        "actualSelectedSave": "UNKNOWN"
+      }
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
