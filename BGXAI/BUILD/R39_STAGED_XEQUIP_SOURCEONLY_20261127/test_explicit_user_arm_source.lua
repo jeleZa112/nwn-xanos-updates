@@ -223,4 +223,140 @@ check('registration session changed -> callback inert',function()
  eq(p:fire(),false)
  eq(p.locals.BGXW3ARM,0)
 end)
+-- New cross-module contract for the volatile EEex_LuaTrigger 0x410E.
+-- These tests use mock ports, NEVER actual installed EET or EEex.
+check('same actor and live in-memory token permits R39 gate',function()
+ eq(M.sessionGate(P.sprite),true)
+end)
+check('cannot pass unknown actor userdata even same actorId',function()
+ eq(M.sessionGate({m_id=P.sprite.m_id}),false)
+end)
+check('no global Lua trigger is installed just by importing source',function()
+ eq(rawget(_G,'BGXW3_EEexSessionGate'),nil)
+end)
+check('EEex trigger wrapper fails closed without Lua actor context',function()
+ local fn=M.makeLuaTrigger()
+ eq(fn(),false)
+ _G.EEex_LuaTrigger_Object=P.sprite
+ eq(fn(),true)
+ _G.EEex_LuaTrigger_Object=nil
+end)
+check('saved local ARM without memory token never permits BAF',function()
+ local core=newCore();local q=make({oldArm=1})
+ eq(core.sessionGate(q.sprite),false)
+ eq(core.prepare(q.ports,token).status,'REGISTERED_GESTURE_ONLY_NO_ARM')
+ eq(core.sessionGate(q.sprite),false)
+ eq(q:fire(),true)
+ eq(q.opts.result.status,'HOLD_STALE_ARM_FOUND_DISARMED_NO_REARM')
+ eq(core.sessionGate(q.sprite),false)
+end)
+check('current action queue becomes nonempty after arm: gate false',function()
+ P.s.queueEmpty=false
+ eq(M.sessionGate(P.sprite),false)
+ P.s.queueEmpty=true
+ eq(M.sessionGate(P.sprite),true)
+end)
+check('combat after arm rejects volatile permission',function()
+ P.s.combatCounter=1
+ eq(M.sessionGate(P.sprite),false)
+ P.s.combatCounter=0
+ eq(M.sessionGate(P.sprite),true)
+end)
+check('item replaced after arm rejects session gate',function()
+ P.s.sourceResref='AX1'
+ eq(M.sessionGate(P.sprite),false)
+ P.s.sourceResref='STAF01'
+ eq(M.sessionGate(P.sprite),true)
+end)
+check('pending stage 1 can be checked after BAF warmup',function()
+ P.locals.BGXW3QST=1
+ eq(M.sessionGate(P.sprite),true)
+ P.locals.BGXW3QST=0
+end)
+check('spent stage or consumed ARM cannot execute again',function()
+ P.locals.BGXW3QST=2
+ eq(M.sessionGate(P.sprite),false)
+ P.locals.BGXW3QST=0
+ P.locals.BGXW3ARM=2
+ eq(M.sessionGate(P.sprite),false)
+ P.locals.BGXW3ARM=1
+ eq(M.sessionGate(P.sprite),true)
+end)
+check('saved witness TAG mismatch rejects gate',function()
+ P.locals.BGXW3TAG=0
+ eq(M.sessionGate(P.sprite),false)
+ P.locals.BGXW3TAG=2110908191
+ eq(M.sessionGate(P.sprite),true)
+end)
+check('new session epoch invalidates token with old saved local ARM',function()
+ local core=newCore();local p=make()
+ eq(core.prepare(p.ports,token).status,'REGISTERED_GESTURE_ONLY_NO_ARM')
+ eq(p:fire(),true)
+ eq(core.sessionGate(p.sprite),true)
+ p.setEpoch(2) -- R40 onGameDestroyed() increments epoch; locals can persist
+ eq(core.sessionGate(p.sprite),false)
+ eq(p.locals.BGXW3ARM,1)
+ p.setEpoch(1) -- even hypothetical stale/reused epoch cannot restore token
+ eq(core.sessionGate(p.sprite),false)
+end)
+check('live selected actor change rejects gate',function()
+ P.s.selectedActorSame=false
+ eq(M.sessionGate(P.sprite),false)
+ P.s.selectedActorSame=true
+ eq(M.sessionGate(P.sprite),true)
+end)
+check('runtime item usable proof missing rejects gate',function()
+ P.s.itemEngineUsable=nil
+ eq(M.sessionGate(P.sprite),false)
+ P.s.itemEngineUsable=true
+ eq(M.sessionGate(P.sprite),true)
+end)
+-- Cross-module integration with the EXACT pre-existing R40 reset source,
+-- not a surrogate rewritten copy of its logic.
+local RESET_FILE='M_BGXW3_SESSION_RESET_V1.lua'
+local checkFile=io.open(RESET_FILE,'rb')
+if checkFile then checkFile:close()
+else RESET_FILE='../R40_SESSION_RESET_SOURCEONLY_20261127/M_BGXW3_SESSION_RESET_V1.lua' end
+local function integratedR40()
+ local reset=assert(loadfile(RESET_FILE))()
+ local core=newCore()
+ local p=make()
+ local destroyed,loaded
+ local gate={preGameStartupVerified=true,
+   addDestroyed=function(fn) destroyed=fn end,
+   addLoaded=function(fn) loaded=fn end,
+   getLocal=p.ports.getLocal,
+   setLocal=p.ports.setLocal}
+ eq(reset.register(gate,'ACTIVATE_BGXAI_R40_SESSION_RESET_GUARD').status,
+   'RESET_ONLY_LIFECYCLE_HOOKS_REGISTERED_NO_ARM')
+ p.ports.getEpoch=function() return reset.getStatus().sessionEpoch end
+ p.ports.proveLifecycle=function() return reset.registered end
+ eq(core.prepare(p.ports,token).status,'REGISTERED_GESTURE_ONLY_NO_ARM')
+ eq(p:fire(),true)
+ eq(core.sessionGate(p.sprite),true)
+ return {reset=reset,core=core,p=p,destroyed=destroyed,loaded=loaded}
+end
+check('real R40 module drives volatile epoch used by R39 gate',function()
+ _G.R40_JOIN=integratedR40()
+ eq(R40_JOIN.reset.getStatus().sessionEpoch,1)
+ eq(R40_JOIN.p.locals.BGXW3ARM,1)
+end)
+check('actual R40 destroyed callback makes old saved ARM unusable',function()
+ local j=R40_JOIN
+ j.destroyed()
+ eq(j.reset.getStatus().sessionEpoch,2)
+ eq(j.p.locals.BGXW3ARM,1) -- intentionally still persisted at this instant
+ eq(j.core.sessionGate(j.p.sprite),false)
+end)
+check('actual R40 loaded callback clears saved ARM and stale timers',function()
+ local j=R40_JOIN
+ j.loaded(j.p.sprite)
+ eq(j.p.locals.BGXW3ARM,0)
+ eq(j.p.locals.BGXW3TAG,0)
+ eq(j.p.locals.BGXW3TRY,0)
+ eq(j.p.locals.BGXW3QST,0)
+ eq(j.p.locals.BGXW3QTM,0)
+ eq(j.p.locals.BGXW3MAX,0)
+ eq(j.core.sessionGate(j.p.sprite),false)
+end)
 print('BGXAI R39 EXPLICIT USER GESTURE mock PASS '..passed..'/'..tests)
