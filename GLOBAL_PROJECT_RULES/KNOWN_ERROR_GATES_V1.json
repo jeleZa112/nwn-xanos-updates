@@ -305,6 +305,26 @@
         "/GLOBAL_PROJECT_RULES/GLOBAL_PRIOR_WORK_GATE_V1_RU.md"
       ],
       "enforcement": "assistant_scope_confirmation_before_interpreting_quoted_chat; process-only, no universal runtime block"
+    },
+    {
+      "error_id": "BGXAI_R41_BUNDLE_REPRO_AND_LIFECYCLE_HOOK_FALSE_20261128",
+      "project": "BGXAI",
+      "type": "CONFIRMED_FAILURE",
+      "status": "SOURCE_FIXED_CI_PASS_RUNTIME_UNPROVEN",
+      "discovered_at": "2026-11-28",
+      "trigger": "Regenerating R41 from a clean GitHub checkout, or registering R40 destroyed/loaded callbacks with an API that explicitly returns false",
+      "observed_failure": "The R41 builder resolved R40 in the wrong directory, preventing reproducible generation. R41 forwarded callback registration to R40 whose pcall test did not reject an explicit false return, so readiness could be asserted without both hooks.",
+      "cause": "No clean-checkout generated-file reproducibility test; callback registration was checked for exceptions but not explicit false.",
+      "do_not_repeat": "Do not copy an original module into R39 merely to mask a broken relative path; do not treat pcall(success) as proof that an EEex listener registered; do not claim source-only mock tests prove live lifecycle order.",
+      "safe_action": "Use the existing sibling R40 source with unchanged SHA; use R41 wrapper functions that throw on explicit false while permitting documented void-success, assert residual callbacks remain inert after failed registration, verify reproducibility and CI before deployment.",
+      "closure_condition": "Clean-checkout builder exactly reproduces committed R41; Lua negative tests reject false listener registrations; Ubuntu+Windows source CI passes. EET runtime startup, item usability and before-AI ordering are separate unresolved deployment blockers.",
+      "evidence": [
+        "https://github.com/jeleZa112/nwn-xanos-updates/commit/64c56100dcb4de81eb624b644142da3dfd7a033e",
+        "https://github.com/jeleZa112/nwn-xanos-updates/commit/6e0c32278358361749a6afa58e05f4786a696d34",
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46117471549",
+        "BGXAI/CURRENT/00_RESUME_CURRENT.md"
+      ],
+      "enforcement": "existing R39 CI clean-checkout generator equality, Lua mock false-return regression, original R39/R40 sha pins; no install permission"
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
