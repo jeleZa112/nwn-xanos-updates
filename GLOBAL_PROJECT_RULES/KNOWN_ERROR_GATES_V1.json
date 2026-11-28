@@ -559,7 +559,7 @@
       "error_id": "BGXAI_V3_TARGET_ATTACK_TYPE_AC_NOT_APPLIED_20261128",
       "project": "BGXAI",
       "type": "CONFIRMED_SOURCE_DEFECT",
-      "status": "SOURCE_FIXED_TEST_CASES_ADDED_NATIVE_CI_NOT_VERIFIED",
+      "status": "SOURCE_FIXED_EXACT_GIT_BLOB_LUA_LOCAL_PASS_CI_AND_LIVE_UNVERIFIED",
       "discovered_at": "2026-11-28",
       "trigger": "V3 weapon utility ranking used one enemy.armorClass for every attack mode while R13 already read separately derived crushing/piercing/slashing/missile AC modifiers; external protection fingerprint could remain unchanged when typed AC changed",
       "observed_failure": "Before correction, V3 scored_weapon() used (21-finalTHAC0+enemy.armorClass)/20 without an attack type; a ranged piercing payload would not use MISSILE target AC, and V3.signature() omitted target AC numeric values so a changing target AC could reuse target stabilization. Source inspection only; not a proven incorrect live game order.",
@@ -574,7 +574,27 @@
         "https://github.com/jeleZa112/nwn-xanos-updates/commit/41d5bcd7af95094ec30da247c23cc9cf4230b677",
         "https://gibberlings3.github.io/iesdp/files/ids/bgee/stats.htm"
       ],
-      "enforcement": "Existing BGXAI R13/V3 models only; source tests, GitHub V3 workflow on push; no new updater/WeiDU/actor action. Fails closed for incomplete profile."
+      "enforcement": "Existing BGXAI R13/V3 models only; source tests, GitHub V3 workflow on push; no new updater/WeiDU/actor action. Fails closed for incomplete profile.",
+      "offline_verification": {
+        "date": "2026-11-28",
+        "method": "Restore original Library source/test bytes; apply only reviewed GitHub diffs; require four resulting Git blob hashes to match published branch byte-for-byte, then execute existing Lua regression tests locally",
+        "git_blob_checks": {
+          "BGXAI/BUILD/R13_TARGET_DEFENSE_SOURCE_ONLY/BGXAI_R13_TARGET_DEFENSE_OBSERVER.lua": "e500bd72dbaf8aa560f90b28ff9c9b0b8d66866e",
+          "BGXAI/BUILD/R13_TARGET_DEFENSE_SOURCE_ONLY/test_r13.lua": "e54b9cf74b0b94634c2505e9546e27b782a563fc",
+          "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_PRIORITY_LUA_V3.lua": "79ff4e14039865d5843cf1c531266c2e18ba26f6",
+          "BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_priority_lua_v3.lua": "b0de0120841d683c87a223ac21f3138919843c12"
+        },
+        "commands": [
+          "luahbtex --luaonly test_r13.lua",
+          "luahbtex --luaonly test_weapon_priority_lua_v3.lua"
+        ],
+        "results": [
+          "R13 36/36 PASS",
+          "V3 66/66 PASS",
+          "4/4 exact git blob SHA and no game action patterns PASS"
+        ],
+        "limitations": "Lua model/offline only. Existing V3 full 450-case runner and GitHub Actions have NOT been observed PASS. Actual in-game EEex R13 binding and alternate weapon stats unverified."
+      }
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
