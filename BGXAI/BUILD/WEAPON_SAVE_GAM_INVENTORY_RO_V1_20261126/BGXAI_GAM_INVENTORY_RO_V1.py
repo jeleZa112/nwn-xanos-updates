@@ -26,7 +26,7 @@ def piece(raw,off,size):
 def checkedres(raw):
  if not raw or len(raw)>8:return None
  raw=raw.split(b"\0",1)[0].rstrip(b" ")
- if not raw or not re.fullmatch(rb"[A-Za-z0-9_]{1,8}",raw):
+ if not raw or not re.fullmatch(rb"[A-Za-z0-9_#\\-]{1,8}",raw):
   raise Hold("HOLD_INVALID_RESREF_BYTES")
  return raw.decode("ascii").upper()
 def character(raw):
