@@ -85,4 +85,22 @@ class T(unittest.TestCase):
         self.assertLessEqual(len(self.raw),LIMIT)
         self.assertGreaterEqual(LIMIT-len(self.raw),100)
 
+
+    def test_published_onefile_channel_pin_exact_bytes(self):
+        import json
+        channel=json.loads((ROOT/'BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text(encoding='utf-8'))
+        self.assertEqual(channel['channel'],'bgxai-fox-new-onefile')
+        self.assertEqual(channel['script_path'],'BGXAI/BGXAI_SYNC.ps1')
+        self.assertEqual(channel['script_size'],len(self.raw))
+        self.assertEqual(channel['script_sha256'],hashlib.sha256(self.raw).hexdigest())
+        self.assertEqual(channel['commit'],'6ae745332d314d6bacd8ad883cdf808ae7a866f5')
+
+    def test_published_source_only_claim_is_accurate(self):
+        import json
+        channel=json.loads((ROOT/'BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text(encoding='utf-8'))
+        self.assertIn('source-only',channel['description'])
+        self.assertIn('179',channel['description'])
+        self.assertIn('175/176',channel['description'])
+        self.assertLess(channel['script_size'],80000)
+
 if __name__=='__main__':unittest.main()
