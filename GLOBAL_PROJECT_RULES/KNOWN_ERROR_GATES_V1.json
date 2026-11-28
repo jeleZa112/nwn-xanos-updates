@@ -537,7 +537,25 @@
       "status": "PREWORK_REVIEWED_SOURCE_ONLY",
       "source_only": true,
       "game_modified": false,
-      "installed": false
+      "installed": false,
+      "reviewed_deltas": [
+        {
+          "delta_id": "BGXAI_R42_CLASS_HOLD_REASON_SOURCEONLY_20261128",
+          "recorded_before_source_edit": true,
+          "already_done": "Actual installed R42 one-listener captured exactly one valid [BGXBCS] event for Jagan (uploaded 55,209B log); identity and STAF01 slot20 match, but classScriptResref=null. Existing R39 bridge already emits precise status enum on each failure; R42 one-shot only forwarded broad HOLD_CLASS_BCS_NOT_READABLE. Onefile additionally masks native HOLD, both already in known-error registry. R39 and R42 production sources SHA-pinned by sole 179 uploader; breaking those would invalidate installed R42 and tests.",
+          "exclusive_missing_delta": "Add a small opt-in SOURCE-ONLY deterministic composer extension based on the exact existing R42 composed Lua that forwards a strictly allowlisted R39 probeStatus and bounded CLASS slot state in the same one-shot JSON. Source-only no installer, no game access, no new EEex listener, no BCS orders, no LOCALS, no change to R39/R42 installed/pinned files or bootstrap; include adversarial tests and Lua parse in existing R42 workflow. Do not treat source test as current runtime answer.",
+          "target_source": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_CLASS_HOLD_REASON_SOURCE_ONLY.py",
+          "predecessor_blobs": {
+            "r42_composer": "8fbf928a7f346433eaac01c47208b153eeb81b64",
+            "r39_bridge": "52bd8751581aa9f9d9ac09559f11a856e81ba1da",
+            "r38_installed": "ada1ff628873e83a0b21296e5b5017bbc47510cd"
+          },
+          "source_only": true,
+          "game_modified": false,
+          "install_authorized": false,
+          "safety": "Original R42 one-shot matches actor, one action callback, no EQ/ARM. Add no new row; numeric or attacker-defined row.status must never be directly spliced into JSON; allowlist statuses. No installation or retry after first R42 HOLD without separate reviewed guarded last-only upgrade and typed consent. "
+        }
+      ]
     },
     {
       "receipt_id": "BGXAI_R39_JOIN_REUSE_R38_RAW_SCRIPT_FIELDS_PREWORK_20261128",
