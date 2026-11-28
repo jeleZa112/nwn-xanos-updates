@@ -1,3 +1,17 @@
+# 28.11.2026 — R39 volatile EEex trigger без повтора V3/R40 (SOURCE ONLY)
+
+**Уже реализовано:** V3 actor-specific `BGXW3ARM/TAG/TRY`, R39 одноразовый `XEquipItem` с задержкой и EPS Continue, R40 destroyed/loaded обнуляет сохранённые ARM, R37/R38 собирает raw identity/inventory, 081-085 исследуют manual/EPS. Рабочие игровые файлы НЕ изменять. Стадии: старый R39 BAF CODE+TEST, NATIVE/DEPLOY/LIVE нет; новый вариант также SOURCE ONLY.
+
+**Найденное существующее средство EEex (Bubb13 v1.1.7):** `0x410E EEex_LuaTrigger(S:Chunk*)` в upstream `EEex/patch/TRIGGER.IDS`, `EEex_Trigger.lua` передаёт `EEex_LuaTrigger_Object` и булев ответ Lua. Подтверждено в upstream tag, НЕ в текущих IDS пользователя.
+
+**Точная новизна:** в прежний `BGXAI_R39_STAGED_XEQUIP_V1.py` добавлен **не заменяющий старый render()** метод `render_session_gate()`, который генерирует опциональный `BGXAI_R39_JAGAN_STAF01_EEEX_SESSION_SOURCE_ONLY.baf` (2407B, SHA256 `6d39e72684548c7b1b900e80f1bdb4271044e9889364db958f52b0532d1b73f0`), содержащий ровно 2 EEex_LuaTrigger (warm/equip), 1 XEquipItem и оба EPS Continue. Старый BAF 2303B SHA256 `3b84d38a9df069e3dedfdaf8de6cbf6958a7252d43490fa64b829375cf7cd03d` побайтно не изменён и остаётся единственным pinned кандидатом updater 176→7. В существующем `M_BGXW3_EXPLICIT_USER_ARM_SOURCE_ONLY.lua` дополнительно создаётся volatile Lua memory token ТОЛЬКО после actor-local ARM final readback; `sessionGate(aiBase)` требует и LOCALS, и такой токен для точно того же sprite/portrait/epoch и текущих item/effects/queue; если API/значения неизвестны — `false`. `makeLuaTrigger()` не экспортирует глобальную функцию на этапе импорта: будущая установка должна подключить её явно после typed approval.
+
+**Реальные локальные проверки:** 50/50 `texlua test_explicit_user_arm_source.lua` (включает настоящий R40 module и сериализованный ARM=1 -> destroyed -> volatile gate false -> loaded -> ARM=0), 41/41 Python двух suites, сравнение original/new BAF SHA, все новые 5 GitHub source файлов exact length/blob SHA. НИКАКИХ gameplay команд, runtime native компиляции, установленной user EEex trigger, guarded BCS install не было.
+
+**Честный next gate:** подтвердить реальный EEex engine-facing capture/queue/item usability + load-order; native EET compile 2407B только в user game via existing updater after new source pinned and QA, затем отдельный typed guarded install + backup на расходном сейве. До этого NONE user action, не запускать прежнее 176→7 вновь без причины, не дублировать R37/R40.
+
+---
+
 # 28.11.2026 — R39: первый контролируемый внутриигровой ARM подготовлен без установки
 
 **PRIOR WORK GATE:** уже было: R39 BAF с одним `XEquipItem`, локальный witness, откат при истечении двухраундного окна; R40 сброс сохранённого ARM при загрузке, R38 один read-only action-start listener. Все эти наработки переиспользованы; ничего не переустанавливали, BAF **2303B SHA256 3b84d38...** неизменен.
