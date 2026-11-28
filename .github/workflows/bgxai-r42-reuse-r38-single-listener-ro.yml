@@ -45,6 +45,16 @@ jobs:
         run: python project_tools/resume_guard.py --preflight BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_GUARDED_FROM_R38.py
       - name: Existing immutable predecessor and canonical preflight
         run: python project_tools/resume_guard.py
+      - name: Print staged R47 same-original-onefile179 child SHA before repin (NO GAME)
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          raw=Path('BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py').read_bytes()
+          print('R47_NEW179_CHILD_PIN',len(raw),hashlib.sha256(raw).hexdigest())
+          PY
+
       - name: Print staged exact onefile179 R46 child pins before changing user bootstrap
         shell: bash
         run: |
@@ -136,6 +146,9 @@ jobs:
 
       - name: Test R47 one-shot CLASS script execution proof log parser with malformed outputs (NO GAME)
         run: python -m unittest -v BGXAI/BUILD/R47_GUARDED_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/test_r47_live_witness_capture_parser_source_only.py
+
+      - name: Test R47 original onefile179 modes18..22 with exact ancestor sources (NO GAME)
+        run: python -m unittest -v BGXAI/BUILD/R47_GUARDED_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/test_r47_same_onefile179_guarded_source_only.py
 
       - name: Test R46 always-false BDDEFAI BCS witness source (NO GAME)
         run: python -m unittest -v BGXAI/BUILD/R46_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/test_r46_inert_bcs_witness_source_only.py
