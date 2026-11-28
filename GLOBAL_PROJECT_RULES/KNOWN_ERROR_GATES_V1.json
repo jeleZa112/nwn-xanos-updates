@@ -164,6 +164,25 @@
   },
   "project_error_register": [
     {
+      "error_id": "BGXAI_R42_ONEFILE_80KB_AND_JS_LITERAL_REPLACE_20261128",
+      "project": "BGXAI",
+      "type": "CONFIRMED_FAILURE",
+      "status": "MITIGATED_SOURCE_ONLY",
+      "discovered_at": "2026-11-28",
+      "trigger": "Connecting an R42 source-only readout under the one and only existing BGXAI_UPDATE.cmd while BGXAI_SYNC.ps1 already uses 79996 of its 80000 permitted bytes",
+      "observed_failure": "Naively appending a new menu would exceed the 80KB immutable bootstrap cap. In JavaScript build tooling, String.replace(oldCase, newCase) silently interprets '$\\'' inside the PowerShell regex pattern as a replacement backreference, expands the suffix and duplicates nine lines.",
+      "cause": "Hard 80000-byte pinned PowerShell bootstrap budget plus replacement-string dollar substitution in code generation; original 175/176 menu could not be broken and no second CMD is allowed.",
+      "do_not_repeat": "Do not add a second CMD, bump the permanent CMD bootstrap limit, alter 175/176 child SHA/behavior, or treat JS String.replace string replacement as literal when the replacement includes PowerShell $ tokens. Do not equate menu179 source staging with an installed live CLASS observer.",
+      "safe_action": "Review old onefile routing, reuse the existing 175/176 switch case for new 179, use functional replacement c.replace(old,()=>newText), shorten only non-semantic human-readable status text to keep 79792 bytes, pin exact immutable script commit/size/SHA via BOOTSTRAP_PIN, validate PowerShell AST in Windows CI and original menu regressions on both OS.",
+      "closure_condition": "Boot channel points to immutable commit 6ae745332d314d6bacd8ad883cdf808ae7a866f5 and exact script SHA256 04a3ffa6b53792f14bb878930f553ecd4809f17302091e1da3b04bb30e1fd00a at 79792 bytes; 50/50 Python tests on Ubuntu and Windows, Windows PowerShell AST syntax and generated Lua syntax PASS. Live installation and current CLASS BCS name remain separately unverified.",
+      "evidence": [
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46122393283",
+        "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/README_RU.md",
+        "BGXAI/CURRENT/00_RESUME_CURRENT.md"
+      ],
+      "enforcement": "source-only onefile release static SHA test, 80000B cap test, 175/176 preserved with 179 explicit branch, Windows AST parse, zero game write"
+    },
+    {
       "error_id": "BGXAI_R39_PROVENANCE_BUILD_SCOPE_AND_DEPENDENT_SHA_DRIFT_20261128",
       "project": "BGXAI",
       "type": "CONFIRMED_FAILURE",
