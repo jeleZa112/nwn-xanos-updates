@@ -13,7 +13,7 @@ local function fixture()
  local item={resref='SW1H04'}
  local s={m_id=111,m_equipment={m_selectedWeapon=35,m_selectedWeaponAbility=0,m_items={get=function(_,slot)return item end}}}
  local a={m_actionID=3,m_acteeID={m_Instance=222}}
- local t={m_id=222,isSprite=function() return true end}
+ local t={m_id=222,m_bAllowEffectListCall=1,isSprite=function() return true end}
  local stats={m_nArmorClass=-2,m_nACCrushingMod=2,m_nACMissileMod=-4,
   m_nACPiercingMod=-1,m_nACSlashingMod=0,m_nResistCrushing=30,
   m_nResistPiercing=0,m_nResistSlashing=50,m_nResistMissile=40}
@@ -150,5 +150,45 @@ T('missile resistance out of bounds partial',function()
  local o=call(function(_,_,_,_,stats)stats.m_nResistMissile=9999 end)
  assert(o.status=='TARGET_PARTIAL_DEFENSE_FIELDS_CANDIDATE_ONLY')
  assert(o.rawFields.m_nResistMissile==false)
+end)
+-- Real observed BGXAI actor actions were AttackOneRound (105) and
+-- AttackReevaluate (134); old R13 allowed only 3/30. Verify both read only.
+T('real AttackOneRound 105 now binds actual hostile-candidate target',function()
+ local o=call(function(_,a,_,c) a.m_actionID=105;c.actionRaw=105 end)
+ assert(o.status=='TARGET_RAW_DEFENSE_FIELDS_CANDIDATE_ONLY')
+ assert(o.rawActionId==105 and o.targetActor==222)
+ assert(o.activeStatsNotTempDoubleRead==true and o.hostileTargetProven==false)
+end)
+T('real AttackReevaluate 134 now binds candidate target',function()
+ local o=call(function(_,a,_,c)a.m_actionID=134;c.actionRaw=134 end)
+ assert(o.status=='TARGET_RAW_DEFENSE_FIELDS_CANDIDATE_ONLY')
+ assert(o.rawActionId==134 and o.dispatchAuthorized==false)
+end)
+T('weapon ability selection action 92 not assumed an attack',function()
+ local o=call(function(_,a,_,c)a.m_actionID=92;c.actionRaw=92 end)
+ assert(o.status=='HOLD' and o.reason=='NOT_AN_ATTACK_CANDIDATE_ACTION')
+end)
+T('temporary target-derived stats during effect list HOLD',function()
+ local o=call(function(_,_,_,_,_,target)target.m_bAllowEffectListCall=0 end)
+ assert(o.status=='HOLD' and o.reason=='TARGET_ACTIVE_STATS_TEMP_OR_EFFECTS_IN_PROGRESS')
+end)
+T('unreadable active stats guard held',function()
+ local o=call(function(_,_,_,_,_,target)target.m_bAllowEffectListCall=nil end)
+ assert(o.status=='HOLD' and o.reason=='TARGET_ACTIVE_STATS_TEMP_OR_EFFECTS_IN_PROGRESS')
+end)
+T('target derived-stats processing switched during read HOLD',function()
+ local o=call(function(_,_,api,_,_,target)
+   local before=api.GetActiveStats
+   api.GetActiveStats=function(t)target.m_bAllowEffectListCall=2;return before(t)end
+ end)
+ assert(o.status=='HOLD' and o.reason=='TARGET_ACTIVE_STATS_GUARD_CHANGED')
+end)
+T('real attack action target changed midread cannot be ranked',function()
+ local o=call(function(_,act,api,ctx)
+   act.m_actionID=105;ctx.actionRaw=105
+   local before=api.GetActiveStats
+   api.GetActiveStats=function(target)act.m_acteeID.m_Instance=333;return before(target)end
+ end)
+ assert(o.status=='HOLD' and o.reason=='SOURCE_TARGET_CHANGED_DURING_READ')
 end)
 print(('R13 %d/%d PASS'):format(COUNT,COUNT))
