@@ -136,6 +136,28 @@ def render(m):
     return baf
 
 
+def render_session_gate(m):
+    """Optional R39 source-only candidate; ORIGINAL verified BAF remains intact.
+
+    EEex v1.1.7 provides trigger 0x410E EEex_LuaTrigger(S:Chunk*).
+    It passes EEex_LuaTrigger_Object into a separately approved volatile
+    in-memory R39 armer. A saved actor-local ARM alone can NEVER equip.
+    EEex presence / trigger compilation and runtime are not proven here.
+    """
+    baf = render(m)
+    gate = '  EEex_LuaTrigger("return BGXW3_EEexSessionGate()")\n'
+    # Gate only warmup and equip; abort is safe housekeeping (Continue).
+    equip = '  GlobalTimerExpired("BGXW3QTM","LOCALS")\n'
+    warm = '  Global("BGXW3QST","LOCALS",0)\nTHEN'
+    if baf.count(equip) != 1 or baf.count(warm) != 1:
+        raise Hold('HOLD_SESSION_GATE_INJECTION_TARGET_MISSING')
+    baf = baf.replace(equip, gate + equip, 1)
+    baf = baf.replace(warm, '  Global("BGXW3QST","LOCALS",0)\n' + gate + 'THEN', 1)
+    if baf.count('EEex_LuaTrigger(') != 2 or baf.count('XEquipItem(') != 1:
+        raise Hold('HOLD_SESSION_GATE_NOT_EXACTLY_TWICE')
+    return baf
+
+
 def audit(m):
     baf = render(m)
     return {
