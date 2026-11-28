@@ -989,20 +989,42 @@
       "error_id": "BGXAI_V2_MODULE180_STAGE_EXCEPTION_MASKED_20261128",
       "project": "BGXAI",
       "type": "CONFIRMED_FAILURE",
-      "status": "OPEN",
+      "status": "MITIGATED_SOURCE_ONLY",
       "discovered_at": "2026-11-28",
       "trigger": "User's first real one-file V2 choice 180, after SHA256-verified hub 40cd303fdcf9 and active manifest dispatch.",
       "observed_failure": "User's real console: BGXAI V2 module 180; status=HOLD_SAVED_PARTY_CATALOG_PREPARATION, reason=HOLD_R3_GAM_STAGE_IO_OR_SOURCE, noAutoRetry=true, gameModified=false, ordersSent=0; module exit 3. Current Python module catches broad OSError/ValueError/TypeError/KeyError/AttributeError and maps all to one opaque reason. Which underlying stage failed is NOT proven.",
       "cause": "KNOWN REPORTING DEFECT: existing module180.run exception handler collapses multiple specific exception classes and all execution stages into one generic code. UNDERLYING GAM/KEY/ITM/FILESYSTEM FAILURE CAUSE: UNKNOWN; do not blame game data.",
       "do_not_repeat": "Do not rerun same immutable module180 without code delta, re-download/replace CMD, repeat R47 capture, reinstall/rollback mods, reset caches, request old reports, or say a saved game is corrupt. Do not leak raw local paths or private saved data into logs.",
-      "safe_action": "Keep one existing V2 updater + same menu180; minimally add bounded stage and Python exception-class identifier to in-place module180 HOLD catch, preserve code3/noAutoRetry and no EET writes. Update only existing test and pinned module180 manifest after independent source verification. Then one new read-only Windows run only if CI green; error cause remains UNKNOWN until stage shown.",
+      "safe_action": "Use updated SAME existing V2 menu 180 after successful Windows+Ubuntu source CI. If new HOLD, preserve its failureStage and exceptionType; do not blindly retry or alter game. Do not assume source save is corrupt. No additional CMD/hub copy.",
       "closure_condition": "Corrected exact pinned module180 + manifest pass existing test suite on Windows and Ubuntu; next authorized read-only run displays discriminated stage and class while preserving fail-closed behavior; the underlying source failure should be separately diagnosed from evidence before declaring live stage success.",
       "evidence": [
         "/BGXAI/UPDATER_V2/BGXAI_MODULE180_SAVED_PARTY_CATALOG_RO.py",
         "/BGXAI/UPDATER_V2/MODULES_V1.json",
-        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46155871557"
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46155871557",
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46157354088",
+        "https://github.com/jeleZa112/nwn-xanos-updates/commit/47b0dfcc523fb21837e727f2f14a878ff69c34c7"
       ],
-      "enforcement": "No altered CMD/Hub/legacy game/WeiDU/EEex. SHA-pin new module source; mark only SOURCE mitigated, not live, until specific updated console proves actual Windows outcome."
+      "enforcement": "No altered CMD/Hub/legacy game/WeiDU/EEex. SHA-pin new module source; mark only SOURCE mitigated, not live, until specific updated console proves actual Windows outcome.",
+      "source_repair": {
+        "sourceFile": "BGXAI/UPDATER_V2/BGXAI_MODULE180_SAVED_PARTY_CATALOG_RO.py",
+        "firstBadImmutableCommit": "dd185a64a2120880a943f22b3e9108e8bbfbd5e9",
+        "repairedImmutableCommit": "8fd8b0014d1af62908ca57b52d52bb15d0b3fc98",
+        "repairedModuleSize": 12874,
+        "repairedModuleSha256": "1552abeb52602f9d1983a0196be15ede8be5f4cb6de22f7de81a8abc1aa23790",
+        "manifestCommit": "47b0dfcc523fb21837e727f2f14a878ff69c34c7",
+        "testFile": "BGXAI/UPDATER_V2/test_module180_saved_party_catalog_ro.py",
+        "ciRun": 46157354088,
+        "ciStatus": "SUCCESS_WINDOWS_AND_UBUNTU",
+        "limitations": "Only source error stage and exception class now observable. Original user Windows underlying cause UNKNOWN until one new patched read-only run. No real item move.",
+        "noChange": [
+          "BGXAI_UPDATE.cmd",
+          "BGXAI_HUB_V2.ps1",
+          "legacy_1_179",
+          "EET_game",
+          "R47",
+          "EPS"
+        ]
+      }
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
