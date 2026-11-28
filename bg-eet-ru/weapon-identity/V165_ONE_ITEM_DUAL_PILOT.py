@@ -281,5 +281,81 @@ def run(mode,game,workdir,batch,cumulative,bridge,catalog=None,resolver=None,v10
                 'gameFilesWritten':0 if mode in ('status','preflight') else 'UNKNOWN_AFTER_EXCEPTION'}
 
 
+# Reuse EXACT V163 V162/R3/V111 chain; these source pins already existed in
+# the single onefile updater. This module is invoked ONLY by the same CMD.
+V163_DISPATCH_URL = ('https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/'
+                     '8ea2895b2e1167e7be8a226367e4b4af37968425/'
+                     'bg-eet-ru/hit-only-v160/weapon_names_cumulative_onefile_dispatch.py')
+V163_DISPATCH_SHA = 'b24bb80860103f31688d54c9d906b44619e01bcf50be1beb645fe8aa215d7426'
+V107_SOURCE_URL = ('https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/'
+                   '2685fdf54268c274700a0e0948862d09cad48e9d/'
+                   'bg-eet-ru/weapon-identity/BG_EET_RU_V107_GUARDED_CALLBACK_SOURCE_ONLY.lua')
+V107_SOURCE_SHA = '335ad3537734a52fd8aed923fe953f8fcda5d6ef54e23586ba90218b95c47d4d'
+
+
+def _pinned(root:Path,relative:str,url:str,expected:str,offline:bool)->bytes:
+    if not SHA.fullmatch(expected) or not root.is_dir() or root.is_symlink():
+        raise Hold('V165_PIN_OR_EXTERNAL_CACHE_INVALID')
+    target=root/relative
+    if target.is_symlink() or target.exists() and not target.is_file():
+        raise Hold('V165_PINNED_FILE_UNSAFE')
+    if target.exists():
+        data=read(target,30000)
+        if digest(data)!=expected: raise Hold('V165_PINNED_CACHE_CHANGED')
+        return data
+    if offline: raise Hold('V165_PINNED_CACHE_MISSING_OFFLINE')
+    with urllib.request.urlopen(url,timeout=12) as response:
+        data=response.read(30001)
+    if not data or len(data)>30000 or digest(data)!=expected:
+        raise Hold('V165_PINNED_UPSTREAM_SHA_HOLD')
+    with tempfile.NamedTemporaryFile(dir=root,prefix='.v165_',delete=False) as f:
+        stage=Path(f.name);f.write(data);f.flush();os.fsync(f.fileno())
+    try:
+        if digest(read(stage,30000))!=expected or target.exists():
+            raise Hold('V165_CACHE_RACE_OR_HASH_DRIFT')
+        os.replace(stage,target)
+    finally:
+        if stage.exists():stage.unlink()
+    return data
+
+
+def run_from_onefile(game,workdir,mode='status',offline=False):
+    """Single existing BG_EET_RU_UPDATE.cmd owns output ZIP and user menu."""
+    try:
+        g,w=safe_paths(game,workdir)
+        if mode not in ('status','preflight','install','rollback'):
+            raise Hold('V165_UNKNOWN_ACTION')
+        cache=w/'.BG_EET_RU_AUTOFIX_CACHE'
+        if cache.is_symlink():raise Hold('V165_CACHE_SYMLINK')
+        cache.mkdir(exist_ok=True)
+        v163source=_pinned(cache,'V163_CUMULATIVE_DISPATCH.py',V163_DISPATCH_URL,V163_DISPATCH_SHA,offline)
+        import types
+        v163=types.ModuleType('v165_reused_v163')
+        exec(compile(v163source,'v163_pinned.py','exec'),v163.__dict__)
+        base,cumulative=v163._load(cache,offline)
+        batch=base._module(base._pinned_source(cache,'batch',offline),'batch')
+        if mode=='status':
+            return run(mode,g,w,batch,cumulative,None)
+        if mode=='rollback':
+            word=input('Type '+APPROVE_ROLLBACK+' to restore V163 exactly (Enter cancels): ').strip()
+            return run(mode,g,w,batch,cumulative,None,typed=word)
+        bridge=base._module(base._pinned_source(cache,'bridge',offline),'bridge')
+        catalog,resolver=base._readonly_catalog(cache,g,[USER_SEED],offline)
+        v107=_pinned(cache,'V107_GUARDED_CALLBACK_SOURCE_ONLY.lua',
+                      V107_SOURCE_URL,V107_SOURCE_SHA,offline)
+        if mode=='preflight':
+            return run(mode,g,w,batch,cumulative,bridge,catalog,resolver,v107)
+        prior=run('preflight',g,w,batch,cumulative,bridge,catalog,resolver,v107)
+        if prior.get('status')!='V165_ONE_ITEM_PREFLIGHT_PASS':
+            return prior
+        word=input('Type '+APPROVE_INSTALL+' to trial only AROW01 (Enter cancels): ').strip()
+        return run('install',g,w,batch,cumulative,bridge,catalog,resolver,v107,typed=word)
+    except Exception as exc:
+        return {'schema':SCHEMA,'status':'V165_SAFE_STOP',
+                'reason':type(exc).__name__+': '+str(exc)[:155],
+                'gameFilesWritten':0 if mode in ('status','preflight') else 'UNKNOWN_AFTER_EXCEPTION'}
+
+
+
 if __name__=='__main__':
     raise SystemExit('INTERNAL SOURCE: use existing BG_EET_RU_UPDATE.cmd only')
