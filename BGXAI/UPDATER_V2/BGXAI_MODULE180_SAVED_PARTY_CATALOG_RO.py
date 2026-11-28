@@ -12,6 +12,7 @@ import json
 import os
 from pathlib import Path
 import sys
+import re
 
 ROOT=Path(__file__).resolve().parents[2]
 GAME=Path(r"C:\Games\BG_EET_FOXX_NEW")
@@ -239,6 +240,23 @@ def run(game:Path,documents:Path,reports:Path,*,game_required:bool=True,
         info["failureStage"]=stage
         if isinstance(e,Hold):
             info["reason"]=str(e)
+        elif (type(e).__name__=="Hold" and
+              type(e).__module__ in (
+                "bgxai_existing_saved_gam_parser_v1",
+                "bgxai_existing_r3_itm_parser_v3")):
+            # Old vetted parser-specific Hold(ValueError) is NOT this module's
+            # Hold class. Preserve only its fixed machine-readable reason
+            # prefix, not dynamic resrefs, local paths or exception traceback.
+            code=str(e).split(":",1)[0]
+            allowed=("HOLD_","R3_","BIF_","BIFF_","KEY_","CHITIN_",
+                     "ITM_","SPL_","RESOURCE_","R2_","2DA_",
+                     "OVERRIDE_","GAME_")
+            if re.fullmatch(r"[A-Z0-9_]{4,96}",code) and code.startswith(allowed):
+                info["reason"]="HOLD_EXISTING_READER_"+code
+                info["exceptionType"]="KNOWN_READER_HOLD"
+            else:
+                info["reason"]="HOLD_MODULE180_UNEXPECTED_SOURCE_STAGE"
+                info["exceptionType"]="KNOWN_READER_HOLD_INVALID_REASON"
         else:
             klass=type(e).__name__
             safe_classes={"OSError","PermissionError","FileNotFoundError",
