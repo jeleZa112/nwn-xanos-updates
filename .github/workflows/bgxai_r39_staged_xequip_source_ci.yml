@@ -32,6 +32,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      # Before-code gate: v1.1.7 EEex_Debug.lua m_curScriptNum>=3 maps to SCRLEV+1.
+      # RUN THIS while the reviewed R39 Lua source SHA is still the old pinned blob.
       - name: PREWORK before modifying R39 script owner adapter (existing source/ancestry)
         working-directory: .
         run: python project_tools/resume_guard.py --preflight BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_EEEX117_ENGINE_BRIDGE_RO.lua
