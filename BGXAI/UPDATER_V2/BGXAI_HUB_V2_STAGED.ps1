@@ -1,4 +1,4 @@
-param([string]$GameRoot='.',[switch]$SelfTest)
+param([string]$GameRoot='.',[switch]$SelfTest,[string]$IndexFixturePath='')
 # BGXAI onefile V2: one old CMD, one small permanent dispatch, immutable modules.
 # Windows PowerShell 5.1; no game writes, orders, hook installs or implicit retries.
 $ErrorActionPreference='Stop'
@@ -109,7 +109,7 @@ function Check-Index($Index){
  $seen=@{}
  foreach($m in $mods){
   $id=[int]$m.code
-  if($m.code -isnot [int] -or $id -lt 180 -or $id -gt 899 -or
+  if(($m.code -isnot [int] -and $m.code -isnot [long]) -or $id -lt 180 -or $id -gt 899 -or
      $seen.ContainsKey($id) -or
      [string]$m.label -cnotmatch '^[A-Za-z0-9 .:_()/+-]{3,90}$' -or
      [string]$m.language -cnotin @('python','powershell') -or
@@ -243,6 +243,15 @@ function Run-SelfTest {
  $obj.modules[0].mode='guarded'
  try{$null=Check-Index $obj;throw 'SELFTEST_GUARDED_WITHOUT_TOKEN_ACCEPTED'}
  catch{if($_.Exception.Message -ceq 'SELFTEST_GUARDED_WITHOUT_TOKEN_ACCEPTED'){throw}}
+ if($IndexFixturePath -ne ''){
+  $actual=Get-Content -LiteralPath $IndexFixturePath -Raw -Encoding UTF8 | ConvertFrom-Json
+  $active=@(Check-Index $actual)
+  if($active.Count -ne 1 -or $active[0].code -ne 180 -or
+     $active[0].mode -cne 'readonly'){
+   throw 'SELFTEST_ACTUAL_MANIFEST_180_INVALID'
+  }
+  Write-Host 'BGXAI_UPDATER_V2_ACTUAL_MODULE180_MANIFEST_PASS'
+ }
  Write-Host 'BGXAI_UPDATER_V2_SELFTEST_PASS'
 }
 try{
