@@ -210,4 +210,94 @@ check('script assignment: no native trigger evaluation while observing resrefs',
  eq(r.nativeScriptNameVerified,false);hold(r)
 end)
 
+
+-- Stock v1.1.7 EEex_Debug.lua translates internal curScriptNum>=3 by +1
+-- before reading the SCRLEV BCS resref; do not pretend raw 3 is SCRLEV 3.
+check('real upstream debug mapping: internal 3 resolves CLASS SCRLEV4',function()
+ local p,a,s=scriptsFixture()
+ s[4]='BDDEFAI';a.m_curScriptNum=3;a.m_curAction={m_actionID=30}
+ local r=M.probeScriptAssignments(p)
+ eq(r.status,'R39_SCRIPT_RESREFS_OBSERVED_NO_DEPLOY')
+ eq(r.engineDebugScriptIndexRaw,3);eq(r.engineDebugMappedScrlevCandidate,4)
+ eq(r.observedCurrentActionIdRaw,30)
+ eq(r.assignedScriptForObservedActionCandidate,'BDDEFAI')
+ eq(r.engineDebugCursorDoubleReadStable,true)
+ eq(r.mappingVerifiedAgainstEEexDebugV117,true)
+ eq(r.actualBcsExecutionVerified,false);eq(r.actionOriginVerified,false)
+ hold(r)
+end)
+check('internal -1 means no mapped script owner, not a manual action',function()
+ local p,a,s=scriptsFixture()
+ a.m_curScriptNum=-1;a.m_curAction={m_actionID=23}
+ local r=M.probeScriptAssignments(p)
+ eq(r.engineDebugScriptIndexRaw,-1)
+ eq(r.engineDebugMappedScrlevCandidate,nil)
+ eq(r.assignedScriptForObservedActionCandidate,nil)
+ eq(r.actionOriginVerified,false);hold(r)
+end)
+check('current action idle zero does not create BCS attribution',function()
+ local p,a,s=scriptsFixture()
+ a.m_curScriptNum=3;a.m_curAction={m_actionID=0}
+ local r=M.probeScriptAssignments(p)
+ eq(r.engineDebugMappedScrlevCandidate,4)
+ eq(r.assignedScriptForObservedActionCandidate,nil);hold(r)
+end)
+check('internal script index 7 is unsupported, not SCRLEV 7',function()
+ local p,a,s=scriptsFixture()
+ a.m_curScriptNum=7;a.m_curAction={m_actionID=30}
+ local r=M.probeScriptAssignments(p)
+ eq(r.status,'HOLD_SCRIPT_CURSOR_INVALID');hold(r)
+end)
+check('action missing while raw script number set: HOLD',function()
+ local p,a,s=scriptsFixture()
+ a.m_curScriptNum=3
+ local r=M.probeScriptAssignments(p)
+ eq(r.status,'HOLD_SCRIPT_CURSOR_INVALID');hold(r)
+end)
+check('current raw script number mutates during reading: HOLD',function()
+ local p,a,s=scriptsFixture()
+ a.m_curScriptNum=3;a.m_curAction={m_actionID=30}
+ local prior=p.getScriptLevelResRef;local n=0
+ p.getScriptLevelResRef=function(actor,level)
+  n=n+1;if n==14 then a.m_curScriptNum=4 end
+  return prior(actor,level)
+ end
+ local r=M.probeScriptAssignments(p)
+ eq(r.status,'HOLD_SCRIPT_CURSOR_CHANGED');hold(r)
+end)
+check('current action id mutates during reading: HOLD',function()
+ local p,a,s=scriptsFixture()
+ a.m_curScriptNum=3;a.m_curAction={m_actionID=30}
+ local prior=p.getScriptLevelResRef;local n=0
+ p.getScriptLevelResRef=function(actor,level)
+  n=n+1;if n==14 then a.m_curAction.m_actionID=115 end
+  return prior(actor,level)
+ end
+ local r=M.probeScriptAssignments(p)
+ eq(r.status,'HOLD_SCRIPT_CURSOR_CHANGED');hold(r)
+end)
+check('assigned class slot absent: no BCS name conjecture',function()
+ local p,a,s=scriptsFixture()
+ s[4]='';a.m_curScriptNum=3;a.m_curAction={m_actionID=30}
+ local r=M.probeScriptAssignments(p)
+ eq(r.engineDebugMappedScrlevCandidate,4)
+ eq(r.assignedScriptForObservedActionCandidate,nil);hold(r)
+end)
+check('known genuine C#GREY BCS resref accepted and mapped',function()
+ local p,a,s=scriptsFixture()
+ s[0]='C#GREY';a.m_curScriptNum=0;a.m_curAction={m_actionID=30}
+ local r=M.probeScriptAssignments(p)
+ eq(r.status,'R39_SCRIPT_RESREFS_OBSERVED_NO_DEPLOY')
+ eq(r.engineDebugMappedScrlevCandidate,0)
+ eq(r.assignedScriptForObservedActionCandidate,'C#GREY');hold(r)
+end)
+check('script resref path and whitespace still rejected',function()
+ for _,bad in ipairs({'../evil','bad name','a/b'}) do
+  local p,a,s=scriptsFixture()
+  s[4]=bad;a.m_curScriptNum=3;a.m_curAction={m_actionID=30}
+  local r=M.probeScriptAssignments(p)
+  eq(r.status,'HOLD_SCRIPT_RESREF_UNREADABLE');hold(r)
+ end
+end)
+
 print('BGXAI R39 EEex117 engine bridge RO '..tests..'/'..tests..' PASS')
