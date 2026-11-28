@@ -310,7 +310,7 @@
       "error_id": "BGXAI_R41_BUNDLE_REPRO_AND_LIFECYCLE_HOOK_FALSE_20261128",
       "project": "BGXAI",
       "type": "CONFIRMED_FAILURE",
-      "status": "SOURCE_FIXED_CI_PASS_RUNTIME_UNPROVEN",
+      "status": "MITIGATED_SOURCE_ONLY",
       "discovered_at": "2026-11-28",
       "trigger": "Regenerating R41 from a clean GitHub checkout, or registering R40 destroyed/loaded callbacks with an API that explicitly returns false",
       "observed_failure": "The R41 builder resolved R40 in the wrong directory, preventing reproducible generation. R41 forwarded callback registration to R40 whose pcall test did not reject an explicit false return, so readiness could be asserted without both hooks.",
@@ -324,7 +324,8 @@
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46117471549",
         "BGXAI/CURRENT/00_RESUME_CURRENT.md"
       ],
-      "enforcement": "existing R39 CI clean-checkout generator equality, Lua mock false-return regression, original R39/R40 sha pins; no install permission"
+      "enforcement": "existing R39 CI clean-checkout generator equality, Lua mock false-return regression, original R39/R40 sha pins; no install permission",
+      "status_detail": "SOURCE_FIXED_CI_PASS_RUNTIME_UNPROVEN"
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
