@@ -1,5 +1,33 @@
 # BGXAI — ЕДИНСТВЕННАЯ КАНОНИЧЕСКАЯ ТОЧКА ВОССТАНОВЛЕНИЯ
 
+## 28.11.2026 — USER R49 #160 NATIVE INSTALL VERIFICATION
+
+**AUTHENTIC USER CONSOLE 28 NOV 2026, NO NEW CAPTURE NEEDED:** Original and ONLY `BGXAI_UPDATE.cmd`, hub `40cd303fdcf9` verified pinned SHA256 OK, V2 menu180..186 visible; user explicitly chose `185` and typed `INSTALL_BGXAI_R49_BACKPACK16_ONE_STAF01_AFTER_R48_LAST159`. Native result:
+```json
+{
+  "schema": "BGXAI_V2_R49_MENUS184_185_186_ORIGINAL_GUARDED_V1",
+  "status": "R49_LAST160_INSTALLED_AWAITING_GAMEPLAY",
+  "nativeStatus": "R49_BACKPACK16_ONE_STAF01_INSTALLED_AWAITING_GAME",
+  "installed": true,
+  "gameModified": true,
+  "ordersSentAtInstall": 0,
+  "actualXEquipPerformed": false,
+  "originalR48Last159Preserved": true,
+  "oneShotBGX48TRYStillInEffect": true,
+  "manualReviewIfInterrupted": true,
+  "noAutoRetry": true
+}
+```
+The original onefile hub printed `BGXAI: update/status action completed.`; no HOLD/STOP. This is **REAL USER WINDOWS NATIVE DEPLOY/WEIDU INSTALL #160 CONFIRMED**, NOT mere source/CI. R48 #159 remains below it, as explicitly proven by native output. No user-side rerun of 184/185/186, 180..183, rollback, reset, or source capture needed. The old saved GAM already supplied and interpreted (Jagan `*GCLERIC`, STAF01 in actual runtime slot22, old R48 required only slot20, AI bit off at save time); do not ask for it again.
+
+**IMPORTANT PROOF SEPARATION:** `installed=true` means R49 BCS & last WeiDU component were verified; `actualXEquipPerformed=false` means **the installer sent no in-game action and runtime actual item transfer has NOT been observed**. Do not claim first real auto-equip works until a user gameplay observation. R49 new 16-slot OR trigger is earlier/above old R48 in `BDDEFAI`, preserving original one-actor `BGX48TRY` local one-shot flag, actor identity `*GCLERIC`, party position1, quiet idle/zero combat/action queue/no casting, no shield, empty first weapon slot, and exact item `STAF01`. `Name` runtime truth and `BDDEFAI` actual BCS execution still remain unproven by install. The user's prior saved GAM AI enabled flag was OFF at saving; this does NOT prove what live AI was on earlier. Existing save LOCALS `BGX48TRY` was not read; if consumed by prior R48, R49 on same save cannot retry by design.
+
+**NEXT USER ACTION IS ONLY ONE SHORT REAL GAMEPLAY CHECK:** Through existing EEex InfinityLoader, load **disposable/test save** with Jagan Battleforge second portrait, STAF01 anywhere in backpack (do NOT move between slots), weapon0 empty and no shield, turn PARTY AI ON, unpause and let actor be idle outside combat, with no manual orders, then open inventory and look if STAF01 moved to first weapon slot. One explicit result `переместился` or `не переместился`. If no movement, **do not reattempt or change saved LOCALS or reinstall**; continue source-first analysis of Name/BDDEFAI evaluation/one-shot status with already available evidence; no endless diagnostics. Full dynamic V3/V4 actor→target→best weapon across all party is a future separate functional step, **not** claimed by this narrow R49 pilot.
+
+**CURRENT TIERS:** CODE+CI PASS (Windows+Ubuntu workflow `https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46162692094`), ORIGINAL V2 MENU INDEX deployed, **USER REAL NATIVE INSTALL #160 PASS**, GAMEPLAY XEquip LIVE NOT YET PROVEN. One CMD retained, R48 #159 preserved, EPS untouched.
+
+---
+
 ## 28.11.2026 — R49 GUARDED LAST159→160 DELIVERED ORIGINAL V2: CODE/CI/INDEX PASS; USER GAME R48#159 UNCHANGED
 
 **USER + = CONTINUE IMPLEMENTATION, NOT USER APPROVAL FOR GAME MUTATION.** Existing real user's GAM `BALDUR(2).gam` (185732B, SHA256 `e836b3c534dde5b058d0d4cab64e0b5b3b1837c9416a04f5d1a907b812d88c7b`) conclusively identified Jagan party index1, CLERIC/STR12, class script BDDEFAI, STAF01 raw slot22, slot20 EMPTY, no shield/no equipped weapon, GAM NPC name `*GCLERIC`, saved GUI AI bit0 off. Prior game attempts R48 no item moved, and source R48 BAF requires slot20. Local actor `BGX48TRY` was NOT verifiably read from GAM (no plain name bytes, **not** proof of zero). Never re-request same GAM, retest visual slots, or mark R48 runtime gameplay PASS. `Name("*GCLERIC")` runtime check remains unproven, not automatically false due CRE deathVariable None.
