@@ -49,6 +49,8 @@ jobs:
         run: python project_tools/resume_guard.py
       - name: V2 staged single-updater legacy and manifest compatibility (7 exact tests)
         run: python -m unittest discover -s BGXAI/UPDATER_V2 -p test_updater_v2_static.py -q
+      - name: V2 new module180 saved GAM to existing R3 source catalog (10 bounded tests)
+        run: python -m unittest discover -s BGXAI/UPDATER_V2 -p test_module180_saved_party_catalog_ro.py -q
       - name: V2 staged native Windows PowerShell 5.1 parser and negative contract tests
         if: runner.os == 'Windows'
         shell: powershell
