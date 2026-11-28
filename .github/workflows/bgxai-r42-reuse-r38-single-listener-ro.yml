@@ -199,6 +199,9 @@ jobs:
               b=(root/name).read_bytes()
               print('R43_STAGE_PIN',name,len(b),hashlib.sha256(b).hexdigest())
           PY
+      - name: R49 corrected R48 backpack16 exact diff SOURCE ONLY (8 regression tests, NO GAME)
+        run: python -m unittest -v BGXAI/BUILD/R49_R48_BACKPACK16_SOURCE_ONLY_20261128/test_r49_reuse_r48_backpack16_source_only.py
+
       - name: R48 first actual STAF01 action/last159 WeiDU guard mock source (NO GAME)
         run: python -m unittest -v BGXAI/BUILD/R48_ONE_REAL_STAF01_EQUIP_AFTER_R47_20261128/test_r48_first_real_one_shot_item_source_only.py
 
