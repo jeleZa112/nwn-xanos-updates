@@ -7,6 +7,8 @@ on:
       - 'bg-eet-ru/onefile/**'
       - 'bg-eet-ru/hit-only-v160/weapon_names_onefile_dispatch.py'
       - 'bg-eet-ru/hit-only-v160/test_weapon_names_onefile_dispatch.py'
+      - 'bg-eet-ru/hit-only-v160/weapon_names_cumulative_source.py'
+      - 'bg-eet-ru/hit-only-v160/test_weapon_names_cumulative_source.py'
       - '.github/workflows/bg-eet-ru-v162-stage.yml'
   workflow_dispatch:
 permissions:
