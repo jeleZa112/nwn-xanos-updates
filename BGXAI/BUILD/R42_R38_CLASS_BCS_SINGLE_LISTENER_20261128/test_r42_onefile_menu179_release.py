@@ -46,7 +46,7 @@ class T(unittest.TestCase):
     def test_new179_pin_is_exact(self):
         r=self.routes[0]
         self.assertIn(NEW179,r)
-        self.assertIn('$n=25804',r)
+        self.assertIn('$n=35283',r)
         self.assertIn(HELPER_PATH,r)
         # Exact staged child pin is enforced on branch. Current user release
         # continues using the OLD immutable source commit until the separate
