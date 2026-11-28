@@ -1,5 +1,17 @@
 # BGXAI — ЕДИНСТВЕННАЯ КАНОНИЧЕСКАЯ ТОЧКА ВОССТАНОВЛЕНИЯ
 
+## 28.11.2026 — R43 INSTALLED, VERIFIED BY REAL ONEFILE 179→9; FIRST R43 LIVE CAPTURE PENDING
+
+**FIRSTHAND USER-PC NATIVE INSTALL EVIDENCE (2026-11-28):** Same original `BGXAI_UPDATE.cmd` verified immutable source commit `180ef997fd6cee7e3b12c03ecaae472340d9aac0` SHA OK. After prior real `179→8` `R43_PREFLIGHT_EXACT_GUARDED_PASS`, user selected **`179→9`** and explicitly typed exact token `INSTALL_BGXAI_R43_READONLY_REASON_AFTER_R42_LAST`. Native parent response: `status=R43_INSTALL_EXACT_GUARDED_PASS`, `innerStatus=R43_READONLY_REASON_INSTALLED_AWAITING_LIVE`, `sourceCommit=180ef997fd6cee7e3b12c03ecaae472340d9aac0`, `expectedDiagnosticSHA256=8abdc5b1d2088d8c8e2f53b6e4502de5dd0b05225fc6fcca52ebe165253e7ce6`, `gameModified=true`, **`installed=true`**, `classScriptResrefAtLiveJaganVerified=false`, `classScriptResref=null`, `actualBcsExecutionVerified=false`, `manualEpsActionOriginVerified=false`, `ordersSent=0`, `dispatchAuthorized=false`, `armAuthorized=false`, `noAutoRetry=false`. The no-orders result is native read-only instrumentation/WeiDU install, NOT a dynamic equipment move. R43 last156 guarded install is **DEPLOY VERIFIED**; actual R39 HOLD cause and CLASS assignment **still NOT LIVE VERIFIED**. The first R42 179→6 HOLD remains historical and must never be repeated.
+
+**ONLY NEXT LOCAL USER STEP:** one new `179→11` R43 **capture game RO** in same old CMD, game+InfinityLoader initially closed. Load existing Jagan test save, select only Jagan, give one ordinary walking action, close game ordinarily. R43 single listener emits one bounded `[BGXBCS]` event with allowlisted `r39ProbeStatus`, `r39PhysicalReason` and `r39ClassSlotState` (when available) and no orders. Capture may still HOLD (and the caller may exit nonzero) while providing useful diagnostics; preserve FIRST stdout and existing `BGXAI_R43_CLASS_REASON_*.log`, NO auto-retry, NO rollback. Do not use prior `179→6`, `179→8` or `179→9` again, nor `179→7` redundant status. No XEquip/manual action origin claims.
+
+**CODE/TEST** source pass 152/OS Windows+Ubuntu, latest post-channel pin run 46129023635 pass; **SOURCE RELEASED** yes; **DEPLOY** R43 installed true and exact first-hand receipt; **LIVE** R43 capture pending and class resref unknown; **XEquip** remains NO ACTUAL MOVE. Preserve one existing updater and global prior-work gate; next after first capture is to classify actual reason and only minimal relevant action.
+
+---
+
+
+
 ## 28.11.2026 — R43 LIVE PREFLIGHT USER-CONFIRMED; INSTALL NOT YET DONE
 
 **First-hand user Windows stdout, 28.11.2026, existing one-file BGXAI_UPDATE.cmd:** SHA-verified pinned `BGXAI_SYNC.ps1` from immutable `180ef997fd6cee7e3b12c03ecaae472340d9aac0`. User selected **179→8** and received `status=R43_PREFLIGHT_EXACT_GUARDED_PASS`, `innerStatus=R43_PREFLIGHT_LAST155_PASS_NO_INSTALL`, `expectedDiagnosticSHA256=8abdc5b1d2088d8c8e2f53b6e4502de5dd0b05225fc6fcca52ebe165253e7ce6`, `gameModified=false`, `installed=false`, `classScriptResrefAtLiveJaganVerified=false`, `classScriptResref=null`, `actualBcsExecutionVerified=false`, `manualEpsActionOriginVerified=false`, `ordersSent=0`, `dispatchAuthorized=false`, `armAuthorized=false`, `noAutoRetry=false`. Confirmed real-PC guarded preflight: original R42 last155, R43 diagnostic successor candidate/source integrity and exact checks PASS; **does not imply R43 is installed**. Do not repeat 179→8.
