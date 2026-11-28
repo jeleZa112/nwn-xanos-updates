@@ -24,7 +24,7 @@ class OnefileV2Compatibility(unittest.TestCase):
     def test_original_cmd_legacy_release_still_untouched(self):
         raw=CMD.read_bytes()
         self.assertEqual(hashlib.sha1(
-            b'blob '+str(len(raw)).encode()+b'\\x00'+raw
+            b'blob '+str(len(raw)).encode()+bytes([0])+raw
         ).hexdigest(),'0c0428be14f12aea4e0cb027972139d77a860342')
         released=(ROOT/'BGXAI/UPDATER_V2/BGXAI_UPDATE_V2_RELEASE.cmd').read_bytes()
         stage=(ROOT/'BGXAI/UPDATER_V2/BGXAI_UPDATE_V2_STAGE.txt').read_bytes()
