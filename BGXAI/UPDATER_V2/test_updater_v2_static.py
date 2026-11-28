@@ -89,6 +89,33 @@ class OnefileV2Compatibility(unittest.TestCase):
                 self.assertRegex(file['sha256'],r'^[a-f0-9]{64}$')
                 self.assertLessEqual(file['size'],1000000)
 
+    def test_separate_v2_bootstrap_is_exact_sha_and_under_old_cmd_limit(self):
+        pin=json.loads((ROOT/'BGXAI/UPDATER_V2/BOOTSTRAP_PIN_V2.json').read_text())
+        self.assertEqual(pin['schema'],2)
+        self.assertEqual(pin['channel'],'bgxai-fox-new-modular-v2')
+        self.assertEqual(pin['script_path'],'BGXAI/UPDATER_V2/BGXAI_HUB_V2.ps1')
+        final=ROOT/pin['script_path']
+        self.assertLess(final.stat().st_size,80000)
+        self.assertEqual(final.stat().st_size,pin['script_size'])
+        self.assertEqual(hashlib.sha256(final.read_bytes()).hexdigest(),pin['script_sha256'])
+        self.assertEqual(final.read_bytes(),HUB.read_bytes())
+        cmd=(ROOT/'BGXAI/UPDATER_V2/BGXAI_UPDATE_V2_STAGE.txt').read_bytes()
+        self.assertIn(b"BGXAI/UPDATER_V2/BOOTSTRAP_PIN_V2.json",cmd)
+        self.assertIn(b"BGXAI/UPDATER_V2/BGXAI_HUB_V2.ps1",cmd)
+        self.assertNotIn(b"BGXAI/fox_new/BOOTSTRAP_PIN.json",cmd)
+
+    def test_module180_manifest_assets_are_SHA_pinned_to_current_source(self):
+        data=json.loads(INDEX.read_text(encoding='ascii'))
+        modules=[x for x in data['modules'] if x['code']==180]
+        self.assertEqual(len(modules),1)
+        m=modules[0]
+        self.assertEqual(m['mode'],'readonly')
+        self.assertEqual(len(m['files']),3)
+        for entry in m['files']:
+            f=ROOT/entry['path']
+            self.assertEqual(len(f.read_bytes()),entry['size'])
+            self.assertEqual(hashlib.sha256(f.read_bytes()).hexdigest(),entry['sha256'])
+
     def test_existing_pin_unchanged_during_staging(self):
         j=json.loads(PIN.read_text(encoding='utf-8'))
         self.assertEqual(j['commit'],'f2827f25da5a01215fcbdc0b9a48e3900d654384')
