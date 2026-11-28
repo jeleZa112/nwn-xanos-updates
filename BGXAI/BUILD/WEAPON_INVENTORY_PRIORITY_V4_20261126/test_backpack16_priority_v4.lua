@@ -487,7 +487,7 @@ local function r3_snapshot(raw,weaponName,attackType)
    inventoryRawMap=map,items=items}
 end
 local function modeled_from(fixture,force)
- local base=fixture[9][1].weaponModel
+ local base=fixture[8][1].weaponModel
  return function(slot,observed,itm)
   local w={}
   for k,v in pairs(base) do w[k]=v end
