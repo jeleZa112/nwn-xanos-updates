@@ -3,6 +3,16 @@
 <!-- RESUME_GUARD_BGXAI_R39_BAF_BYTES=2303 -->
 <!-- RESUME_GUARD_BGXAI_R39_BAF_SHA256=3b84d38a9df069e3dedfdaf8de6cbf6958a7252d43490fa64b829375cf7cd03d -->
 
+## 28.11.2026 — R42 PREFLIGHT USER-CONFIRMED; INSTALL AND LIVE CAPTURE PENDING
+
+**Latest user handoff (BGXAI 1.6 → new conversation, 28.11.2026):** user reported exact local result `R42_PREFLIGHT_EXACT_GUARDED_PASS` and `gameModified: false`; therefore guarded local preflight is treated as **USER-REPORTED PASS, NOT AN INDEPENDENTLY RE-READ PRIMARY JSON**. No R42 installation, `R42_INSTALL_EXACT_GUARDED_PASS`, `R42_CAPTURE_EXACT_GUARDED_PASS`, or live Jagan `classScriptResref` has been provided in this handoff. **Do not rerun `179→3` or earlier R39 `176→7` native/ITM tests.** The source remains exact current `179` one-file R42 guarded installer; source CI 103/103 each OS is already recorded below.
+
+**FIRST UNFINISHED USER-PC STEP:** close Baldur's Gate and InfinityLoader; use the **same** `BGXAI_UPDATE.cmd` → `179→4 (install)`; type exactly `INSTALL_BGXAI_R42_READONLY_CLASS_BCS_AFTER_R38`. Require actual returned `R42_INSTALL_EXACT_GUARDED_PASS` before `179→6 (capture game RO)`: launch existing test save, select only Jagan, allow one ordinary action, quit. Capture may prove assigned CLASS SCRLEV4 resref only, not executing BCS owner/manual EPS provenance/STAF01 item usability/XEquip. Any HOLD/STOP/error: no install retry, no capture, no automatic rollback; preserve original output for targeted review. Assistant cannot execute local Windows installation remotely. Next code work remains blocked until this exact local result, and later independent manual/EPS/item-safety proofs. **No new updater, listener, equipment commands, or duplicate report files.**
+
+**PRE-WORK/ERROR READ:** checked `GLOBAL_PROJECT_RULES/KNOWN_ERROR_GATES_V1.json` on current branch; relevant existing IDs: `BGXAI_R42_ONEFILE_80KB_AND_JS_LITERAL_REPLACE_20261128`, `BGXAI_R39_V3_PRIOR_WORK_GATE_BYPASS_20261128`, `BGXAI_R41_BUNDLE_REPRO_AND_LIFECYCLE_HOOK_FALSE_20261128`, `BGXAI_RESUME_R39_STALE_PIN_20261127`. No new error was observed by this handoff. **HISTORY_INCOMPLETE** for uncopied primary R42 preflight/install logs; the previous chat text was not fully readable. **CODE/TEST: PASS; DEPLOY R42: UNKNOWN/PENDING; LIVE R42: NOT PROVEN.**
+
+---
+
 ## 28.11.2026 — R42 GUARDED WEIDU155 + CLASS4 CAPTURE IN ONE 179 MENU — LIVE STILL HOLD
 
 **CURRENT STAGE** — **SOURCE CODE / PINNED ONEFILE PUBLISHED, GAME UNTOUCHED.** Earlier R42 source-only stage below is historical; the single `BGXAI_UPDATE.cmd` now has menu `179 — R42 guarded` offering `1=source RO [default], 2=status, 3=preflight RO, 4=install (typed), 5=rollback (typed), 6=capture game RO, 0=exit`. No silent installation; no second CMD.
