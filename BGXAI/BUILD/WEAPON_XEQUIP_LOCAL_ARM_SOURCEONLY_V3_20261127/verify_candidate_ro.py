@@ -65,8 +65,14 @@ def read_party(data:bytes):
         top_name=_short_ascii(_get(data,base+12,8))
         display=_get(data,base+0xc0,32).split(b'\x00',1)[0].decode('cp1252',errors='replace')
         death=_short_ascii(_get(cre,0x280,32))
+        # IESDP CRE V1.0 0x248..0x268: saved CRE script assignments only.
+        # These are neither proof of an executing BCS nor EEex SCRLEV 1/2.
+        saved_scripts={str(level):_short_ascii(_get(cre,offset,8))
+                       for level,offset in ((0,0x248),(4,0x250),(5,0x258),
+                                            (6,0x260),(7,0x268))}
         party.append({'partyIndex':index,'internalName':top_name,'displayName':display,
            'creDeathVariable':death,'classRaw':cre[0x273],
+           'savedCreScriptResrefs':saved_scripts,
            'weaponQuickslots':{str(x):contents[x] for x in range(35,39)},
            'backpack':{str(x):contents[x] for x in range(18,34)},
            'topSlotItems':contents,
@@ -86,7 +92,9 @@ def propose(data:bytes):
             if p['weaponQuickslots']['35'] is not None:continue
             if p['classRaw']!=3:continue
             candidates.append({'actor':{'partyIndexSnapshot':p['partyIndex'],'internalNameFromGAM':p['internalName'],
-              'displayName':p['displayName'],'classRaw':p['classRaw'],'deathVariable':p['creDeathVariable']},
+              'displayName':p['displayName'],'classRaw':p['classRaw'],'deathVariable':p['creDeathVariable'],
+              'savedCreScriptResrefs':p['savedCreScriptResrefs'],
+              'scriptAssignmentEvidence':'SAVED_CRE_V1_ONLY_NOT_LIVE_EEEX'},
               'source':{'resref':'STAF01','slot':int(k),'slotIds':f'SLOT_MISC{int(k)-15}',
               'charges':v['charges'],'flags':v['flags'],'expiry':v['expiry']},
               'target':{'slot':35,'slotIds':'SLOT_WEAPON0','statusInSave':'EMPTY'},
@@ -95,10 +103,12 @@ def propose(data:bytes):
       'gamHeader':'GAMEV2.0','sourceGamSha256':hashlib.sha256(data).hexdigest(),
       'sourceGamBytes':len(data),'partyMembers':len(party),'candidates':candidates,
       'provenBySave':['source item resref and container slot','empty target in saved CRE',
-           'saved actor class raw','saved party position','item charges flags expiration'],
+           'saved actor class raw','saved party position','item charges flags expiration',
+           'five saved CRE V1.0 script resrefs (not current executing BCS)'],
       'notProvenBySave':['runtime actor instance identity','currently loaded session equals input save',
            'item resource ITM availability/usable by class/kit','actor-specific arming scope',
-           'active manual/EPS/current action','native V2 compile','live item move and conservation'],
+           'active manual/EPS/current action','native V2 compile','live item move and conservation',
+           'live EEex assigned BCS level 1/2, current script execution or script slot ownership'],
       'pilotExecutable':False,'manifestExecutable':False,'gameModified':False,'ordersSent':0}
 
 def main():
