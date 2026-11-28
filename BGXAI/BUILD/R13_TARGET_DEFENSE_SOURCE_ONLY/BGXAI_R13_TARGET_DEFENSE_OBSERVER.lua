@@ -9,6 +9,31 @@ local DEF={
  'm_nResistCrushing','m_nResistPiercing','m_nResistSlashing'
 }
 M.fields=DEF
+-- BG(2)EE: effective AC against each attack kind is the general AC
+-- plus the corresponding derived AC modifier. This is MODEL-ONLY until a
+-- version-pinned installed EEex source validates fields and snapshot identity.
+local AC_FIELDS={
+ CRUSHING='m_nACCrushingMod',
+ PIERCING='m_nACPiercingMod',
+ SLASHING='m_nACSlashingMod',
+ MISSILE='m_nACMissileMod'
+}
+local function effective_ac_candidate(fields)
+ if type(fields)~='table' then return nil end
+ local base=fields.m_nArmorClass
+ if type(base)~='number' or base~=base or base%1~=0 or
+    base< -60 or base>100 then return nil end
+ local out={}
+ for typ,key in pairs(AC_FIELDS) do
+  local mod=fields[key]
+  if type(mod)~='number' or mod~=mod or mod%1~=0 or
+     mod< -200 or mod>200 then return nil end
+  local total=base+mod
+  if total< -50 or total>100 then return nil end
+  out[typ]=total
+ end
+ return out
+end
 local function int(x,lo,hi)
  return type(x)=='number' and x==x and x~=math.huge and x~=-math.huge and
   x%1==0 and x>=lo and x<=hi
@@ -119,6 +144,7 @@ function M.inspect(source,action,api,ctx)
  if not same_reading(first,second) then
   return output('HOLD','DEFENSE_STATS_CHANGED_DURING_READ') end
  local full=#second.missing==0
+ local byAttack=full and effective_ac_candidate(second.fields) or nil
  return output(full and 'TARGET_RAW_DEFENSE_FIELDS_CANDIDATE_ONLY' or
   'TARGET_PARTIAL_DEFENSE_FIELDS_CANDIDATE_ONLY',
   full and 'UNVERIFIED_IN_NATIVE_EEEX_AND_EFFECTS_UNKNOWN' or
@@ -129,6 +155,11 @@ function M.inspect(source,action,api,ctx)
    selectedSlotIsAmmo=(slot>=11 and slot<=14),
    rawFields=second.fields,missingFields=second.missing,
    rawDefenseFieldsComplete=full,allDamageTypesModeled=false,
+   targetArmorClassByAttackTypeCandidate=byAttack,
+   targetTypeACModelStatus=byAttack and
+     'R13_DERIVED_ATTACK_TYPE_AC_MODEL_ONLY' or 'HOLD_TYPE_AC_NOT_MODELABLE',
+   targetTypeACModelSnapshotId=byAttack and ctx.snapshotId or nil,
+   targetTypeACNativeAuthenticated=false,
    nativeItemDamageTypeUnknown=true,
    damageTypeACResolutionUnverified=true,
    protectionsAndItemImmunitiesUnknown=true,
