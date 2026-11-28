@@ -56,6 +56,20 @@ jobs:
           print('R46_NEW179_PIN',len(b),hashlib.sha256(b).hexdigest())
           PY
 
+      - name: Pin R47 guarded source and corrected Lua source before staging onefile (NO GAME)
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          for p in (
+            'BGXAI/BUILD/R47_GUARDED_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/BGXAI_R47_WITNESS_LAST157_TO158_GUARDED_SOURCE_ONLY.py',
+            'BGXAI/BUILD/R47_GUARDED_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/BGXAI_R47_CORRECT_R46_EEEX_SCRIPT_PORT_SOURCE_ONLY.py',
+          ):
+              raw=Path(p).read_bytes()
+              print('R47_SOURCE_PIN',p,len(raw),hashlib.sha256(raw).hexdigest())
+          PY
+
       - name: Pin exact proposed R46 onefile native TEMP-only sources (NO GAME)
         shell: bash
         run: |
