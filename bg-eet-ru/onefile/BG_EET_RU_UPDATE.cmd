@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 167
+SELF_VERSION = 168
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -8179,8 +8179,8 @@ def v163_dispatch(game,mode,offline=False):
  except Exception as e:print('V163_ZIP_HOLD',str(e)[:90]);return 2
  print('V163:',report.get('status'),report.get('reason',''))
  return 0 if report.get('status') in ('CUMULATIVE_PREFLIGHT_PASS','CUMULATIVE_NOT_INSTALLED','CUMULATIVE_INSTALLED_AWAITING_GAMEPLAY','CUMULATIVE_ROLLED_BACK_TO_FIRST64') else 2
-V165_PIN='e4eea7218bc1e57398c464bf22cce87c40b9b67b86a3ef422abaeb8a53af82ec'
-V165_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/2cb9cab8b5f5b7f168be09a529e884948eae9941/bg-eet-ru/weapon-identity/V165_ONE_ITEM_DUAL_PILOT.py'
+V165_PIN='188e0ea92f5ce27a70c505f1e6fca6a1175c8a93befa235b78c5084bba71c28e'
+V165_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/39a98f35050097980180b322efb117e497454261/bg-eet-ru/weapon-identity/V165_ONE_ITEM_DUAL_PILOT.py'
 def v165_dispatch(game,mode,offline=False):
  try:
   p=v121_cache(game)/'V165_DUAL_ONE_ITEM.py'
@@ -8381,7 +8381,7 @@ def main(argv=None):
     if a=='8':return v133_audit(game,WORKDIR/REPORT_NAME)
     if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)
     if a=='14':
-       try:b=input('V167 AROW01:1=status 2=check 3=install 4=undo [1]: ').strip()
+       try:b=input('V168 AROW01:1=status 2=check 3=install 4=undo [1]: ').strip()
        except EOFError:b=''
        return v165_dispatch(game,{'2':'preflight','3':'install','4':'rollback'}.get(b,'status'),args.offline)
     if a=='13':

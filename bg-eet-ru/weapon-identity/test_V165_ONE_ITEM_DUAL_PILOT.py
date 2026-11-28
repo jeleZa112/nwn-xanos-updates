@@ -15,7 +15,11 @@ pilot=importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(pilot)
 V107=(ROOT/'BG_EET_RU_V107_GUARDED_CALLBACK_SOURCE_ONLY.lua').read_bytes()
 
-BASE="""local BG_EET_RU_V160_names={ AROW01='Стрела', BOW05='Короткий лук' }
+BASE="""-- Synthetic V108 twice-wrapped callback, followed by V160 third wrapper.
+function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage(context) return nil end
+function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage(context) return nil end
+local BG_EET_RU_V160_previous = BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage
+local BG_EET_RU_V160_names={ AROW01='Стрела', BOW05='Короткий лук' }
 local function BG_EET_RU_V160_ref(item)
  if not item then return nil end
  return item.cResRef:get()
@@ -52,7 +56,7 @@ class PilotTests(unittest.TestCase):
     def test_exact_v107_reuse_one_existing_callback_and_cyrillic_names(self):
         raw=self.make()
         self.assertIn(b'BG_EET_RU_V107_ResolveName',raw)
-        self.assertEqual(raw.count(b'function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage(context)'),1)
+        self.assertEqual(raw.count(b'function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage(context)'),3)
         executable=b'\n'.join(line for line in raw.splitlines() if not line.lstrip().startswith(b'--'))
         self.assertNotIn(b'EEex_Sprite_AddAlterBaseWeaponDamageListener(',executable)
         lua=LuaRuntime(unpack_returned_tuples=True)
@@ -69,6 +73,54 @@ class PilotTests(unittest.TestCase):
         self.assertEqual(call('BOW05',0),'Оружие при попадании: Короткий лук')
         self.assertEqual(call('AROW01',0,Item('BOW05',1)),
                          'Оружие при попадании: Отличная стрела (Короткий лук)')
+
+    def test_v168_actual_v160_source_third_wrapper_preserves_v108_chain_123_names(self):
+        actual=(ROOT.parent/'hit-only-v160/BG_EET_RU_V160_HIT_ONLY_APPEND.lua').read_bytes().replace(b'\r\n',b'\n')
+        self.assertEqual(pilot.digest(actual),
+                         'ad76b46df1359bfdeeb9400f6b10f2ecd104059bd17a12d737fa60dcd733445c')
+        target=b'function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage(context)'
+        prefix=(target+b'\n BG_EET_RU_V108_HITS=(BG_EET_RU_V108_HITS or 0)+1\n return nil\nend\n')*2
+        old="    BOW05='Короткий лук',\n".encode('utf-8')
+        self.assertEqual(actual.count(old),1)
+        added=b''.join(("    Z%04d='Сохраняемый перевод %d',\n"%(i,i)).encode('utf-8')
+                       for i in range(123))
+        original=prefix+b'\n'+actual.replace(old,old+added)
+        self.assertEqual(original.count(target),3)
+        with patch.object(pilot,'EXPECTED_V163_SHA',pilot.digest(original)):
+            candidate=pilot.compose(original,PAIR,V107)
+        marker=b'local BG_EET_RU_V160_previous = BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage'
+        self.assertEqual(candidate.split(marker,1)[0],original.split(marker,1)[0])
+        self.assertEqual(candidate.count(target),3)
+        self.assertEqual(candidate.count(b'local function BG_EET_RU_V165_pick('),1)
+        self.assertEqual(candidate.count(added),1)
+        lua=LuaRuntime(unpack_returned_tuples=True)
+        lua.execute('messages={}; Infinity_DisplayString=function(x) table.insert(messages,x) end')
+        lua.execute('EEex_IsBitSet=function(f,n) return (f%(2^(n+1)))>=(2^n) end')
+        lua.execute(candidate.decode('utf-8'))
+        cb=lua.globals().BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage
+        def call(ref,flags):
+            cb(lua.table_from({'weapon':Item(ref,flags)}))
+            return lua.globals().messages[len(lua.globals().messages)]
+        self.assertEqual(call('AROW01',0),'Оружие при попадании: Отличная стрела')
+        self.assertEqual(call('AROW01',1),'Оружие при попадании: Стрела')
+        self.assertEqual(call('BOW05',1),'Оружие при попадании: Короткий лук')
+        self.assertEqual(lua.globals().BG_EET_RU_V108_HITS,3)
+        self.assertEqual(lua.globals().BG_EET_RU_V160_HIT.shown,3)
+
+    def test_v168_missing_or_duplicated_real_v160_anchor_fails_closed(self):
+        real=(ROOT.parent/'hit-only-v160/BG_EET_RU_V160_HIT_ONLY_APPEND.lua').read_bytes().replace(b'\r\n',b'\n')
+        tag=b'local BG_EET_RU_V160_previous = BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage'
+        target=b'function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage(context)'
+        legacy=(target+b'\n return nil\nend\n')*2
+        original=legacy+real
+        for corrupted in (original.replace(tag,b''),original+tag,
+                          original.replace(target,b'function different(context)',1),
+                          original.replace(b'BG_EET_RU_V160_name(weapon)',
+                                           b'BG_EET_RU_V160_name(launcher)')):
+            with self.subTest(mutated=pilot.digest(corrupted)[:12]):
+                with patch.object(pilot,'EXPECTED_V163_SHA',pilot.digest(corrupted)):
+                    with self.assertRaises(pilot.Hold):
+                        pilot.compose(corrupted,PAIR,V107)
 
     def test_modifying_prior_v163_lua_must_stop(self):
         with self.assertRaises(pilot.Hold):
@@ -235,7 +287,7 @@ class PilotTests(unittest.TestCase):
                 {'gamePins':{'Baldur.exe':'0'*64},'weiduSha':'0'*64},
                 {'itemPins':{}},FakeBatch,None)
 
-    def test_v167_published_onefile_backend_and_manifest_exact(self):
+    def test_v168_published_onefile_backend_and_manifest_exact(self):
         import json
         base=ROOT.parent/'onefile'
         cmd=(base/'BG_EET_RU_UPDATE.cmd').read_bytes()
@@ -245,18 +297,18 @@ class PilotTests(unittest.TestCase):
         backend_bytes=P.read_bytes().replace(b'\r\n',b'\n')
         self.assertNotIn(b'\r',backend_bytes)
         backend_sha=pilot.digest(backend_bytes)
-        self.assertEqual(manifest['version'],167)
+        self.assertEqual(manifest['version'],168)
         self.assertEqual(manifest['sha256'],pilot.digest(cmd))
         self.assertEqual(len(cmd),747154)
         self.assertLessEqual(len(cmd),750000)
         self.assertEqual(manifest['v165_backend_sha256'],backend_sha)
         self.assertEqual(manifest['v167_pr129_dual_bridge_sha256'],pilot.V167_DUAL_BRIDGE_SHA)
-        self.assertIn(b'SELF_VERSION = 167',cmd)
+        self.assertIn(b'SELF_VERSION = 168',cmd)
         self.assertIn(('V165_PIN=\''+backend_sha+'\'').encode('ascii'),cmd)
         self.assertIn(b'14=dual',cmd)
-        self.assertIn(b'V167 AROW01:1=status 2=check 3=install 4=undo',cmd)
+        self.assertIn(b'V168 AROW01:1=status 2=check 3=install 4=undo',cmd)
         self.assertIn(b'V165_ONE_ITEM_DUAL_PILOT.py',cmd)
-        self.assertIn(b'2cb9cab8b5f5b7f168be09a529e884948eae9941',cmd)
+        self.assertIn(b'39a98f35050097980180b322efb117e497454261',cmd)
         self.assertIs(manifest['default_game_writes_allowed'],False)
 
     def test_v167_actual_immutable_legacy_bridge_mismatch_and_verified_dual_loader(self):

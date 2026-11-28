@@ -141,22 +141,47 @@ def compose(existing:bytes,names:dict,v107:bytes):
     if not isinstance(v107,bytes) or not v107.startswith(b'-- BG_EET_RU V107') or (
         b'function BG_EET_RU_V107_ResolveName(ref, item)' not in v107):
         raise Hold('V107_SOURCE_IDENTITY_HOLD')
+    # V108 already has >=2 globally named wrappers. V160 *intentionally*
+    # appends its third wrapper to preserve previous observer behavior.
+    # User's real V163 Lua derives from exactly that guarded V160 append;
+    # expecting a single occurrence here was the V167 false SAFE_STOP.
     a=b'function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage(context)'
+    tag=b'local BG_EET_RU_V160_previous = BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage'
     b=b'BG_EET_RU_V160_name(weapon)'
     c=b'BG_EET_RU_V160_name(launcher)'
-    if existing.count(a)!=1 or existing.count(b)!=1 or existing.count(c)!=1 or (
-        existing.count(b'EEex_Sprite_AddAlterBaseWeaponDamageListener(')>1) or (
+    if existing.count(tag)!=1 or existing.count(a)<3 or (
+        existing.count(b)!=1 or existing.count(c)!=1 or
         b'BG_EET_RU_V165_pick' in existing or b'BG_EET_RU_V107_GUARD' in existing):
         raise Hold('V160_CALLBACK_OR_V163_LUA_DRIFT')
+    historical, sep, v160=existing.partition(tag)
+    if not sep or historical.count(a)<2 or v160.count(a)!=1 or (
+        v160.count(b)!=1 or v160.count(c)!=1 or
+        b'local function BG_EET_RU_V160_name(ref)' not in v160):
+        raise Hold('V160_FINAL_WRAPPER_OR_PRIOR_CHAIN_DRIFT')
+    # Ignore comment mentions of listener registration; only executable
+    # lines can register a new native hook. Preserve the existing count.
+    def executable_listener_count(src):
+        return sum(line.lstrip().startswith(
+            b'EEex_Sprite_AddAlterBaseWeaponDamageListener(')
+            for line in src.splitlines())
+    active_listeners=executable_listener_count(existing)
     helper=(b'local function BG_EET_RU_V165_pick(ref,item)\n'
             b' if ref=="AROW01" and type(BG_EET_RU_V107_ResolveName)=="function" then\n'
             b'  local n=BG_EET_RU_V107_ResolveName(ref,item)\n'
             b'  if n then return n end\n'
             b' end\n'
             b' return BG_EET_RU_V160_name(ref)\nend\n')
-    candidate=existing.replace(a,helper+a)
-    candidate=candidate.replace(b,b'BG_EET_RU_V165_pick(weapon,context.weapon)')
-    candidate=candidate.replace(c,b'BG_EET_RU_V165_pick(launcher,context.launcher)')
+    # Patch ONLY the last V160 wrapper; earlier V108 wrapper chain remains
+    # byte-for-byte identical (no repeated helper insertion).
+    changed=v160.replace(a,helper+a,1)
+    changed=changed.replace(b,b'BG_EET_RU_V165_pick(weapon,context.weapon)',1)
+    changed=changed.replace(c,b'BG_EET_RU_V165_pick(launcher,context.launcher)',1)
+    candidate=historical+tag+changed
+    if not candidate.startswith(historical+tag) or (
+        candidate.count(a)!=existing.count(a) or
+        candidate.count(b)!=0 or candidate.count(c)!=0 or
+        executable_listener_count(candidate)!=active_listeners):
+        raise Hold('V165_V160_WRAPPER_INVARIANT_FAILED')
     def lua_quote(n):return json.dumps(n,ensure_ascii=False).encode('utf-8')
     config=(b'\n-- V165 one-item user-approved bit0 trial, no extra callback/listener.\n'
             b'BG_EET_RU_V107_GUARD.verified_dual_pairs={AROW01={identified='+

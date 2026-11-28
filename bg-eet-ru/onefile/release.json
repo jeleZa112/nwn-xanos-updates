@@ -1,18 +1,19 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 167,
-  "sha256": "c3f4f55188bfd1c20c81cd1fd790430ee47719c27109cc2d1871182333190aaf",
-  "mode": "V167_V165_PR129_PINNED_DUAL_EXTRACTOR_IMPORT_CONTRACT",
+  "version": 168,
+  "sha256": "eb7f5b69ec37b1ffef03bd54c2e3ef1cfab365c4fed0ad1837082512facfc804",
+  "mode": "V168_V165_PRESERVE_REAL_V108_V160_WRAPPER_CHAIN",
   "game_writes_allowed": false,
-  "note": "V167 fixes user-confirmed V166 14->2 AttributeError: frozen V162 bridge lacks PR129 dual_russian_names_source_only. The same V165 one-item backend now loads actual merged PR129 bridge by pinned Git commit + SHA256 into separate external cache, reuses all unchanged V162/V163 R3/V111 catalog sources and 123 installed ITM pins. Tests assert real legacy bridge has no function and real PR129 function extracts both Russian AROW01 names with both dialog TLKs and original ITM. No new game writes by default; 14->2 READ ONLY first. No additional listeners, no new updater, all prior version 166 security guards unchanged. User runtime not verified.",
+  "note": "V168 fixes user V167 14->2 false V160_CALLBACK_OR_V163_LUA_DRIFT: V108 V160 existing observer is intentionally multiply wrapped. Actual V160 guarded install requires at least two prior definitions, and appends a final third; original V165 pilot incorrectly required exactly one. Only the exact final V160 wrapper identified by the original V160_previous marker is patched, V108 earlier chain preserved byte-for-byte; verify original 123 names and single V160 reference pair, fail closed for absent/duplicate tag, no extra native hook. User AROW01 preflight READ-ONLY, no game writes until typed install. Source/test/publish do not prove live native flags.",
   "default_game_writes_allowed": false,
   "typed_game_write_mode_available": true,
   "requires_exact_typed_install_and_rollback": true,
   "weidu_native_component": false,
   "last_only_rollback_guard": "EXACT_V163_123_LUA_STATE_SHA_CURRENT_ITM_TLK_WEIDU_TRANSACTION_SHA_GAME_PINS_EXTERNAL_BACKUP",
   "v68_original_source_sha256": "c5fb02e40301384687b2a5c1662c6b04c040d92739cd2df4899d5ed4067f9068",
-  "v165_backend_sha256": "e4eea7218bc1e57398c464bf22cce87c40b9b67b86a3ef422abaeb8a53af82ec",
+  "v165_backend_sha256": "188e0ea92f5ce27a70c505f1e6fca6a1175c8a93befa235b78c5084bba71c28e",
   "weidu_drift_policy": "V166_ONLY: V162 original WeiDU SHA preserved; all 123 current ITM+origins and all original gamePins and DLLs verified; live WeiDU SHA pinned across preflight, typed approval, install and rollback; original V162/V163 strict checks unchanged",
-  "v167_pr129_dual_bridge_sha256": "f77de7d48adbbd33be8a71e621386d5a72b2a0194d6249e848103b12679aefff"
+  "v167_pr129_dual_bridge_sha256": "f77de7d48adbbd33be8a71e621386d5a72b2a0194d6249e848103b12679aefff",
+  "v168_v160_wrapper_policy": "V108>=2 + exact final V160 one, original V162/V163 123 names and callback chain preserved"
 }
