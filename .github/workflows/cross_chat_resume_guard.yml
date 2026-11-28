@@ -32,4 +32,6 @@ jobs:
           python-version: '3.11'
       - run: python project_tools/resume_guard.py
       - run: python project_tools/resume_guard.py --self-test
+      - run: python project_tools/resume_guard.py --preflight BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/M_BGXW3_EXPLICIT_USER_ARM_SOURCE_ONLY.lua
+      - run: python project_tools/resume_guard.py --preflight BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/M_BGXW3_R41_LINK_SOURCE_ONLY.lua
       - run: python GLOBAL_PROJECT_RULES/known_error_guard.py --self-test
