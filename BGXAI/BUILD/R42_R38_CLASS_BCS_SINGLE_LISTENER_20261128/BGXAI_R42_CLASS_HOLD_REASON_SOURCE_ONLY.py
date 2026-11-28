@@ -128,7 +128,7 @@ def patch(original_candidate: bytes) -> bytes:
         result.count(b"EEex_Action_AddSpriteStartedActionListener,pilot.listener") != 1 or
         result.count(b"EEex_Action_AddSpriteStartedActionListener(") != 0 or
         result.count(b"R27.r42Once=true") != 1 or
-        result.count(b"probeInstalledScriptAssignments()") != 1):
+        result.count(b"probeInstalledScriptAssignments()") != original_candidate.count(b"probeInstalledScriptAssignments()")):
         raise ValueError("HOLD_R42_DIAG_LISTENER_OR_ONE_SHOT_CHANGED")
     for tag in (b"[BGXR27]", b"[BGXR37]", b"[BGXINV3]", b"[BGXID]"):
         if result.count(tag) != original_candidate.count(tag):
