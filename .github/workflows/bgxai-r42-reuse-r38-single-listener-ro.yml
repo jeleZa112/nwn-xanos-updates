@@ -8,6 +8,7 @@ on:
       - 'BGXAI/BUILD/R45_R41_ARMER_NUMERIC_ID_SOURCEONLY_20261128/**'
       - 'BGXAI/BUILD/R46_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/**'
       - 'BGXAI/BUILD/R47_GUARDED_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/**'
+      - 'BGXAI/BUILD/R48_ONE_REAL_STAF01_EQUIP_AFTER_R47_20261128/**'
       - 'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_ACTOR_ID_GUARD_SOURCE_ONLY.py'
       - 'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/test_r39_actor_wrapper_id_guard_source_only.py'
       - 'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/test_r39_actor_wrapper_id_guard_source_only.lua'
@@ -138,6 +139,26 @@ jobs:
               b=(root/name).read_bytes()
               print('R43_STAGE_PIN',name,len(b),hashlib.sha256(b).hexdigest())
           PY
+      - name: R48 first actual STAF01 action/last159 WeiDU guard mock source (NO GAME)
+        run: python -m unittest -v BGXAI/BUILD/R48_ONE_REAL_STAF01_EQUIP_AFTER_R47_20261128/test_r48_first_real_one_shot_item_source_only.py
+
+      - name: Print R48 staged one-shot action+guard pins before binding to onefile
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib,importlib.util
+          root=Path('BGXAI/BUILD/R48_ONE_REAL_STAF01_EQUIP_AFTER_R47_20261128')
+          for p in (root/'BGXAI_R48_REUSE_R39_ONE_SHOT_BAF_SOURCE_ONLY.py',
+                    root/'BGXAI_R48_LAST158_TO159_ONE_ITEM_GUARDED.py'):
+              b=p.read_bytes()
+              print('R48_SOURCE_PIN',p,len(b),hashlib.sha256(b).hexdigest())
+          spec=importlib.util.spec_from_file_location('r48_source',root/'BGXAI_R48_REUSE_R39_ONE_SHOT_BAF_SOURCE_ONLY.py')
+          r48=importlib.util.module_from_spec(spec);spec.loader.exec_module(r48)
+          b=r48.compose()
+          print('R48_ACTUAL_XEQUIP_BAF_PIN',len(b),hashlib.sha256(b).hexdigest())
+          PY
+
       - name: Test R47 corrected witness reuses native-confirmed R46 inert BAF (SOURCE ONLY)
         run: python -m unittest -v BGXAI/BUILD/R47_GUARDED_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/test_r47_reuse_r46_exact_witness_port_source_only.py
 
