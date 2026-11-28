@@ -131,6 +131,19 @@ local function select_verified_dual_name(ref, identification, state)
     return name
 end
 
+-- Reuse-only public primitive resolver for the existing V160 label.
+-- Never keeps a CItem, never registers a listener or writes UI.
+-- Missing proof/invalid flag falls back to original V160 label (nil).
+function BG_EET_RU_V107_ResolveName(ref, item)
+    local st = BG_EET_RU_V107_GUARD
+    if not st.enabled then return nil end
+    local result = select_verified_dual_name(ref, read_citem_identification(item, st), st)
+    local row = type(st.verified_dual_pairs) == 'table' and st.verified_dual_pairs[ref] or nil
+    if type(row) ~= 'table' then return nil end
+    if result == row.identified or result == row.unidentified then return result end
+    return nil
+end
+
 -- Called by an already-registered V105/V106 listener ONLY after a future
 -- explicitly approved same-CMD deployment; no auto-hook or auto-execution.
 function BG_EET_RU_V107_GuardedObserve(context)

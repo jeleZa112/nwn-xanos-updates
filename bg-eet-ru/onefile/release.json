@@ -1,14 +1,16 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 164,
-  "sha256": "80db1808d3748f03c10c090345c40afcd17881bacac80d68ad9d88f0e1f1f90e",
-  "mode": "V164_V107_EXISTING_READONLY_LUABINDINGS_FINGERPRINT",
+  "version": 165,
+  "sha256": "478c663294c43d328d23f250affb490c0a548433c2e36dd1980ace7becab9da9",
+  "mode": "V165_ONE_ITEM_AROW01_TYPED_DUAL_RU_PILOT",
   "game_writes_allowed": false,
-  "note": "V164 extends only the existing V107 read-only static fingerprint to root LuaBindings.dll (sha256, size, status) and adds a synthetic selftest. All V163 first64+59 cumulative name code/menus, deployed game Lua, backups, rollback, V160 and journal remain untouched. No CItem native read, EEex hook, installed DLL import, gameplay or game file writes. Original V163 terms: One existing BG_EET_RU_UPDATE.cmd, 749793/750000 bytes. Menus 1-12 unchanged, new 13 status/read-only preflight/typed install/typed last-only rollback for second batch. Reuses exact immutable V162 backend, first64 installed state SHA and R3/V111 current-game TLK+ITM. Second 64 historical seeds are candidates ONLY: no new names are installed without fresh in-game verification and typed user consent. External backup restores exact first64 installed Lua, never rewrites first V162 state/rollback. No new EEex hook, no TLK/WeiDU/game save writes. Released source and targeted CI do not imply user installation. Default game writes remain disabled.",
+  "note": "One existing updater. V165 adds only menu 14 and immutable V165 backend for AROW01 identified/unidentified Russian names using existing V107 bit0 and V160 callback; exact V163 123-name baseline, fresh both RU TLKs and ITM SHA, official EEex 1.2.0 DLL SHA, external backup, typed install, last-only rollback. Default game writes disabled. V68 historical embedded source recompressed losslessly; unchanged bytes on decompression. Publishing the installer is not user deployment or LIVE proof. PREPARED rollback receipt recovery is verified in source unit tests.",
   "default_game_writes_allowed": false,
   "typed_game_write_mode_available": true,
   "requires_exact_typed_install_and_rollback": true,
   "weidu_native_component": false,
-  "last_only_rollback_guard": "EXACT_V162_FIRST64_LUA_STATE_SHA_CURRENT_ITM_TLK_WEIDU_GAME_PINS_EXTERNAL_BACKUP"
+  "last_only_rollback_guard": "EXACT_V162_FIRST64_LUA_STATE_SHA_CURRENT_ITM_TLK_WEIDU_GAME_PINS_EXTERNAL_BACKUP",
+  "v68_original_source_sha256": "c5fb02e40301384687b2a5c1662c6b04c040d92739cd2df4899d5ed4067f9068",
+  "v165_backend_sha256": "d882c235ee4c2f57d02d5fc3afd614dead1bc918cbd45077a22bea3baf715dea"
 }
