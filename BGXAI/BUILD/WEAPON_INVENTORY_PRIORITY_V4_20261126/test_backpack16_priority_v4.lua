@@ -706,4 +706,131 @@ test('autobatch_refuses_changed_r37_snapshot_mid_scan',function()
  assert(x.r37CaptureStatus=='HOLD_TOPLEVEL_ITEM_CHANGED')
  contract(x)
 end)
+
+-- R13 is the OLD, read-only target defense reader. This bridge uses its
+-- double-read on native-action candidate 105/134; R3 still owns item ITM.
+local R13=dofile('BGXAI/BUILD/R13_1_TARGET_DEFENSE_SOURCE_ONLY/BGXAI_R13_TARGET_DEFENSE_OBSERVER.lua')
+local function with_r13()
+ local sprite,obs,context,bag,quick,other,scene,candidates,v3Scene=r37_fixture()
+ sprite.m_equipment.m_selectedWeapon=35
+ sprite.m_equipment.m_selectedWeaponAbility=0
+ local getter=sprite.m_equipment.m_items.get
+ local stableItems={}
+ sprite.m_equipment.m_items.get=function(self,slot)
+  if stableItems[slot]==nil then stableItems[slot]=getter(self,slot) end
+  return stableItems[slot]
+ end
+ local action={m_actionID=105,m_acteeID={m_Instance=222}}
+ local target={m_id=222,m_bAllowEffectListCall=1,isSprite=function()return true end}
+ local stats={m_nArmorClass=0,m_nACCrushingMod=0,m_nACPiercingMod=-1,
+  m_nACSlashingMod=-3,m_nACMissileMod=4,
+  m_nResistCrushing=0,m_nResistPiercing=0,
+  m_nResistSlashing=0,m_nResistMissile=40}
+ local api={GameObject_Get=function(id)return id==222 and target or nil end,
+  GetActiveStats=function()return stats end}
+ local contextR13={sessionId='S1',snapshotId='SNAP1',sequence=1,
+  actor=123,targetActor=222,actionRaw=105,
+  selectedSlot=35,selectedAbility=0,
+  readOnlyContextOnly=true,switchAttempted=false,manualEPSBoundaryProven=false}
+ local raw=R37Bag.captureTopLevel(sprite,obs,context)
+ assert(raw.status=='TOPLEVEL0_38_AND_R37_STABLE_ADVICE_ONLY')
+ local f={sprite,obs,context,bag,quick,other,scene,candidates,v3Scene}
+ local calls=0
+ local proxy={inspect=function(...)
+  calls=calls+1
+  return R13.inspect(...)
+ end}
+ local p={sprite=sprite,action=action,api=api,context=contextR13,
+  r13=proxy,r37=obs,contextReader=context,reader=R37Bag,
+  r3=r3_snapshot(raw),projection=modeled_from(f),
+  scene=scene,v3Scene=v3Scene,previousV3=nil,v3=V3}
+ return p,stats,target,function()return calls end
+end
+test('r13_real_action105_to_full_16_slot_weapon_choice_same_target',function()
+ local p,stats,target,calls=with_r13()
+ local beforeAC=p.v3Scene.enemy.armorClass
+ local beforeRes=p.v3Scene.enemy.protections.resistance.MISSILE
+ local initial=M.planAutoBatchWithR13(p)
+ assert(initial.status=='HOLD_AUTOBATCH_TARGET_RANKING_UNSTABLE')
+ assert(type(initial.v3Next)=='table')
+ assert(initial.r13DefensesReadFromSameAttack and initial.r13ActionId==105)
+ assert(initial.r13AttackTypeACModel.MISSILE==4)
+ assert(initial.r13AttackTypeACModel.SLASHING==-3)
+ assert(initial.r13PhysicalResistancesModel.MISSILE==0.4)
+ -- Caller is NOT mutated; only cloned V3 scene receives raw R13 armor.
+ assert(p.v3Scene.enemy.armorClass==beforeAC)
+ assert(p.v3Scene.enemy.protections.resistance.MISSILE==beforeRes)
+ p.scene.tick=101;p.v3Scene.frame.tick=101;p.previousV3=initial.v3Next
+ local out=M.planAutoBatchWithR13(p)
+ assert(out.status=='STAGE_DECISION_AWAIT_INDEPENDENT_MANUAL_EPS_ROUND_PROOF')
+ assert(out.pendingWeaponChange.kind=='EQUIP_BACKPACK_TO_EMPTY_QUICKSLOT')
+ assert(out.pendingWeaponChange.sourceSlot==18 and out.r13TargetId==222)
+ assert(out.r13NativeRuntimeAuthenticated==false and out.r13AllImmunitiesKnown==false)
+ assert(calls()==2)
+ contract(out)
+end)
+test('r13_action134_context_remains_observed_only',function()
+ local p=with_r13()
+ p.action.m_actionID=134;p.context.actionRaw=134;p.r37.actionRaw=134
+ local initial=M.planAutoBatchWithR13(p)
+ assert(initial.status=='HOLD_AUTOBATCH_TARGET_RANKING_UNSTABLE')
+ assert(initial.r13ActionId==134)
+ contract(initial)
+end)
+test('r13_nonattack_weapon_selection_92_does_not_bypass_target_guard',function()
+ local p=with_r13()
+ p.action.m_actionID=92;p.context.actionRaw=92;p.r37.actionRaw=92
+ local x=M.planAutoBatchWithR13(p)
+ assert(x.status=='HOLD_AUTOBATCH_R13_TARGET_DEFENSE_UNSTABLE')
+ assert(x.r13Reason=='NOT_AN_ATTACK_CANDIDATE_ACTION')
+ contract(x)
+end)
+test('r13_target_temporarily_recalculating_stats_blocks_full_batch',function()
+ local p,stats,target=with_r13()
+ target.m_bAllowEffectListCall=0
+ local calls=0
+ p.reader={captureTopLevel=function()calls=calls+1;error('no scan')end}
+ local x=M.planAutoBatchWithR13(p)
+ assert(x.status=='HOLD_AUTOBATCH_R13_TARGET_DEFENSE_UNSTABLE')
+ assert(x.r13Reason=='TARGET_ACTIVE_STATS_TEMP_OR_EFFECTS_IN_PROGRESS')
+ assert(calls==0)
+ contract(x)
+end)
+test('r13_target_or_action_mismatch_cannot_make_weapon_decision',function()
+ local p=with_r13()
+ p.context.targetActor=333
+ local x=M.planAutoBatchWithR13(p)
+ assert(x.status=='HOLD_AUTOBATCH_R13_R27_ACTOR_TARGET_ACTION_MISMATCH')
+ contract(x)
+ p.context.targetActor=222
+ p.action.m_acteeID.m_Instance=333
+ local y=M.planAutoBatchWithR13(p)
+ assert(y.status=='HOLD_AUTOBATCH_R13_TARGET_DEFENSE_UNSTABLE')
+ contract(y)
+end)
+test('r13_negative_resistance_not_clamped_into_normal_damage',function()
+ local p,stats=with_r13()
+ stats.m_nResistMissile=-15
+ local x=M.planAutoBatchWithR13(p)
+ assert(x.status=='HOLD_AUTOBATCH_R13_RESISTANCE_OUTSIDE_MODEL')
+ contract(x)
+end)
+test('r13_outside_supported_attack_type_AC_is_HOLD',function()
+ local p,stats=with_r13()
+ stats.m_nACMissileMod=-99
+ local x=M.planAutoBatchWithR13(p)
+ assert(x.status=='HOLD_AUTOBATCH_R13_TYPE_AC_UNSUPPORTED')
+ contract(x)
+end)
+test('r13_busy_action_queue_disables_even_target_probe',function()
+ local p,stats,target,calls=with_r13()
+ p.r37.queuedActionsRaw=2
+ local scans=0
+ p.reader={captureTopLevel=function()scans=scans+1;error('not allowed')end}
+ local x=M.planAutoBatchWithR13(p)
+ assert(x.status=='PRESERVE_KNOWN_ACTION_QUEUE_NO_SCAN')
+ assert(x.knownQueuedActions==2 and x.r13ObserveCalls==0)
+ assert(scans==0 and calls()==0)
+ contract(x)
+end)
 print("BGXAI BACKPACK16 PRIORITY V4 "..n.." synthetic tests PASS")
