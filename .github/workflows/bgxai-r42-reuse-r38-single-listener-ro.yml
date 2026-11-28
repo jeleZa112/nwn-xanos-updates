@@ -41,6 +41,16 @@ jobs:
 
       - name: Test one-CMD source-only R42 child (pinned, isolated)
         run: python -m unittest -v BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_onefile_source_ro.py
+      - name: Published 179 new guarded helper SHA before release pin
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          p=Path('BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py')
+          b=p.read_bytes()
+          print('NEW_R42_GUARDED179_PIN',len(b),hashlib.sha256(b).hexdigest())
+          PY
       - name: Verify one-CMD menu 179 regression and 80KB source cap
         run: python -m unittest -v BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_onefile_menu179_release.py
       - name: Native Windows PowerShell parse only (do not execute updater)
