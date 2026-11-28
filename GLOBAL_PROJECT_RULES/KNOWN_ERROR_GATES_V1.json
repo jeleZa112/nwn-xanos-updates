@@ -626,6 +626,24 @@
         "live": "NO"
       },
       "remaining": "Full 37/37 exact GitHub V4 suite, 493-case CI and LIVE EET native target/effective alternate APR+manual/EPS safe window not observed PASS"
+    },
+    {
+      "error_id": "BGXAI_R37_R27_RAW_SLOT_SCHEMA_V4_JOIN_20261128",
+      "project": "BGXAI",
+      "discovered_at": "2026-11-28",
+      "status": "CORRECTED_IN_SOURCE_NOT_LIVE_OR_CI_VERIFIED",
+      "type": "R37_NATIVE_RAW_DATA_SCHEMA_MISMATCH",
+      "cause": "Initial R37 to V4 all-inventory bridge assumed modeled slots used {slot,resrefRaw} and offhand was array. Exact existing R27 raw slot schema is {index,kind,ordinal,access,itemResrefRaw,resrefAccess,useCount1Raw,useCount2Raw,useCount3Raw,flagsRaw}; offhandRaw is singleton. Mismatch would always HOLD or mask valid identity.",
+      "evidence": "Source cross-check: BGXAI/BUILD/R37_XEQUIP_IDENTITY_SINGLE_LISTENER_SOURCEONLY_20261127/M_BGXR27_R37_INV3_IDENTITY_SOURCE_ONLY.lua, R2 take_slot() and R27.observe() quickWeaponsRaw / quiversRaw / offhandRaw fields. No in-game error observed.",
+      "smallest_fix": "Updated same_raw_item to validate exact R27 fields and singleton offhand; only reuse current R37 callback and R37 backpack capture; source Git blob c03664af8c80f56b9c1f8bc20a40dd36c74b63a9; no new module/listener. V4 planWithR37 stays pure read-only, never dispatch.",
+      "no_repeat": "Before every cross-source join inspect native producer output field names/shapes, not prior consumer model representations. Do not repeat R47 witness 179→22. Do not call source-only test PASS until actual executed.",
+      "scope": {
+        "code": "FIXED",
+        "test": "ADDED_5_TO_EXISTING_42_CASE_SUITE_UNEXECUTED",
+        "deploy": "NO",
+        "live": "NO"
+      },
+      "remaining": "Run original V4 42 case suite / full 498 offline; establish native same-frame target and hypothetical unselected item final APR/THAC0 plus safe EPS/round boundary"
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
