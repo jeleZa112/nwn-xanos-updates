@@ -105,6 +105,50 @@ def _getslot(group, slot):
     return sel[0]
 
 
+def raw_script_evidence(candidate: list[dict]):
+    """Reuse R38 same-callback raw script/action fields without guessing BCS."""
+    observed = collections.Counter()
+    raw_source_count = 0
+    for record in candidate:
+        stable = record.get('actionContextSnapshotStable')
+        script_number = record.get('currentScriptNumberRaw')
+        require(stable is None or type(stable) is bool,
+                'HOLD_R38_SCRIPT_CONTEXT_FLAG_MALFORMED')
+        if stable is True:
+            if script_number is not None:
+                require(type(script_number) is int and -32768 <= script_number <= 32767,
+                        'HOLD_R38_CURRENT_SCRIPT_RAW_INVALID')
+                observed[script_number] += 1
+        else:
+            require(script_number is None, 'HOLD_UNSTABLE_R38_SCRIPT_RAW')
+        source_stable = record.get('actionSourceStable')
+        require(source_stable is None or type(source_stable) is bool,
+                'HOLD_R38_SOURCE_STABILITY_FLAG_MALFORMED')
+        if source_stable is True:
+            raw = record.get('actionSourceRaw')
+            require(record.get('actionSourceReadStatus') == 'SOURCE_RAW_OBSERVED' and
+                    type(raw) is str and 1 <= len(raw) <= 48 and
+                    all(32 <= ord(ch) <= 126 for ch in raw),
+                    'HOLD_R38_SOURCE_RAW_UNTRUSTED')
+            raw_source_count += 1
+        else:
+            require(record.get('actionSourceRaw') is None,
+                    'HOLD_UNSTABLE_R38_SOURCE_RAW')
+    return {
+        'rawCurrentScriptNumberEvents': sum(observed.values()),
+        'rawCurrentScriptNumberHistogram': [
+            {'valueRaw': n, 'events': count}
+            for n, count in sorted(observed.items())
+        ],
+        'unclassifiedRawActionSourceAvailableEvents': raw_source_count,
+        'rawActionSourceContentPublished': False,
+        'rawScriptNumberMappedToSCRLEV': False,
+        'actualBcsExecutionVerified': False,
+        'scriptSlotOwnershipVerified': False,
+        'manualEpsActionOriginVerified': False,
+    }
+
+
 def evaluate(captured: dict, item: dict):
     r27, rid = captured['[BGXR27] '], captured['[BGXID] ']
     require(len(r27) == len(rid) and len(r27) >= MIN_EVENTS,
@@ -177,6 +221,7 @@ def evaluate(captured: dict, item: dict):
        'armAuthorized': False, 'dispatchAuthorized': False,
        'ordersSent': 0, 'gameModified': False,
        'liveXEquipTransferVerified': False}
+    out.update(raw_script_evidence(candidate))
     return out
 
 
