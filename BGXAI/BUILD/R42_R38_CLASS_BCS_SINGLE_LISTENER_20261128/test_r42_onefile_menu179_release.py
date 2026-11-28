@@ -9,7 +9,7 @@ SYNC=ROOT/'BGXAI/BGXAI_SYNC.ps1'
 BOOT=ROOT/'BGXAI_UPDATE.cmd'
 HELPER=ROOT/'BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py'
 OLD175='d6fa98f19bb693e4f2cb43216307805ba427a4accefa703d03f33c299df21a3c'
-NEW179='737cbbc5fbb00e2570bdf9f2769600cd9022dac1e3ee8b84784d512fd376920f'
+NEW179='fcc90eed4fb138bb2714c7cbdfb960e80c5b65e86e62421269992cb64c6a01d3'
 HELPER_PATH='BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py'
 LIMIT=80000
 
@@ -23,7 +23,7 @@ class T(unittest.TestCase):
 
     def test_limit_with_margin(self):
         self.assertLessEqual(len(self.raw),LIMIT)
-        self.assertEqual(len(self.raw),79792)
+        self.assertEqual(len(self.raw),79798)
 
     def test_ascii_exact_onefile(self):
         self.assertTrue(self.raw.isascii())
@@ -32,7 +32,7 @@ class T(unittest.TestCase):
     def test_one_unambiguous_router(self):
         self.assertEqual(len(self.routes),1)
         self.assertEqual(self.routes[0].count("if($choice -eq '179')"),1)
-        self.assertEqual(self.src.count("179 R42 RO"),1)
+        self.assertEqual(self.src.count("179 R42 guarded"),1)
 
     def test_keep_existing_175_176_stage_and_native_flag(self):
         r=self.routes[0]
@@ -46,7 +46,7 @@ class T(unittest.TestCase):
     def test_new179_pin_is_exact(self):
         r=self.routes[0]
         self.assertIn(NEW179,r)
-        self.assertIn('$n=8351',r)
+        self.assertIn('$n=15902',r)
         self.assertIn(HELPER_PATH,r)
         self.assertEqual(hashlib.sha256(HELPER.read_bytes()).hexdigest(),NEW179)
 
@@ -63,10 +63,16 @@ class T(unittest.TestCase):
         self.assertIn('80000',b)
         self.assertIn('BGXAI_SYNC.ps1',b)
 
-    def test_original_entrypoint_179_not_installer(self):
+    def test_179_install_is_only_opt_in_inside_sha_pinned_child(self):
         self.assertIn('--native-readonly @extra',self.routes[0])
         self.assertNotIn('--install',self.routes[0])
         self.assertNotIn('--rollback',self.routes[0])
+        child=HELPER.read_text(encoding='utf-8')
+        self.assertIn('INSTALL_BGXAI_R42_READONLY_CLASS_BCS_AFTER_R38',child)
+        self.assertIn('ROLLBACK_BGXAI_R42_RESTORE_R38_ONLY',child)
+        self.assertIn('input("Type "+correct',child)
+        self.assertIn('"1": "source"',child)
+        self.assertIn('mode=args.mode if args.mode is not None else choose_mode()',child)
 
     def test_source_has_no_unexpected_auto_action(self):
         h=HELPER.read_text(encoding='utf-8')
@@ -93,12 +99,13 @@ class T(unittest.TestCase):
         self.assertEqual(channel['script_path'],'BGXAI/BGXAI_SYNC.ps1')
         self.assertEqual(channel['script_size'],len(self.raw))
         self.assertEqual(channel['script_sha256'],hashlib.sha256(self.raw).hexdigest())
-        self.assertEqual(channel['commit'],'6ae745332d314d6bacd8ad883cdf808ae7a866f5')
+        self.assertEqual(channel['commit'],'4200fd84027b2937cb16400b3eddb2030d7b0634')
 
     def test_published_source_only_claim_is_accurate(self):
         import json
         channel=json.loads((ROOT/'BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text(encoding='utf-8'))
-        self.assertIn('source-only',channel['description'])
+        self.assertIn('default SOURCE READ-ONLY',channel['description'])
+        self.assertIn('explicit typed install/rollback',channel['description'])
         self.assertIn('179',channel['description'])
         self.assertIn('175/176',channel['description'])
         self.assertLess(channel['script_size'],80000)
