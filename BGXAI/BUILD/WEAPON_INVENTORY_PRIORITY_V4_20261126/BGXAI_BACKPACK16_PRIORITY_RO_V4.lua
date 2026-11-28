@@ -264,6 +264,26 @@ function M.planWithV3(backpack,quick,other,scene,candidates,v3Scene,previous,v3)
  end
  if not finite(currentScore) then
   return result('HOLD_V3_V4_CURRENT_TARGET_SCORE_UNKNOWN') end
+ -- V3 has ALREADY scored every occupied quickslot against this actor/target.
+ -- Compare a backpack candidate to the BEST READY quickslot, not merely the
+ -- selected weapon. Otherwise a weak backpack item can displace a stronger
+ -- item that is already equipped and requires no inventory transaction.
+ local readyBest=nil
+ for _,ready in ipairs(preview.candidates) do
+  if ready.available~=false then
+   if not finite(ready.value) or type(ready.id)~='string' or
+      not integer(ready.slotIndex,0,3) then
+    return result('HOLD_V3_V4_READY_QUICKSLOT_SCORE_INVALID') end
+   if readyBest==nil or ready.value>readyBest.value then
+    readyBest=ready
+   end
+  end
+ end
+ local selectedScore=currentScore
+ if readyBest~=nil and readyBest.value>currentScore then
+  currentScore=readyBest.value
+  currentReason=nil -- an already equipped option is better than selected
+ end
  local count=0
  for k in pairs(candidates) do
   count=count+1
@@ -307,6 +327,17 @@ function M.planWithV3(backpack,quick,other,scene,candidates,v3Scene,previous,v3)
  -- This is a pure model composition; never set 'proven live' on any input.
  advice.v3V4Link='SAME_ACTOR_TARGET_BACKPACK_MODEL_ONLY'
  advice.v3Next=preview.next
+ advice.selectedScoreModel=selectedScore
+ advice.bestEquippedScoreModel=readyBest and readyBest.value or nil
+ advice.bestEquippedWeaponId=readyBest and readyBest.id or nil
+ advice.comparisonBasis='BEST_ALREADY_EQUIPPED_QUICKSLOT'
+ if advice.status=='KEEP_CURRENT_NO_MEANINGFUL_GAIN' and
+    readyBest~=nil and readyBest.id~=current.id then
+  -- The selected weapon may be worse, but the next step is an ordinary
+  -- quickslot choice, NOT an item move from the backpack.
+  advice.status='PREFER_ALREADY_EQUIPPED_QUICKSLOT_NO_INVENTORY_MOVE'
+  advice.suggestedQuickslotIndex=readyBest.slotIndex
+ end
  advice.engineFinalAlternativeStatsVerified=false
  advice.inventoryMoveAuthorized=false
  advice.dispatchAuthorized=false
