@@ -236,6 +236,80 @@ class NativeFixture(unittest.TestCase):
         self.assertEqual(r['aprtables']['CLSWPBON']['provenance']['origin'],'CURRENT_GAME_OVERRIDE')
         self.assertTrue(r['aprtables']['CLSWPBON']['contentsParsed'])
 
+    def full_inventory_catalog(self):
+        return r3.audit_r37_top_level(r3.NativeSource(self.root),self.make_r37_capture())
+
+    def test_native_r3_lua_catalog_is_inert_and_keeps_real_itm_data(self):
+        txt=r3.export_r37_lua_cache(self.full_inventory_catalog())
+        self.assertTrue(txt.startswith('-- BGXAI SOURCE-ONLY STAGED DATA.'))
+        self.assertIn('return {',txt)
+        self.assertIn('["sourceKind"]="CURRENT_GAME"',txt)
+        self.assertIn('["schema"]="BGXAI_R3_R37_LUA_STATIC_CATALOG_V1"',txt)
+        self.assertIn('["inventoryLinkSchema"]="BGXAI_R3_R37_TOPLEVEL_ITM_JOIN_SOURCE_ONLY_V1"',txt)
+        self.assertIn('["nativeCurrentAlternativeAPRVerified"]=false',txt)
+        self.assertIn('["inventoryTransferAuthorized"]=false',txt)
+        self.assertIn('["SW1H04"]',txt)
+        self.assertIn('["STAF01"]',txt)
+        self.assertNotIn('XEquipItem(',txt)
+        self.assertNotIn('EEex_Action_Queue',txt)
+        self.assertNotIn('ClearActions(',txt)
+
+    def test_native_r3_catalog_deterministic_no_new_game_files(self):
+        report=self.full_inventory_catalog()
+        before=(self.root/'override').iterdir()
+        self.assertEqual(len(list(before)),0)
+        a=r3.export_r37_lua_cache(report)
+        b=r3.export_r37_lua_cache(report)
+        self.assertEqual(a,b)
+        self.assertLess(len(a),1000000)
+        self.assertEqual(len(list((self.root/'override').iterdir())),0)
+
+    def test_native_r3_lua_catalog_executes_as_pure_table_in_lua(self):
+        import shutil, subprocess
+        cmd=next((n for n in ('lua5.3','lua5.4','luajit') if shutil.which(n)),None)
+        if not cmd:self.skipTest('Lua not installed; GitHub Linux job tests Lua')
+        code=r3.export_r37_lua_cache(self.full_inventory_catalog())
+        path=self.root/'staged_source_data_only.lua'
+        path.write_text(code,encoding='ascii')
+        program=('local r=dofile(arg[1]);'
+                 'assert(type(r)=="table");'
+                 'assert(r.inventoryRawMap[18].resref=="SW1H04");'
+                 'assert(r.items.STAF01.item.proficiencyIdRaw==102);'
+                 'assert(r.dispatchAuthorized==false);'
+                 'assert(r.nativeCurrentAlternativeAPRVerified==false);'
+                 'assert(r.items.SW1H04.item.abilities[1].attackTypeRaw==1);'
+                 'print("R3_LUA_CATALOG_DATA_PASS")')
+        p=subprocess.run([cmd,'-e',program,str(path)],capture_output=True,
+                         text=True,timeout=10)
+        self.assertEqual(p.returncode,0,p.stderr)
+        self.assertIn('R3_LUA_CATALOG_DATA_PASS',p.stdout)
+
+    def test_native_r3_catalog_rejects_untrusted_archive_source(self):
+        report=self.full_inventory_catalog()
+        report['sourceKind']='OLDER_USER_ZIP_SNAPSHOT'
+        with self.assertRaisesRegex(r3.Hold,'SOURCE_OR_PROVENANCE'):
+            r3.export_r37_lua_cache(report)
+
+    def test_native_r3_catalog_rejects_forged_equip_authority(self):
+        report=self.full_inventory_catalog()
+        report['inventoryTransferAuthorized']=True
+        with self.assertRaisesRegex(r3.Hold,'SOURCE_OR_PROVENANCE'):
+            r3.export_r37_lua_cache(report)
+
+    def test_native_r3_catalog_rejects_stale_slot_mapping(self):
+        report=self.full_inventory_catalog()
+        report['inventoryRawMap'][18]['resref']='STAF01'
+        with self.assertRaisesRegex(r3.Hold,'SOURCE_OR_PROVENANCE|ITEMS_NOT_SAME_INVENTORY'):
+            r3.export_r37_lua_cache(report)
+
+    def test_native_r3_catalog_never_serializes_control_characters_or_lua_code(self):
+        report=self.full_inventory_catalog()
+        report['items']['SW1H04']['item']['abilities'][0]['effects'].append({
+            'resourceRaw':'X")\n_G.BGXAI_HACK=true\n--','opcodeRaw':100,
+            'effectVerified':False})
+        with self.assertRaisesRegex(r3.Hold,'NONASCII_OR_CONTROL_CHAR'):
+            r3.export_r37_lua_cache(report)
+
 class Tables(unittest.TestCase):
     def test_real_clswpbon_from_user_archive(self):
         # Portable miniature of real archive content; no library file dependency.
