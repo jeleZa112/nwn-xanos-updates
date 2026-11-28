@@ -351,4 +351,113 @@ test('immune_selected_still_prefers_effective_equipped_over_weak_backpack',funct
  assert(x.bestEquippedScoreModel>6)
  contract(x)
 end)
+-- R37's EXISTING single-callback raw schema is index/itemResrefRaw,
+-- not slot/resrefRaw; its offhand is a singleton, never an array.
+local R37Bag=dofile('BGXAI/BUILD/WEAPON_INVENTORY_CORRECTED_V3_20261126/BGXAI_BACKPACK16_R37_RO_V3.lua')
+local function r37_fixture()
+ local bag,quick,other,scene,candidates,v3Scene=v3v4()
+ local slots={}
+ for slot=0,38 do
+  local x=slot>=18 and slot<=33 and bag.slots[slot] or
+          slot>=35 and quick[slot] or other[slot]
+  slots[slot]=x
+ end
+ local items={get=function(self,slot)
+  local x=slots[slot]
+  if x==nil or x.status=='EMPTY' then return nil end
+  return {cResRef={get=function()return x.resref end},m_flags=0,
+   m_useCount1=0,m_useCount2=0,m_useCount3=0}
+ end}
+ local actor={m_id=123,m_equipment={m_items=items}}
+ local function raw(slot,kind,ordinal)
+  local x=slots[slot]
+  local t={index=slot,kind=kind,ordinal=ordinal,
+    access=x.status=='EMPTY' and 'NULL' or 'OBJECT_RETURNED_UNVERIFIED'}
+  if x.status~='EMPTY' then
+   t.itemResrefRaw=x.resref
+   t.resrefAccess='RAW_RESREF_RETURNED_UNVERIFIED'
+   t.useCount1Raw=0;t.useCount2Raw=0;t.useCount3Raw=0;t.flagsRaw=0
+  end
+  return t
+ end
+ local obs={schema='BGXAI_R27_SINGLE_CALLBACK_SELECTED_RO_V1',
+  status='CURRENT_SELECTED_SAME_CALLBACK_SOURCE_CANDIDATE',
+  readOnly=true,ordersSent=0,dispatchAuthorized=false,
+  weaponSwitchAuthorized=false,sameLuaListenerInvocation=true,
+  rawInventoryDoubleReadConsistent=true,
+  selectedDerivedStatsDoubleReadConsistent=true,
+  queueSnapshotStable=true,actionContextSnapshotStable=true,
+  actor=123,partyIndex=1,actionRaw=105,selectedWeaponRaw=35,
+  selectedAbilityRaw=0,queuedActionsRaw=0,currentScriptNumberRaw=4,
+  quickWeaponsRaw={},quiversRaw={}}
+ for i=1,4 do
+  obs.quickWeaponsRaw[i]=raw(34+i,'QUICKWEAPON',i-1)
+  obs.quiversRaw[i]=raw(10+i,'QUIVER',i-1)
+ end
+ obs.offhandRaw=raw(9,'OFFHAND_OR_SHIELD',0)
+ local ctx=function()
+  return {actorId=123,actionRaw=105,selectedWeaponRaw=35,
+   selectedAbilityRaw=0,queuedActionsRaw=0,currentScriptNumberRaw=4}
+ end
+ return actor,obs,ctx,bag,quick,other,scene,candidates,v3Scene,slots
+end
+test('r37_full_real_top_level_raw_map_for_v4',function()
+ local sprite,obs,ctx=r37_fixture()
+ local x=R37Bag.captureTopLevel(sprite,obs,ctx)
+ assert(x.status=='TOPLEVEL0_38_AND_R37_STABLE_ADVICE_ONLY')
+ assert(x.topLevelSlotsCount==39 and x.backpack.slots[18].resref=='HAMM01')
+ assert(x.quick[35].resref=='BOW05' and x.other[9].status=='EMPTY')
+ assert(x.alternativeAPRVerified==false and x.sameTickProven==false)
+ assert(x.dispatchAuthorized==false and x.inventoryMoveAuthorized==false)
+end)
+test('r37_full_map_rejects_raw_selected_weapon_mismatch',function()
+ local sprite,obs,ctx=r37_fixture()
+ obs.quickWeaponsRaw[1].itemResrefRaw='SW1H04'
+ local x=R37Bag.captureTopLevel(sprite,obs,ctx)
+ assert(x.status=='HOLD_TOPLEVEL_R37_GEAR_CHANGED')
+ assert(x.dispatchAuthorized==false)
+end)
+test('r37_full_map_rejects_mutating_item_reads',function()
+ local sprite,obs,ctx=r37_fixture()
+ local get=sprite.m_equipment.m_items.get
+ local seen=0
+ sprite.m_equipment.m_items.get=function(self,slot)
+  if slot==35 then
+   seen=seen+1
+   if seen==2 then
+    return {cResRef={get=function()return 'SW1H04' end},
+      m_flags=0,m_useCount1=0,m_useCount2=0,m_useCount3=0}
+   end
+  end
+  return get(self,slot)
+ end
+ local x=R37Bag.captureTopLevel(sprite,obs,ctx)
+ assert(x.status=='HOLD_TOPLEVEL_ITEM_CHANGED')
+ assert(x.dispatchAuthorized==false)
+end)
+test('r37_to_v3_v4_target_aware_no_new_listener',function()
+ local sprite,obs,ctx,b,q,o,s,c,vm=r37_fixture()
+ local one=M.planWithR37(sprite,obs,ctx,R37Bag,s,c,vm,nil,V3)
+ assert(one.status=='HOLD_V3_V4_TARGET_RANKING_UNSTABLE'
+        and type(one.v3Next)=='table')
+ contract(one)
+ s.tick=101;vm.frame.tick=101
+ local x=M.planWithR37(sprite,obs,ctx,R37Bag,s,c,vm,one.v3Next,V3)
+ assert(x.status=='ADVISE_BACKPACK16_TO_EMPTY_QUICKSLOT_DRYRUN_ONLY')
+ assert(x.r37InventoryMap=='ON_DEMAND_TOPLEVEL0_38_SOURCE_ONLY')
+ assert(x.sourceSlot==18 and x.targetSlot==36 and x.candidateResref=='HAMM01')
+ assert(x.nativeInventoryInstanceAuthenticated==false)
+ contract(x)
+end)
+test('r37_v4_rejects_laundered_native_or_dispatch_claim',function()
+ local sprite,obs,ctx,b,q,o,s,c,vm=r37_fixture()
+ local forged={captureTopLevel=function()
+  return {status='TOPLEVEL0_38_AND_R37_STABLE_ADVICE_ONLY',
+   readOnly=true,sourceOnly=true,dispatchAuthorized=true,
+   inventoryMoveAuthorized=false}
+ end}
+ local x=M.planWithR37(sprite,obs,ctx,forged,s,c,vm,nil,V3)
+ assert(x.status=='HOLD_R37_TOPLEVEL_RAW_MAP_UNVERIFIED')
+ contract(x)
+end)
 print("BGXAI BACKPACK16 PRIORITY V4 "..n.." synthetic tests PASS")
