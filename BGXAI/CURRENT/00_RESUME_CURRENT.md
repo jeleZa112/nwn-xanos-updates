@@ -1,5 +1,24 @@
 # BGXAI — ЕДИНСТВЕННАЯ КАНОНИЧЕСКАЯ ТОЧКА ВОССТАНОВЛЕНИЯ
 
+## 28.11.2026 — USER CLOSED 181 INSTALL CONSOLE; RECOVER VIA READONLY 183
+
+**REAL USER RESPONSE:** User confirmed they had performed the proposed original V2 menu181 guarded R48 installation action, then reported **"я закрыл консоль"**. No terminal JSON, no `status` or `reason` from 181 was provided. Therefore **R48 deployment on user's PC is UNKNOWN**, not verified installed, not verified absent, and gameplay XEquip remains UNKNOWN. **NEVER REPEAT 181** on uncertain first attempt and **NEVER PREEMPTIVELY RUN 182 ROLLBACK**. The original R48 guard itself has precise SHA-verified `status(...)` using WeiDU component count #158/#159, proof JSON and BCS SHA; original source works read-only and can classify installed/absent or HOLD on interrupted/mismatched states. Reuse it; no new game logic.
+
+**EXACT MINIMAL DELTA DEPLOYED TO THE EXISTING SINGLE V2 MENU:** Added **183** `R48 install state recovery RO` via immutable `BGXAI/UPDATER_V2/MODULES_V1.json`, `mode=readonly`, no typed install/rollback token, using `BGXAI/UPDATER_V2/BGXAI_MODULE183_R48_STATUS_RO.py` from commit `bd0b1971ba104ac69d9a34c9d5340d5bdc01501d`, exact 4173 bytes SHA256 `9814a4f9840b6d458492e6df384f0376c36836d20d61cc9f442444a7ed586e6d`. Manifest published at `03d2cbc7de7f3f3fedb3e5ef95b3e7ede2ac78cb`, size 15912 below original V2 hub 32KB bound, module183 pins **19 files**: its script plus exact original 18 pinned R48 dependency files already used by 181. **Original CMD, hub, WeiDU files, menu180, guarded menu181 and menu182 hashes/entries remain unchanged**. Existing module181 adapter verifies R48 original guard Git blob; 183 uses `bridge.load_original()`, `native.load_checked()`, **only `native.status(*parents[:-1],game)`**, never install, rollback, XEquip or game-action.
+
+**STATUS INTERPRETATION** from 183:
+- `R48_INSTALLED_AWAITING_GAMEPLAY_VERIFIED` only if original read-only R48 last #159, installed proof and installed BCS SHA all verified. Means WeiDU installed; **does not mean XEquipItem was actually performed in game**.
+- `R48_NOT_INSTALLED_VERIFIED` only if exact R47 #158 pre-R48 last and proof state verified.
+- `R48_STATE_UNVERIFIED_DO_NOT_REINSTALL`, with reason `HOLD_...`, if current installed state is partially written, unexpected, changed, or not trustable. Fail-closed; `gameModified=false`, `ordersSent=0`, `noAutoRetry=true`. This is not equivalent to R48 absent.
+
+**SOURCE/CI PROOF, NOT USER PC STATUS:** Seven dedicated 183 cases including successful installed/absent, uncertainty, forged status and no direct invoke; new static test checks 19 exact asset SHA, original 180/181/182 unchanged, native Windows original V2 `Check-Index` validates FULL **180..183** using unchanged original PS5.1 hub; old one-entry selftest still PASS. Workflow `https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46160346090` **SUCCESS Windows + Ubuntu**; R48 native original guard, original CMD and user EET unmodified by this source publication. Earlier nonfinal CI 46160288381 failed only because old static test pair-unpacked `[181:]` and now had 183; fixed exact `[1:3]` with no gameplay changes.
+
+**NEXT USER ACTION:** Open same existing `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`, choose **183 only once**, send its JSON `status` and optional `reason`; do not choose 181/182/180, do not duplicate installation. No game launch, WeiDU install, rollback, capture or manual file copy needed. If 183 absent due offline cached older manifest, preserve initial menu output; do not overwrite updater. If 183 verifies installed, proceed to ONE disposable-save actual Jagan/STAF01 test; if `HOLD`, plan manual evidence-guided recovery, no automatic rollback. General V4 actor→target→best weapon remains separate SOURCE ONLY.
+
+**CODE/TEST/DEPLOY/LIVE:** 183 CODE+CI PASS, manifest DEPLOY published, user runtime 183 PENDING. User's actual 181 native install state UNKNOWN, one-shot item movement NOT PROVEN. Original module180 static catalog Windows success (6 party, 16/17 ITM) still closed; DO NOT repeat.
+
+---
+
 ## 28.11.2026 — ORIGINAL V2 MODULES 181/182 R48 REAL ONE-SHOT: CODE+CI PASS, USER INSTALL NOT PERFORMED
 
 **LATEST USER REAL PROOF remains CLOSED module180:** One original V2 `BGXAI_UPDATE.cmd` finished `SOURCE_CATALOG_PARTIAL_OUTSIDE_GAME`: 6 saved party actors, 16/17 native ITM (1 quarantined), zero unavailable linked SPL, `gameModified=false`, `ordersSent=0`, outputs `BGXAI_GAM_R3_4824580592a4_41ef2b38d882.lua/.json` in Documents/BGXAI_LIVE_REPORTS. DO NOT run 180 again, do not request old GAM. Saved inventory static data DOES NOT PROVE live actor/resref, alternative APR, target immunity, or R48 Jagan same-session presence.
