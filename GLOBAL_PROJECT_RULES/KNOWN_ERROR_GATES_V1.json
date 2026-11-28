@@ -164,6 +164,26 @@
   },
   "project_error_register": [
     {
+      "error_id": "BGXAI_R39_PROVENANCE_BUILD_SCOPE_AND_DEPENDENT_SHA_DRIFT_20261128",
+      "project": "BGXAI",
+      "type": "CONFIRMED_FAILURE",
+      "status": "MITIGATED_SOURCE_ONLY",
+      "discovered_at": "2026-11-28",
+      "trigger": "Modifying R39 native script-assignment source when an existing V3 saved-CRE reader receipt has pinned the earlier R39 bridge SHA, or referencing a historical experimental 081 Lua outside BGXAI/BUILD as a machine-gate predecessor.",
+      "observed_failure": "The first R39 PREWORK receipt used BGXAI/fox_new source, rejected by canonical source_provenance guard. After correction and successful two-OS PREWORK, the reviewed R39 bridge changed; an existing V3 reader ancestry still pinned the old bridge hash, yielding RESUME DRIFT until synchronized.",
+      "cause": "Source dependency edges are immutable SHA-pinned and path-scoped; updating the changed source's own receipt does not update other receipts which cite it as a predecessor.",
+      "do_not_repeat": "Before post-code CI, enumerate all source_provenance_receipts whose predecessor_sources include the edited path; verify both the new source Git blob and every dependent pin. Machine-gated predecessor path must be under BGXAI/BUILD; unrelated historical 081 evidence can stay in already_implemented/evidence, not invalid machine predecessors.",
+      "safe_action": "Use existing BUILD V3 and R37 source SHA for before-code receipt; run exact --preflight on both CI OS BEFORE editing. After editing R39, repin both R39 source_git_blob_sha and V3 reader predecessor reference; run existing resume_guard and R39/R41 CI, no game changes.",
+      "closure_condition": "Canonical resume checks PASS with unchanged predecessors; R39 staged CI Ubuntu+Windows PASS after exact reviewed pins; Linux native Lua bridge 34/34 PASS, R41 14/14 PASS.",
+      "evidence": [
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46118458028",
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46118562825",
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46118593957"
+      ],
+      "enforcement": "project_tools/resume_guard.py --preflight and default gate in CI; source_provenance_receipts pins and machine-checked BUILD scope",
+      "closure_note": "Fix is source-only; does not prove Jagan's live BCS, EPS action origin, R41 deployment or XEquipItem"
+    },
+    {
       "error_id": "BGXAI_V3_SYNTHETIC_GAM_PY_BYTE_LITERAL_OVERESCAPE_20261128",
       "project": "BGXAI",
       "type": "CONFIRMED_FAILURE",
