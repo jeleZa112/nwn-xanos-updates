@@ -370,6 +370,37 @@
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
   "source_provenance_receipts": [
     {
+      "receipt_id": "BGXAI_R42_ONEFILE_REUSE_175_176_WITHOUT_NEW_CMD_PREWORK_20261128",
+      "project": "BGXAI",
+      "source_path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py",
+      "source_git_blob_sha": null,
+      "status": "PLANNED_SOURCE_ONLY",
+      "predecessor_sources": [
+        {
+          "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_REUSE_R38_CLASS_BCS_RO.py",
+          "git_blob_sha": "8fbf928a7f346433eaac01c47208b153eeb81b64"
+        },
+        {
+          "path": "BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONEFILE_175_RO_V1.py",
+          "git_blob_sha": "fb61e337feb4aa086f89ee01b6fc6c1399b42c97"
+        },
+        {
+          "path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_EEEX117_ENGINE_BRIDGE_RO.lua",
+          "git_blob_sha": "52bd8751581aa9f9d9ac09559f11a856e81ba1da"
+        }
+      ],
+      "already_implemented": [
+        "Existing single BGXAI_UPDATE.cmd uses immutable BOOTSTRAP_PIN.json to fetch BGXAI_SYNC.ps1 which is 79996/80000 byte max and delegates menus 175/176 to SHA-pinned preexisting child.",
+        "Existing 176 already downloads original R38 installed one-listener sources with SHA-verified mechanisms; no new updater or duplicate download framework is appropriate.",
+        "R42 exact R38+R39 source composer tested 19/19 on both OS, Lua parser PASS; it is not installed and does not read live game script resrefs."
+      ],
+      "exclusive_delta": "Minimal read-only onefile child of existing 175/176 channel to prepare R42 candidate strictly OUTSIDE the game from SHA-pinned source composer and current installed exact R38 78927-byte Lua, reusing verified immutable Git commit and R39 bridge. No installation, WeiDU, engine hooks, LOCALS or gameplay orders. Parent sole BGXAI_SYNC.ps1 may add one small menu entry within 80000 bytes and original 175/176 must remain intact; this stage does not prove a live BCS name.",
+      "evidence": "BGXAI/CURRENT/00_RESUME_CURRENT.md; CI 46121696262 R42 PASS; BGXAI/fox_new/BOOTSTRAP_PIN.json original max 80000; BGXAI_UPDATE.cmd unchanged",
+      "recorded_before_change": true,
+      "game_modified": false,
+      "installed": false
+    },
+    {
       "receipt_id": "BGXAI_R42_SINGLE_R38_LISTENER_CLASS_BCS_SOURCE_PREWORK_20261128",
       "project": "BGXAI",
       "source_path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_REUSE_R38_CLASS_BCS_RO.py",
