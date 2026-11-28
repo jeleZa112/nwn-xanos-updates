@@ -334,7 +334,7 @@
       "receipt_id": "BGXAI_V3_GAM_CRE_SAVED_BCS_ASSIGNMENTS_PREWORK_20261128",
       "project": "BGXAI",
       "source_path": "BGXAI/BUILD/WEAPON_XEQUIP_LOCAL_ARM_SOURCEONLY_V3_20261127/verify_candidate_ro.py",
-      "source_git_blob_sha": "4b095b4e61c167d55c19196abd7f2ea3083a4dce",
+      "source_git_blob_sha": "46090e11b6f2e145e57c05907e507eeae06a07a2",
       "predecessor_sources": [
         {
           "path": "BGXAI/BUILD/WEAPON_XEQUIP_LOCAL_ARM_SOURCEONLY_V3_20261127/BGXAI_XEQUIP_LOCAL_ARM_SOURCE_V3.py",
