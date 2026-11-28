@@ -1,5 +1,23 @@
 # BGXAI — ЕДИНСТВЕННАЯ КАНОНИЧЕСКАЯ ТОЧКА ВОССТАНОВЛЕНИЯ
 
+## 28.11.2026 — GAM #/- RESREF: ВТОРОЙ WINDOWS HOLD ИСПРАВЛЕН В SOURCE, V2 CI WIN+UBUNTU PASS
+
+**ACTIVE USER LOG FROM SAME ONEFILE V2:** `BGXAI_UPDATE.cmd` verified pinned hub `40cd303fdcf9` SHA256 OK; user again selected **180** on Windows; first actual new-stage result: `status=HOLD_SAVED_PARTY_CATALOG_PREPARATION`, `failureStage=PARSE_SAVED_GAM`, `reason=HOLD_EXISTING_READER_HOLD_INVALID_RESREF_BYTES`, `exceptionType=KNOWN_READER_HOLD`, `noAutoRetry=true`, `gameModified=false`, `ordersSent=0`, `dispatchAuthorized=false`, `inventoryMoveAuthorized=false`, `gameplayAIInstalled=false`; exit code 3. **DO NOT run the old immutable reader again**; no rollback or R47/EPS reinstall.
+
+**PRIOR-WORK GATE:** Existing native R3 `BGXAI_WEAPON_NATIVE_ITM_R3_RO.py` already accepts ASCII resrefs `[A-Z0-9_#-]` (see `RESREF`). Older GAM save parser `BGXAI_GAM_INVENTORY_RO_V1.py` allowed only `[A-Za-z0-9_]`, despite known user EET mod resource `C#GRTOO0` in prior parsed save. Incompatible allowlists were a **confirmed code defect**, but **exact bad bytes in the currently chosen save remain unknown**; never assert actual save corrupt or definitively that `C#GRTOO0` was the offending name.
+
+**MINIMAL SOURCE CORRECTION / NO NEW UPDATER:** Changed ONE existing regex in `BGXAI/BUILD/WEAPON_SAVE_GAM_INVENTORY_RO_V1_20261126/BGXAI_GAM_INVENTORY_RO_V1.py` to `[A-Za-z0-9_#-]{1,8}`, retaining rejection of slash/backslash/dot/control/non-ASCII/unsafe names. Bounded negatives and positive GAM/CRE `#/-` fixtures added to existing `test_gam_inventory_ro_v1.py`; R3-integrated passive catalog + no-save/no-game-write tests added to existing `test_module180_saved_party_catalog_ro.py`. No alternate GAM parser, no new menu, no game source mutation, no new listener. Initial CI failures were malformed *test fixture byte escapes* (`\\0` vs Python `\0`), NOT a gameplay result; tests corrected and verified.
+
+**PIN:** Existing V2 `BGXAI/UPDATER_V2/MODULES_V1.json` module 180 pins immutable commit `d22d518103b304a7d7a209d51b0272b47b1df63f`; GAM file 5762 bytes, SHA256 `ca56577b552f2f3438e6448ab315ce40cb8220741bcf526f1fe10b885e5a134c`; manifest publication commit `0f321e8f5957e03b0d64e9c07e89ec12d40d7d1e`. Other pinned R3/parser/parent module180 unchanged. Original V2 CMD + pinned hub unchanged. Same `BGXAI_UPDATE.cmd` on Windows will fetch this safe changed parser when next invoked. The existing tester code changed afterwards but asset source pin remains byte-identical.
+
+**CI / INDEPENDENT EVIDENCE:** Original GAM parser tests PASS Windows + Ubuntu, https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46158072171; V2/R42 broader test includes module180/GAM/R3 integration + exact manifest SHA + Windows PowerShell and legacy preservation, PASS Windows + Ubuntu https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46158084445. This is SOURCE TEST, **NOT** successful processing of user's latest selected actual save, not native gameplay equip.
+
+**KNOWN ERROR:** `GLOBAL_PROJECT_RULES/KNOWN_ERROR_GATES_V1.json` new `BGXAI_V2_GAM_RESREF_R3_CHARSET_MISMATCH_HOLD_20261128`, `MITIGATED_SOURCE_ONLY`. Earlier `BGXAI_V2_MODULE180_STAGE_EXCEPTION_MASKED_20261128` remains also source-only mitigated and explains how exact GAM failure was surfaced.
+
+**NEXT SINGLE USER ACTION:** Close game → launch **same installed** `BGXAI_UPDATE.cmd` → select **180 once** (updated reader source), send first console result; do NOT download/replace CMD, rerun unchanged menu, install/rollback WeiDU, capture R47 again or touch saves. If HOLD/STOP, preserve output and do NOT repeat; diagnose specific next deltas from source. If `SOURCE_CATALOG_READY_OUTSIDE_GAME`, only saved-party passive Lua/JSON is ready under Documents, NOT live actor or auto-equip. Main objective remains safe real character→enemy→all eligible weapons including backpack, with round/action ownership and native alternative APR/THAC0 proven before any equip. `CODE/TEST/DEPLOY/LIVE` remain separately recorded in previous handoff below.
+
+---
+
 ## 28.11.2026 — LATEST USER RUNTIME: V2 ИСПОЛНЯЕТСЯ, MODULE180 SOURCE HOLD ИСПРАВЛЕН ПО ЭТАПАМ
 
 **PROJECT/CHAT:** «ТОПОВЫЙ БОТ НА СВЕТЕ» / «BG XAI 1.8». **Game:** `C:\Games\BG_EET_FOXX_NEW`, EET/EPS 18.4/EEex/SCS35.21 Insane. **Single updater:** installed by user in the same existing `BGXAI_UPDATE.cmd`. NEVER ask to download/replace it again.
