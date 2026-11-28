@@ -81,16 +81,19 @@ def _lua(lua: str) -> None:
         for name in ('BGXAI_WEAPON_APR_PROVENANCE_V5.lua', 'test_weapon_apr_provenance_v5.lua'):
             shutil.copy2(ROOT / name, p5 / name)
         suites = [
-            (p3 / TEST, r'PASS WEAPON PRIORITY NATIVE LUA 66/66 SOURCE ONLY'),
+            (p3 / TEST, r'PASS WEAPON PRIORITY NATIVE LUA 72/72 SOURCE ONLY'),
             (p4 / 'test_weapon_effects_v4.lua', r'PASS TOTAL 34 / 34 NATIVE LUA SOURCE ONLY'),
             (p5 / 'test_weapon_apr_provenance_v5.lua', r'PASS APR V5 25/25 OFFLINE SOURCE ONLY'),
             (ROOT / 'test_weapon_noninterrupt_plan_v1.lua', r'PASS NONINTERRUPT SCHEDULER 26/26 SOURCE ONLY'),
             (ROOT / 'test_weapon_noninterrupt_integration_v1.lua', r'PASS REAL WEAPON PIPELINE INTEGRATION 11/11 OFFLINE'),
-            (ROOT / 'test_weapon_failclosed_matrix_v1.lua', r'PASS WEAPON MATRIX 288/288 READONLY CASES SOURCE ONLY')
+            (ROOT / 'test_weapon_failclosed_matrix_v1.lua', r'PASS WEAPON MATRIX 288/288 READONLY CASES SOURCE ONLY'),
+            (ROOT.parents[2] / 'BGXAI/BUILD/WEAPON_INVENTORY_PRIORITY_V4_20261126/test_backpack16_priority_v4.lua',
+             r'BGXAI BACKPACK16 PRIORITY V4 34 synthetic tests PASS')
         ]
         passed = 0
         for path, marker in suites:
-            result = subprocess.run(([lua, '--luaonly'] if Path(lua).name.lower().startswith('luatex') else [lua]) + [str(path)], cwd=ROOT, text=True,
+            run_cwd = ROOT.parents[2] if path.name == 'test_backpack16_priority_v4.lua' else ROOT
+            result = subprocess.run(([lua, '--luaonly'] if Path(lua).name.lower().startswith('luatex') else [lua]) + [str(path)], cwd=run_cwd, text=True,
                                     capture_output=True, check=False, timeout=20)
             if result.returncode != 0 or marker not in result.stdout:
                 print(result.stdout, file=sys.stderr)
@@ -98,12 +101,14 @@ def _lua(lua: str) -> None:
                 raise RuntimeError(f'Lua regression failed: {path.name} ({result.returncode})')
             if path.name == 'test_weapon_failclosed_matrix_v1.lua':
                 count = 288 # Cross-product scenarios, not 288 game-play cases.
+            elif path.name == 'test_backpack16_priority_v4.lua':
+                count = 34 # Real Lua model tests; footer has no 'PASS ' prefix.
             else:
                 count = len(re.findall(r'^PASS ', result.stdout, re.M)) - 1
             print(f'PASS {path.name}: {count} offline tests / matrix cases')
             passed += count
-        assert passed == 450, passed
-        print(f'PASS TOTAL {passed}/450 OFFLINE LUA TESTS AND MATRIX CASES; NO GAME DEPLOY')
+        assert passed == 490, passed
+        print(f'PASS TOTAL {passed}/490 OFFLINE LUA TESTS AND MATRIX CASES; NO GAME DEPLOY')
 
 
 def main() -> int:
