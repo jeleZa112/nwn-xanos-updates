@@ -105,7 +105,7 @@ def _lua(lua: str) -> None:
             (ROOT / 'test_weapon_noninterrupt_integration_v1.lua', r'PASS REAL WEAPON PIPELINE INTEGRATION 11/11 OFFLINE'),
             (ROOT / 'test_weapon_failclosed_matrix_v1.lua', r'PASS WEAPON MATRIX 288/288 READONLY CASES SOURCE ONLY'),
             (ROOT.parents[2] / 'BGXAI/BUILD/WEAPON_INVENTORY_PRIORITY_V4_20261126/test_backpack16_priority_v4.lua',
-             r'BGXAI BACKPACK16 PRIORITY V4 60 synthetic tests PASS')
+             r'BGXAI BACKPACK16 PRIORITY V4 68 synthetic tests PASS')
         ]
         passed = 0
         for path, marker in suites:
@@ -121,13 +121,13 @@ def _lua(lua: str) -> None:
             if path.name == 'test_weapon_failclosed_matrix_v1.lua':
                 count = 288 # Cross-product scenarios, not 288 game-play cases.
             elif path.name == 'test_backpack16_priority_v4.lua':
-                count = 60 # Real Lua model tests; footer has no 'PASS ' prefix.
+                count = 68 # Real Lua model tests; footer has no 'PASS ' prefix.
             else:
                 count = len(re.findall(r'^PASS ', result.stdout, re.M)) - 1
             print(f'PASS {path.name}: {count} offline tests / matrix cases')
             passed += count
-        assert passed == 516, passed
-        print(f'PASS TOTAL {passed}/516 OFFLINE LUA TESTS AND MATRIX CASES; NO GAME DEPLOY')
+        assert passed == 524, passed
+        print(f'PASS TOTAL {passed}/524 OFFLINE LUA TESTS AND MATRIX CASES; NO GAME DEPLOY')
 
 
 def main() -> int:
