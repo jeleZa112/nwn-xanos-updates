@@ -650,7 +650,7 @@
       "project": "BGXAI",
       "discovered_at": "2026-11-28",
       "type": "POTENTIAL_NATIVE_POINTER_STRIDE_HAZARD",
-      "status": "SOURCE_DISCREPANCY_VERIFIED_LIVE_RUNTIME_NOT_ATTESTED_GUARDED_BY_R3_REUSE",
+      "status": "V1_1_7_EXACT_SOURCE_DISCREPANCY_CONFIRMED_NATIVE_BINARY_NOT_TESTED",
       "scope": "EEex x64 CItem.getAbility index>=1 and item ability pointer arithmetic",
       "source_proof": {
         "upstream_repo": "Bubb13/EEex",
@@ -659,19 +659,33 @@
         "upstream_git_blob": "5ecd3c2f9e9bcc6cbd317653fc057a06d956916b",
         "observed_formula": "itemHeader.abilityOffset + Item_Header_st.sizeof * abilityIndex",
         "expected_itm_structure": "BGEE ITM V1 main Item header 114 bytes; extended ability header 56 bytes (IESDP https://iesdp.bgforge.net/file_formats/ie_formats/itm_v1)",
-        "caveat": "This is a code review mismatch, not a demonstrated crash or confirmed bug in user's installed EEex 1.1.7"
+        "caveat": "Exact public source tag v1.1.7 has this pointer formula, but installed Windows binary and runtime use/access are not inspected; no crash or unsafe live behavior demonstrated",
+        "exactReleaseVerified": true,
+        "exactRelease": "v1.1.7",
+        "exactReleaseCommit": "cd016e0",
+        "exactReleaseSourceBlob": "5ecd3c2f9e9bcc6cbd317653fc057a06d956916b",
+        "exactSourceSameAsLatest": true,
+        "moduleVersionBoundary": "B3AttackInfo.lua and its to-hit UI appear in v1.3.0, not in EEex v1.1.7 tree; do not claim attack-info API works on installed v1.1.7"
       },
       "prior_work": "Existing BGXAI_WEAPON_NATIVE_ITM_R3_RO.py parse_itm already uses ability offset + 56*index with bounds and BIF/override precedence. Existing native R3 source/test baseline was reused byte-exact from Library, no second parser implemented.",
       "implemented_fix": "Added audit_r37_top_level to SAME R3 module, feeding 39-slot raw inventory into existing audit/source.get/parse_itm; 5 tests appended to existing suite, 35/35 Python unittest PASS on exact latest GitHub blobs; existing workflow now triggers on R3 edits.",
       "evidence": {
         "source_blob": "4a1400661c07efede1d097117e3e49d327cda9f5",
         "test_blob": "8e4413db402e59f51519e78b5f81428841d70233",
-        "offgame_tests": "35/35 PASS; historical baseline 30/30 PASS; local git hash-object == GitHub"
+        "offgame_tests": "35/35 PASS; historical baseline 30/30 PASS; local git hash-object == GitHub",
+        "verifiedSourceCI": {
+          "commit": "6b1851f2a2de4d6ee7c44f3696720740e8634e09",
+          "runId": 46150571121,
+          "ubuntuJobId": 140996097814,
+          "windowsJobId": 140996097617,
+          "statusContext": "BGXAI/source-only/498-lua-plus-r3",
+          "evidence": "Lua5.3 498/498; Lua5.4 498/498; LuaJIT 498/498; R3 35/35; V4 42/42 within each 498; Windows static PASS"
+        }
       },
       "no_repeat": "Do not call unverified EEex CItem.getAbility for ability index>=1; do not read raw pointer manually until installed EEex exact type sizes, lifetime and native behavior are proven; reuse R3 static bounded parser and R37 raw event. Do not repeat R47 179→22 HOLD or change game without typed consent.",
       "tiers": {
         "code": "SOURCE_ONLY_IN_GITHUB",
-        "test": "35/35_EXACT_LOCAL_PASS",
+        "test": "CI 498/498 ON EACH LUA5.3 LUA5.4 LUAJIT, R3 35/35, WINDOWS PASS",
         "deploy": "NO",
         "live": "NO"
       },
