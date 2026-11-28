@@ -5,6 +5,8 @@ on:
     paths:
       - 'BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/**'
       - '.github/workflows/bgxai-r42-reuse-r38-single-listener-ro.yml'
+      - 'BGXAI/BGXAI_SYNC.ps1'
+      - 'BGXAI/fox_new/BOOTSTRAP_PIN.json'
   workflow_dispatch:
 
 permissions:
@@ -36,6 +38,18 @@ jobs:
 
       - name: Test one-CMD source-only R42 child (pinned, isolated)
         run: python -m unittest -v BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_onefile_source_ro.py
+      - name: Verify one-CMD menu 179 regression and 80KB source cap
+        run: python -m unittest -v BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_onefile_menu179_release.py
+      - name: Native Windows PowerShell parse only (do not execute updater)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $tokens=$null; $parseErrors=$null
+          $path=[IO.Path]::GetFullPath('BGXAI/BGXAI_SYNC.ps1')
+          [System.Management.Automation.Language.Parser]::ParseFile($path,[ref]$tokens,[ref]$parseErrors) | Out-Null
+          if($parseErrors.Count -ne 0){foreach($e in $parseErrors){Write-Host $e.ToString()}; throw 'HOLD_PS_AST_PARSE'}
+          if((Get-Item -LiteralPath $path).Length -gt 80000){throw 'HOLD_ONEFILE_PS_SIZE'}
+          Write-Host ('R42 PS SCRIPT PARSE ONLY PASS; bytes='+[IO.File]::ReadAllBytes($path).Length)
       - name: Syntax-check generated R38+R39 class BCS observer (no runtime)
         if: runner.os == 'Linux'
         shell: bash
@@ -58,6 +72,16 @@ jobs:
           print('R42 composed Lua syntax PASS; no listener executed; game untouched')
           PY
 
+      - name: Publish SHA/bytes of onefile script for separately gated channel pin
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          b=Path('BGXAI/BGXAI_SYNC.ps1').read_bytes()
+          assert len(b)<=80000
+          print('PINNED_BGXAI_SYNC_SHA256',len(b),hashlib.sha256(b).hexdigest())
+          PY
       - name: Record exact immutable source sizes and SHA256 for sole updater
         shell: bash
         run: |
