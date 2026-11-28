@@ -243,4 +243,120 @@ function M.captureTopLevel(sprite,r37,contextReader)
   targetObserved=false,alternativeAPRVerified=false,
   executorAllowed=false,currentActionPreserved=true})
 end
+
+-- Native EEex 1.1.7 ITM source view, on demand in the SAME existing R37
+-- callback. No Python can execute inside InfinityLoader Lua: this closes the
+-- missing runtime item-resource channel for the FIRST ability only.
+-- EEex_Resource.lua uses WRONG Item_Header_st.sizeof stride for ability
+-- indices >=1; NEVER dereference those. For >1 abilities, HOLD THAT ITEM.
+-- CItem pRes.pHeader is obtained from the engine's own live inventory.
+-- R3 still owns full ITM/BIFF/effects validation, NOT this native probe.
+-- api is optional and defaults to EEex's real UDToPtr/Read8 functions.
+function M.captureNativeAbility0(sprite,r37,contextReader,api)
+ if type(r37)~='table' or r37.queuedActionsRaw~=0 or
+    type(contextReader)~='function' then
+  return hold('HOLD_NATIVE_ITM_EVENT_OR_QUEUE_NOT_QUIET') end
+ local base=M.captureTopLevel(sprite,r37,contextReader)
+ if base.status~='TOPLEVEL0_38_AND_R37_STABLE_ADVICE_ONLY' then
+  return hold('HOLD_NATIVE_ITM_R37_MAP_NOT_READY',
+              {priorStatus=base.status}) end
+ local toPtr=type(api)=='table' and api.toPtr or EEex_UDToPtr
+ local read8=type(api)=='table' and api.read8 or EEex_Read8
+ if type(toPtr)~='function' or type(read8)~='function' then
+  return hold('HOLD_NATIVE_ITM_EEEX117_READER_MISSING') end
+ local expected={actorId=r37.actor,actionRaw=r37.actionRaw,
+  selectedWeaponRaw=r37.selectedWeaponRaw,
+  selectedAbilityRaw=r37.selectedAbilityRaw,
+  queuedActionsRaw=r37.queuedActionsRaw,
+  currentScriptNumberRaw=r37.currentScriptNumberRaw}
+ local eq=field(sprite,'m_equipment')
+ local items=field(eq,'m_items')
+ if items==nil or type(field(items,'get'))~='function' then
+  return hold('HOLD_NATIVE_ITM_ITEM_GETTER_MISSING') end
+ local beforeOK,before=pcall(contextReader,sprite)
+ if not beforeOK or not contextOK(before,expected) then
+  return hold('HOLD_NATIVE_ITM_ACTION_DRIFT_BEFORE') end
+ local rows={};local total=0;local single=0;local unsupported=0
+ for slot=18,38 do
+  if slot~=34 then -- backpack 18..33 plus quickweapons 35..38
+   local raw=slot<=33 and base.backpack.slots[slot] or base.quick[slot]
+   if type(raw)~='table' or raw.slot~=slot then
+    return hold('HOLD_NATIVE_ITM_R37_SLOT_UNTRUSTED',{badSlot=slot}) end
+   if raw.status=='PRESENT_RAW' then
+    total=total+1
+    -- Item instance identity is NOT proven by a stable resref or pointer.
+    local x=at(items,slot)
+    if not itemEqual(x,raw,slot) then
+     return hold('HOLD_NATIVE_ITM_INVENTORY_CHANGED',{badSlot=slot}) end
+    local get=field(items,'get')
+    local got,item=pcall(get,items,slot)
+    if not got or item==nil then
+     return hold('HOLD_NATIVE_ITM_ITEM_GONE',{badSlot=slot}) end
+    local resource=field(item,'pRes')
+    local header=field(resource,'pHeader')
+    local count=field(header,'abilityCount')
+    if header==nil or not valid(count,0,64) then
+     return hold('HOLD_NATIVE_ITM_HEADER_UNREADABLE',{badSlot=slot}) end
+    local row={slot=slot,resref=raw.resref,abilityCountRaw=count,
+     status='NOT_A_SINGLE_ATTACK_ABILITY',firstAbilityAttackTypeRaw=nil,
+     proficiencyIdRaw=nil,engineFinalAlternateAPRVerified=false}
+    if count==1 then
+     -- Only index 0: the documented EEex 1.1.7 getAbility stride bug
+     -- multiplies by zero for index 0, so no wrong stride is traversed.
+     local getter=field(header,'getAbility')
+     local ok,ability=false,nil
+     if type(getter)=='function' then ok,ability=pcall(getter,header,0) end
+     if not ok or ability==nil then
+      return hold('HOLD_NATIVE_ITM_ABILITY_ZERO_UNREADABLE',{badSlot=slot}) end
+     local ok1,p1=pcall(toPtr,ability)
+     local ok2,p2=pcall(toPtr,header)
+     if not ok1 or not ok2 or not valid(p1,1,9007199254740991) or
+        not valid(p2,1,9007199254740991) then
+      return hold('HOLD_NATIVE_ITM_USERDATA_POINTER_UNKNOWN',{badSlot=slot}) end
+     local a1Ok,a1=pcall(read8,p1)
+     local a2Ok,a2=pcall(read8,p1)
+     local profOk,prof=pcall(read8,p2+0x31)
+     local prof2Ok,prof2=pcall(read8,p2+0x31)
+     if not a1Ok or not a2Ok or not profOk or not prof2Ok or
+        not valid(a1,0,4) or a1~=a2 or
+        not valid(prof,0,255) or prof~=prof2 then
+      return hold('HOLD_NATIVE_ITM_ATTACK_OR_PROF_DRIFT',{badSlot=slot}) end
+     row.firstAbilityAttackTypeRaw=a1
+     row.proficiencyIdRaw=prof
+     row.status=(a1==1 or a1==2) and
+       'SINGLE_PHYSICAL_ATTACK_ABILITY_RAW' or
+       'SKIP_NONPHYSICAL_ABILITY_RAW'
+     single=single+1
+    elseif count>1 then
+     row.status='SKIP_MULTIPLE_ABILITIES_UNSAFE_EEEX117_STRIDE'
+     unsupported=unsupported+1
+    else
+     row.status='SKIP_NO_WEAPON_ABILITY'
+    end
+    rows[slot]=row
+   elseif raw.status~='EMPTY' then
+    return hold('HOLD_NATIVE_ITM_UNKNOWN_SLOT_STATE',{badSlot=slot}) end
+  end
+ end
+ local afterOK,after=pcall(contextReader,sprite)
+ if not afterOK or not contextOK(after,expected) then
+  return hold('HOLD_NATIVE_ITM_ACTION_DRIFT_AFTER') end
+ -- No source can authenticate the actor's *unselected* final APR from ITM
+ -- bytes alone, even when all item names, first ability and proficiency match.
+ base.nativeAbility0=rows
+ base.nativeAbility0Source='EEEX117_ENGINE_CITEM_FIRST_ABILITY_RAW'
+ base.nativeAbility0Count=total
+ base.nativeAbility0SingleCount=single
+ base.nativeAbility0MultiUnsafeCount=unsupported
+ base.nativeAbility0EEexVersionAssumed='v1.1.7'
+ base.engineFinalAlternateAPRVerified=false
+ base.nativeItemInstanceAuthenticated=false
+ base.nativeResourceShaVerified=false
+ base.dispatchAuthorized=false
+ base.inventoryMoveAuthorized=false
+ base.ordersSent=0
+ return base
+end
+
+
 return M
