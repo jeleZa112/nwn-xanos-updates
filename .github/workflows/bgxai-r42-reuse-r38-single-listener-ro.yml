@@ -44,6 +44,24 @@ jobs:
         run: python project_tools/resume_guard.py --preflight BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_GUARDED_FROM_R38.py
       - name: Existing immutable predecessor and canonical preflight
         run: python project_tools/resume_guard.py
+      - name: Pin exact proposed R46 onefile native TEMP-only sources (NO GAME)
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          for p in (
+            'BGXAI/BUILD/R46_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/BGXAI_R46_INERT_BDDEFAI_WITNESS_SOURCE_ONLY.py',
+            'BGXAI/BUILD/R46_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/BGXAI_R46_NATIVE_COMPILE_RO_REUSE_R39.py',
+            'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_JAGAN_STAF01_EEEX_SESSION_SOURCE_ONLY.baf',
+            'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_NATIVE_EET_COMPILE_RO_V1.py',
+            'BGXAI/BUILD/WEAPON_XEQUIP_V3_NATIVE_RO_20261127/BGXAI_XEQUIP_V3_NATIVE_COMPILE_RO.py',
+            'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py',
+          ):
+              raw=Path(p).read_bytes()
+              print('R46_ONEFILE_SOURCE_PIN',p,len(raw),hashlib.sha256(raw).hexdigest())
+          PY
+
       - name: Pin exact staged R44 last157 source files before release (NO GAME)
         shell: bash
         run: |
