@@ -1,0 +1,88 @@
+{
+  "schema": "BGXAI_R44_FIRST_LIVE_CLASS_PROOF_SANITIZED_V1",
+  "proofDate": "2026-11-28",
+  "source": "FIRSTHAND_USER_PC_CONSOLE_AND_EXACT_USER_UPLOADED_LOG",
+  "rawLogFilename": "BGXAI_R44_CLASS_NUMERIC_ID_20261128T103527344865Z.log",
+  "rawLogBytes": 50703,
+  "rawLogLines": 631,
+  "rawLogSha256": "8dabbb5353b3eb834cbe685ccaee7fe22aa30c1c56018355cee325e1432837d4",
+  "rawLogStoredInRepo": false,
+  "originalOnefileVerifiedPin": "668b0fe4ba3b9b7c49245b73a2ba9834aa8f4768",
+  "r44CandidateSha256": "bae25741c3ee620a184ddddcd0a7b59b82d835bd7f5766d5911459baedfe8600",
+  "console": {
+    "status": "R44_CAPTURE_EXACT_GUARDED_PASS",
+    "innerStatus": "R42_LIVE_CLASS_BCS_ASSIGNMENT_OBSERVED_NO_ARM",
+    "installed": true,
+    "gameModified": false,
+    "classScriptResrefAtLiveJaganVerified": true,
+    "classScriptResref": "BDDEFAI",
+    "r39ProbeStatus": "R39_SCRIPT_RESREFS_OBSERVED_NO_DEPLOY",
+    "r39ClassSlotState": "VALID_NAME_CANDIDATE",
+    "r39PhysicalReason": "NONE",
+    "actualBcsExecutionVerified": false,
+    "manualEpsActionOriginVerified": false,
+    "ordersSent": 0,
+    "dispatchAuthorized": false,
+    "armAuthorized": false,
+    "noAutoRetry": false
+  },
+  "rawSingleListener": {
+    "tag": "[BGXBCS]",
+    "rows": 1,
+    "status": "CLASS_BCS_RESREF_OBSERVED_NO_ARM",
+    "scrlev": 4,
+    "partyIndex": 1,
+    "sameR38Listener": true,
+    "actualBcsExecutionVerified": false,
+    "localsWritten": 0,
+    "ordersSent": 0
+  },
+  "correlatedSameFirstEvent": {
+    "identityStatus": "RUNTIME_JAGAN_INVENTORY_MATCH_READONLY_NO_ARM",
+    "backpackStatus": "BACKPACK16_AND_R37_RAW_CONTEXT_STABLE_ADVICE_ONLY",
+    "backpackFirstSlot": 18,
+    "backpackLastSlot": 33,
+    "backpackPresentCount": 1,
+    "backpackEmptyCount": 15,
+    "duplicateResrefObserved": false,
+    "quickWeaponSlots35to38AllNull": true,
+    "offhandSlot9Null": true,
+    "actorInventoryIdentityReadOnly": true,
+    "currentActionRaw": 23,
+    "queuedActionsRaw": 0,
+    "actionSourceReadStatus": "ACTION_SOURCE_POINTER_UNAVAILABLE",
+    "actionOrigin": "UNKNOWN",
+    "manualEpsQueueVerified": false,
+    "safeActionBoundaryVerified": false,
+    "allBuffsObserved": false,
+    "allEffectsObserved": false,
+    "inventoryMoveAuthorized": false,
+    "weaponSwitchAuthorized": false
+  },
+  "previousSavedEvidenceNotNewLiveProof": {
+    "gameSavedSource": "BALDUR(1).gam",
+    "savedName": "*GCLERIC",
+    "savedBackpackSlot20Item": "STAF01",
+    "savedQuickSlot35Empty": true,
+    "interpret": "HISTORICAL_SAVED_ONLY_STAF01_NOT_NAMED_BY_CURRENT_R44_CONSOLE"
+  },
+  "sideObservation": {
+    "line85": "Error loading menu: [string function variant...]:1: ']' expected near 'icon'",
+    "interpretation": "UNRELATED_UI_PARSE_ERROR_NOT_EVIDENCE_R44_FAILURE",
+    "ruV106Loaded": true
+  },
+  "regression": {
+    "earlierR43FirstSingleCaptureStatus": "HOLD_SCRIPT_ACTOR_CHANGED",
+    "r44NumericActorGuardGameTestNowPasses": true,
+    "gameLiveActualBcsExecutionConfirmed": false,
+    "gameLiveXEquipMovedItem": false
+  },
+  "next": "REUSE_PRIOR_R39_V3_BAF_AND_R41_GUARDED_ARM_SOURCES, ANALYZE_CURRENT_REAL_EVIDENCE; NEVER REPEAT_R44_179_TO_16; NEXT DELTA MUST BE MINIMAL_EVIDENCE_BOUND_SOURCE_ONLY_FOR_BCS_EXEC_AND_ONE_ITEM_MOVE_WITH_SEPARATE_EXPLICIT_APPROVAL",
+  "forbidden": [
+    "REPEAT_179_TO_16",
+    "REPEAT_179_TO_14",
+    "AUTO_INSTALL_OR_ROLLBACK",
+    "CLAIM_EQUIP_OR_BCS_EXECUTION_FROM_ASSIGNED_RESREF",
+    "NEW_UPDATER"
+  ]
+}
