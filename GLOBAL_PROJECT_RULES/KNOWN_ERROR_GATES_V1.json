@@ -409,7 +409,7 @@
         },
         {
           "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py",
-          "git_blob_sha": "03f9950eb6ad79743bd69d39aeca9c4790800998"
+          "git_blob_sha": "4bb1dca5823aa0aa29586019b22ae726ee542453"
         }
       ],
       "already_implemented": [
@@ -429,7 +429,7 @@
       "reviewed_deltas": [{"delta_id":"BGXAI_R42_179_TYPED_GUARDED_MENU_20261128","recorded_before_source_edit":true,"current_source_blob":"03f9950eb6ad79743bd69d39aeca9c4790800998","already_done":"179 existing onefile child stages exact R38 and R39/R42 read-only sources outside game using immutable source SHA. R42 separate guarded installer now passes 24 fake-EET tests on both OS, using R38 last-154 proof, external backup and last-only typed WeiDU rollback; not yet routed to user updater.","missing_delta":"Extend only current 179 child to stage SHA-pinned existing R42 installer plus old R38/R37 helpers and offer status/preflight/install/rollback behind explicit subchoice, with source-only default. Existing code paths for 175/176 and existing BGXAI_UPDATE.cmd must be identical. First install requires separately typed exact token inside guarded process, no automatic installer on selecting 179. Source-only onefile must not trust a candidate without 93776B SHA d14bf5f6..., and rollback must work with 155th R42 game without requiring live R38 78927B.","required_implementation_checks":"Pin all imported helper byte lengths/SHA, stage only in temporary OUTSIDE EET, ensure new subcommand fails closed on unknown mode/noninteractive install, parse subprocess JSON status, never reissue a failed WeiDU transaction. Preserve default read-only behavior and boot limit 80000 bytes. Extend existing unit tests and Windows PowerShell AST CI before channel release.","scope":"SOURCE_CHILD_CODE_AND_TEST_ONLY","runtimeInstalled":false}],
       "project": "BGXAI",
       "source_path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py",
-      "source_git_blob_sha": "03f9950eb6ad79743bd69d39aeca9c4790800998",
+      "source_git_blob_sha": "4bb1dca5823aa0aa29586019b22ae726ee542453",
       "status": "PREWORK_REVIEWED_SOURCE_ONLY",
       "predecessor_sources": [
         {
