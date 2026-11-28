@@ -137,22 +137,34 @@ class PilotTests(unittest.TestCase):
             backup=work/'safe';backup.mkdir()
             saved=backup/'prior.lua';saved.write_bytes(BASE)
             state=work/pilot.STATE
-            second=work/'v163_state.json';second.write_text('{"phase":"INSTALLED"}')
+            weidu=game/'WeiDU.log';weidu.write_bytes(b'current weidu changed')
+            pin=game/'UI.MENU';pin.write_bytes(b'original pinned UI')
+            gamepin={'UI.MENU':pilot.digest(pin.read_bytes())}
+            oldlog='f'*64
+            old_items={f'ITM{i:05}':{'sha256':'a'*64,'origin':'CURRENT_GAME_BIFF'}
+                       for i in range(123)}
+            state=work/pilot.STATE
+            second=work/'v163_state.json'
+            second.write_text(json.dumps({'phase':'INSTALLED','itemPins':old_items}))
             oldsha=pilot.digest(BASE)
             payload={'schema':pilot.SCHEMA,'phase':'PREPARED',
                      'baselineSha':oldsha,'candidateSha':'a'*64,
                      'backup':str(saved),
+                     'weiduSha256HistoricalV162':oldlog,
+                     'weiduSha256Current':pilot.digest(weidu.read_bytes()),
                      'secondStateSha':pilot.digest(second.read_bytes())}
             state.write_text(json.dumps(payload))
             class Batch:
                 @staticmethod
                 def _check_game_closed():return None
+                @staticmethod
+                def file_sha(p,limit=1000000):return pilot.digest(pathlib.Path(p).read_bytes())
             class Cumulative:
                 SECOND_STATE='v163_state.json'
                 @staticmethod
-                def _read_first_state(*_):return {},b'FIRST'
+                def _read_first_state(*_):return {'gamePins':gamepin,'weiduSha':oldlog},b'FIRST'
                 @staticmethod
-                def _verify_pins(*_):return None
+                def _verify_pins(*_):raise AssertionError('must not call old historic WeiDU check')
             with patch.object(pilot,'EXPECTED_V163_SHA',oldsha):
                 result=pilot.run('rollback',game,work,Batch,Cumulative,None,
                                  typed=pilot.APPROVE_ROLLBACK,allow_non_windows_test=True)
@@ -162,6 +174,60 @@ class PilotTests(unittest.TestCase):
                 self.assertEqual(json.loads(state.read_text())['phase'],'ROLLED_BACK')
                 status=pilot.run('status',game,work,Batch,Cumulative,None)
                 self.assertEqual(status['status'],'V165_ROLLED_BACK_TO_V163_123')
+
+    def test_scoped_weidu_drift_full_123_current_itm_revalidation(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=pathlib.Path(d)
+            (root/'core').write_bytes(b'untouched')
+            (root/'WeiDU.log').write_bytes(b'new harmless downstream install log')
+            pins={'core':pilot.digest((root/'core').read_bytes())}
+            first={'gamePins':pins,'weiduSha':'0'*64}
+            items={f'ITEM{i:04}':{'sha256':pilot.digest(b'original'),
+                                'origin':'CURRENT_GAME_BIFF'} for i in range(123)}
+            second={'itemPins':items}
+            seen=[]
+            class Batch:
+                @staticmethod
+                def file_sha(p,limit=1000000):return pilot.digest(pathlib.Path(p).read_bytes())
+            class Cum:
+                @staticmethod
+                def _verify_item(resolver,ref,pin,batch):
+                    raw,meta=resolver.get(ref,'.ITM')
+                    if pilot.digest(raw)!=pin['sha256'] or meta['origin']!=pin['origin']:
+                        raise pilot.Hold('CURRENT_GAME_ITM_SHA_OR_ORIGIN_CHANGED:'+ref)
+                    seen.append(ref)
+            class Resolver:
+                @staticmethod
+                def get(ref,ext):return b'original',{'origin':'CURRENT_GAME_BIFF'}
+            p=pilot.verify_scoped_pins(root,first,second,Batch,Cum,Resolver)
+            self.assertTrue(p['weiduHistoricalDrift'])
+            self.assertTrue(p['all123HistoricalItemPinsRechecked'])
+            self.assertEqual(p['priorItemsChecked'],123)
+            self.assertEqual(len(seen),123)
+            self.assertEqual(p['weiduSha256Current'],pilot.digest((root/'WeiDU.log').read_bytes()))
+            (root/'WeiDU.log').write_bytes(b'changed again during approval')
+            with self.assertRaisesRegex(pilot.Hold,'WEIDU_CHANGED_SINCE_V165_PREFLIGHT'):
+                pilot.verify_scoped_pins(root,first,second,Batch,Cum,Resolver,
+                                          expected_current_weidu=p['weiduSha256Current'])
+            (root/'WeiDU.log').write_bytes(b'new harmless downstream install log')
+            (root/'core').write_bytes(b'changed game resource')
+            with self.assertRaisesRegex(pilot.Hold,'V162_GAME_PIN_DRIFT'):
+                pilot.verify_scoped_pins(root,first,second,Batch,Cum,Resolver)
+            (root/'core').write_bytes(b'untouched')
+            class MutatedResolver:
+                @staticmethod
+                def get(ref,ext):return b'modified',{'origin':'CURRENT_GAME_BIFF'}
+            with self.assertRaisesRegex(pilot.Hold,'CURRENT_GAME_ITM_SHA_OR_ORIGIN_CHANGED'):
+                pilot.verify_scoped_pins(root,first,second,Batch,Cum,MutatedResolver)
+
+    def test_scoped_weidu_drift_without_all_123_receipts_fails_closed(self):
+        class FakeBatch:
+            @staticmethod
+            def file_sha(*args):return '0'*64
+        with self.assertRaisesRegex(pilot.Hold,'V163_123_ITEM_PINS_MISSING'):
+            pilot.verify_scoped_pins(pathlib.Path('/not-real'),
+                {'gamePins':{'Baldur.exe':'0'*64},'weiduSha':'0'*64},
+                {'itemPins':{}},FakeBatch,None)
 
     def test_pins_and_typed_windows_barrier(self):
         self.assertEqual(len(pilot.V163_DISPATCH_SHA),64)
