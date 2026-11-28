@@ -14,7 +14,7 @@ io={open=function()return nil end};os={getenv=function()return nil end}
 local item={}
 local source={m_id=111,m_equipment={m_selectedWeapon=35,m_selectedWeaponAbility=0,m_items={get=function()return item end}}}
 local action={m_actionID=3,m_acteeID={m_Instance=222}}
-local target={m_id=222,isSprite=function()return true end}
+local target={m_id=222,m_bAllowEffectListCall=1,isSprite=function()return true end}
 local defense={m_nArmorClass=-2,m_nACCrushingMod=2,m_nACMissileMod=1,
  m_nACPiercingMod=0,m_nACSlashingMod=-1,
  m_nResistCrushing=20,m_nResistPiercing=0,m_nResistSlashing=15,m_nResistMissile=35}
@@ -85,6 +85,29 @@ T('missing missile resistance logs null with no dispatch',function()
  assert(logs[#logs]:find('"m_nResistMissile":null',1,true))
  assert(logs[#logs]:find('"weaponSwitchAuthorized":false',1,true))
  defense.m_nResistMissile=35
+end)
+T('real one-round action 105 reuses same listener',function()
+ local initial=#logs
+ action.m_actionID=105;listener(source,action);action.m_actionID=3
+ assert(#logs==initial+1)
+ assert(logs[#logs]:find('"rawActionId":105',1,true))
+ assert(logs[#logs]:find('TARGET_RAW_DEFENSE_FIELDS_CANDIDATE_ONLY'))
+ assert(logs[#logs]:find('"dispatchAuthorized":false',1,true))
+end)
+T('real reevaluate action 134 reuses same listener',function()
+ local initial=#logs
+ action.m_actionID=134;listener(source,action);action.m_actionID=3
+ assert(#logs==initial+1)
+ assert(logs[#logs]:find('"rawActionId":134',1,true))
+end)
+T('temporary target derived stats are HOLD in existing listener',function()
+ target.m_bAllowEffectListCall=0
+ local initial=#logs
+ action.m_actionID=105;listener(source,action);action.m_actionID=3
+ target.m_bAllowEffectListCall=1
+ assert(#logs==initial+1)
+ assert(logs[#logs]:find('"status":"HOLD"',1,true))
+ assert(logs[#logs]:find('"dispatchAuthorized":false',1,true))
 end)
 for _,n in ipairs(names)do _G[n]=old[n]end
 io,os=priorIO,priorOS
