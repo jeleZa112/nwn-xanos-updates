@@ -51,7 +51,8 @@ class OnefileV2Compatibility(unittest.TestCase):
         self.assertIn(b'trusted_lastgood_v2.json',raw)
         self.assertIn(b'Offline cached script SHA or size mismatch',raw)
         self.assertIn(b'BGXAI OFFLINE: verified last good ',raw)
-        self.assertIn(b'Get-FileHash -LiteralPath $archive -Algorithm SHA256',raw)
+        self.assertIn(b'function File-SHA256',raw)
+        self.assertIn(b'File-SHA256 $archive',raw)
         self.assertIn(b'No auto retry',HUB.read_bytes())
         self.assertNotIn(b'XEquipItem(',raw)
 
