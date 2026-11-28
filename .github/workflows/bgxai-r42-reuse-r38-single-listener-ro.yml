@@ -5,6 +5,7 @@ on:
     paths:
       - 'BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/**'
       - 'BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/**'
+      - 'BGXAI/BUILD/R45_R41_ARMER_NUMERIC_ID_SOURCEONLY_20261128/**'
       - 'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_ACTOR_ID_GUARD_SOURCE_ONLY.py'
       - 'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/test_r39_actor_wrapper_id_guard_source_only.py'
       - 'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/test_r39_actor_wrapper_id_guard_source_only.lua'
@@ -82,6 +83,9 @@ jobs:
               b=(root/name).read_bytes()
               print('R43_STAGE_PIN',name,len(b),hashlib.sha256(b).hexdigest())
           PY
+      - name: Test source-only R45 numerically identity-bound R39/R41 armer (NO GAME)
+        run: python -m unittest -v BGXAI/BUILD/R45_R41_ARMER_NUMERIC_ID_SOURCEONLY_20261128/test_r45_compose_r41_numeric_wrapper_source_only.py
+
       - name: Test exact R44 replacement of R43 embedded R39 (SOURCE ONLY)
         run: python -m unittest -v BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/test_r44_numeric_id_compose_source_only.py
 
@@ -185,6 +189,28 @@ jobs:
               target.write_bytes(raw)
               subprocess.run(['lua5.4','-e','assert(loadfile('+json.dumps(str(target))+'))'],check=True)
           print('R44 SOURCE candidate Lua syntax PASS; user game not modified')
+          PY
+
+      - name: R45 existing R41 armer cross-wrapper safety and no-orders regression (NO GAME)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib,importlib.util,json,subprocess,tempfile
+          from pathlib import Path
+          root=Path('BGXAI/BUILD/R45_R41_ARMER_NUMERIC_ID_SOURCEONLY_20261128')
+          ar=Path('BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127')
+          spec=importlib.util.spec_from_file_location('r45_inert_armer',root/'BGXAI_R45_COMPOSE_R41_NUMERIC_WRAPPER_SOURCE_ONLY.py')
+          mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod)
+          raw=mod.compose()
+          print('R45_R41_SOURCE_ONLY_PIN',len(raw),hashlib.sha256(raw).hexdigest())
+          with tempfile.TemporaryDirectory(prefix='BGXAI_R45_INERT_') as folder:
+              target=Path(folder)/'M_BGXW3_R41_NUMERIC_ID_SOURCE_ONLY.lua'
+              target.write_bytes(raw)
+              subprocess.run(['lua5.4','-e','assert(loadfile('+json.dumps(str(target))+'))'],check=True)
+              subprocess.run(['lua5.4',str(root/'test_r45_r41_numeric_actor_lua_source_only.lua'),
+                              str(target),str(ar/'M_BGXW3_R41_LINK_SOURCE_ONLY.lua')],check=True)
+          print('R45 SOURCE only; neither registered in user game nor installed BAF')
           PY
 
       - name: R39 Lua wrapper-object versus numeric actor ID regression (NO GAME)
