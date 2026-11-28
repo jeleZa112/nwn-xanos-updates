@@ -92,22 +92,119 @@ def saved_names(gam:dict)->set[str]:
     if not names or len(names)>234:raise Hold("HOLD_GAM_ITEM_COUNT_INVALID")
     return names
 
-def build_source(gam:dict, audit:dict, keyhash:str, r3)->str:
+def source_coverage(gam:dict,audit:dict)->dict:
+    """Reuse R3 audit; trust only exact native ITM and linked-SPL coverage.
+
+    A partial saved-game inventory is valid SOURCE DATA, never proof of an
+    executable weapon or an engine actor. Unresolved ITM / linked spells
+    cannot be ranked or equipped; no synthetic item records are generated.
+    """
     names=saved_names(gam)
-    if not isinstance(keyhash,str) or len(keyhash)!=64 or (
-        any(c not in "0123456789abcdef" for c in keyhash)):
-        raise Hold("HOLD_GAME_RESOURCE_KEY_DIGEST")
     if not isinstance(audit,dict) or audit.get("schema")!=(
         "BGXAI_WEAPON_NATIVE_ITM_R3_READONLY") or (
         audit.get("sourceKind")!="CURRENT_GAME") or (
-        audit.get("status")!="ITM_NATIVE_ALL_ITEMS_RAW_READ") or (
+        audit.get("status") not in (
+            "ITM_NATIVE_ALL_ITEMS_RAW_READ","ITM_NATIVE_PARTIAL_HOLD")) or (
         audit.get("dispatchAuthorized") is not False) or (
         audit.get("weaponSwitchAuthorized") is not False) or (
-        audit.get("missingItemsOrLinkedSpells")) or (
-        set(audit.get("items",{}))!=names) or (
+        audit.get("executable") is not False) or (
         sorted(audit.get("requestedItems",[]))!=sorted(names)):
         raise Hold("HOLD_R3_CURRENT_GAME_RESOURCE_COVERAGE")
-    compact=r3._r3_compact_items(audit,names)
+    info=audit.get("items")
+    missing=audit.get("missingItemsOrLinkedSpells")
+    linked=audit.get("linkedSpells")
+    if not isinstance(info,dict) or not isinstance(missing,list) or (
+        not isinstance(linked,dict)) or len(missing)>1024 or (
+        set(info)-names) or len(linked)>1000:
+        raise Hold("HOLD_R3_COVERAGE_STRUCTURE_UNTRUSTED")
+    absent_items=set()
+    absent_spells=set()
+    for row in missing:
+        if not isinstance(row,dict) or not isinstance(row.get("resource"),str):
+            raise Hold("HOLD_R3_MISSING_RECORD_UNTRUSTED")
+        resource=row["resource"]
+        if resource.endswith(".ITM"):
+            name=resource[:-4]
+            if name not in names or name in info or name in absent_items:
+                raise Hold("HOLD_R3_ITEM_MISSING_RECORD_MISMATCH")
+            absent_items.add(name)
+        elif resource.endswith(".SPL"):
+            name=resource[:-4]
+            if name not in linked or name in absent_spells:
+                raise Hold("HOLD_R3_SPELL_MISSING_RECORD_MISMATCH")
+            absent_spells.add(name)
+        else:
+            raise Hold("HOLD_R3_MISSING_RESOURCE_TYPE_UNTRUSTED")
+    if (names-set(info))!=absent_items:
+        raise Hold("HOLD_R3_ITEM_COVERAGE_NOT_EXACT")
+    actual_missing_spells=set()
+    for name,row in linked.items():
+        if not isinstance(row,dict) or not isinstance(name,str):
+            raise Hold("HOLD_R3_LINKED_SPELL_SHAPE")
+        if row.get("status")=="LINKED_SPELL_UNAVAILABLE":
+            actual_missing_spells.add(name)
+        elif not isinstance(row.get("spell"),dict) or (
+            row["spell"].get("schema")!="BGXAI_SPL_RAW_V1"):
+            raise Hold("HOLD_R3_LINKED_SPELL_NOT_VERIFIED")
+    if absent_spells!=actual_missing_spells:
+        raise Hold("HOLD_R3_LINKED_SPELL_COVERAGE_MISMATCH")
+    partial=bool(missing)
+    if partial!=(audit["status"]=="ITM_NATIVE_PARTIAL_HOLD"):
+        raise Hold("HOLD_R3_AUDIT_STATUS_MISMATCH")
+    blocked=set()
+    links_referenced=set()
+    for name,row in info.items():
+        if not isinstance(row,dict) or not isinstance(row.get("item"),dict):
+            raise Hold("HOLD_R3_ITEM_ROW_UNTRUSTED")
+        abilities=row["item"].get("abilities")
+        if not isinstance(abilities,list):
+            raise Hold("HOLD_R3_ITEM_ABILITIES_UNTRUSTED")
+        for ability in abilities:
+            if not isinstance(ability,dict) or not isinstance(
+                ability.get("effects"),list):
+                raise Hold("HOLD_R3_ITEM_EFFECTS_UNTRUSTED")
+            for eff in ability["effects"]:
+                if not isinstance(eff,dict):
+                    raise Hold("HOLD_R3_EFFECT_ROW_UNTRUSTED")
+                if eff.get("opcodeRaw")==146 and eff.get("resourceRaw"):
+                    target=eff["resourceRaw"]
+                    if not isinstance(target,str) or target not in linked:
+                        raise Hold("HOLD_R3_LINKED_SPELL_UNJOINED")
+                    links_referenced.add(target)
+                    if target in absent_spells:
+                        blocked.add(name)
+    if set(linked)!=links_referenced:
+        raise Hold("HOLD_R3_LINKED_SPELL_EXTRA_RECORD")
+    safe_names=set(info)-blocked
+    if not safe_names:
+        raise Hold("HOLD_R3_NO_USABLE_NATIVE_SOURCE_ITEM_BYTES")
+    statuses={}
+    for name in sorted(names):
+        if name in absent_items:
+            statuses[name]="ITM_RESOURCE_UNAVAILABLE"
+        elif name in blocked:
+            statuses[name]="LINKED_SPELL_RESOURCE_UNAVAILABLE"
+        else:
+            statuses[name]="ITM_RAW_PARSED_LINKED_RESOURCES_PRESENT"
+    return {
+        "allNames":names,
+        "parsedNames":safe_names,
+        "absentItems":absent_items,
+        "blockedLinked":blocked,
+        "unavailableLinkedSpells":absent_spells,
+        "coverageComplete":not partial,
+        "sourceStatusByResref":statuses,
+    }
+
+def build_source(gam:dict, audit:dict, keyhash:str, r3)->tuple[str,dict]:
+    coverage=source_coverage(gam,audit)
+    names=coverage["allNames"]
+    if not isinstance(keyhash,str) or len(keyhash)!=64 or (
+        any(c not in "0123456789abcdef" for c in keyhash)):
+        raise Hold("HOLD_GAME_RESOURCE_KEY_DIGEST")
+    # Existing native R3 serializer only receives items whose ITM bytes
+    # and referenced linked spells were actually read. Never synthesize.
+    compact=r3._r3_compact_items(audit,coverage["parsedNames"])
     people=[]
     for actor in gam["partyMembers"]:
         inv={}
@@ -131,13 +228,25 @@ def build_source(gam:dict, audit:dict, keyhash:str, r3)->str:
         })
     catalog={
         "schema":"BGXAI_R3_GAM_SAVED_PARTY_STATIC_LUA_V1",
-        "status":"SAVED_PARTY_CATALOG_NON_EXECUTABLE",
-        "sourceKind":"SAVED_GAM_WITH_CURRENT_GAME_RESOURCE_BYTES",
+        "status":("SAVED_PARTY_CATALOG_NON_EXECUTABLE"
+                  if coverage["coverageComplete"] else
+                  "SAVED_PARTY_CATALOG_PARTIAL_NON_EXECUTABLE"),
+        "sourceKind":("SAVED_GAM_WITH_CURRENT_GAME_RESOURCE_BYTES"
+                      if coverage["coverageComplete"] else
+                      "SAVED_GAM_WITH_PARTIAL_CURRENT_GAME_RESOURCE_BYTES"),
         "partyMembers":people,
         "items":compact,
         "gamSha256":gam["gamSha256"],
         "chitinSha256":keyhash,
         "rawUniqueItemResources":len(names),
+        "nativeResourceCoverageComplete":coverage["coverageComplete"],
+        "nativeParsedItemResources":len(coverage["parsedNames"]),
+        "nativeUnavailableItemResources":len(coverage["absentItems"]),
+        "nativeLinkedSpellBlockedItems":len(coverage["blockedLinked"]),
+        "nativeUnavailableLinkedSpells":len(coverage["unavailableLinkedSpells"]),
+        "sourceResourceStatusByResref":coverage["sourceStatusByResref"],
+        "allPresentInventoryItemsHaveNativeITM":coverage["coverageComplete"],
+        "unresolvedItemsCannotBeRankedOrEquipped":True,
         "liveInventorySnapshotAuthenticated":False,
         "alternateSlotEffectiveAprVerified":False,
         "alternateSlotEffectiveThac0Verified":False,
@@ -150,8 +259,9 @@ def build_source(gam:dict, audit:dict, keyhash:str, r3)->str:
         "gameModified":False,
         "ordersSent":0
     }
-    return r3._r3_lua_source(catalog,
-       "Saved GAM not live R37. Do not use for runtime dispatch without revalidation.")
+    return (r3._r3_lua_source(catalog,
+       "Saved GAM not live R37. Do not use for runtime dispatch without revalidation."),
+       coverage)
 
 def run(game:Path,documents:Path,reports:Path,*,game_required:bool=True,
         source_path:Path|None=None)->dict:
@@ -199,7 +309,7 @@ def run(game:Path,documents:Path,reports:Path,*,game_required:bool=True,
         audited=r3.audit(r3.NativeSource(game),sorted(names),
                          {"sourceKind":"SAVED_GAM_DOES_NOT_PROVE_LIVE"})
         stage="BUILD_INERT_LUA_CATALOG"
-        text=build_source(gam,audited,key_before,r3)
+        text,coverage=build_source(gam,audited,key_before,r3)
         stage="VERIFY_SOURCE_BYTES_STABLE"
         if selected.read_bytes()!=saved or key_before!=hashlib.sha256(
                 key.read_bytes()).hexdigest():
@@ -211,8 +321,17 @@ def run(game:Path,documents:Path,reports:Path,*,game_required:bool=True,
         stem="BGXAI_GAM_R3_"+gam["gamSha256"][:12]+"_"+digest[:12]
         output=reports/(stem+".lua")
         report=reports/(stem+".json")
-        done={**info,"status":"SOURCE_CATALOG_READY_OUTSIDE_GAME",
+        done={**info,"status":(
+                  "SOURCE_CATALOG_READY_OUTSIDE_GAME"
+                  if coverage["coverageComplete"] else
+                  "SOURCE_CATALOG_PARTIAL_OUTSIDE_GAME"),
               "noAutoRetry":False,
+              "nativeResourceCoverageComplete":coverage["coverageComplete"],
+              "nativeParsedItemResources":len(coverage["parsedNames"]),
+              "nativeUnavailableItemResources":len(coverage["absentItems"]),
+              "nativeLinkedSpellBlockedItems":len(coverage["blockedLinked"]),
+              "nativeUnavailableLinkedSpells":len(coverage["unavailableLinkedSpells"]),
+              "partialSourceNeverAuthorizesGameplay":True,
               "sourceGAMHash":gam["gamSha256"],
               "chitinKeyHash":key_before,"catalogHash":digest,
               "partyCount":len(gam["partyMembers"]),
@@ -279,7 +398,9 @@ def main(argv=None):
     reports=documents/"BGXAI_LIVE_REPORTS"
     result=run(args.game,documents,reports)
     print(json.dumps(result,ensure_ascii=False,indent=2))
-    return 0 if result["status"]=="SOURCE_CATALOG_READY_OUTSIDE_GAME" else 3
+    return 0 if result["status"] in (
+        "SOURCE_CATALOG_READY_OUTSIDE_GAME",
+        "SOURCE_CATALOG_PARTIAL_OUTSIDE_GAME") else 3
 
 if __name__=="__main__":
     raise SystemExit(main())
