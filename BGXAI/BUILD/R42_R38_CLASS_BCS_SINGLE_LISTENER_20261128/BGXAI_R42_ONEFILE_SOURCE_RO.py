@@ -34,6 +34,21 @@ BRIDGE_SHA = "80891a29a38d9bddac948ddf95146761d73e9112c44242a4fa0e673a2a476f95"
 SOURCES = {BUILDER: (BUILDER_BYTES, BUILDER_SHA),
            BRIDGE: (BRIDGE_BYTES, BRIDGE_SHA)}
 SCHEMA = "BGXAI_R42_ONEFILE179_CLASS_BCS_SOURCEONLY_V1"
+R38_GUARD = "BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/BGXAI_R38_GUARDED_FROM_R37.py"
+R37_GUARD = "BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/R37_GUARDED_SOURCE_ONLY.py"
+R42_GUARD = PREFIX + "BGXAI_R42_GUARDED_FROM_R38.py"
+CANDIDATE_SIZE = 93776
+CANDIDATE_SHA = "d14bf5f62f7d37663cf77f3305f57fb9631293940ed8ae2d4cb7b488248434b0"
+SOURCES.update({
+    R38_GUARD: (21303, "f39c0efb08ef9db7097fe062db88c6f6b1452e4e77ec9b395d4e934d39440b9c"),
+    R37_GUARD: (26252, "b34c93a0315c578989079c3565c6f0704315b8cdeabfb15be06508e4b5367e2d"),
+    R42_GUARD: (15458, "939274e0d30319fc04b9a1973b818a0da77370d55e85b46d8e085b7179fa0110"),
+})
+MODES = {"1": "source", "2": "status", "3": "preflight",
+         "4": "install", "5": "rollback"}
+INSTALL_CONFIRM = "INSTALL_BGXAI_R42_READONLY_CLASS_BCS_AFTER_R38"
+ROLLBACK_CONFIRM = "ROLLBACK_BGXAI_R42_RESTORE_R38_ONLY"
+
 
 
 class Hold(ValueError):
@@ -177,21 +192,143 @@ def run(game: Path, commit: str, *, fetcher=fetch,
         }
 
 
+
+def run_guarded(game: Path, commit: str, mode: str, *, fetcher=fetch,
+                runner=subprocess.run, require_windows: bool=True,
+                approved_token: str | None=None) -> dict:
+    """Preflight/install/rollback uses exact pinned legacy helpers and one existing CMD."""
+    if mode not in ("status", "preflight", "install", "rollback"):
+        raise Hold("HOLD_R42_GUARDED_MODE")
+    game=protected_root(game,require_windows)
+    commit=pin(commit)
+    install_mode=mode in ("install", "rollback")
+    required=INSTALL_CONFIRM if mode=="install" else ROLLBACK_CONFIRM
+    if install_mode and approved_token!=required:
+        raise Hold("HOLD_EXACT_TYPED_R42_APPROVAL_REQUIRED")
+    with tempfile.TemporaryDirectory(prefix="BGXAI_R42_GUARDED_") as folder:
+        workspace=Path(folder).resolve(strict=True)
+        real_game=game.resolve(strict=True)
+        if workspace==real_game or workspace in real_game.parents or real_game in workspace.parents:
+            raise Hold("HOLD_R42_STAGE_INSIDE_GAME")
+        # No game file is opened for writing. The only copy of R38 is original,
+        # exact SHA, used for composing a temporary candidate.
+        for path in (R38_GUARD, R37_GUARD, R42_GUARD, BUILDER, BRIDGE):
+            data=verified(path,fetcher(commit,path))
+            target=workspace.joinpath(*path.split("/"))
+            if workspace not in target.parents or target.is_symlink():
+                raise Hold("HOLD_R42_STAGE_PATH")
+            target.parent.mkdir(parents=True,exist_ok=True)
+            target.write_bytes(data)
+            if sha(target.read_bytes())!=SOURCES[path][1]:
+                raise Hold("HOLD_R42_STAGED_SHA")
+        candidate=None
+        if mode in ("preflight", "install"):
+            live=exact_installed_r38(game)
+            source=workspace.joinpath(*LIVE_SOURCE.split("/"))
+            source.parent.mkdir(parents=True,exist_ok=True)
+            source.write_bytes(live)
+            if sha(source.read_bytes())!=LIVE_R38_SHA:
+                raise Hold("HOLD_R42_STAGED_R38_SHA")
+            import importlib.util
+            loader=workspace.joinpath(*BUILDER.split("/"))
+            spec=importlib.util.spec_from_file_location('bgxai_verified_r42_builder',loader)
+            if spec is None or spec.loader is None:
+                raise Hold("HOLD_R42_BUILDER_IMPORT")
+            builder=importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(builder)
+            raw=builder.compose(source.read_bytes(),workspace.joinpath(*BRIDGE.split("/")).read_bytes())
+            if len(raw)!=CANDIDATE_SIZE or sha(raw)!=CANDIDATE_SHA:
+                raise Hold("HOLD_R42_COMPOSED_BYTES_DRIFT")
+            candidate=workspace/"R42_CANDIDATE_M_BGXR27.lua"
+            candidate.write_bytes(raw)
+            if sha(candidate.read_bytes())!=CANDIDATE_SHA:
+                raise Hold("HOLD_R42_TEMP_CANDIDATE_SHA")
+        command=[sys.executable,str(workspace.joinpath(*R42_GUARD.split("/"))),
+                 "--game",str(game),
+                 "--r38-tool",str(workspace.joinpath(*R38_GUARD.split("/"))),
+                 "--r37-tool",str(workspace.joinpath(*R37_GUARD.split("/"))),
+                 "--mode",mode]
+        if candidate is not None:
+            command+=["--candidate",str(candidate)]
+        # Token is typed by user on the current console before this call.
+        # The independently SHA-checked native guarded installer validates
+        # the same exact token again: no implicit or script-provided approval.
+        result=runner(command,cwd=str(workspace),input=(approved_token+"\n") if install_mode else "",
+                      stdin=None,capture_output=True,text=True,encoding="utf-8",
+                      errors="replace",timeout=330,check=False)
+        try:
+            inner=json.loads(result.stdout[result.stdout.find("{"):])
+        except (ValueError,TypeError):
+            raise Hold("HOLD_R42_NATIVE_REPORT_INVALID")
+        expected={
+            "status": ("R42_NOT_INSTALLED_R38_LAST","R42_PRESENT_LAST_READONLY"),
+            "preflight": ("R42_PREFLIGHT_PASS_NO_INSTALL",),
+            "install": ("R42_READONLY_INSTALLED_AWAITING_LIVE_CLASS",),
+            "rollback": ("R42_ROLLBACK_RESTORED_R38_LAST",),
+        }
+        accepted=expected["status"] if mode=="status" else expected[mode]
+        if (result.returncode!=0 or type(inner) is not dict or
+            inner.get("status") not in accepted or
+            inner.get("ordersSent")!=0 or
+            inner.get("dispatchAuthorized") is not False or
+            inner.get("armAuthorized") is not False or
+            inner.get("classScriptResrefAtLiveJaganVerified") is True):
+            raise Hold("HOLD_R42_NATIVE_GUARD_OR_STATE")
+        return {
+            "schema":SCHEMA,"status":"R42_"+mode.upper()+"_EXACT_GUARDED_PASS",
+            "innerStatus":inner["status"],"sourceCommit":commit,
+            "r42ExpectedCandidateSHA256":CANDIDATE_SHA,
+            "gameModified":mode in ("install","rollback"),
+            "installed":mode=="install" or (mode=="status" and inner.get("installed") is True),
+            "classScriptResrefAtLiveJaganVerified":False,
+            "ordersSent":0,"dispatchAuthorized":False,"armAuthorized":False,
+            "manualEpsActionOriginVerified":False,
+        }
+
+def choose_mode() -> str:
+    print("R42 (single BGXAI_UPDATE.cmd): 1=source RO [default]; 2=status; "
+          "3=preflight RO; 4=install (typed); 5=rollback (typed); 0=exit",flush=True)
+    s=input("R42 choice [1]: ").strip()
+    if not s:s="1"
+    if s=="0":return "exit"
+    if s not in MODES:raise Hold("HOLD_INVALID_R42_SUBMENU")
+    return MODES[s]
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--game", type=Path, default=ROOT)
     p.add_argument("--commit", required=True)
     p.add_argument("--native-readonly", action="store_true", required=True)
+    p.add_argument("--mode", choices=("source","status","preflight","install","rollback"))
     args = p.parse_args(argv)
     try:
-        result = run(args.game, args.commit)
-    except (OSError, ValueError, subprocess.TimeoutExpired) as error:
-        result = {"schema": SCHEMA, "status": "R42_HOLD_ONEFILE_RO",
+        mode=args.mode if args.mode is not None else choose_mode()
+        if mode=="exit":
+            result={"schema":SCHEMA,"status":"R42_CANCELLED_NO_CHANGE",
+                    "installed":False,"gameModified":False,"ordersSent":0,
+                    "dispatchAuthorized":False,"armAuthorized":False}
+        elif mode=="source":
+            result=run(args.game,args.commit)
+        else:
+            token=None
+            if mode in ("install","rollback"):
+                correct=INSTALL_CONFIRM if mode=="install" else ROLLBACK_CONFIRM
+                print("R42 "+mode+": this changes installed WeiDU; close game. "
+                      "No auto retry/restore after failure.",flush=True)
+                token=input("Type "+correct+" exactly (ENTER cancels): ").strip()
+                if token!=correct:raise Hold("HOLD_EXACT_TYPED_R42_APPROVAL_REQUIRED")
+            result=run_guarded(args.game,args.commit,mode,approved_token=token)
+        rc=0
+    except (OSError, ValueError, subprocess.TimeoutExpired, EOFError) as error:
+        result = {"schema": SCHEMA, "status": "R42_HOLD_ONEFILE_GUARDED",
                   "reason": str(error) if isinstance(error, Hold) else "HOLD_RUNTIME_OR_IO",
-                  "gameModified": False, "installed": False,
-                  "ordersSent": 0, "dispatchAuthorized": False}
+                  "noAutoRetry":True,
+                  "gameModifiedUnknown":args.mode in ("install","rollback"),
+                  "ordersSent": 0, "dispatchAuthorized": False,"armAuthorized":False}
+        rc=3
     print(json.dumps(result, ensure_ascii=False, indent=2))
-    return 0 if result["status"] == "R42_EXISTING_ONEFILE_SOURCE_READY_NO_INSTALL" else 3
+    return rc
 
 
 if __name__ == "__main__":
