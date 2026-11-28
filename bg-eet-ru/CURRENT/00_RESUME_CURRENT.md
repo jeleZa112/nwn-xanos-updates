@@ -1,9 +1,15 @@
 # BG_EET_RU — ЕДИНСТВЕННАЯ КАНОНИЧЕСКАЯ ТОЧКА ВОССТАНОВЛЕНИЯ
 
-<!-- RESUME_GUARD_BG_EET_RU_RELEASE_VERSION=163 -->
-<!-- RESUME_GUARD_BG_EET_RU_RELEASE_SHA256=838056e8626efecb4e1e4ec589806727e6eae000784385eee1f2aff25a337999 -->
+<!-- RESUME_GUARD_BG_EET_RU_RELEASE_VERSION=164 -->
+<!-- RESUME_GUARD_BG_EET_RU_RELEASE_SHA256=80db1808d3748f03c10c090345c40afcd17881bacac80d68ad9d88f0e1f1f90e -->
 
 **Сверено:** 2026-11-28. **Версию опубликованного исходника** всегда перепроверять по [release.json](../onefile/release.json) (**V163 опубликован в `bg-eet-ai`, второй пакет установлен по отчёту ZIP 20261128-063022; LIVE новых названий ещё не подтверждён**), а установленное у пользователя — только по его последним ZIP/console/status. Старые `V153–V160 READ_FIRST` и README — исторические, не «следующий шаг».
+
+## 28.11.2026 — V107 установленный LuaBindings.dll: минимальная READ-ONLY дельта (PR #132)
+
+- **PRIOR WORK GATE:** ранее V107 уже вычислял SHA256+размер через `v107_probe_files` без нативного чтения; его список НЕ содержал установленный `LuaBindings.dll`. По официальному `Bubb13/InfinityLoader/LuaBindings-v2.6.6.0/COPY_TO_GAME.ps1` и `Bubb13/EEex/EEex.tp2` этот файл копируется в **корень игры**. По GitHub `Bubb13/EEex` опубликован файл `EEex/loader/v2.6.6.0/LuaBindings.dll`, blob `66b5de7bb65b77637c08413d00f5026972da59cb`, размер 6,479,360 байт; публичный хэш **не доказывает**, что локальная DLL пользователя идентична.
+- **MINIMAL CODE:** ровно один существующий `BG_EET_RU_UPDATE.cmd`: добавлен только `'LuaBindings.dll'` в `V107_PROBE_FILES`, плюс синтетический `v107_selftest` для SHA256 этого файла; `SELF_VERSION=164` и `release.json` SHA256 `80db1808d3748f03c10c090345c40afcd17881bacac80d68ad9d88f0e1f1f90e`, размер **749937 из 750000 байт**. Имеющийся `53_V107_CITEM_STATIC_ABI_PREFLIGHT.json` внутри единственного ZIP получает `files['LuaBindings.dll']` со статусом FINGERPRINTED/ABSENT/HOLD и SHA256 при наличии. Ни один новый отчёт, observer, EEex hook, native read или запись в игру не добавлены. Вся логика V163 второй партии, меню 13, V160 и откат сохранены.
+- **ПРОВЕРКА И ГЕЙТ:** PR [#132](https://github.com/jeleZa112/nwn-xanos-updates/pull/132) — SOURCE STAGED; CI Windows/Linux и слияние нужно проверять отдельно, не считать PR уже установленным. До реального нового Windows `53_V107` **USER DLL SHA=UNKNOWN / CALLBACK CITEM FLAGS=HOLD / LIVE DUAL NAMES=NO**. Игра и V163 пользовательский deploy не менялись. После source+CI publish достаточно **одного** запуска прежнего CMD с параметром `--v107-static-preflight` (без боя, меню 13 и установки), затем того же ZIP. Если сеть офлайн, штатный обновлятор сохранит текущую версию; отсутствие нового SHA — HOLD, не фиктивный PASS.
 
 ## Доказанные факты
 - **CODE:** V161 `V161_WEIDU_DRIFT_GUARD_AND_PINNED_OFFLINE_CACHE_FIX`, [PR #125](https://github.com/jeleZa112/nwn-xanos-updates/pull/125), merged commit `f2c0bc7ca0131734ddff30e0c0d4aae48f638ce5`. Один прежний `BG_EET_RU_UPDATE.cmd`; релизный SHA256 `cbce7f0fdb519d6f5642d420d70f198f97d6479b6259c0709abf5a157e64238b`, **749994 байта**. При V161 берётся фактический текущий SHA `WeiDU.log`, сохраняются все другие точные пины EEex/UI/TLK/EXE. Кэш Python/Lua SHA-проверяемый и вне игры, сокращён сетевой таймаут.
