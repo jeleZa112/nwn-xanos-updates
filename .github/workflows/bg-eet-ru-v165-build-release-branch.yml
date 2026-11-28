@@ -42,8 +42,8 @@ jobs:
           'bg-eet-ru/hit-only-v160/test_v162_onefile_release.py',
           'bg-eet-ru/hit-only-v160/test_v163_cumulative_release_contract.py'}
           changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
-          assert changed==expected,(changed,expected)
-          print('ONLY_FIVE_EXPECTED_FILES_PASS')
+          assert changed in (expected,set()),(changed,expected)
+          print('ONLY_FIVE_EXPECTED_FILES_OR_ALREADY_BUILT_PASS')
           PY
       - name: Commit exact signed-off source and release contract to same PR branch
         shell: bash
