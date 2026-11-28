@@ -3,6 +3,18 @@
 <!-- RESUME_GUARD_BGXAI_R39_BAF_BYTES=2303 -->
 <!-- RESUME_GUARD_BGXAI_R39_BAF_SHA256=3b84d38a9df069e3dedfdaf8de6cbf6958a7252d43490fa64b829375cf7cd03d -->
 
+## 28.11.2026 — R39 SCRIPT-PILOT PHYSICAL BCS GATE — SOURCE CI PASS, LIVE STILL HOLD
+
+**SOURCE/PRIOR WORK:** Existing `BGXAI_R39_EEEX117_ENGINE_BRIDGE_RO.lua` previously read seven assigned EEex BCS resrefs after checking only portrait ID, class 3 and kit 16384; it might have returned another cleric's script names if party membership changed. Instead of new owner system/observer, `probeScriptAssignments()` now **reuses already-defined `exactPhysical()`** to match current single selected actor in portrait1, source STAF01 unique in slot20, target slot35 empty, offhand empty and exact actor/class/kit; repeats physical proof after two reads of script assignments. Any mismatch or mutation fails closed. **Physical pilot match is not authenticated scriptName or actual BCS execution**. Global receipt `BGXAI_R39_SCRIPT_OWNER_EXACT_PILOT_PREWORK_20261128` was recorded before source code modification, machine preflight PASS both OS [run 46118458028](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46118458028); all dependent predecessor pins verified and updated. Existing R37/V3/081 code reused, no new action listener.
+
+**CODE:** existing R39 native read-only bridge **10917B, Git blob `71411f7f6e4989a5237242b88e95166755a894df`**. R39 2407B EET native-compile-PASS BAF, R40 original 4632B, R41 compiled source bundle 21603B unchanged. **TEST:** [R39/R41 CI 46118593957](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46118593957) **SUCCESS Windows+Ubuntu**: 118/118 Python each OS; V3 27 cases/4 expected real-GAM skips each OS; Ubuntu native Lua **R39 bridge 34/34 PASS** (eight added wrong actor/selection/changed inventory/no-trigger cases), R41 14/14 PASS. `project_tools/resume_guard.py` and `--preflight` both PASS. No false runtime approval.
+
+**FOUND ERROR + METHOD:** an initial prework receipt used predecessor from `BGXAI/fox_new` rather than required `BGXAI/BUILD`; later the V3 saved-CRE reader still pinned previous R39 bridge SHA, producing expected RESUME DRIFT. Corrected both; recorded in existing `GLOBAL_PROJECT_RULES/KNOWN_ERROR_GATES_V1.json` as `BGXAI_R39_PROVENANCE_BUILD_SCOPE_AND_DEPENDENT_SHA_DRIFT_20261128`. Recheck *all dependent receipts* whenever a predecessor changes.
+
+**DEPLOY/LIVE:** game untouched; R39/R40/R41 not installed; no first `XEquipItem`. Cannot select a BCS to patch on `scriptLevelResrefs` alone: `actualBcsExecutionVerified=false`, `scriptSlotOwnershipVerified=false`, `nativeScriptNameVerified=false`, `actionOriginVerified=false`, `canArm=false` even for a physical-match result. **First next real delta:** obtain real installed EEex/current script execution/owner evidence for exact Jagan (using same existing single updater when safely linked), prove item/effects+manual/EPS boundary and R40 startup order, then staged typed-only last WeiDU install+external backup+rollback and one trial STAF01 equip. Never rerun 176→7, install R39 on guessed BDDEFAI/PRIEST1, or treat synthetic GAM fixture as real BCS names.
+
+---
+
 ## 28.11.2026 — SAVED CRE SCRIPT REFS READONLY: CODE/TEST PASS, REAL SAVE RESREFS STILL UNKNOWN
 
 **PRIOR WORK GATE:** Before editing the existing V3 GAM reader, committed scoped reviewed receipt `BGXAI_V3_GAM_CRE_SAVED_BCS_ASSIGNMENTS_PREWORK_20261128` to the existing global registry (commit `34218661aa0e`); compared existing V3 GAMEV2.0/CRE inventory parsing, R39 EEex117 in-memory script-assignment reader and exact predecessor blob SHA. No new GAM parser, no new action listener, no new updater.
