@@ -23,9 +23,19 @@ jobs:
       run:
         working-directory: BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127
     steps:
+      - name: Preserve exact source bytes on Windows
+        run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Assert inert source-only guards and exact committed BAF
         run: python -m unittest -v test_r39_staged_xequip_v1.py test_r39_existing_evidence_join_ro.py test_r39_reuse_menu176_native_ro.py test_r39_onefile177_ro.py test_176_option7_ro.py test_r39_explicit_gesture_contract.py
+
+      - name: Verify guarded R41 Lua lifecycle integration (Ubuntu, source-only)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.4
+          lua5.4 test_r41_link_sourceonly.lua
