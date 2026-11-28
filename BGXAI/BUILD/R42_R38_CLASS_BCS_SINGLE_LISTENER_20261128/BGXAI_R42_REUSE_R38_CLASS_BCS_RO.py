@@ -25,7 +25,7 @@ SCHEMA = "BGXAI_R42_R38_R39_SINGLE_LISTENER_CLASS_BCS_SOURCE_ONLY_V1"
 READONLY_STATUS = "R42_COMPOSED_CLASS_BCS_SINGLE_LISTENER_NO_INSTALL"
 EMIT_ANCHOR = "   if idline then ports.emitString('[BGXID] '..idline) end"
 CALL_ANCHOR = "  local emitted=pcall(deps.emit,result)"
-BRIDGE_ANCHOR = " -- BGXAI R31: passive bootstrap for EXACT R27 ACTION_CONTEXT_V3 source."
+BRIDGE_ANCHOR = "-- BGXAI R31: passive bootstrap for EXACT R27 ACTION_CONTEXT_V3 source."
 LISTENER_CALL = "EEex_Action_AddSpriteStartedActionListener,pilot.listener"
 
 # This line is emitted at most once in the existing R38 callback. It is
