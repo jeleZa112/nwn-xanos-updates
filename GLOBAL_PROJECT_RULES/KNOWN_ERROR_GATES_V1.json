@@ -572,6 +572,21 @@
           "pinned_commit": "180ef997fd6cee7e3b12c03ecaae472340d9aac0",
           "post_release_ci": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46129023635",
           "native_live_preflight_proven": false
+        },
+        {
+          "delta_id": "BGXAI_R44_ONEFILE179_NUMERIC_ACTOR_RO_20261128",
+          "recorded_before_source_edit": true,
+          "already_done": "One existing BGXAI_UPDATE.cmd and 79798-byte PS source with one menu179 child. Immutable published source commit 180ef997fd6cee7e3b12c03ecaae472340d9aac0 has menus 179→1..11 for original R42 and installed R43 diagnostic. R43 last #156 first live capture HOLD_SCRIPT_ACTOR_CHANGED. R39 numeric actor-id alternate source-only 13533B/sha c7b72.. passed mock; R44 complete 96410B/sha bae257.. compiled and Lua checked; R44 guarded last156→157 source-only fake EET passed Windows and Linux including typed backup install+rollback. No live R44 install.",
+          "specific_missing_delta": "Add R44 guarded modes 12..16 to SAME existing menu179 child, using SHA-pinned R44 guard/composer and alternative R39 wrapper, plus previous exact 8 ancestors from immutable commit and external TEMP. Preserve 1..11 functionality. Main parent onefile PS only pin bytes+SHA updated (length MUST remain 79798 <=80000). AFTER CI Windows+Linux passes and current onefile channel remains unchanged, atomically repin BOOTSTRAP_PIN to immutable committed PS with exact SHA. Never auto install; user must perform 179→13 preflight then separately typed 179→14 install. One new capture only later if installed. Stop on any HOLD.",
+          "source_staged_paths": [
+            "BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/BGXAI_R44_GUARDED_LAST156_SOURCE_ONLY.py",
+            "BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/BGXAI_R44_COMPOSE_FROM_R43_SOURCE_ONLY.py",
+            "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_ACTOR_ID_GUARD_SOURCE_ONLY.py"
+          ],
+          "source_only": true,
+          "gameModified": false,
+          "autoConsent": false,
+          "status": "PREWORK_REVIEWED_BEFORE_ONEFILE_STAGE"
         }
       ],
       "project": "BGXAI",
