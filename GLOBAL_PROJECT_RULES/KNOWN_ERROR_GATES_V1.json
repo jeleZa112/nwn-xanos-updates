@@ -389,13 +389,13 @@
       "error_id": "BGXAI_R42_LIVE_CAPTURE_HOLD_DETAIL_MASKED_20261128",
       "project": "BGXAI",
       "type": "CONFIRMED_FAILURE",
-      "status": "R44_NATIVE_TYPED_INSTALL_PASS_LAST157_FIRST_LIVE_CAPTURE_PENDING",
+      "status": "R44_NATIVE_LIVE_CLASS_BDDEFAI_FIRST_CAPTURE_PASS_ACTIONS_NONE",
       "discovered_at": "2026-11-28",
       "trigger": "Real Windows R42 one-file 179→6 capture after independently positive 179→2 guarded installed status",
       "observed_failure": "28-Nov 2026 first real R43 installed Windows capture 179→11 produced R43_CAPTURE_HOLD_REASON_OBSERVED, inner R42_CAPTURE_HOLD_CLASS_BCS_UNREADABLE, noAutoRetry=true, r39ProbeStatus=HOLD_SCRIPT_ACTOR_CHANGED, r39ClassSlotState=NOT_READ, classScriptResref=null, installed=true, ordersSent=0, dispatchAuthorized=false, armAuthorized=false, gameModified=false. Existing 46,109-byte raw console file local path C:\\Users\\Drevo\\Documents\\BGXAI_LIVE_REPORTS\\BGXAI_R43_CLASS_REASON_20261128T093349396112Z.log WAS NOT uploaded and has NOT been inspected. Two BG_EET_RU_V106 registration lines are not causal proof. Native process STOP code 1 is deliberate on hold.",
       "cause": "SOURCE-EXACT STOP LOCATION: R39 EEex 1.1.7 bridge probeScriptAssignments() checks `sameActor ~= sprite or sameId ~= portraitId` immediately after first seven resref reads, returning HOLD_SCRIPT_ACTOR_CHANGED. The single observed reason does NOT distinguish Lua userdata wrapper reference inequality (fresh typed wrapper returned by EEex_GameObject_Get / EEex_GameObject_CastUT) from an actual portrait actor ID change. Need not assert the actor actually switched. R43 successful identity matched earlier; class script not read. Proposed exclusive minimal source-only fix: compare stable numeric m_id with initial physical actorId and portrait ID, then second read using second object wrapper, and retain all previously existing exact physical/selection/script/cursor change HOLD gates; test same actor new wrapper vs changed ID without game installation. Not known which of two comparisons failed live.",
       "do_not_repeat": "Do not replay 179→11, reinstall R43 179→9, rerun old R42 179→6, old R39 compile, R38 capture, old GAM parsing, or unguarded rollback. Preserve original raw file. No duplicate listener, no new command/ARM, no assertion of CLASS name from 19-Nov GAM saved snapshot, no blame on BG_EET_RU without evidence.",
-      "safe_action": "Real user onefile 668b0fe4 verified SHA, 179→13 R44_PREFLIGHT_EXACT_GUARDED_PASS, then separately user-typed 179→14 R44_INSTALL_EXACT_GUARDED_PASS, inner R44_READONLY_NUMERIC_ACTOR_INSTALLED_AWAITING_LIVE. Real EET gameModified=true, installed=true, ordersSent=0, dispatchAuthorized=false, armAuthorized=false, classScriptResref=null. No repeat 179→13, 179→14, old R43 179→11 or 179→9. Next ONE user-PC 179→16 read-only capture with game/InfinityLoader initially closed; load same Jagan save, select only Jagan, brief walk, close game; preserve first console and local BGXAI_R44_CLASS_NUMERIC_ID_*.log. If HOLD or STOP, no retry/rollback; analyze output. No automatic equip, no BCS execution verification.",
+      "safe_action": "Real user R44 179→16 captured ONE first live event: R44_CAPTURE_EXACT_GUARDED_PASS, R42_LIVE_CLASS_BCS_ASSIGNMENT_OBSERVED_NO_ARM, classScriptResrefAtLiveJaganVerified=true, CLASS4 BDDEFAI, r39ProbeStatus R39_SCRIPT_RESREFS_OBSERVED_NO_DEPLOY, classState VALID_NAME_CANDIDATE, physicalReason NONE, sameR38Listener true, ordersSent=0, no LOCALS, no ARM. Raw user uploaded 50703 bytes SHA256 8dabbb5353b3eb834cbe685ccaee7fe22aa30c1c56018355cee325e1432837d4, 631 lines; proof in BGXAI/CURRENT/BGXAI_R44_FIRST_LIVE_CLASS_20261128_PROOF_SANITIZED.json; raw log not committed. Do NOT repeat 179→16, older 179→13/14, or reinstall. NEXT SOURCE-ONLY: reuse existing R39 2407B native compiled BAF, V3 local ARM, R40 reset, R41 link; audit existing armer's direct Lua sprite equality (same issue as R43) and missing actually executing CLASS/scriptName/EEex item usability/side-effect boundary. Existing user-PC log is sufficient for live assigned CLASS; not sufficient for BCS execution, active effects or actual XEquip. Do not start new diagnostic just to reprove CLASS. Move to minimal pilot action with separate explicit typed consent and safe guards after source/CI.",
       "closure_condition": "Specific original source of R39 CLASS assignment read HOLD is identified without speculating from unrelated mods or retrying the same capture. A future narrow source-only fix must explicitly preserve existing listener, no command dispatch, exact script/backup/provenance checks, one updated existing updater and CI; any new installation requires separate typed approval. Class script remains UNKNOWN until real current-game evidence.",
       "evidence": [
         "user-provided 2026-11-28 BGXAI_UPDATE.cmd 179→6 console in current BGXAI conversation (R42_HOLD_ONEFILE_GUARDED, HOLD_R42_NATIVE_GUARD_OR_STATE)",
@@ -408,7 +408,7 @@
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46133473161",
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46133585010"
       ],
-      "enforcement": "R44 CODE/TEST/SOURCE/REAL-PREFLIGHT/REAL-DEPLOY=PASS, R44 LIVE=NOT DONE; first XEquip not performed. Keep one original updater; stop after one R44 capture and review. R43 last156 ancestor retained, R44 installed last157.",
+      "enforcement": "R44 CODE/TEST/SOURCE/DEPLOY/LIVE READONLY=PASS, class BDDEFAI confirmed assigned, previous HOLD_SCRIPT_ACTOR_CHANGED no longer observed. DOES NOT prove actual BCS execution, item STAF01 in live log (only one backpack item), action origin, safe boundary, equipped transfer. First R44 capture only once; no auto game operations.",
       "source_only_fix": {
         "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_CLASS_HOLD_REASON_SOURCE_ONLY.py",
         "tests": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_class_hold_reason_source_only.py",
@@ -474,7 +474,20 @@
         "r44RealUserInstalled": true,
         "r44RealUserInstallStatus": "R44_INSTALL_EXACT_GUARDED_PASS",
         "r44RealUserInstallInnerStatus": "R44_READONLY_NUMERIC_ACTOR_INSTALLED_AWAITING_LIVE",
-        "r44DeployDate": "2026-11-28"
+        "r44DeployDate": "2026-11-28",
+        "r44RealUserFirstLiveCaptureVerified": true,
+        "r44LiveCaptureStatus": "R44_CAPTURE_EXACT_GUARDED_PASS",
+        "r44LiveClassResref": "BDDEFAI",
+        "r44LiveClassSlotState": "VALID_NAME_CANDIDATE",
+        "r44LiveR39ProbeStatus": "R39_SCRIPT_RESREFS_OBSERVED_NO_DEPLOY",
+        "r44LivePhysicalReason": "NONE",
+        "r44RawLogSha256": "8dabbb5353b3eb834cbe685ccaee7fe22aa30c1c56018355cee325e1432837d4",
+        "r44RawLogBytes": 50703,
+        "r44RawLogLines": 631,
+        "r44FirstLiveLogUploaded": true,
+        "r44ReadOnly": true,
+        "r44ActualBCSExecution": false,
+        "r44XEquipMoved": false
       }
     }
   ],
@@ -555,7 +568,7 @@
           "deploy": false,
           "live": false,
           "approval_for_install": false,
-          "status": "REAL_USER_TYPED_INSTALL_LAST157_PASS_LIVE_CAPTURE_PENDING",
+          "status": "REAL_USER_FIRST_R44_READONLY_CAPTURE_PASS_CLASS_BDDEFAI_NO_ARM",
           "ci_before_channel": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46133473161",
           "ci_after_channel": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46133585010",
           "candidateSha256": "bae25741c3ee620a184ddddcd0a7b59b82d835bd7f5766d5911459baedfe8600",
@@ -568,7 +581,16 @@
           "realInstalled": true,
           "realUserInstallStatus": "R44_INSTALL_EXACT_GUARDED_PASS",
           "realUserInstallInner": "R44_READONLY_NUMERIC_ACTOR_INSTALLED_AWAITING_LIVE",
-          "realLiveClassResrefConfirmed": false
+          "realLiveClassResrefConfirmed": false,
+          "realUserLiveStatus": "R44_CAPTURE_EXACT_GUARDED_PASS",
+          "realUserLiveInner": "R42_LIVE_CLASS_BCS_ASSIGNMENT_OBSERVED_NO_ARM",
+          "realAssignedClassResref": "BDDEFAI",
+          "livePhysicalReason": "NONE",
+          "liveActorStatus": "R39_SCRIPT_RESREFS_OBSERVED_NO_DEPLOY",
+          "realFirstCaptureSha256": "8dabbb5353b3eb834cbe685ccaee7fe22aa30c1c56018355cee325e1432837d4",
+          "realClassAssignedVerified": true,
+          "realBCSExecutionVerified": false,
+          "realItemMoveVerified": false
         }
       ]
     },
@@ -785,6 +807,21 @@
           "tests": "161 Python tests Windows and 161 Ubuntu PASS, 9/9 additional Lua 5.4 alternative runtime-wrapper mocks PASS; original R43/PS and EEex bridge immutable sha preserved; no real game change",
           "runtime_cause_confirmed": false,
           "installed": false
+        },
+        {
+          "delta_id": "BGXAI_R44_FIRST_LIVE_XEQUIP_PREARM_WRAPPER_EQUIVALENCE_20261128",
+          "recorded_before_source_edit": true,
+          "already_done": "R44 first real one-shot LIVE CLASS assignment BDDEFAI confirmed, one existing R38 listener. Original R39 BAF 2407B compiled natively read-only on user EET, V3 candidate STAF01 saved backpack slot20 and empty weapon35, source-only armer and R41 lifetime/reset bundle exist; prior 9 Lua R39 numeric-ID tests passed and exact R44 first user game live class succeeded. R39 source-only armer M_BGXW3_EXPLICIT_USER_ARM_SOURCE_ONLY.lua still uses state.volatileSprite~=aiBase, portraitSprite~=aiBase and postPortrait~=aiBase; R41 link uses current~=verifiedLoadedSprite. These are separate pre-existing equality pitfalls; do not assume installed R44 corrected them (it did not).",
+          "evidence": "2026-11-28 uploaded R44 raw 50703B SHA 8dabbb5353b3eb834cbe685ccaee7fe22aa30c1c56018355cee325e1432837d4; sanitized single [BGXBCS] CLASS=BDDEFAI, r39 physical reason NONE, [BGXINV3] 1 present 15 empty, [BGXR27] 35..38 null, m_curScriptNum=-1, actionSource pointer unavailable. Original saved GAM (previous provenance) named STAF01 slot20, BUT live R44 log does not explicitly output STAF01.",
+          "missing_delta": "Need source-only numeric ID wrapper-independent correction in already-written future R39 explicit-gesture armer & R41 lifecycle. Preserve strict per-session epoch, hotkey, LOCAL arming/readback, last-only BAF, native EEex exact actor m_id and portrait+selection, active item/effects+non-interruption checks. Prove with negative Lua tests separate wrapper same numeric ID accepted only when all other gates, changed ID HOLD. No actual user-game install / new updater / start of automatic XEquip until exact BCS execution and safe arming proof. Prefer one minimal live first transfer, not more passive diagnostics.",
+          "status": "PRIOR_WORK_REVIEWED_SOURCE_ONLY_NO_DEPLOY",
+          "auto_install": false,
+          "user_action_now": false,
+          "source_provenance": [
+            "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/M_BGXW3_EXPLICIT_USER_ARM_SOURCE_ONLY.lua",
+            "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/M_BGXW3_R41_LINK_SOURCE_ONLY.lua",
+            "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_JAGAN_STAF01_EEEX_SESSION_SOURCE_ONLY.baf"
+          ]
         }
       ],
       "predecessor_sources": [
