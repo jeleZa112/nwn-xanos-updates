@@ -1,0 +1,169 @@
+@echo off
+setlocal EnableExtensions DisableDelayedExpansion
+chcp 65001 >nul 2>nul
+cd /d "%~dp0"
+title BGXAI - ONE FILE UPDATE - RAW BOOTSTRAP
+if not exist "chitin.key" (
+  echo BGXAI STOP: Place BGXAI_UPDATE.cmd beside chitin.key in your Foxx EET game folder.
+  pause
+  exit /b 2
+)
+set "BGX_SELF=%~f0"
+set "BGX_ROOT=%~dp0"
+set "BGX_CACHE=%LOCALAPPDATA%\BGXAI_UPDATER"
+set "BGX_SCRIPT=%BGX_CACHE%\BGXAI_SYNC.current.ps1"
+echo BGXAI - one-file updater - RAW download without GitHub REST API ...
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$raw=[IO.File]::ReadAllText($env:BGX_SELF); $tag='# BEGIN_BGXAI_RAW_BOOTSTRAP_PS'; $at=$raw.LastIndexOf($tag); if($at -lt 0){throw 'Missing embedded PowerShell'}; & ([ScriptBlock]::Create($raw.Substring($at)))"
+set "BGX_RC=%ERRORLEVEL%"
+if not "%BGX_RC%"=="0" (
+  echo.
+  echo BGXAI STOP: Bootstrap failed. Existing EET and EPS unchanged.
+  echo Share this output with ChatGPT. No manual retry loop.
+  pause
+  exit /b %BGX_RC%
+)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%BGX_SCRIPT%" -GameRoot "%CD%"
+set "BGX_RC=%ERRORLEVEL%"
+echo.
+if "%BGX_RC%"=="0" (
+  echo BGXAI: update/status action completed.
+) else (
+  echo BGXAI STOP: Update action failed with code %BGX_RC%. Preserve this output.
+)
+pause
+exit /b %BGX_RC%
+# BEGIN_BGXAI_RAW_BOOTSTRAP_PS
+# One-time permanent CMD bootstrap. HTTPS RAW + CDN, immutable ref + SHA256.
+# No API calls, no tokens, no direct game/script/WeiDU changes in this phase.
+$ErrorActionPreference='Stop'
+$ProgressPreference='SilentlyContinue'
+try {
+    [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
+    $gameRoot=[IO.Path]::GetFullPath([string]$env:BGX_ROOT).TrimEnd('\')
+    if($gameRoot -ine 'C:\Games\BG_EET_FOXX_NEW') {throw ('Unexpected game root: '+$gameRoot)}
+    if(!(Test-Path -LiteralPath (Join-Path $gameRoot 'chitin.key') -PathType Leaf)) {throw 'Missing chitin.key'}
+    $cacheDir=Join-Path $env:LOCALAPPDATA 'BGXAI_UPDATER'
+    [IO.Directory]::CreateDirectory($cacheDir) | Out-Null
+    $temporaryPin=Join-Path $cacheDir ('channel_'+[guid]::NewGuid().ToString('N')+'.json')
+    $temporaryScript=Join-Path $cacheDir ('sync_'+[guid]::NewGuid().ToString('N')+'.ps1')
+    function Download-Limited([string[]]$uris,[string]$target,[int]$limit) {
+        $errorsSeen=@()
+        foreach($uri in $uris) {
+            try {
+                if(Test-Path -LiteralPath $target){Remove-Item -LiteralPath $target -Force}
+                Invoke-WebRequest -Uri $uri -Headers @{'User-Agent'='BGXAI-Foxx-Onefile-NoAPI'} -OutFile $target -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop | Out-Null
+                $size=(Get-Item -LiteralPath $target).Length
+                if($size -lt 1 -or $size -gt $limit) {throw ('Unexpected response size: '+$size)}
+                return
+            } catch {
+                $errorsSeen+=($_.Exception.Message)
+            }
+        }
+        throw ('All download hosts failed: '+($errorsSeen -join ' | '))
+    }
+    function File-SHA256([string]$target) {
+        $hasher=[Security.Cryptography.SHA256]::Create()
+        try {
+            $stream=[IO.File]::OpenRead($target)
+            try{return ([BitConverter]::ToString($hasher.ComputeHash($stream))).Replace('-','').ToLowerInvariant()}
+            finally {$stream.Dispose()}
+        } finally {$hasher.Dispose()}
+    }
+    try {
+        $pinPath='BGXAI/UPDATER_V2/BOOTSTRAP_PIN_V2.json'
+        # Unique query per launch prevents stale branch-ref pin across HTTP/proxy/CDN caches.
+        $cacheNonce=[DateTime]::UtcNow.Ticks.ToString()
+        $pinSources=@(
+          ('https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/bg-eet-ai/'+$pinPath+'?bgxnonce='+$cacheNonce),
+          ('https://cdn.jsdelivr.net/gh/jeleZa112/nwn-xanos-updates@bg-eet-ai/'+$pinPath+'?bgxnonce='+$cacheNonce)
+        )
+        Download-Limited $pinSources $temporaryPin 4096
+        $pin=[IO.File]::ReadAllText($temporaryPin,[Text.Encoding]::UTF8) | ConvertFrom-Json
+        if($pin.schema -ne 2 -or $pin.channel -cne 'bgxai-fox-new-modular-v2' -or $pin.branch -cne 'bg-eet-ai' -or $pin.script_path -cne 'BGXAI/UPDATER_V2/BGXAI_HUB_V2.ps1') {
+            throw 'Unexpected updater channel descriptor'
+        }
+        $commitId=[string]$pin.commit
+        $expectedHash=[string]$pin.script_sha256
+        $expectedSize=[int]$pin.script_size
+        # V2 bootstrap never rewrites pin IDs. Legacy is a separate immutable module.
+        if($commitId -cnotmatch '^[0-9a-f]{40}$' -or $expectedHash -cnotmatch '^[0-9a-f]{64}$' -or
+            $expectedSize -lt 3000 -or $expectedSize -gt 80000) {
+            throw 'Invalid V2 exact pinned commit, SHA256 or size'
+        }
+        $scriptSources=@(
+          ('https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/'+$commitId+'/'+[string]$pin.script_path),
+          ('https://cdn.jsdelivr.net/gh/jeleZa112/nwn-xanos-updates@'+$commitId+'/'+[string]$pin.script_path)
+        )
+        Download-Limited $scriptSources $temporaryScript 80000
+        if((Get-Item -LiteralPath $temporaryScript).Length -ne $expectedSize) {throw 'Downloaded updater size mismatch'}
+        $actualHash=(File-SHA256 $temporaryScript)
+        if($actualHash -cne $expectedHash) {throw 'Downloaded updater SHA256 mismatch; refusing execution'}
+        $targetScript=Join-Path $cacheDir 'BGXAI_SYNC.current.ps1'
+        [IO.File]::Copy($temporaryScript,$targetScript,$true)
+        if((File-SHA256 $targetScript) -cne $expectedHash) {
+            throw 'Cached updater SHA256 mismatch; refusing execution'
+        }
+        # Content-addressed last-known-good hub persists outside the game folder.
+        $archive=Join-Path $cacheDir ('verified_'+$expectedHash+'.ps1')
+        if(Test-Path -LiteralPath $archive) {
+            $a=Get-Item -LiteralPath $archive -Force
+            if(($a.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0 -or
+                $a.Length -ne $expectedSize -or
+                (File-SHA256 $archive) -cne $expectedHash) {
+                throw 'Last good pinned cache changed; refusing execution'
+            }
+        } else {
+            [IO.File]::Copy($temporaryScript,$archive,$false)
+        }
+        $trust=Join-Path $cacheDir 'trusted_lastgood_v2.json'
+        $trustTemp=Join-Path $cacheDir ('trusted_'+[guid]::NewGuid().ToString('N')+'.json')
+        $state=@{schema=2;commit=$commitId;sha256=$expectedHash;size=$expectedSize} | ConvertTo-Json -Compress
+        try {
+            [IO.File]::WriteAllText($trustTemp,$state,[Text.Encoding]::ASCII)
+            if(Test-Path -LiteralPath $trust){
+                $t=Get-Item -LiteralPath $trust -Force
+                if(($t.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){throw 'Trusted state reparse blocked'}
+            }
+            [IO.File]::Copy($trustTemp,$trust,$true)
+        } finally {if(Test-Path -LiteralPath $trustTemp){Remove-Item -LiteralPath $trustTemp -Force -ErrorAction SilentlyContinue}}
+        [IO.File]::WriteAllText((Join-Path $cacheDir 'head.txt'),$commitId,[Text.Encoding]::ASCII)
+        Write-Host ('BGXAI: verified pinned script '+$commitId.Substring(0,12)+' (SHA256 OK)')
+        Write-Host 'GitHub REST API: not used.'
+    } catch {
+        # Network unavailable: use ONLY a previously SHA-verified immutable hub.
+        $networkReason=$_.Exception.Message
+        $trust=Join-Path $cacheDir 'trusted_lastgood_v2.json'
+        if(!(Test-Path -LiteralPath $trust -PathType Leaf)){throw ('No verified offline cache: '+$networkReason)}
+        $node=Get-Item -LiteralPath $trust -Force
+        if(($node.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0 -or $node.Length -gt 2048){throw 'Untrusted offline state'}
+        $old=[IO.File]::ReadAllText($trust,[Text.Encoding]::ASCII) | ConvertFrom-Json
+        $offlineCommit=[string]$old.commit
+        $offlineHash=[string]$old.sha256
+        $offlineSize=[int]$old.size
+        if($old.schema -ne 2 -or $offlineCommit -cnotmatch '^[a-f0-9]{40}$' -or
+           $offlineHash -cnotmatch '^[a-f0-9]{64}$' -or
+           $offlineSize -lt 3000 -or $offlineSize -gt 80000){throw 'Offline cached pin invalid'}
+        $archive=Join-Path $cacheDir ('verified_'+$offlineHash+'.ps1')
+        if(!(Test-Path -LiteralPath $archive -PathType Leaf)){throw 'Offline immutable script absent'}
+        $a=Get-Item -LiteralPath $archive -Force
+        if(($a.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0 -or
+           $a.Length -ne $offlineSize -or
+           (File-SHA256 $archive) -cne $offlineHash){
+            throw 'Offline cached script SHA or size mismatch'
+        }
+        $targetScript=Join-Path $cacheDir 'BGXAI_SYNC.current.ps1'
+        [IO.File]::Copy($archive,$targetScript,$true)
+        if((File-SHA256 $targetScript) -cne $offlineHash){throw 'Offline executable cache changed'}
+        [IO.File]::WriteAllText((Join-Path $cacheDir 'head.txt'),$offlineCommit,[Text.Encoding]::ASCII)
+        Write-Host ('BGXAI OFFLINE: verified last good '+$offlineCommit.Substring(0,12)+' (SHA256 OK; no auto install)')
+    } finally {
+        foreach($item in @($temporaryPin,$temporaryScript)) {
+            if(Test-Path -LiteralPath $item) {Remove-Item -LiteralPath $item -Force -ErrorAction SilentlyContinue}
+        }
+    }
+    exit 0
+} catch {
+    Write-Host ('BGXAI BOOTSTRAP STOP: '+$_.Exception.Message) -ForegroundColor Red
+    Write-Host 'No EET game or WeiDU resources were changed.'
+    exit 1
+}
