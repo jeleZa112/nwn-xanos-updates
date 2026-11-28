@@ -400,7 +400,7 @@
       "receipt_id": "BGXAI_R39_SCRIPT_OWNER_EXACT_PILOT_PREWORK_20261128",
       "project": "BGXAI",
       "source_path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_EEEX117_ENGINE_BRIDGE_RO.lua",
-      "source_git_blob_sha": "71411f7f6e4989a5237242b88e95166755a894df",
+      "source_git_blob_sha": "52bd8751581aa9f9d9ac09559f11a856e81ba1da",
       "reviewed_deltas": [
         {
           "delta_id": "BGXAI_R39_EEEX117_DEBUG_SCRIPT_INDEX_MAP_20261128",
@@ -452,7 +452,7 @@
         },
         {
           "path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_EEEX117_ENGINE_BRIDGE_RO.lua",
-          "git_blob_sha": "71411f7f6e4989a5237242b88e95166755a894df"
+          "git_blob_sha": "52bd8751581aa9f9d9ac09559f11a856e81ba1da"
         }
       ],
       "already_implemented": [
