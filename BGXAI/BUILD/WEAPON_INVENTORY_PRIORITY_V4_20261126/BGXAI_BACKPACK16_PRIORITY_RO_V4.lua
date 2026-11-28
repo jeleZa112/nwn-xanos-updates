@@ -400,4 +400,151 @@ function M.planWithR37(sprite,r37,contextReader,reader,
  advice.ordersSent=0
  return advice
 end
+
+-- ONE discovery pass through the EXISTING R37/R3 source route: read exactly
+-- the correct sixteen backpack slots 18..33, rather than hand-entering each
+-- weapon. The caller's actor-specific projection must be explicitly modeled.
+-- ITM facts are real source bytes; hypothetical effective APR/THAC0 are NOT.
+function M.prepare16FromR3(raw,r3,projection)
+ if type(raw)~='table' or
+    raw.status~='TOPLEVEL0_38_AND_R37_STABLE_ADVICE_ONLY' or
+    raw.rawInventoryDoubleRead~=true or raw.r37QuickQuiverOffhandMatched~=true or
+    type(raw.backpack)~='table' or type(raw.backpack.slots)~='table' or
+    type(raw.quick)~='table' or type(raw.other)~='table' or
+    type(r3)~='table' or
+    r3.inventoryLinkSchema~='BGXAI_R3_R37_TOPLEVEL_ITM_JOIN_SOURCE_ONLY_V1' or
+    r3.sourceKind~='CURRENT_GAME' or
+    r3.status~='ITM_NATIVE_ALL_ITEMS_RAW_READ' or
+    r3.nativeRuntimeInventorySnapshotAuthenticated~=false or
+    r3.nativeCurrentAlternativeAPRVerified~=false or
+    r3.dispatchAuthorized~=false or r3.inventoryTransferAuthorized~=false or
+    type(r3.items)~='table' or type(r3.inventoryRawMap)~='table' or
+    type(projection)~='function' then
+  return nil,'HOLD_R3_16_SLOT_INPUT_OR_PROVENANCE_INCOMPLETE' end
+ -- R3 is an older resource audit, not a same-tick native instance proof.
+ -- Compare ALL top-level names, not just the intended source item.
+ for slot=0,38 do
+  local observed=slot>=18 and slot<=33 and raw.backpack.slots[slot] or
+      slot>=35 and raw.quick[slot] or raw.other[slot]
+  local archived=r3.inventoryRawMap[slot] or r3.inventoryRawMap[tostring(slot)]
+  if type(observed)~='table' or type(archived)~='table' or
+     observed.slot~=slot or archived.slot~=slot or
+     observed.status~=archived.status or observed.resref~=archived.resref then
+   return nil,'HOLD_R3_TOPLEVEL_ITEM_CHANGED_OR_UNMAPPED' end
+ end
+ local candidates={}
+ for slot=18,33 do
+  local observed=raw.backpack.slots[slot]
+  if observed.status=='PRESENT_RAW' then
+   local entry=r3.items[observed.resref]
+   if type(entry)~='table' or
+      type(entry.item)~='table' or
+      entry.item.schema~='BGXAI_ITM_RAW_V1' or
+      type(entry.item.abilities)~='table' or
+      type(entry.provenance)~='table' or
+      (entry.provenance.origin~='CURRENT_GAME_BIFF' and
+       entry.provenance.origin~='CURRENT_GAME_OVERRIDE') then
+    return nil,'HOLD_R3_ITM_RESOURCE_MISSING' end
+   local success,p=pcall(projection,slot,observed,entry.item)
+   if not success or type(p)~='table' then
+    return nil,'HOLD_R3_PROJECTOR_UNAVAILABLE' end
+   if p.status=='CANNOT_USE_OR_NOT_WEAPON' then
+    if p.weaponModel~=nil then
+     return nil,'HOLD_R3_SKIPPED_ITEM_MODEL_FORGED' end
+   elseif p.status=='MODELED_WEAPON_CANDIDATE' then
+    local w=p.weaponModel
+    local abilityIndex=p.abilityIndex
+    if type(w)~='table' or
+       not integer(abilityIndex,0,63) or
+       type(entry.item.abilities[abilityIndex+1])~='table' or
+       w.sourceSlot~=slot or w.slot~='BACKPACK' or
+       w.resRef~=observed.resref or
+       w.counterfactualBasis~='MODEL_ONLY_NOT_NATIVE_EFFECTIVE' or
+       w.alternativeEffectiveStatsLiveVerified~=false or
+       p.predictedUtility~=nil then
+      return nil,'HOLD_R3_PROJECTED_WEAPON_NOT_SOURCE_BOUND' end
+    -- The attack type is read from the actual ITM ability, not guessed from
+    -- resref, skill, selected weapon or character's currently shown APR.
+    local attack=entry.item.abilities[abilityIndex+1].attackTypeRaw
+    if (attack==1 and w.mode~='MELEE') or
+       (attack==2 and w.mode~='RANGED') or
+       (attack~=1 and attack~=2) then
+      return nil,'HOLD_R3_ITEM_ABILITY_MODE_MISMATCH' end
+    candidates[#candidates+1]={
+     sourceSlot=slot,resref=observed.resref,snapshotId=w.snapshotId,
+     modelProvenance='V3_V4_V5',
+     usabilityVerified=p.usabilityVerified,
+     identifiedVerified=p.identifiedVerified,
+     notCursedVerified=p.notCursedVerified,
+     notQuestItemVerified=p.notQuestItemVerified,
+     offhandCompatibilityVerified=p.offhandCompatibilityVerified,
+     ammoAndLauncherVerified=p.ammoAndLauncherVerified,
+     protectionsAccountedVerified=p.protectionsAccountedVerified,
+     weaponModel=w}
+   else
+    return nil,'HOLD_R3_PROJECTOR_UNKNOWN_STATUS' end
+  elseif observed.status~='EMPTY' then
+   return nil,'HOLD_R3_UNSUPPORTED_BACKPACK_SLOT' end
+ end
+ return candidates,nil
+end
+
+-- Single target-bound decision output for both already-equipped and backpack
+-- weapons. The engine dispatcher remains the EXISTING R39/actor-local BAF,
+-- which is NOT connected here until manual/EPS/round safety is proven live.
+function M.planBattleDecision(advice,r37,scene)
+ if type(advice)~='table' or advice.readOnly~=true or
+    advice.sourceOnly~=true or advice.executable~=false or
+    advice.dispatchAuthorized~=false or advice.inventoryMoveAuthorized~=false or
+    type(r37)~='table' or
+    r37.schema~='BGXAI_R27_SINGLE_CALLBACK_SELECTED_RO_V1' or
+    r37.status~='CURRENT_SELECTED_SAME_CALLBACK_SOURCE_CANDIDATE' or
+    r37.sameLuaListenerInvocation~=true or r37.queueSnapshotStable~=true or
+    r37.dispatchAuthorized~=false or r37.ordersSent~=0 or
+    r37.manualEpsQueueVerified~=false or r37.actionOriginVerified~=false or
+    type(scene)~='table' or scene.actorId~=r37.actor or
+    not integer(scene.targetActorId,1,2147483647) or
+    scene.targetActorId==scene.actorId or
+    type(scene.snapshotId)~='string' or
+    not integer(scene.tick,0,1e12) or
+    not integer(r37.queuedActionsRaw,0,512) then
+  return result('HOLD_BATTLE_EVIDENCE_OR_ACTION_CONTEXT_INCOMPLETE') end
+ local kind,target,source,name
+ if advice.status=='PREFER_ALREADY_EQUIPPED_QUICKSLOT_NO_INVENTORY_MOVE' then
+  kind='SELECT_ALREADY_EQUIPPED_QUICKSLOT'
+  target=advice.suggestedQuickslotIndex
+  name=advice.bestEquippedWeaponId
+  if not integer(target,0,3) or type(name)~='string' then
+   return result('HOLD_READY_WEAPON_INTENT_INVALID') end
+ elseif advice.status=='ADVISE_BACKPACK16_TO_EMPTY_QUICKSLOT_DRYRUN_ONLY' then
+  kind='EQUIP_BACKPACK_TO_EMPTY_QUICKSLOT'
+  target=advice.targetSlot
+  source=advice.sourceSlot
+  name=advice.candidateResref
+  if not integer(target,35,38) or not integer(source,18,33) or
+     not ref(name) or advice.topLevelResrefOccurrences~=1 or
+     advice.topLevelItemMappingComplete~=true then
+   return result('HOLD_BACKPACK_ITEM_INTENT_INVALID') end
+ else
+  return result('KEEP_CURRENT_ACTION_OR_UNPROVEN_GAIN',{
+   modelAdviceStatus=advice.status}) end
+ local pending={kind=kind,actorId=scene.actorId,
+  targetActorId=scene.targetActorId,snapshotId=scene.snapshotId,
+  tick=scene.tick,sourceSlot=source,targetSlot=target,
+  weaponIdOrResref=name,
+  modelOnly=true,manualEpsOriginVerified=false,
+  safeRoundBoundaryVerified=false,requireTypedNativeInstall=true}
+ local state=r37.queuedActionsRaw>0 and
+   'DEFER_KNOWN_NONEMPTY_ACTION_QUEUE' or
+   'STAGE_DECISION_AWAIT_INDEPENDENT_MANUAL_EPS_ROUND_PROOF'
+ return result(state,{
+  pendingWeaponChange=pending,modelAdviceStatus=advice.status,
+  queuedActionsRaw=r37.queuedActionsRaw,
+  currentlyExecutingActionRaw=r37.actionRaw,
+  engineActionCalls=0,
+  actionQueueNotCleared=true,
+  nativeEmptyQueueNotTreatedAsSafeBoundary=true})
+end
+
+
 return M
