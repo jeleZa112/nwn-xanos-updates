@@ -3,6 +3,20 @@
 <!-- RESUME_GUARD_BGXAI_R39_BAF_BYTES=2303 -->
 <!-- RESUME_GUARD_BGXAI_R39_BAF_SHA256=3b84d38a9df069e3dedfdaf8de6cbf6958a7252d43490fa64b829375cf7cd03d -->
 
+## 28.11.2026 — SAVED CRE SCRIPT REFS READONLY: CODE/TEST PASS, REAL SAVE RESREFS STILL UNKNOWN
+
+**PRIOR WORK GATE:** Before editing the existing V3 GAM reader, committed scoped reviewed receipt `BGXAI_V3_GAM_CRE_SAVED_BCS_ASSIGNMENTS_PREWORK_20261128` to the existing global registry (commit `34218661aa0e`); compared existing V3 GAMEV2.0/CRE inventory parsing, R39 EEex117 in-memory script-assignment reader and exact predecessor blob SHA. No new GAM parser, no new action listener, no new updater.
+
+**CODE:** existing `BGXAI/BUILD/WEAPON_XEQUIP_LOCAL_ARM_SOURCEONLY_V3_20261127/verify_candidate_ro.py` now reads the **five saved CRE V1.0 resrefs at 0x248, 0x250, 0x258, 0x260, 0x268**, mapping to `SCRLEV 0,4,5,6,7`. It includes them as `savedCreScriptResrefs` only for the existing verified actor/item candidate. **Not** the live `SCRLEV 1/2` area/specifics, not an executing BCS, not script slot ownership. Does not grant `itemEngineUsable` or `ports.capture` or R41 installation approval. Existing R39 BAF 2407B, original R39/R40, generated R41 21603B unchanged.
+
+**TEST:** [V3 CI 46118100842](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46118100842) **SUCCESS both OS**, 27 test cases per OS, 4 expected real-GAM skips, including 3 new synthetic saved-CRE script regressions. [R39/R41 CI 46118109030](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46118109030) **SUCCESS both OS**: exact R39/bridge pre-existing tests, new V3 tests, `project_tools/resume_guard.py` predecessor/integrity gate, and Ubuntu 14/14 Lua R41 lifecycle. First synthetic fixture CI run failed due accidentally escaped byte literals, fixed before passing CI; do not cite that failed intermediate as final. No native game compilation rerun.
+
+**EVIDENCE LIMIT:** Previously examined real `BALDUR(1).gam` (SHA256 `7e926634c0972e90e25c975a18c9bf34b96f4d85184195c630555fdd43f7e19c`) established Jagan and STAF01, but its original **bytes were unavailable for this new check**. Therefore the **real saved script values remain UNKNOWN**, not `BDDEFAI`/`PRIEST1` inferred from the synthetic fixture. No repeat request to user for an already provided save until reusing available project evidence is exhausted.
+
+**CODE/TEST:** saved CRE reader PASS. **DEPLOY/LIVE:** no game changes, no runtime actor BCS proof, no R41 install, no live `XEquipItem`. **Next:** obtain real save script refs through existing one-updater read-only path if available; independently confirm actual runtime EEex assignments/execution and EPS/manual safety; only then prepare typed guarded install + external backup + last-only rollback and one disposable-save transfer.
+
+---
+
 ## 28.11.2026 — R41 SOURCE-ONLY FIXED + VERIFIED, ИГРОВАЯ УСТАНОВКА ЗАПРЕЩЕНА ДО LIVE PROOFS
 
 **RESUME_VERDICT:** RESUME_PARTIAL_SAFE_ONLY; полный текст чата BGXAI 1.5.1 недоступен, но ветка `bg-eet-ai`, исходники и отчёты в текущих handoff проверены. **PRIOR_WORK_RECEIPT:** R39 already native-compiled 2407B (реальный `BGXAI_R39_NATIVE177_20261128T061446243176Z.json`), R40 4632B source-only reset, R41 11/11 offline mock. Не повторять 176→7, R38 capture, V3/V6/R29, не писать новый ARM/обновлятор.
