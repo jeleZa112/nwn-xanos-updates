@@ -563,9 +563,9 @@ def export_r37_lua_cache(report:dict) -> str:
                 if v[key] is not None:fields.append(label+'='+lua(v[key],depth+1))
             return '{'+','.join(fields)+'}'
         raise Hold('R3_LUA_EXPORT_VALUE_TYPE_UNSUPPORTED')
-    result='-- BGXAI SOURCE-ONLY STAGED DATA. NOT AN ENGINE ARMER. NO LUA HOOKS.\\n'
-    result+='-- Must be rejoined to SAME live R37/EEex117 inventory.\\n'
-    result+='return '+lua(catalog)+'\\n'
+    result='-- BGXAI SOURCE-ONLY STAGED DATA. NOT AN ENGINE ARMER. NO LUA HOOKS.\n'
+    result+='-- Must be rejoined to SAME live R37/EEex117 inventory.\n'
+    result+='return '+lua(catalog)+'\n'
     if len(result)>1000000:
         raise Hold('R3_LUA_EXPORT_CATALOG_TOO_LARGE')
     return result
