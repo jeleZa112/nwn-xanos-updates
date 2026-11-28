@@ -373,7 +373,7 @@
       "receipt_id": "BGXAI_R42_SINGLE_R38_LISTENER_CLASS_BCS_SOURCE_PREWORK_20261128",
       "project": "BGXAI",
       "source_path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_REUSE_R38_CLASS_BCS_RO.py",
-      "source_git_blob_sha": "1669bfb438449f15d07f93f5bca5693d5bbff50d",
+      "source_git_blob_sha": "8fbf928a7f346433eaac01c47208b153eeb81b64",
       "predecessor_sources": [
         {
           "path": "BGXAI/BUILD/R37_XEQUIP_IDENTITY_SINGLE_LISTENER_SOURCEONLY_20261127/M_BGXR27_R37_INV3_IDENTITY_SOURCE_ONLY.lua",
