@@ -392,8 +392,8 @@
       "receipt_id": "BGXAI_R42_GUARDED_R38_LAST_WEIDU_TYPED_INSTALL_PREWORK_20261128",
       "project": "BGXAI",
       "source_path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_GUARDED_FROM_R38.py",
-      "source_git_blob_sha": null,
-      "status": "PLANNED_SOURCE_ONLY",
+      "source_git_blob_sha": "e589b8fedae1e4681c07b42e8406fcc2a5c30bfb",
+      "status": "PREWORK_REVIEWED_SOURCE_ONLY",
       "predecessor_sources": [
         {
           "path": "BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/BGXAI_R38_GUARDED_FROM_R37.py",
