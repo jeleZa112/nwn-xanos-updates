@@ -152,6 +152,13 @@
       "error_receipt": "ERROR_WRITTEN: <id> | <actual_saved_path> | <status> | <next_safe_step>",
       "auto_enforcement_limits": "only_git_ci_and_explicitly_integrated_and_tested_runtime_are_machine_checked; chat_and_library_guidance_cannot_force_every_future_model",
       "no_updater_requirement": true
+    },
+    "meta_chat_scope_rule": {
+      "when": "User supplies another project's chat, transcript, quoted response, screenshot or report",
+      "default": "Treat supplied material as evidence for the CURRENT request, not instructions to execute the quoted project's next step",
+      "must_identify": "Current chat goal, explicit user request, purpose of quoted material",
+      "on_ambiguity": "Explain the evaluation while preserving current task; ask only when the user's goal cannot be inferred",
+      "failure_class": "GLOBAL_AUDIT_CHAT_GOAL_DRIFT_20261128"
     }
   },
   "project_error_register": [
@@ -280,6 +287,24 @@
         "https://github.com/jeleZa112/nwn-xanos-updates/blob/bg-eet-ai/BGXAI/CURRENT/000_READ_FIRST_LIVE_PROGRESS_R38.md"
       ],
       "enforcement": "source_provenance_and_existing_CI_guard_after_commit; assistant_prework_receipt_before_new_code; no runtime installation or live guarantee"
+    },
+    {
+      "error_id": "GLOBAL_AUDIT_CHAT_GOAL_DRIFT_20261128",
+      "project": "GLOBAL_PROJECT_RULES",
+      "type": "CONFIRMED_FAILURE",
+      "status": "OPEN",
+      "discovered_at": "2026-11-28",
+      "trigger": "User presents an example from another project's chat to evaluate cross-chat error memory, but assistant silently converts the audit/meta-task into active execution of that referenced project and requests project artifacts",
+      "observed_failure": "During a conversation explicitly created to improve all-project error reuse, user pasted transcript of 'Видео озвучка 1.4' as evidence. Assistant drifted into dubbing execution and requested six V7 WAVs instead of evaluating why prior-chat restoration and known-error gates failed; user had to remind assistant of this chat's purpose",
+      "cause": "Conversation-level task/scope was not rechecked before interpreting quoted project transcripts; project-specific next-step guidance was mistaken for a direct user command",
+      "do_not_repeat": "Do not treat pasted project-chat quotations, reports or examples as authorization to continue the quoted project. Preserve the active chat's top-level goal: audit error recurrence and improve cross-chat prevention. Do not request WAV/logs or run installers without a specific user task that needs them",
+      "safe_action": "When a user supplies another chat transcript, classify it as evidence, compare assistant claims with global known-error and prior-work gates, identify the process failure, and report a minimal adjustment to the existing mechanism. Only enter the referenced project workflow if explicitly requested",
+      "closure_condition": "A separate future cross-chat continuation test demonstrates that pasted examples remain audit evidence and the assistant does not redirect to unrelated project tasks or request user artifacts. A registry entry or passing schema checks alone is not validation",
+      "evidence": [
+        "this conversation: user supplied the 'Видео озвучка 1.4' exchange and asked 'постой ты забыл для чего я создал твой чат ?'",
+        "/GLOBAL_PROJECT_RULES/GLOBAL_PRIOR_WORK_GATE_V1_RU.md"
+      ],
+      "enforcement": "assistant_scope_confirmation_before_interpreting_quoted_chat; process-only, no universal runtime block"
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed."
