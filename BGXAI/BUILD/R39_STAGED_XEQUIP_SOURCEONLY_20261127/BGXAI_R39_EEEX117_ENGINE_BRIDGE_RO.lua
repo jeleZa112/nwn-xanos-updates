@@ -166,6 +166,7 @@ end
 function M.probeScriptAssignments(ports)
  if type(ports)~='table' or type(ports.getPortraitSprite)~='function' or
     type(ports.getPortraitID)~='function' or
+    type(ports.getSelectedIDs)~='function' or
     type(ports.getScriptLevelResRef)~='function' then
   return report('HOLD_SCRIPT_ASSIGNMENT_APIS_UNAVAILABLE') end
  local sprite=safe(ports.getPortraitSprite,1)
@@ -177,6 +178,13 @@ function M.probeScriptAssignments(ports)
  local stats=safe(prop(sprite,'getActiveStats'),sprite)
  if prop(ai,'m_Class')~=3 or prop(stats,'m_nKit')~=16384 then
   return report('HOLD_SCRIPT_ASSIGNMENT_CLASS_OR_KIT') end
+ -- Reuse the already-defined, strictly read-only pilot physical gate.
+ -- Other clerics in portrait1 MUST NOT be mistaken for this STAF01 pilot.
+ -- This is a physical candidate match, not a proof of script name/ownership.
+ local initialPhysical,initialReason=exactPhysical(sprite,
+   safe(ports.getSelectedIDs),portraitId)
+ if not initialPhysical then
+  return report('HOLD_SCRIPT_PILOT_PHYSICAL_CONTEXT',{reason=initialReason}) end
  local function once()
   local out={}
   for _,level in ipairs(SCRIPT_LEVELS) do
@@ -194,6 +202,14 @@ function M.probeScriptAssignments(ports)
   return report('HOLD_SCRIPT_ACTOR_CHANGED') end
  local second=once()
  if not second then return report('HOLD_SCRIPT_RESREF_UNREADABLE') end
+ local finalPhysical,finalReason=exactPhysical(sameActor,
+   safe(ports.getSelectedIDs),sameId)
+ if not finalPhysical then
+  return report('HOLD_SCRIPT_PILOT_PHYSICAL_CHANGED',{reason=finalReason}) end
+ for k,v in pairs(initialPhysical) do
+  if finalPhysical[k]~=v then
+   return report('HOLD_SCRIPT_PILOT_PHYSICAL_CHANGED') end
+ end
  for _,level in ipairs(SCRIPT_LEVELS) do
   if first[level]~=second[level] then return report('HOLD_SCRIPT_RESREF_CHANGED') end
  end
@@ -206,6 +222,8 @@ function M.probeScriptAssignments(ports)
  return report('R39_SCRIPT_RESREFS_OBSERVED_NO_DEPLOY',{
     scriptLevelResrefs=first,portraitActorId=portraitId,
     bddefaiAssigned=(#found>0),bddefaiAssignedLevels=found,
+    pilotPhysicalSnapshotDoubleMatched=true,
+    nativeScriptNameVerified=false,
     actualBcsExecutionVerified=false,scriptSlotOwnershipVerified=false,
     actionOriginVerified=false,canArm=false})
 end
@@ -213,11 +231,13 @@ function M.probeInstalledScriptAssignments()
  local g=_G
  local gp=rawget(g,'EEex_Sprite_GetInPortrait')
  local gi=rawget(g,'EEex_Sprite_GetInPortraitID')
+ local selected=rawget(g,'EEex_Sprite_GetAllSelectedIDs')
  local gs=rawget(g,'EEex_AIBase_GetScriptLevelResRef')
- if type(gp)~='function' or type(gi)~='function' or type(gs)~='function' then
+ if type(gp)~='function' or type(gi)~='function' or
+    type(selected)~='function' or type(gs)~='function' then
   return report('HOLD_SCRIPT_ASSIGNMENT_APIS_UNAVAILABLE') end
  return M.probeScriptAssignments({getPortraitSprite=gp,getPortraitID=gi,
-    getScriptLevelResRef=gs})
+    getSelectedIDs=selected,getScriptLevelResRef=gs})
 end
 
 function M.getStatus()return report('SOURCE_ONLY_NOT_REGISTERED_OR_CONNECTED') end
