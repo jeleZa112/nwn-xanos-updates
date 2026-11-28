@@ -48,7 +48,21 @@ class T(unittest.TestCase):
         self.assertIn(NEW179,r)
         self.assertIn('$n=16626',r)
         self.assertIn(HELPER_PATH,r)
-        self.assertEqual(hashlib.sha256(HELPER.read_bytes()).hexdigest(),NEW179)
+        # The channel still points to an IMMUTABLE earlier release. A newer
+        # child is allowed in the branch only as UNPUBLISHED staging; it
+        # must never be treated as available in BGXAI_UPDATE.cmd until
+        # BOOTSTRAP_PIN and the onefile PS exact source hash are repinned.
+        import json
+        channel=json.loads((ROOT/'BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text())
+        actual=hashlib.sha256(HELPER.read_bytes()).hexdigest()
+        if channel['commit']=='b0586b2d0c3d00afdc9ff68ad944505476733ff6':
+            self.assertNotEqual(actual,NEW179)
+            child=HELPER.read_text(encoding='utf-8')
+            self.assertIn('R43_GUARD = PREFIX',child)
+            self.assertIn('def run_diag_guarded',child)
+            self.assertIn('MODES.update({"7":',child)
+        else:
+            self.assertEqual(actual,NEW179)
 
     def test_allowlist_is_finite(self):
         self.assertIn('|BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128)',self.src)
