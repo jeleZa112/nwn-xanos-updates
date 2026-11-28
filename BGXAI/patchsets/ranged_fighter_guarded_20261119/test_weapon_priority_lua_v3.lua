@@ -384,4 +384,68 @@ check('nonphysical verified utility preserves currently selected weapon',functio
  eq(b.status,'KEEP_CURRENT')
  eq(b.dispatchAuthorized,false)
 end)
+-- Reuse R13 AC modifiers, not a new weapon scorer or action.
+local function with_r13_type_ac(s)
+ s.enemy.targetArmorClassBaseCandidate=0
+ s.enemy.targetArmorClassByAttackTypeCandidate={
+   CRUSHING=0,PIERCING=-8,SLASHING=-8,MISSILE=8}
+ s.enemy.targetTypeACModelStatus='R13_DERIVED_ATTACK_TYPE_AC_MODEL_ONLY'
+ s.enemy.targetTypeACModelSnapshotId='SNAP1'
+ s.enemy.targetTypeACNativeAuthenticated=false
+ return s
+end
+check('base-only older advisory remains approximate with no dispatch',function()
+ local _,b=two(mk(false))
+ eq(b.candidates[2].attackACModel,'BASE_AC_ONLY_APPROXIMATE')
+ eq(b.executable,false);eq(b.dispatchAuthorized,false)
+end)
+check('R13 melee slashing versus ranged missile AC changes target-specific choice',function()
+ local s=mk(false)
+ s.weapons[1].inRange=true
+ s.weapons[1].movementCost=0
+ local _,legacy=two(s);eq(legacy.status,'KEEP_CURRENT')
+ with_r13_type_ac(s)
+ local _,typed=two(s)
+ eq(typed.status,'ADVISE_PRIORITY_QUICKSLOT_ONLY')
+ eq(typed.toWeaponId,'DART')
+ eq(typed.candidates[1].targetACUsed,-8)
+ eq(typed.candidates[2].targetACUsed,8)
+ eq(typed.candidates[2].attackACType,'MISSILE')
+ eq(typed.candidates[2].attackACModel,'R13_TYPE_AC_MODEL_ONLY')
+ eq(typed.dispatchAuthorized,false)
+end)
+check('ranged piercing payload uses missile AC but piercing resistance',function()
+ local s=with_r13_type_ac(mk(false))
+ s.weapons[2].damageType='PIERCING'
+ s.enemy.protections.resistance.PIERCING=0.5
+ local _,b=two(s)
+ eq(b.candidates[2].attackACType,'MISSILE')
+ eq(b.candidates[2].targetACUsed,8)
+ eq(b.candidates[2].hitChance,0.95)
+ eq(b.candidates[2].dpr,0.95*5.5*3*0.5)
+ eq(b.dispatchAuthorized,false)
+end)
+check('partial R13 AC map is HOLD rather than false weapon choice',function()
+ local s=with_r13_type_ac(mk(false))
+ s.enemy.targetArmorClassByAttackTypeCandidate.MISSILE=nil
+ local _,b=two(s)
+ eq(b.status,'HOLD_UNRANKABLE_OCCUPIED_WEAPON')
+ eq(b.reason,'TARGET_TYPE_AC_EVIDENCE_INCOMPLETE')
+ eq(b.dispatchAuthorized,false)
+end)
+check('different R13 target snapshot cannot score',function()
+ local s=with_r13_type_ac(mk(false))
+ s.enemy.targetTypeACModelSnapshotId='WRONG'
+ local _,b=two(s)
+ eq(b.status,'HOLD_UNRANKABLE_OCCUPIED_WEAPON')
+ eq(b.reason,'TARGET_TYPE_AC_EVIDENCE_INCONSISTENT')
+end)
+check('native proof cannot be invented by caller mock flag',function()
+ local s=with_r13_type_ac(mk(false))
+ s.enemy.targetTypeACNativeAuthenticated=true
+ local _,b=two(s)
+ eq(b.status,'HOLD_UNRANKABLE_OCCUPIED_WEAPON')
+ eq(b.reason,'TARGET_TYPE_AC_EVIDENCE_INCONSISTENT')
+ eq(b.dispatchAuthorized,false)
+end)
 print('PASS WEAPON PRIORITY NATIVE LUA '..count..'/'..count..' SOURCE ONLY')
