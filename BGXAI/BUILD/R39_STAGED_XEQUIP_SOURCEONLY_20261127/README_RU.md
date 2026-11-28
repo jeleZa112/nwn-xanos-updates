@@ -1,3 +1,13 @@
+# 28.11.2026 — R41 LINK V2: единый неактивный bundle R39+R40, готовится для будущего guarded pilot
+
+До этого этапа реальный пользовательский 2407B R39 уже native WeiDU compile PASS и static STAF01 ITEM PASS; 176→7 НЕ повторять. Подтверждена auto-load механика override/M_*.lua (EEex docs Infinity_DoFile), что позволяет впоследствии подключить имеющиеся армер и lifecycle без второго action-start observer. **Но сам новый SOURCE ONLY file при загрузке не вызывает даже M.prepare и ни во что не вмешивается.**
+
+В текущей R39 папке: build_r41_link_sourceonly.py **6621B** генерирует SHA-pinned единый M_BGXW3_R41_LINK_SOURCE_ONLY.lua **21131B**, SHA256 `120c9a94fc45f830bda0c687090c9755701bd27cbdf08f9fb8b009bbd2c0ed73`, встраивая уже имеющиеся байт-в-байт R40 4632B и R39 armer 11427B. `M.prepare(ports, installerApproval)` ИНЕРТЕН до отдельного typed install consent и доказанных installed EEex item/active effects/BCS script owner/manual EPS/safe startup. После разрешения R40 loaded/destroyed hooks регистрируются ПЕРВЫМИ; R39 key listener и глобальный Lua-trigger ставятся только ПОСЛЕ подтверждённого successful R40 reset точного portrait1 sprite. При ошибке locals, stale session, wrong actor или чужом EEexLua global — FAIL CLOSED.
+
+Test: `texlua test_r41_link_sourceonly.lua` **11/11 PASS** на двух встроенных существующих Lua modules + mocked EEex; Python generator py_compile PASS. Game install/BCS assignment/real item move NOT tested. Ни R39 BAF, ни единственный updater/пины не трогали. Задача дальше: реальный ports.capture на текущем EEex, script-level owner/Jagan и guarded last-only WeiDU typed installer+backup (один существующий BGXAI_UPDATE.cmd). Нельзя подменять отсутствующие runtime proofs константами true.
+
+---
+
 # 28.11.2026 — R39 2407-source BAF вошёл в существующий NATIVE READ-ONLY маршрут 176→7
 
 Ранее 176→7 компилировал только исторический BAF **2303B**, тогда как улучшенный R39 c двумя EEex_LuaTrigger оставался **2407B SOURCE ONLY**. Исправлено без нового CMD / второго обновлятора / новой EEex регистрации: прежний `BGXAI_R39_NATIVE_EET_COMPILE_RO_V1.py` теперь поддерживает **оба** BAF через точные SHA+размер; `BGXAI_R39_ONEFILE177_RO.py` по умолчанию направляет **2407B** в тот же TEMP-only WeiDU backend. Старые R39 2303B, R38, V6/R29, EPS и save НЕ изменены.
