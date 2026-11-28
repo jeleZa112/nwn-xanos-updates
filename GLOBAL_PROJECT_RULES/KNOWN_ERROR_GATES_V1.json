@@ -554,6 +554,27 @@
         "priorV3WeaponScorerFound": true,
         "priorV4BackpackRankerFound": true
       }
+    },
+    {
+      "error_id": "BGXAI_V3_TARGET_ATTACK_TYPE_AC_NOT_APPLIED_20261128",
+      "project": "BGXAI",
+      "type": "CONFIRMED_SOURCE_DEFECT",
+      "status": "SOURCE_FIXED_TEST_CASES_ADDED_NATIVE_CI_NOT_VERIFIED",
+      "discovered_at": "2026-11-28",
+      "trigger": "V3 weapon utility ranking used one enemy.armorClass for every attack mode while R13 already read separately derived crushing/piercing/slashing/missile AC modifiers; external protection fingerprint could remain unchanged when typed AC changed",
+      "observed_failure": "Before correction, V3 scored_weapon() used (21-finalTHAC0+enemy.armorClass)/20 without an attack type; a ranged piercing payload would not use MISSILE target AC, and V3.signature() omitted target AC numeric values so a changing target AC could reuse target stabilization. Source inspection only; not a proven incorrect live game order.",
+      "cause": "Missing model-only bridge from existing R13 defensive stat fields to V3 attack-specific AC; attack AC category was conflated with damage resistance category and AC values were not included in the target state signature.",
+      "do_not_repeat": "Do not create another weapon scorer or listener; do not use only generalized AC for target-specific ranking; do not use PIERCING/slashing damage resistance category to choose ranged attack AC; never treat caller-supplied R13 mock booleans as real authenticated EEex data or authorize a weapon change from source-only models.",
+      "safe_action": "In existing R13 candidate source derive four per-attack-type AC values (base + documented type modifier) from the same double-read, with out-of-range/partial HOLD and nativeEvidenceAuthenticated=false. Existing V3 scorer optionally consumes the complete R13 preview and selects MISSILE AC for ranged attacks while retaining actual damage type for resistance. V3 signature includes general/type AC values and restabilizes on drift. Old no-type model remains an approximate non-executable advisory. Add test cases in existing suites and update dependent R13 SHA manifest and V3 test runner counts.",
+      "closure_condition": "Run existing updated R13 Lua 36-case suite and V3 66-case suite / existing full V3 450-case source CI successfully and verify manifest hashes. This closes source regression only. Genuine EEex same-frame actor/hostile-target/item/alternate APR, item usability, EPS/manual boundary and typed GAME test remain separate OPEN blockers; no live install or R47 retry permitted.",
+      "evidence": [
+        "https://github.com/jeleZa112/nwn-xanos-updates/commit/08ebe118186c8258374389c5042aeea136c90f91",
+        "https://github.com/jeleZa112/nwn-xanos-updates/commit/211efb0b4710d46e4f27eb2223f36fe4036532a7",
+        "https://github.com/jeleZa112/nwn-xanos-updates/commit/989a58a209567aa6b93392ccbc9c90f5431bf242",
+        "https://github.com/jeleZa112/nwn-xanos-updates/commit/41d5bcd7af95094ec30da247c23cc9cf4230b677",
+        "https://gibberlings3.github.io/iesdp/files/ids/bgee/stats.htm"
+      ],
+      "enforcement": "Existing BGXAI R13/V3 models only; source tests, GitHub V3 workflow on push; no new updater/WeiDU/actor action. Fails closed for incomplete profile."
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
