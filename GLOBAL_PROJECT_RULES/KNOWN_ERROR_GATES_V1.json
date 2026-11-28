@@ -159,7 +159,8 @@
       "must_identify": "Current chat goal, explicit user request, purpose of quoted material",
       "on_ambiguity": "Explain the evaluation while preserving current task; ask only when the user's goal cannot be inferred",
       "failure_class": "GLOBAL_AUDIT_CHAT_GOAL_DRIFT_20261128"
-    }
+    },
+    "source_change_policy": "Before new source work, run existing project_tools/resume_guard.py --preflight <path>; if no V3 or other predecessor receipt, HOLD and inspect prior implementations first. Post-commit CI verifies exact blob SHA, predecessor identities, and generated R41 embed. Retrospective receipts do NOT prove pre-code compliance; future changes must have their own justified delta."
   },
   "project_error_register": [
     {
@@ -307,5 +308,63 @@
       "enforcement": "assistant_scope_confirmation_before_interpreting_quoted_chat; process-only, no universal runtime block"
     }
   ],
-  "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed."
+  "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
+  "source_provenance_receipts": [
+    {
+      "receipt_id": "BGXAI_R39_GESTURE_V3_REUSE_20261128",
+      "project": "BGXAI",
+      "source_path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/M_BGXW3_EXPLICIT_USER_ARM_SOURCE_ONLY.lua",
+      "source_git_blob_sha": "dab140035652bcf66b7f150ad72b0ec5f9ae1453",
+      "predecessor_sources": [
+        {
+          "path": "BGXAI/BUILD/WEAPON_XEQUIP_LOCAL_ARM_SOURCEONLY_V3_20261127/BGXAI_XEQUIP_LOCAL_ARM_SOURCE_V3.py",
+          "git_blob_sha": "c692607782c787d183daee76fe712d09f304e777"
+        }
+      ],
+      "already_implemented": [
+        "V3 actor-local BGXW3ARM/BGXW3TAG/BGXW3TRY",
+        "single XEquipItem from inventory with one-shot consume",
+        "V3 idle/queue/slot checks"
+      ],
+      "exclusive_delta": "Only candidate explicit user hotkey and volatile epoch/double-snapshot/readback preflight for first controlled pilot; does not implement autonomous weapon choice",
+      "evidence": "BGXAI/CURRENT/00_RESUME_CURRENT.md",
+      "status": "RETROSPECTIVE_ACKNOWLEDGMENT_SOURCE_ONLY",
+      "created_after_source": true,
+      "closure": "Future source changes require rechecking predecessor and rebinding source sha; native EEex, install and game result remain unverified"
+    },
+    {
+      "receipt_id": "BGXAI_R41_LINK_REUSE_V3_R39_R40_20261128",
+      "project": "BGXAI",
+      "source_path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/M_BGXW3_R41_LINK_SOURCE_ONLY.lua",
+      "source_git_blob_sha": "8d64a67b013c6c42352835c5a51706d5075522a4",
+      "predecessor_sources": [
+        {
+          "path": "BGXAI/BUILD/WEAPON_XEQUIP_LOCAL_ARM_SOURCEONLY_V3_20261127/BGXAI_XEQUIP_LOCAL_ARM_SOURCE_V3.py",
+          "git_blob_sha": "c692607782c787d183daee76fe712d09f304e777"
+        },
+        {
+          "path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/M_BGXW3_EXPLICIT_USER_ARM_SOURCE_ONLY.lua",
+          "git_blob_sha": "dab140035652bcf66b7f150ad72b0ec5f9ae1453"
+        },
+        {
+          "path": "BGXAI/BUILD/R40_SESSION_RESET_SOURCEONLY_20261127/M_BGXW3_SESSION_RESET_V1.lua",
+          "git_blob_sha": "2edf6bfe006361761c35a9b664b82b640ab565d7"
+        }
+      ],
+      "embedded_sources": [
+        "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/M_BGXW3_EXPLICIT_USER_ARM_SOURCE_ONLY.lua",
+        "BGXAI/BUILD/R40_SESSION_RESET_SOURCEONLY_20261127/M_BGXW3_SESSION_RESET_V1.lua"
+      ],
+      "already_implemented": [
+        "V3 actor-bound arm and one-shot equip",
+        "R39 explicit gesture armer source",
+        "R40 session-loaded/destroyed reset source"
+      ],
+      "exclusive_delta": "Generated source-only wrapper sequences R40 loaded/reset before R39 gesture binding, without a second action-start observer; not a new equip controller",
+      "evidence": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/README_RU.md",
+      "status": "RETROSPECTIVE_ACKNOWLEDGMENT_SOURCE_ONLY",
+      "created_after_source": true,
+      "closure": "No game install or LIVE equip; require generated bundle to embed identical R39/R40 original sources"
+    }
+  ]
 }
