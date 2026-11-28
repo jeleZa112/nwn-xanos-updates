@@ -4,6 +4,9 @@ on:
     branches: [bg-eet-ai]
     paths:
       - 'BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/**'
+      - 'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_ACTOR_ID_GUARD_SOURCE_ONLY.py'
+      - 'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/test_r39_actor_wrapper_id_guard_source_only.py'
+      - 'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/test_r39_actor_wrapper_id_guard_source_only.lua'
       - 'GLOBAL_PROJECT_RULES/KNOWN_ERROR_GATES_V1.json'
       - '.github/workflows/bgxai-r42-reuse-r38-single-listener-ro.yml'
       - 'BGXAI/BGXAI_SYNC.ps1'
@@ -64,6 +67,9 @@ jobs:
           PY
       - name: Test composed R38/R39 read-only bridge (required)
         run: python -m unittest -v BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_reuse_r38_source_only.py
+
+      - name: Test R39 alternate actor numeric-id guard (source-only, no native install)
+        run: python -m unittest -v BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/test_r39_actor_wrapper_id_guard_source_only.py
 
       - name: Test R42 opt-in source-only bounded R39 HOLD diagnosis (no runtime)
         run: python -m unittest -v BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_class_hold_reason_source_only.py
@@ -134,6 +140,27 @@ jobs:
               subprocess.run(['lua5.4','-e','assert(loadfile('+json.dumps(str(extra))+'))'],check=True)
           print('R42 bounded R39 HOLD-reason Lua syntax PASS; original installed candidate unchanged')
           print('R42 composed Lua syntax PASS; no listener executed; game untouched')
+          PY
+
+      - name: R39 Lua wrapper-object versus numeric actor ID regression (NO GAME)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib,importlib.util,subprocess,tempfile
+          from pathlib import Path
+          root=Path('BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127')
+          spec=importlib.util.spec_from_file_location('r39_actor_id_ro',root/'BGXAI_R39_ACTOR_ID_GUARD_SOURCE_ONLY.py')
+          m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+          with tempfile.TemporaryDirectory(prefix='BGXAI_R39_ACTOR_ID_SOURCEONLY_') as folder:
+              candidate=Path(folder)/'r39_numeric_actor_id_ro.lua'
+              raw=m.compose()
+              candidate.write_bytes(raw)
+              print('R39_ACTOR_ID_SOURCE_ONLY_PIN',len(raw),hashlib.sha256(raw).hexdigest())
+              subprocess.run(['lua5.4','-e','assert(loadfile('+__import__('json').dumps(str(candidate))+'))'],check=True)
+              subprocess.run(['lua5.4',str(root/'test_r39_actor_wrapper_id_guard_source_only.lua'),
+                              str(candidate),str(root/'BGXAI_R39_EEEX117_ENGINE_BRIDGE_RO.lua')],check=True)
+          print('R39 alternate numeric-ID guard tested; R39 original/installed R43 untouched')
           PY
 
       - name: Publish SHA/bytes of onefile script for separately gated channel pin
