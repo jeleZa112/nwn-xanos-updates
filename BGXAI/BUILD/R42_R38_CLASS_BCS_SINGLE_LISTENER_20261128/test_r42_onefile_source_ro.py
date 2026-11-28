@@ -174,5 +174,108 @@ class T(unittest.TestCase):
         self.outcome()
         self.assertEqual(log.read_bytes(),before)
 
+
+    def guarded_fetch(self, commit, path):
+        self.assertEqual(commit,COMMIT)
+        self.assertIn(path,R.SOURCES)
+        return (REPO/path).read_bytes()
+
+    def guarded_runner(self, expected_status, installed=False, rc=0):
+        def runner(command, **kw):
+            self.runner_calls.append((command,kw))
+            self.assertIn('--r38-tool',command)
+            self.assertIn('--r37-tool',command)
+            self.assertTrue(str(command[1]).endswith('BGXAI_R42_GUARDED_FROM_R38.py'))
+            self.assertIn('--mode',command)
+            self.assertNotIn('--install',command)
+            obj=dict(status=expected_status,ordersSent=0,
+                     dispatchAuthorized=False,armAuthorized=False,
+                     classScriptResrefAtLiveJaganVerified=False,
+                     installed=installed)
+            return type('Completed',(object,),{
+                'returncode':rc,'stdout':'R42 prompt captured\n'+json.dumps(obj)})()
+        return runner
+
+    def test_guarded_status_uses_installed_old_r38_without_overwrite(self):
+        before=(self.game/'override/M_BGXR27.lua').read_bytes()
+        outcome=R.run_guarded(self.game,COMMIT,'status',fetcher=self.guarded_fetch,
+              runner=self.guarded_runner('R42_NOT_INSTALLED_R38_LAST'),
+              require_windows=False)
+        self.assertEqual(outcome['status'],'R42_STATUS_EXACT_GUARDED_PASS')
+        self.assertFalse(outcome['installed'])
+        self.assertEqual(before,(self.game/'override/M_BGXR27.lua').read_bytes())
+        self.assertEqual(self.runner_calls[0][1]['input'],'')
+
+    def test_guarded_preflight_composes_exact_candidate_outside_game(self):
+        o=R.run_guarded(self.game,COMMIT,'preflight',fetcher=self.guarded_fetch,
+            runner=self.guarded_runner('R42_PREFLIGHT_PASS_NO_INSTALL'),require_windows=False)
+        self.assertEqual(o['status'],'R42_PREFLIGHT_EXACT_GUARDED_PASS')
+        self.assertIn('--candidate',self.runner_calls[0][0])
+        self.assertFalse(o['gameModified'])
+        self.assertFalse((self.game/'BGXR42').exists())
+
+    def test_guarded_install_requires_specific_typed_token(self):
+        with self.assertRaisesRegex(R.Hold,'HOLD_EXACT_TYPED_R42_APPROVAL_REQUIRED'):
+            R.run_guarded(self.game,COMMIT,'install',fetcher=self.guarded_fetch,
+                          runner=self.guarded_runner('R42_READONLY_INSTALLED_AWAITING_LIVE_CLASS'),
+                          approved_token='OK',require_windows=False)
+        self.assertEqual(len(self.runner_calls),0)
+
+    def test_guarded_install_exact_token_passed_into_native_guard_only(self):
+        o=R.run_guarded(self.game,COMMIT,'install',fetcher=self.guarded_fetch,
+                        runner=self.guarded_runner('R42_READONLY_INSTALLED_AWAITING_LIVE_CLASS',True),
+                        approved_token=R.INSTALL_CONFIRM,require_windows=False)
+        self.assertEqual(o['status'],'R42_INSTALL_EXACT_GUARDED_PASS')
+        self.assertTrue(o['gameModified'])
+        self.assertEqual(self.runner_calls[0][1]['input'],R.INSTALL_CONFIRM+'\n')
+        # Fake native runner: explicit typed authorization never touched game.
+        self.assertFalse((self.game/'BGXR42').exists())
+
+    def test_guarded_rollback_wrong_token_rejected(self):
+        with self.assertRaisesRegex(R.Hold,'HOLD_EXACT_TYPED_R42_APPROVAL_REQUIRED'):
+            R.run_guarded(self.game,COMMIT,'rollback',fetcher=self.guarded_fetch,
+                          runner=self.guarded_runner('R42_ROLLBACK_RESTORED_R38_LAST'),
+                          approved_token=R.INSTALL_CONFIRM,require_windows=False)
+
+    def test_guarded_rollback_uses_only_exact_native_token(self):
+        o=R.run_guarded(self.game,COMMIT,'rollback',fetcher=self.guarded_fetch,
+                        runner=self.guarded_runner('R42_ROLLBACK_RESTORED_R38_LAST'),
+                        approved_token=R.ROLLBACK_CONFIRM,require_windows=False)
+        self.assertEqual(o['status'],'R42_ROLLBACK_EXACT_GUARDED_PASS')
+        self.assertEqual(self.runner_calls[0][1]['input'],R.ROLLBACK_CONFIRM+'\n')
+        self.assertNotIn('--candidate',self.runner_calls[0][0])
+
+    def test_guarded_unrecognized_native_state_rejected(self):
+        with self.assertRaisesRegex(R.Hold,'HOLD_R42_NATIVE_GUARD_OR_STATE'):
+            R.run_guarded(self.game,COMMIT,'install',fetcher=self.guarded_fetch,
+                          runner=self.guarded_runner('R42_PREFLIGHT_PASS_NO_INSTALL'),
+                          approved_token=R.INSTALL_CONFIRM,require_windows=False)
+
+    def test_guarded_nonzero_native_exit_requires_manual_review(self):
+        with self.assertRaisesRegex(R.Hold,'HOLD_R42_NATIVE_GUARD_OR_STATE'):
+            R.run_guarded(self.game,COMMIT,'status',fetcher=self.guarded_fetch,
+                          runner=self.guarded_runner('R42_NOT_INSTALLED_R38_LAST',rc=3),
+                          require_windows=False)
+
+    def test_guarded_modified_sha_fetch_rejected(self):
+        def bad(c,p):
+            if p==R.R42_GUARD:return (REPO/p).read_bytes()[:-1]+b'x'
+            return (REPO/p).read_bytes()
+        with self.assertRaisesRegex(R.Hold,'HOLD_SOURCE_SHA_DRIFT'):
+            R.run_guarded(self.game,COMMIT,'status',fetcher=bad,
+                          runner=self.guarded_runner('R42_NOT_INSTALLED_R38_LAST'),
+                          require_windows=False)
+        self.assertEqual(self.runner_calls,[])
+
+    def test_guarded_invalid_mode_rejected_before_fetch(self):
+        with self.assertRaisesRegex(R.Hold,'HOLD_R42_GUARDED_MODE'):
+            R.run_guarded(self.game,COMMIT,'capture',fetcher=self.guarded_fetch,
+                          require_windows=False)
+
+    def test_guarded_does_not_infer_old_bddefai_is_live(self):
+        self.assertNotIn('BDDEFAI',R.run_guarded.__code__.co_consts)
+        self.assertIn('CANDIDATE_SHA',R.run_guarded.__code__.co_names)
+
+
 if __name__ == '__main__':
     unittest.main()
