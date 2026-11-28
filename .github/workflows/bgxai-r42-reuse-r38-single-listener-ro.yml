@@ -52,6 +52,8 @@ jobs:
           if($parseErrors.Count -ne 0){foreach($e in $parseErrors){Write-Host $e.ToString()}; throw 'HOLD_PS_AST_PARSE'}
           if((Get-Item -LiteralPath $path).Length -gt 80000){throw 'HOLD_ONEFILE_PS_SIZE'}
           Write-Host ('R42 PS SCRIPT PARSE ONLY PASS; bytes='+[IO.File]::ReadAllBytes($path).Length)
+      - name: Test guarded R42 last-only installer on fake EET (NO LIVE)
+        run: python -m unittest -v BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_guarded_r38_last.py
       - name: Syntax-check generated R38+R39 class BCS observer (no runtime)
         if: runner.os == 'Linux'
         shell: bash
