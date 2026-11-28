@@ -811,6 +811,55 @@
         "deploy": "NO",
         "live": "NO"
       }
+    },
+    {
+      "error_id": "BGXAI_ONEFILE_80KB_MONOLITH_PINS_AND_OFFLINE_FAILURE_RESOLVED_V2_20261128",
+      "project": "BGXAI",
+      "discovered_at": "2026-11-28",
+      "type": "MONOLITHIC_ONEFILE_UPDATER_LIMIT_AND_NETWORK_SINGLE_POINT_OF_FAILURE",
+      "status": "OPT_IN_RELEASE_CI_PASS_NOT_YET_REPLACED_ON_USER_PC",
+      "prior_work_gate": {
+        "already_done": "Exact old BGXAI_UPDATE.cmd v1, BGXAI_SYNC.ps1 SHA256 4728e8... size 79798/80000, current R47 via existing 179 and original pin f282; no need a second updater",
+        "proof": "Old file Git blob 0c0428be14f12aea4e0cb027972139d77a860342, unchanged root/pin restored after historical CI contract conflict",
+        "missing_delta": "New modules demanded PS source edits and static length/SHA repins; outage caused bootstrap to stop before cached script despite prior verified install",
+        "minimal_step": "One opt-in same CMD replacement with immutable 12KB hub, exact old legacy snapshot and manifest-controlled pinned modules, SHA256 offline lastgood fallback"
+      },
+      "fix": {
+        "userVisibleOnefile": "BGXAI/UPDATER_V2/BGXAI_UPDATE_V2_RELEASE.cmd bytes copied ONCE over same existing game file BGXAI_UPDATE.cmd; no second updater should be used",
+        "sourceCommit": "9412957ffc7d9f717a207fbb381add19afa18795",
+        "releaseSize": 9617,
+        "releaseSha256": "754cdf6b21aa23e0f410c8a4691bc1c333cf2bac8bb4759ca50097991bbafd9b",
+        "newPin": "BGXAI/UPDATER_V2/BOOTSTRAP_PIN_V2.json",
+        "hub": "BGXAI/UPDATER_V2/BGXAI_HUB_V2.ps1",
+        "hubSize": 12133,
+        "hubSha256": "74ec9a026ea4a9d96cff21a66a5c753c8916fb0802e1b3d729426109795c8706",
+        "hubPinnedCommit": "40cd303fdcf9e776e6062b9ce6c8eaa3d00a7376",
+        "legacy": "BGXAI/UPDATER_V2/BGXAI_SYNC_LEGACY_F282.ps1",
+        "legacyPinCommit": "8fb1296926925b1298085665255bb9ef95ebddd7",
+        "legacySha256": "edd1a67be9c5ea9d5ec7c52fb7eb1135cd3ae6f4d248f709459e11667053df75",
+        "modules": "BGXAI/UPDATER_V2/MODULES_V1.json handles 180..899 via immutable commit+sha+len; no primary script modifications; 1..179 delegated to fixed old menu",
+        "module180": "BGXAI_MODULE180_SAVED_PARTY_CATALOG_RO.py reuses existing GAM and R3 readers, writes only Documents/BGXAI_LIVE_REPORTS; saved inventory not current actor proof",
+        "offline": "Last verified hub cached outside game with SHA; RAW/CDN each 15s; if no trusted archive fail closed; cannot fabricate SHA from cache",
+        "oldChannel": "Original BGXAI_UPDATE.cmd original file, BGXAI/BGXAI_SYNC.ps1 and BGXAI/fox_new/BOOTSTRAP_PIN.json remain byte unchanged in GH for legacy and rollback"
+      },
+      "evidence": {
+        "v2ReleaseTestWorkflow": "BGXAI existing R42 source-only CI; Windows PowerShell 5.1 plus Ubuntu",
+        "ciRun": "46155871557",
+        "ciConclusion": "SUCCESS",
+        "cases": "V2 static 10+ cases, module180 10 cases, Windows native PS5 AST/manifest, three offline positive/tamper/missing tests; historical R42 suite also PASS",
+        "oldRootRecoveryCiRun": "46155780799",
+        "oldRootRecoveryStatus": "SUCCESS"
+      },
+      "limits": {
+        "trulyForever": false,
+        "why": "Platform or schema changes may require migration; modules in current schema never require editing CMD or 80KB monolith",
+        "oneTimeUserAction": "Game closed; backup existing BGXAI_UPDATE.cmd; overwrite SAME path with SHA-checked V2 release; first online bootstrap needed to establish trusted offline archive",
+        "noUserActionUntil": "Release file now published, user's Windows installation still original V1 until manual replacement",
+        "deploy": "NO",
+        "liveEquip": "NO",
+        "R47Unmodified": true
+      },
+      "no_repeat": "Do not rewrite giant BGXAI_SYNC.ps1, no new CMD in game, no repeated legacy witness 179->22. Future changes add separate immutable module and registry entry only. Use V2 compiled release and SHA cache, otherwise fail closed."
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
