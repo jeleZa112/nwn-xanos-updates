@@ -16,6 +16,113 @@ def marker(doc, key):
         raise ValueError(f"{key}: expected one value, got {len(hits)}")
     return hits[0]
 
+
+def blob_sha(path):
+    raw = path.read_bytes()
+    return hashlib.sha1(b"blob " + str(len(raw)).encode("ascii") + b"\0" + raw).hexdigest()
+
+
+def check_source_provenance(root, registry):
+    """Fail closed on stale provenance, missing predecessor, or copied R41 internals.
+
+    This is source integrity + reuse evidence, NOT semantic proof that code is new.
+    """
+    failures = []
+    receipts = registry.get("source_provenance_receipts", [])
+    if not isinstance(receipts, list):
+        return ["source_provenance_receipts must be a list"]
+    by_path = {}
+    for entry in receipts:
+        if not isinstance(entry, dict):
+            failures.append("source provenance receipt is not an object")
+            continue
+        rel = entry.get("source_path")
+        if not isinstance(rel, str) or not rel.startswith("BGXAI/BUILD/") or ".." in Path(rel).parts:
+            failures.append("invalid source provenance path: " + repr(rel))
+            continue
+        if rel in by_path:
+            failures.append("duplicate source provenance receipt for " + rel)
+            continue
+        by_path[rel] = entry
+        if not entry.get("already_implemented") or not isinstance(entry.get("exclusive_delta"), str) or len(entry["exclusive_delta"].strip()) < 50:
+            failures.append(rel + " lacks meaningful predecessor overlap or exclusive delta")
+        if not entry.get("evidence"):
+            failures.append(rel + " lacks evidence link")
+        refs = entry.get("predecessor_sources")
+        if not isinstance(refs, list) or not refs:
+            failures.append(rel + " has no predecessor_sources")
+            continue
+        for parent in refs:
+            if not isinstance(parent, dict):
+                failures.append(rel + " has invalid predecessor")
+                continue
+            parent_path = parent.get("path", "")
+            if not isinstance(parent_path, str) or ".." in Path(parent_path).parts or not parent_path.startswith("BGXAI/BUILD/"):
+                failures.append(rel + " has invalid predecessor path")
+                continue
+            p = root / parent_path
+            if not p.is_file():
+                failures.append(rel + " prior source missing: " + parent_path)
+                continue
+            if blob_sha(p) != parent.get("git_blob_sha"):
+                failures.append(rel + " prior source changed without reviewed delta: " + parent_path)
+        source = root / rel
+        if entry.get("status") == "PLANNED_SOURCE_ONLY":
+            if source.exists():
+                failures.append(rel + " is still marked PLANNED after code was written")
+            continue
+        if not source.is_file():
+            failures.append(rel + " registered source is missing")
+            continue
+        if blob_sha(source) != entry.get("source_git_blob_sha"):
+            failures.append(rel + " changed without an updated reviewed provenance receipt")
+        for embedded in entry.get("embedded_sources", []):
+            if not isinstance(embedded, str) or ".." in Path(embedded).parts or not embedded.startswith("BGXAI/BUILD/"):
+                failures.append(rel + " invalid embedded predecessor")
+                continue
+            original = root / embedded
+            if not original.is_file() or original.read_bytes() not in source.read_bytes():
+                failures.append(rel + " no longer embeds unchanged source: " + embedded)
+
+    target = root / "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127"
+    candidates = []
+    for p in target.glob("*.lua"):
+        if p.name.startswith("test_"):
+            continue
+        if "BGXW3ARM" in p.read_text(encoding="utf-8"):
+            candidates.append(p)
+    if not candidates:
+        failures.append("BGXAI R39 actor-arm source is missing")
+    for p in candidates:
+        rel = p.relative_to(root).as_posix()
+        if rel not in by_path:
+            failures.append(rel + " has no predecessor receipt (HOLD_NEW_SOURCE)")
+    exact_v3 = root / "BGXAI/BUILD/WEAPON_XEQUIP_LOCAL_ARM_SOURCEONLY_V3_20261127/BGXAI_XEQUIP_LOCAL_ARM_SOURCE_V3.py"
+    if not exact_v3.is_file() or not all(token in exact_v3.read_text(encoding="utf-8")
+                                              for token in ("BGXW3ARM", "BGXW3TAG", "BGXW3TRY", "XEquipItem(")):
+        failures.append("BGXAI V3 original one-shot actor LOCALS are not verified")
+    return failures
+
+
+def preflight_target(root, registry, proposed_source):
+    """Must run BEFORE editing a file; does not authorize deployment or prove novelty."""
+    path = Path(proposed_source)
+    if path.is_absolute() or ".." in path.parts:
+        return ["PREWORK HOLD: target must be a repo-relative path"]
+    matches = [x for x in registry.get("source_provenance_receipts", [])
+               if isinstance(x, dict) and x.get("source_path") == path.as_posix()]
+    if len(matches) != 1:
+        return ["PREWORK HOLD: source has no single scoped predecessor receipt: " + path.as_posix()]
+    r = matches[0]
+    if not r.get("predecessor_sources") or not r.get("already_implemented") or not r.get("exclusive_delta"):
+        return ["PREWORK HOLD: predecessor, overlap and exclusive delta not documented"]
+    source = root / path
+    if not source.is_file() and r.get("status") != "PLANNED_SOURCE_ONLY":
+        return ["PREWORK HOLD: source missing and no prospective plan recorded"]
+    if source.is_file() and blob_sha(source) != r.get("source_git_blob_sha"):
+        return ["PREWORK HOLD: source identity changed before preflight"]
+    return []
+
 def check():
     errors = []
     try:
@@ -36,36 +143,19 @@ def check():
             errors.append("BGXAI R39 BAF SHA differs from current resume")
     except (OSError, ValueError) as exc:
         errors.append("BGXAI resume cannot be verified: " + str(exc))
-    # PREDECESSOR-GATE (BGXAI R39 armer): exact existing feature ancestry, not a
-    # proof of absence of duplication. FAIL if agent drops V3 attribution in new code.
+    # PREDECESSOR-GATE: provenance is bound to Git blobs, not fragile comments
+    # inside generated R41 or SHA-pinned R39 Lua source.
     try:
-        v3 = (ROOT / "BGXAI/BUILD/WEAPON_XEQUIP_LOCAL_ARM_SOURCEONLY_V3_20261127/BGXAI_XEQUIP_LOCAL_ARM_SOURCE_V3.py").read_text(encoding="utf-8")
         capsule = (ROOT / "BGXAI/CURRENT/00_RESUME_CURRENT.md").read_text(encoding="utf-8")
         registry = json.loads((ROOT / "GLOBAL_PROJECT_RULES/KNOWN_ERROR_GATES_V1.json").read_text(encoding="utf-8"))
-        if not all(token in v3 for token in ('BGXW3ARM', 'BGXW3TAG', 'BGXW3TRY', 'XEquipItem(')):
-            errors.append("BGXAI prior V3 actor-local one-shot implementation unavailable or changed")
         if "ПОДТВЕРЖДЁННЫЙ ПОВТОР V3" not in capsule:
             errors.append("BGXAI canonical resume omits confirmed overlap with V3")
         expected_id = "BGXAI_R39_V3_PRIOR_WORK_GATE_BYPASS_20261128"
         if not any(x.get("error_id") == expected_id for x in registry.get("project_error_register", [])):
             errors.append("BGXAI prior-work violation not logged in global known error register")
-        arm_dir = ROOT / "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127"
-        candidates = [p for p in arm_dir.glob("*.lua") if not p.name.startswith("test_") and "BGXW3ARM" in p.read_text(encoding="utf-8")]
-        if not candidates:
-            errors.append("BGXAI guarded R39 armer missing")
-        for p in candidates:
-            source = p.read_text(encoding="utf-8")
-            head = "\n".join(source.splitlines()[:20])
-            if not all(s in head for s in (
-                "PRIOR_WORK_REUSE: BGXAI/BUILD/WEAPON_XEQUIP_LOCAL_ARM_SOURCEONLY_V3_20261127/",
-                "PRIOR_WORK_EXISTING:",
-                "PRIOR_WORK_DELTA_ONLY:",
-                "PRIOR_WORK_STATUS:",
-                "PRIOR_WORK_NO_REIMPLEMENT:"
-            )):
-                errors.append(p.name + " missing verified V3 provenance and delta-only receipt")
+        errors.extend(check_source_provenance(ROOT, registry))
     except (OSError, ValueError, UnicodeError) as exc:
-        errors.append("BGXAI prior-work gate unavailable: " + str(exc))
+        errors.append("BGXAI prior-work provenance gate unavailable: " + str(exc))
     routes = {
         "BGXAI/README_RU.md": "CURRENT/00_RESUME_CURRENT.md",
         "BGXAI/CURRENT/00_CURRENT_STATUS.md": "00_RESUME_CURRENT.md",
@@ -81,9 +171,24 @@ def check():
     return errors
 
 if __name__ == "__main__":
+    if len(sys.argv) >= 2 and sys.argv[1] == "--preflight":
+        if len(sys.argv) != 3:
+            print("PREWORK HOLD: usage --preflight REPO_RELATIVE_SOURCE_PATH", file=sys.stderr)
+            sys.exit(2)
+        try:
+            reg = json.loads((ROOT / "GLOBAL_PROJECT_RULES/KNOWN_ERROR_GATES_V1.json").read_text(encoding="utf-8"))
+            problems = preflight_target(ROOT, reg, sys.argv[2])
+        except (OSError, ValueError, UnicodeError) as exc:
+            problems = ["PREWORK HOLD: " + str(exc)]
+        for problem in problems:
+            print(problem, file=sys.stderr)
+        if problems:
+            sys.exit(2)
+        print("PREWORK SOURCE RECEIPT PASS: existing source/ancestry recorded; compare actual behavior before edits.")
+        sys.exit(0)
     problems = check()
     if problems:
         for problem in problems:
             print("RESUME DRIFT: " + problem, file=sys.stderr)
         sys.exit(1)
-    print("RESUME PASS: BGXAI source and BG_EET_RU release match canonical resume.")
+    print("RESUME PASS: current sources, predecessor receipts, and canonical resumes agree.")
