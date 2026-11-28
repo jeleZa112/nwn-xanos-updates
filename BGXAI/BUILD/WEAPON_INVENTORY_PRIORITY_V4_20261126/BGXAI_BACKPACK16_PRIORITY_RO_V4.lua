@@ -547,4 +547,68 @@ function M.planBattleDecision(advice,r37,scene)
 end
 
 
+
+-- One batch entry point. Reuses R37, R3 and V3/V4 directly, not a second
+-- observer, scorer, item parser, executor or updater. The game's AI action
+-- queue is never touched. If known busy, avoid even the 39-slot heavy read.
+function M.planAutoBatch(sprite,r37,contextReader,reader,r3,projection,
+                         scene,v3Scene,previousV3,v3)
+ if type(r37)~='table' or
+    r37.schema~='BGXAI_R27_SINGLE_CALLBACK_SELECTED_RO_V1' or
+    r37.status~='CURRENT_SELECTED_SAME_CALLBACK_SOURCE_CANDIDATE' or
+    r37.queueSnapshotStable~=true or
+    r37.sameLuaListenerInvocation~=true or
+    r37.dispatchAuthorized~=false or
+    r37.ordersSent~=0 or
+    r37.actionOriginVerified~=false or
+    r37.manualEpsQueueVerified~=false or
+    type(scene)~='table' or
+    scene.actorId~=r37.actor or
+    type(reader)~='table' or
+    type(reader.captureTopLevel)~='function' or
+    type(contextReader)~='function' or
+    type(v3)~='table' or type(v3.preview)~='function' or
+    not integer(r37.queuedActionsRaw,0,512) then
+  return result('HOLD_AUTOBATCH_EVENT_CONTRACT_INCOMPLETE') end
+ if r37.queuedActionsRaw>0 then
+  -- A queue can contain an uninterrupted attack or an EPS/manual order.
+  -- Skip both R37 inventory scanning and ranking when known busy.
+  return result('PRESERVE_KNOWN_ACTION_QUEUE_NO_SCAN',{
+   knownQueuedActions=r37.queuedActionsRaw,
+   inventoryCaptureCalls=0,scorerCalls=0})
+ end
+ local ok,raw=pcall(reader.captureTopLevel,sprite,r37,contextReader)
+ if not ok or type(raw)~='table' or
+    raw.status~='TOPLEVEL0_38_AND_R37_STABLE_ADVICE_ONLY' or
+    raw.readOnly~=true or raw.sourceOnly~=true or
+    raw.dispatchAuthorized~=false or
+    raw.inventoryMoveAuthorized~=false or
+    raw.actorId~=scene.actorId then
+  return result('HOLD_AUTOBATCH_R37_RAW_SNAPSHOT',{
+   r37CaptureStatus=ok and type(raw)=='table' and raw.status or nil}) end
+ local candidates,err=M.prepare16FromR3(raw,r3,projection)
+ if not candidates then
+  return result('HOLD_AUTOBATCH_R3_ITEM_JOIN',{reason=err}) end
+ local advice=M.planWithV3(raw.backpack,raw.quick,raw.other,
+                           scene,candidates,v3Scene,previousV3,v3)
+ if advice.status=='HOLD_V3_V4_TARGET_RANKING_UNSTABLE' then
+  return result('HOLD_AUTOBATCH_TARGET_RANKING_UNSTABLE',{
+   v3Next=advice.v3Next,candidateCount=#candidates,
+   inventoryCaptureCalls=1}) end
+ local action=M.planBattleDecision(advice,r37,scene)
+ action.v3Next=advice.v3Next
+ action.candidateCount=#candidates
+ action.inventoryCaptureCalls=1
+ action.r3ItemSourcesCrosschecked=true
+ action.nativeEffectiveAlternateAprVerified=false
+ action.manualEpsOriginVerified=false
+ action.safeActionBoundaryVerified=false
+ action.executable=false
+ action.dispatchAuthorized=false
+ action.inventoryMoveAuthorized=false
+ action.ordersSent=0
+ return action
+end
+
+
 return M
