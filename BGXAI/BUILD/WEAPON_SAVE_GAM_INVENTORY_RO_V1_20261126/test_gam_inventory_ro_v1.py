@@ -40,11 +40,11 @@ class TestGam(unittest.TestCase):
   self.assertEqual(a["quickWeaponSlots35to38"][0]["resref"],"BOW05")
   self.assertEqual(a["topLevelSlots"][9]["resref"],"SHLD03A")
  def test_moded_resref_charset_aligns_exactly_with_existing_r3(self):
-  # EET items can use mod namespaces, e.g. C#GRTOO0. R3's
-  # existing RESREF already accepts ASCII letters/digits/_/#/-.
+  # EET items can use mod namespaces, e.g. C#GRTOO0. The original
+  # R3 RESREF allowlist already accepts ASCII letters/digits/_/#/-.
   self.assertEqual(m.checkedres(b'C#GRTOO0'),'C#GRTOO0')
   self.assertEqual(m.checkedres(b'C-ITEM01'),'C-ITEM01')
-  self.assertEqual(m.checkedres(b'sw1h04\\0\\0'),'SW1H04')
+  self.assertEqual(m.checkedres(b'sw1h04\0\0'),'SW1H04')
   c=bytearray(make_cre())
   c[0x350:0x358]=b'C#GRTOO0'
   c[0x350+20:0x350+28]=b'C-ITEM01'
@@ -56,9 +56,9 @@ class TestGam(unittest.TestCase):
   self.assertEqual(parsed['ordersSent'],0)
 
  def test_resref_dangerous_bytes_still_fail_closed(self):
-  for bad in (b'X/BAD\\0\\0\\0',b'../TEST\\0',b'X\\\\TEST\\0',
-              b'X;DROP\\0\\0',b'X\\x01BAD\\0\\0\\0',b'X\\xffTEST\\0\\0',
-              b'X BAD\\0\\0\\0'):
+  for bad in (b'X/BAD\0\0\0',b'../TEST\0',b'X\\TEST\0',
+              b'X;DROP\0\0',b'X\x01BAD\0\0\0',b'X\xffTEST\0\0',
+              b'X BAD\0\0\0'):
    with self.subTest(raw=bad),self.assertRaisesRegex(m.Hold,'HOLD_INVALID_RESREF_BYTES'):
     m.checkedres(bad)
 
