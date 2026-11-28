@@ -126,6 +126,34 @@ class OnefileDiag(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"HOLD_R43_UNSUPPORTED_MODE"):
             self.call_stage("diag_fake","R43_NOT_INSTALLED_R42_PRESENT_LAST")
 
+    def test_capture_requires_native_bounded_class4_proof(self):
+        with self.assertRaisesRegex(ValueError,"HOLD_R43_CLASS_ASSIGNMENT_PROOF_INVALID"):
+            self.call_stage("diag_capture","R42_LIVE_CLASS_BCS_ASSIGNMENT_OBSERVED_NO_ARM",
+                            returncode=0,details={"classScriptResrefAtLiveJaganVerified":True,
+                              "classScriptResref":"EVIL/ONE", "scrlev":4,"partyIndex":1,
+                              "actualBcsExecutionVerified":False,
+                              "manualEpsActionOriginVerified":False,
+                              "r39ProbeStatus":"R39_SCRIPT_RESREFS_OBSERVED_NO_DEPLOY",
+                              "r39ClassSlotState":"VALID_NAME_CANDIDATE"})
+
+    def test_capture_real_class4_proof_is_still_only_assignment(self):
+        out=self.call_stage("diag_capture","R42_LIVE_CLASS_BCS_ASSIGNMENT_OBSERVED_NO_ARM",
+                            returncode=0,details={"classScriptResrefAtLiveJaganVerified":True,
+                              "classScriptResref":"BDDEFAI", "scrlev":4,"partyIndex":1,
+                              "actualBcsExecutionVerified":False,
+                              "manualEpsActionOriginVerified":False,
+                              "r39ProbeStatus":"R39_SCRIPT_RESREFS_OBSERVED_NO_DEPLOY",
+                              "r39ClassSlotState":"VALID_NAME_CANDIDATE"})
+        self.assertEqual(out["status"],"R43_CAPTURE_EXACT_GUARDED_PASS")
+        self.assertEqual(out["classScriptResref"],"BDDEFAI")
+        self.assertFalse(out["actualBcsExecutionVerified"])
+        self.assertFalse(out["manualEpsActionOriginVerified"])
+
+    def test_capture_rejects_hold_disguised_as_live_proof(self):
+        with self.assertRaisesRegex(ValueError,"HOLD_R43_NATIVE_HOLD_DISGUISED_AS_PROOF"):
+            self.call_stage("diag_capture","R42_CAPTURE_HOLD_CLASS_BCS_UNREADABLE",
+                            returncode=3,details={"classScriptResrefAtLiveJaganVerified":True})
+
     def test_original_only_one_updater_static(self):
         raw=(HERE/"BGXAI_R42_ONEFILE_SOURCE_RO.py").read_text()
         self.assertNotIn("XEquipItem(",raw)
