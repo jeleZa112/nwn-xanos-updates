@@ -2,9 +2,9 @@
 
 ## 28.11.2026 — АКТУАЛЬНЫЙ СТАТУС ПОСЛЕ СООБЩЕНИЯ ПОЛЬЗОВАТЕЛЯ: CMD V2 ЗАМЕНЁН
 
-**PROJECT/CHAT:** «ТОПОВЫЙ БОТ НА СВЕТЕ» / «BG XAI 1.8». **База:** `C:\\Games\\BG_EET_FOXX_NEW`, EET + EPS 18.4 + EEex + SCS 35.21, Insane. Один `BGXAI_UPDATE.cmd`. Исторические записи ниже — не новый план и не основание повторять уже пройденные проверки.
+**PROJECT/CHAT:** «ТОПОВЫЙ БОТ НА СВЕТЕ» / «BG XAI 1.8». **База:** `C:\Games\BG_EET_FOXX_NEW`, EET + EPS 18.4 + EEex + SCS 35.21, Insane. Один `BGXAI_UPDATE.cmd`. Исторические записи ниже — не новый план и не основание повторять уже пройденные проверки.
 
-**ПОСЛЕДНЕЕ ДЕЙСТВИЕ ПОЛЬЗОВАТЕЛЯ:** «файл скачал и заменил» после получения фиксированного V2 выпуска `BGXAI/UPDATER_V2/BGXAI_UPDATE_V2_RELEASE.cmd` из коммита `9412957ffc7d9f717a207fbb381add19afa18795`. ВЫПОЛНЕНО СО СЛОВ ПОЛЬЗОВАТЕЛЯ: однократная замена того же `C:\\Games\\BG_EET_FOXX_NEW\\BGXAI_UPDATE.cmd`. Не просить повторно скачивать, переименовывать или заменять файл. **HASH/BOOTSTRAP/RUNTIME НА ЕГО WINDOWS ПОКА НЕ ПОДТВЕРЖДЕНЫ.**
+**ПОСЛЕДНЕЕ ДЕЙСТВИЕ ПОЛЬЗОВАТЕЛЯ:** «файл скачал и заменил» после получения фиксированного V2 выпуска `BGXAI/UPDATER_V2/BGXAI_UPDATE_V2_RELEASE.cmd` из коммита `9412957ffc7d9f717a207fbb381add19afa18795`. ВЫПОЛНЕНО СО СЛОВ ПОЛЬЗОВАТЕЛЯ: однократная замена того же `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`. Не просить повторно скачивать, переименовывать или заменять файл. **HASH/BOOTSTRAP/RUNTIME НА ЕГО WINDOWS ПОКА НЕ ПОДТВЕРЖДЕНЫ.**
 
 **CODE/TEST/DEPLOY/LIVE — независимые уровни:**
 - V2 `BGXAI_UPDATE_V2_RELEASE.cmd`: CODE published (9617 bytes, SHA256 `754cdf6b21aa23e0f410c8a4691bc1c333cf2bac8bb4759ca50097991bbafd9b`); TEST Windows+Ubuntu/verified offline fallback PASS, https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46155871557; DEPLOY user reports copying SAME CMD; LIVE actual launch not yet observed. Hub V2 immutable `40cd303fdcf9e776e6062b9ce6c8eaa3d00a7376` (12133 bytes, SHA256 `74ec9a026ea4a9d96cff21a66a5c753c8916fb0802e1b3d729426109795c8706`); legacy 1..179 exact f282 retained as one frozen module.
