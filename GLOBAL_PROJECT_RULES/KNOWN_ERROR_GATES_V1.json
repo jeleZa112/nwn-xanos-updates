@@ -500,6 +500,17 @@
           "already_done": "Onefile menu179 already has source RO(default), status, preflight, typed install/rollback; immutable main PS 79798/80000, no game writes until typed install; 85 tests PASS. It currently has no R42-last capture entry; old menu176 R38 capture requires last 154.",
           "missing_delta": "Expose 6=capture through existing menu179 child and same pinned guarded R42 installer, without adding CMD, changing 175/176, or unnecessary R38 source download. On capture require exact installed R42 last 155, launch existing InfinityLoader and store/parse only bounded [BGXBCS] evidence, no commands. Re-pin old onefile child/new dependent R42 installer and sole PS immutable pin after two-OS CI.",
           "runtimeInstalled": false
+        },
+        {
+          "delta_id": "BGXAI_R43_DIAG_ROUTE_SAME_179_20261128",
+          "recorded_before_source_edit": true,
+          "source_path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py",
+          "already_implemented": "Same one BGXAI_UPDATE.cmd pinned BGXAI_SYNC.ps1 79798/80000 and menu179 source/status/preflight/typed install/rollback/RO capture for original R42; child already securely downloads immutable R38/R37/R42/bridge/composer, stages outside game and invokes native guarded helper with independent exact typed token. 175/176 menu/child untouched. The new source-only R43 successor and 18 fake EET tests already pass 134/134 each OS.",
+          "exclusive_missing_delta": "Extend ONLY the existing R42 menu179 child to add bounded R43 status/preflight/typed install/typed rollback/capture modes as numbers 7..11, fetch SHA-verified existing diagnostic composer and R43 guarded source from immutable commit under same repo allowlist, copy only into temp outside EET, verify nested native JSON and retain exact original native HOLD reason even if nonzero; old modes 1..6 and 175/176 untouched. No silent install. Preserve parent PS <=80000 bytes by editing only pinned 179 child hash/size, then atomically repin immutable source commit and BGXAI_SYNC script after Windows+Ubuntu CI PASS. One CMD never replaced by new one. Do not equate release with LIVE install; typed token still necessary.",
+          "safety": "DO NOT repin BOOTSTRAP_PIN or publish changed user onefile until staging and source/regression CI all PASS, Windows PS AST PASS, 80KB cap and original 175/176 SHA unaffected, source child size hash correct, old R42 179 modes untouched, and fail-closed HOLD always reported. On any failure leave old pinned b0586b.. channel. Game installer cannot run on chat '+'.",
+          "status": "PREWORK_REVIEWED_BEFORE_SOURCE_CHANGE",
+          "game_modified": false,
+          "install_approved": false
         }
       ],
       "project": "BGXAI",
