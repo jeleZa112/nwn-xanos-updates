@@ -243,7 +243,7 @@ ANR $zcd;$f=jp $zcd ('r30_'+[guid]::NewGuid().ToString('N')+'.py');$g=jp $zcd ('
 try{[IO.File]::WriteAllBytes($f,$b);[IO.File]::WriteAllBytes($g,$q);if((hf $f) -cne '88582abf17e919b9441795b8559cfe85b858fd3083672431eb36b60ba78981bd' -or (hf $g) -cne '61744e9b4b5a5e6d15736980038c7a9dda1cf8c51e3fe16043cf9b4ceae6b929'){throw 'R30 CACHE PIN STOP'};& py -3 $f --game $gr --candidate $g | Out-File -Lit $o -Encoding utf8;$rc=$LASTEXITCODE;gc -Lit $o -Raw;wh ('REPORT_FILE='+$o);if($rc -ne 0 -and $rc -ne 2){throw ('R30 ERROR '+$rc)}}finally{foreach($t in @($f,$g)){if(tp -Lit $t){Remove-Item -Lit $t -Force}}}
 }
 function Get-PinnedBytes([string]$zrp) {
-if($zrp -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116|patchsets/priest_combat_eps_first_20261116|patchsets/priest_auto_attack_buffer_source_only_20261117|patchsets/priest_auto_priority_guard_source_20261117|patchsets/aoe_entangle_readonly_onefile_20261117|patchsets/ranged_fighter_guarded_20261119|BUILD/R27_R2_IDENTITY_REFRESH_20261124|BUILD/R30_QUEUE_DEPLOY_PREFLIGHT_RO_20261125|BUILD/R31_R27V3_PASSIVE_SOURCE_20261125|BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125|BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125|BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126|BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126|BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123)/[A-Za-z0-9_./-]+$' -or $zrp.Contains('..')) {
+if($zrp -notmatch '^BGXAI/(?:fox_new/(?:release_0(39|40|41|42b|43p|44|45|45b|46|47|48|49|54)|experimental_056_active_guard|experimental_060_direct_response_source_only|experimental_061_rescue_approach_source_only|experimental_064_same_area_061_source_only|experimental_064_guarded_weidu_source_only|experimental_066_multi_guard_guarded|experimental_066s_guarded_install_candidate|experimental_067_early_guard_guarded)|patchsets/eps_first_066s_idle_guard_pilot_guarded_installer_source_only|patchsets/priest_modes_eps_first_installable_20261116|patchsets/team_f_guard_066s_installable_pilot_20261116|patchsets/priest_combat_eps_first_20261116|patchsets/priest_auto_attack_buffer_source_only_20261117|patchsets/priest_auto_priority_guard_source_20261117|patchsets/aoe_entangle_readonly_onefile_20261117|patchsets/ranged_fighter_guarded_20261119|BUILD/R27_R2_IDENTITY_REFRESH_20261124|BUILD/R30_QUEUE_DEPLOY_PREFLIGHT_RO_20261125|BUILD/R31_R27V3_PASSIVE_SOURCE_20261125|BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125|BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125|BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126|BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126|BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123|BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128)/[A-Za-z0-9_./-]+$' -or $zrp.Contains('..')) {
 throw ('Remote source path blocked: '+$zrp)
 }
 $urls=@(
@@ -404,7 +404,7 @@ if((hf $dest) -cne $list[$name].sha){throw ('Unverified local source; select sou
 Generate041Assets $spec
 $installerPath=jp $spec.localPath $spec.installer
 if($mode -eq '--install' -or $mode -eq '--uninstall'){
-wh 'WARNING: experimental WeiDU change; requires explicit YES.'
+wh 'Experimental WeiDU: exact YES required.'
 wh 'Close game/loader/WeiDU; backup required.'
 }
 if($spec.id -eq '042B' -and $mode -eq '--status'){
@@ -471,7 +471,7 @@ if((hf $dest) -cne $list[$name].sha){throw ('BGXAI061 unverified file: '+$name)}
 wh '061 WeiDU BAF/Lua preflight (RO).'
 & py -3 (jp $spec.localPath 'BGXAI61_INSTALL.py') preflight
 if($LASTEXITCODE -ne 0){throw ('BGXAI 061 preflight FAILED: exit '+$LASTEXITCODE+'. No changes to game.')}
-wh 'BGXAI 061 - preflight PASS; installed 060 unchanged.'
+wh '061 preflight PASS; 060 intact.'
 }
 function Run061Guarded([string]$mode) {
 if($mode -cne 'install' -and $mode -cne 'rollback'){throw 'BGXAI061 unknown mode blocked'}
@@ -506,7 +506,7 @@ Verify064GuardedSource
 wh '064 guarded preflight (RO).'
 & py -3 (jp $x64.localPath $i64) preflight
 if($LASTEXITCODE -ne 0){throw ('BGXAI064 guarded PRECHECK STOP '+$LASTEXITCODE)}
-wh 'BGXAI064 guarded preflight PASS. Installed 061 remains unchanged.'
+wh '064 preflight PASS; 061 intact.'
 }
 function Status064GuardedReadOnly {
 SyncRelease $x64
@@ -557,7 +557,7 @@ Verify066SGuardedSource
 wh '066S native preflight READ ONLY.'
 & py -3 (jp $x6s.localPath 'BGXAI66S_INSTALL.py') preflight
 if($LASTEXITCODE -ne 0){throw ('BGXAI066S REAL EET IDS preflight STOP '+$LASTEXITCODE)}
-wh 'BGXAI066S PRECHECK PASS. Existing 064 remains installed.'
+wh '066S precheck PASS; 064 intact.'
 }
 function Status066SReadOnly {
 SyncRelease $x6s
@@ -594,7 +594,7 @@ Verify067GuardedSource
 wh '067 prehit guard preflight READ ONLY.'
 & py -3 (jp $x67.localPath 'BGXAI67_INSTALL.py') preflight
 if($LASTEXITCODE -ne 0){throw ('BGXAI067 REAL EET preflight STOP '+$LASTEXITCODE)}
-wh 'BGXAI067 PRECHECK PASS. Existing 066S remains installed.'
+wh '067 precheck PASS; 066S intact.'
 }
 function Status067ReadOnly {
 SyncRelease $x67
@@ -608,12 +608,12 @@ SyncRelease $x67
 Verify067GuardedSource
 $ztok=if($mode -ceq 'install'){'INSTALL_BGXAI_067'}else{'ROLLBACK_BGXAI_067'}
 wh 'BGXAI067 guarded Lua/BCS; 066S baseline required.'
-wh 'CLOSE BALDUR + INFINITYLOADER. No retry after a failure.'
+wh 'Close game/loader. No retry on failure.'
 $zcf=rh ('Type '+$ztok+' exactly to authorize, or ENTER to cancel')
 if($zcf -cne $ztok){wh 'BGXAI067 CANCELLED. Game unchanged.';return}
 & py -3 (jp $x67.localPath 'BGXAI67_INSTALL.py') $mode '--yes' '--confirm' $ztok
 if($LASTEXITCODE -ne 0){throw ('BGXAI067 '+$mode+' STOP '+$LASTEXITCODE+'. DO NOT AUTO-RETRY')}
-wh 'BGXAI067 action completed. Read-only status via menu 90.'
+wh '067 done; status menu 90.'
 }
 
 
@@ -761,7 +761,7 @@ $zcf=rh ('Type '+$ztok+' exactly to authorize or ENTER to cancel')
 if($zcf -cne $ztok){wh '066 cancelled.';return}
 & py -3 (jp $x66.localPath 'BGXAI66_INSTALL.py') $mode '--yes' '--confirm' $ztok
 if($LASTEXITCODE -ne 0){throw ('BGXAI066 '+$mode+' STOP '+$LASTEXITCODE+'; do NOT retry automatically')}
-wh 'BGXAI066 action complete. Check status with option 80.'
+wh '066 done; status menu 80.'
 }
 function Test064ReadOnly {
 $parsedTokens=$null
@@ -778,7 +778,7 @@ if((hf $dest) -cne $list[$name].sha){throw ('BGXAI064 source SHA mismatch: '+$na
 wh '064 SHA-checked 061 status; read only.'
 & py -3 (jp $spec.localPath $p64) '--game-root' $gr
 if($LASTEXITCODE -ne 0){throw ('BGXAI064 read-only preflight STOP: '+$LASTEXITCODE)}
-wh '064 preflight PASS; not installed; runtime unverified.'
+wh '064 preflight PASS; no install/live.'
 }
 function Status061ReadOnly {
 $log=jp $gr 'WeiDU.log'
@@ -820,10 +820,10 @@ $dest=jp $spec.localPath $name
 ANR $dest
 if((hf $dest) -cne $list[$name].sha){throw ('BGXAI060 unverified file: '+$name)}
 }
-wh 'BGXAI 060 - READ-ONLY Windows WeiDU compile (NO INSTALL).'
+wh '060 native RO compile; no install.'
 & py -3 (jp $spec.localPath 'BGXAI60_INSTALL.py') preflight
 if($LASTEXITCODE -ne 0){throw ('BGXAI 060 preflight failed: exit '+$LASTEXITCODE)}
-wh 'BGXAI 060 - preflight PASSED; installed 056 unchanged.'
+wh '060 preflight PASS; 056 intact.'
 }
 function Test041ReadOnly {
 wh ''
@@ -844,7 +844,7 @@ wh ('BGX41 in WeiDU.log: '+$has041)
 wh ('BGX40 is LAST installed WeiDU mod: '+$is040Last)
 $stat=jp $gr 'override\STATDESC.2DA'
 wh ('STATDESC.2DA in override: '+(tp -Lit $stat -PathT Leaf))
-wh 'NOTE: STATDESC may exist in game archives even when not in override.'
+wh 'STATDESC may be in game archives.'
 $bcs=jp $gr 'override\BDDEFAI.BCS'
 wh ('EPS script in override: '+(tp -Lit $bcs -PathT Leaf))
 $toolsOk=(tp -Lit (jp $gr 'setup-enhanced-powergaming-scripts.exe') -PathT Leaf)
@@ -858,7 +858,7 @@ wh 'NO GAME WRITE.'
 }
 function Test042EPSReadOnly {
 wh ''
-wh 'BGXAI 042 - EPS GUARD / AUTOATTACK AUDIT (READ ONLY)'
+wh '042 EPS guard/autoattack audit RO'
 $fileName=jp $gr 'override\BDDEFAI.BCS'
 if(!(tp -Lit $fileName -PathT Leaf)){throw 'Current BDDEFAI.BCS missing'}
 $bytes=[IO.File]::ReadAllBytes($fileName)
@@ -895,7 +895,7 @@ wh ('BGXAI guard-mode blocks: '+$guardCount)
 wh ('Actions: ProtectObject='+$protectCount+' AttackReevaluate='+$attackReeval+' AttackOneRound='+$attackOneRound)
 foreach($item in $interesting){wh $item}
 wh 'Only live game sources; READ ONLY.'
-wh '042 audit only; no game files changed by this option.'
+wh '042 audit RO; no game changes.'
 }
 function Test042BReadOnly {
 wh ''
@@ -919,7 +919,7 @@ wh ('BGX41 present: '+$has41+'; 041 last: '+$last41)
 wh ('BGX42 present: '+$has42+'; 042 last: '+$last42)
 wh ('Live BCS SHA256: '+$hash)
 if($eps -and $weidu -and $has41 -and !$has42 -and $last41 -and $hash -ceq $orig) {
-wh 'BGXAI 042B PRECHECK: BASELINE OK. NOT INSTALLED.'
+wh '042B baseline OK; not installed.'
 } elseif($eps -and $has42 -and $last42 -and $hash -ceq $patched) {
 wh '042B patch present; status 16.'
 } else {
@@ -1016,7 +1016,7 @@ wh ('Short Lua files exist: '+$short43+'/'+$short44)
 wh ('EEex boot='+$boot+'; InfinityLoader='+$loader)
 if($has42 -and $has43 -and $has44 -and $last44 -and !$has45 -and
 !$short43 -and !$short44 -and $base42 -and $base43 -and $base44 -and $boot -and $loader){
-wh 'BGXAI 045 PRECHECK: BASELINE OK. NOT INSTALLED.'
+wh '045 baseline OK; not installed.'
 } elseif($has45 -and $last45 -and $short43 -and $short44 -and $base42 -and $base43 -and $base44) {
 wh '045 probe present; status 31.'
 } else {
@@ -1040,7 +1040,7 @@ $other=(hf (jp $gr 'override\M_BX44.lua')) -ceq 'a7bdfba10cdb3cc26351072dac0c6f3
 wh ('045 last='+$last45+'; 046 present='+$present46+'; 046 last='+$last46)
 wh ('045 observer original='+$old45+'; 042B BCS='+$bcs+'; 044 short Lua='+$other)
 if($last45 -and !$present46 -and $old45 -and $bcs -and $other){
-wh 'BGXAI 046 PRECHECK: BASELINE OK. NOT INSTALLED.'
+wh '046 baseline OK; not installed.'
 } elseif($last46 -and $bcs -and $other) {
 wh '046 present; status 36.'
 } else {
@@ -1063,9 +1063,9 @@ $diag=(hf (jp $gr 'override\M_BX44.lua')) -ceq 'a7bdfba10cdb3cc26351072dac0c6f37
 wh ('046 last='+$last46+'; 047 installed='+$present47+'; 047 last='+$last47)
 wh ('046 Lua='+$old46+'; 042B BCS='+$bcs+'; 044 Lua='+$diag)
 if($last46 -and !$present47 -and $old46 -and $bcs -and $diag){
-wh 'BGXAI 047 PRECHECK: BASELINE OK. NOT INSTALLED.'
+wh '047 baseline OK; not installed.'
 } elseif($last47 -and $bcs -and $diag) {
-wh 'BGXAI 047 PRECHECK: PRESENT. Use 41 for checksum status.'
+wh '047 present; SHA status 41.'
 } else {wh '047 REVIEW before install.'}
 wh 'NO GAME WRITE.'
 }
@@ -1084,7 +1084,7 @@ $diag=(hf (jp $gr 'override\M_BX44.lua')) -ceq 'a7bdfba10cdb3cc26351072dac0c6f37
 wh ('047 last='+$last47+'; 048 installed='+$present48+'; 048 last='+$last48)
 wh ('047 Lua='+$old47+'; 042B BCS unchanged='+$bcs+'; 044 Lua unchanged='+$diag)
 if($last47 -and !$present48 -and $old47 -and $bcs -and $diag) {
-wh 'BGXAI 048 PRECHECK: BASELINE OK. NOT INSTALLED.'
+wh '048 baseline OK; not installed.'
 } elseif($last48 -and $bcs -and $diag) {
 wh '048 present; status 46.'
 } else { wh '048 REVIEW before install.' }
@@ -1092,7 +1092,7 @@ wh 'NO GAME WRITE.'
 }
 function Test049ReadOnly {
 wh ''
-wh 'BGXAI 049 GUARD ADVISORY PRECHECK (READ ONLY)'
+wh '049 guard precheck RO'
 $p=jp $gr 'WeiDU.log'
 if(!(tp -Lit $p -PathT Leaf)){throw 'WeiDU.log missing'}
 $e=@(gc -Lit $p | Where-Object { $_.TrimStart().StartsWith('~') })
@@ -1111,7 +1111,7 @@ wh '049 present; status 51.'
 } else {wh '049 REVIEW before install.'}
 wh 'NO GAME WRITE.'
 }
-wh '175 inert | 176 R38 | 0 Exit'
+wh '175 inert | 176 R38 | 179 R42 RO | 0 Exit'
 $choice=rh 'Choice [0]'
 if([string]::IsNullOrWhiteSpace($choice)){$choice='0'}
 if($choice -eq '0'){wh 'No changes.';exit 0}
@@ -1291,7 +1291,7 @@ switch($choice){
 '172' {$p='BGXAI/BUILD/R33_R31_REUSE_PROF_SNAPSHOT_RO_20261125/';$a=Get-PinnedBytes ($p+'R33_GUARDED_SOURCE_ONLY.py');$b=Get-PinnedBytes ($p+'M_BGXR27_R33_SOURCE_ONLY.lua');if($a.Length -ne 22132 -or (HashBytes $a) -cne '0815d173b276c0f990eb3ab66ac6f8f614a9a0f0f59fc301f94f5f8c890be653' -or $b.Length -ne 49438 -or (HashBytes $b) -cne '1420ef723df1090d56f8f6590fd82e5c69107ba97a39b2ca2ba73f93e0e77069'){throw 'R33 PIN STOP'};ANR $zcd;$f=jp $zcd ('r33_'+[guid]::NewGuid().ToString('N')+'.py');$c=jp $zcd ('r33_'+[guid]::NewGuid().ToString('N')+'.lua');try{[IO.File]::WriteAllBytes($f,$a);[IO.File]::WriteAllBytes($c,$b);if((HashFile $f)-cne '0815d173b276c0f990eb3ab66ac6f8f614a9a0f0f59fc301f94f5f8c890be653' -or (HashFile $c)-cne '1420ef723df1090d56f8f6590fd82e5c69107ba97a39b2ca2ba73f93e0e77069'){throw 'R33 STAGE SHA'};$n=Read-Host 'R33 1=RO 2=install 3=status 4=rollback 5=capture [1]';if(!$n){$n='1'};if($n -eq '0'){break};$m=@{'1'='preflight';'2'='install';'3'='status';'4'='rollback';'5'='capture'}[$n];if(!$m){throw 'R33 BAD CHOICE'};& py -3 $f --game $gr --candidate $c --mode $m;if($LASTEXITCODE){throw 'R33 STOP'}}finally{Remove-Item -LiteralPath $f,$c -Force -ErrorAction SilentlyContinue};break}
 '173' {$p='BGXAI/BUILD/R34_R33_NATIVE_ITM_PROF_BRIDGE_20261125/BGXAI_R34_NATIVE_PROF_BRIDGE_RO.py';$q='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_ITM_R3_RO.py';$a=Get-PinnedBytes $p;$b=Get-PinnedBytes $q;if((HashBytes $a)-cne 'd40f7729ee84c576d08fe712b98adcd0704611def6385e976a50597b68c496c4' -or (HashBytes $b)-cne 'ed87a7a6618826c6d3901d2579a39bf280fcaeb09cd18b7b6ee159b9ebfcc74a'){throw 'R34 SOURCE PIN STOP'};ANR $zcd;$f=jp $zcd ('r34_'+[guid]::NewGuid().ToString('N')+'.py');$g=jp $zcd ('r3_'+[guid]::NewGuid().ToString('N')+'.py');try{[IO.File]::WriteAllBytes($f,$a);[IO.File]::WriteAllBytes($g,$b);$d=jp $env:USERPROFILE 'Documents\BGXAI_LIVE_REPORTS';ANR $d;$o=jp $d ('BGXAI_R34_NATIVE_PROF_'+(Get-Date -Format 'yyyyMMddTHHmmssfff')+'.json');& py -3 $f --game $gr --reports-dir $d --r3-source $g | Out-File -LiteralPath $o -Encoding utf8;$r=$LASTEXITCODE;Get-Content -LiteralPath $o;wh ('REPORT_FILE='+$o);if($r){throw 'R34 READONLY STOP'}}finally{Remove-Item -LiteralPath $f,$g -Force -ErrorAction SilentlyContinue};break}
 '174' {$p='BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/';$a=Get-PinnedBytes ($p+'R37_GUARDED_SOURCE_ONLY.py');$b=Get-PinnedBytes ($p+'M_BGXR27_R37_SOURCE_ONLY.lua');if($a.Length -ne 26252 -or (hb $a) -cne 'b34c93a0315c578989079c3565c6f0704315b8cdeabfb15be06508e4b5367e2d' -or $b.Length -ne 60835 -or (hb $b) -cne '5ece282270f0e6a1fa7a6086b7f13c57c77de98759637efa4b2ab0cc1e5744d6'){throw 'R37 SOURCE PIN STOP'};ANR $zcd;$f=jp $zcd ('r37_'+[guid]::NewGuid().ToString('N')+'.py');$c=jp $zcd ('r37_'+[guid]::NewGuid().ToString('N')+'.lua');try{[IO.File]::WriteAllBytes($f,$a);[IO.File]::WriteAllBytes($c,$b);if((hf $f)-cne 'b34c93a0315c578989079c3565c6f0704315b8cdeabfb15be06508e4b5367e2d'){throw 'R37 STAGE HASH'};$n=rh 'R37 1=preflight 2=install 3=status 4=rollback 5=capture [1]';if(!$n){$n='1'};if($n -eq '0'){break};$m=@{'1'='preflight';'2'='install';'3'='status';'4'='rollback';'5'='capture'}[$n];if(!$m){throw 'R37 BAD CHOICE'};& py -3 $f --game $gr --candidate $c --mode $m;if($LASTEXITCODE){throw 'R37 STOP'}}finally{Remove-Item -LiteralPath $f,$c -Force -ErrorAction SilentlyContinue};break}
-{$_ -match '^17[56]$'} {$p='BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONEFILE_175_RO_V1.py';$b=Get-PinnedBytes $p;if($b.Length -ne 21120 -or (hb $b) -cne 'd6fa98f19bb693e4f2cb43216307805ba427a4accefa703d03f33c299df21a3c'){throw '175 PIN STOP'};$f=jp $zcd ('x175_'+[guid]::NewGuid().ToString('N')+'.py');try{[IO.File]::WriteAllBytes($f,$b);$extra=@();if($choice -eq '176'){$extra=@('--v3')};& py -3 $f --commit $commitId --game $gr --native-readonly @extra;if($LASTEXITCODE){throw "$choice RO STOP"}}finally{if(tp -Lit $f){Remove-Item -Lit $f -Force}};break}
+{$_ -match '^17[569]$'} {$p='BGXAI/BUILD/WEAPON_XEQUIP_ONEFILE_175_RO_20261126/BGXAI_XEQUIP_ONEFILE_175_RO_V1.py';$n=21120;$h='d6fa98f19bb693e4f2cb43216307805ba427a4accefa703d03f33c299df21a3c';if($choice -eq '179'){$p='BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py';$n=8351;$h='737cbbc5fbb00e2570bdf9f2769600cd9022dac1e3ee8b84784d512fd376920f'};$b=Get-PinnedBytes $p;if($b.Length -ne $n -or (hb $b) -cne $h){throw '175/179 PIN STOP'};$f=jp $zcd ('x175_'+[guid]::NewGuid().ToString('N')+'.py');try{[IO.File]::WriteAllBytes($f,$b);$extra=@();if($choice -eq '176'){$extra=@('--v3')};& py -3 $f --commit $commitId --game $gr --native-readonly @extra;if($LASTEXITCODE){throw "$choice RO STOP"}}finally{if(tp -Lit $f){Remove-Item -Lit $f -Force}};break}
 default {throw 'Unknown menu option, no game change.'}
 }
 exit 0
