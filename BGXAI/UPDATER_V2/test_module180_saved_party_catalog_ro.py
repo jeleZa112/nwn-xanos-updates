@@ -4,6 +4,7 @@ import hashlib
 import importlib.util
 import json
 from pathlib import Path
+from unittest.mock import patch
 import struct
 import tempfile
 import unittest
@@ -121,5 +122,36 @@ class CatalogStage(unittest.TestCase):
     parsed['partyMembers'][0]['topLevelSlots'][18]['slot']=3
     with self.assertRaisesRegex(mod.Hold,'HOLD_GAM_SLOT_INDEX_UNTRUSTED'):
         mod.saved_names(parsed)
+
+
+ def test_unexpected_source_error_reports_stage_without_disclosing_private_error(self):
+    cases=(
+      ("load",TypeError("PRIVATE: game user's Documents path"),"LOAD_EXISTING_GAM_READER","TypeError"),
+      ("choose_gam",OSError("PRIVATE: save folder name"),"LOCATE_EXISTING_SAVE","OSError"),
+      ("saved_names",KeyError("PRIVATE: inventory"),"VALIDATE_SAVED_PARTY_ITEMS","KeyError"),
+      ("build_source",ValueError("PRIVATE: item path"),"BUILD_INERT_LUA_CATALOG","ValueError"),
+    )
+    for func,exc,stage,error_class in cases:
+      with self.subTest(func=func), patch.object(mod,func,side_effect=exc):
+        result=mod.run(self.game,self.docs,self.reports,game_required=False)
+        self.assertEqual(result["status"],"HOLD_SAVED_PARTY_CATALOG_PREPARATION")
+        self.assertEqual(result["reason"],"HOLD_MODULE180_UNEXPECTED_SOURCE_STAGE")
+        self.assertEqual(result["failureStage"],stage)
+        self.assertEqual(result["exceptionType"],error_class)
+        self.assertTrue(result["noAutoRetry"])
+        self.assertFalse(result["gameModified"])
+        self.assertFalse(result["dispatchAuthorized"])
+        self.assertEqual(result["ordersSent"],0)
+        self.assertNotIn("PRIVATE",json.dumps(result))
+        self.assertFalse(list(self.reports.glob("*.lua")))
+
+ def test_existing_specific_hold_still_reports_original_reason_without_retries(self):
+    self.gam.unlink()
+    result=mod.run(self.game,self.docs,self.reports,game_required=False)
+    self.assertEqual(result["reason"],"HOLD_NO_EXISTING_BALDUR_GAM")
+    self.assertEqual(result["failureStage"],"LOCATE_EXISTING_SAVE")
+    self.assertNotIn("exceptionType",result)
+    self.assertTrue(result["noAutoRetry"])
+
 
 if __name__=='__main__':unittest.main(verbosity=2)
