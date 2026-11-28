@@ -45,7 +45,7 @@ SOURCES.update({
     R42_GUARD: (15458, "939274e0d30319fc04b9a1973b818a0da77370d55e85b46d8e085b7179fa0110"),
 })
 MODES = {"1": "source", "2": "status", "3": "preflight",
-         "4": "install", "5": "rollback"}
+         "4": "install", "5": "rollback", "6": "capture"}
 INSTALL_CONFIRM = "INSTALL_BGXAI_R42_READONLY_CLASS_BCS_AFTER_R38"
 ROLLBACK_CONFIRM = "ROLLBACK_BGXAI_R42_RESTORE_R38_ONLY"
 
@@ -197,7 +197,7 @@ def run_guarded(game: Path, commit: str, mode: str, *, fetcher=fetch,
                 runner=subprocess.run, require_windows: bool=True,
                 approved_token: str | None=None) -> dict:
     """Preflight/install/rollback uses exact pinned legacy helpers and one existing CMD."""
-    if mode not in ("status", "preflight", "install", "rollback"):
+    if mode not in ("status", "preflight", "install", "rollback", "capture"):
         raise Hold("HOLD_R42_GUARDED_MODE")
     game=protected_root(game,require_windows)
     commit=pin(commit)
@@ -265,29 +265,40 @@ def run_guarded(game: Path, commit: str, mode: str, *, fetcher=fetch,
             "preflight": ("R42_PREFLIGHT_PASS_NO_INSTALL",),
             "install": ("R42_READONLY_INSTALLED_AWAITING_LIVE_CLASS",),
             "rollback": ("R42_ROLLBACK_RESTORED_R38_LAST",),
+            "capture": ("R42_LIVE_CLASS_BCS_ASSIGNMENT_OBSERVED_NO_ARM",),
         }
         accepted=expected["status"] if mode=="status" else expected[mode]
+        observed=inner.get("classScriptResrefAtLiveJaganVerified") is True
+        resref=inner.get("classScriptResref")
         if (result.returncode!=0 or type(inner) is not dict or
             inner.get("status") not in accepted or
             inner.get("ordersSent")!=0 or
             inner.get("dispatchAuthorized") is not False or
             inner.get("armAuthorized") is not False or
-            inner.get("classScriptResrefAtLiveJaganVerified") is True):
+            (observed and mode!="capture") or
+            (mode=="capture" and (not observed or
+              type(resref) is not str or
+              re.fullmatch(r'[A-Z0-9_#*]{1,8}',resref) is None or
+              inner.get("scrlev")!=4 or inner.get("partyIndex")!=1 or
+              inner.get("actualBcsExecutionVerified") is not False or
+              inner.get("manualEpsActionOriginVerified") is not False))):
             raise Hold("HOLD_R42_NATIVE_GUARD_OR_STATE")
         return {
             "schema":SCHEMA,"status":"R42_"+mode.upper()+"_EXACT_GUARDED_PASS",
             "innerStatus":inner["status"],"sourceCommit":commit,
             "r42ExpectedCandidateSHA256":CANDIDATE_SHA,
             "gameModified":mode in ("install","rollback"),
-            "installed":mode=="install" or (mode=="status" and inner.get("installed") is True),
-            "classScriptResrefAtLiveJaganVerified":False,
+            "installed":mode in ("install","capture") or (mode=="status" and inner.get("installed") is True),
+            "classScriptResrefAtLiveJaganVerified":observed,
+            "classScriptResref":resref if observed else None,
+            "actualBcsExecutionVerified":False,
             "ordersSent":0,"dispatchAuthorized":False,"armAuthorized":False,
             "manualEpsActionOriginVerified":False,
         }
 
 def choose_mode() -> str:
     print("R42 (single BGXAI_UPDATE.cmd): 1=source RO [default]; 2=status; "
-          "3=preflight RO; 4=install (typed); 5=rollback (typed); 0=exit",flush=True)
+          "3=preflight RO; 4=install (typed); 5=rollback (typed); 6=capture game RO; 0=exit",flush=True)
     s=input("R42 choice [1]: ").strip()
     if not s:s="1"
     if s=="0":return "exit"
@@ -300,7 +311,7 @@ def main(argv=None) -> int:
     p.add_argument("--game", type=Path, default=ROOT)
     p.add_argument("--commit", required=True)
     p.add_argument("--native-readonly", action="store_true", required=True)
-    p.add_argument("--mode", choices=("source","status","preflight","install","rollback"))
+    p.add_argument("--mode", choices=("source","status","preflight","install","rollback","capture"))
     args = p.parse_args(argv)
     try:
         mode=args.mode if args.mode is not None else choose_mode()
