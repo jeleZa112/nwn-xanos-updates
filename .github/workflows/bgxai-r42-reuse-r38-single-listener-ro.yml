@@ -117,6 +117,9 @@ jobs:
       - name: Test R47 corrected witness reuses native-confirmed R46 inert BAF (SOURCE ONLY)
         run: python -m unittest -v BGXAI/BUILD/R47_GUARDED_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/test_r47_reuse_r46_exact_witness_port_source_only.py
 
+      - name: Test R47 guarded last157→158 inert BCS witness install and exact rollback fake EET (NO GAME)
+        run: python -m unittest -v BGXAI/BUILD/R47_GUARDED_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/test_r47_guarded_last157_to158_source_only.py
+
       - name: Test R46 always-false BDDEFAI BCS witness source (NO GAME)
         run: python -m unittest -v BGXAI/BUILD/R46_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/test_r46_inert_bcs_witness_source_only.py
 
