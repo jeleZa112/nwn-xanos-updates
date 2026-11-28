@@ -745,4 +745,103 @@ function M.planAutoBatchWithR13(p)
  return advice
 end
 
+
+-- Complete SOURCE-only join of ACTOR and TARGET in the SAME R27 started
+-- action. Reuses existing R35 selected APR/THAC0 and R13 defensive reader.
+-- Unlike EEex v1.3 AttackInfo, both use functions documented in EEex 1.1.7.
+-- This rejects stale actor APR and actor changes; it does NOT calculate
+-- effective APR/THAC0 for every alternative and does NOT authorize a switch.
+function M.planAutoBatchWithActorTarget(p)
+ if type(p)~='table' or type(p.r35)~='table' or
+    type(p.r35.observe)~='function' or
+    type(p.r37)~='table' or
+    type(p.v3Scene)~='table' or
+    type(p.v3Scene.actor)~='table' or
+    type(p.v3Scene.weapons)~='table' or
+    type(p.statsReader)~='function' then
+  return result('HOLD_AUTOBATCH_ACTOR_TARGET_INPUT_INCOMPLETE') end
+ if integer(p.r37.queuedActionsRaw,1,512) then
+  -- Even actor-stat reads are unnecessary during an ongoing/queued action.
+  return M.planAutoBatchWithR13(p)
+ end
+ local function observed()
+  local success,o=pcall(p.r35.observe,p.sprite,p.statsReader)
+  if not success or type(o)~='table' or
+     o.schema~='BGXAI_R35_SELECTED_ENGINE_STATS_RO_V1' or
+     o.status~='SELECTED_APR_THAC0_DOUBLE_READ_STABLE_PASSIVE' or
+     o.source~='EEEX_ACTIVE_DERIVED_STATS_CURRENT_SELECTED' or
+     o.actorRaw~=p.r37.actor or
+     o.selectedSlotRaw~=p.r37.selectedWeaponRaw or
+     o.selectedAbilityRaw~=p.r37.selectedAbilityRaw or
+     o.liveSameCallbackDoubleRead~=true or
+     o.activeStatsNotTempObserved~=true or
+     o.otherSlotEffectiveAPRVerified~=false or
+     o.dispatchAuthorized~=false or
+     o.weaponSwitchAuthorized~=false or
+     o.manualAndEPSOriginVerified~=false or
+     o.matchedBuffContextVerified~=false or
+     not integer(o.selectedTHAC0Raw,-100,100) or
+     type(o.selectedAPRIfStandardDecoder)~='number' then
+   return nil
+  end
+  return o
+ end
+ local first=observed()
+ if not first then return result('HOLD_AUTOBATCH_R35_SELECTED_STATS_UNAVAILABLE') end
+ local slot=first.selectedSlotRaw
+ if not integer(slot,35,38) then
+  return result('HOLD_AUTOBATCH_R35_SELECTED_QUICKSLOT_UNMAPPED') end
+ local quick=p.r37.quickWeaponsRaw
+ local row=type(quick)=='table' and quick[slot-34] or nil
+ local found=nil
+ for _,w in ipairs(p.v3Scene.weapons) do
+  if type(w)=='table' and w.id==p.v3Scene.actor.selectedWeaponId then
+   if found~=nil then
+    return result('HOLD_AUTOBATCH_R35_SELECTED_MODEL_AMBIGUOUS') end
+   found=w
+  end
+ end
+ if type(row)~='table' or
+    row.index~=slot or
+    row.access~='OBJECT_RETURNED_UNVERIFIED' or
+    type(row.itemResrefRaw)~='string' or
+    type(found)~='table' or found.slot~='QUICKSLOT' or
+    found.quickslotIndex~=slot-35 or
+    found.resRef~=row.itemResrefRaw:upper() or
+    type(found.apr)~='number' or
+    found.apr~=first.selectedAPRIfStandardDecoder then
+  return result('HOLD_AUTOBATCH_SELECTED_WEAPON_APR_OR_IDENTITY_MISMATCH',{
+    selectedSlot=slot,
+    selectedAprRaw=first.selectedAPRKeyRaw,
+    selectedAprDecoded=first.selectedAPRIfStandardDecoder}) end
+ local advice=M.planAutoBatchWithR13(p)
+ if advice.status~='HOLD_AUTOBATCH_TARGET_RANKING_UNSTABLE' and
+    advice.status~='STAGE_DECISION_AWAIT_INDEPENDENT_MANUAL_EPS_ROUND_PROOF' and
+    advice.status~='KEEP_CURRENT_ACTION_OR_UNPROVEN_GAIN' and
+    advice.status~='DEFER_KNOWN_NONEMPTY_ACTION_QUEUE' then
+  return advice
+ end
+ -- An actor whose attack stats changed while R13/R37 looked at the target
+ -- must not reuse a now-obsolete V3 preference token.
+ local final=observed()
+ if not final or first.actorRaw~=final.actorRaw or
+    first.selectedSlotRaw~=final.selectedSlotRaw or
+    first.selectedAbilityRaw~=final.selectedAbilityRaw or
+    first.selectedAPRKeyRaw~=final.selectedAPRKeyRaw or
+    first.selectedTHAC0Raw~=final.selectedTHAC0Raw then
+  return result('HOLD_AUTOBATCH_ACTOR_STATS_DRIFT_DURING_TARGET_READ') end
+ advice.r35SelectedAprObservedUnderEeexV117=true
+ advice.r35SelectedAprModelMatched=true
+ advice.r35SelectedApr=first.selectedAPRIfStandardDecoder
+ advice.r35SelectedThac0Raw=first.selectedTHAC0Raw
+ advice.r35OtherWeaponAprVerified=false
+ advice.r35OtherWeaponThac0Verified=false
+ advice.nativeEffectiveAlternateAprVerified=false
+ advice.executable=false
+ advice.inventoryMoveAuthorized=false
+ advice.dispatchAuthorized=false
+ advice.ordersSent=0
+ return advice
+end
+
 return M
