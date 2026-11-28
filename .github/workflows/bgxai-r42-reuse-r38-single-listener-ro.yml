@@ -76,6 +76,24 @@ jobs:
           # Preserve that backwards-compatible test while separately
           # checking the FULL (180+181+182) immutable manifest in Python CI.
           $all=Get-Content 'BGXAI/UPDATER_V2/MODULES_V1.json' -Raw | ConvertFrom-Json
+          # Test actual unmodified V2 hub Check-Index on the entire
+          # production manifest using PowerShell 5.1; NO game/root access.
+          $hub=[IO.File]::ReadAllText('BGXAI/UPDATER_V2/BGXAI_HUB_V2_STAGED.ps1')
+          $anchor="try{`n  if(`$SelfTest)"
+          $at=$hub.LastIndexOf($anchor)
+          if($at -lt 0){throw 'Existing immutable V2 hub entrypoint changed'}
+          $sourceOnly=$hub.Substring(0,$at)
+          $probe=Join-Path $env:RUNNER_TEMP 'bgxai_v2_full_index_native_ro.ps1'
+          $check=@'
+$all=Get-Content 'BGXAI/UPDATER_V2/MODULES_V1.json' -Raw | ConvertFrom-Json
+$mods=@(Check-Index $all)
+if($mods.Count -ne 3){throw 'Native V2 actual full manifest check failed'}
+if($mods[0].code -ne 180 -or $mods[1].code -ne 181 -or $mods[2].code -ne 182){throw 'Native V2 module ordering changed'}
+if($mods[1].mode -cne 'guarded' -or $mods[2].mode -cne 'guarded'){throw 'Native V2 R48 consent mode invalid'}
+Write-Host 'BGXAI V2 ORIGINAL HUB FULL 180-182 INDEX NATIVE PASS'
+'@
+          [IO.File]::WriteAllText($probe,$sourceOnly+`"`n`"+$check,[Text.Encoding]::ASCII)
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File $probe
           $mods=@($all.modules)
           $old=@($mods | Where-Object { $_.code -eq 180 })
           if($old.Count -ne 1){throw 'Missing original safe readonly module180'}
