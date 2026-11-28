@@ -15,6 +15,16 @@ PRIOR WORK GATE: V3 уже содержит проверенный на синт
 
 Ограничение: любой caller может передать `*Verified=true` как данные тестовой модели. Это НЕ нативное EEex-доказательство, и V4 по-прежнему всегда выдаёт `executable=false`, `dispatchAuthorized=false`, `inventoryMoveAuthorized=false`, `ordersSent=0`. Не устанавливать в игру по одному такому результату.
 
+## 28.11.2026 — прямое соединение V3 → V4 (только модель, не игра)
+
+Вместо дополнительного оценщика переиспользован **тот же V3 `scored_weapon`**: добавлен `V3.scoreBackpackCandidate(scene, weapon)` для одного оружия в настоящем слоте рюкзака 18–33 (без имитации, будто оно уже экипировано). Он оценивает персонажа и текущего врага, тип AC, сопротивления и итоговый *модельный* DPR; отсутствие APR, THAC0, эффектов/предметной совместимости или разные снимки дают HOLD. Он всегда возвращает только non-executable модель: `engineFinalAlternativeStatsVerified=false`, `dispatchAuthorized=false`.
+
+В **существующий V4** добавлен `planWithV3(backpack,quick,other,scene,candidates,v3Scene,previous,v3)` — чистый компоновщик, вызывающий исходные `V3.preview`, `V3.scoreBackpackCandidate` и уже имеющийся `V4.plan`. Дважды связывает актёра с одной целью, требует одинаковый `snapshotId`/`tick`, проверяет реальный `resref` каждого quickslot против модельного V3, сохраняет `v3Next` для двухкадровой стабилизации. В этом пути `c.predictedUtility`, переданный вызывающим кодом, категорически отвергается: численная полезность выводится только из V3. Не изменяет исходные таблицы или игру. Внешний старый `plan` оставлен для совместимости, по-прежнему dry-run.
+
+**Тесты:** ровно 6 новых в уже существующем `test_weapon_priority_lua_v3.lua` — на идентичном GitHub исходнике V3 локально на LuaTeX 5.3: **72/72 PASS**, SHA git blob совпали; 7 новых интеграционных сценариев в существующем `test_backpack16_priority_v4.lua` (в сумме 34), включая подмену score, смену цели, неизвестный APR, текущую иммунность и отсутствие диспатча. Регрессионный запускатор объединён с прежним V3/V4/V5 набором, ожидает **490** модельных проверок, а прежний GitHub workflow запускает его на push по файлам V4. **Интеграционные 34 и полный 490-тестовый CI не подтверждены PASS отдельным отчётом** — не выдавать составленные тесты за исполненные.
+
+**Главное незавершённое:** настоящий EEex-поставщик альтернативных APR, THAC0, повреждений/бафов и защиты *по одному игровому кадру*, а также реальный арбитраж EPS/ручной команды/раунда. Результаты `planWithV3` нельзя считать готовой игрой и подключать к `XEquipItem` без доказательств/typed install. R47 при HOLD не повторять. Обновлятор и игровые файлы не изменены.
+
 ## What this removes as a blocker
 Previously V1 used **incorrect 15..34** backpack map and only checked duplicates in backpack+quickweapons; V4 corrects mapping, covers all top-level slots and strict no-overwrite, reuses existing external scorer. V4 is not yet plugged into R37 and is NOT actual automation; native EEex loaded ITM stats/provenance and execution transaction remain unproven.
 
