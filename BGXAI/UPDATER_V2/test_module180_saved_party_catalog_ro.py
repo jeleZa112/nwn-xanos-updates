@@ -52,6 +52,10 @@ class CatalogStage(unittest.TestCase):
     self.assertEqual(result['status'],'SOURCE_CATALOG_READY_OUTSIDE_GAME',result)
     self.assertEqual(result['partyCount'],1)
     self.assertEqual(result['uniqueItemResources'],2)
+    self.assertEqual(result['nativeParsedItemResources'],2)
+    self.assertTrue(result['nativeResourceCoverageComplete'])
+    self.assertEqual(result['nativeUnavailableItemResources'],0)
+    self.assertEqual(result['nativeLinkedSpellBlockedItems'],0)
     payload=Path(result['catalogPath']).read_text(encoding='ascii')
     self.assertIn('["SW1H04"]',payload)
     self.assertIn('["STAF01"]',payload)
@@ -125,12 +129,79 @@ class CatalogStage(unittest.TestCase):
     self.assertEqual(ret['status'],'HOLD_SAVED_PARTY_CATALOG_PREPARATION')
     self.assertFalse(self.reports.exists() and list(self.reports.glob('*.lua')))
 
- def test_missing_item_resref_cannot_be_synthesized(self):
-    a=bytearray(self.raw);index=a.find(b'STAF01')
-    a[index:index+8]=b'FAKE01\0\0'
-    self.gam.write_bytes(a)
-    ret=mod.run(self.game,self.docs,self.reports,game_required=False)
-    self.assertEqual(ret['reason'],'HOLD_R3_CURRENT_GAME_RESOURCE_COVERAGE')
+ def test_missing_item_resref_is_quarantined_not_forged_or_equipped(self):
+    # The known R3 fixture does not contain FAKE01. The other native ITM
+    # must survive as a passive source catalog entry without fake stats.
+    raw=bytearray(self.raw)
+    index=raw.find(b'STAF01\0\0')
+    self.assertGreaterEqual(index,0)
+    raw[index:index+8]=b'FAKE01\0\0'
+    self.gam.write_bytes(raw)
+    before=self.gam.read_bytes()
+    result=mod.run(self.game,self.docs,self.reports,game_required=False)
+    self.assertEqual(result['status'],'SOURCE_CATALOG_PARTIAL_OUTSIDE_GAME',result)
+    self.assertFalse(result['nativeResourceCoverageComplete'])
+    self.assertEqual(result['nativeUnavailableItemResources'],1)
+    self.assertEqual(result['nativeParsedItemResources'],1)
+    self.assertTrue(result['partialSourceNeverAuthorizesGameplay'])
+    self.assertFalse(result['dispatchAuthorized'])
+    self.assertFalse(result['inventoryMoveAuthorized'])
+    self.assertFalse(result['gameModified'])
+    self.assertEqual(result['ordersSent'],0)
+    lua=Path(result['catalogPath']).read_text(encoding='ascii')
+    self.assertIn('["sourceResourceStatusByResref"]=',lua)
+    self.assertIn('["FAKE01"]="ITM_RESOURCE_UNAVAILABLE"',lua)
+    self.assertIn('["resref"]="FAKE01"',lua) # raw saved slot only
+    self.assertNotIn('["FAKE01"]={"resource":"FAKE01"',lua)
+    self.assertIn('["status"]="SAVED_PARTY_CATALOG_PARTIAL_NON_EXECUTABLE"',lua)
+    self.assertIn('["unresolvedItemsCannotBeRankedOrEquipped"]=true',lua)
+    self.assertEqual(self.gam.read_bytes(),before)
+    self.assertNotIn("XEquipItem(",lua)
+
+ def test_unavailable_linked_spell_quarantines_item_and_preserves_staff(self):
+    # SW1H04's existing ITM links SW1H04.SPL via opcode 146. Corrupting
+    # a fixture SPL is not permission to use the sword as a weapon.
+    (self.game/'override'/'SW1H04.SPL').write_bytes(b'unsafe synthetic SPL')
+    result=mod.run(self.game,self.docs,self.reports,game_required=False)
+    self.assertEqual(result['status'],'SOURCE_CATALOG_PARTIAL_OUTSIDE_GAME',result)
+    self.assertEqual(result['nativeUnavailableLinkedSpells'],1)
+    self.assertEqual(result['nativeLinkedSpellBlockedItems'],1)
+    self.assertEqual(result['nativeParsedItemResources'],1)
+    lua=Path(result['catalogPath']).read_text(encoding='ascii')
+    self.assertIn('["SW1H04"]="LINKED_SPELL_RESOURCE_UNAVAILABLE"',lua)
+    self.assertIn('["STAF01"]="ITM_RAW_PARSED_LINKED_RESOURCES_PRESENT"',lua)
+    self.assertIn('["items"]={["STAF01"]=',lua)
+    self.assertFalse(result['dispatchAuthorized'])
+    self.assertFalse(result['inventoryMoveAuthorized'])
+    self.assertEqual(result['ordersSent'],0)
+    self.assertFalse(result['gameModified'])
+
+ def test_all_missing_native_items_remains_hold_not_fake_ready(self):
+    raw=bytearray(self.raw)
+    raw=raw.replace(b'STAF01\0\0',b'FAKE01\0\0')
+    raw=raw.replace(b'SW1H04\0\0',b'FAKE02\0\0')
+    self.gam.write_bytes(raw)
+    result=mod.run(self.game,self.docs,self.reports,game_required=False)
+    self.assertEqual(result['status'],'HOLD_SAVED_PARTY_CATALOG_PREPARATION')
+    self.assertEqual(result['reason'],'HOLD_R3_NO_USABLE_NATIVE_SOURCE_ITEM_BYTES')
+    self.assertTrue(result['noAutoRetry'])
+    self.assertFalse(result['dispatchAuthorized'])
+    self.assertFalse(result['gameModified'])
+    self.assertFalse(list(self.reports.glob('*.lua')))
+
+ def test_missing_record_inconsistent_with_native_audit_is_rejected(self):
+    parsed=gam.parse(self.raw)
+    names=sorted(mod.saved_names(parsed))
+    audit=r3.audit(r3.NativeSource(self.game),names)
+    self.assertEqual(audit['status'],'ITM_NATIVE_ALL_ITEMS_RAW_READ')
+    audit['missingItemsOrLinkedSpells'].append(
+        {'resource':'FAKE01.ITM','reason':'fake foreign status'})
+    with self.assertRaisesRegex(mod.Hold,'HOLD_R3_ITEM_MISSING_RECORD_MISMATCH'):
+       mod.source_coverage(parsed,audit)
+    audit['missingItemsOrLinkedSpells'].clear()
+    audit['dispatchAuthorized']=True
+    with self.assertRaisesRegex(mod.Hold,'HOLD_R3_CURRENT_GAME_RESOURCE_COVERAGE'):
+       mod.source_coverage(parsed,audit)
 
  def test_duplicate_item_resref_same_party_resource_is_not_instance_identity(self):
     ret=mod.run(self.game,self.docs,self.reports,game_required=False)
