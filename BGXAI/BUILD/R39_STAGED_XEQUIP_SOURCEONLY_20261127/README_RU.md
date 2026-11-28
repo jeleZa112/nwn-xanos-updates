@@ -1,3 +1,11 @@
+# 28.11.2026 — R39 engine EEex read-only bridge (CODE+MOCK ONLY)
+
+Новый `BGXAI_R39_EEEX117_ENGINE_BRIDGE_RO.lua` **7024B** не дублирует прежний weapon priority и не устанавливает observer: вызывает имеющиеся EEex v1.1.7 API `EEex_Sprite_GetInPortrait`, `EEex_Sprite_GetInPortraitID`, `EEex_Sprite_GetAllSelectedIDs`, `EEex_Trigger_EvalConditionalStringAsAIBase` только после явного read-only вызова. Инвентарь читает по уже принятому R37 0..38, кроме fist slot10. Два физических снимка, 12 R39 engine triggers и строго одиночное выделение Джагана. При UNKNOWN/неверном ресурсе/смене action возвращает HOLD; даже при идеальном состоянии возвращает **`PARTIAL_ENGINE_PHYSICAL_AND_TRIGGER_MATCH_NO_ARM`**, всегда `canArm=false`, `armAuthorized=false`, `ordersSent=0`. Не доказывает полноценный эффект/требования экипировки/природу EPS ручных приказов. Отдельно оставляет `nativeTriggerSideEffectsExcluded=false` — `EEex_Trigger_EvalConditionalStringAsAIBase` реализован через `m_pendingTriggers:Hold`, безопасность обработки реального backlog/queue пользователем НЕ доказана.
+
+**Проверки:** `texlua test_r39_eeex117_engine_bridge_ro.lua` 18/18 PASS, старые `texlua test_explicit_user_arm_source.lua` 50/50 PASS, `python -m unittest -q test_r39_explicit_gesture_contract.py test_r39_staged_xequip_v1.py` 42/42 PASS. Предыдущий BAF, 2407B optional EEex LuaTrigger BAF, весь R38/EPS/136? и единственный updater не менялись. Ни native EET compile, ни реальный XEquipItem в игровом движке в этом выпуске НЕ проверялись. Предстоит подтвердить действующую систему и usability; не считать исходниковую проверку игровым успехом.
+
+---
+
 # 28.11.2026 — R39 volatile EEex trigger без повтора V3/R40 (SOURCE ONLY)
 
 **Уже реализовано:** V3 actor-specific `BGXW3ARM/TAG/TRY`, R39 одноразовый `XEquipItem` с задержкой и EPS Continue, R40 destroyed/loaded обнуляет сохранённые ARM, R37/R38 собирает raw identity/inventory, 081-085 исследуют manual/EPS. Рабочие игровые файлы НЕ изменять. Стадии: старый R39 BAF CODE+TEST, NATIVE/DEPLOY/LIVE нет; новый вариант также SOURCE ONLY.
