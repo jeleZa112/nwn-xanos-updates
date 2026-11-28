@@ -1190,14 +1190,14 @@
       "error_id": "BGXAI_R48_STAF01_ITEM_SAVED_SLOT22_VS_HARDCODED20_20261128",
       "project": "BGXAI",
       "type": "CONFIRMED_FAILURE",
-      "status": "MITIGATED_SOURCE_ONLY",
+      "status": "GUARDED",
       "discovered_at": "2026-11-28",
       "trigger": "User installed R48 last WeiDU #159 and in game moved STAF01 to third visible backpack cell, toggled AI, but no XEquip occurred. User supplied exact BALDUR.GAM snapshot.",
       "observed_failure": "Raw GAMEV2.0 party index1 (Jagan Battleforge) CRE V1.0 saved slot22 is STAF01, while slot20 is EMPTY. Installed immutable R48 BAF has CheckItemSlot(Myself,\"STAF01\",SLOT_MISC5), with SLOT_MISC5=20, so R48 condition is false in the saved configuration. GUI AI flag at save time bit0=0, which is not proof that AI was off throughout attempted runtime. Class BDDEFAI, CLERIC, STR12, empty weapon and shield matched.",
       "cause": "Overly rigid source index20 from earlier R39 snapshot was incorrectly assumed to correspond to a particular visible inventory cell, but EET/lefreut inventory UI position does not prove stored slot index. Additional mistaken claim that Name(\"*GCLERIC\") must fail conflated embedded CRE death variable None with GAM NPC Character Name *GCLERIC; runtime Name truth remains unproven.",
       "do_not_repeat": "No re-run of 180/181/182/183, no reinstall R48 or rollback last159, no new GAM request, no same visual manual item slot shuffling, no unverified NAME identity-guard removal, no old R47 witness capture loop, no blind unconditional equips or interrupting EPS/round.",
-      "safe_action": "Already built+published original V2 menu184 readonly R49 preflight/status, menu185 exact typed WeiDU R48-last159 -> R49-last160 install, and 186 separate guarded R49-last160 rollback to R48-last159. Original native guard exact last-only ancestry SHA + external backup. All 21 assets pinned in unchanged original CMD hub; Windows+Ubuntu full CI PASS 46162692094, 37 R49 source/mock tests. User game R49 not installed yet; no extra diagnostics/old 180-183 repeat. Installation 185 independently preflights, explicit user approval required. Fail-closed HOLD/STOP never auto-retry/rollback.",
-      "closure_condition": "Real user's saved GAM proves R48 slot20-only trigger mismatch and AI disabled at snapshot. Code+mock+native Windows PS full 184/185/186 index is completed, but native user's EET installation #160 and single in-game XEquip after AI-on/unpaused are NOT yet proven. Runtime closure requires separate real action observation.",
+      "safe_action": "Real Windows original same CMD menu185 user exact typed INSTALL_BGXAI_R49_BACKPACK16_ONE_STAF01_AFTER_R48_LAST159 completed with R49_LAST160_INSTALLED_AWAITING_GAMEPLAY, nativeStatus R49_BACKPACK16_ONE_STAF01_INSTALLED_AWAITING_GAME, originalR48Last159Preserved true, installed true, gameModified true, ordersSentAtInstall=0, actualXEquipPerformed=false. Do NOT repeat 184/185/186, 180-183, do not auto rollback or reinstall. Next only one disposable-save gameplay observation: Jagan second party portrait, STAF01 anywhere in 16 backpack slots, weapon0 empty, no shield, PARTY AI ON, game unpaused, no combat or queued actions. Prior GAM saved AI bit off; actor-local BGX48TRY not verified. No repeat old save upload.",
+      "closure_condition": "Code+CI+user native WeiDU last160 installation CONFIRMED from actual original V2 menu185 native status. Gameplay transfer XEquipItem still UNPROVEN until a single observed game action. Keep guard status until LIVE confirmation; never claim resolved from installer alone.",
       "evidence": [
         "/BGXAI/BUILD/R49_R48_BACKPACK16_SOURCE_ONLY_20261128/BGXAI_R49_REUSE_R48_BACKPACK16_SOURCE_ONLY.py",
         "/BGXAI/BUILD/R49_R48_BACKPACK16_SOURCE_ONLY_20261128/test_r49_reuse_r48_backpack16_source_only.py",
@@ -1213,7 +1213,7 @@
         "/BGXAI/UPDATER_V2/MODULES_V1.json",
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46162692094"
       ],
-      "enforcement": "Original R48 #159 intact until separate secure install. Saved GAM snapshot's slot/source inventory and GUI flag do not prove live engine action evaluation; retain CODE/TEST/DEPLOY/LIVE distinction.",
+      "enforcement": "Installed old R48 #159 preserved below new R49 #160, same BGX48TRY one-shot gate prevents duplicate attempt; no additional installers, status checks, rollbacks or save modifications. User's actual game R49 now installed; no source-only claim. Do not mark runtime transfer success until visually observed.",
       "metadata": {
         "userGameSaveSHA256": "e836b3c534dde5b058d0d4cab64e0b5b3b1837c9416a04f5d1a907b812d88c7b",
         "savedJaganIndex": 1,
@@ -1227,7 +1227,7 @@
         "nameTriggerRuntimeVerified": false,
         "sourceCandidateCommit": "49660511648fa498300503d67cb27075df836711",
         "existingR48WeiDULast": 159,
-        "repairedR49WeiDUInstalled": false,
+        "repairedR49WeiDUInstalled": true,
         "repairedR49GameplayXEquipObserved": false,
         "R49SourceAndGuardedModulePublished": true,
         "R49OriginalV2Modules": [
@@ -1235,9 +1235,9 @@
           185,
           186
         ],
-        "R49InstallUserApproved": false,
-        "R49NativeWeiDUOnUserGameVerified": false,
-        "R49Last160UserGameInstalled": false,
+        "R49InstallUserApproved": true,
+        "R49NativeWeiDUOnUserGameVerified": true,
+        "R49Last160UserGameInstalled": true,
         "R49BackpackSourceOnlyCI": "PASS_WINDOWS_UBUNTU_46162692094",
         "R49NewUnitTests": 37,
         "R49PinnedAssets": 21,
@@ -1246,7 +1246,14 @@
         "manifestCommit": "f8b65249c19d58addc2261c12df5cec88256155a",
         "manifestBytesBeforeCompression": 32545,
         "manifestBytesAfterCompression": 25444,
-        "oldInstalledR48Component": 159
+        "oldInstalledR48Component": 159,
+        "R49NativeUserStatus": "R49_BACKPACK16_ONE_STAF01_INSTALLED_AWAITING_GAME",
+        "R49OriginalHubStatus": "R49_LAST160_INSTALLED_AWAITING_GAMEPLAY",
+        "userActualGameChanged": true,
+        "orderSentAtInstall": 0,
+        "R48Last159Preserved": true,
+        "oneShotBGX48TRYStillInEffect": true,
+        "lastNativeWeiDUComponent": 160
       }
     }
   ],
