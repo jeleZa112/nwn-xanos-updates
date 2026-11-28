@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 161
+SELF_VERSION = 162
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -8136,6 +8136,27 @@ def v153_dispatch(game,mode):
  except Exception as e:print('ZIP_HOLD',str(e)[:90])
  print(report.get('status'), report.get('reason',''))
  return 2 if 'HOLD' in report.get('status','') or 'STOP' in report.get('status','') else 0
+V162_PIN='b46a01274479fbe3c7e83cf847ef299ba41d12f4a1f051ac26cf7495b7e2ab00'
+V162_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/ca6fa6bbc29f74ebe2884de39eb0e970813a1d3a/bg-eet-ru/hit-only-v160/weapon_names_onefile_dispatch.py'
+def v162_dispatch(game,mode,offline=False):
+ try:
+  p=v121_cache(game)/'V162_WEAPON_NAMES_DISPATCH.py'
+  if p.is_symlink():raise RuntimeError('V162_SYMLINK')
+  if not p.is_file() or sha_path(p)!=V162_PIN:
+   if offline:raise RuntimeError('V162_OFFLINE_PIN_MISSING')
+   with urllib.request.urlopen(V162_URL,timeout=9) as r:data=r.read(8001)
+   if digest(data)!=V162_PIN:raise RuntimeError('V162_SOURCE_SHA_HOLD')
+   v121_write(game,p,data)
+  m=types.ModuleType('v162')
+  source=p.read_bytes()
+  if digest(source)!=V162_PIN:raise RuntimeError('V162_PIN_CHANGED_BEFORE_EXEC')
+  exec(compile(source,str(p),'exec'),m.__dict__)
+  report=m.run(game,WORKDIR,mode,offline)
+ except Exception as e:report={'status':'BATCH_SAFE_STOP','reason':type(e).__name__+': '+str(e)[:150],'gameFilesWritten':'UNKNOWN_AFTER_EXCEPTION' if mode in ('install','rollback') else 0}
+ try:v116_zip(game,WORKDIR/REPORT_NAME,report,entry='79_V162_WEAPON_NAMES_BATCH.json')
+ except Exception as e:print('V162_ZIP_HOLD',str(e)[:90]);return 2
+ print('V162:',report.get('status'),report.get('reason',''))
+ return 0 if report.get('status') in ('BATCH_PREFLIGHT_PASS','BATCH_NOT_INSTALLED','BATCH_INSTALLED_AWAITING_GAMEPLAY','BATCH_ROLLED_BACK_TO_V160') else 2
 def v133_audit(game,path,v136=False):
  report={'schema':'BG_EET_RU_V133_WINDOWS_RUNTIME_READONLY','status':'RUNTIME_MEMORY_HOLD','game_files_written':0,'native_hook_install_allowed':False,'firstcall_owner_verified':False,'gameplay_verified':False}
  try:
@@ -8306,13 +8327,17 @@ def main(argv=None):
  try:v121_snapshot(game,WORKDIR/REPORT_NAME)
  except Exception as exc:print('V121 SNAPSHOT HOLD:',str(exc)[:120])
  if not (argv if argv is not None else sys.argv[1:]):
-    try:a=input('1=audit 2=install 3=undo 4=play 5=status 6-9=diag 10=V153 11=bulk [1]: ').strip()
+    try:a=input('1=audit 2=install 3=undo 4=play 5=status 6-9=diag 10=V153 11=bulk 12=names [1]: ').strip()
     except EOFError:a=''
     mode={'2':'install','3':'rollback','4':'capture','5':'status'}.get(a)
     if a=='6':return v130_audit(game,WORKDIR/REPORT_NAME)
     if a=='7':return v130_audit(game,WORKDIR/REPORT_NAME,132)
     if a=='8':return v133_audit(game,WORKDIR/REPORT_NAME)
     if a=='9':return v133_audit(game,WORKDIR/REPORT_NAME,True)
+    if a=='12':
+       try:b=input('V162 names:1=status 2=check 3=install 4=undo [1]: ').strip()
+       except EOFError:b=''
+       return v162_dispatch(game,{'2':'preflight','3':'install','4':'rollback'}.get(b,'status'),args.offline)
     if a=='11':
        try:b=input('V157:1-4 V159:5-8 V160:9=check 10=install 11=undo 12=status [1]: ').strip()
        except EOFError:b=''
@@ -9652,7 +9677,7 @@ def v68_combat_evidence(game, report_path):
  print('Единый ZIP:', report_path)
  return 0 if status['status'] == 'CODE_EVIDENCE_CAPTURED_HOLD_DISASSEMBLY' else 2
 V69_PROOF_SCHEMA = 'BG_EET_RU_V69_INDEPENDENT_DISASM_REPLAY_V1'
-V69_PROOF_DATA = '{"functions":{"19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin":"6191eadc6417846290e659abb1e81f7f2ee60a408b247a3e8d3f2fe7408ed5a2","19_V68_COMBAT_CODE/functions/0037ECA0_0038552C.bin":"8c6fae5b8a25834289d63c166824502a04f6bf4422e9b7d0be671620b762f00f","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin":"59fa0cdbc7206698acd7bd49c7c68807a02d9318a001f13911e04d0d5e49723a","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin":"19c1d11b7ac41d261d22b19506b3570427e356544e48f2e2c622c1efdb74cc79"},"refs":{"3458097":[5949192,"488d15d0022600","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3458184":[5949216,"488d1591022600","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3458658":[5949232,"488d15c7002600","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3458987":[5949232,"488d157eff2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459174":[5949248,"488d15d3fe2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459214":[5949256,"488d15b3fe2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459253":[5949256,"488d158cfe2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459574":[5949272,"488d155bfd2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459610":[5949280,"488d153ffd2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459678":[5949296,"488d150bfd2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459722":[5949296,"488d15dffc2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459920":[5949328,"488d1539fc2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3459955":[5949344,"488d1526fc2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3460003":[5949344,"488d15f6fb2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3460298":[5949344,"488d15cffa2500","19_V68_COMBAT_CODE/functions/0034C340_0034CD5A.bin"],"3673126":[5950952,"488d15bbc12200","19_V68_COMBAT_CODE/functions/0037ECA0_0038552C.bin"],"3673511":[5950952,"488d153ac02200","19_V68_COMBAT_CODE/functions/0037ECA0_0038552C.bin"],"3673325":[5950968,"488d1504c12200","19_V68_COMBAT_CODE/functions/0037ECA0_0038552C.bin"],"3791578":[5952264,"488d1527f82000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3791683":[5952272,"488d15c6f72000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792268":[5952288,"488d158df52000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792304":[5952304,"488d1579f52000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3735649":[5952320,"488d15d8d22100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3736015":[5952320,"488d156ad12100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3792482":[5952320,"488d15d7f42000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792649":[5952320,"488d1530f42000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3735749":[5952352,"488d1594d22100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3792574":[5952352,"488d159bf42000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792636":[5952384,"488d157df42000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792663":[5952400,"488d1572f42000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792727":[5952416,"488d1542f42000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3792866":[5952432,"488d15c7f32000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3793213":[5952448,"488d157cf22000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3793311":[5952464,"488d152af22000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3793934":[5952488,"488d15d3ef2000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3738589":[5952504,"488d1514c82100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3794036":[5952504,"488d157def2000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3794110":[5952528,"488d154bef2000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3794187":[5952552,"488d1516ef2000","19_V68_COMBAT_CODE/functions/0039DA50_0039E9DC.bin"],"3735182":[5952576,"488d15abd52100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3735245":[5952592,"488d157cd52100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3735400":[5952608,"488d15f1d42100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3738043":[5952632,"488d15b6ca2100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3738115":[5952648,"488d157eca2100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3738475":[5952664,"488d1526c92100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3738655":[5952680,"488d1582c82100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"],"3738692":[5952704,"488d1575c82100","19_V68_COMBAT_CODE/functions/0038FBF0_00390F3C.bin"]},"exe_sha256":"fc821a4806a0305b84fd85f1aad2bd472c8db642ed34b4494ae62351cae1c580","analysis_tool":"GNU objdump 2.44 x86-64; independent RIP target calculation","disassembly_anomalies":{"19_V68_COMBAT_CODE/functions/0037ECA0_0038552C.bin":14}}'
+V69_PROOF_DATA=zlib.decompress(base64.b64decode('eNqt2FtrYzcQAOC/Ys5zujszGo2k9CmbS+lDL5S2L6UYXVsXx17WCeyy5L9XcXx0DDbUVOchjnHg03gyMxr761CeN/Fptd3shuuvA7rl72KXtz/98OHm1/rr7v59+/t7AMW3imG5f3Knb96F1Wa4HgQdZp+iMBrLQg6yaOdDwGyxmEI5C3gGG4iNV9kmVahkU1/JSXsarv7zXHN/e7M/12pNt4dzbZTisw7Wk7aKybokKqKIJdZAHrhIKMxE2QWTIGQxKATBCBWAcsG59uHDw/5cBw9qPFe74iGmEA2BiLM+JhMSu2iiWAvGAyWn0HoALKgcYgZOkHRmZ0j5C851dzf67dx7dzeeiy5iQgzGR8ZEUn8ooNMgQWkDTCYrLZo5s61JpyhEEXNJwXCMxg0vV8OnXPb/aMXagjPD9R/asUNHVwNbm1AnACIBuCDIM8Xw59VeRssHmVBG2eEMsmg7yqrFHE0Nuld21pzKJpdCuk92aFo22LY8q5K7ZcIm65bnMIus1als4wyynrJhWp51KKlbFoRRtjDKqswhm1Z1rmUD5ojZEJ3KqZTYLTsas6GoVZ1yc8hajzLzKJN0y7WDQZ3KRUrolsnZUzmW4vtkMQpJ9rIGp1s9hxCR6CL5zNV2kDXiqax8hG5ZkR5labUB3BuzcXVivuVZ11E/1YYptsLw/y6+gyxWjfI0N+oGYHrlGmmL2bZs2FR0t6yAD3J91u4U1y3Xa57dKFObdcnWjQAvks8sNm+yAOpTWXzCTvn18qMzMZvC3Xk+mw0F3XJdqyZ56kHH3Xmu16rhM3KYIxtKRtlOVZfmkGXsQYaWZ0MzyIbMKE8bI88hWxmzwccbY1G9siJs2Zj2OhMLdctqnPzER1PUzyDX62+U7dEumktvp9i6QR9kPc065Gh7O4Wh1fORbFJ3zI7xsDFWedqROMwh27Ge9dTdKP151timqDatU3xIunfy15IYJ7+ePg+aOINcp8VBFmh5Lpi4V7bAYw/K1N1Bou+Wsd2DctTdeQaZTZOPului65ZFN3n6BGSpuwer7MaqM0c9qLvkl6shf87L3d91Ca8dPpRXzbMF8aBAB8sl2Vom3icKiU19HykIU06KA7Njn6Venhh9xqjtaxh+49dfdqvd8mm7XVfyux9/W2zDP+n58eOC3jEvPlv5RvjbxWqT8sdcHzZPi1++/3nx5D/9lZ8W0a/j89q/hl21tNr53S4/hvWXpd9sH/16lS/6muzc11XILy//Ah7zFJc=')).decode('utf8')
 def v69_static_proof(report_path):
  report_path = Path(report_path)
  proof = json.loads(V69_PROOF_DATA)
