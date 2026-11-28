@@ -1,0 +1,40 @@
+name: BG EET RU V165 AROW01 one-item typed pilot
+on:
+  push:
+    branches: [bg-eet-ai]
+    paths:
+      - 'bg-eet-ru/weapon-identity/V165_ONE_ITEM_DUAL_PILOT.py'
+      - 'bg-eet-ru/weapon-identity/BG_EET_RU_V107_GUARDED_CALLBACK_SOURCE_ONLY.lua'
+      - 'bg-eet-ru/weapon-identity/test_V165_ONE_ITEM_DUAL_PILOT.py'
+      - 'bg-eet-ru/weapon-identity/test_V107_CITEM_IDENTIFICATION_SOURCE_ONLY.py'
+      - '.github/workflows/bg-eet-ru-v165-one-item-dual-pilot.yml'
+  pull_request:
+    paths:
+      - 'bg-eet-ru/weapon-identity/V165_ONE_ITEM_DUAL_PILOT.py'
+      - 'bg-eet-ru/weapon-identity/BG_EET_RU_V107_GUARDED_CALLBACK_SOURCE_ONLY.lua'
+      - 'bg-eet-ru/weapon-identity/test_V165_ONE_ITEM_DUAL_PILOT.py'
+      - 'bg-eet-ru/weapon-identity/test_V107_CITEM_IDENTIFICATION_SOURCE_ONLY.py'
+      - '.github/workflows/bg-eet-ru-v165-one-item-dual-pilot.yml'
+  workflow_dispatch:
+jobs:
+  one-item-guarded-source-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Lua emulator only (NOT any native game DLL)
+        run: python -m pip install --disable-pip-version-check "lupa==2.8"
+      - name: V165 one-item Lua overlay, current catalog and typed gates
+        run: python -m unittest discover -s bg-eet-ru/weapon-identity -p 'test_V165_ONE_ITEM_DUAL_PILOT.py' -v
+      - name: Existing V107 dormant resolver tests
+        run: python -m unittest discover -s bg-eet-ru/weapon-identity -p 'test_V107_CITEM_IDENTIFICATION_SOURCE_ONLY.py' -v
+      - name: Existing onefile updater selftest regression
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
