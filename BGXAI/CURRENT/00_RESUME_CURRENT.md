@@ -1,5 +1,23 @@
 # BGXAI — ЕДИНСТВЕННАЯ КАНОНИЧЕСКАЯ ТОЧКА ВОССТАНОВЛЕНИЯ
 
+## 28.11.2026 — USER WINDOWS PARTIAL SOURCE CATALOG SUCCESS: 6 ACTORS, 16/17 ITM
+
+**AUTHORITATIVE LATEST USER REPORT:** Existing original same `BGXAI_UPDATE.cmd` V2 menu **180** now completed with `status=SOURCE_CATALOG_PARTIAL_OUTSIDE_GAME` and `BGXAI: update/status action completed`. Real Windows source proof `partyCount=6`, `uniqueItemResources=17`, `nativeParsedItemResources=16`, `nativeUnavailableItemResources=1`, `nativeLinkedSpellBlockedItems=0`, `nativeUnavailableLinkedSpells=0`; `nativeResourceCoverageComplete=false`. Safe full 39-slot saved-party static stage, **NOT LIVE ACTOR**. `gameModified=false`, `ordersSent=0`, `dispatchAuthorized=false`, `inventoryMoveAuthorized=false`, `sourceOnly=true`, `gameplayAIInstalled=false`, `partialSourceNeverAuthorizesGameplay=true`. Output files created **OUTSIDE GAME** in user's Documents/BGXAI_LIVE_REPORTS; assistant has not read the actual file contents and must not invent specific item names or ranks.
+
+**EXACT USER-SUPPLIED SOURCE DIGESTS:**
+- saved GAM SHA256 `4824580592a4e8f1835f0aabc0b387521341c5365bf8117fffb2429f5344b467`
+- installed chitin.key SHA256 `ad67498a222043421c39bcdb2026abf6cdf0fbd160cba51135ab61d6a85d9515`
+- passive Lua SHA256 `41ef2b38d882a66574a842fb31b645ba3ed815cfa90ee2abf82966997e6218f8`
+- catalog path `C:\Users\Drevo\Documents\BGXAI_LIVE_REPORTS\BGXAI_GAM_R3_4824580592a4_41ef2b38d882.lua`; matching JSON at same basename `.json`; neither changes current game.
+
+**CODE/TEST/DEPLOY/LIVE:** Existing module180 partial R3 coverage source fix pinned at immutable `86489b0ed88e593a7451fcc551ceaa111bc2ed1d`, SHA256 `30169724747e632fa2bf59ac05ed916bfac9c71ef0faf85376dd7f66ed868520`, 17 module tests Windows/Ubuntu PASS https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46158535358, deployed through SAME existing V2 manifest and now **USER WINDOWS LIVE VERIFIED FOR SOURCE CATALOG ONLY**. Error register `BGXAI_V2_MODULE180_ALL_OR_NOTHING_NATIVE_R3_COVERAGE_HOLD_20261128` closed for this SOURCE stage as `MITIGATED_VERIFIED` in `GLOBAL_PROJECT_RULES/KNOWN_ERROR_GATES_V1.json`. DON'T redo any old 180 or chase the single missing item without a reason. No extra file upload required to establish counts; resref-specific data is NOT available in conversation.
+
+**NEXT UNFINISHED FUNCTIONAL GATE:** Reuse already-coded V3 target/actor/weapon scorer and V4/R37 inventory/ready-slot ranking with R3 passive catalog. Verify and preserve provenance/partial statuses; never treat raw saved-party state as live identity or ready to equip, and never stage speculative dispatch to fill one unavailable item. Existing live-selected actor APR/THAC0 and some target facts are separate source/live proofs; alternative-slot final APR, actor identity same-session, target resists/immunities and no-interruption manual/EPS/round gate remain unproven. Existing R39 guarded XEquip is only source/native compile, not an installed real transfer. Source work can proceed without asking user to rerun 180, re-copy CMD, repeat R47 witness or old tests. When one truly necessary gameplay preflight is ready, ask for ONE action through existing updater only, no second CMD and no auto-install.
+
+**NO_REPEAT:** Menu180 source catalog, 179→22 R47 witness HOLD, 175/176 native compile, old V3/V4 source suite 542/542, R29/V6 switch proof, 80KB updater repair. Keep exact one CMD and never alter R47/EPS or files unless separately authorized.
+
+---
+
 ## 28.11.2026 — R3 ITM PARTIAL SOURCE AFTER THIRD WINDOWS HOLD; WIN+UBUNTU CI PASS
 
 **USER'S MOST RECENT ACTUAL V2 MENU180 CONSOLE:** `BGXAI: verified pinned script 40cd303fdcf9 (SHA256 OK)`; same original Windows `BGXAI_UPDATE.cmd`, menu **180** dispatched and read-only executed, result `status=HOLD_SAVED_PARTY_CATALOG_PREPARATION`, `failureStage=BUILD_INERT_LUA_CATALOG`, `reason=HOLD_R3_CURRENT_GAME_RESOURCE_COVERAGE`, `noAutoRetry=true`, `gameModified=false`, `ordersSent=0`, `dispatchAuthorized=false`, `inventoryMoveAuthorized=false`, `gameplayAIInstalled=false`, exit 3. **GAM parsing (previous #/- error) now succeeded** and R3 audit returned far enough to be checked. Specific missing installed ITM or linked SPL not determined from console; cannot claim which resource failed or that user save is corrupt.
