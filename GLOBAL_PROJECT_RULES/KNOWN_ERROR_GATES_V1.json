@@ -373,8 +373,8 @@
       "receipt_id": "BGXAI_R42_ONEFILE_REUSE_175_176_WITHOUT_NEW_CMD_PREWORK_20261128",
       "project": "BGXAI",
       "source_path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py",
-      "source_git_blob_sha": null,
-      "status": "PLANNED_SOURCE_ONLY",
+      "source_git_blob_sha": "03f9950eb6ad79743bd69d39aeca9c4790800998",
+      "status": "PREWORK_REVIEWED_SOURCE_ONLY",
       "predecessor_sources": [
         {
           "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_REUSE_R38_CLASS_BCS_RO.py",
