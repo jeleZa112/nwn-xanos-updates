@@ -156,4 +156,37 @@ class RealContract(unittest.TestCase):
     self.assertEqual(hashlib.sha256(p.read_bytes()).hexdigest(),
        '3b84d38a9df069e3dedfdaf8de6cbf6958a7252d43490fa64b829375cf7cd03d')
 
+ def test_20_native_engine_probe_reuses_R37_and_084_gates_fail_closed(self):
+    p=HERE/'BGXAI_R39_EEEX117_ENGINE_BRIDGE_RO.lua'
+    self.assertTrue(p.is_file())
+    src=p.read_text('utf-8')
+    opt=(HERE/'BGXAI_R39_JAGAN_STAF01_EEEX_SESSION_SOURCE_ONLY.baf').read_text('ascii')
+    # Not another observer, installer, BAF executor, or a duplicate priority engine.
+    self.assertNotIn('EEex_Action_AddSpriteStartedActionListener',src)
+    self.assertNotIn('EEex_Sprite_AddLoadedListener',src)
+    self.assertNotIn('function M.register(',src)
+    self.assertNotIn('XEquipItem(',src)
+    self.assertNotIn('EEex_Sprite_SetLocalInt',src)
+    self.assertNotIn('SetGlobal(',src)
+    self.assertIn('function M.probeInstalledEEex()',src)
+    self.assertIn('EEex_Sprite_GetAllSelectedIDs',src)
+    self.assertIn('EEex_Trigger_EvalConditionalStringAsAIBase',src)
+    self.assertIn('nativeTriggerSideEffectsExcluded=false',src)
+    for trig in ('ActionListEmpty()', 'CombatCounter(0)',
+       'CheckItemSlot(Myself,\"STAF01\",SLOT_MISC5)',
+       '!HasItemSlot(Myself,SLOT_WEAPON0)',
+       'Name(\"*GCLERIC\",Myself)'):
+        self.assertIn(trig,src)
+        self.assertIn(trig,opt)
+    self.assertIn('canArm=false',src)
+    self.assertIn('actualItemUsabilityVerified=false',src)
+    self.assertIn('activeEffectsFullyChecked=false',src)
+    self.assertIn('epsManualOriginVerified=false',src)
+    lua=shutil.which('texlua')
+    if lua:
+        run=subprocess.run([lua,'test_r39_eeex117_engine_bridge_ro.lua'],cwd=HERE,
+             capture_output=True,text=True,timeout=10,check=False)
+        self.assertEqual(run.returncode,0,run.stdout+'\n'+run.stderr)
+        self.assertIn('18/18 PASS',run.stdout)
+
 if __name__=='__main__':unittest.main()
