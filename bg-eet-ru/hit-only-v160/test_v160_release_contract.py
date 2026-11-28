@@ -18,7 +18,7 @@ class V160ReleaseContract(unittest.TestCase):
         self.assertEqual(release['version'], 162)
         self.assertEqual(release['sha256'], sha(cmd))
         self.assertLessEqual(len(blob), 750000)
-        self.assertEqual(len(blob), 747945)
+        self.assertEqual(len(blob), 748042)
         self.assertIn(b'SELF_VERSION = 162', blob)
         self.assertIs(release['default_game_writes_allowed'], False)
         self.assertIs(release['game_writes_allowed'], False)
