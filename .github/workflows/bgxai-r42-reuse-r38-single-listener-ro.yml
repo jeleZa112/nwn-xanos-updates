@@ -15,6 +15,7 @@ on:
       - 'GLOBAL_PROJECT_RULES/KNOWN_ERROR_GATES_V1.json'
       - '.github/workflows/bgxai-r42-reuse-r38-single-listener-ro.yml'
       - 'BGXAI/BGXAI_SYNC.ps1'
+      - 'BGXAI/UPDATER_V2/**'
       - 'BGXAI/fox_new/BOOTSTRAP_PIN.json'
   workflow_dispatch:
 
@@ -46,6 +47,14 @@ jobs:
         run: python project_tools/resume_guard.py --preflight BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_GUARDED_FROM_R38.py
       - name: Existing immutable predecessor and canonical preflight
         run: python project_tools/resume_guard.py
+      - name: V2 staged single-updater legacy and manifest compatibility (7 exact tests)
+        run: python -m unittest discover -s BGXAI/UPDATER_V2 -p test_updater_v2_static.py -q
+      - name: V2 staged native Windows PowerShell 5.1 parser and negative contract tests
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File BGXAI/UPDATER_V2/BGXAI_HUB_V2_STAGED.ps1 -SelfTest
+
       - name: Print staged R47 same-original-onefile179 child SHA before repin (NO GAME)
         shell: bash
         run: |
