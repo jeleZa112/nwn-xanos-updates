@@ -334,6 +334,353 @@
           "sha256": "958a3b7b8bd26840d62df63ad8b89d12a01a6ef97b446f7e7a969503afd0e19c"
         }
       ]
+    },
+    {
+      "code": 184,
+      "label": "R49 backpack16 preflight or status RO",
+      "mode": "readonly",
+      "language": "python",
+      "commit": "90a2ddccf7d8c4c88ef1f356d5882c84adb5dd41",
+      "entry": "BGXAI/UPDATER_V2/BGXAI_MODULE184_186_R49_ORIGINAL_GUARDED.py",
+      "files": [
+        {
+          "path": "BGXAI/UPDATER_V2/BGXAI_MODULE181_182_R48_ONE_SHOT_GUARDED.py",
+          "size": 5674,
+          "sha256": "f75ad56e5d87a53cb015d85f549c7551f83a20c4eb1e89327684310fa4eeb7cf"
+        },
+        {
+          "path": "BGXAI/BUILD/R48_ONE_REAL_STAF01_EQUIP_AFTER_R47_20261128/BGXAI_R48_LAST158_TO159_ONE_ITEM_GUARDED.py",
+          "size": 15135,
+          "sha256": "6a4b934297cb5f20357c46d42eaf804a7bec748c59a878cd0c97ef481990e9e6"
+        },
+        {
+          "path": "BGXAI/BUILD/R48_ONE_REAL_STAF01_EQUIP_AFTER_R47_20261128/BGXAI_R48_REUSE_R39_ONE_SHOT_BAF_SOURCE_ONLY.py",
+          "size": 5717,
+          "sha256": "6fbfb6eeed26e6e06ceb4714dd6fb398eb8bf6f65318fcaf566e73eb913b5d02"
+        },
+        {
+          "path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_JAGAN_STAF01_EEEX_SESSION_SOURCE_ONLY.baf",
+          "size": 2407,
+          "sha256": "6d39e72684548c7b1b900e80f1bdb4271044e9889364db958f52b0532d1b73f0"
+        },
+        {
+          "path": "BGXAI/BUILD/R47_GUARDED_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/BGXAI_R47_WITNESS_LAST157_TO158_GUARDED_SOURCE_ONLY.py",
+          "size": 20399,
+          "sha256": "b61811e27afc57bb02db720027c43b46b1b021b6bf9d6e9003059f68e1bfa758"
+        },
+        {
+          "path": "BGXAI/BUILD/R47_GUARDED_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/BGXAI_R47_CORRECT_R46_EEEX_SCRIPT_PORT_SOURCE_ONLY.py",
+          "size": 4309,
+          "sha256": "2c9f97820be8c83927498b9806f75dd59397c385e14407c835e2f46f64b62d0e"
+        },
+        {
+          "path": "BGXAI/BUILD/R46_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/BGXAI_R46_INERT_BDDEFAI_WITNESS_SOURCE_ONLY.py",
+          "size": 6129,
+          "sha256": "47f202bbe3dbcf706ede4f99f9e3ea33eb5e15841709c926bd5dce71f7fb58cc"
+        },
+        {
+          "path": "BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/BGXAI_R44_GUARDED_LAST156_SOURCE_ONLY.py",
+          "size": 16764,
+          "sha256": "f53879657afbe51122a5a0869598f5fcb795e42ed608be8e064e42d3c48b8466"
+        },
+        {
+          "path": "BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/BGXAI_R44_COMPOSE_FROM_R43_SOURCE_ONLY.py",
+          "size": 5191,
+          "sha256": "9ca2e7c00f796cc07fe1a905fad798691c46fd73bffd880b85f148706ce4ca6e"
+        },
+        {
+          "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_DIAG_UPGRADE_GUARDED_SOURCE_ONLY.py",
+          "size": 19969,
+          "sha256": "8c1d0275e861909d1caa004a3e434e2791d5f8181c1ff966bd578f610cb4bb31"
+        },
+        {
+          "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_CLASS_HOLD_REASON_SOURCE_ONLY.py",
+          "size": 6950,
+          "sha256": "718e0f11a405439398a4102406f0b27acd08f8f75f29e53bb054e19a5c138da2"
+        },
+        {
+          "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_REUSE_R38_CLASS_BCS_RO.py",
+          "size": 8409,
+          "sha256": "11e6967cbfe22ba1b819d4744bc20275b392bf30e98d2a2a8a6323e79c4891b9"
+        },
+        {
+          "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_GUARDED_FROM_R38.py",
+          "size": 20471,
+          "sha256": "347722909c8c41364530adc1c51cd1607fb4181d6c2628d1d52b80596c170215"
+        },
+        {
+          "path": "BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/BGXAI_R38_GUARDED_FROM_R37.py",
+          "size": 21303,
+          "sha256": "f39c0efb08ef9db7097fe062db88c6f6b1452e4e77ec9b395d4e934d39440b9c"
+        },
+        {
+          "path": "BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/R37_GUARDED_SOURCE_ONLY.py",
+          "size": 26252,
+          "sha256": "b34c93a0315c578989079c3565c6f0704315b8cdeabfb15be06508e4b5367e2d"
+        },
+        {
+          "path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_ACTOR_ID_GUARD_SOURCE_ONLY.py",
+          "size": 4648,
+          "sha256": "cb990dea8e8e2dcfe1f32902ccf8bdc1327eacdd8f2951eb583e670501a75dd1"
+        },
+        {
+          "path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_EEEX117_ENGINE_BRIDGE_RO.lua",
+          "size": 13088,
+          "sha256": "80891a29a38d9bddac948ddf95146761d73e9112c44242a4fa0e673a2a476f95"
+        },
+        {
+          "path": "BGXAI/BUILD/R37_XEQUIP_IDENTITY_SINGLE_LISTENER_SOURCEONLY_20261127/M_BGXR27_R37_INV3_IDENTITY_SOURCE_ONLY.lua",
+          "size": 78927,
+          "sha256": "958a3b7b8bd26840d62df63ad8b89d12a01a6ef97b446f7e7a969503afd0e19c"
+        },
+        {
+          "path": "BGXAI/BUILD/R49_R48_BACKPACK16_SOURCE_ONLY_20261128/BGXAI_R49_REUSE_R48_BACKPACK16_SOURCE_ONLY.py",
+          "size": 4648,
+          "sha256": "e3f9d977b72ed5b296eefea6d83bd703fa83c6b762935fb4c0d55a8b38f08dd8"
+        },
+        {
+          "path": "BGXAI/BUILD/R49_R48_BACKPACK16_SOURCE_ONLY_20261128/BGXAI_R49_LAST159_TO160_GUARDED.py",
+          "size": 16559,
+          "sha256": "3fc410473f561a41ba0a941225ba21d08af17bd493b329f6fb83728a535925f0"
+        },
+        {
+          "path": "BGXAI/UPDATER_V2/BGXAI_MODULE184_186_R49_ORIGINAL_GUARDED.py",
+          "size": 7998,
+          "sha256": "8e8dd67546eb6164dc845b58dabbfa11737a6b92b5d57631d3e9cbd37f9220aa"
+        }
+      ]
+    },
+    {
+      "code": 185,
+      "label": "R49 one STAF01 backpack16 guarded real install",
+      "mode": "guarded",
+      "approval": "INSTALL_BGXAI_R49_BACKPACK16_ONE_STAF01_AFTER_R48_LAST159",
+      "language": "python",
+      "commit": "90a2ddccf7d8c4c88ef1f356d5882c84adb5dd41",
+      "entry": "BGXAI/UPDATER_V2/BGXAI_MODULE184_186_R49_ORIGINAL_GUARDED.py",
+      "files": [
+        {
+          "path": "BGXAI/UPDATER_V2/BGXAI_MODULE181_182_R48_ONE_SHOT_GUARDED.py",
+          "size": 5674,
+          "sha256": "f75ad56e5d87a53cb015d85f549c7551f83a20c4eb1e89327684310fa4eeb7cf"
+        },
+        {
+          "path": "BGXAI/BUILD/R48_ONE_REAL_STAF01_EQUIP_AFTER_R47_20261128/BGXAI_R48_LAST158_TO159_ONE_ITEM_GUARDED.py",
+          "size": 15135,
+          "sha256": "6a4b934297cb5f20357c46d42eaf804a7bec748c59a878cd0c97ef481990e9e6"
+        },
+        {
+          "path": "BGXAI/BUILD/R48_ONE_REAL_STAF01_EQUIP_AFTER_R47_20261128/BGXAI_R48_REUSE_R39_ONE_SHOT_BAF_SOURCE_ONLY.py",
+          "size": 5717,
+          "sha256": "6fbfb6eeed26e6e06ceb4714dd6fb398eb8bf6f65318fcaf566e73eb913b5d02"
+        },
+        {
+          "path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_JAGAN_STAF01_EEEX_SESSION_SOURCE_ONLY.baf",
+          "size": 2407,
+          "sha256": "6d39e72684548c7b1b900e80f1bdb4271044e9889364db958f52b0532d1b73f0"
+        },
+        {
+          "path": "BGXAI/BUILD/R47_GUARDED_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/BGXAI_R47_WITNESS_LAST157_TO158_GUARDED_SOURCE_ONLY.py",
+          "size": 20399,
+          "sha256": "b61811e27afc57bb02db720027c43b46b1b021b6bf9d6e9003059f68e1bfa758"
+        },
+        {
+          "path": "BGXAI/BUILD/R47_GUARDED_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/BGXAI_R47_CORRECT_R46_EEEX_SCRIPT_PORT_SOURCE_ONLY.py",
+          "size": 4309,
+          "sha256": "2c9f97820be8c83927498b9806f75dd59397c385e14407c835e2f46f64b62d0e"
+        },
+        {
+          "path": "BGXAI/BUILD/R46_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/BGXAI_R46_INERT_BDDEFAI_WITNESS_SOURCE_ONLY.py",
+          "size": 6129,
+          "sha256": "47f202bbe3dbcf706ede4f99f9e3ea33eb5e15841709c926bd5dce71f7fb58cc"
+        },
+        {
+          "path": "BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/BGXAI_R44_GUARDED_LAST156_SOURCE_ONLY.py",
+          "size": 16764,
+          "sha256": "f53879657afbe51122a5a0869598f5fcb795e42ed608be8e064e42d3c48b8466"
+        },
+        {
+          "path": "BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/BGXAI_R44_COMPOSE_FROM_R43_SOURCE_ONLY.py",
+          "size": 5191,
+          "sha256": "9ca2e7c00f796cc07fe1a905fad798691c46fd73bffd880b85f148706ce4ca6e"
+        },
+        {
+          "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_DIAG_UPGRADE_GUARDED_SOURCE_ONLY.py",
+          "size": 19969,
+          "sha256": "8c1d0275e861909d1caa004a3e434e2791d5f8181c1ff966bd578f610cb4bb31"
+        },
+        {
+          "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_CLASS_HOLD_REASON_SOURCE_ONLY.py",
+          "size": 6950,
+          "sha256": "718e0f11a405439398a4102406f0b27acd08f8f75f29e53bb054e19a5c138da2"
+        },
+        {
+          "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_REUSE_R38_CLASS_BCS_RO.py",
+          "size": 8409,
+          "sha256": "11e6967cbfe22ba1b819d4744bc20275b392bf30e98d2a2a8a6323e79c4891b9"
+        },
+        {
+          "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_GUARDED_FROM_R38.py",
+          "size": 20471,
+          "sha256": "347722909c8c41364530adc1c51cd1607fb4181d6c2628d1d52b80596c170215"
+        },
+        {
+          "path": "BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/BGXAI_R38_GUARDED_FROM_R37.py",
+          "size": 21303,
+          "sha256": "f39c0efb08ef9db7097fe062db88c6f6b1452e4e77ec9b395d4e934d39440b9c"
+        },
+        {
+          "path": "BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/R37_GUARDED_SOURCE_ONLY.py",
+          "size": 26252,
+          "sha256": "b34c93a0315c578989079c3565c6f0704315b8cdeabfb15be06508e4b5367e2d"
+        },
+        {
+          "path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_ACTOR_ID_GUARD_SOURCE_ONLY.py",
+          "size": 4648,
+          "sha256": "cb990dea8e8e2dcfe1f32902ccf8bdc1327eacdd8f2951eb583e670501a75dd1"
+        },
+        {
+          "path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_EEEX117_ENGINE_BRIDGE_RO.lua",
+          "size": 13088,
+          "sha256": "80891a29a38d9bddac948ddf95146761d73e9112c44242a4fa0e673a2a476f95"
+        },
+        {
+          "path": "BGXAI/BUILD/R37_XEQUIP_IDENTITY_SINGLE_LISTENER_SOURCEONLY_20261127/M_BGXR27_R37_INV3_IDENTITY_SOURCE_ONLY.lua",
+          "size": 78927,
+          "sha256": "958a3b7b8bd26840d62df63ad8b89d12a01a6ef97b446f7e7a969503afd0e19c"
+        },
+        {
+          "path": "BGXAI/BUILD/R49_R48_BACKPACK16_SOURCE_ONLY_20261128/BGXAI_R49_REUSE_R48_BACKPACK16_SOURCE_ONLY.py",
+          "size": 4648,
+          "sha256": "e3f9d977b72ed5b296eefea6d83bd703fa83c6b762935fb4c0d55a8b38f08dd8"
+        },
+        {
+          "path": "BGXAI/BUILD/R49_R48_BACKPACK16_SOURCE_ONLY_20261128/BGXAI_R49_LAST159_TO160_GUARDED.py",
+          "size": 16559,
+          "sha256": "3fc410473f561a41ba0a941225ba21d08af17bd493b329f6fb83728a535925f0"
+        },
+        {
+          "path": "BGXAI/UPDATER_V2/BGXAI_MODULE184_186_R49_ORIGINAL_GUARDED.py",
+          "size": 7998,
+          "sha256": "8e8dd67546eb6164dc845b58dabbfa11737a6b92b5d57631d3e9cbd37f9220aa"
+        }
+      ]
+    },
+    {
+      "code": 186,
+      "label": "R49 last160 restore R48 guarded rollback",
+      "mode": "guarded",
+      "approval": "ROLLBACK_BGXAI_R49_RESTORE_R48_LAST159_ONLY",
+      "language": "python",
+      "commit": "90a2ddccf7d8c4c88ef1f356d5882c84adb5dd41",
+      "entry": "BGXAI/UPDATER_V2/BGXAI_MODULE184_186_R49_ORIGINAL_GUARDED.py",
+      "files": [
+        {
+          "path": "BGXAI/UPDATER_V2/BGXAI_MODULE181_182_R48_ONE_SHOT_GUARDED.py",
+          "size": 5674,
+          "sha256": "f75ad56e5d87a53cb015d85f549c7551f83a20c4eb1e89327684310fa4eeb7cf"
+        },
+        {
+          "path": "BGXAI/BUILD/R48_ONE_REAL_STAF01_EQUIP_AFTER_R47_20261128/BGXAI_R48_LAST158_TO159_ONE_ITEM_GUARDED.py",
+          "size": 15135,
+          "sha256": "6a4b934297cb5f20357c46d42eaf804a7bec748c59a878cd0c97ef481990e9e6"
+        },
+        {
+          "path": "BGXAI/BUILD/R48_ONE_REAL_STAF01_EQUIP_AFTER_R47_20261128/BGXAI_R48_REUSE_R39_ONE_SHOT_BAF_SOURCE_ONLY.py",
+          "size": 5717,
+          "sha256": "6fbfb6eeed26e6e06ceb4714dd6fb398eb8bf6f65318fcaf566e73eb913b5d02"
+        },
+        {
+          "path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_JAGAN_STAF01_EEEX_SESSION_SOURCE_ONLY.baf",
+          "size": 2407,
+          "sha256": "6d39e72684548c7b1b900e80f1bdb4271044e9889364db958f52b0532d1b73f0"
+        },
+        {
+          "path": "BGXAI/BUILD/R47_GUARDED_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/BGXAI_R47_WITNESS_LAST157_TO158_GUARDED_SOURCE_ONLY.py",
+          "size": 20399,
+          "sha256": "b61811e27afc57bb02db720027c43b46b1b021b6bf9d6e9003059f68e1bfa758"
+        },
+        {
+          "path": "BGXAI/BUILD/R47_GUARDED_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/BGXAI_R47_CORRECT_R46_EEEX_SCRIPT_PORT_SOURCE_ONLY.py",
+          "size": 4309,
+          "sha256": "2c9f97820be8c83927498b9806f75dd59397c385e14407c835e2f46f64b62d0e"
+        },
+        {
+          "path": "BGXAI/BUILD/R46_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/BGXAI_R46_INERT_BDDEFAI_WITNESS_SOURCE_ONLY.py",
+          "size": 6129,
+          "sha256": "47f202bbe3dbcf706ede4f99f9e3ea33eb5e15841709c926bd5dce71f7fb58cc"
+        },
+        {
+          "path": "BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/BGXAI_R44_GUARDED_LAST156_SOURCE_ONLY.py",
+          "size": 16764,
+          "sha256": "f53879657afbe51122a5a0869598f5fcb795e42ed608be8e064e42d3c48b8466"
+        },
+        {
+          "path": "BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/BGXAI_R44_COMPOSE_FROM_R43_SOURCE_ONLY.py",
+          "size": 5191,
+          "sha256": "9ca2e7c00f796cc07fe1a905fad798691c46fd73bffd880b85f148706ce4ca6e"
+        },
+        {
+          "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_DIAG_UPGRADE_GUARDED_SOURCE_ONLY.py",
+          "size": 19969,
+          "sha256": "8c1d0275e861909d1caa004a3e434e2791d5f8181c1ff966bd578f610cb4bb31"
+        },
+        {
+          "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_CLASS_HOLD_REASON_SOURCE_ONLY.py",
+          "size": 6950,
+          "sha256": "718e0f11a405439398a4102406f0b27acd08f8f75f29e53bb054e19a5c138da2"
+        },
+        {
+          "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_REUSE_R38_CLASS_BCS_RO.py",
+          "size": 8409,
+          "sha256": "11e6967cbfe22ba1b819d4744bc20275b392bf30e98d2a2a8a6323e79c4891b9"
+        },
+        {
+          "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_GUARDED_FROM_R38.py",
+          "size": 20471,
+          "sha256": "347722909c8c41364530adc1c51cd1607fb4181d6c2628d1d52b80596c170215"
+        },
+        {
+          "path": "BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/BGXAI_R38_GUARDED_FROM_R37.py",
+          "size": 21303,
+          "sha256": "f39c0efb08ef9db7097fe062db88c6f6b1452e4e77ec9b395d4e934d39440b9c"
+        },
+        {
+          "path": "BGXAI/BUILD/R37_R33_R36_SINGLE_LISTENER_RO_20261126/R37_GUARDED_SOURCE_ONLY.py",
+          "size": 26252,
+          "sha256": "b34c93a0315c578989079c3565c6f0704315b8cdeabfb15be06508e4b5367e2d"
+        },
+        {
+          "path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_ACTOR_ID_GUARD_SOURCE_ONLY.py",
+          "size": 4648,
+          "sha256": "cb990dea8e8e2dcfe1f32902ccf8bdc1327eacdd8f2951eb583e670501a75dd1"
+        },
+        {
+          "path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_EEEX117_ENGINE_BRIDGE_RO.lua",
+          "size": 13088,
+          "sha256": "80891a29a38d9bddac948ddf95146761d73e9112c44242a4fa0e673a2a476f95"
+        },
+        {
+          "path": "BGXAI/BUILD/R37_XEQUIP_IDENTITY_SINGLE_LISTENER_SOURCEONLY_20261127/M_BGXR27_R37_INV3_IDENTITY_SOURCE_ONLY.lua",
+          "size": 78927,
+          "sha256": "958a3b7b8bd26840d62df63ad8b89d12a01a6ef97b446f7e7a969503afd0e19c"
+        },
+        {
+          "path": "BGXAI/BUILD/R49_R48_BACKPACK16_SOURCE_ONLY_20261128/BGXAI_R49_REUSE_R48_BACKPACK16_SOURCE_ONLY.py",
+          "size": 4648,
+          "sha256": "e3f9d977b72ed5b296eefea6d83bd703fa83c6b762935fb4c0d55a8b38f08dd8"
+        },
+        {
+          "path": "BGXAI/BUILD/R49_R48_BACKPACK16_SOURCE_ONLY_20261128/BGXAI_R49_LAST159_TO160_GUARDED.py",
+          "size": 16559,
+          "sha256": "3fc410473f561a41ba0a941225ba21d08af17bd493b329f6fb83728a535925f0"
+        },
+        {
+          "path": "BGXAI/UPDATER_V2/BGXAI_MODULE184_186_R49_ORIGINAL_GUARDED.py",
+          "size": 7998,
+          "sha256": "8e8dd67546eb6164dc845b58dabbfa11737a6b92b5d57631d3e9cbd37f9220aa"
+        }
+      ]
     }
   ],
   "notes": "Add module entries using immutable commit, byte-size, sha256. Existing 1-179 remain in pinned legacy. No new CMD or hub release required."
