@@ -1,8 +1,3 @@
--- PRIOR_WORK_REUSE: BGXAI/BUILD/WEAPON_XEQUIP_LOCAL_ARM_SOURCEONLY_V3_20261127/BGXAI_XEQUIP_LOCAL_ARM_SOURCE_V3.py
--- PRIOR_WORK_EXISTING: V3 already owns BGXW3ARM/TAG/TRY, once-only XEquipItem and action/slot safety guards.
--- PRIOR_WORK_DELTA_ONLY: optional explicit physical hotkey gesture, epoch/two-snapshot/readback preflight candidate.
--- PRIOR_WORK_STATUS: CODE/MOCK only; no installed adapter, native R39 compile, approved hotkey, or LIVE equip.
--- PRIOR_WORK_NO_REIMPLEMENT: reuse V3/R37/R38/R40 and weapon priority; never claim this is autonomous weapon selection.
 -- BGXAI R39 controlled first actual-inventory-transfer pilot, SOURCE ONLY.
 -- NOT INSTALLED. No auto-arm, no action injection, no second action-start observer.
 -- If later installed after typed approval, an explicit (non-repeat) Ctrl+Alt+Shift+F12
@@ -18,7 +13,8 @@ local APPROVAL='INSTALL_BGXAI_R39_EXPLICIT_GESTURE_WITH_R40_LIVE_GUARD'
 local WITNESS=2110908191
 local KEYS={'BGXW3ARM','BGXW3TAG','BGXW3TRY','BGXW3QST','BGXW3QTM','BGXW3MAX'}
 local COUNT={gestures=0,armed=0,holds=0,last='NOT_REGISTERED'}
-local state={epoch=nil,attemptedEpoch=nil,attemptedActorId=nil}
+local state={epoch=nil,attemptedEpoch=nil,attemptedActorId=nil,
+             volatileEpoch=nil,volatileActorId=nil,volatileSprite=nil,activePorts=nil}
 local function validInt(v,lo,hi)
  return type(v)=='number' and v==v and v%1==0 and v>=lo and v<=hi
 end
@@ -89,6 +85,9 @@ local function requestOnce(ports)
   state.epoch=epoch
   state.attemptedEpoch=nil
   state.attemptedActorId=nil
+  state.volatileEpoch=nil
+  state.volatileActorId=nil
+  state.volatileSprite=nil
  end
  local ok,sprite=pcall(ports.getPortraitSprite,1)
  if not ok or sprite==nil then return ret('HOLD_PARTY_ACTOR_UNAVAILABLE') end
@@ -133,6 +132,12 @@ local function requestOnce(ports)
   disarm(ports,sprite)
   return ret('HOLD_CHANGED_AFTER_ARM_DISARMED')
  end
+ -- A volatile permission is NEVER saved in actor LOCALS. The exact
+ -- EEex_LuaTrigger guard must see BOTH saved BAF flags and this live token.
+ -- Assign only after the final verified arming snapshot has succeeded.
+ state.volatileEpoch=epoch
+ state.volatileActorId=first.actorId
+ state.volatileSprite=sprite
  COUNT.armed=COUNT.armed+1
  return ret('EXPLICIT_GESTURE_ARMED_ONCE_BAF_WILL_RECHECK')
 end
@@ -188,7 +193,56 @@ function M.prepare(ports,exactInstallerApproval)
  end
  enabled=true
  M.registered=true
+ state.activePorts=ports
  return ret('REGISTERED_GESTURE_ONLY_NO_ARM')
+end
+
+-- Invoked ONLY by an EEex_LuaTrigger in the future guarded R39 BAF.
+-- It returns false for every unapproved / stale / missing-proof state.
+-- It does NOT modify LOCALS, authorize installation, or cause a game action.
+-- EEex_LuaTrigger_Object must be forwarded as the aiBase argument by the
+-- future typed-approved bootstrap; the source itself exports no global hook.
+function M.sessionGate(aiBase)
+ local ports=state.activePorts
+ if not M.registered or type(ports)~='table' or aiBase==nil then return false end
+ if state.volatileEpoch==nil or state.volatileActorId==nil or
+    state.volatileSprite~=aiBase then return false end
+ local epoch=armingAllowed(ports)
+ if epoch==nil or epoch~=state.volatileEpoch or
+    state.attemptedEpoch~=epoch or
+    state.attemptedActorId~=state.volatileActorId then
+   -- Destroyed game / new session: immediately invalidate the volatile token.
+   state.volatileEpoch=nil
+   state.volatileActorId=nil
+   state.volatileSprite=nil
+   return false
+ end
+ local ok,portraitSprite=pcall(ports.getPortraitSprite,1)
+ if not ok or portraitSprite~=aiBase then return false end
+ -- Fail closed even if an old save contains BGXW3ARM=1.
+ if read(ports,aiBase,KEYS[1])~=1 or
+    read(ports,aiBase,KEYS[2])~=WITNESS or
+    read(ports,aiBase,KEYS[3])~=0 then return false end
+ local stage=read(ports,aiBase,KEYS[4])
+ if stage~=0 and stage~=1 then return false end
+ local live=snapshot(ports,aiBase)
+ if not live or live.actorId~=state.volatileActorId then return false end
+ local postEpoch=armingAllowed(ports)
+ local ok2,postPortrait=pcall(ports.getPortraitSprite,1)
+ if postEpoch~=epoch or not ok2 or postPortrait~=aiBase or
+    read(ports,aiBase,KEYS[1])~=1 then return false end
+ return true
+end
+
+-- This function could be called by the future guarded installer via
+-- The future guarded bootstrap may bind M.makeLuaTrigger() only AFTER approval.
+-- No global function is installed by merely importing this source.
+function M.makeLuaTrigger()
+ return function()
+  local actor=rawget(_G,'EEex_LuaTrigger_Object')
+  local ok,allowed=pcall(M.sessionGate,actor)
+  return ok and allowed==true
+ end
 end
 
 function M.getStatus()return ret(COUNT.last)end
