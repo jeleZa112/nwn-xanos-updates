@@ -163,6 +163,66 @@ class SourceOnlyV3(unittest.TestCase):
         with self.assertRaises(m.Hold):m.build(changed(sourceCharges=[1,0,0]),gam)
 
 
+class SavedBCSFromCRE(unittest.TestCase):
+    """IESDP CRE V1.0 offsets: source-only script refs, never script execution."""
+
+    @staticmethod
+    def make_saved_gam(override=b'BDDEFAI', class_script=b'PRIEST1'):
+        from verify_candidate_ro import SLOTS_TO_RUNTIME
+        cre=bytearray(0x390)
+        cre[:8]=b'CRE V1.0'
+        cre[0x273]=3
+        cre[0x280:0x288]=b'GCLERIC\\x00'
+        for off, name in ((0x248,override),(0x250,class_script),
+                          (0x258,b''),(0x260,b''),(0x268,b'DEFAULT')):
+            cre[off:off+8]=name.ljust(8,b'\\x00')
+        struct.pack_into('<III',cre,0x2b8,0x2d4,0x324,1)
+        cre[0x2d4:0x324]=b'\\xff'*80
+        struct.pack_into('<H',cre,0x2d4+SLOTS_TO_RUNTIME.index(20)*2,0)
+        cre[0x324:0x32c]=b'STAF01\\x00\\x00'
+        struct.pack_into('<I',cre,0x324+16,1)
+        gam=bytearray(0x260+len(cre))
+        gam[:8]=b'GAMEV2.0'
+        struct.pack_into('<II',gam,0x20,0x100,1)
+        struct.pack_into('<HII',gam,0x102,1,0x260,len(cre))
+        gam[0x10c:0x114]=b'*GCLERIC'
+        gam[0x260:]=cre
+        return bytes(gam)
+
+    def test_saved_cre_scripts_exact_with_Jagan_STAF01(self):
+        from verify_candidate_ro import propose
+        original=self.make_saved_gam()
+        before=hashlib.sha256(original).hexdigest()
+        result=propose(original)
+        self.assertEqual(len(result['candidates']),1)
+        actor=result['candidates'][0]['actor']
+        self.assertEqual(actor['savedCreScriptResrefs'],
+                         {'0':'BDDEFAI','4':'PRIEST1','5':'',
+                          '6':'','7':'DEFAULT'})
+        self.assertEqual(actor['scriptAssignmentEvidence'],
+                         'SAVED_CRE_V1_ONLY_NOT_LIVE_EEEX')
+        self.assertEqual(result['status'],'HOLD_RUNTIME_IDENTITY_AND_GAME_PREFLIGHT')
+        self.assertFalse(result['pilotExecutable'])
+        self.assertFalse(result['gameModified'])
+        self.assertEqual(result['ordersSent'],0)
+        self.assertEqual(hashlib.sha256(original).hexdigest(),before)
+
+    def test_saved_refs_do_not_invent_EEex_area_or_specifics(self):
+        from verify_candidate_ro import read_party
+        data=self.make_saved_gam(b'PRIEST1',b'BDDEFAI')
+        scripts=read_party(data)[0]['savedCreScriptResrefs']
+        self.assertEqual(scripts['0'],'PRIEST1')
+        self.assertEqual(scripts['4'],'BDDEFAI')
+        self.assertEqual(set(scripts),{'0','4','5','6','7'})
+        self.assertNotIn('1',scripts)
+        self.assertNotIn('2',scripts)
+
+    def test_illegal_script_resref_HOLD_not_false_ownership(self):
+        from verify_candidate_ro import propose,Hold
+        with self.assertRaisesRegex(Hold,'HOLD_BAD_NAME_BYTES'):
+            propose(self.make_saved_gam(override=b'BAD!.BCS'))
+
+
 def get_gam():
     p=os.environ.get('BGXAI_TEST_GAM','')
     if not p:return None
