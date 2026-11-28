@@ -440,6 +440,15 @@ check('different R13 target snapshot cannot score',function()
  eq(b.status,'HOLD_UNRANKABLE_OCCUPIED_WEAPON')
  eq(b.reason,'TARGET_TYPE_AC_EVIDENCE_INCONSISTENT')
 end)
+check('R13 AC changed under same external fingerprint restabilizes',function()
+ local s=with_r13_type_ac(mk(false))
+ local first=choose(s)
+ s.frame.tick=101
+ s.enemy.targetArmorClassByAttackTypeCandidate.MISSILE=6
+ local second=choose(s,first.next)
+ eq(second.status,'HOLD_STABILIZE_TARGET_AND_EQUIPMENT')
+ eq(second.dispatchAuthorized,false)
+end)
 check('native proof cannot be invented by caller mock flag',function()
  local s=with_r13_type_ac(mk(false))
  s.enemy.targetTypeACNativeAuthenticated=true
