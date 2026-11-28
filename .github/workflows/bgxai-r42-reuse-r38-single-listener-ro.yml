@@ -69,6 +69,9 @@ jobs:
       - name: Test exact R44 replacement of R43 embedded R39 (SOURCE ONLY)
         run: python -m unittest -v BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/test_r44_numeric_id_compose_source_only.py
 
+      - name: Test R44 guarded last156→157 with mock WeiDU backup/rollback (NO GAME)
+        run: python -m unittest -v BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/test_r44_guarded_last156_source_only.py
+
       - name: Test composed R38/R39 read-only bridge (required)
         run: python -m unittest -v BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_reuse_r38_source_only.py
 
