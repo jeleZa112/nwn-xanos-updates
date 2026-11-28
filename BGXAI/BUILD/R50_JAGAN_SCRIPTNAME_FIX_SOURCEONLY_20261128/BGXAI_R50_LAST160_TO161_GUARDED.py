@@ -326,8 +326,8 @@ def rollback(r49,r48,r47,r44,r43,r42,r38,old,game,token):
     if old.sha(old.safe(game,SOURCE_BCS))!=proof.get("installedBcsSHA256"):
         raise Hold("HOLD_R50_INSTALLED_BCS_SHA_DRIFT")
     for rel,digest in saved.items():
-        if rel not in ("WeiDU.log",SOURCE_BCS) and
-            old.sha(old.safe(game,rel))!=digest:
+        if (rel not in ("WeiDU.log",SOURCE_BCS) and
+            old.sha(old.safe(game,rel))!=digest):
             raise Hold("HOLD_R50_UNRELATED_FILE_DRIFT")
     if old.sha(old.safe(game,r49.PROOF))!=proof.get("r49OriginalProofSHA256"):
         raise Hold("HOLD_R50_ORIGINAL_R49_PROOF_CHANGED")
