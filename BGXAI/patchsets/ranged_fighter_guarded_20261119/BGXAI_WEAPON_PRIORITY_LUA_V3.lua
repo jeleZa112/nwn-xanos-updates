@@ -55,6 +55,17 @@ local function signature(s)
  local t={f.area,f.actorId,f.enemyId,f.equipmentFingerprint,f.protectionFingerprint,
           f.combatFingerprint,s.actor.selectedWeaponId,s.actor.traitProfile.modFingerprint}
  for i=1,4 do t[#t+1]=s.quickslotIds[i]==false and '-' or s.quickslotIds[i] end
+ -- Do not trust an external protection fingerprint alone for the new R13
+ -- attack-type AC model. Any AC drift forces fresh scene stabilization.
+ local enemy=s.enemy
+ t[#t+1]='BASE_AC:'..tostring(enemy.armorClass)
+ t[#t+1]='TYPE_AC_STATE:'..tostring(enemy.targetTypeACModelStatus)
+ local typed=enemy.targetArmorClassByAttackTypeCandidate
+ if type(typed)=='table' then
+  for _,kind in ipairs({'CRUSHING','PIERCING','SLASHING','MISSILE'}) do
+   t[#t+1]='AC_'..kind..':'..tostring(rawget(typed,kind))
+  end
+ end
  return table.concat(t,'|')
 end
 local function verified_scene(s,passivePreview)
