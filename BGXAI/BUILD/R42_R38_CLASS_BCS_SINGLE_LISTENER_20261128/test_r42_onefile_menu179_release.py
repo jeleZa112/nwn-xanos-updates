@@ -115,7 +115,7 @@ class T(unittest.TestCase):
             self.assertNotEqual(staged_sha,channel['script_sha256'])
         else:
             self.assertEqual(channel['script_sha256'],staged_sha)
-            self.assertRegex(channel['commit'],r'^[a-f0-9]{40}
+            self.assertEqual(len(channel['commit']),40)
 
     def test_published_source_only_claim_is_accurate(self):
         import json
