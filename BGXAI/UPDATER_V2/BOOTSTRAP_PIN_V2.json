@@ -2,9 +2,9 @@
   "schema": 2,
   "channel": "bgxai-fox-new-modular-v2",
   "branch": "bg-eet-ai",
-  "commit": "d6ca225e2ee39f3aaf3eee7ce03e32ad0d307526",
+  "commit": "40cd303fdcf9e776e6062b9ce6c8eaa3d00a7376",
   "script_path": "BGXAI/UPDATER_V2/BGXAI_HUB_V2.ps1",
-  "script_sha256": "7564ff73b02533365e442d8a9e29bc8a31c65009121a0f9e2220f72925f2ae3d",
+  "script_sha256": "74ec9a026ea4a9d96cff21a66a5c753c8916fb0802e1b3d729426109795c8706",
   "script_size": 12133,
   "description": "One BGXAI_UPDATE.cmd forever-oriented V2 hub. Legacy 1-179 exact pinned; 180+ immutable pinned modules in MODULES_V1.json. Content-addressed last good offline fallback. No install without guarded consent."
 }
