@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "6ae745332d314d6bacd8ad883cdf808ae7a866f5",
+  "commit": "4200fd84027b2937cb16400b3eddb2030d7b0634",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "04a3ffa6b53792f14bb878930f553ecd4809f17302091e1da3b04bb30e1fd00a",
-  "script_size": 79792,
-  "description": "BGXAI existing onefile: preserves menu 175/176 and verified R39 176->7 native PASS; adds menu 179 source-only exact R38+R39 one-listener CLASS BCS preparation. 48/48 Python unit checks per OS and Windows PowerShell AST PASS (CI 46122303108). R38 remains installed/untouched; 179 never installs, arms, sends commands, or authenticates live BCS name."
+  "script_sha256": "d502bac10633dcd32835a7063e70cf3679bc50c635444c86e8b9a9b715010604",
+  "script_size": 79798,
+  "description": "BGXAI single existing onefile: menu 179 R42 guarded class BCS observer, default SOURCE READ-ONLY, status/preflight, explicit typed install/rollback only when live R38 154-last and SHA/backup prerequisites pass. Other menus 175/176 unchanged. 179 install modifies only original one-listener override via guarded WeiDU; no XEquip/orders, no automatic install or retry. SOURCE CI PASS; game unchanged until explicit user action."
 }
