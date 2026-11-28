@@ -8148,7 +8148,9 @@ def v162_dispatch(game,mode,offline=False):
    if digest(data)!=V162_PIN:raise RuntimeError('V162_SOURCE_SHA_HOLD')
    v121_write(game,p,data)
   m=types.ModuleType('v162')
-  exec(compile(p.read_bytes(),str(p),'exec'),m.__dict__)
+  source=p.read_bytes()
+  if digest(source)!=V162_PIN:raise RuntimeError('V162_PIN_CHANGED_BEFORE_EXEC')
+  exec(compile(source,str(p),'exec'),m.__dict__)
   report=m.run(game,WORKDIR,mode,offline)
  except Exception as e:report={'status':'BATCH_SAFE_STOP','reason':type(e).__name__+': '+str(e)[:150],'gameFilesWritten':'UNKNOWN_AFTER_EXCEPTION' if mode in ('install','rollback') else 0}
  try:v116_zip(game,WORKDIR/REPORT_NAME,report,entry='79_V162_WEAPON_NAMES_BATCH.json')
