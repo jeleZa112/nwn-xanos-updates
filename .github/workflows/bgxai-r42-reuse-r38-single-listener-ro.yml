@@ -4,6 +4,7 @@ on:
     branches: [bg-eet-ai]
     paths:
       - 'BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/**'
+      - 'GLOBAL_PROJECT_RULES/KNOWN_ERROR_GATES_V1.json'
       - '.github/workflows/bgxai-r42-reuse-r38-single-listener-ro.yml'
       - 'BGXAI/BGXAI_SYNC.ps1'
       - 'BGXAI/fox_new/BOOTSTRAP_PIN.json'
