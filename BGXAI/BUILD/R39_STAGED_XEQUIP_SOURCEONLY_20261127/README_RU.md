@@ -1,3 +1,13 @@
+# 28.11.2026 — R39 SCRIPT-PILOT IDENTITY GATE: CODE ONLY, LIVE HOLD
+
+После восстановления сохранённого CRE/SCRLEV обнаружен конкретный пробел: `probeScriptAssignments` ранее проверял только `portraitId + class3 + kit16384`, так что мог приписать BCS любого другого жреца в том же портретном слоте тестовому Джагану. Новая SOURCE-ONLY минимальная дельта **повторно использует** уже созданный `exactPhysical()`: одиночное выделение portrait1/actorId, уникальный STAF01 в slot20, пустой slot35 и щит, отсутствие изменения физических данных до/после двух чтений семи script-resref. Ни Native trigger evaluator, ни BCS execution, ни EPS action provenance **не запускаются и не объявляются проверенными**. `nativeScriptNameVerified=false`, `actualBcsExecutionVerified=false`, `scriptSlotOwnershipVerified=false`, `canArm=false`, `ordersSent=0` всегда. **Сходство с физическим пилотом не доказывает личность Джагана и не разрешает установку**.
+
+**PRIOR WORK BEFORE CODE:** global `source_provenance_receipts/BGXAI_R39_SCRIPT_OWNER_EXACT_PILOT_PREWORK_20261128` recorded before editing; [PREWORK two-OS CI 46118458028](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46118458028) PASS. The first attempt at registry receipt referenced a predecessor in `BGXAI/fox_new`, which the existing machine guard rejects; corrected to an actual `BGXAI/BUILD` predecessor BEFORE the code change. New EEex RO bridge `BGXAI_R39_EEEX117_ENGINE_BRIDGE_RO.lua`: **10917B, Git blob `71411f7f6e4989a5237242b88e95166755a894df`**. Existing mock tests include eight new negative/positive cases for wrong actor, multi-select, missing/duplicate/mutated STAF01 and no trigger evaluation; two-OS CI for changed source still pending at this README draft.
+
+**NO GAME CHANGE:** R39 2407B native-pass BAF, R40 original, R41 21603B bundle, installed R38, EPS, save and the user's one-file updater remain untouched. This is CODE/TEST verification of a **blocker**, not first `XEquipItem`.
+
+---
+
 # 28.11.2026 — R41 LINK V2: единый неактивный bundle R39+R40, готовится для будущего guarded pilot
 
 До этого этапа реальный пользовательский 2407B R39 уже native WeiDU compile PASS и static STAF01 ITEM PASS; 176→7 НЕ повторять. Подтверждена auto-load механика override/M_*.lua (EEex docs Infinity_DoFile), что позволяет впоследствии подключить имеющиеся армер и lifecycle без второго action-start observer. **Но сам новый SOURCE ONLY file при загрузке не вызывает даже M.prepare и ни во что не вмешивается.**
