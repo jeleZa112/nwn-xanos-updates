@@ -1,7 +1,7 @@
 name: BG EET RU V162 guarded onefile stage
 on:
   push:
-    branches: [bg-eet-ru-v162-batch-stage]
+    branches: [bg-eet-ai, bg-eet-ru-v162-batch-stage]
   pull_request:
     paths:
       - 'bg-eet-ru/onefile/**'
