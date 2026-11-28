@@ -90,6 +90,19 @@ SOURCES.update({
  R46_V3_NATIVE:(10743,"b4a0789c568879a179e21cf50391afd999861e85f832f587aceb07cf816e055e"),
  R46_BACKEND:(9551,"27285b3d067eab2c67b075dc8654b9a0f74da0d7920b2e96339ced3e14bcd10a"),
 })
+R47_ROOT = "BGXAI/BUILD/R47_GUARDED_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/"
+R47_GUARD = R47_ROOT + "BGXAI_R47_WITNESS_LAST157_TO158_GUARDED_SOURCE_ONLY.py"
+R47_COMPOSE = R47_ROOT + "BGXAI_R47_CORRECT_R46_EEEX_SCRIPT_PORT_SOURCE_ONLY.py"
+R47_INSTALL_CONFIRM = "INSTALL_BGXAI_R47_INERT_BDDEFAI_WITNESS_AFTER_R44_LAST"
+R47_ROLLBACK_CONFIRM = "ROLLBACK_BGXAI_R47_RESTORE_R44_ONLY"
+R47_BAF_SHA = "af9c78d00dd24806c694e7ee1d6fe882a65b8a9fd71acc90654f60188932a0d9"
+R47_LUA_SHA = "f095193e77b2a9ec5d8f21edf738a805c462656e58df41b9199ff9b2ac4da256"
+MODES.update({"18":"r47_preflight","19":"r47_install",
+              "20":"r47_status","21":"r47_rollback","22":"r47_capture"})
+SOURCES.update({
+ R47_GUARD:(20399,"b61811e27afc57bb02db720027c43b46b1b021b6bf9d6e9003059f68e1bfa758"),
+ R47_COMPOSE:(4309,"2c9f97820be8c83927498b9806f75dd59397c385e14407c835e2f46f64b62d0e"),
+})
 INSTALL_CONFIRM = "INSTALL_BGXAI_R42_READONLY_CLASS_BCS_AFTER_R38"
 ROLLBACK_CONFIRM = "ROLLBACK_BGXAI_R42_RESTORE_R38_ONLY"
 
@@ -664,6 +677,117 @@ def run_r46_native_readonly(game: Path, commit: str, *, fetcher=fetch,
             "R39XEquipInstalled":False,"noAutoRetry":False}
 
 
+
+def run_r47_guarded(game: Path, commit: str, mode: str, *,
+                    fetcher=fetch, runner=subprocess.run,
+                    require_windows: bool=True, approved_token: str | None=None) -> dict:
+    """ONE original updater R47 passive BCS 157→158 guarded operations."""
+    if mode not in ("r47_status","r47_preflight","r47_install","r47_rollback","r47_capture"):
+        raise Hold("HOLD_R47_UNSUPPORTED_ONEFILE_MODE")
+    game=protected_root(game,require_windows)
+    commit=pin(commit)
+    native_mode=mode[4:]
+    typed=native_mode in ("install","rollback")
+    exact=R47_INSTALL_CONFIRM if native_mode=="install" else R47_ROLLBACK_CONFIRM
+    if typed and approved_token!=exact:
+        raise Hold("HOLD_R47_EXACT_TYPED_APPROVAL_REQUIRED")
+    with tempfile.TemporaryDirectory(prefix="BGXAI_R47_SAME_ONEFILE179_") as folder:
+        workspace=Path(folder).resolve(strict=True)
+        realgame=game.resolve(strict=True)
+        if workspace==realgame or workspace in realgame.parents or realgame in workspace.parents:
+            raise Hold("HOLD_R47_STAGING_INSIDE_GAME")
+        for path in (R37_GUARD,R38_GUARD,R42_GUARD,BUILDER,BRIDGE,LIVE_SOURCE,
+                     R43_DIAG,R43_GUARD,R39_NUMERIC_PATCH,R44_COMPOSE,R44_GUARD,
+                     R46_COMPOSE,R46_PREVIOUS_BAF,R47_COMPOSE,R47_GUARD):
+            data=verified(path,fetcher(commit,path))
+            target=workspace.joinpath(*path.split("/"))
+            if workspace not in target.parents or target.is_symlink():
+                raise Hold("HOLD_R47_STAGE_UNSAFE_PATH")
+            target.parent.mkdir(parents=True,exist_ok=True)
+            target.write_bytes(data)
+            if sha(target.read_bytes())!=SOURCES[path][1]:
+                raise Hold("HOLD_R47_STAGED_SOURCE_DRIFT")
+        command=[sys.executable,str(workspace.joinpath(*R47_GUARD.split("/"))),
+                 "--game",str(game),"--mode",native_mode,"--onefile-review-gate"]
+        result=runner(command,cwd=str(workspace),
+                      input=(approved_token+"\n") if typed else "",
+                      stdin=None,capture_output=True,text=True,encoding="utf-8",
+                      errors="replace",timeout=350,check=False)
+        try:
+            inner=json.loads(result.stdout[result.stdout.find("{"):])
+        except (ValueError,TypeError):
+            raise Hold("HOLD_R47_NATIVE_OUTPUT_INVALID")
+        if type(inner) is not dict:
+            raise Hold("HOLD_R47_NATIVE_REPORT_NOT_OBJECT")
+        if (inner.get("ordersSent")!=0 or inner.get("armAuthorized") is not False
+            or inner.get("dispatchAuthorized") is not False):
+            raise Hold("HOLD_R47_NATIVE_SAFETY_MARKERS")
+        status=inner.get("status")
+        expected={
+            "status":("R47_NOT_INSTALLED_R44_PRESENT_LAST","R47_PRESENT_LAST_PASSIVE_WITNESS"),
+            "preflight":("R47_PREFLIGHT_R44_LAST157_PASS_NO_INSTALL",),
+            "install":("R47_INERT_BDDEFAI_WITNESS_INSTALLED_AWAITING_LIVE",),
+            "rollback":("R47_ROLLBACK_RESTORED_R44_LAST",),
+            "capture":("R47_LIVE_BDDEFAI_WITNESS_TRIGGER_EVALUATED_NO_ARM",
+                       "R47_CAPTURE_HOLD_WITNESS_NOT_OBSERVED"),
+        }
+        if status not in expected[native_mode]:
+            reason=inner.get("reason")
+            if type(reason) is not str or len(reason)>128 or re.fullmatch(r"[A-Z0-9_:.+-]+",reason) is None:
+                reason="HOLD_R47_UNCLASSIFIED_NATIVE_STOP"
+            return {"schema":SCHEMA,"status":"R47_NATIVE_HOLD_DETAILS",
+                "innerStatus":status if type(status) is str and status in (
+                    "R47_STOP_MANUAL_REVIEW","R47_HOLD_WEIDU_OR_BCS_DRIFT") else "UNCLASSIFIED",
+                "nativeReason":reason,"noAutoRetry":True,
+                "gameModifiedUnknown":native_mode in ("install","rollback"),
+                "ordersSent":0,"armAuthorized":False,"dispatchAuthorized":False}
+        hold="_HOLD_" in status
+        if result.returncode not in ((0,3) if (native_mode=="capture" and hold) else (0,)):
+            raise Hold("HOLD_R47_NATIVE_EXIT_CODE")
+        expected_installed=native_mode in ("install","capture") or (
+            native_mode=="status" and status=="R47_PRESENT_LAST_PASSIVE_WITNESS")
+        if inner.get("installed") is not expected_installed:
+            raise Hold("HOLD_R47_NATIVE_INSTALLED_FLAG")
+        if inner.get("gameModified") is not (native_mode in ("install","rollback")):
+            raise Hold("HOLD_R47_NATIVE_GAME_MODIFIED_FLAG")
+        if native_mode=="preflight":
+            if (inner.get("originalBcsSha256")!=
+                "24d94062ebc7226dc3486ecad3786dca7e5edae424cef0f13d8a4577cff36331" or
+                inner.get("expectedLuaSha256")!=R47_LUA_SHA or
+                inner.get("expectedBafSha256")!=R47_BAF_SHA):
+                raise Hold("HOLD_R47_NATIVE_PREIMAGE_OR_BAF_PIN")
+        if native_mode=="capture" and not hold:
+            if (inner.get("observedWitnessRows")!=1 or
+                inner.get("actualBcsWitnessBlockEvaluated") is not True or
+                inner.get("actualBcsActionExecutionVerified") is not False or
+                inner.get("manualEpsActionOriginVerified") is not False):
+                raise Hold("HOLD_R47_CAPTURE_FALSE_PROOF")
+        if native_mode=="install":
+            if (inner.get("sourceBafSha256")!=R47_BAF_SHA or
+                inner.get("sourceLuaSha256")!=R47_LUA_SHA):
+                raise Hold("HOLD_R47_INSTALL_SOURCE_PIN")
+        out={"schema":SCHEMA,
+             "status":"R47_"+native_mode.upper()+
+                ("_HOLD_REASON_OBSERVED" if hold else "_EXACT_GUARDED_PASS"),
+             "innerStatus":status,"sourceCommit":commit,
+             "expectedInertBafSHA256":R47_BAF_SHA,
+             "expectedWitnessLuaSHA256":R47_LUA_SHA,
+             "installed":inner.get("installed") is True,
+             "gameModified":inner.get("gameModified") is True,
+             "ordersSent":0,"armAuthorized":False,"dispatchAuthorized":False,
+             "actualBcsExecutionVerified":False,
+             "actualBcsWitnessBlockEvaluated":inner.get("actualBcsWitnessBlockEvaluated") is True
+                      if native_mode=="capture" else False,
+             "manualEpsActionOriginVerified":False,
+             "noAutoRetry":hold}
+        if native_mode=="capture":
+            if type(inner.get("rawConsoleFile")) is str:
+                out["rawConsoleFile"]=inner["rawConsoleFile"]
+            if type(inner.get("rawConsoleBytes")) is int:
+                out["rawConsoleBytes"]=inner["rawConsoleBytes"]
+        return out
+
+
 def choose_mode() -> str:
     print("R42 (single BGXAI_UPDATE.cmd): 1=source RO [default]; 2=status; "
           "3=preflight RO; 4=install (typed); 5=rollback (typed); 6=capture game RO; 0=exit",flush=True)
@@ -672,6 +796,7 @@ def choose_mode() -> str:
     print("R44 after R43: 12=status; 13=preflight RO; 14=install typed; "
           "15=rollback typed; 16=capture game RO",flush=True)
     print("R46: 17=first inert BDDEFAI BAF native TEMP compile RO (NO INSTALL)",flush=True)
+    print("R47: 18=preflight RO; 19=install typed; 20=status; 21=rollback typed; 22=capture game RO",flush=True)
     s=input("R42 choice [1]: ").strip()
     if not s:s="1"
     if s=="0":return "exit"
@@ -696,6 +821,14 @@ def main(argv=None) -> int:
             result=run(args.game,args.commit)
         elif mode=="r46_native_ro":
             result=run_r46_native_readonly(args.game,args.commit)
+        elif mode.startswith("r47_"):
+            token=None
+            if mode in ("r47_install","r47_rollback"):
+                correct=R47_INSTALL_CONFIRM if mode=="r47_install" else R47_ROLLBACK_CONFIRM
+                print("R47 "+mode+": guarded WeiDU; close game. No auto retry.",flush=True)
+                token=input("Type "+correct+" exactly (ENTER cancels): ").strip()
+                if token!=correct:raise Hold("HOLD_R47_EXACT_TYPED_APPROVAL_REQUIRED")
+            result=run_r47_guarded(args.game,args.commit,mode,approved_token=token)
         elif mode.startswith("numeric_"):
             token=None
             if mode in ("numeric_install","numeric_rollback"):
