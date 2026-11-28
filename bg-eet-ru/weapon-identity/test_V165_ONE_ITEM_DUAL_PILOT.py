@@ -127,6 +127,42 @@ class PilotTests(unittest.TestCase):
             self.assertEqual(result['status'],'V165_SAFE_STOP')
             self.assertFalse((p/'game').exists())
 
+    def test_prepared_rollback_without_swap_finalizes_external_receipt(self):
+        import json
+        with tempfile.TemporaryDirectory() as d:
+            root=pathlib.Path(d);game=root/'game';work=root/'external'
+            game.mkdir();work.mkdir();(game/'chitin.key').write_bytes(b'KEY')
+            target=game/pilot.GAME_REL;target.parent.mkdir()
+            target.write_bytes(BASE)
+            backup=work/'safe';backup.mkdir()
+            saved=backup/'prior.lua';saved.write_bytes(BASE)
+            state=work/pilot.STATE
+            second=work/'v163_state.json';second.write_text('{"phase":"INSTALLED"}')
+            oldsha=pilot.digest(BASE)
+            payload={'schema':pilot.SCHEMA,'phase':'PREPARED',
+                     'baselineSha':oldsha,'candidateSha':'a'*64,
+                     'backup':str(saved),
+                     'secondStateSha':pilot.digest(second.read_bytes())}
+            state.write_text(json.dumps(payload))
+            class Batch:
+                @staticmethod
+                def _check_game_closed():return None
+            class Cumulative:
+                SECOND_STATE='v163_state.json'
+                @staticmethod
+                def _read_first_state(*_):return {},b'FIRST'
+                @staticmethod
+                def _verify_pins(*_):return None
+            with patch.object(pilot,'EXPECTED_V163_SHA',oldsha):
+                result=pilot.run('rollback',game,work,Batch,Cumulative,None,
+                                 typed=pilot.APPROVE_ROLLBACK,allow_non_windows_test=True)
+                self.assertEqual(result['status'],'V165_ROLLED_BACK_TO_V163_123',result)
+                self.assertEqual(result['gameFilesWritten'],0)
+                self.assertEqual(target.read_bytes(),BASE)
+                self.assertEqual(json.loads(state.read_text())['phase'],'ROLLED_BACK')
+                status=pilot.run('status',game,work,Batch,Cumulative,None)
+                self.assertEqual(status['status'],'V165_ROLLED_BACK_TO_V163_123')
+
     def test_pins_and_typed_windows_barrier(self):
         self.assertEqual(len(pilot.V163_DISPATCH_SHA),64)
         self.assertEqual(len(pilot.V107_SOURCE_SHA),64)
