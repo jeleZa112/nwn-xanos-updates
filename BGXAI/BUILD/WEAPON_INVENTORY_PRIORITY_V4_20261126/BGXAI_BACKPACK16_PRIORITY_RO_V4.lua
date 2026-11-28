@@ -233,6 +233,12 @@ function M.planWithV3(backpack,quick,other,scene,candidates,v3Scene,previous,v3)
   end
  end
  local ok,preview=pcall(v3.preview,v3Scene,previous)
+ if ok and type(preview)=='table' and
+    preview.status=='HOLD_STABILIZE_TARGET_AND_EQUIPMENT' and
+    preview.executable==false and preview.dispatchAuthorized==false and
+    type(preview.next)=='table' then
+  return result('HOLD_V3_V4_TARGET_RANKING_UNSTABLE',{v3Next=preview.next})
+ end
  if not ok or type(preview)~='table' or preview.executable~=false or
     preview.dispatchAuthorized~=false or preview.passivePreview~=true or
     (preview.status~='KEEP_CURRENT' and
@@ -300,6 +306,7 @@ function M.planWithV3(backpack,quick,other,scene,candidates,v3Scene,previous,v3)
  local advice=M.plan(backpack,quick,other,linked,computed)
  -- This is a pure model composition; never set 'proven live' on any input.
  advice.v3V4Link='SAME_ACTOR_TARGET_BACKPACK_MODEL_ONLY'
+ advice.v3Next=preview.next
  advice.engineFinalAlternativeStatsVerified=false
  advice.inventoryMoveAuthorized=false
  advice.dispatchAuthorized=false
