@@ -43,6 +43,18 @@ class OnefileV2Compatibility(unittest.TestCase):
         self.assertEqual(hashlib.sha256(LEGACY.read_bytes()).hexdigest(),
              'edd1a67be9c5ea9d5ec7c52fb7eb1135cd3ae6f4d248f709459e11667053df75')
 
+    def test_staged_same_cmd_can_restore_sha_checked_last_good_offline(self):
+        raw=(ROOT/'BGXAI/UPDATER_V2/BGXAI_UPDATE_V2_STAGE.txt').read_bytes()
+        old=CMD.read_bytes()
+        self.assertTrue(raw.startswith(old[:120]))
+        self.assertEqual(raw.count(b'# BEGIN_BGXAI_RAW_BOOTSTRAP_PS'),1)
+        self.assertIn(b'trusted_lastgood_v2.json',raw)
+        self.assertIn(b'Offline cached script SHA or size mismatch',raw)
+        self.assertIn(b'BGXAI OFFLINE: verified last good ',raw)
+        self.assertIn(b'Get-FileHash -LiteralPath $archive -Algorithm SHA256',raw)
+        self.assertIn(b'No auto retry',HUB.read_bytes())
+        self.assertNotIn(b'XEquipItem(',raw)
+
     def test_hub_staged_not_game_installer(self):
         s=HUB.read_text(encoding='ascii')
         self.assertLess(len(s),20000)
