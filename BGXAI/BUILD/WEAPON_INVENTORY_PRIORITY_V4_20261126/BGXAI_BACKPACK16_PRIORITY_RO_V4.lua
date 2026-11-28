@@ -401,6 +401,95 @@ function M.planWithR37(sprite,r37,contextReader,reader,
  return advice
 end
 
+-- Strictly match the actor's native EEex v1.1.7 first-ability view to
+-- R3's ALREADY audited file bytes, without taking the native view as a
+-- complete ITM/effects/APR parse. Multi-ability resources are excluded:
+-- public EEex 1.1.7 getAbility(i>0) uses the wrong header stride.
+function M.validateNativeAbility0AgainstR3(raw,r3)
+ if type(raw)~='table' or
+    raw.nativeAbility0Source~='EEEX117_ENGINE_CITEM_FIRST_ABILITY_RAW' or
+    raw.nativeAbility0EEexVersionAssumed~='v1.1.7' or
+    type(raw.nativeAbility0)~='table' or
+    raw.engineFinalAlternateAPRVerified~=false or
+    raw.nativeItemInstanceAuthenticated~=false or
+    raw.nativeResourceShaVerified~=false or
+    raw.dispatchAuthorized~=false or
+    type(r3)~='table' or r3.sourceKind~='CURRENT_GAME' or
+    r3.status~='ITM_NATIVE_ALL_ITEMS_RAW_READ' or
+    type(r3.items)~='table' then
+  return nil,'HOLD_NATIVE_ABILITY0_UNTRUSTED' end
+ local total=0;local single=0;local multi=0;local excluded={}
+ local checked={}
+ for slot=18,38 do
+  if slot~=34 then
+   local rawSlot=slot<=33 and raw.backpack.slots[slot] or raw.quick[slot]
+   local n=raw.nativeAbility0[slot]
+   if type(rawSlot)~='table' then
+    return nil,'HOLD_NATIVE_ABILITY0_SLOT_MAP_MISSING' end
+   if rawSlot.status=='PRESENT_RAW' then
+    total=total+1
+    local e=r3.items[rawSlot.resref]
+    local itm=type(e)=='table' and e.item or nil
+    if type(n)~='table' or n.slot~=slot or
+       n.resref~=rawSlot.resref or
+       type(itm)~='table' or
+       itm.schema~='BGXAI_ITM_RAW_V1' or itm.rawOnly~=true or
+       type(itm.abilities)~='table' or
+       not integer(n.abilityCountRaw,0,64) or
+       n.abilityCountRaw~=#itm.abilities or
+       n.engineFinalAlternateAPRVerified~=false then
+     return nil,'HOLD_NATIVE_R3_ABILITY_COUNT_OR_IDENTITY_MISMATCH' end
+    if n.abilityCountRaw==1 then
+     single=single+1
+     if n.status~='SINGLE_PHYSICAL_ATTACK_ABILITY_RAW' and
+        n.status~='SKIP_NONPHYSICAL_ABILITY_RAW' then
+      return nil,'HOLD_NATIVE_ABILITY0_STATUS_FOR_SINGLE' end
+     if not integer(n.proficiencyIdRaw,0,255) or
+        n.proficiencyIdRaw~=itm.proficiencyIdRaw or
+        not integer(n.firstAbilityAttackTypeRaw,0,4) or
+        n.firstAbilityAttackTypeRaw~=itm.abilities[1].attackTypeRaw then
+      return nil,'HOLD_NATIVE_R3_PROFICIENCY_OR_ATTACK_TYPE_MISMATCH' end
+     if n.status=='SINGLE_PHYSICAL_ATTACK_ABILITY_RAW' and
+        n.firstAbilityAttackTypeRaw~=1 and
+        n.firstAbilityAttackTypeRaw~=2 then
+      return nil,'HOLD_NATIVE_ABILITY0_FALSE_WEAPON' end
+     if n.status=='SKIP_NONPHYSICAL_ABILITY_RAW' and
+        (n.firstAbilityAttackTypeRaw==1 or n.firstAbilityAttackTypeRaw==2) then
+      return nil,'HOLD_NATIVE_ABILITY0_PHYSICAL_MARKED_NONPHYSICAL' end
+     if n.status~='SINGLE_PHYSICAL_ATTACK_ABILITY_RAW' then
+      excluded[slot]=true end
+    elseif n.abilityCountRaw>1 then
+     multi=multi+1
+     if n.status~='SKIP_MULTIPLE_ABILITIES_UNSAFE_EEEX117_STRIDE' or
+        n.firstAbilityAttackTypeRaw~=nil then
+      return nil,'HOLD_NATIVE_MULTIPLE_ABILITY_NOT_SKIPPED' end
+     excluded[slot]=true
+    else
+     if n.status~='SKIP_NO_WEAPON_ABILITY' or
+        n.firstAbilityAttackTypeRaw~=nil then
+      return nil,'HOLD_NATIVE_ZERO_ABILITY_INVALID' end
+     excluded[slot]=true
+    end
+    checked[slot]=true
+   elseif rawSlot.status=='EMPTY' then
+    if n~=nil then return nil,'HOLD_NATIVE_EMPTY_SLOT_HAS_ITEM' end
+   else
+    return nil,'HOLD_NATIVE_R37_SLOT_BAD_STATUS' end
+  end
+ end
+ local extras=0
+ for slot in pairs(raw.nativeAbility0) do
+  if not checked[slot] then
+   return nil,'HOLD_NATIVE_EXTRA_OR_FORGED_SLOT' end
+  extras=extras+1
+ end
+ if extras~=total or raw.nativeAbility0Count~=total or
+    raw.nativeAbility0SingleCount~=single or
+    raw.nativeAbility0MultiUnsafeCount~=multi then
+  return nil,'HOLD_NATIVE_ABILITY0_COUNT_CHANGED' end
+ return excluded,nil
+end
+
 -- ONE discovery pass through the EXISTING R37/R3 source route: read exactly
 -- the correct sixteen backpack slots 18..33, rather than hand-entering each
 -- weapon. The caller's actor-specific projection must be explicitly modeled.
@@ -432,6 +521,12 @@ function M.prepare16FromR3(raw,r3,projection)
      observed.status~=archived.status or observed.resref~=archived.resref then
    return nil,'HOLD_R3_TOPLEVEL_ITEM_CHANGED_OR_UNMAPPED' end
  end
+ local nativeExcluded=nil
+ if raw.nativeAbility0~=nil then
+  local reason
+  nativeExcluded,reason=M.validateNativeAbility0AgainstR3(raw,r3)
+  if nativeExcluded==nil then return nil,reason end
+ end
  local candidates={}
  for slot=18,33 do
   local observed=raw.backpack.slots[slot]
@@ -445,7 +540,12 @@ function M.prepare16FromR3(raw,r3,projection)
       (entry.provenance.origin~='CURRENT_GAME_BIFF' and
        entry.provenance.origin~='CURRENT_GAME_OVERRIDE') then
     return nil,'HOLD_R3_ITM_RESOURCE_MISSING' end
-   local success,p=pcall(projection,slot,observed,entry.item)
+   local success,p
+   if nativeExcluded and nativeExcluded[slot] then
+    success=true;p={status='CANNOT_USE_OR_NOT_WEAPON'}
+   else
+    success,p=pcall(projection,slot,observed,entry.item)
+   end
    if not success or type(p)~='table' then
     return nil,'HOLD_R3_PROJECTOR_UNAVAILABLE' end
    if p.status=='CANNOT_USE_OR_NOT_WEAPON' then
@@ -843,5 +943,35 @@ function M.planAutoBatchWithActorTarget(p)
  advice.ordersSent=0
  return advice
 end
+
+-- Single-call native source bridge with NO new R37 listener.
+-- Requires both an EEex 1.1.7 CItem first-ability view and an R3 game
+-- resource audit. The latter must be supplied by a separately verified
+-- static catalog staged through the existing updater; Python cannot run in
+-- EEex Lua and is NEVER silently invoked here.
+function M.planAutoBatchNativeAbility0(p)
+ if type(p)~='table' or type(p.reader)~='table' or
+    type(p.reader.captureNativeAbility0)~='function' or
+    type(p.nativeApi)~='table' or
+    type(p.nativeApi.toPtr)~='function' or
+    type(p.nativeApi.read8)~='function' then
+  return result('HOLD_NATIVE_BATCH_READER_OR_API_UNAVAILABLE') end
+ local nativeReader={captureTopLevel=function(sprite,r37,contextReader)
+  return p.reader.captureNativeAbility0(sprite,r37,contextReader,p.nativeApi)
+ end}
+ local x=M.planAutoBatch(p.sprite,p.r37,p.contextReader,nativeReader,
+                        p.r3,p.projection,p.scene,p.v3Scene,
+                        p.previousV3,p.v3)
+ x.usedNativeAbility0Probe=x.inventoryCaptureCalls==1 and
+   x.r3ItemSourcesCrosschecked==true
+ x.nativeOtherAbilitiesRead=false
+ x.engineFinalAlternateAPRVerified=false
+ x.dispatchAuthorized=false
+ x.inventoryMoveAuthorized=false
+ x.executable=false
+ x.ordersSent=0
+ return x
+end
+
 
 return M
