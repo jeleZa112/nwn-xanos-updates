@@ -141,6 +141,61 @@ class EvidenceJoin(unittest.TestCase):
         v=copy.deepcopy(self.ctx);v['[BGXR27] '][33]['rawInventoryDoubleReadConsistent']=False
         self.assertHold(v)
 
+    def test_existing_jagan_raw_script_number_is_only_a_histogram(self):
+        v=copy.deepcopy(self.ctx)
+        script_ids=[4,4,0,6]
+        for offset,n in enumerate(script_ids):
+            sample=v['[BGXR27] '][17+offset]
+            sample.update(actionContextSnapshotStable=True,
+                          currentScriptNumberRaw=n,
+                          actionSourceStable=True,
+                          actionSourceReadStatus='SOURCE_RAW_OBSERVED',
+                          actionSourceRaw='C:\\PRIVATE\\DoNotLeak.BCS')
+        out=g.evaluate(v,self.item)
+        self.assertEqual(out['rawCurrentScriptNumberEvents'],4)
+        self.assertEqual(out['rawCurrentScriptNumberHistogram'],
+                         [{'valueRaw':0,'events':1},
+                          {'valueRaw':4,'events':2},
+                          {'valueRaw':6,'events':1}])
+        self.assertEqual(out['unclassifiedRawActionSourceAvailableEvents'],4)
+        self.assertFalse(out['actualBcsExecutionVerified'])
+        self.assertFalse(out['scriptSlotOwnershipVerified'])
+        self.assertFalse(out['rawScriptNumberMappedToSCRLEV'])
+        self.assertFalse(out['rawActionSourceContentPublished'])
+        self.assertFalse(out['manualEpsActionOriginVerified'])
+        self.assertNotIn('PRIVATE',json.dumps(out))
+        self.assertNotIn('DoNotLeak',json.dumps(out))
+
+    def test_old_log_without_optional_raw_fields_is_not_fake_proof(self):
+        out=g.evaluate(self.ctx,self.item)
+        self.assertEqual(out['rawCurrentScriptNumberEvents'],0)
+        self.assertEqual(out['rawCurrentScriptNumberHistogram'],[])
+        self.assertEqual(out['unclassifiedRawActionSourceAvailableEvents'],0)
+        self.assertFalse(out['actualBcsExecutionVerified'])
+
+    def test_unstable_script_number_does_not_get_published(self):
+        v=copy.deepcopy(self.ctx)
+        v['[BGXR27] '][17].update(actionContextSnapshotStable=False,
+                                     currentScriptNumberRaw=5)
+        self.assertHold(v)
+
+    def test_invalid_current_script_number_never_becomes_a_bcslvl(self):
+        for value in (True,1.5,32768,-32769,'4',{}):
+            with self.subTest(value=value):
+                v=copy.deepcopy(self.ctx)
+                v['[BGXR27] '][17].update(actionContextSnapshotStable=True,
+                                            currentScriptNumberRaw=value)
+                self.assertHold(v)
+
+    def test_action_source_with_invalid_trust_flags_HOLD(self):
+        for raw in ('C:\\OUT\\LEAK.BCS',None,'BAD\\nSOURCE'):
+            with self.subTest(raw=raw):
+                v=copy.deepcopy(self.ctx)
+                v['[BGXR27] '][17].update(actionSourceStable=True,
+                                          actionSourceRaw=raw,
+                                          actionSourceReadStatus='SOURCE_UNKNOWN')
+                self.assertHold(v)
+
     def test_mock_capture_roundtrip(self):
         v=context()
         with tempfile.TemporaryDirectory() as d:
