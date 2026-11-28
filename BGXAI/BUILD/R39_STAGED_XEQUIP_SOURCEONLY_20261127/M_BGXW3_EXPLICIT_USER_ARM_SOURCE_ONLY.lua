@@ -1,3 +1,8 @@
+-- PRIOR_WORK_REUSE: BGXAI/BUILD/WEAPON_XEQUIP_LOCAL_ARM_SOURCEONLY_V3_20261127/BGXAI_XEQUIP_LOCAL_ARM_SOURCE_V3.py
+-- PRIOR_WORK_EXISTING: V3 already owns BGXW3ARM/TAG/TRY, once-only XEquipItem and action/slot safety guards.
+-- PRIOR_WORK_DELTA_ONLY: optional explicit physical hotkey gesture, epoch/two-snapshot/readback preflight candidate.
+-- PRIOR_WORK_STATUS: CODE/MOCK only; no installed adapter, native R39 compile, approved hotkey, or LIVE equip.
+-- PRIOR_WORK_NO_REIMPLEMENT: reuse V3/R37/R38/R40 and weapon priority; never claim this is autonomous weapon selection.
 -- BGXAI R39 controlled first actual-inventory-transfer pilot, SOURCE ONLY.
 -- NOT INSTALLED. No auto-arm, no action injection, no second action-start observer.
 -- If later installed after typed approval, an explicit (non-repeat) Ctrl+Alt+Shift+F12
