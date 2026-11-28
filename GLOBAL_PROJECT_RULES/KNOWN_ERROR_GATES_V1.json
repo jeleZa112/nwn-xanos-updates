@@ -370,6 +370,39 @@
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
   "source_provenance_receipts": [
     {
+      "receipt_id": "BGXAI_R42_SINGLE_R38_LISTENER_CLASS_BCS_SOURCE_PREWORK_20261128",
+      "project": "BGXAI",
+      "source_path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_REUSE_R38_CLASS_BCS_RO.py",
+      "source_git_blob_sha": null,
+      "predecessor_sources": [
+        {
+          "path": "BGXAI/BUILD/R37_XEQUIP_IDENTITY_SINGLE_LISTENER_SOURCEONLY_20261127/M_BGXR27_R37_INV3_IDENTITY_SOURCE_ONLY.lua",
+          "git_blob_sha": "ada1ff628873e83a0b21296e5b5017bbc47510cd"
+        },
+        {
+          "path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_EEEX117_ENGINE_BRIDGE_RO.lua",
+          "git_blob_sha": "52bd8751581aa9f9d9ac09559f11a856e81ba1da"
+        },
+        {
+          "path": "BGXAI/BUILD/R38_GUARDED_FROM_R37_20261127/BGXAI_R38_GUARDED_FROM_R37.py",
+          "git_blob_sha": "aaa9f182fec7e7800e382167d1666d8c85804ef8"
+        }
+      ],
+      "already_implemented": [
+        "Live R38 is already installed as exactly one EEex_Action_AddSpriteStartedActionListener in M_BGXR27.lua, with 34 authentic aligned events including 10 Jagan observations; do not capture again.",
+        "Existing R39 native read-only EEex bridge performs exact physical Jagan STAF01 slot20/35 validation, double-reads assigned SCRLEV BCS names, and maps stock EEex raw m_curScriptNum index3 to SCRLEV4 CLASS; unit-tested 44/44.",
+        "R38 guarded installer already has typed last-only WeiDU installation, external SHA backup, rollback and status; reuse its baseline rather than inventing generic installer.",
+        "Immutable pinned onefile BGXAI_SYNC.ps1 already 79996 bytes, strictly limited to 80000 by existing BGXAI_UPDATE.cmd; no second CMD/updater or unlocked URL."
+      ],
+      "exclusive_delta": "Source-only deterministic guard to COMPOSE the already-installed R38 exact 78927B source with unchanged existing R39 read-only bridge inside R38's original same single action listener. On first exact Jagan physical-context callback, observe stable class BCS resref, emit only one sanitized bounded [BGXBCS] evidence line; no second listener, gameplay action, LOCALS or EPS interference. Only later guarded typed WeiDU last-only R38 replacement through existing onefile channel, not an automatic install. Preserve exact existing R38 and R39 files/SHAs.",
+      "evidence": "BGXAI/CURRENT/00_RESUME_CURRENT.md; authentic BGXAI_R38_CONSOLE_20261127T081433673320Z.log SHA256 2846ba45879d37a62f38d0e714d1dbdb0797458c263317d76f9e27dda9d04767; upstream EEex 1.1.7 Debug.lua ec8f6d1735d1e2e27fc2bae6dca26fd89c22eef5",
+      "recorded_before_change": true,
+      "status": "PLANNED_SOURCE_ONLY",
+      "source_only": true,
+      "game_modified": false,
+      "installed": false
+    },
+    {
       "receipt_id": "BGXAI_R39_JOIN_REUSE_R38_RAW_SCRIPT_FIELDS_PREWORK_20261128",
       "project": "BGXAI",
       "source_path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/R39_JOIN_EXISTING_R38_R3_RO.py",
