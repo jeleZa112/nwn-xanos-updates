@@ -1,5 +1,6 @@
 {
   "actorRuntimeArmingImplemented": false,
+  "actualBcsExecutionVerified": false,
   "armAuthorized": false,
   "classRaw3ClericObserved": true,
   "currentEffectBlocksEquippingVerified": false,
@@ -21,10 +22,28 @@
   "ordersSent": 0,
   "otherActorEventsFiltered": 24,
   "r38AlignedEvents": 34,
+  "rawActionSourceContentPublished": false,
+  "rawCurrentScriptNumberEvents": 10,
+  "rawCurrentScriptNumberHistogram": [
+    {
+      "events": 5,
+      "valueRaw": -1
+    },
+    {
+      "events": 5,
+      "valueRaw": 3
+    }
+  ],
+  "rawScriptNumberMappedToSCRLEV": false,
   "sameJaganRuntimeActorAcrossObservations": true,
   "sameSessionInstalledItemResourceVerified": false,
   "schema": "BGXAI_R39_R38_R3_EXISTING_EVIDENCE_JOIN_V1",
+  "scriptSlotOwnershipVerified": false,
+  "sourceLogBytes": 702973,
+  "sourceLogSha256": "2846ba45879d37a62f38d0e714d1dbdb0797458c263317d76f9e27dda9d04767",
+  "sourceR3ReportSha256": "7ae7555f81b14a784e7866472f14483b02c2d6b707ab6169225e8fec32507304",
   "sourceResref": "STAF01",
   "status": "PASS_OBSERVED_STRENGTH_AND_PHYSICAL_SLOTS_USABILITY_UNPROVEN",
-  "targetSlot35EmptyInAllJaganEvents": true
+  "targetSlot35EmptyInAllJaganEvents": true,
+  "unclassifiedRawActionSourceAvailableEvents": 0
 }
