@@ -116,9 +116,17 @@ local function select_verified_dual_name(ref, identification, state)
     -- Strings only; reject controls, multiline and overlong values.
     -- Actual Russian lexical validation is done BEFORE generating the
     -- SHA-pinned installed manifest by the existing R3+V111 extractor.
-    if type(name) ~= 'string' or #name < 2 or #name > 180
-        or name:find('[%c]') or name ~= name:match('^%s*(.-)%s*$') then
+    if type(name) ~= 'string' or #name < 2 or #name > 180 then
         return 'DUAL_NAME_VALUE_HOLD'
+    end
+    -- Lua %c/%s are platform-locale dependent on Windows; UTF-8 Cyrillic
+    -- continuation bytes must NEVER be treated as control/whitespace.
+    if name:sub(1, 1) == ' ' or name:sub(-1) == ' ' then
+        return 'DUAL_NAME_VALUE_HOLD'
+    end
+    for i = 1, #name do
+        local b = name:byte(i)
+        if b < 32 or b == 127 then return 'DUAL_NAME_VALUE_HOLD' end
     end
     return name
 end
