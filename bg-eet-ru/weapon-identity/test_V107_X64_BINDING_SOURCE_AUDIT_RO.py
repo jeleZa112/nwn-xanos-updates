@@ -65,4 +65,44 @@ class SourceProofTests(unittest.TestCase):
             self.assertEqual(len(gitsha), 40)
 
 
+    def test_v120_release_era_binding_and_callback_source(self):
+        cpp = '''CGameEffectDamage* CGameSprite::Override_Damage(
+            CItem* curWeaponIn, CItem* pLauncher, int curAttackNum, int criticalDamage,
+            CAIObjectType* type, short facing, short myFacing, CGameSprite* target, int lastSwing)
+        {
+          luaCallProtected(L, 1, 0, [&](int) {
+            lua_getglobal(L, "EEex_Sprite_LuaHook_AlterBaseWeaponDamage");
+            lua_newtable(L);
+            setImmediateTableUsertype(L, "weapon", curWeaponIn, "CItem");
+            setImmediateTableUsertype(L, "launcher", pLauncher, "CItem");
+          });
+          return pEffect;
+        }
+        void CGameEffectList::Override_Unmarshal() {}
+        '''
+        good = audit.analyze_v120_callback(GOOD, cpp, DOC)
+        self.assertTrue(good['sourceOnlyPass'])
+        self.assertTrue(good['sourceWeaponAndLauncherCItemSynchronous'])
+        self.assertFalse(good['allowNativeRead'])
+        self.assertFalse(good['allowGameInstallation'])
+        self.assertFalse(good['liveCItemFlagsReadVerified'])
+        self.assertFalse(good['exactBuiltBinaryToReleaseEraSourceAttested'])
+        self.assertFalse(audit.analyze_v120_callback(
+            GOOD, cpp.replace('"weapon", curWeaponIn', '"weapon", pLauncher'), DOC
+        )['sourceOnlyPass'])
+        self.assertFalse(audit.analyze_v120_callback(
+            GOOD.replace('tolua_get_CItem_m_flags', 'tolua_get_CItem_other'), cpp, DOC
+        )['sourceOnlyPass'])
+        self.assertRaises(ValueError, audit.analyze_v120_callback,
+                          GOOD, cpp.replace('Override_Damage', 'OtherFunction'), DOC)
+
+    def test_v120_release_era_pins(self):
+        self.assertEqual(len(audit.V120_RELEASE_ERA_INFINITYLOADER_COMMIT), 40)
+        self.assertEqual(len(audit.V120_RELEASE_ERA_SOURCES), 2)
+        for path, sha, size in audit.V120_RELEASE_ERA_SOURCES:
+            self.assertTrue(path.endswith('.cpp'))
+            self.assertEqual(len(sha), 40)
+            self.assertGreater(size, 100000)
+
+
 if __name__ == '__main__': unittest.main()
