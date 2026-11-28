@@ -32,32 +32,7 @@ jobs:
           from pathlib import Path
           import ast,base64,re,zlib
           src=Path('bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd').read_text(encoding='utf-8')
-          m=re.search(r'(?m)^V69_PROOF_DATA\s*=\s*(.+)
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          from hashlib import sha256
-          paths=[
-             'bg-eet-ru/hit-only-v160/weapon_names_batch_source.py',
-             'bg-eet-ru/weapon-identity/BG_EET_RU_ITEM_NAMES_FROM_BGXAI_R3_RO.py',
-             'BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/BGXAI_WEAPON_NATIVE_ITM_R3_RO.py',
-             'bg-eet-ru/weapon-identity/V111_ITEM_NAMES_READONLY_SOURCE_ONLY.py',
-             'bg-eet-ru/hit-only-v160/v160_guarded.py',
-             'bg-eet-ru/hit-only-v160/weapon_names_onefile_dispatch.py',
-          ]
-          for name in paths:
-              data=Path(name).read_bytes()
-              print('PIN_SHA256',sha256(data).hexdigest(),name)
-          PY
-      - name: New onefile routing unit tests
-        run: python -m unittest discover -s bg-eet-ru/hit-only-v160 -p 'test_weapon_names_onefile_dispatch.py' -v
-      - name: Existing guarded batch and V160 regression
-        run: python -m unittest discover -s bg-eet-ru/hit-only-v160 -p 'test_*.py' -v
-      - name: Existing R3/V111 integration
-        run: python -m unittest discover -s bg-eet-ru/weapon-identity -p 'test_BG_EET_RU_ITEM_NAMES_FROM_BGXAI_R3_RO.py' -v
-      - name: Existing onefile selftest (no game)
-        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest,src)
+          m=re.search(r'(?m)^V69_PROOF_DATA\s*=\s*(.+)$',src)
           assert m
           old=ast.literal_eval(m.group(1))
           assert isinstance(old,str)
