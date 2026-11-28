@@ -1,17 +1,18 @@
 {
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
-  "version": 166,
-  "sha256": "ddccbc456691015d36d541bbb750fafc04c9775ee917b84ef6576a1274146fa1",
-  "mode": "V166_V165_ONE_ITEM_AROW01_SCOPED_HISTORICAL_WEIDU_DRIFT",
+  "version": 167,
+  "sha256": "c3f4f55188bfd1c20c81cd1fd790430ee47719c27109cc2d1871182333190aaf",
+  "mode": "V167_V165_PR129_PINNED_DUAL_EXTRACTOR_IMPORT_CONTRACT",
   "game_writes_allowed": false,
-  "note": "V166 fixes user-confirmed V165 14->2 FIRST_WEIDU_LOG_CHANGED: old V162 WeiDU snapshot is not the current install transaction. Existing single CMD, menu 14 and all V163 123 names preserved; new backend revalidates 123 current ITM SHA and origins, all stored gamePins (including current RU TLK/UI/EEex), official EEex+LuaBindings SHA, exact installed Lua and state receipts. Actual present WeiDU SHA is rechecked through preflight/install/rollback. Never edits the historic receipts or WeiDU. Same typed install and last-only rollback; zero game writes by default. Previous V165 reversible V68 zlib repack unchanged. Source/test/publish do not prove native runtime and do not install game files.",
+  "note": "V167 fixes user-confirmed V166 14->2 AttributeError: frozen V162 bridge lacks PR129 dual_russian_names_source_only. The same V165 one-item backend now loads actual merged PR129 bridge by pinned Git commit + SHA256 into separate external cache, reuses all unchanged V162/V163 R3/V111 catalog sources and 123 installed ITM pins. Tests assert real legacy bridge has no function and real PR129 function extracts both Russian AROW01 names with both dialog TLKs and original ITM. No new game writes by default; 14->2 READ ONLY first. No additional listeners, no new updater, all prior version 166 security guards unchanged. User runtime not verified.",
   "default_game_writes_allowed": false,
   "typed_game_write_mode_available": true,
   "requires_exact_typed_install_and_rollback": true,
   "weidu_native_component": false,
   "last_only_rollback_guard": "EXACT_V163_123_LUA_STATE_SHA_CURRENT_ITM_TLK_WEIDU_TRANSACTION_SHA_GAME_PINS_EXTERNAL_BACKUP",
   "v68_original_source_sha256": "c5fb02e40301384687b2a5c1662c6b04c040d92739cd2df4899d5ed4067f9068",
-  "v165_backend_sha256": "74af1a1df0f8cc1ea47d2cc79a894f850e6dc9b4e946fbe3d022d9466b8c0a27",
-  "weidu_drift_policy": "V166_ONLY: V162 original WeiDU SHA preserved; all 123 current ITM+origins and all original gamePins and DLLs verified; live WeiDU SHA pinned across preflight, typed approval, install and rollback; original V162/V163 strict checks unchanged"
+  "v165_backend_sha256": "e4eea7218bc1e57398c464bf22cce87c40b9b67b86a3ef422abaeb8a53af82ec",
+  "weidu_drift_policy": "V166_ONLY: V162 original WeiDU SHA preserved; all 123 current ITM+origins and all original gamePins and DLLs verified; live WeiDU SHA pinned across preflight, typed approval, install and rollback; original V162/V163 strict checks unchanged",
+  "v167_pr129_dual_bridge_sha256": "f77de7d48adbbd33be8a71e621386d5a72b2a0194d6249e848103b12679aefff"
 }

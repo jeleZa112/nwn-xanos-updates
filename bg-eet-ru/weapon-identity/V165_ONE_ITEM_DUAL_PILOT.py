@@ -353,6 +353,32 @@ V107_SOURCE_URL = ('https://raw.githubusercontent.com/jeleZa112/nwn-xanos-update
                    'bg-eet-ru/weapon-identity/BG_EET_RU_V107_GUARDED_CALLBACK_SOURCE_ONLY.lua')
 V107_SOURCE_SHA = '335ad3537734a52fd8aed923fe953f8fcda5d6ef54e23586ba90218b95c47d4d'
 
+# PR #129 added the dual-name extractor AFTER the immutable V162 bridge pin.
+# V162 must continue to use its original bridge for the 123 installed names.
+# Download this verified newer *source-only* bridge separately; never shadow
+# the old bridge cache or silently patch the V162 backend.
+V167_DUAL_BRIDGE_REF = '4d35d3b7e32b7981865626d098ed816081514c06'
+V167_DUAL_BRIDGE_REL = 'bg-eet-ru/weapon-identity/BG_EET_RU_ITEM_NAMES_FROM_BGXAI_R3_RO.py'
+V167_DUAL_BRIDGE_SHA = 'f77de7d48adbbd33be8a71e621386d5a72b2a0194d6249e848103b12679aefff'
+V167_DUAL_BRIDGE_URL = ('https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/'
+                        + V167_DUAL_BRIDGE_REF + '/' + V167_DUAL_BRIDGE_REL)
+
+
+def load_pinned_dual_bridge(cache,offline):
+    """Exact source-only PR129 implementation, not V162's pre-PR129 bridge."""
+    import types
+    raw=_pinned(cache,'V167_DUAL_NAMES_BRIDGE_R3_RO.py',
+                V167_DUAL_BRIDGE_URL,V167_DUAL_BRIDGE_SHA,offline)
+    if b'def dual_russian_names_source_only(catalog: dict) -> dict:' not in raw:
+        raise Hold('V167_PINNED_DUAL_EXTRACTOR_ABSENT')
+    dual=types.ModuleType('bg_eet_ru_v167_pinned_real_dual_bridge')
+    exec(compile(raw,'V167_DUAL_NAMES_BRIDGE_R3_RO.py','exec'),dual.__dict__)
+    if not callable(getattr(dual,'dual_russian_names_source_only',None)):
+        raise Hold('V167_DUAL_EXTRACTOR_NOT_CALLABLE')
+    return dual
+
+
+
 
 def _pinned(root:Path,relative:str,url:str,expected:str,offline:bool)->bytes:
     if not SHA.fullmatch(expected) or not root.is_dir() or root.is_symlink():
@@ -400,17 +426,20 @@ def run_from_onefile(game,workdir,mode='status',offline=False):
         if mode=='rollback':
             word=input('Type '+APPROVE_ROLLBACK+' to restore V163 exactly (Enter cancels): ').strip()
             return run(mode,g,w,batch,cumulative,None,typed=word)
-        bridge=base._module(base._pinned_source(cache,'bridge',offline),'bridge')
+        # Old bridge is embedded in _readonly_catalog(), before PR129.
+        # Its published callable never existed; load the newer exact function
+        # under an independent immutable SHA pin, without changing old cache.
         catalog,resolver=base._readonly_catalog(cache,g,[USER_SEED],offline)
+        dual_bridge=load_pinned_dual_bridge(cache,offline)
         v107=_pinned(cache,'V107_GUARDED_CALLBACK_SOURCE_ONLY.lua',
                       V107_SOURCE_URL,V107_SOURCE_SHA,offline)
         if mode=='preflight':
-            return run(mode,g,w,batch,cumulative,bridge,catalog,resolver,v107)
-        prior=run('preflight',g,w,batch,cumulative,bridge,catalog,resolver,v107)
+            return run(mode,g,w,batch,cumulative,dual_bridge,catalog,resolver,v107)
+        prior=run('preflight',g,w,batch,cumulative,dual_bridge,catalog,resolver,v107)
         if prior.get('status')!='V165_ONE_ITEM_PREFLIGHT_PASS':
             return prior
         word=input('Type '+APPROVE_INSTALL+' to trial only AROW01 (Enter cancels): ').strip()
-        return run('install',g,w,batch,cumulative,bridge,catalog,resolver,v107,typed=word)
+        return run('install',g,w,batch,cumulative,dual_bridge,catalog,resolver,v107,typed=word)
     except Exception as exc:
         return {'schema':SCHEMA,'status':'V165_SAFE_STOP',
                 'reason':type(exc).__name__+': '+str(exc)[:155],

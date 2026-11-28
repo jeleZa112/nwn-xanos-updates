@@ -235,7 +235,7 @@ class PilotTests(unittest.TestCase):
                 {'gamePins':{'Baldur.exe':'0'*64},'weiduSha':'0'*64},
                 {'itemPins':{}},FakeBatch,None)
 
-    def test_v166_published_onefile_backend_and_manifest_exact(self):
+    def test_v167_published_onefile_backend_and_manifest_exact(self):
         import json
         base=ROOT.parent/'onefile'
         cmd=(base/'BG_EET_RU_UPDATE.cmd').read_bytes()
@@ -245,18 +245,90 @@ class PilotTests(unittest.TestCase):
         backend_bytes=P.read_bytes().replace(b'\r\n',b'\n')
         self.assertNotIn(b'\r',backend_bytes)
         backend_sha=pilot.digest(backend_bytes)
-        self.assertEqual(manifest['version'],166)
+        self.assertEqual(manifest['version'],167)
         self.assertEqual(manifest['sha256'],pilot.digest(cmd))
         self.assertEqual(len(cmd),747154)
         self.assertLessEqual(len(cmd),750000)
         self.assertEqual(manifest['v165_backend_sha256'],backend_sha)
-        self.assertIn(b'SELF_VERSION = 166',cmd)
+        self.assertEqual(manifest['v167_pr129_dual_bridge_sha256'],pilot.V167_DUAL_BRIDGE_SHA)
+        self.assertIn(b'SELF_VERSION = 167',cmd)
         self.assertIn(('V165_PIN=\''+backend_sha+'\'').encode('ascii'),cmd)
         self.assertIn(b'14=dual',cmd)
-        self.assertIn(b'V166 AROW01:1=status 2=check 3=install 4=undo',cmd)
+        self.assertIn(b'V167 AROW01:1=status 2=check 3=install 4=undo',cmd)
         self.assertIn(b'V165_ONE_ITEM_DUAL_PILOT.py',cmd)
-        self.assertIn(b'ad4e7f9f8eb234aa9b8f707104355628555d43df',cmd)
+        self.assertIn(b'2cb9cab8b5f5b7f168be09a529e884948eae9941',cmd)
         self.assertIs(manifest['default_game_writes_allowed'],False)
+
+    def test_v167_actual_immutable_legacy_bridge_mismatch_and_verified_dual_loader(self):
+        """Real published source, not a mock with the missing method invented."""
+        current=(ROOT/'BG_EET_RU_ITEM_NAMES_FROM_BGXAI_R3_RO.py').read_bytes().replace(b'\r\n',b'\n')
+        self.assertEqual(pilot.digest(current),pilot.V167_DUAL_BRIDGE_SHA)
+        self.assertIn(b'def dual_russian_names_source_only(catalog: dict) -> dict:',current)
+        legacy=current.split(b'def dual_russian_names_source_only(catalog: dict) -> dict:')[0]
+        self.assertNotIn(b'def dual_russian_names_source_only',legacy)
+        with tempfile.TemporaryDirectory() as d:
+            root=pathlib.Path(d)
+            cached=root/'V167_DUAL_NAMES_BRIDGE_R3_RO.py'
+            cached.write_bytes(legacy)
+            with self.assertRaisesRegex(pilot.Hold,'V165_PINNED_CACHE_CHANGED'):
+                pilot.load_pinned_dual_bridge(root,offline=True)
+            cached.write_bytes(current)
+            dual=pilot.load_pinned_dual_bridge(root,offline=True)
+            self.assertTrue(callable(dual.dual_russian_names_source_only))
+            sha=pilot.digest(b'ITM_V1_ARROW_MOCK')
+            hashes={'dialog.tlk':'0'*64,'dialogf.tlk':'1'*64}
+            catalog={
+                'schema':'BG_EET_RU_REUSE_BGXAI_R3_V111_NAMES_RO_V1',
+                'status':'READ_ONLY_SOURCE_CATALOG',
+                'gameFilesWritten':0,'engineListenersAdded':0,
+                'tlkSha256':hashes,
+                'items':{'AROW01':{
+                    'status':'NAME_OR_IDENTIFICATION_HOLD',
+                    'autoDisplayName':None,
+                    'itemTypeRaw':5,
+                    'resourceSha256':sha,
+                    'origin':'CURRENT_GAME_BIFF',
+                    'unidentifiedStrref':6328,
+                    'identifiedStrref':6759,
+                    'unidentifiedRuByTlk':{
+                        'dialog.tlk':'Отличная стрела',
+                        'dialogf.tlk':'Отличная стрела'},
+                    'identifiedRuByTlk':{
+                        'dialog.tlk':'Стрела',
+                        'dialogf.tlk':'Стрела'}}}}
+            names,item=pilot.pairs_from_current(catalog,dual,hashes)
+            self.assertEqual(names,PAIR)
+            self.assertEqual(item['itmSha256'],sha)
+            self.assertEqual(item['itmOrigin'],'CURRENT_GAME_BIFF')
+            self.assertEqual(item['identificationEvidence'],'NOT_PROVEN_FOR_CURRENT_X64_EEEX')
+            self.assertFalse(dual.dual_russian_names_source_only(catalog)['installAllowed'])
+            # Female TLK drift: the real function must not mint a verified pair.
+            catalog['items']['AROW01']['identifiedRuByTlk']['dialogf.tlk']='Стрела!подмена'
+            with self.assertRaisesRegex(pilot.Hold,'AROW01_NOT_CURRENT_TWO_RU_NAMES'):
+                pilot.pairs_from_current(catalog,dual,hashes)
+            cached.write_bytes(current+b'!')
+            with self.assertRaisesRegex(pilot.Hold,'V165_PINNED_CACHE_CHANGED'):
+                pilot.load_pinned_dual_bridge(root,offline=True)
+
+    def test_v167_real_import_contract_old_v162_vs_pr129_extractor(self):
+        """Precisely the missing AttributeError from user's V166 14->2."""
+        import ast
+        v162=ROOT.parent/'hit-only-v160/weapon_names_onefile_dispatch.py'
+        v163=ROOT.parent/'hit-only-v160/weapon_names_cumulative_onefile_dispatch.py'
+        legacy=v162.read_text('utf-8')
+        newer=(ROOT/'BG_EET_RU_ITEM_NAMES_FROM_BGXAI_R3_RO.py').read_text('utf-8')
+        self.assertIn("COMMIT = '26a3a792af22257edf85da0877f306199d15ea43'",legacy)
+        self.assertIn("'bridge': ('bg-eet-ru/weapon-identity/BG_EET_RU_ITEM_NAMES_FROM_BGXAI_R3_RO.py'",legacy)
+        self.assertIn("V162_ORIGINAL_BUNDLE",v163.read_text('utf-8'))
+        node=ast.parse(newer)
+        self.assertIn('dual_russian_names_source_only',
+                      {f.name for f in node.body if isinstance(f,ast.FunctionDef)})
+        # The old source prefix matches all old bridge logic but has no
+        # getter function; the installed core chain must remain untouched.
+        self.assertIn("dual_bridge=load_pinned_dual_bridge(cache,offline)",
+                      P.read_text('utf-8'))
+        self.assertNotIn("bridge=base._module(base._pinned_source(cache,'bridge',offline),'bridge')",
+                         P.read_text('utf-8'))
 
     def test_pins_and_typed_windows_barrier(self):
         self.assertEqual(len(pilot.V163_DISPATCH_SHA),64)
