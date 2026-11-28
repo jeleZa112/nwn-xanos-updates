@@ -61,6 +61,14 @@ try {
         }
         throw ('All download hosts failed: '+($errorsSeen -join ' | '))
     }
+    function File-SHA256([string]$target) {
+        $hasher=[Security.Cryptography.SHA256]::Create()
+        try {
+            $stream=[IO.File]::OpenRead($target)
+            try{return ([BitConverter]::ToString($hasher.ComputeHash($stream))).Replace('-','').ToLowerInvariant()}
+            finally {$stream.Dispose()}
+        } finally {$hasher.Dispose()}
+    }
     try {
         $pinPath='BGXAI/UPDATER_V2/BOOTSTRAP_PIN_V2.json'
         # Unique query per launch prevents stale branch-ref pin across HTTP/proxy/CDN caches.
@@ -88,11 +96,11 @@ try {
         )
         Download-Limited $scriptSources $temporaryScript 80000
         if((Get-Item -LiteralPath $temporaryScript).Length -ne $expectedSize) {throw 'Downloaded updater size mismatch'}
-        $actualHash=(Get-FileHash -LiteralPath $temporaryScript -Algorithm SHA256).Hash.ToLowerInvariant()
+        $actualHash=(File-SHA256 $temporaryScript)
         if($actualHash -cne $expectedHash) {throw 'Downloaded updater SHA256 mismatch; refusing execution'}
         $targetScript=Join-Path $cacheDir 'BGXAI_SYNC.current.ps1'
         [IO.File]::Copy($temporaryScript,$targetScript,$true)
-        if((Get-FileHash -LiteralPath $targetScript -Algorithm SHA256).Hash.ToLowerInvariant() -cne $expectedHash) {
+        if((File-SHA256 $targetScript) -cne $expectedHash) {
             throw 'Cached updater SHA256 mismatch; refusing execution'
         }
         # Content-addressed last-known-good hub persists outside the game folder.
@@ -101,7 +109,7 @@ try {
             $a=Get-Item -LiteralPath $archive -Force
             if(($a.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0 -or
                 $a.Length -ne $expectedSize -or
-                (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant() -cne $expectedHash) {
+                (File-SHA256 $archive) -cne $expectedHash) {
                 throw 'Last good pinned cache changed; refusing execution'
             }
         } else {
@@ -140,12 +148,12 @@ try {
         $a=Get-Item -LiteralPath $archive -Force
         if(($a.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0 -or
            $a.Length -ne $offlineSize -or
-           (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant() -cne $offlineHash){
+           (File-SHA256 $archive) -cne $offlineHash){
             throw 'Offline cached script SHA or size mismatch'
         }
         $targetScript=Join-Path $cacheDir 'BGXAI_SYNC.current.ps1'
         [IO.File]::Copy($archive,$targetScript,$true)
-        if((Get-FileHash -LiteralPath $targetScript -Algorithm SHA256).Hash.ToLowerInvariant() -cne $offlineHash){throw 'Offline executable cache changed'}
+        if((File-SHA256 $targetScript) -cne $offlineHash){throw 'Offline executable cache changed'}
         [IO.File]::WriteAllText((Join-Path $cacheDir 'head.txt'),$offlineCommit,[Text.Encoding]::ASCII)
         Write-Host ('BGXAI OFFLINE: verified last good '+$offlineCommit.Substring(0,12)+' (SHA256 OK; no auto install)')
     } finally {
