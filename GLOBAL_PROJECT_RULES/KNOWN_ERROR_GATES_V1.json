@@ -644,6 +644,38 @@
         "live": "NO"
       },
       "remaining": "Run original V4 42 case suite / full 498 offline; establish native same-frame target and hypothetical unselected item final APR/THAC0 plus safe EPS/round boundary"
+    },
+    {
+      "error_id": "BGXAI_EEEX_GETITEMABILITY_HEADER_STRIDE_UNVERIFIED_20261128",
+      "project": "BGXAI",
+      "discovered_at": "2026-11-28",
+      "type": "POTENTIAL_NATIVE_POINTER_STRIDE_HAZARD",
+      "status": "SOURCE_DISCREPANCY_VERIFIED_LIVE_RUNTIME_NOT_ATTESTED_GUARDED_BY_R3_REUSE",
+      "scope": "EEex x64 CItem.getAbility index>=1 and item ability pointer arithmetic",
+      "source_proof": {
+        "upstream_repo": "Bubb13/EEex",
+        "upstream_file": "EEex/copy/EEex_scripts/EEex_Resource.lua",
+        "upstream_commit": "a6d21abe44e20509f5d0259ccc6c7e7f9d12b285",
+        "upstream_git_blob": "5ecd3c2f9e9bcc6cbd317653fc057a06d956916b",
+        "observed_formula": "itemHeader.abilityOffset + Item_Header_st.sizeof * abilityIndex",
+        "expected_itm_structure": "BGEE ITM V1 main Item header 114 bytes; extended ability header 56 bytes (IESDP https://iesdp.bgforge.net/file_formats/ie_formats/itm_v1)",
+        "caveat": "This is a code review mismatch, not a demonstrated crash or confirmed bug in user's installed EEex 1.1.7"
+      },
+      "prior_work": "Existing BGXAI_WEAPON_NATIVE_ITM_R3_RO.py parse_itm already uses ability offset + 56*index with bounds and BIF/override precedence. Existing native R3 source/test baseline was reused byte-exact from Library, no second parser implemented.",
+      "implemented_fix": "Added audit_r37_top_level to SAME R3 module, feeding 39-slot raw inventory into existing audit/source.get/parse_itm; 5 tests appended to existing suite, 35/35 Python unittest PASS on exact latest GitHub blobs; existing workflow now triggers on R3 edits.",
+      "evidence": {
+        "source_blob": "4a1400661c07efede1d097117e3e49d327cda9f5",
+        "test_blob": "8e4413db402e59f51519e78b5f81428841d70233",
+        "offgame_tests": "35/35 PASS; historical baseline 30/30 PASS; local git hash-object == GitHub"
+      },
+      "no_repeat": "Do not call unverified EEex CItem.getAbility for ability index>=1; do not read raw pointer manually until installed EEex exact type sizes, lifetime and native behavior are proven; reuse R3 static bounded parser and R37 raw event. Do not repeat R47 179→22 HOLD or change game without typed consent.",
+      "tiers": {
+        "code": "SOURCE_ONLY_IN_GITHUB",
+        "test": "35/35_EXACT_LOCAL_PASS",
+        "deploy": "NO",
+        "live": "NO"
+      },
+      "remaining": "Native installed EEex 1.1.7 function safety unverified; complete same-frame actor/target hypothetical final APR/THAC0 and manual EPS action boundary missing"
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
