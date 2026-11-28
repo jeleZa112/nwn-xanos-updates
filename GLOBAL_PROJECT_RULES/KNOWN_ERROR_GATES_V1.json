@@ -519,6 +519,22 @@
           "user_live_install_approval": false,
           "installed_verified": true,
           "live_capture_verified": false
+        },
+        {
+          "delta_id": "BGXAI_R44_LAST157_STABLE_ACTOR_ID_GUARDED_SUCCESSOR_20261128",
+          "recorded_before_source_edit": true,
+          "history_complete_for_target": true,
+          "already_done": "R43 is REAL installed last WeiDU #156 and first one-shot R43 179->11 captured HOLD_SCRIPT_ACTOR_CHANGED. Exact existing R39 source immutable (Git blob 52bd8751581aa9f9d9ac09559f11a856e81ba1da) contains fresh Lua sprite wrapper pointer inequality. Alternate read-only R39 numeric-ID source-only 13533 bytes SHA256 c7b72d75c9d5500907e63ff7eb09c37ec8981a048235b72db266a9d19f0e322a passes 161 Python/OS and 9 Lua tests. R43 composed 95965 bytes SHA256 8abdc5b1d2088d8c8e2f53b6e4502de5dd0b05225fc6fcca52ebe165253e7ce6 and exact R43 typed installer/backup/rollback/one listener source exists. Existing single 179 updater channel immutable pinned 180ef997fd6cee7e3b12c03ecaae472340d9aac0; old menu 1..11 should remain unchanged.",
+          "missing_delta": "A new source-only exact R43->R44 single-byte-internal R39 replacement, preserving the ONLY preexisting R38 listener and R43 bounded status emitter. Need an independent last-only #157 guarded native successor reusing R43 proof and backup, typed install/rollback; prove via CI with mocked EET. Only after ALL SOURCE gates pass consider separately adding menu 12..16 to SAME one BGXAI_UPDATE.cmd, repin only 179 child hash/bytes in existing <80000B parent, and atomic bootstrap immutable source SHA. Never reinstall R43 or repeat 179->11. Do not equate this with XEquip.",
+          "restrictions": "No game writes during development; no new action listener; no auto ARM/XEquip/EPS actions/LOCALS; strict last #156 R43 and exact proof sha before installing successor #157; ensure unrelated watched original snapshots and original R43 proof unchanged; external SHA-backed backup; exact typed consent; no automatic retry after WeiDU; guarded last-only rollback; preserve original 180ef release until new CI PASS. Avoid using user's private raw log which was not uploaded; status already pins failure site and sufficient to write source-only delta.",
+          "anticipated_source": "BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/BGXAI_R44_COMPOSE_FROM_R43_SOURCE_ONLY.py",
+          "anticipated_guard": "BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/BGXAI_R44_GUARDED_LAST156_SOURCE_ONLY.py",
+          "code": false,
+          "test": false,
+          "deploy": false,
+          "live": false,
+          "approval_for_install": false,
+          "status": "REVIEWED_PREWORK_NO_CODE_YET"
         }
       ]
     },
