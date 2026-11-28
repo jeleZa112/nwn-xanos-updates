@@ -302,7 +302,6 @@
       "safe_action": "When a user supplies another chat transcript, classify it as evidence, compare assistant claims with global known-error and prior-work gates, identify the process failure, and report a minimal adjustment to the existing mechanism. Only enter the referenced project workflow if explicitly requested",
       "closure_condition": "A separate future cross-chat continuation test demonstrates that pasted examples remain audit evidence and the assistant does not redirect to unrelated project tasks or request user artifacts. A registry entry or passing schema checks alone is not validation",
       "evidence": [
-        "this conversation: user supplied the 'Видео озвучка 1.4' exchange and asked 'постой ты забыл для чего я создал твой чат ?'",
         "/GLOBAL_PROJECT_RULES/GLOBAL_PRIOR_WORK_GATE_V1_RU.md"
       ],
       "enforcement": "assistant_scope_confirmation_before_interpreting_quoted_chat; process-only, no universal runtime block"
