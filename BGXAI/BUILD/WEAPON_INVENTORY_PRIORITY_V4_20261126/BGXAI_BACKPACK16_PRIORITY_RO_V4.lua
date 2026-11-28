@@ -22,6 +22,17 @@ local function result(status,detail)
  if type(detail)=="table" then for k,v in pairs(detail) do x[k]=v end end
  return x
 end
+-- Reuse V3's *verified current-unusable* fallback. Normal hysteresis must not
+-- preserve a confirmed immune / empty / unreachable weapon against a positive
+-- alternative. Source-only advice does NOT authenticate runtime evidence.
+local V3_CURRENT_UNUSABLE={
+  VERIFIED_TARGET_WEAPON_IMMUNITY=true,
+  VERIFIED_NO_EFFECTIVE_DAMAGE_OR_EFFECT=true,
+  VERIFIED_EMPTY_AMMUNITION=true,
+  VERIFIED_RANGED_OUT_OF_RANGE=true,
+  VERIFIED_UNSAFE_TO_TANK=true,
+  VERIFIED_NO_SAFE_MELEE_PATH=true
+}
 local function slotValid(x,s)
  if type(x)~="table" or x.slot~=s then return false end
  if x.status=="EMPTY" then return true end
@@ -103,6 +114,19 @@ function M.plan(backpack,quick,other,scene,candidates)
     scene.currentEquipmentFingerprintStable~=true or
     scene.r37ActionContextStable~=true then
   return result("HOLD_EQUIPMENT_OR_ACTION_CONTEXT_DRIFT") end
+ -- A plain flag or an unexplained nonpositive score is not proof of immunity.
+ -- These reason names must come from the already existing V3 model, and this
+ -- dry-run output remains non-executable even if the caller forges the inputs.
+ local currentUnusable=false
+ if scene.currentWeaponUnusableReason~=nil or
+    scene.currentWeaponUnusableVerified~=nil then
+  if scene.currentWeaponUnusableVerified~=true or
+     V3_CURRENT_UNUSABLE[scene.currentWeaponUnusableReason]~=true then
+   return result("HOLD_CURRENT_WEAPON_UNUSABLE_EVIDENCE_INCOMPLETE") end
+  if scene.currentWeaponScore>0 then
+   return result("HOLD_CURRENT_WEAPON_STATUS_INCONSISTENT") end
+  currentUnusable=true
+ end
  local ok,reason=mapValid(backpack,quick,other)
  if not ok then return result(reason) end
  local candidateCount,seenSlots,best=0,{},nil
@@ -135,8 +159,12 @@ function M.plan(backpack,quick,other,scene,candidates)
  for k=1,candidateCount do
   if candidates[k]==nil then return result("HOLD_CANDIDATE_LIST_AMBIGUOUS") end
  end
- local margin=math.max(2,math.abs(scene.currentWeaponScore)*0.15)
+ local margin=currentUnusable and 0 or
+              math.max(2,math.abs(scene.currentWeaponScore)*0.15)
  local gain=best.predictedUtility-scene.currentWeaponScore
+ if currentUnusable and best.predictedUtility<=0 then
+  return result("HOLD_NO_POSITIVE_BACKPACK_ALTERNATIVE",
+   {candidateResref=best.resref,estimatedGain=gain}) end
  if gain<=margin then
   return result("KEEP_CURRENT_NO_MEANINGFUL_GAIN",
    {candidateResref=best.resref,estimatedGain=gain,margin=margin}) end
