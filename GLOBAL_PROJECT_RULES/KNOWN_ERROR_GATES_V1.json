@@ -1064,14 +1064,14 @@
       "error_id": "BGXAI_V2_MODULE180_ALL_OR_NOTHING_NATIVE_R3_COVERAGE_HOLD_20261128",
       "project": "BGXAI",
       "type": "KNOWN_RISK",
-      "status": "MITIGATED_SOURCE_ONLY",
+      "status": "MITIGATED_VERIFIED",
       "discovered_at": "2026-11-28",
       "trigger": "Third actual V2 menu180 on user's Windows after exact GAM parser #/- fix. status=HOLD_SAVED_PARTY_CATALOG_PREPARATION, failureStage=BUILD_INERT_LUA_CATALOG, reason=HOLD_R3_CURRENT_GAME_RESOURCE_COVERAGE, noAutoRetry=true, gameModified=false, ordersSent=0.",
       "observed_failure": "Full GAM parsing and R3 native audit completed without an unhandled exception; module180 build_source rejected audit coverage. Its old contract requires no missing ITM or linked spells and exact item coverage for ALL saved-party inventory entries. The specific actual resource(s) causing the incomplete coverage remain UNKNOWN; never claim named missing files.",
       "cause": "CONFIRMED SOURCE DESIGN GAP: older module180's all-or-nothing catalog build discards every otherwise parsed R3 item when ANY saved inventory ITM or opcode146 linked SPL cannot be read/parsed. The exact root cause of the user's incomplete audit is UNKNOWN because the public console does not identify which resources were missing.",
       "do_not_repeat": "Do not call original pin module180 again, redo original GAM resref fix, re-run R47 witness, reset cache, install/rollback WeiDU/EPS, invent absent ITMs/SPLs, replace the same CMD, or request previously analyzed BALDUR(1).gam.",
-      "safe_action": "Reuse existing R3 audit returned items/missingItemsOrLinkedSpells/linkedSpells; require exact status/provenance and missing-record consistency. Stage a passive partial catalogue with only verified ITM plus present linked SPL, quarantine absent ITM and opcode146-linked items with missing SPL, keep complete GAM inventory as source-only raw slots and no native actor claim, all dispatch/equip false. If no safe item remains, retain HOLD. Tests Windows+Ubuntu PASS run 46158535358, 17/17 in each OS; exact new immutable module180 SHA in existing V2 manifest. A subsequent single changed readonly menu180 run may verify current saved source, not gameplay.",
-      "closure_condition": "Windows and Ubuntu CI PASS existing V2/source test contract incl missing ITM, broken linked SPL, forged audit rejection and zero-file mutation; changed pinned module180 returns FULL or PARTIAL catalog on genuine user Windows save with no game/party actions. Missing resource causality needs actual evidence; general autoequip remains uninstalled.",
+      "safe_action": "ACTUAL LIVE-ON-WINDOWS USER RUN SUCCESS for static partial source 16/17 and party6; do NOT rerun menu 180 to chase 1 missing ITM. Reuse existing passive Lua/JSON output from Documents for subsequent work, but its content was NOT supplied to assistant and cannot infer which resrefs/weapon candidates passed. Proceed to existing V4/R37/actor+target+manual EPS gates; no game changes or equip from source-only proof.",
+      "closure_condition": "CLOSED FOR SOURCE-ONLY STAGING: user has proved 16/17 native ITM, one quarantined, 0 missing linked spells, 6 saved actors, Lua/JSON outside game, no orders, no gameplay write. The single unavailable item identity is not required to continue; all native actor/target/round/equip work remains separately unverified.",
       "evidence": [
         "/BGXAI/UPDATER_V2/BGXAI_MODULE180_SAVED_PARTY_CATALOG_RO.py",
         "/BGXAI/UPDATER_V2/test_module180_saved_party_catalog_ro.py",
@@ -1086,9 +1086,28 @@
         "pinnedModuleSha256": "30169724747e632fa2bf59ac05ed916bfac9c71ef0faf85376dd7f66ed868520",
         "moduleSourceBytes": 19854,
         "moduleManifestCommit": "c01ea94c079229687d6db29f8f808d63ebd86b6d",
-        "nativeWindowsRuntime": "PENDING_NOT_PROVEN_AFTER_SOURCE_ONLY_CHANGE",
+        "nativeWindowsRuntime": "SOURCE_CATALOG_PARTIAL_OUTSIDE_GAME_ACTUAL_WINDOWS_PASS_20261128",
         "ciRun": 46158535358,
-        "ciStatus": "SUCCESS_WINDOWS_AND_UBUNTU_17_MODULE180_TESTS_EACH"
+        "ciStatus": "SUCCESS_WINDOWS_AND_UBUNTU_17_MODULE180_TESTS_EACH",
+        "actualWindowsProof": {
+          "status": "SOURCE_CATALOG_PARTIAL_OUTSIDE_GAME",
+          "gamSha256": "4824580592a4e8f1835f0aabc0b387521341c5365bf8117fffb2429f5344b467",
+          "chitinKeySha256": "ad67498a222043421c39bcdb2026abf6cdf0fbd160cba51135ab61d6a85d9515",
+          "catalogSha256": "41ef2b38d882a66574a842fb31b645ba3ed815cfa90ee2abf82966997e6218f8",
+          "partyCount": 6,
+          "uniqueItemResources": 17,
+          "parsedItems": 16,
+          "unavailableItems": 1,
+          "blockedByLinkedSpells": 0,
+          "missingLinkedSpells": 0,
+          "gameplayAIInstalled": false,
+          "gameModified": false,
+          "ordersSent": 0,
+          "dispatchAuthorized": false,
+          "inventoryMoveAuthorized": false,
+          "nativeCurrentSessionInventoryVerified": false,
+          "sourceReportOutsideEET": true
+        }
       }
     }
   ],
