@@ -389,13 +389,13 @@
       "error_id": "BGXAI_R42_LIVE_CAPTURE_HOLD_DETAIL_MASKED_20261128",
       "project": "BGXAI",
       "type": "CONFIRMED_FAILURE",
-      "status": "R47_LIVE_BCS_WITNESS_HOLD_NO_RETRY_R48_FIXED_ITEM_NOT_SMART_SELECTOR_PUBLISH_BLOCKED",
+      "status": "R47_CAPTURE_HOLD_R48_FIXED_ITEM_STAGE_REVERTED_SMART_SELECTION_GATE_PENDING",
       "discovered_at": "2026-11-28",
       "trigger": "Real Windows R42 one-file 179→6 capture after independently positive 179→2 guarded installed status",
       "observed_failure": "28-Nov 2026 first real R43 installed Windows capture 179→11 produced R43_CAPTURE_HOLD_REASON_OBSERVED, inner R42_CAPTURE_HOLD_CLASS_BCS_UNREADABLE, noAutoRetry=true, r39ProbeStatus=HOLD_SCRIPT_ACTOR_CHANGED, r39ClassSlotState=NOT_READ, classScriptResref=null, installed=true, ordersSent=0, dispatchAuthorized=false, armAuthorized=false, gameModified=false. Existing 46,109-byte raw console file local path C:\\Users\\Drevo\\Documents\\BGXAI_LIVE_REPORTS\\BGXAI_R43_CLASS_REASON_20261128T093349396112Z.log WAS NOT uploaded and has NOT been inspected. Two BG_EET_RU_V106 registration lines are not causal proof. Native process STOP code 1 is deliberate on hold.",
       "cause": "SOURCE-EXACT STOP LOCATION: R39 EEex 1.1.7 bridge probeScriptAssignments() checks `sameActor ~= sprite or sameId ~= portraitId` immediately after first seven resref reads, returning HOLD_SCRIPT_ACTOR_CHANGED. The single observed reason does NOT distinguish Lua userdata wrapper reference inequality (fresh typed wrapper returned by EEex_GameObject_Get / EEex_GameObject_CastUT) from an actual portrait actor ID change. Need not assert the actor actually switched. R43 successful identity matched earlier; class script not read. Proposed exclusive minimal source-only fix: compare stable numeric m_id with initial physical actorId and portrait ID, then second read using second object wrapper, and retain all previously existing exact physical/selection/script/cursor change HOLD gates; test same actor new wrapper vs changed ID without game installation. Not known which of two comparisons failed live.",
       "do_not_repeat": "Do not replay 179→11, reinstall R43 179→9, rerun old R42 179→6, old R39 compile, R38 capture, old GAM parsing, or unguarded rollback. Preserve original raw file. No duplicate listener, no new command/ARM, no assertion of CLASS name from 19-Nov GAM saved snapshot, no blame on BG_EET_RU without evidence.",
-      "safe_action": "Real R47 menu179→22 first live HOLD_R47_WITNESS_NOT_OBSERVED (no repeat), installed #158 unchanged. R48 fixed STAF01 proof-of-XEquip BAF 849B SOURCE ONLY, no actor+target scoring; user explicitly requires first actor assessment, then current enemy, then comparison and time to switch. Existing V3 weapon priority scorer, R10/11/12/13 target evidence, R32/35 APR, traits evaluator and V4 16-inventory planner are SOURCE-ONLY and must be reused, not reinvented. R48 onefile staged 23–25 is broken CI, unpublished and blocked. Restore functioning pinned f282 onefile, no R48 install. Do not ask user to run anything now; do not claim first equip or full auto chooser.",
+      "safe_action": "User corrected scope: must evaluate character then enemy then weapons. Already existing V3 weapon priority scorer (actor trait prof class buffs effective APR/THAC0 + target AC/resists/immunities/enchantment/range; DPR switch cost & hysteresis), R11/R12/R13 target binding, R32/R35 APR evidence and inventory V4 scoring. These have SOURCE ONLY recommendation with no authenticated adapter/action. R48 fixed STAF01 action 849B SOURCE ONLY, no ranker integrated; ONEFILE 23..25 integration staged, discovered SyntaxError, NEVER published, and restored branch to immutable f2827f25da5 original onefile 1..22 exact blob ad2a63bf.... Existing user game remains R47 last158 and first menu179→22 live witness HOLD, no repeat. Do not instruct R48 install. Next build only minimal scoring-to-action integration based on prior work, no extra passive diagnostics loop.",
       "closure_condition": "Specific original source of R39 CLASS assignment read HOLD is identified without speculating from unrelated mods or retrying the same capture. A future narrow source-only fix must explicitly preserve existing listener, no command dispatch, exact script/backup/provenance checks, one updated existing updater and CI; any new installation requires separate typed approval. Class script remains UNKNOWN until real current-game evidence.",
       "evidence": [
         "user-provided 2026-11-28 BGXAI_UPDATE.cmd 179→6 console in current BGXAI conversation (R42_HOLD_ONEFILE_GUARDED, HOLD_R42_NATIVE_GUARD_OR_STATE)",
@@ -408,7 +408,7 @@
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46133473161",
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46133585010"
       ],
-      "enforcement": "R47 LIVE witness UNKNOWN. R48 fixed-pilot source/mock only, NO real DEPLOY, NO intelligent selection. Future equipment decisions must have same-frame verified actor+enemy+candidate ranking, complete or appropriate partial evidence, safe EPS/manual queue, one-shot execution, no auto retry. Never promote unverified source CI to real engine proof.",
+      "enforcement": "No release without actor AND target evaluation and real same-frame evidence; old original onefile restored to working immutable release, R48 CODE ONLY not installed. No repeated capture or user action now.",
       "source_only_fix": {
         "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_CLASS_HOLD_REASON_SOURCE_ONLY.py",
         "tests": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_class_hold_reason_source_only.py",
@@ -579,7 +579,7 @@
         },
         {
           "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py",
-          "git_blob_sha": "c88144ee648fbd099eca5c6a19654de8faa6fc31"
+          "git_blob_sha": "ad2a63bf635f1e3de17c52dc7e6605bf280dfabc"
         }
       ],
       "already_implemented": [
@@ -805,19 +805,24 @@
           "recorded_before_source_edit": true,
           "already_done": "BGXAI original onefile179 at immutable f2827f25da5 still has 1–22: 1–16 R42–R44 read-only, 17 R46 real native compiled, 18–22 R47 real typed install last158 and first passive live witness HOLD, no redo. New R48 849B real action BAF from exact pinned original R39 2407B already native compiled in user EET, one BGX48TRY LOCALS flag, one XEquipItem(STAF01,Myself,SLOT_WEAPON0,EQUIP) only if actor exact *GCLERIC CLERIC party1 and ActionListEmpty+CombatCounter0, no enemy, item MISC5, target and offhand empty. New R48 guarded last158→159 WeiDU install/rollback source 15135B sha 6a4b934297cb5f20357c46d42eaf804a7bec748c59a878cd0c97ef481990e9e6, original code reuse. R48 18 mock-EET lifecycle tests WIN+UBUNTU PASS GitHub Actions 46140142723, no real game change yet.",
           "missing_delta": "Add ONLY same onefile179 modes23=R48 typed one-shot real equip install (internal exact last158 source and BCS sha preflight, NO separate menu preflight), 24=R48 exact typed rollback last159, 25=status RO. Stage exact R37/R38/R42/R43/R44/R46/R47 sources and original R39 BAF, new R48 composer+guard with SHA pins. Preserve original 179 1–22, PS <=80000, no second CMD, no auto install. CI Win+Linux regression PASS before immutable release. User then ONE typed install action after reviewing risks, and ONE actual gameplay trial on expendable save; no further passive witness capture loops.",
-          "status": "R48_UNPUBLISHED_BROKEN_STAGE_HOLD_REVERT_TO_PUBLISHED_R47_ONEFILE_REQUIRED",
+          "status": "R48_UNPUBLISHED_ONEFILE_STAGE_REVERTED_EXISTING_R47_ONEFILE_PIN_RESTORED",
           "gameModified": false,
           "autoConsent": false,
           "safety": "R48 is actual gameplay-changing XEquipItem and may update live save if conditions match; requires explicit user typed approval, external SHA backup for BCS/WeiDU, separate rollback and no retry on failed install.",
           "userFrustration": "User explicitly said how many more tests; do not ask for R47 raw log or repeat 179→22. Direct pilot only.",
           "blockReason": "User requested character+enemy evaluation gate, not fixed STAF01 action. Original staged R48 onefile has Python syntax error line ~863 (CI 46140352896 failed), and never passed integrated two-OS CI. Do NOT repin immutable parent/BOOTSTRAP_PIN, do NOT offer mode23 install. Restore unpublished branch child from exact immutable f2827f25 and remove R48 onefile staging tests from active CI, preserve standalone R48 source for future, use existing V3+V4 as ranker.",
           "releaseAuthorized": false,
-          "next": "Restore branch to last pinned and functioning onefile179 1–22; keep source-only R48 action examples but do not deploy, no user tests now. Implement merge using prior R11/12/13 + trait+V3 + inventory V4."
+          "next": "Reuse existing BGXAI_WEAPON_PRIORITY_LUA_V3 plus TRAITS, target R11/R12/R13, APR R32/R35 and inventory V4, ensure actor current derived stats and target defenses simultaneously bound; only then bridge scored chosen item from V4 into one-shot typed action path. No speculative reinstall or logs.",
+          "restoredGitBlob": "ad2a63bf635f1e3de17c52dc7e6605bf280dfabc",
+          "restoredFromImmutableSourceCommit": "f2827f25da5a01215fcbdc0b9a48e3900d654384",
+          "restoredOnefile1Through22": true,
+          "realGameModified": false,
+          "r48SmartWeaponSelectionImplemented": false
         }
       ],
       "project": "BGXAI",
       "source_path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py",
-      "source_git_blob_sha": "c88144ee648fbd099eca5c6a19654de8faa6fc31",
+      "source_git_blob_sha": "ad2a63bf635f1e3de17c52dc7e6605bf280dfabc",
       "status": "PREWORK_REVIEWED_SOURCE_ONLY",
       "predecessor_sources": [
         {
