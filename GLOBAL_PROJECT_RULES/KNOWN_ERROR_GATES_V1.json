@@ -389,13 +389,13 @@
       "error_id": "BGXAI_R42_LIVE_CAPTURE_HOLD_DETAIL_MASKED_20261128",
       "project": "BGXAI",
       "type": "CONFIRMED_FAILURE",
-      "status": "R43_DEPLOY_INSTALLED_VERIFIED_FIRSTHAND_LIVE_CAPTURE_PENDING",
+      "status": "R43_LIVE_ONE_SHOT_CAPTURE_HOLD_R39_ACTOR_EQUALITY_CHECK_SOURCE_UNDER_REVIEW",
       "discovered_at": "2026-11-28",
       "trigger": "Real Windows R42 one-file 179→6 capture after independently positive 179→2 guarded installed status",
-      "observed_failure": "Real 179→6 outer HOLD_R42_NATIVE_GUARD_OR_STATE. Original user-supplied BGXAI_R42_CLASS_BCS_20261128T084201129348Z.log (55,209 bytes, SHA256 5695aaacd4fb2da2f690188f46fb4241e5cad8961cd537dd3ee1c757ba452495) has exactly one well-formed [BGXBCS] row (line 354) with seq=1 partyIndex=1 scrlev=4 sameR38Listener=true, status=HOLD_CLASS_BCS_NOT_READABLE and classScriptResref=null. Exact Jagan identity callback [BGXID] match appears line 355; [BGXR27] actionRaw=23 seq=1 line 351. Listener and game ran, one row emitted. Separate menu Lua parsing error line 85 and BG_EET_RU_V150_HOLD line 397 also appear but are not proven causes of this BCS read failure.",
-      "cause": "CONFIRMED_INNER_BCS_READ_HOLD: [BGXBCS] class resref null in exactly one valid event. The existing R42 bridge returns a generic unreadable status for several possible conditions (EEex API unavailable, selected IDs/physical probe, cursor instability, empty class assignment, etc.). SPECIFIC_R39_BRIDGE_REASON=UNKNOWN because installed R42 one-shot row discards the inner R39 status; outer onefile additionally masks all native non-PASS as HOLD_R42_NATIVE_GUARD_OR_STATE. Game process exit code is not recoverable from the raw log alone; with exit 0 original parser would return R42_CAPTURE_HOLD_CLASS_BCS_UNREADABLE, else R42_CAPTURE_HOLD_MANUAL_REVIEW.",
-      "do_not_repeat": "Do not rerun 179→6 or 179→3/4, R38 capture, R39 native compile, reinstall or rollback. Do not infer the BG_EET_RU_V106 listener caused R42 failure, or assert a CLASS BCS name from historical GAM. Do not declare offline 103/103 CI a live proof.",
-      "safe_action": "Real onefile user-PC 179→8 preflight PASS then separately typed 179→9 install PASS with inner R43_READONLY_REASON_INSTALLED_AWAITING_LIVE. R43 is installed; DO NOT repeat 179→8/9 or original R42 179→6, no rollback unless justified. ONLY next user local step once: game/InfinityLoader closed initially, same existing updater 179→11 R43 capture game RO, load Jagan test save, select Jagan alone, one ordinary walk action, close game. On HOLD/STOP preserve first output and BGXAI_R43_CLASS_REASON_*.log, NO retry. Class resref and R39 exact hold reason still unproven pending R43 capture. No XEquip orders.",
+      "observed_failure": "28-Nov 2026 first real R43 installed Windows capture 179→11 produced R43_CAPTURE_HOLD_REASON_OBSERVED, inner R42_CAPTURE_HOLD_CLASS_BCS_UNREADABLE, noAutoRetry=true, r39ProbeStatus=HOLD_SCRIPT_ACTOR_CHANGED, r39ClassSlotState=NOT_READ, classScriptResref=null, installed=true, ordersSent=0, dispatchAuthorized=false, armAuthorized=false, gameModified=false. Existing 46,109-byte raw console file local path C:\\Users\\Drevo\\Documents\\BGXAI_LIVE_REPORTS\\BGXAI_R43_CLASS_REASON_20261128T093349396112Z.log WAS NOT uploaded and has NOT been inspected. Two BG_EET_RU_V106 registration lines are not causal proof. Native process STOP code 1 is deliberate on hold.",
+      "cause": "SOURCE-EXACT STOP LOCATION: R39 EEex 1.1.7 bridge probeScriptAssignments() checks `sameActor ~= sprite or sameId ~= portraitId` immediately after first seven resref reads, returning HOLD_SCRIPT_ACTOR_CHANGED. The single observed reason does NOT distinguish Lua userdata wrapper reference inequality (fresh typed wrapper returned by EEex_GameObject_Get / EEex_GameObject_CastUT) from an actual portrait actor ID change. Need not assert the actor actually switched. R43 successful identity matched earlier; class script not read. Proposed exclusive minimal source-only fix: compare stable numeric m_id with initial physical actorId and portrait ID, then second read using second object wrapper, and retain all previously existing exact physical/selection/script/cursor change HOLD gates; test same actor new wrapper vs changed ID without game installation. Not known which of two comparisons failed live.",
+      "do_not_repeat": "Do not replay 179→11, reinstall R43 179→9, rerun old R42 179→6, old R39 compile, R38 capture, old GAM parsing, or unguarded rollback. Preserve original raw file. No duplicate listener, no new command/ARM, no assertion of CLASS name from 19-Nov GAM saved snapshot, no blame on BG_EET_RU without evidence.",
+      "safe_action": "Source-only review of existing R39 bridge exact comparison; optionally regression patch using numeric actor-id equivalence while retaining double physical and script read gates. Keep installed R43 and immutable 180ef... updater untouched. No new user game test until separately reviewed, CI-confirmed, gated last-only typed successor and clear practical need. No auto-retry.",
       "closure_condition": "Specific original source of R39 CLASS assignment read HOLD is identified without speculating from unrelated mods or retrying the same capture. A future narrow source-only fix must explicitly preserve existing listener, no command dispatch, exact script/backup/provenance checks, one updated existing updater and CI; any new installation requires separate typed approval. Class script remains UNKNOWN until real current-game evidence.",
       "evidence": [
         "user-provided 2026-11-28 BGXAI_UPDATE.cmd 179→6 console in current BGXAI conversation (R42_HOLD_ONEFILE_GUARDED, HOLD_R42_NATIVE_GUARD_OR_STATE)",
@@ -405,7 +405,7 @@
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46127897683",
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46129023635"
       ],
-      "enforcement": "R43 DEPLOY VERIFIED 2026-11-28 by firsthand typed install native guarded PASS; LIVE unverified. Keep existing onefile, no retries, don't equate 0 orders with equip success.",
+      "enforcement": "R43 DEPLOY=YES, first R43 LIVE capture=HOLD with exact status HOLD_SCRIPT_ACTOR_CHANGED; Lua object equality cause is hypothesis not live proven. No new user action now. NO XEquip.",
       "source_only_fix": {
         "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_CLASS_HOLD_REASON_SOURCE_ONLY.py",
         "tests": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_class_hold_reason_source_only.py",
@@ -437,7 +437,14 @@
         "r43Installed": true,
         "liveClassResrefConfirmed": false,
         "r43InstalledEvidence": "Firsthand real Windows 179→9 R43_INSTALL_EXACT_GUARDED_PASS, innerStatus=R43_READONLY_REASON_INSTALLED_AWAITING_LIVE, exact SHA256 8abdc5b1d2088d8c8e2f53b6e4502de5dd0b05225fc6fcca52ebe165253e7ce6, ordersSent=0",
-        "r43LiveCaptureVerified": false
+        "r43LiveCaptureVerified": false,
+        "r43FirstLiveCaptureAttempted": true,
+        "r43FirstLiveCaptureStatus": "R43_CAPTURE_HOLD_REASON_OBSERVED",
+        "r39ProbeStatus": "HOLD_SCRIPT_ACTOR_CHANGED",
+        "r39ClassSlotState": "NOT_READ",
+        "rawConsoleFile": "C:\\Users\\Drevo\\Documents\\BGXAI_LIVE_REPORTS\\BGXAI_R43_CLASS_REASON_20261128T093349396112Z.log",
+        "rawConsoleBytes": 46109,
+        "rawLogUploadedOrInspected": false
       }
     }
   ],
@@ -674,6 +681,20 @@
           "stage": "PREWORK_RECORDED",
           "game_modified": false,
           "installed": false
+        },
+        {
+          "delta_id": "BGXAI_R43_LIVE_ACTOR_OBJECT_EQUALS_NUMERIC_ID_RO_20261128",
+          "recorded_before_source_edit": true,
+          "already_done": "R39 installed EEex v1.1.7 SCRIPT_ASSIGNMENTS bridge 13088 bytes (Git blob 52bd8751581aa9f9d9ac09559f11a856e81ba1da) already performs two full read-only physical snapshots, 7+7 script-level reads, cursor stability, one selected actor, portrait ID, inventory uniqueness; R43 currently installed as last WeiDU156 with this exact bridge inside single R38 listener. First R43 179→11 has exact R39 hold HOLD_SCRIPT_ACTOR_CHANGED and 46109-byte raw game log path; not yet uploaded. Earlier R39 Lua tests only reused same Lua table wrapper identity.",
+          "specific_missing_delta": "Avoid rejecting two distinct Lua typed wrappers for same sprite solely on `sameActor ~= sprite` Lua equality. In a separate SHA-bound SOURCE-ONLY alternative R39 bridge, compare sameActor.m_id == initialPhysical.actorId == sameId == portraitId, re-read scripts through sameActor wrapper on second pass; preserve all physical/script/cursor tests and no orders. Add positive distinct wrapper same actor and negative actual different m_id, selection, inventory and resref changes. Do not edit pinned R39 original or installed R43/onefile.",
+          "upstream_evidence": "Bubb13/EEex v1.1.7 EEex_Sprite_GetInPortrait calls EEex_GameObject_Get then EEex_GameObject_CastUT, and GetInPortraitID returns numeric id. Fresh typed Lua wrappers can have unequal object equality even if numeric ID same, but actual runtime comparison failure side not proven.",
+          "precedence": "SOURCE_NEW_DIAGNOSTIC_ONLY after existing R39/R37/GAM/EEex evidence; no new observer, no auto deployment, no change to 180ef pinned release. Exact first R43 HOLD and stable READONLY output supersede older 'capture pending' reports.",
+          "source_bridge_path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_EEEX117_ENGINE_BRIDGE_RO.lua",
+          "source_bridge_git_blob": "52bd8751581aa9f9d9ac09559f11a856e81ba1da",
+          "source_only": true,
+          "game_modified": false,
+          "install_approved": false,
+          "status": "PREWORK_REVIEWED_BEFORE_SOURCE_ONLY_ALTERNATE"
         }
       ],
       "predecessor_sources": [
