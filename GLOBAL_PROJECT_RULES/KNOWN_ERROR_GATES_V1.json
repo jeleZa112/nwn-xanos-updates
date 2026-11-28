@@ -1144,6 +1144,37 @@
         "oldCmdUnchanged": true,
         "autoInstall": false
       }
+    },
+    {
+      "error_id": "BGXAI_R48_CLOSED_INSTALL_CONSOLE_OUTCOME_UNKNOWN_20261128",
+      "project": "BGXAI",
+      "type": "KNOWN_RISK",
+      "status": "MITIGATED_SOURCE_ONLY",
+      "discovered_at": "2026-11-28",
+      "trigger": "User said they completed original onefile CMD menu181 real R48 install, then closed terminal and cannot provide previous console status. Actual WeiDU state is UNKNOWN.",
+      "observed_failure": "Original guarded R48 install status not captured; closure of console alone does not imply installed, absent, failed or gameplay XEquip.",
+      "cause": "Installation attempt output lost when console was closed. Existing native R48 already had read-only status() with exact last#158/159 proof and BCS hash but old installed single V2 had no menu entry for it.",
+      "do_not_repeat": "Never rerun 181 or start rollback 182 when first attempt outcome unknown. Never infer installed from user's 'сделал'. Do not repeat module180, R47 witness, copy/overwrite original CMD, or inspect destructive install stages blindly.",
+      "safe_action": "Use only same existing BGXAI_UPDATE.cmd menu183 READONLY. Thin source module 183 reuses verified pre-existing R48.status() with exact WeiDU last / proof / BCS SHA. If 159 status exact, mark installed but gameplay equip unproven; if 158 exact mark not installed; else HOLD_STATE_UNVERIFIED and preserve manual review. No new updater, no game changes, no automatic reinstall/rollback.",
+      "closure_condition": "Source mitigation PASS Win+Ubuntu CI 46160346090; actual user's Windows installed state not confirmed until one menu183 read-only report. Never claim gameplay XEquip without disposable-save observation.",
+      "evidence": [
+        "/BGXAI/UPDATER_V2/BGXAI_MODULE183_R48_STATUS_RO.py",
+        "/BGXAI/UPDATER_V2/MODULES_V1.json",
+        "/BGXAI/BUILD/R48_ONE_REAL_STAF01_EQUIP_AFTER_R47_20261128/BGXAI_R48_LAST158_TO159_ONE_ITEM_GUARDED.py",
+        "/BGXAI/UPDATER_V2/test_module183_r48_status_ro.py",
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46160346090"
+      ],
+      "enforcement": "Unknown ≠ absent, file presence ≠ installed, WeiDU install ≠ gameplay XEquip. Only original R48.status proves installed; preserve R47 and EPS; no duplicate gameplay install or unattended retry.",
+      "metadata": {
+        "sourceStatus": "CODE_TEST_WIN_UBUNTU_PASS",
+        "installedRuntime": "UNKNOWN",
+        "readOnlyMenu": 183,
+        "moduleSha256": "9814a4f9840b6d458492e6df384f0376c36836d20d61cc9f442444a7ed586e6d",
+        "moduleSourceCommit": "bd0b1971ba104ac69d9a34c9d5340d5bdc01501d",
+        "manifestCommit": "03d2cbc7de7f3f3fedb3e5ef95b3e7ede2ac78cb",
+        "noNewCmd": true,
+        "previous180CatalogPreserved": true
+      }
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
