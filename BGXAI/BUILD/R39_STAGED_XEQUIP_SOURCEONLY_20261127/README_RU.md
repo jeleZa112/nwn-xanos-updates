@@ -1,3 +1,15 @@
+# 28.11.2026 — R39 R38 RAW SCRIPT NUMBER REUSE: существующий исторический журнал, без нового capture
+
+**PRIOR WORK GATE:** до правки зарегистрирован `BGXAI_R39_JOIN_REUSE_R38_RAW_SCRIPT_FIELDS_PREWORK_20261128` в существующем реестре `GLOBAL_PROJECT_RULES/KNOWN_ERROR_GATES_V1.json`; до кода `project_tools/resume_guard.py --preflight` прошёл в [CI 46118877959](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46118877959), оба OS. Сверены существующие R38+R3 offline join, raw fields R37 single-listener и R38 runtime gate. Никакого второго наблюдателя, CMD, нового отчёта из игры или запроса старого native compile.
+
+**EXCLUSIVE DELTA:** существующий `R39_JOIN_EXISTING_R38_R3_RO.py` теперь агрегирует `currentScriptNumberRaw` только если в том же реальном Jagan-событии `actionContextSnapshotStable=true`; при неверном типе/нестабильном числе — HOLD. Публикует только `rawCurrentScriptNumberHistogram` и число случаев `actionSourceRaw`, **никогда само содержимое** (в нём возможны приватные строки). Отличает отсутствие поля от доказанного значения; `rawScriptNumberMappedToSCRLEV=false`, `actualBcsExecutionVerified=false`, `scriptSlotOwnershipVerified=false`, `manualEpsActionOriginVerified=false`. Не догадываться, что маппинг `m_curScriptNum` равен SCRLEV 0/1/2/4/5/6/7.
+
+**CODE:** existing join Git blob `8a2aca77a6a8c413510273040c68797eccd89ee0`. Новые тесты проверяют валидные raw значения/приватную строку, отсутствие опциональных полей, нестабильный context, повреждённое число и неклассифицированный источник. Копии исходного подлинного R38 журнала сейчас нет в доступном runtime; из одного прежнего обезличенного `R39_EXISTING_EVIDENCE_JOIN_SANITIZED.json` реальные raw значения восстановить нельзя. **Реальные raw номера UNKNOWN до запуска агрегатора на уже существующем архивном журнале, не выдумывать.**
+
+**DEPLOY/LIVE:** только исходник/тест; никакого XEquipItem, LOCALS, BCS, updater или сохранения не менялось. Не повторять R38 захват. Для фактического подтверждения имени выполняемого BCS всё равно требуется независимый исполнительный источник/installed EEex; даже raw индекс по Jagan не доказывает конкретный BCS.
+
+---
+
 # 28.11.2026 — R39 SCRIPT-PILOT IDENTITY GATE: CODE ONLY, LIVE HOLD
 
 После восстановления сохранённого CRE/SCRLEV обнаружен конкретный пробел: `probeScriptAssignments` ранее проверял только `portraitId + class3 + kit16384`, так что мог приписать BCS любого другого жреца в том же портретном слоте тестовому Джагану. Новая SOURCE-ONLY минимальная дельта **повторно использует** уже созданный `exactPhysical()`: одиночное выделение portrait1/actorId, уникальный STAF01 в slot20, пустой slot35 и щит, отсутствие изменения физических данных до/после двух чтений семи script-resref. Ни Native trigger evaluator, ни BCS execution, ни EPS action provenance **не запускаются и не объявляются проверенными**. `nativeScriptNameVerified=false`, `actualBcsExecutionVerified=false`, `scriptSlotOwnershipVerified=false`, `canArm=false`, `ordersSent=0` всегда. **Сходство с физическим пилотом не доказывает личность Джагана и не разрешает установку**.
