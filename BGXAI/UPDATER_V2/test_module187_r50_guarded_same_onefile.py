@@ -138,7 +138,7 @@ class V2OriginalR50(unittest.TestCase):
    self.assertEqual(M.main(["--game",str(self.game),
        "--onefile-hub-guarded","--approved-token",M.OPEN]),3)
 
- def test_13_real_guard_PIN_and_same_original R50 frozen contracts(self):
+ def test_13_real_guard_PIN_and_same_original_R50_frozen_contracts(self):
   n=M.load_native()
   self.assertEqual(n.INSTALL_TOKEN,M.INSTALL)
   self.assertEqual(n.ROLLBACK_TOKEN,M.ROLLBACK)
