@@ -389,13 +389,13 @@
       "error_id": "BGXAI_R42_LIVE_CAPTURE_HOLD_DETAIL_MASKED_20261128",
       "project": "BGXAI",
       "type": "CONFIRMED_FAILURE",
-      "status": "R43_LIVE_ONE_SHOT_CAPTURE_HOLD_R39_ACTOR_EQUALITY_CHECK_SOURCE_UNDER_REVIEW",
+      "status": "R43_LIVE_ACTOR_HOLD_SOURCE_ONLY_NUMERIC_ID_FIX_CI_PASS_NOT_DEPLOYED",
       "discovered_at": "2026-11-28",
       "trigger": "Real Windows R42 one-file 179→6 capture after independently positive 179→2 guarded installed status",
       "observed_failure": "28-Nov 2026 first real R43 installed Windows capture 179→11 produced R43_CAPTURE_HOLD_REASON_OBSERVED, inner R42_CAPTURE_HOLD_CLASS_BCS_UNREADABLE, noAutoRetry=true, r39ProbeStatus=HOLD_SCRIPT_ACTOR_CHANGED, r39ClassSlotState=NOT_READ, classScriptResref=null, installed=true, ordersSent=0, dispatchAuthorized=false, armAuthorized=false, gameModified=false. Existing 46,109-byte raw console file local path C:\\Users\\Drevo\\Documents\\BGXAI_LIVE_REPORTS\\BGXAI_R43_CLASS_REASON_20261128T093349396112Z.log WAS NOT uploaded and has NOT been inspected. Two BG_EET_RU_V106 registration lines are not causal proof. Native process STOP code 1 is deliberate on hold.",
       "cause": "SOURCE-EXACT STOP LOCATION: R39 EEex 1.1.7 bridge probeScriptAssignments() checks `sameActor ~= sprite or sameId ~= portraitId` immediately after first seven resref reads, returning HOLD_SCRIPT_ACTOR_CHANGED. The single observed reason does NOT distinguish Lua userdata wrapper reference inequality (fresh typed wrapper returned by EEex_GameObject_Get / EEex_GameObject_CastUT) from an actual portrait actor ID change. Need not assert the actor actually switched. R43 successful identity matched earlier; class script not read. Proposed exclusive minimal source-only fix: compare stable numeric m_id with initial physical actorId and portrait ID, then second read using second object wrapper, and retain all previously existing exact physical/selection/script/cursor change HOLD gates; test same actor new wrapper vs changed ID without game installation. Not known which of two comparisons failed live.",
       "do_not_repeat": "Do not replay 179→11, reinstall R43 179→9, rerun old R42 179→6, old R39 compile, R38 capture, old GAM parsing, or unguarded rollback. Preserve original raw file. No duplicate listener, no new command/ARM, no assertion of CLASS name from 19-Nov GAM saved snapshot, no blame on BG_EET_RU without evidence.",
-      "safe_action": "Source-only review of existing R39 bridge exact comparison; optionally regression patch using numeric actor-id equivalence while retaining double physical and script read gates. Keep installed R43 and immutable 180ef... updater untouched. No new user game test until separately reviewed, CI-confirmed, gated last-only typed successor and clear practical need. No auto-retry.",
+      "safe_action": "Source-only next step: review numeric actor-id fix for a separately guarded last-only future R43->successor using exactly same one-file updater and typed consent. The original R43 179->11 capture is complete; DO NOT repeat it, reinstall/rollback, or run first XEquip. Existing saved GAM scripts are historical. The local raw 46109-byte log is preserved; not uploaded. Diagnostic state NOT_READ is computed by R43 only for successful R39 result; original R39 successfully read and validated first 7 resrefs before its actor wrapper guard failed, but did not release CLASS name. Preserving fail-closed behavior is mandatory.",
       "closure_condition": "Specific original source of R39 CLASS assignment read HOLD is identified without speculating from unrelated mods or retrying the same capture. A future narrow source-only fix must explicitly preserve existing listener, no command dispatch, exact script/backup/provenance checks, one updated existing updater and CI; any new installation requires separate typed approval. Class script remains UNKNOWN until real current-game evidence.",
       "evidence": [
         "user-provided 2026-11-28 BGXAI_UPDATE.cmd 179→6 console in current BGXAI conversation (R42_HOLD_ONEFILE_GUARDED, HOLD_R42_NATIVE_GUARD_OR_STATE)",
@@ -403,9 +403,10 @@
         "https://github.com/jeleZa112/nwn-xanos-updates/blob/bg-eet-ai/BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_GUARDED_FROM_R38.py",
         "Uploaded original BGXAI_R42_CLASS_BCS_20261128T084201129348Z.log, 55209 bytes, SHA256 5695aaacd4fb2da2f690188f46fb4241e5cad8961cd537dd3ee1c757ba452495, [BGXBCS] line 354",
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46127897683",
-        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46129023635"
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46129023635",
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46131397520"
       ],
-      "enforcement": "R43 DEPLOY=YES, first R43 LIVE capture=HOLD with exact status HOLD_SCRIPT_ACTOR_CHANGED; Lua object equality cause is hypothesis not live proven. No new user action now. NO XEquip.",
+      "enforcement": "Original R43 real one-shot captured exact R39 hold, no retry. Alternative source-only R39 numeric actor-id guard 13533B sha c7b72... passes 161 Python each Windows/Ubuntu and 9 Lua mocks; NOT installed. No claim real game actor actually changed or that wrapper cause has been live proven. No new game instructions until separate guarded last-only upgrade.",
       "source_only_fix": {
         "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_CLASS_HOLD_REASON_SOURCE_ONLY.py",
         "tests": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_class_hold_reason_source_only.py",
@@ -444,7 +445,15 @@
         "r39ClassSlotState": "NOT_READ",
         "rawConsoleFile": "C:\\Users\\Drevo\\Documents\\BGXAI_LIVE_REPORTS\\BGXAI_R43_CLASS_REASON_20261128T093349396112Z.log",
         "rawConsoleBytes": 46109,
-        "rawLogUploadedOrInspected": false
+        "rawLogUploadedOrInspected": false,
+        "numericActorIdSourceOnlyFixPrepared": true,
+        "numericActorIdSourceOnlyFixInstalled": false,
+        "numericActorIdSourceOnlyCandidateSize": 13533,
+        "numericActorIdSourceOnlyCandidateSHA256": "c7b72d75c9d5500907e63ff7eb09c37ec8981a048235b72db266a9d19f0e322a",
+        "numericActorIdMockCI": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46131397520",
+        "originalR39BridgeUnchanged": true,
+        "installedR43Unchanged": true,
+        "proofStillPending": "Current live assigned CLASS script, actual BCS execution and XEquip transfer"
       }
     }
   ],
@@ -694,7 +703,18 @@
           "source_only": true,
           "game_modified": false,
           "install_approved": false,
-          "status": "PREWORK_REVIEWED_BEFORE_SOURCE_ONLY_ALTERNATE"
+          "status": "SOURCE_ONLY_CI_PASS_NOT_INSTALLED",
+          "source_code": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_ACTOR_ID_GUARD_SOURCE_ONLY.py",
+          "source_tests": [
+            "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/test_r39_actor_wrapper_id_guard_source_only.py",
+            "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/test_r39_actor_wrapper_id_guard_source_only.lua"
+          ],
+          "candidate_bytes": 13533,
+          "candidate_sha256": "c7b72d75c9d5500907e63ff7eb09c37ec8981a048235b72db266a9d19f0e322a",
+          "ci": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46131397520",
+          "tests": "161 Python tests Windows and 161 Ubuntu PASS, 9/9 additional Lua 5.4 alternative runtime-wrapper mocks PASS; original R43/PS and EEex bridge immutable sha preserved; no real game change",
+          "runtime_cause_confirmed": false,
+          "installed": false
         }
       ],
       "predecessor_sources": [
