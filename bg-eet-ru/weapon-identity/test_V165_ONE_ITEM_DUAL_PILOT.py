@@ -140,6 +140,11 @@ class PilotTests(unittest.TestCase):
             weidu=game/'WeiDU.log';weidu.write_bytes(b'current weidu changed')
             pin=game/'UI.MENU';pin.write_bytes(b'original pinned UI')
             gamepin={'UI.MENU':pilot.digest(pin.read_bytes())}
+            dllpins={}
+            for name in ('EEex.dll','LuaBindings.dll'):
+                dll=game/name
+                dll.write_bytes(('mock-'+name).encode('ascii'))
+                dllpins[name]=pilot.digest(dll.read_bytes())
             oldlog='f'*64
             old_items={f'ITM{i:05}':{'sha256':'a'*64,'origin':'CURRENT_GAME_BIFF'}
                        for i in range(123)}
@@ -165,7 +170,8 @@ class PilotTests(unittest.TestCase):
                 def _read_first_state(*_):return {'gamePins':gamepin,'weiduSha':oldlog},b'FIRST'
                 @staticmethod
                 def _verify_pins(*_):raise AssertionError('must not call old historic WeiDU check')
-            with patch.object(pilot,'EXPECTED_V163_SHA',oldsha):
+            with patch.object(pilot,'EXPECTED_V163_SHA',oldsha), patch.object(
+                    pilot,'EXPECTED_DLL',dllpins):
                 result=pilot.run('rollback',game,work,Batch,Cumulative,None,
                                  typed=pilot.APPROVE_ROLLBACK,allow_non_windows_test=True)
                 self.assertEqual(result['status'],'V165_ROLLED_BACK_TO_V163_123',result)
