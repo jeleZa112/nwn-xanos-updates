@@ -380,6 +380,19 @@ def run_diag_guarded(game: Path, commit: str, mode: str, *, fetcher=fetch,
         hold=("_HOLD_" in status)
         if result.returncode not in ((0,3) if (native_mode=="capture" and hold) else (0,)):
             raise Hold("HOLD_R43_NATIVE_EXIT_CODE")
+        if native_mode=="capture":
+            if hold and inner.get("classScriptResrefAtLiveJaganVerified") is True:
+                raise Hold("HOLD_R43_NATIVE_HOLD_DISGUISED_AS_PROOF")
+            if not hold and (
+                inner.get("classScriptResrefAtLiveJaganVerified") is not True or
+                type(inner.get("classScriptResref")) is not str or
+                re.fullmatch(r"[A-Z0-9_#*]{1,8}",inner["classScriptResref"]) is None or
+                inner.get("scrlev")!=4 or inner.get("partyIndex")!=1 or
+                inner.get("actualBcsExecutionVerified") is not False or
+                inner.get("manualEpsActionOriginVerified") is not False or
+                inner.get("r39ProbeStatus")!="R39_SCRIPT_RESREFS_OBSERVED_NO_DEPLOY" or
+                inner.get("r39ClassSlotState")!="VALID_NAME_CANDIDATE"):
+                raise Hold("HOLD_R43_CLASS_ASSIGNMENT_PROOF_INVALID")
         outcome={"schema":SCHEMA,
                  "status":"R43_"+native_mode.upper()+("_HOLD_REASON_OBSERVED" if hold else "_EXACT_GUARDED_PASS"),
                  "innerStatus":status, "sourceCommit":commit,
