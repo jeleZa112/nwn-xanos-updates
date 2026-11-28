@@ -73,6 +73,23 @@ SOURCES.update({
     R44_COMPOSE:(5191,"9ca2e7c00f796cc07fe1a905fad798691c46fd73bffd880b85f148706ce4ca6e"),
     R39_NUMERIC_PATCH:(4648,"cb990dea8e8e2dcfe1f32902ccf8bdc1327eacdd8f2951eb583e670501a75dd1"),
 })
+R46_ROOT = "BGXAI/BUILD/R46_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/"
+R46_COMPOSE = R46_ROOT + "BGXAI_R46_INERT_BDDEFAI_WITNESS_SOURCE_ONLY.py"
+R46_NATIVE = R46_ROOT + "BGXAI_R46_NATIVE_COMPILE_RO_REUSE_R39.py"
+R46_PREVIOUS_BAF = "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_JAGAN_STAF01_EEEX_SESSION_SOURCE_ONLY.baf"
+R46_R39_NATIVE = "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_NATIVE_EET_COMPILE_RO_V1.py"
+R46_V3_NATIVE = "BGXAI/BUILD/WEAPON_XEQUIP_V3_NATIVE_RO_20261127/BGXAI_XEQUIP_V3_NATIVE_COMPILE_RO.py"
+R46_BACKEND = "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py"
+R46_BAF_SHA = "af9c78d00dd24806c694e7ee1d6fe882a65b8a9fd71acc90654f60188932a0d9"
+MODES.update({"17":"r46_native_ro"})
+SOURCES.update({
+ R46_COMPOSE:(6129,"47f202bbe3dbcf706ede4f99f9e3ea33eb5e15841709c926bd5dce71f7fb58cc"),
+ R46_NATIVE:(6427,"92fff7d9d97706866eccc9d6f63f11e0f1d5f2c891684b76f038b12674b313d4"),
+ R46_PREVIOUS_BAF:(2407,"6d39e72684548c7b1b900e80f1bdb4271044e9889364db958f52b0532d1b73f0"),
+ R46_R39_NATIVE:(13584,"9cd96c77f07d7261b69139f9454c9a68e8d0773b0afa58a02c7051c73c32bed4"),
+ R46_V3_NATIVE:(10743,"b4a0789c568879a179e21cf50391afd999861e85f832f587aceb07cf816e055e"),
+ R46_BACKEND:(9551,"27285b3d067eab2c67b075dc8654b9a0f74da0d7920b2e96339ced3e14bcd10a"),
+})
 INSTALL_CONFIRM = "INSTALL_BGXAI_R42_READONLY_CLASS_BCS_AFTER_R38"
 ROLLBACK_CONFIRM = "ROLLBACK_BGXAI_R42_RESTORE_R38_ONLY"
 
@@ -567,6 +584,86 @@ def run_numeric_guarded(game: Path, commit: str, mode: str, *, fetcher=fetch,
         return out
 
 
+
+def run_r46_native_readonly(game: Path, commit: str, *, fetcher=fetch,
+                           runner=subprocess.run, require_windows: bool=True,
+                           status_checker=run_numeric_guarded) -> dict:
+    """R46 existing menu179→17: native temp-only BAF compile, no EET write."""
+    game=protected_root(game,require_windows)
+    commit=pin(commit)
+    prior=status_checker(game,commit,"numeric_status",fetcher=fetcher,
+                         runner=runner,require_windows=require_windows)
+    if (prior.get("status")!="R44_STATUS_EXACT_GUARDED_PASS" or
+        prior.get("innerStatus")!="R44_PRESENT_LAST_READONLY" or
+        prior.get("installed") is not True or
+        prior.get("ordersSent")!=0 or
+        prior.get("armAuthorized") is not False):
+        raise Hold("HOLD_R46_EXACT_R44_LAST157_PROOF_REQUIRED")
+    with tempfile.TemporaryDirectory(prefix="BGXAI_R46_179_TEMP_ONLY_") as folder:
+        workspace=Path(folder).resolve(strict=True)
+        realgame=game.resolve(strict=True)
+        if workspace==realgame or workspace in realgame.parents or realgame in workspace.parents:
+            raise Hold("HOLD_R46_TEMP_OVERLAPS_GAME")
+        for path in (R46_COMPOSE,R46_NATIVE,R46_PREVIOUS_BAF,
+                     R46_R39_NATIVE,R46_V3_NATIVE,R46_BACKEND):
+            raw=verified(path,fetcher(commit,path))
+            target=workspace.joinpath(*path.split("/"))
+            if workspace not in target.parents or target.is_symlink():
+                raise Hold("HOLD_R46_STAGE_PATH_UNTRUSTED")
+            target.parent.mkdir(parents=True,exist_ok=True)
+            target.write_bytes(raw)
+            if sha(target.read_bytes())!=SOURCES[path][1]:
+                raise Hold("HOLD_R46_STAGE_SOURCE_SHA")
+        command=[sys.executable,str(workspace.joinpath(*R46_NATIVE.split("/"))),
+                 "--native-ro","--game",str(game)]
+        result=runner(command,cwd=str(workspace),input="",
+                      stdin=None,capture_output=True,text=True,encoding="utf-8",
+                      errors="replace",timeout=170,check=False)
+        try:
+            inner=json.loads(result.stdout[result.stdout.find("{"):])
+        except (ValueError,TypeError):
+            raise Hold("HOLD_R46_NATIVE_OUTPUT_NOT_JSON")
+        if type(inner) is not dict:
+            raise Hold("HOLD_R46_NATIVE_OUTPUT_NOT_OBJECT")
+        if (inner.get("ordersSent")!=0 or inner.get("dispatchAuthorized") is not False
+            or inner.get("armAuthorized") is not False or
+            inner.get("installed") is not False or
+            inner.get("gameModified") is not False):
+            raise Hold("HOLD_R46_NATIVE_NONREADONLY_REPORT")
+        success=(inner.get("status")=="R46_NATIVE_BAF_TEMP_PASS_NO_INSTALL" and
+            inner.get("r46BafBytes")==223 and
+            inner.get("r46BafSourceSha256")==R46_BAF_SHA and
+            inner.get("watchedFilesChanged") is False and
+            inner.get("temporaryOutputRemoved") is True and
+            type(inner.get("compiledBcsSha256")) is str and
+            re.fullmatch(r"[a-f0-9]{64}",inner["compiledBcsSha256"]) is not None and
+            result.returncode==0)
+        if not success:
+            reason=inner.get("nativeStatus")
+            if reason not in ("NATIVE_WEIDU_COMPILED_TEMP_ONLY",
+                              "WEIDU_COMPILE_FAILED_OR_UNRESOLVED_IDS",
+                              "WEIDU_TIMEOUT","WEIDU_PROCESS_FAILURE",
+                              "REVIEW_WATCHED_LIVE_FILES_CHANGED",
+                              "BCS_OUTPUT_INVALID"):
+                reason="HOLD_R46_UNKNOWN_NATIVE_STATUS"
+            return {"schema":SCHEMA,"status":"R46_NATIVE_TEMP_COMPILE_HOLD",
+                "nativeStatus":reason,"sourceCommit":commit,
+                "noAutoRetry":True,"installed":False,"gameModified":False,
+                "ordersSent":0,"armAuthorized":False,"dispatchAuthorized":False,
+                "actualBcsExecutionVerified":False}
+        return {"schema":SCHEMA,
+            "status":"R46_NATIVE_TEMP_COMPILE_EXACT_PASS_NOT_INSTALLED",
+            "sourceCommit":commit,"expectedInertBafSHA256":R46_BAF_SHA,
+            "compiledBcsSha256":inner["compiledBcsSha256"],
+            "watchedFilesChanged":False,"temporaryOutputRemoved":True,
+            "r44Last157ProofVerified":True,
+            "installed":False,"gameModified":False,"ordersSent":0,
+            "armAuthorized":False,"dispatchAuthorized":False,
+            "actualBcsExecutionVerified":False,
+            "actualBcsActionOriginVerified":False,
+            "R39XEquipInstalled":False,"noAutoRetry":False}
+
+
 def choose_mode() -> str:
     print("R42 (single BGXAI_UPDATE.cmd): 1=source RO [default]; 2=status; "
           "3=preflight RO; 4=install (typed); 5=rollback (typed); 6=capture game RO; 0=exit",flush=True)
@@ -574,6 +671,7 @@ def choose_mode() -> str:
           "10=rollback typed; 11=capture game RO",flush=True)
     print("R44 after R43: 12=status; 13=preflight RO; 14=install typed; "
           "15=rollback typed; 16=capture game RO",flush=True)
+    print("R46: 17=first inert BDDEFAI BAF native TEMP compile RO (NO INSTALL)",flush=True)
     s=input("R42 choice [1]: ").strip()
     if not s:s="1"
     if s=="0":return "exit"
@@ -596,6 +694,8 @@ def main(argv=None) -> int:
                     "dispatchAuthorized":False,"armAuthorized":False}
         elif mode=="source":
             result=run(args.game,args.commit)
+        elif mode=="r46_native_ro":
+            result=run_r46_native_readonly(args.game,args.commit)
         elif mode.startswith("numeric_"):
             token=None
             if mode in ("numeric_install","numeric_rollback"):
