@@ -9,7 +9,7 @@ SYNC=ROOT/'BGXAI/BGXAI_SYNC.ps1'
 BOOT=ROOT/'BGXAI_UPDATE.cmd'
 HELPER=ROOT/'BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py'
 OLD175='d6fa98f19bb693e4f2cb43216307805ba427a4accefa703d03f33c299df21a3c'
-NEW179='fcc90eed4fb138bb2714c7cbdfb960e80c5b65e86e62421269992cb64c6a01d3'
+NEW179='7aa1ef524eb2b259c3911bd46126fc93a6c5dbe8195c8fce0d26069dabb5899c'
 HELPER_PATH='BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py'
 LIMIT=80000
 
@@ -46,7 +46,7 @@ class T(unittest.TestCase):
     def test_new179_pin_is_exact(self):
         r=self.routes[0]
         self.assertIn(NEW179,r)
-        self.assertIn('$n=15902',r)
+        self.assertIn('$n=16626',r)
         self.assertIn(HELPER_PATH,r)
         self.assertEqual(hashlib.sha256(HELPER.read_bytes()).hexdigest(),NEW179)
 
@@ -71,6 +71,7 @@ class T(unittest.TestCase):
         self.assertIn('INSTALL_BGXAI_R42_READONLY_CLASS_BCS_AFTER_R38',child)
         self.assertIn('ROLLBACK_BGXAI_R42_RESTORE_R38_ONLY',child)
         self.assertIn('input("Type "+correct',child)
+        self.assertIn('"6": "capture"',child)
         self.assertIn('"1": "source"',child)
         self.assertIn('mode=args.mode if args.mode is not None else choose_mode()',child)
 
@@ -99,13 +100,16 @@ class T(unittest.TestCase):
         self.assertEqual(channel['script_path'],'BGXAI/BGXAI_SYNC.ps1')
         self.assertEqual(channel['script_size'],len(self.raw))
         self.assertEqual(channel['script_sha256'],hashlib.sha256(self.raw).hexdigest())
-        self.assertEqual(channel['commit'],'4200fd84027b2937cb16400b3eddb2030d7b0634')
+        self.assertEqual(channel['commit'],'b0586b2d0c3d00afdc9ff68ad944505476733ff6')
 
     def test_published_source_only_claim_is_accurate(self):
         import json
         channel=json.loads((ROOT/'BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text(encoding='utf-8'))
-        self.assertIn('default SOURCE READ-ONLY',channel['description'])
-        self.assertIn('explicit typed install/rollback',channel['description'])
+        self.assertIn('Default source RO',channel['description'])
+        self.assertIn('install typed',channel['description'])
+        self.assertIn('rollback typed',channel['description'])
+        self.assertIn('capture RO',channel['description'])
+        self.assertIn('CLASS4 Jagan',channel['description'])
         self.assertIn('179',channel['description'])
         self.assertIn('175/176',channel['description'])
         self.assertLess(channel['script_size'],80000)
