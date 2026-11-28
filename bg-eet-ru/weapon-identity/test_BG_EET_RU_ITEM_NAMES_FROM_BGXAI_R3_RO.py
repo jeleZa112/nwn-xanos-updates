@@ -158,6 +158,88 @@ class BridgeTests(unittest.TestCase):
                 self.assertEqual(data['gameFilesWritten'],0)
                 self.assertFalse(data['combatLogRowJoinVerified'])
 
+
+    def r28_fixture(self, resources=None):
+        resources = self.src.resources if resources is None else resources
+        refs = list(resources)
+        return {
+            'schema':'BGXAI_R28_NATIVE_FROM_R27_RO_V1',
+            'status':'R28_NATIVE_ITEMS_RAW_READ_AWAITING_REVIEW',
+            'captureSha256':'a'*64,'gameModified':False,
+            'ordersSent':0,'dispatchAuthorized':False,
+            'liveR27Evidence':{
+                'schema':'BGXAI_R28_R27_LIVE_INPUT_V1',
+                'sourceSha256':'a'*64,'r27SessionMarkers':1,
+                'r27ConfirmedCallbacks':24,'gameModified':False,
+                'observedRawItemResrefs':refs},
+            'nativeAudit':{
+                'schema':'BGXAI_WEAPON_NATIVE_ITM_R3_READONLY',
+                'status':'ITM_NATIVE_ALL_ITEMS_RAW_READ',
+                'sourceKind':'CURRENT_GAME','gameModified':False,
+                'missingItemsOrLinkedSpells':[],'requestedItems':refs,
+                'items':{ref:{
+                    'resource':ref,'provenance':{
+                        'origin':'CURRENT_GAME_BIFF',
+                        'sha256':hashlib.sha256(raw).hexdigest()
+                    }
+                } for ref,raw in resources.items()}
+            }
+        }
+
+    def test_r28_saved_actual_source_provenance(self):
+        report=self.r28_fixture()
+        result=catalog.catalog_from_r28(self.root,report,SimpleNamespace(),self.v111,source=self.src)
+        self.assertEqual(result['status'],'R28_SHA_MATCH_CATALOG_READONLY')
+        self.assertEqual(result['autoDisplayNamesReady'],2)
+        self.assertIsNone(result['items']['AROW01']['autoDisplayName'])
+        self.assertTrue(result['itemShaComparedToR28'])
+        self.assertNotIn('actorRaw',str(result))
+        self.assertNotIn('captureSha256',result)
+        self.assertEqual(result['engineListenersAdded'],0)
+        self.assertEqual(result['gameFilesWritten'],0)
+
+    def test_r28_changed_itm_only_holds_that_item(self):
+        report=self.r28_fixture()
+        changed=FakeSource({**self.src.resources,'BOW05':itm(13,13,15)})
+        result=catalog.catalog_from_r28(self.root,report,SimpleNamespace(),self.v111,source=changed)
+        self.assertEqual(result['status'],'R28_ITEM_DRIFT_HOLD')
+        self.assertEqual(result['items']['BOW05']['status'],'ITEM_HOLD')
+        self.assertIsNone(result['items']['BOW05']['autoDisplayName'])
+        self.assertEqual(result['items']['SW1H04']['autoDisplayName'],'Длинный меч')
+
+    def test_r28_origin_drift_rejected(self):
+        report=self.r28_fixture()
+        for row in report['nativeAudit']['items'].values():
+            row['provenance']['origin']='CURRENT_GAME_OVERRIDE'
+        result=catalog.catalog_from_r28(self.root,report,SimpleNamespace(),self.v111,source=self.src)
+        self.assertEqual(result['status'],'R28_ITEM_DRIFT_HOLD')
+        self.assertEqual(result['autoDisplayNamesReady'],0)
+
+    def test_r28_bad_capture_not_bound(self):
+        report=self.r28_fixture()
+        report['captureSha256']='f'*64
+        with self.assertRaisesRegex(catalog.SourceHold,'R27_R28_CAPTURE_NOT_BOUND'):
+            catalog.catalog_from_r28(self.root,report,SimpleNamespace(),self.v111,source=self.src)
+
+    def test_r28_stale_or_unsafe_source_holds_before_read(self):
+        mutations=[
+            lambda r:r.update(status='SOMETHING_ELSE'),
+            lambda r:r.update(gameModified=True),
+            lambda r:r.update(ordersSent=1),
+            lambda r:r['nativeAudit'].update(sourceKind='ARCHIVE'),
+            lambda r:r['nativeAudit'].update(missingItemsOrLinkedSpells=['X']),
+            lambda r:r['liveR27Evidence'].update(r27SessionMarkers=2),
+            lambda r:r['nativeAudit'].update(requestedItems=['BOW05']),
+            lambda r:r['liveR27Evidence'].update(observedRawItemResrefs=['BOW05','BOW05']),
+            lambda r:r['nativeAudit']['items']['BOW05']['provenance'].update(sha256='bad'),
+            lambda r:r['nativeAudit']['items']['BOW05'].update(resource='AROW01'),
+        ]
+        for change in mutations:
+            report=self.r28_fixture()
+            change(report)
+            with self.subTest(case=change),self.assertRaises(catalog.SourceHold):
+                catalog.catalog_from_r28(self.root,report,SimpleNamespace(),self.v111,source=self.src)
+
     def test_source_has_no_game_mutation_api(self):
         code=SRC.read_text(encoding='utf-8')
         for forbidden in ('Infinity_DisplayString','XEquipItem(','.write_bytes(','.write_text(',"open('w'", "open('a'"):
