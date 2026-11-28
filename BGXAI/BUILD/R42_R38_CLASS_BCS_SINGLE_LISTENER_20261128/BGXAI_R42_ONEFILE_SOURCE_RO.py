@@ -46,6 +46,20 @@ SOURCES.update({
 })
 MODES = {"1": "source", "2": "status", "3": "preflight",
          "4": "install", "5": "rollback", "6": "capture"}
+# R43 is an opt-in guarded successor; preserve R42 menu 1..6 byte-for-byte.
+# Additional choices are inert until individually selected.
+MODES.update({"7":"diag_status", "8":"diag_preflight", "9":"diag_install",
+              "10":"diag_rollback", "11":"diag_capture"})
+R43_GUARD = PREFIX + "BGXAI_R42_DIAG_UPGRADE_GUARDED_SOURCE_ONLY.py"
+R43_DIAG = PREFIX + "BGXAI_R42_CLASS_HOLD_REASON_SOURCE_ONLY.py"
+R43_INSTALL_CONFIRM = "INSTALL_BGXAI_R43_READONLY_REASON_AFTER_R42_LAST"
+R43_ROLLBACK_CONFIRM = "ROLLBACK_BGXAI_R43_RESTORE_R42_ONLY"
+R43_CANDIDATE_SHA = "8abdc5b1d2088d8c8e2f53b6e4502de5dd0b05225fc6fcca52ebe165253e7ce6"
+SOURCES.update({
+    R43_GUARD:(19969,"8c1d0275e861909d1caa004a3e434e2791d5f8181c1ff966bd578f610cb4bb31"),
+    R43_DIAG:(6950,"718e0f11a405439398a4102406f0b27acd08f8f75f29e53bb054e19a5c138da2"),
+    LIVE_SOURCE:(LIVE_R38_LEN,LIVE_R38_SHA),
+})
 INSTALL_CONFIRM = "INSTALL_BGXAI_R42_READONLY_CLASS_BCS_AFTER_R38"
 ROLLBACK_CONFIRM = "ROLLBACK_BGXAI_R42_RESTORE_R38_ONLY"
 
@@ -296,9 +310,119 @@ def run_guarded(game: Path, commit: str, mode: str, *, fetcher=fetch,
             "manualEpsActionOriginVerified":False,
         }
 
+
+def run_diag_guarded(game: Path, commit: str, mode: str, *, fetcher=fetch,
+                     runner=subprocess.run, require_windows: bool=True,
+                     approved_token: str | None=None) -> dict:
+    """R43-only, same onefile 179. No extra listener or separate CMD."""
+    if mode not in ("diag_status","diag_preflight","diag_install","diag_rollback","diag_capture"):
+        raise Hold("HOLD_R43_UNSUPPORTED_MODE")
+    game=protected_root(game,require_windows)
+    commit=pin(commit)
+    native_mode=mode[5:]
+    install_mode=native_mode in ("install","rollback")
+    required=R43_INSTALL_CONFIRM if native_mode=="install" else R43_ROLLBACK_CONFIRM
+    if install_mode and approved_token!=required:
+        raise Hold("HOLD_EXACT_TYPED_R43_APPROVAL_REQUIRED")
+    with tempfile.TemporaryDirectory(prefix="BGXAI_R43_GUARDED_") as folder:
+        workspace=Path(folder).resolve(strict=True)
+        real_game=game.resolve(strict=True)
+        if workspace==real_game or workspace in real_game.parents or real_game in workspace.parents:
+            raise Hold("HOLD_R43_STAGE_INSIDE_GAME")
+        for path in (R37_GUARD,R38_GUARD,R42_GUARD,BUILDER,BRIDGE,LIVE_SOURCE,R43_DIAG,R43_GUARD):
+            data=verified(path,fetcher(commit,path))
+            target=workspace.joinpath(*path.split("/"))
+            if workspace not in target.parents or target.is_symlink():
+                raise Hold("HOLD_R43_STAGING_PATH")
+            target.parent.mkdir(parents=True,exist_ok=True)
+            target.write_bytes(data)
+            if sha(target.read_bytes())!=SOURCES[path][1]:
+                raise Hold("HOLD_R43_SOURCE_STAGED_SHA")
+        command=[sys.executable,str(workspace.joinpath(*R43_GUARD.split("/"))),
+                 "--game",str(game),"--mode",native_mode,"--onefile-review-gate"]
+        result=runner(command,cwd=str(workspace),
+                      input=(approved_token+"\n") if install_mode else "",
+                      stdin=None,capture_output=True,text=True,encoding="utf-8",
+                      errors="replace",timeout=350,check=False)
+        try:
+            inner=json.loads(result.stdout[result.stdout.find("{"):])
+        except (ValueError,TypeError):
+            raise Hold("HOLD_R43_NATIVE_REPORT_INVALID")
+        if type(inner) is not dict:
+            raise Hold("HOLD_R43_NATIVE_NOT_A_DICT")
+        status=inner.get("status")
+        if inner.get("ordersSent")!=0 or inner.get("dispatchAuthorized") is not False or inner.get("armAuthorized") is not False:
+            raise Hold("HOLD_R43_NATIVE_SAFETY_MARKERS")
+        expected={
+            "status":("R43_NOT_INSTALLED_R42_PRESENT_LAST","R43_PRESENT_LAST_READONLY_REASON"),
+            "preflight":("R43_PREFLIGHT_LAST155_PASS_NO_INSTALL",),
+            "install":("R43_READONLY_REASON_INSTALLED_AWAITING_LIVE",),
+            "rollback":("R43_ROLLBACK_RESTORED_R42_LAST",),
+            "capture":("R42_LIVE_CLASS_BCS_ASSIGNMENT_OBSERVED_NO_ARM",
+                       "R42_CAPTURE_HOLD_CLASS_BCS_UNREADABLE",
+                       "R42_CAPTURE_HOLD_MANUAL_REVIEW",
+                       "R43_CAPTURE_HOLD_DIAG_ROW_COUNT_OR_FORMAT",
+                       "R43_CAPTURE_HOLD_DIAG_INVALID_JSON",
+                       "R43_CAPTURE_HOLD_DIAG_FIELDS"),
+        }
+        accepted=expected[native_mode]
+        if status not in accepted:
+            reason=inner.get("reason")
+            if not (type(reason) is str and len(reason)<=128 and
+                    re.fullmatch(r"[A-Z0-9_:.+-]+",reason)):
+                reason="HOLD_R43_UNCLASSIFIED_NATIVE_STOP"
+            return {"schema":SCHEMA,"status":"R43_NATIVE_HOLD_DETAILS",
+                    "innerStatus":status if type(status) is str and status in (
+                        "R43_STOP_MANUAL_REVIEW","R43_HOLD_UNEXPECTED_WEIDU_OR_LUA") else "UNCLASSIFIED",
+                    "nativeReason":reason,"noAutoRetry":True,
+                    "gameModifiedUnknown":native_mode in ("install","rollback"),
+                    "ordersSent":0,"dispatchAuthorized":False,"armAuthorized":False}
+        hold=("_HOLD_" in status)
+        if result.returncode not in ((0,3) if (native_mode=="capture" and hold) else (0,)):
+            raise Hold("HOLD_R43_NATIVE_EXIT_CODE")
+        outcome={"schema":SCHEMA,
+                 "status":"R43_"+native_mode.upper()+("_HOLD_REASON_OBSERVED" if hold else "_EXACT_GUARDED_PASS"),
+                 "innerStatus":status, "sourceCommit":commit,
+                 "expectedDiagnosticSHA256":R43_CANDIDATE_SHA,
+                 "gameModified":native_mode in ("install","rollback"),
+                 "installed":native_mode in ("install","capture") or
+                             (native_mode=="status" and inner.get("installed") is True),
+                 "classScriptResrefAtLiveJaganVerified":inner.get("classScriptResrefAtLiveJaganVerified") is True,
+                 "classScriptResref":inner.get("classScriptResref") if native_mode=="capture" else None,
+                 "actualBcsExecutionVerified":False,
+                 "manualEpsActionOriginVerified":False,
+                 "ordersSent":0,"dispatchAuthorized":False,"armAuthorized":False,
+                 "noAutoRetry":hold}
+        if native_mode=="capture":
+            # Never silently turn a failed CLASS resref probe into success.
+            if hold:
+                outcome["classScriptResrefAtLiveJaganVerified"]=False
+                outcome["classScriptResref"]=None
+            for key,allowed in (
+                ("r39ProbeStatus",("R39_SCRIPT_RESREFS_OBSERVED_NO_DEPLOY",
+                    "HOLD_SCRIPT_ASSIGNMENT_APIS_UNAVAILABLE","HOLD_SCRIPT_ASSIGNMENT_ACTOR_ID",
+                    "HOLD_SCRIPT_ASSIGNMENT_CLASS_OR_KIT","HOLD_SCRIPT_PILOT_PHYSICAL_CONTEXT",
+                    "HOLD_SCRIPT_CURSOR_INVALID","HOLD_SCRIPT_RESREF_UNREADABLE",
+                    "HOLD_SCRIPT_ACTOR_CHANGED","HOLD_SCRIPT_PILOT_PHYSICAL_CHANGED",
+                    "HOLD_SCRIPT_RESREF_CHANGED","HOLD_SCRIPT_CURSOR_CHANGED",
+                    "R39_BRIDGE_RESULT_MISSING","R39_PROBE_EXCEPTION","R39_UNCLASSIFIED_STATUS")),
+                ("r39ClassSlotState",("NOT_READ","LEVEL_TABLE_MISSING","MISSING_CLASS_ENTRY",
+                    "EMPTY","INVALID_RESREF","VALID_NAME_CANDIDATE"))):
+                val=inner.get(key)
+                if val in allowed:
+                    outcome[key]=val
+            if type(inner.get("rawConsoleFile")) is str:
+                outcome["rawConsoleFile"]=inner["rawConsoleFile"]
+            if type(inner.get("rawConsoleBytes")) is int:
+                outcome["rawConsoleBytes"]=inner["rawConsoleBytes"]
+        return outcome
+
+
 def choose_mode() -> str:
     print("R42 (single BGXAI_UPDATE.cmd): 1=source RO [default]; 2=status; "
           "3=preflight RO; 4=install (typed); 5=rollback (typed); 6=capture game RO; 0=exit",flush=True)
+    print("R43 after R42: 7=status; 8=preflight RO; 9=install typed; "
+          "10=rollback typed; 11=capture game RO",flush=True)
     s=input("R42 choice [1]: ").strip()
     if not s:s="1"
     if s=="0":return "exit"
@@ -321,6 +445,14 @@ def main(argv=None) -> int:
                     "dispatchAuthorized":False,"armAuthorized":False}
         elif mode=="source":
             result=run(args.game,args.commit)
+        elif mode.startswith("diag_"):
+            token=None
+            if mode in ("diag_install","diag_rollback"):
+                correct=R43_INSTALL_CONFIRM if mode=="diag_install" else R43_ROLLBACK_CONFIRM
+                print("R43 "+mode+": guarded WeiDU; close game. No auto retry.",flush=True)
+                token=input("Type "+correct+" exactly (ENTER cancels): ").strip()
+                if token!=correct:raise Hold("HOLD_EXACT_TYPED_R43_APPROVAL_REQUIRED")
+            result=run_diag_guarded(args.game,args.commit,mode,approved_token=token)
         else:
             token=None
             if mode in ("install","rollback"):
@@ -330,7 +462,7 @@ def main(argv=None) -> int:
                 token=input("Type "+correct+" exactly (ENTER cancels): ").strip()
                 if token!=correct:raise Hold("HOLD_EXACT_TYPED_R42_APPROVAL_REQUIRED")
             result=run_guarded(args.game,args.commit,mode,approved_token=token)
-        rc=0
+        rc=3 if result.get("noAutoRetry") is True or "_HOLD_" in result.get("status","") else 0
     except (OSError, ValueError, subprocess.TimeoutExpired, EOFError) as error:
         result = {"schema": SCHEMA, "status": "R42_HOLD_ONEFILE_GUARDED",
                   "reason": str(error) if isinstance(error, Hold) else "HOLD_RUNTIME_OR_IO",
