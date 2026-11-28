@@ -63,6 +63,11 @@ local function stable(source,action,api,sourceId,actionId,targetId,target,slot,a
  return ok and rawequal(got,target) and is_sprite(got,targetId)
 end
 local function read_fields(api,target)
+ -- EEex 1.1.7 getActiveStats() uses m_tempStats when the effect list is
+ -- being processed. Reuse R35's existing read guard, not a new stat API.
+ local guardOk,guard=pcall(function()return target.m_bAllowEffectListCall end)
+ if not guardOk or not int(guard,1,65535) then
+  return nil,'TARGET_ACTIVE_STATS_TEMP_OR_EFFECTS_IN_PROGRESS' end
  local ok,stats=pcall(api.GetActiveStats,target)
  if not ok or stats==nil then return nil,'TARGET_ACTIVE_STATS_UNAVAILABLE' end
  local fields,missing={},{}
@@ -73,6 +78,9 @@ local function read_fields(api,target)
   if good and int(value,lo,hi) then fields[name]=value
   else fields[name]=false;missing[#missing+1]=name end
  end
+ local afterOk,after=pcall(function()return target.m_bAllowEffectListCall end)
+ if not afterOk or after~=guard then
+  return nil,'TARGET_ACTIVE_STATS_GUARD_CHANGED' end
  return {fields=fields,missing=missing},nil
 end
 local function same_reading(a,b)
@@ -99,7 +107,10 @@ function M.inspect(source,action,api,ctx)
  if sid~=ctx.actor or aid~=ctx.actionRaw or tid~=ctx.targetActor then
   return output('HOLD','ACTION_CONTEXT_MISMATCH') end
  -- Started action IDs are only candidate values; hostility/priority not proven.
- if aid~=3 and aid~=30 then return output('HOLD','NOT_AN_ATTACK_CANDIDATE_ACTION') end
+ -- ACTION.IDS in BGEE / actual BGXAI R27 logs: AttackOneRound=105,
+ -- AttackReevaluate=134. These bind a candidate target, NOT a free round.
+ if aid~=3 and aid~=30 and aid~=105 and aid~=134 then
+  return output('HOLD','NOT_AN_ATTACK_CANDIDATE_ACTION') end
  local slot,ability,item=selection(source)
  if not slot then return output('HOLD','SELECTION_UNREADABLE') end
  if slot~=ctx.selectedSlot or ability~=ctx.selectedAbility then
@@ -136,6 +147,7 @@ function M.inspect(source,action,api,ctx)
    actualTargetHitProbability=nil,
    actualTargetPhysicalDamageThrough=nil,
    targetDefensesReadFromInjectedAdapterOnly=true,
+   activeStatsNotTempDoubleRead=true,
   })
 end
 local CORE=M
@@ -221,7 +233,8 @@ function R.on_started(sprite,action)
   local p=party(id)
   if p==nil then return end
   local actionRaw=safe(function()return action.m_actionID end)
-  if actionRaw~=3 and actionRaw~=30 then return end
+  if actionRaw~=3 and actionRaw~=30 and
+    actionRaw~=105 and actionRaw~=134 then return end
   R.recorded=R.recorded+1
   local context={
    sessionId=R.sessionId,snapshotId='BGXTD13_'..tostring(R.recorded),
