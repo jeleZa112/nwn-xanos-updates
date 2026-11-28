@@ -389,13 +389,13 @@
       "error_id": "BGXAI_R42_LIVE_CAPTURE_HOLD_DETAIL_MASKED_20261128",
       "project": "BGXAI",
       "type": "CONFIRMED_FAILURE",
-      "status": "R46_USER_NATIVE_BAF_TEMP_PASS_R47_PASSIVE_GUARDED_158_SOURCE_ONLY_WIN_LINUX_CI_PASS_NOT_INSTALLED",
+      "status": "R46_NATIVE_USER_TEMP_COMPILE_PASS_R47_SOURCE_RELEASED_NEXT_ONE_PREFLIGHT_179_18",
       "discovered_at": "2026-11-28",
       "trigger": "Real Windows R42 one-file 179→6 capture after independently positive 179→2 guarded installed status",
       "observed_failure": "28-Nov 2026 first real R43 installed Windows capture 179→11 produced R43_CAPTURE_HOLD_REASON_OBSERVED, inner R42_CAPTURE_HOLD_CLASS_BCS_UNREADABLE, noAutoRetry=true, r39ProbeStatus=HOLD_SCRIPT_ACTOR_CHANGED, r39ClassSlotState=NOT_READ, classScriptResref=null, installed=true, ordersSent=0, dispatchAuthorized=false, armAuthorized=false, gameModified=false. Existing 46,109-byte raw console file local path C:\\Users\\Drevo\\Documents\\BGXAI_LIVE_REPORTS\\BGXAI_R43_CLASS_REASON_20261128T093349396112Z.log WAS NOT uploaded and has NOT been inspected. Two BG_EET_RU_V106 registration lines are not causal proof. Native process STOP code 1 is deliberate on hold.",
       "cause": "SOURCE-EXACT STOP LOCATION: R39 EEex 1.1.7 bridge probeScriptAssignments() checks `sameActor ~= sprite or sameId ~= portraitId` immediately after first seven resref reads, returning HOLD_SCRIPT_ACTOR_CHANGED. The single observed reason does NOT distinguish Lua userdata wrapper reference inequality (fresh typed wrapper returned by EEex_GameObject_Get / EEex_GameObject_CastUT) from an actual portrait actor ID change. Need not assert the actor actually switched. R43 successful identity matched earlier; class script not read. Proposed exclusive minimal source-only fix: compare stable numeric m_id with initial physical actorId and portrait ID, then second read using second object wrapper, and retain all previously existing exact physical/selection/script/cursor change HOLD gates; test same actor new wrapper vs changed ID without game installation. Not known which of two comparisons failed live.",
       "do_not_repeat": "Do not replay 179→11, reinstall R43 179→9, rerun old R42 179→6, old R39 compile, R38 capture, old GAM parsing, or unguarded rollback. Preserve original raw file. No duplicate listener, no new command/ARM, no assertion of CLASS name from 19-Nov GAM saved snapshot, no blame on BG_EET_RU without evidence.",
-      "safe_action": "Real R46 179→17 native TEMP BAF compile PASS, once only; source unchanged game. R47 corrected EEex global API 2232B sha f095193..., 20399B SHA b61811e... guarded last157→158 installer fake-EET CI Windows+Ubuntu PASS and 12 bounded capture-parser tests PASS. Proven old BDDEFAI BCS SHA from R37/R44 baseline 24d94062... makes new extraction unnecessary. DO NOT install or run game yet; next stage same original onefile179 added modes18..22 with explicit typed gate and CI before published channel. Never repeat 179→17, R44 old 16, nor reinstall R44.",
+      "safe_action": "R46 user original onefile 8ac menu179→17 PASS native TEMP compiled inert 223B BAF to c44488ab80ddfab08eabc39ca302ea2797d6fd3b0caa83b42900741812cfb626, installed=false gameModified=false orders0. R44 remains actual last WeiDU #157 with one live CLASS BDDEFAI and STAF01 exactPhysical gate true. R47 corrected witness Lua 2232B SHA f095193... uses EEex_AIBase_GetScriptLevelResRef (real R44 API); original 223B BAF unchanged and always returns false. R47 source-only guarded last157→158 external BCS backup + exact 24d94062... preimage + rollback/status/capture fake EET 18 tests PASS Windows/Linux. Original single BGXAI_UPDATE.cmd immutable source f2827f25da5, PS 79798B sha 4728e8a..., child179 49505B sha db9126... modes18 preflight RO 19 typed install 20 status 21 typed rollback 22 once game capture; old1..17 retained. Pre-release CI 46138827273 Windows/Linux PASS; postrelease CI 46138925240 pending/verify before user action. R47 not installed, BCS execution not proved; next ONLY user once 179→18 RO with game+InfinityLoader closed after postrelease CI. NEVER repeat 179→17 R46, 179→16 R44, old native tests. If HOLD preserve first console, no retry. If preflight PASS separately authorize 179→19 typed, after install later 179→22 once. NO actual XEquip and no new listener.",
       "closure_condition": "Specific original source of R39 CLASS assignment read HOLD is identified without speculating from unrelated mods or retrying the same capture. A future narrow source-only fix must explicitly preserve existing listener, no command dispatch, exact script/backup/provenance checks, one updated existing updater and CI; any new installation requires separate typed approval. Class script remains UNKNOWN until real current-game evidence.",
       "evidence": [
         "user-provided 2026-11-28 BGXAI_UPDATE.cmd 179→6 console in current BGXAI conversation (R42_HOLD_ONEFILE_GUARDED, HOLD_R42_NATIVE_GUARD_OR_STATE)",
@@ -408,7 +408,7 @@
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46133473161",
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46133585010"
       ],
-      "enforcement": "R46 native game WeiDU compile PASS, script BAF not installed. User has no action until next separately checked stage. R44 installed last157 and R44 live CLASS BDDEFAI PASS. R47 source witness Lua global API correction not yet implemented. Real BCS execution, active effects, safe EPS/manual action and XEquip all unverified.",
+      "enforcement": "R44 real user installed last157 and LIVE CLASS assign PASS, R46 user native TEMP comp PASS, R47 source/CI/published SOURCE PASS only, game R47 DEPLOY/LIVE NOT DONE, R39 equip not installed, zero game orders. No automatic CMD install or retry, ignore stale handoff next steps.",
       "source_only_fix": {
         "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_CLASS_HOLD_REASON_SOURCE_ONLY.py",
         "tests": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_class_hold_reason_source_only.py",
@@ -502,7 +502,16 @@
         "r46Installed": false,
         "r46ActualBCSExecution": false,
         "r46XEquipPerformed": false,
-        "liveSTAF01ProvenByExactR39Physical": true
+        "liveSTAF01ProvenByExactR39Physical": true,
+        "r46RealUserNativeCompilePass": true,
+        "r47OnefilePublished": true,
+        "r47ImmutableCommit": "f2827f25da5a01215fcbdc0b9a48e3900d654384",
+        "r47GamePreflightDone": false,
+        "r47Installed": false,
+        "r47ActualBCSEvaluated": false,
+        "r47FirstEquipDone": false,
+        "r47OriginalBCSSHA": "24d94062ebc7226dc3486ecad3786dca7e5edae424cef0f13d8a4577cff36331",
+        "r47NewLuaSHA": "f095193e77b2a9ec5d8f21edf738a805c462656e58df41b9199ff9b2ac4da256"
       }
     }
   ],
@@ -693,10 +702,29 @@
           "exclusive_missing_delta": "Extend ONLY original 179 Python child with new exact typed/passive R47 modes 18=preflight RO,19=typed guarded install,20=status,21=typed rollback,22=once game capture RO. Stage existing R37/R38/R42/R43/R44 SHA-pinned parents plus R46 composer + old BAF + R47 corrected Lua composer + R47 guarded file outside game. Preserve old modes1..17 byte for byte semantics and original single CMD, only update parent PS child-size/SHA literal if 79798 bytes unchanged. Run mocked negative tests and Windows/Linux CI before immutable publication. User only 179→18 first, separately examine PASS then typed 179→19 with explicit consent; NO automatic install or retries.",
           "scope": "CODE+TEST+SOURCE, NOT REAL EET INSTALL",
           "safety": "No new CMD, no extra action-start listener, no weapon/equip commands, no LOCALS. On any HOLD STOP once. Do not repeat R44 179→16 or R46 native 179→17. Reuse user-proven original BDDEFAI.BCS SHA, external backup and WeiDU last157 exact proof. Source-only staged until green CI.",
-          "status": "PRIOR_WORK_BEFORE_ONEFILE_CHILD_EDIT",
+          "status": "R47_ONEFILE179_IMMUTABLE_SOURCE_RELEASE_POSTPIN_CI_PENDING_USER_PREFLIGHT_NOT_INSTALLED",
           "gameModified": false,
           "autoConsent": false,
-          "targetFile": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py"
+          "targetFile": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py",
+          "sourceCommit": "f2827f25da5a01215fcbdc0b9a48e3900d654384",
+          "parentPSSize": 79798,
+          "parentPSSha256": "4728e8a412c2b9497e12541447e9578604677440f344a207cc67b779154d15b5",
+          "childPythonBytes": 49505,
+          "childPythonSha256": "db9126444dbdb4b3587b8c35497f0defcb90c72460ff39b14c17c13792407b8d",
+          "channelPublicationCommit": "12f9b89307d0e9f4f3a9f0822f1c487ae959b38c",
+          "preReleaseCi": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46138827273",
+          "postReleaseCi": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46138925240",
+          "exactModes": {
+            "18": "r47_preflight",
+            "19": "r47_install",
+            "20": "r47_status",
+            "21": "r47_rollback",
+            "22": "r47_capture"
+          },
+          "preserveOriginal1Through17": true,
+          "realGameModified": false,
+          "R47Installed": false,
+          "next": "FIRST one user-PC read-only 179→18 after verifying pinned script f2827f25da5 SHA; no game run. Inspect status R47_PREFLIGHT_EXACT_GUARDED_PASS and inner R47_PREFLIGHT_R44_LAST157_PASS_NO_INSTALL; only later distinct typed 179→19 can install passive witness, and later 179→22 one-shot live BCS evaluation capture. On HOLD do not retry/rollback automatically."
         }
       ],
       "project": "BGXAI",
@@ -920,7 +948,7 @@
           "already_done": "R44 user native installed last157 and live assigned Jagan CLASS=BDDEFAI plus exact STAF01 slot20. R46 223B BAF with EEex_LuaTrigger pcall(fn);return false accepted in real user native WeiDU TEMP compile ONCE, compiledBcsSha256=c44488ab80ddfab08eabc39ca302ea2797d6fd3b0caa83b42900741812cfb626, 0 file changes; original R46 Lua 2222B source only never installed; R46 menu179→17 user already PASS. R44 proven source bridge M_BGXR27 uses GLOBAL EEex_AIBase_GetScriptLevelResRef to read CLASS4 and R44 succeeded; original R46 Lua instead assumes actor.getScriptLevelResRef method, NOT verified. Keep R46 immutable channel source and user proof; correct only next variant.",
           "evidence": "User console 2026-11-28 179→17 R46_NATIVE_TEMP_COMPILE_EXACT_PASS_NOT_INSTALLED, source commit 8ac04640f9960707498afc68bdcd2f1ebde317aa; compiledBcs SHA c44488ab80ddfab08eabc39ca302ea2797d6fd3b0caa83b42900741812cfb626. Existing GitHub source BGXAI_R39_EEEX117_ENGINE_BRIDGE_RO.lua `probeInstalledScriptAssignments()` reads rawget(_G,'EEex_AIBase_GetScriptLevelResRef') and passed user game at R44.",
           "missing_delta": "Minimal NEW source-only corrected R46 witness Lua using global EEex_AIBase_GetScriptLevelResRef(actor,4) and explicit fail-closed actor wrapper ID/class/kit guards, unchanged 223B inert BAF; strict exact SHA original R46 source + diff. Then source-only guarded successor R47 last157→158 with WeiDU EXTEND_TOP exact BDDEFAI.BCS, preserve source preimage and absence/presence of override file, external backup/proof and exact rollback; avoid overwriting any third-party source, no XEquip/ARM/manual orders; source mocked CI before publisher. Discover if BDDEFAI.BCS comes from override versus BIFF; HOLD if preimage cannot be safely obtained, not fake successful install. No new CMD, reuse old menu179 child.",
-          "status": "R47_CORRECTED_LUA_AND_GUARDED_158_SOURCE_ONLY_CI_WIN_LINUX_PASS_NOT_DEPLOYED",
+          "status": "R47_CORRECTED_LUA_GUARDED_LAST158_SOURCE_COMPILED_AND_PUBLISHED_IN_ONE_CMD_NOT_INSTALLED",
           "sourceOnly": true,
           "installApproved": false,
           "realGameModified": false,
@@ -934,7 +962,12 @@
           "sourceCi": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46138587666",
           "actualInstalled": false,
           "gameChanged": false,
-          "next": "Safely add new modes18..22 to old 179 child only after same prework, test Win+Linux and repin immutable source SHA; user must do once read-only 179→18 before separately typed install 179→19."
+          "next": "Safely add new modes18..22 to old 179 child only after same prework, test Win+Linux and repin immutable source SHA; user must do once read-only 179→18 before separately typed install 179→19.",
+          "r47NativeUserPreflightDone": false,
+          "r47Installed": false,
+          "r47LiveBcsWitnessDone": false,
+          "exactBcsSourceSha": "24d94062ebc7226dc3486ecad3786dca7e5edae424cef0f13d8a4577cff36331",
+          "r47NativeUserStatus": "NOT_RUN"
         }
       ],
       "predecessor_sources": [
