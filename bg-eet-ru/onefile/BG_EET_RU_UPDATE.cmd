@@ -8179,8 +8179,8 @@ def v163_dispatch(game,mode,offline=False):
  except Exception as e:print('V163_ZIP_HOLD',str(e)[:90]);return 2
  print('V163:',report.get('status'),report.get('reason',''))
  return 0 if report.get('status') in ('CUMULATIVE_PREFLIGHT_PASS','CUMULATIVE_NOT_INSTALLED','CUMULATIVE_INSTALLED_AWAITING_GAMEPLAY','CUMULATIVE_ROLLED_BACK_TO_FIRST64') else 2
-V165_PIN='8037cf2361f3c0431124a2ad03b88e3f477b5aac99d8c3c016d8adce12d97264'
-V165_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/fd815134f127ec568806eb2e23f41b6d9ff5b5c3/bg-eet-ru/weapon-identity/V165_ONE_ITEM_DUAL_PILOT.py'
+V165_PIN='d882c235ee4c2f57d02d5fc3afd614dead1bc918cbd45077a22bea3baf715dea'
+V165_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/8864c9cbd711297e07ba95f0cf118c61a12f0fdb/bg-eet-ru/weapon-identity/V165_ONE_ITEM_DUAL_PILOT.py'
 def v165_dispatch(game,mode,offline=False):
  try:
   p=v121_cache(game)/'V165_DUAL_ONE_ITEM.py'
