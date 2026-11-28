@@ -112,7 +112,47 @@
       "GUARDED",
       "HISTORY_INCOMPLETE"
     ],
-    "minimum_feedback": "Already known: <error_id and evidence>. Current risk: <trigger>. New delta: <action>. Gate: <ALLOW_REVIEW or HOLD>; explain source limitations."
+    "minimum_feedback": "Already known: <error_id and evidence>. Current risk: <trigger>. New delta: <action>. Gate: <ALLOW_REVIEW or HOLD>; explain source limitations.",
+    "error_gate_contract_v1": {
+      "status": "MANDATORY_PROCEDURAL_GATE_ALL_PROJECTS",
+      "scope": "before_substantial_action_and_on_each_confirmed_error",
+      "before_action": [
+        "project",
+        "sources_read",
+        "matched_error_ids_or_none_found_in_checked_sources",
+        "do_not_repeat",
+        "safe_delta",
+        "gate_verdict_CHECKED_PARTIAL_HOLD"
+      ],
+      "after_confirmed_error": {
+        "moment": "before_retrying_same_operation",
+        "lookup": "semantic_search_existing_error_ids_first",
+        "same_error": "update_existing_entry_and_evidence_without_creating_duplicate_id",
+        "new_error": "append_once_to_project_error_register_and_update_canonical_project_state",
+        "required_fields": [
+          "error_id",
+          "project",
+          "type",
+          "status",
+          "discovered_at",
+          "trigger",
+          "observed_failure",
+          "cause",
+          "do_not_repeat",
+          "safe_action",
+          "closure_condition",
+          "evidence",
+          "enforcement"
+        ],
+        "unknown_cause": "use_UNKNOWN_not_guess",
+        "write_failure": "ERROR_NOT_SAVED; provide evidence-backed portable record; no claim_of_persistence",
+        "closure": "requires_exact_test_and_primary_evidence; CODE_TEST_DEPLOY_LIVE_remain_separate"
+      },
+      "minimum_receipt": "ERROR_GATE: <CHECKED|PARTIAL|HOLD> | PROJECT: <name> | IDS: <ids|NONE_FOUND_IN_CHECKED_SOURCES> | EVIDENCE: <links> | DELTA: <step>",
+      "error_receipt": "ERROR_WRITTEN: <id> | <actual_saved_path> | <status> | <next_safe_step>",
+      "auto_enforcement_limits": "only_git_ci_and_explicitly_integrated_and_tested_runtime_are_machine_checked; chat_and_library_guidance_cannot_force_every_future_model",
+      "no_updater_requirement": true
+    }
   },
   "project_error_register": [
     {
