@@ -345,4 +345,43 @@ function M.planWithV3(backpack,quick,other,scene,candidates,v3Scene,previous,v3)
  advice.ordersSent=0
  return advice
 end
+-- On-demand bridge from the EXISTING R37 action event to the existing V3
+-- actor-target scorer and V4 inventory comparison. No callback registration.
+-- A stable raw item map is NOT full item instance identity or final APR.
+function M.planWithR37(sprite,r37,contextReader,reader,
+                       scene,candidates,v3Scene,previous,v3)
+ if type(reader)~='table' or type(reader.captureTopLevel)~='function' or
+    type(r37)~='table' or type(contextReader)~='function' or
+    type(scene)~='table' then
+  return result('HOLD_R37_V4_ADAPTER_INPUT_INCOMPLETE') end
+ local ok,raw=pcall(reader.captureTopLevel,sprite,r37,contextReader)
+ if not ok or type(raw)~='table' or
+    raw.status~='TOPLEVEL0_38_AND_R37_STABLE_ADVICE_ONLY' or
+    raw.readOnly~=true or raw.sourceOnly~=true or
+    raw.dispatchAuthorized~=false or
+    raw.inventoryMoveAuthorized~=false or
+    raw.fullEquipmentUniquenessVerified~=false or
+    raw.engineItemInstanceVerified~=false or
+    raw.r37QuickQuiverOffhandMatched~=true or
+    raw.alternativeAPRVerified~=false or
+    raw.actorId~=scene.actorId or
+    type(raw.backpack)~='table' or
+    type(raw.quick)~='table' or type(raw.other)~='table' then
+  return result('HOLD_R37_TOPLEVEL_RAW_MAP_UNVERIFIED',
+                {priorStatus=ok and type(raw)=='table' and raw.status or nil}) end
+ local advice=M.planWithV3(raw.backpack,raw.quick,raw.other,
+                           scene,candidates,v3Scene,previous,v3)
+ -- Even if all simulated V3 inputs are forged, item read can NEVER arm an
+ -- engine command or claim complete buffs / current alternate APR.
+ advice.r37InventoryMap='ON_DEMAND_TOPLEVEL0_38_SOURCE_ONLY'
+ advice.nativeInventoryInstanceAuthenticated=false
+ advice.alternativeAPRVerified=false
+ advice.safeActionBoundaryVerified=false
+ advice.manualEpsOriginVerified=false
+ advice.executable=false
+ advice.dispatchAuthorized=false
+ advice.inventoryMoveAuthorized=false
+ advice.ordersSent=0
+ return advice
+end
 return M
