@@ -172,14 +172,14 @@ class SavedBCSFromCRE(unittest.TestCase):
         cre=bytearray(0x390)
         cre[:8]=b'CRE V1.0'
         cre[0x273]=3
-        cre[0x280:0x288]=b'GCLERIC\\x00'
+        cre[0x280:0x288]=b'GCLERIC\x00'
         for off, name in ((0x248,override),(0x250,class_script),
                           (0x258,b''),(0x260,b''),(0x268,b'DEFAULT')):
-            cre[off:off+8]=name.ljust(8,b'\\x00')
+            cre[off:off+8]=name.ljust(8,b'\x00')
         struct.pack_into('<III',cre,0x2b8,0x2d4,0x324,1)
-        cre[0x2d4:0x324]=b'\\xff'*80
+        cre[0x2d4:0x324]=b'\xff'*80
         struct.pack_into('<H',cre,0x2d4+SLOTS_TO_RUNTIME.index(20)*2,0)
-        cre[0x324:0x32c]=b'STAF01\\x00\\x00'
+        cre[0x324:0x32c]=b'STAF01\x00\x00'
         struct.pack_into('<I',cre,0x324+16,1)
         gam=bytearray(0x260+len(cre))
         gam[:8]=b'GAMEV2.0'
