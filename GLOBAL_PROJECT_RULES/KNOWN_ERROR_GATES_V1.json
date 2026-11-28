@@ -164,6 +164,25 @@
   },
   "project_error_register": [
     {
+      "error_id": "BGXAI_V3_SYNTHETIC_GAM_PY_BYTE_LITERAL_OVERESCAPE_20261128",
+      "project": "BGXAI",
+      "type": "CONFIRMED_FAILURE",
+      "status": "MITIGATED_SOURCE_ONLY",
+      "discovered_at": "2026-11-28",
+      "trigger": "Generating Python binary CRE fixtures from a JavaScript template that double-escapes Python byte literals",
+      "observed_failure": "The first new V3 test commit emitted b'\\\\x00' instead of Python b'\\x00' in the test fixture, making bytes.ljust padding invalid; GitHub Actions V3 source CI failed on Ubuntu and Windows in three tests.",
+      "cause": "Nested JavaScript/Python string escaping was not inspected before committing the synthetic fixture; test fixture failures were unrelated to installed game or existing R39 native code.",
+      "do_not_repeat": "Do not double-escape Python b'\\x00' or b'\\xff' literals when emitting through JavaScript; inspect committed source bytes, then require both Windows and Linux test runs before reporting PASS.",
+      "safe_action": "Correct only the synthetic test's byte literals, rerun the existing V3 tests and R39/R41 canonical CI, and preserve the original R39 2407B BAF, R40 reset and R41 generated Lua unchanged.",
+      "closure_condition": "V3 27-test suite with four expected real-GAM skips succeeds on Windows and Ubuntu; R39/R41 canonical workflow and source provenance guard succeed; no claim of LIVE actor BCS or item transfer.",
+      "evidence": [
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46118088540",
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46118100842",
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46118109030"
+      ],
+      "enforcement": "CI regression and source byte-literal inspection; test fixture correction only; no gameplay deployment"
+    },
+    {
       "error_id": "BGXAI_RESUME_R39_STALE_PIN_20261127",
       "project": "BGXAI",
       "type": "SOURCE_STATE_DRIFT",
