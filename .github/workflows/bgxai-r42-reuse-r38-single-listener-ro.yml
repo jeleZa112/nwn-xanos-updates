@@ -82,6 +82,8 @@ jobs:
           assert len(b)<=80000
           print('PINNED_BGXAI_SYNC_SHA256',len(b),hashlib.sha256(b).hexdigest())
           PY
+      - name: Compute exact composed R42 Lua SHA/size (source-only, no game)
+        run: python BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_REUSE_R38_CLASS_BCS_RO.py
       - name: Record exact immutable source sizes and SHA256 for sole updater
         shell: bash
         run: |
