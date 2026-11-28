@@ -1,5 +1,17 @@
 # BGXAI — ЕДИНСТВЕННАЯ КАНОНИЧЕСКАЯ ТОЧКА ВОССТАНОВЛЕНИЯ
 
+## 28.11.2026 — R44 REAL WINDOWS LAST156 READ-ONLY PREFLIGHT PASS; INSTALL PENDING
+
+**FIRSTHAND USER-PC OUTPUT (28.11.2026)**: same original `BGXAI_UPDATE.cmd` verified pinned script `668b0fe4ba3b (SHA256 OK)`, REST API not used, menu `179→13` selected. Parent status `R44_PREFLIGHT_EXACT_GUARDED_PASS`; inner `R44_PREFLIGHT_LAST156_PASS_NO_INSTALL`; `sourceCommit=668b0fe4ba3b9b7c49245b73a2ba9834aa8f4768`, `expectedDiagnosticSHA256=bae25741c3ee620a184ddddcd0a7b59b82d835bd7f5766d5911459baedfe8600`; `gameModified=false`, `installed=false`, `classScriptResrefAtLiveJaganVerified=false`, `classScriptResref=null`, `actualBcsExecutionVerified=false`, `manualEpsActionOriginVerified=false`, `ordersSent=0`, `dispatchAuthorized=false`, `armAuthorized=false`, `noAutoRetry=false`. Native guarded last-only #156 preflight **PASS on real user's EET**. It does NOT mean R44 is installed, nor that the live CLASS resref was read or XEquip works. Do not repeat preflight.
+
+**ONLY NEXT USER ACTION**: Close Baldur's Gate and InfinityLoader. Run SAME `BGXAI_UPDATE.cmd`; choose **`179→14`** R44 typed guarded install only after user deliberately invokes it. When prompted, type EXACT token `INSTALL_BGXAI_R44_READONLY_NUMERIC_ACTOR_AFTER_R43_LAST` (Enter cancels); expect parent `R44_INSTALL_EXACT_GUARDED_PASS` and inner `R44_READONLY_NUMERIC_ACTOR_INSTALLED_AWAITING_LIVE`, `installed=true`, `gameModified=true`, `ordersSent=0`. Preserve first stdout. STOP/HOLD: do NOT retry, reinstall R43 or auto rollback. Only after inspecting successful installed receipt may user run a separately guided SINGLE 179→16 read-only capture, NOT now. Old R43 first capture 179→11 already complete with `HOLD_SCRIPT_ACTOR_CHANGED`, never repeat. R44 adds numeric ID double-check/one old listener, not any weapon/equip commands. No game installation, gameplay execution or capture has been run by assistant.
+
+**TIERS**: CODE R44 PASS; TEST Windows/Ubuntu 208 each + Lua 9 PASS; SOURCE released immutable 668b; REAL USER-PC PREFLIGHT PASS; DEPLOY R44 **NOT DONE**; LIVE R44 **NOT DONE**; XEquip/ARM **NOT ACTIVATED**. R43 still installed last #156 pending consented R44 #157.
+
+---
+
+
+
 ## 28.11.2026 — R44 R39 NUMERIC ACTOR ID SOURCE PUBLISHED VIA ONE CMD; USER-PC PREFLIGHT PENDING
 
 **USER FIRST-HAND**: R43 installed as last WeiDU #156 from onefile 179→9, followed by exactly ONE 179→11 live capture: `R43_CAPTURE_HOLD_REASON_OBSERVED`, `r39ProbeStatus=HOLD_SCRIPT_ACTOR_CHANGED`, `r39ClassSlotState=NOT_READ`, `noAutoRetry=true`, `ordersSent=0`, `installed=true`, console `C:\\Users\\Drevo\\Documents\\BGXAI_LIVE_REPORTS\\BGXAI_R43_CLASS_REASON_20261128T093349396112Z.log` 46,109 bytes USER LOCAL ONLY / NOT UPLOADED. R39 initial first seven resrefs did parse, then old sameActor~=sprite or sameId~=portraitId failed; specific side not live proven. Old 179→11 capture shall NEVER be repeated; do not reinstall R43 or rollback.
