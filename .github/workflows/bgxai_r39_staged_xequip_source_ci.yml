@@ -24,6 +24,7 @@ jobs:
         working-directory: BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127
     steps:
       - name: Preserve exact source bytes on Windows
+        working-directory: .
         run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
