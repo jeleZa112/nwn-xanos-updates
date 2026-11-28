@@ -611,4 +611,138 @@ function M.planAutoBatch(sprite,r37,contextReader,reader,r3,projection,
 end
 
 
+
+-- Use the EXISTING R13 target defense reader in the SAME decision pass.
+-- EEex v1.1.7 has GetActiveStats and GameObject_Get, unlike the unsupported
+-- newer attack-info API. R13 is raw defense evidence, not immunity / hostility
+-- or native counterfactual APR proof. A 105/134 action remains in progress.
+-- This wrapper does not register an action listener or execute any action.
+function M.planAutoBatchWithR13(p)
+ if type(p)~='table' or type(p.r37)~='table' or
+    type(p.scene)~='table' or type(p.v3Scene)~='table' or
+    type(p.v3Scene.frame)~='table' or
+    type(p.v3Scene.enemy)~='table' or
+    type(p.v3Scene.enemy.protections)~='table' or
+    type(p.r13)~='table' or type(p.r13.inspect)~='function' or
+    type(p.context)~='table' or
+    type(p.api)~='table' then
+  return result('HOLD_AUTOBATCH_R13_INPUT_INCOMPLETE') end
+ -- Don't read the target or backpack while an attack / EPS order is queued.
+ -- planAutoBatch already verifies the original R27 action/queue contract.
+ if integer(p.r37.queuedActionsRaw,1,512) then
+  local skip=M.planAutoBatch(p.sprite,p.r37,p.contextReader,p.reader,
+     p.r3,p.projection,p.scene,p.v3Scene,p.previousV3,p.v3)
+  if skip.status=='PRESERVE_KNOWN_ACTION_QUEUE_NO_SCAN' then
+   skip.r13ObserveCalls=0
+  end
+  return skip
+ end
+ local c=p.context
+ local f=p.v3Scene.frame
+ local e=p.v3Scene.enemy
+ if not integer(c.actor,1,2147483647) or
+    not integer(c.targetActor,1,2147483647) or
+    not integer(c.actionRaw,0,65535) or
+    not integer(c.selectedSlot,35,38) or
+    not integer(c.selectedAbility,0,255) or
+    not integer(p.r37.selectedWeaponRaw,35,38) or
+    not integer(p.r37.selectedAbilityRaw,0,255) or
+    c.actor~=p.r37.actor or c.actor~=p.scene.actorId or
+    c.targetActor~=p.scene.targetActorId or
+    c.actionRaw~=p.r37.actionRaw or
+    c.selectedSlot~=p.r37.selectedWeaponRaw or
+    c.selectedAbility~=p.r37.selectedAbilityRaw or
+    c.snapshotId~=p.scene.snapshotId or
+    c.snapshotId~=f.snapshotId or
+    tostring(c.targetActor)~=f.enemyId or
+    tostring(c.actor)~=f.actorId or
+    tostring(c.targetActor)~=e.enemyId or
+    c.readOnlyContextOnly~=true or c.switchAttempted~=false or
+    c.manualEPSBoundaryProven~=false then
+  return result('HOLD_AUTOBATCH_R13_R27_ACTOR_TARGET_ACTION_MISMATCH') end
+ local ok,target=pcall(p.r13.inspect,p.sprite,p.action,p.api,c)
+ if not ok or type(target)~='table' or
+    target.schema~='BGXAI_R13_TARGET_DEFENSE_OBSERVER_V1' or
+    target.status~='TARGET_RAW_DEFENSE_FIELDS_CANDIDATE_ONLY' or
+    target.rawDefenseFieldsComplete~=true or
+    target.activeStatsNotTempDoubleRead~=true or
+    target.nativeEvidenceAuthenticated~=false or
+    target.liveReadVerified~=false or
+    target.hostileTargetProven~=false or
+    target.alternateSlotAPRVerified~=false or
+    target.dispatchAuthorized~=false or
+    target.weaponSwitchAuthorized~=false or
+    target.sourceActor~=c.actor or target.targetActor~=c.targetActor or
+    target.rawActionId~=c.actionRaw or
+    target.selectedSlot~=c.selectedSlot or
+    target.selectedAbility~=c.selectedAbility or
+    target.snapshotId~=c.snapshotId or
+    type(target.rawFields)~='table' then
+  return result('HOLD_AUTOBATCH_R13_TARGET_DEFENSE_UNSTABLE',{
+    r13Status=ok and type(target)=='table' and target.status or nil,
+    r13Reason=ok and type(target)=='table' and target.reason or nil}) end
+ local d=target.rawFields
+ local base=d.m_nArmorClass
+ if not integer(base,-50,100) then
+  return result('HOLD_AUTOBATCH_R13_TARGET_AC_OUTSIDE_MODEL') end
+ local acMap={}
+ local mods={CRUSHING='m_nACCrushingMod',PIERCING='m_nACPiercingMod',
+             SLASHING='m_nACSlashingMod',MISSILE='m_nACMissileMod'}
+ for kind,field in pairs(mods) do
+  local modifier=d[field]
+  if not integer(modifier,-200,200) or
+     not integer(base+modifier,-50,100) then
+   return result('HOLD_AUTOBATCH_R13_TYPE_AC_UNSUPPORTED',{acKind=kind}) end
+  acMap[kind]=base+modifier
+ end
+ -- R13 read these specific four fields; percent -> V3 fractional reduction.
+ -- Unknown enhanced effects/absorption/immunity must NEVER be inferred.
+ local resist={}
+ local names={CRUSHING='m_nResistCrushing',PIERCING='m_nResistPiercing',
+              SLASHING='m_nResistSlashing',MISSILE='m_nResistMissile'}
+ for kind,field in pairs(names) do
+  local raw=d[field]
+  if not integer(raw,0,100) then
+   return result('HOLD_AUTOBATCH_R13_RESISTANCE_OUTSIDE_MODEL',
+     {resistanceKind=kind}) end
+  resist[kind]=raw/100
+ end
+ local function copy(src)
+  local v={}
+  for k,x in pairs(src) do v[k]=x end
+  return v
+ end
+ local cloned=copy(p.v3Scene)
+ local newEnemy=copy(e)
+ local newProtections=copy(e.protections)
+ newProtections.resistance=copy(e.protections.resistance)
+ for kind,value in pairs(resist) do newProtections.resistance[kind]=value end
+ newEnemy.protections=newProtections
+ newEnemy.armorClass=base
+ newEnemy.targetArmorClassBaseCandidate=base
+ newEnemy.targetArmorClassByAttackTypeCandidate=acMap
+ newEnemy.targetTypeACModelStatus='R13_DERIVED_ATTACK_TYPE_AC_MODEL_ONLY'
+ newEnemy.targetTypeACModelSnapshotId=f.snapshotId
+ newEnemy.targetTypeACNativeAuthenticated=false
+ cloned.enemy=newEnemy
+ local advice=M.planAutoBatch(p.sprite,p.r37,p.contextReader,p.reader,
+  p.r3,p.projection,p.scene,cloned,p.previousV3,p.v3)
+ -- Never mutate the caller's scene and never manufacture target protections.
+ advice.r13DefensesReadFromSameAttack=true
+ advice.r13NativeRuntimeAuthenticated=false
+ advice.r13SnapshotId=c.snapshotId
+ advice.r13ActorId=c.actor
+ advice.r13TargetId=c.targetActor
+ advice.r13ActionId=c.actionRaw
+ advice.r13AttackTypeACModel=acMap
+ advice.r13PhysicalResistancesModel=resist
+ advice.r13AllImmunitiesKnown=false
+ advice.nativeEffectiveAlternateAprVerified=false
+ advice.dispatchAuthorized=false
+ advice.inventoryMoveAuthorized=false
+ advice.executable=false
+ advice.ordersSent=0
+ return advice
+end
+
 return M
