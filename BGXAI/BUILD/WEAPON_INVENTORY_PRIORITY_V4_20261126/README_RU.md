@@ -7,6 +7,14 @@ This module is **ADVISORY ONLY**, cannot equip or generate LOCALS, cannot assert
 
 Evidence: IESDP BG(2)EE SLOTS.IDS `15-17` quick items, `18-33` backpack, `34` magical-weapon, `35-38` quickweapons. IESDP action 385 `XEquipItem` can target a slot, but does not guarantee unique *instance*, safe queue boundary or conserved inventory after action; `EquipItemEx` does not move item, `FillSlot` destroys target contents. No active command permitted.
 
+## 28.11.2026 — минимальное согласование с уже существующим V3 (SOURCE ONLY)
+
+PRIOR WORK GATE: V3 уже содержит проверенный на синтетических тестах special-case для *доказанно бесполезного* текущего оружия (иммунитет цели, 100% резист, отсутствие боеприпасов/дальности и прочие явно подтверждённые причины). V4 до этого сохранял обязательный порог max(2, 15%) даже при utility текущего оружия 0: слабая, но реально действующая альтернатива из рюкзака необоснованно отсекалась. В V4 исправлено только это расхождение, без нового переключателя, listener или команд.
+
+Если V3-подобные `currentWeaponUnusableVerified=true` и `currentWeaponUnusableReason` указаны явно, V4 требует причину из закрытого списка, непротиворечивый current score <=0 и положительную utility альтернативы; порог тогда 0. Неизвестная/ложно заявленная причина или положительный score при доказанной бесполезности дают HOLD. При отсутствии таких сведений прежний hysteresis сохранён. Семь новых регрессионных сценариев добавлены в существующий `test_backpack16_priority_v4.lua`; выполнение реальной Lua/CI проверки ещё НЕ подтверждено в этой контрольной точке.
+
+Ограничение: любой caller может передать `*Verified=true` как данные тестовой модели. Это НЕ нативное EEex-доказательство, и V4 по-прежнему всегда выдаёт `executable=false`, `dispatchAuthorized=false`, `inventoryMoveAuthorized=false`, `ordersSent=0`. Не устанавливать в игру по одному такому результату.
+
 ## What this removes as a blocker
 Previously V1 used **incorrect 15..34** backpack map and only checked duplicates in backpack+quickweapons; V4 corrects mapping, covers all top-level slots and strict no-overwrite, reuses existing external scorer. V4 is not yet plugged into R37 and is NOT actual automation; native EEex loaded ITM stats/provenance and execution transaction remain unproven.
 
