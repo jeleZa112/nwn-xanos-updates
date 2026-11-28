@@ -389,13 +389,13 @@
       "error_id": "BGXAI_R42_LIVE_CAPTURE_HOLD_DETAIL_MASKED_20261128",
       "project": "BGXAI",
       "type": "CONFIRMED_FAILURE",
-      "status": "R47_REAL_USER_TYPED_INSTALL_LAST158_PASS_NEXT_ONE_179_22_LIVE_WITNESS_CAPTURE",
+      "status": "R47_USER_LIVE_BCS_WITNESS_MISSING_NO_RETRY_PIVOT_R48_REAL_ONE_SHOT_EQUIP",
       "discovered_at": "2026-11-28",
       "trigger": "Real Windows R42 one-file 179→6 capture after independently positive 179→2 guarded installed status",
       "observed_failure": "28-Nov 2026 first real R43 installed Windows capture 179→11 produced R43_CAPTURE_HOLD_REASON_OBSERVED, inner R42_CAPTURE_HOLD_CLASS_BCS_UNREADABLE, noAutoRetry=true, r39ProbeStatus=HOLD_SCRIPT_ACTOR_CHANGED, r39ClassSlotState=NOT_READ, classScriptResref=null, installed=true, ordersSent=0, dispatchAuthorized=false, armAuthorized=false, gameModified=false. Existing 46,109-byte raw console file local path C:\\Users\\Drevo\\Documents\\BGXAI_LIVE_REPORTS\\BGXAI_R43_CLASS_REASON_20261128T093349396112Z.log WAS NOT uploaded and has NOT been inspected. Two BG_EET_RU_V106 registration lines are not causal proof. Native process STOP code 1 is deliberate on hold.",
       "cause": "SOURCE-EXACT STOP LOCATION: R39 EEex 1.1.7 bridge probeScriptAssignments() checks `sameActor ~= sprite or sameId ~= portraitId` immediately after first seven resref reads, returning HOLD_SCRIPT_ACTOR_CHANGED. The single observed reason does NOT distinguish Lua userdata wrapper reference inequality (fresh typed wrapper returned by EEex_GameObject_Get / EEex_GameObject_CastUT) from an actual portrait actor ID change. Need not assert the actor actually switched. R43 successful identity matched earlier; class script not read. Proposed exclusive minimal source-only fix: compare stable numeric m_id with initial physical actorId and portrait ID, then second read using second object wrapper, and retain all previously existing exact physical/selection/script/cursor change HOLD gates; test same actor new wrapper vs changed ID without game installation. Not known which of two comparisons failed live.",
       "do_not_repeat": "Do not replay 179→11, reinstall R43 179→9, rerun old R42 179→6, old R39 compile, R38 capture, old GAM parsing, or unguarded rollback. Preserve original raw file. No duplicate listener, no new command/ARM, no assertion of CLASS name from 19-Nov GAM saved snapshot, no blame on BG_EET_RU without evidence.",
-      "safe_action": "Real user one CMD verified immutable source f2827f25da5 SHA256 OK; 179→18 real native preflight PASS already, then separately user deliberately typed 179→19 exact INSTALL_BGXAI_R47_INERT_BDDEFAI_WITNESS_AFTER_R44_LAST; outer R47_INSTALL_EXACT_GUARDED_PASS, inner R47_INERT_BDDEFAI_WITNESS_INSTALLED_AWAITING_LIVE. R47 now installed as last WeiDU #158 via guarded process; modified game resources, external SHA backup under Documents/BGXAI_BACKUPS, BAF af9c78... always FALSE and corrected witness Lua f095193..., ordersSent=0 ARM/DISPATCH false. No actual BCS trigger evaluation yet. Next only ONE original BGXAI_UPDATE.cmd menu 179→22 guarded game read-only capture, game/InfinityLoader initially closed; load same Jagan save, select only Jagan, briefly walk to free ground and close game normally. If HOLD/STOP save first console and no retry/rollback; do not redo old 17/18/19 or R44 16. First STAF01 XEquip NOT DONE.",
+      "safe_action": "Real user first and only R47 game capture original CMD menu179→22 yielded R47_CAPTURE_HOLD_REASON_OBSERVED inner R47_CAPTURE_HOLD_WITNESS_NOT_OBSERVED, installed true, gameModified false, ordersSent0, noAutoRetry true, raw 40414B path on user's PC not uploaded. No [BGXBEX] is NOT proof BCS never executes; R47 inert Lua may fail internally or not register. DO NOT repeat 179→22/17/18/19, do not ask for reports already posted; user wants REAL EQUIP, not more passive diagnostics. Source-only R48 PRIOR WORK GATE: reuse R39 original natively compiled XEquipItem action and known one STAF01 backpack20 weapon35 empty, no combat, one-shot flag; preserve installed R47 #158 with new separately typed WeiDU last #159 and external backup rollback. One gameplay equip test on expendable save; no new CMD, no auto install.",
       "closure_condition": "Specific original source of R39 CLASS assignment read HOLD is identified without speculating from unrelated mods or retrying the same capture. A future narrow source-only fix must explicitly preserve existing listener, no command dispatch, exact script/backup/provenance checks, one updated existing updater and CI; any new installation requires separate typed approval. Class script remains UNKNOWN until real current-game evidence.",
       "evidence": [
         "user-provided 2026-11-28 BGXAI_UPDATE.cmd 179→6 console in current BGXAI conversation (R42_HOLD_ONEFILE_GUARDED, HOLD_R42_NATIVE_GUARD_OR_STATE)",
@@ -408,7 +408,7 @@
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46133473161",
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46133585010"
       ],
-      "enforcement": "R47 REAL DEPLOY PASS and read-only LIVE WITNESS PENDING. No engine execution proof, no manual/EPS origin, no first equipment move. Do not infer more from installed status. One same updater only, first 179→22 live capture once.",
+      "enforcement": "R47 installed last158, passive BCS evaluation NOT VERIFIED and first XEquip not done. Stop diagnostic creep; R48 action-bearing pilot MUST be explicit user-typed installation with exact safe BCS/current action guards and last-only rollback. No auto retry on status HOLD.",
       "source_only_fix": {
         "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_CLASS_HOLD_REASON_SOURCE_ONLY.py",
         "tests": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_class_hold_reason_source_only.py",
@@ -539,7 +539,14 @@
           "manualEpsActionOriginVerified": false,
           "noAutoRetry": false
         },
-        "r47RealUserNativeInstallStatus": "R47_INSTALL_EXACT_GUARDED_PASS"
+        "r47RealUserNativeInstallStatus": "R47_INSTALL_EXACT_GUARDED_PASS",
+        "r47FirstLiveCaptureDone": true,
+        "r47RealUserCaptureStatus": "R47_CAPTURE_HOLD_REASON_OBSERVED",
+        "r47InnerCaptureStatus": "R47_CAPTURE_HOLD_WITNESS_NOT_OBSERVED",
+        "r47RawLogBytes": 40414,
+        "r47RawLogNotAccessibleInRepo": true,
+        "r48PivotToOneShotRealEquip": true,
+        "r48UserActionNow": false
       }
     }
   ],
@@ -1029,6 +1036,23 @@
           "r47LiveBcsWitnessDone": false,
           "exactBcsSourceSha": "24d94062ebc7226dc3486ecad3786dca7e5edae424cef0f13d8a4577cff36331",
           "r47NativeUserStatus": "NOT_RUN"
+        },
+        {
+          "delta_id": "BGXAI_R48_INSTEAD_OF_MORE_PASSIVE_CAPTURES_ONE_SHOT_ITEM_TRANSFER_20261128",
+          "recorded_before_source_edit": true,
+          "already_done": "R44 user native LIVE confirms CLASS BDDEFAI assigned, actor m_id stable, R39 exactPhysical twice validates Jagan one unique STAF01 backpack slot20 and empty weapon35/offhand9. R39 2407B exact BAF native TEMP compilation already passed real user EET, contains XEquipItem(STAF01,Myself,SLOT_WEAPON0,EQUIP), and strong ActionListEmpty+CombatCounter(0)+no enemies guards; still source-only. R45 existing numerically-corrected armer CI PASS source-only. R46 user native inert BAF compile PASS. R47 user native WeiDU last #158 install PASS, and FIRST 179→22 live capture HOLD NO [BGXBEX] witness; installed true gameModified false orders0; user explicitly demands no more repeated diagnostics. R47 raw log path is on their PC, NOT mounted or uploaded in this chat. No further read-only captures, no 179→22 retry.",
+          "evidence": "User console first 179→22: status R47_CAPTURE_HOLD_REASON_OBSERVED, inner R47_CAPTURE_HOLD_WITNESS_NOT_OBSERVED, rawConsoleFile C:\\Users\\Drevo\\Documents\\BGXAI_LIVE_REPORTS\\BGXAI_R47_BDDEFAI_BCS_EXEC_20261128T112506415381Z.log, bytes40414; actualBcsWitnessBlockEvaluated false, installed true, ordersSent0; NO evidence BCS not running. R47 witness code gated on EEex_LuaTrigger_Object / class4 name / class3 kit; may return no output even if BCS evaluated; cannot determine without raw R47 log, do not assert root cause. Older user R44 uploaded game log is 50703B and has positive R39 exactPhysical.",
+          "missing_delta": "Go DIRECTLY to SINGLE real user-consented XEquipItem gameplay pilot, reusing original R39 proven BAF conditions and XEquip action plus R47 verified native last #158, without involving R47 witness or uncertain R45 EEex loader. New 1 short BAF only exact actor *GCLERIC, class CLERIC, party slot1, STAF01 backpack MISC5, empty weapon0/offhand shield, ActionListEmpty, CombatCounter0, no visible enemy, no spell cooldown, no modal/panic/helpless, STR>4, one LOCALS global flag prevents retry. New R48 guarded last #159 WeiDU EXTEND_TOP on existing BDDEFAI with exact preimage SHA from R47 proof, external backup and typed explicit approval, rollback; compile occurs only at typed install and one in-game functional test on expendable test save; no further staged passive capture. Do NOT falsely claim gameplay already works. If no action occurs, preserve result and address true BCS/AI enable or guard, no loop of R49-R50 diagnostics.",
+          "status": "PRIOR_WORK_REVIEWED_BEFORE_R48_SOURCE_CODE",
+          "gameModified": false,
+          "autoInstall": false,
+          "actionPermittedOnlyAfterSeparateTypedUserConsent": true,
+          "sourceDependencies": [
+            "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_JAGAN_STAF01_EEEX_SESSION_SOURCE_ONLY.baf",
+            "BGXAI/BUILD/R47_GUARDED_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/BGXAI_R47_WITNESS_LAST157_TO158_GUARDED_SOURCE_ONLY.py"
+          ],
+          "userGoal": "One real STAF01 backpack→weapon35 move ASAP, not endless observer checks",
+          "next": "SOURCE+MOCK ONLY until CI win/linux PASS, then publish ONE CMD typed install for REAL single equip attempt"
         }
       ],
       "predecessor_sources": [
