@@ -1,5 +1,26 @@
 # BGXAI — ЕДИНСТВЕННАЯ КАНОНИЧЕСКАЯ ТОЧКА ВОССТАНОВЛЕНИЯ
 
+## 28.11.2026 — SOURCE-ONLY R13 TYPE-AC → V3 SCORER: EXACT LUA LOCAL PASS (BGXAI 1.7 CONTINUATION)
+
+**USER REQUEST / NO-REPEAT:** continue target-aware smart equipment selection; don't replay R47 `179→22` witness HOLD, don't install R48 fixed STAF01 or change original `BGXAI_UPDATE.cmd`, V6/R29/R37/EPS/WeiDU. 28-Nov R47 remains LAST #158, first capture `R47_CAPTURE_HOLD_WITNESS_NOT_OBSERVED`; no real item move. Earlier V4 inventory 16-slot model (+ verified-useless fallback commit 7260ca9) remains SOURCE ONLY, its own 27 regressions NOT run in this continuation. Full private past chat / 40414B raw R47 log unavailable: HISTORY_INCOMPLETE for these, no manufactured LIVE claims.
+
+**EXACT PRE-WORK DEFECT:** V3 `scored_weapon` previously used `enemy.armorClass` for every attack type. Existing R13 already read `m_nArmorClass` and `m_nACCrushingMod / m_nACPiercingMod / m_nACSlashingMod / m_nACMissileMod` but left them unconnected to V3. It also omitted AC numeric values from V3 target-state signature. No new module or listener needed.
+
+**SOURCE DELTA, EXISTING FILES ONLY:**
+- R13 `BGXAI/BUILD/R13_TARGET_DEFENSE_SOURCE_ONLY/BGXAI_R13_TARGET_DEFENSE_OBSERVER.lua`: derive four per-attack-type AC candidate values only after complete stable double-read; base + corresponding AC modifier, out-of-range or missing => HOLD. `targetTypeACNativeAuthenticated=false`, `dispatchAuthorized=false`; actual installed EEex not authenticated. Source Git blob `e500bd72dbaf8aa560f90b28ff9c9b0b8d66866e`; tests blob `e54b9cf74b0b94634c2505e9546e27b782a563fc`. Existing R13 SHA256 manifest repinned only source/test/README; protected installed `M_BGXTDEF13.lua` and exact SHA unchanged.
+- V3 `BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_PRIORITY_LUA_V3.lua`: when the complete R13 model is supplied with matching snapshot/base, use target AC for **ATTACK KIND**, independently of damage resistance type. RANGED uses MISSILE AC even when its payload is PIERCING; physical resistance still uses PIERCING. Partial/stale/fake-native flags HOLD. Existing base-only scoring remains an approximate actionless fallback. V3 signature includes general/type AC values to force restabilization on defense drift. Source Git blob `79ff4e14039865d5843cf1c531266c2e18ba26f6`; tests blob `b0de0120841d683c87a223ac21f3138919843c12`; existing runner expectation updated to V3 66 and full batch 450, full batch CI **not** claimed PASS.
+
+**REAL TEST (NON-GAME):** Using original Library Lua source/test versions and applying only the already published GitHub diffs, all **4/4 local reconstructed Git blob SHA** matched exact current branch. Executed `luahbtex --luaonly test_r13.lua` → **36/36 PASS**; `luahbtex --luaonly test_weapon_priority_lua_v3.lua` → **66/66 PASS**, including type-AC choice flip, ranged piercing-vs-missile AC, stale snapshot, malformed profile and AC drift. Static source check: no XEquipItem, ClearActions, SelectWeaponAbility, Attack, SetGlobal or dispatch introduced. **CODE YES / TEST exact Lua offline PASS / DEPLOY NO / LIVE NO** for these changes. No direct full 450-suite, GitHub CI, Windows, native EEex or actual game results observed here.
+
+**ERROR RECORD:** Existing global registry `GLOBAL_PROJECT_RULES/KNOWN_ERROR_GATES_V1.json` entry `BGXAI_V3_TARGET_ATTACK_TYPE_AC_NOT_APPLIED_20261128` updated with original defect, evidence, exact local blob hashes, test commands, no-repeat/closure; preserve earlier `BGXAI_R39_V3_PRIOR_WORK_GATE_BYPASS_20261128` and R47 capture hold.
+
+**REAL OPEN FUNCTIONAL GATE:** R13 output is STILL an action-bound mock/candidate, not an authenticated current live target; V3's model requires complete effective actor stats and alternative weapons APR/THAC0/on-hit; V4 consumes external `predictedUtility`, not proven actual inventory-item combat values. Need **one true read-only, same-frame installed EEex actor→hostile target + alternative item/effective stat adapter**, then reuse V3/V4 and R39 existing XEquipItem only when a real EPS/manual/round safe boundary is proven. No new passive capture loop. Any future game install requires separate exact typed consent, native preflight, external backup and last-only rollback. **NEXT SAFE DEVELOPMENT:** runtime adapter provenance and item stats without writing to game; no user action currently.
+
+**RECOVERY_VERDICT:** `RESUME_PARTIAL_SAFE_ONLY`, reliable current code source + local Lua test evidence, missing direct engine runtime / private raw log.
+
+---
+
+
 ## 28.11.2026 — CONTINUATION AFTER BGXAI 1.7: V3→V4 VERIFIED-USELESS FALLBACK REAL SOURCE DELTA
 
 **RESUME/PRE-WORK:** latest user transcript of BGXAI 1.7, actual R47 179→22 HOLD, existing canonical + GitHub sources R11/R13, V3 priority Lua and 27-Nov backpack V4, conservation V1, R39 engine bridge, R39 armer and global known-error register read. Full private chat text, 40414B first R47 raw Windows console and all 1667+ repo sources were NOT directly readable here: HISTORY_INCOMPLETE for these; do not claim otherwise.
