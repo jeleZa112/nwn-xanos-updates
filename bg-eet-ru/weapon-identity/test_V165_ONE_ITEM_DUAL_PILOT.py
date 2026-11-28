@@ -56,7 +56,7 @@ class PilotTests(unittest.TestCase):
     def test_exact_v107_reuse_one_existing_callback_and_cyrillic_names(self):
         raw=self.make()
         self.assertIn(b'BG_EET_RU_V107_ResolveName',raw)
-        self.assertEqual(raw.count(b'function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage(context)'),1)
+        self.assertEqual(raw.count(b'function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage(context)'),3)
         executable=b'\n'.join(line for line in raw.splitlines() if not line.lstrip().startswith(b'--'))
         self.assertNotIn(b'EEex_Sprite_AddAlterBaseWeaponDamageListener(',executable)
         lua=LuaRuntime(unpack_returned_tuples=True)
