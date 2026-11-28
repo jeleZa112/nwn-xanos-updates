@@ -108,12 +108,10 @@ end)
 
 
 local function scriptsFixture()
- local a={m_id=1002,m_typeAI={m_Class=3},getActiveStats=function()return {m_nKit=16384}end}
+ local ports,a,items,stats,selected=fixture()
  local scripts={[0]='BDDEFAI',[1]='',[2]='',[4]='PRIEST1',[5]='',[6]='',[7]=''}
- local ports={getPortraitSprite=function()return a end,
-   getPortraitID=function()return 1002 end,
-   getScriptLevelResRef=function(_,level)return scripts[level] end}
- return ports,a,scripts
+ ports.getScriptLevelResRef=function(_,level)return scripts[level] end
+ return ports,a,scripts,items,stats,selected
 end
 check('script assignment: native EEex resref list observed without deploy',function()
  local p=scriptsFixture();local r=M.probeScriptAssignments(p)
@@ -121,6 +119,8 @@ check('script assignment: native EEex resref list observed without deploy',funct
  eq(r.bddefaiAssigned,true);eq(r.bddefaiAssignedLevels[1],0)
  eq(r.scriptLevelResrefs[4],'PRIEST1')
  eq(r.actualBcsExecutionVerified,false);eq(r.scriptSlotOwnershipVerified,false)
+ eq(r.pilotPhysicalSnapshotDoubleMatched,true)
+ eq(r.nativeScriptNameVerified,false)
  hold(r)
 end)
 check('script assignment: BDDEFAI absent still NO deploy',function()
@@ -159,4 +159,55 @@ check('script assignment: portrait changes between reads refused',function()
  p.getPortraitSprite=function()n=n+1;return n==1 and a or {} end
  local r=M.probeScriptAssignments(p);eq(r.status,'HOLD_SCRIPT_ACTOR_CHANGED');hold(r)
 end)
+
+check('script assignment: missing exact-selection API fails closed',function()
+ local p=scriptsFixture();p.getSelectedIDs=nil
+ local r=M.probeScriptAssignments(p)
+ eq(r.status,'HOLD_SCRIPT_ASSIGNMENT_APIS_UNAVAILABLE');hold(r)
+end)
+check('script assignment: wrong selected actor refuses guessed owner',function()
+ local p,a,s,items,stats,selected=scriptsFixture();selected[1]=999
+ local r=M.probeScriptAssignments(p)
+ eq(r.status,'HOLD_SCRIPT_PILOT_PHYSICAL_CONTEXT')
+ eq(r.reason,'HOLD_SELECTION_NOT_EXACTLY_THIS_ACTOR');hold(r)
+end)
+check('script assignment: multi selection refuses guessed owner',function()
+ local p,a,s,items,stats,selected=scriptsFixture();selected[2]=1234
+ local r=M.probeScriptAssignments(p)
+ eq(r.status,'HOLD_SCRIPT_PILOT_PHYSICAL_CONTEXT');hold(r)
+end)
+check('script assignment: no STAF01 refuses other cleric',function()
+ local p,a,s,items=scriptsFixture();items[20]=nil
+ local r=M.probeScriptAssignments(p)
+ eq(r.status,'HOLD_SCRIPT_PILOT_PHYSICAL_CONTEXT')
+ eq(r.reason,'HOLD_SOURCE_TARGET_OR_ITEM_UNIQUENESS_CHANGED');hold(r)
+end)
+check('script assignment: duplicate STAF01 refuses false owner',function()
+ local p,a,s,items=scriptsFixture();items[24]=items[20]
+ local r=M.probeScriptAssignments(p)
+ eq(r.status,'HOLD_SCRIPT_PILOT_PHYSICAL_CONTEXT');hold(r)
+end)
+check('script assignment: occupied target refuses false owner',function()
+ local p,a,s,items=scriptsFixture();items[35]=items[20]
+ local r=M.probeScriptAssignments(p)
+ eq(r.status,'HOLD_SCRIPT_PILOT_PHYSICAL_CONTEXT');hold(r)
+end)
+check('script assignment: item changes during two BCS reads',function()
+ local p,a,s,items=scriptsFixture()
+ local prior=p.getScriptLevelResRef;local n=0
+ p.getScriptLevelResRef=function(actor,level)
+  n=n+1;if n==14 then items[20]=nil end
+  return prior(actor,level)
+ end
+ local r=M.probeScriptAssignments(p)
+ eq(r.status,'HOLD_SCRIPT_PILOT_PHYSICAL_CHANGED');hold(r)
+end)
+check('script assignment: no native trigger evaluation while observing resrefs',function()
+ local p=scriptsFixture()
+ p.evalNativeTrigger=function()error('not a proven side-effect-free read')end
+ local r=M.probeScriptAssignments(p)
+ eq(r.status,'R39_SCRIPT_RESREFS_OBSERVED_NO_DEPLOY')
+ eq(r.nativeScriptNameVerified,false);hold(r)
+end)
+
 print('BGXAI R39 EEex117 engine bridge RO '..tests..'/'..tests..' PASS')
