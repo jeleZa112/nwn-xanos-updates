@@ -53,3 +53,17 @@ jobs:
               subprocess.run(['lua5.4','-e',lua],check=True)
           print('R42 composed Lua syntax PASS; no listener executed; game untouched')
           PY
+
+      - name: Record exact immutable source sizes and SHA256 for sole updater
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          for p in (
+            'BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_REUSE_R38_CLASS_BCS_RO.py',
+            'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_EEEX117_ENGINE_BRIDGE_RO.lua',
+          ):
+              b=Path(p).read_bytes()
+              print('PINNED_R42_SHA256',p,len(b),hashlib.sha256(b).hexdigest())
+          PY
