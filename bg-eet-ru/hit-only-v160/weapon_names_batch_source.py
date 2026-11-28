@@ -26,6 +26,20 @@ EXPECTED_USER_V160_SHA = '386980c6c20f36a50ad4c667a2155c8603588651538ebb5484e659
 MAX_NEW_NAMES = 64
 # Verified IESDP ITM type IDs, limited to weapons/launchers/ammo we know.
 WEAPON_ITEM_TYPES = frozenset({5, 14, 15, 16, 18, 19, 20, 25, 26, 27, 31})
+# 64 *historical* candidate RESREFs from the user's archived EET items.
+# Identical RU names in archive are only discovery hints, NEVER install proof.
+# The current R3+V111 catalog must independently verify every candidate.
+HISTORICAL_WEAPON_SEEDS_64 = (
+    'AROW02', 'AX1H01', 'AX1H01Q', 'AX1H02', 'BOLT02', 'BOW02', 'BOW04', 'BOW06',
+    'BULL02', 'DAGG01', 'DAGG01Q', 'DAGG02', 'DAGG25', 'SLNG01', 'STAF01', 'STAF02',
+    'STAF04_', 'SW1H01', 'SW1H01Q', 'SW1H04Q', 'SW1H05', 'SW1H07', 'SW1H07Q', 'SW1H08',
+    'SW1H12', 'SW1H17', 'SW1H20', 'SW1H22', 'SW1H43', 'SW1H44', 'SW1H46', 'SW1H47',
+    'SW1H48', 'SW2H01', 'SW2H02', 'XBOW02', 'XBOW05', 'DLXBOW', 'HQ2HSWD', 'HQAXE',
+    'HQBSWRD', 'HQDAGG', 'HQLSWRD', 'HQSSWRD', 'U1HAX1A', 'UHXBW2A', 'Z0AROW02',
+    'Z0AX1H01', 'Z0AX1H12', 'Z0AX1H96', 'Z0AX2H01', 'Z0AX2H97', 'Z0BOLT02',
+    'Z0BOWC02', 'Z0BOWL02', 'Z0SLNG95', 'Z0STAF95', 'Z0SWDC94', 'Z2HAXE',
+    'Z0CWSWDA', 'Z0CWSWDD', 'Z0CWSWDG', 'Z0CWSWDJ', 'Z0CWSWDN',
+)
 MAX_MODULE = 100_000
 NAME_RE = re.compile(r"[А-Яа-яЁёA-Za-z0-9 +,.()\-/]{1,90}\Z")
 RESREF_RE = re.compile(r'[A-Z0-9_]{1,8}\Z')
