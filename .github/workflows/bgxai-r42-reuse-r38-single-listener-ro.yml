@@ -6,6 +6,7 @@ on:
       - 'BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/**'
       - 'BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/**'
       - 'BGXAI/BUILD/R45_R41_ARMER_NUMERIC_ID_SOURCEONLY_20261128/**'
+      - 'BGXAI/BUILD/R46_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/**'
       - 'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_ACTOR_ID_GUARD_SOURCE_ONLY.py'
       - 'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/test_r39_actor_wrapper_id_guard_source_only.py'
       - 'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/test_r39_actor_wrapper_id_guard_source_only.lua'
@@ -83,6 +84,9 @@ jobs:
               b=(root/name).read_bytes()
               print('R43_STAGE_PIN',name,len(b),hashlib.sha256(b).hexdigest())
           PY
+      - name: Test R46 always-false BDDEFAI BCS witness source (NO GAME)
+        run: python -m unittest -v BGXAI/BUILD/R46_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/test_r46_inert_bcs_witness_source_only.py
+
       - name: Test source-only R45 numerically identity-bound R39/R41 armer (NO GAME)
         run: python -m unittest -v BGXAI/BUILD/R45_R41_ARMER_NUMERIC_ID_SOURCEONLY_20261128/test_r45_compose_r41_numeric_wrapper_source_only.py
 
@@ -189,6 +193,30 @@ jobs:
               target.write_bytes(raw)
               subprocess.run(['lua5.4','-e','assert(loadfile('+json.dumps(str(target))+'))'],check=True)
           print('R44 SOURCE candidate Lua syntax PASS; user game not modified')
+          PY
+
+      - name: R46 BCS witness always FALSE / EEex Lua mock (NO GAME)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib,importlib.util,json,subprocess,tempfile
+          from pathlib import Path
+          root=Path('BGXAI/BUILD/R46_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128')
+          spec=importlib.util.spec_from_file_location('r46_inert',root/'BGXAI_R46_INERT_BDDEFAI_WITNESS_SOURCE_ONLY.py')
+          m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+          sources=m.compose()
+          with tempfile.TemporaryDirectory(prefix='BGXAI_R46_NO_INSTALL_') as folder:
+              target=Path(folder)/'M_BGXR46_WITNESS.lua'
+              raw=sources['R46_WITNESS_LUA']
+              target.write_bytes(raw)
+              print('R46_SOURCE_ONLY_LUA_PIN',len(raw),hashlib.sha256(raw).hexdigest())
+              print('R46_SOURCE_ONLY_BAF_PIN',len(sources['R46_WITNESS_BAF']),
+                    hashlib.sha256(sources['R46_WITNESS_BAF']).hexdigest())
+              subprocess.run(['lua5.4','-e','assert(loadfile('+json.dumps(str(target))+'))'],check=True)
+              subprocess.run(['lua5.4',str(root/'test_r46_inert_bcs_witness_source_only.lua'),
+                              str(target)],check=True)
+          print('R46 BAF SOURCE ONLY; no native WeiDU install/BCS execution')
           PY
 
       - name: R45 existing R41 armer cross-wrapper safety and no-orders regression (NO GAME)
