@@ -132,4 +132,108 @@ function M.capture(sprite,r37,contextReader)
   manualEpsOriginVerified=false,
   currentActionPreserved=true})
 end
+-- Extend the EXISTING R37 stable backpack capture into the 23 remaining
+-- top-level inventory slots, ON DEMAND, not in a new listener.
+-- Never treats equal resrefs as proof of individual CItem instance identity.
+local function same_raw_item(r,x,slot)
+ if type(r)~='table' or r.slot~=slot or
+    type(x)~='table' or x.slot~=slot then return false end
+ if x.status=='EMPTY' then
+  return r.resrefRaw==nil and r.useCount1Raw==nil and
+         r.useCount2Raw==nil and r.useCount3Raw==nil
+ end
+ return x.status=='PRESENT_RAW' and type(r.resrefRaw)=='string' and
+        x.resref==r.resrefRaw:upper() and
+        x.useCount1Raw==r.useCount1Raw and
+        x.useCount2Raw==r.useCount2Raw and
+        x.useCount3Raw==r.useCount3Raw
+end
+
+function M.captureTopLevel(sprite,r37,contextReader)
+ -- The previously audited capture is reused as the first step. It confirms
+ -- actor identity, double-read backpack and stable R37 queue/action context.
+ local base=M.capture(sprite,r37,contextReader)
+ if base.status~='BACKPACK16_AND_R37_RAW_CONTEXT_STABLE_ADVICE_ONLY' then
+  return hold('HOLD_TOPLEVEL_PRIOR_R37_BACKPACK_GATE',
+              {priorStatus=base.status}) end
+ local expected={actorId=r37.actor,actionRaw=r37.actionRaw,
+  selectedWeaponRaw=r37.selectedWeaponRaw,
+  selectedAbilityRaw=r37.selectedAbilityRaw,
+  queuedActionsRaw=r37.queuedActionsRaw,
+  currentScriptNumberRaw=r37.currentScriptNumberRaw}
+ local eq=field(sprite,'m_equipment')
+ local items=field(eq,'m_items')
+ if items==nil or type(contextReader)~='function' then
+  return hold('HOLD_TOPLEVEL_ITEMS_OR_CONTEXT_UNAVAILABLE') end
+ local beforeOk,before=pcall(contextReader,sprite)
+ if not beforeOk or not contextOK(before,expected) then
+  return hold('HOLD_TOPLEVEL_CONTEXT_BEFORE') end
+ local function missing()
+  local quick,other={},{}
+  for slot=0,17 do
+   local x=at(items,slot)
+   if x==nil then return nil,nil,slot end
+   other[slot]=x
+  end
+  local magic=at(items,34)
+  if magic==nil then return nil,nil,34 end
+  other[34]=magic
+  for slot=35,38 do
+   local x=at(items,slot)
+   if x==nil then return nil,nil,slot end
+   quick[slot]=x
+  end
+  return quick,other,nil
+ end
+ local quick,other,bad=missing()
+ if not quick then
+  return hold('HOLD_TOPLEVEL_FIRST_READ_UNAVAILABLE',{badSlot=bad}) end
+ local quick2,other2,bad2=missing()
+ if not quick2 then
+  return hold('HOLD_TOPLEVEL_SECOND_READ_UNAVAILABLE',{badSlot=bad2}) end
+ for slot=0,17 do
+  if not itemEqual(other[slot],other2[slot],slot) then
+   return hold('HOLD_TOPLEVEL_ITEM_CHANGED',{badSlot=slot}) end
+ end
+ if not itemEqual(other[34],other2[34],34) then
+  return hold('HOLD_TOPLEVEL_ITEM_CHANGED',{badSlot=34}) end
+ for slot=35,38 do
+  if not itemEqual(quick[slot],quick2[slot],slot) then
+   return hold('HOLD_TOPLEVEL_ITEM_CHANGED',{badSlot=slot}) end
+ end
+ -- Bind actual selected weapon, quiver and offhand back to ORIGINAL
+ -- R27 single-callback raw evidence, instead of inventing an item identity.
+ if type(r37.quickWeaponsRaw)~='table' or
+    type(r37.quiversRaw)~='table' or
+    type(r37.offhandRaw)~='table' then
+  return hold('HOLD_TOPLEVEL_R37_GEAR_NOT_SUPPLIED') end
+ for i=1,4 do
+  if not same_raw_item(r37.quickWeaponsRaw[i],quick[34+i],34+i) or
+     not same_raw_item(r37.quiversRaw[i],other[10+i],10+i) then
+   return hold('HOLD_TOPLEVEL_R37_GEAR_CHANGED') end
+ end
+ if not same_raw_item(r37.offhandRaw[1],other[9],9) then
+  return hold('HOLD_TOPLEVEL_R37_OFFHAND_CHANGED') end
+ -- A final backpack read closes the window spanning the extra 23 slots.
+ local endBag=M.observe(sprite)
+ if endBag.status~='BACKPACK16_RAW_NOT_INSTANCE_PROOF' or
+    endBag.actorId~=r37.actor then
+  return hold('HOLD_TOPLEVEL_BACKPACK_AFTER_UNAVAILABLE') end
+ for slot=18,33 do
+  if not itemEqual(base.snapshot.slots[slot],endBag.slots[slot],slot) then
+   return hold('HOLD_TOPLEVEL_BACKPACK_CHANGED',{badSlot=slot}) end
+ end
+ local afterOk,after=pcall(contextReader,sprite)
+ if not afterOk or not contextOK(after,expected) then
+  return hold('HOLD_TOPLEVEL_CONTEXT_AFTER') end
+ return hold('TOPLEVEL0_38_AND_R37_STABLE_ADVICE_ONLY',{
+  actorId=r37.actor,partyIndex=r37.partyIndex,
+  backpack=base.snapshot,quick=quick,other=other,
+  topLevelSlotsCount=39,rawInventoryDoubleRead=true,
+  r37QuickQuiverOffhandMatched=true,rawSnapshotDriftObserved=false,
+  nativeInstanceIdentityVerified=false,
+  sameTickProven=false,allBuffsObserved=false,
+  targetObserved=false,alternativeAPRVerified=false,
+  executorAllowed=false,currentActionPreserved=true})
+end
 return M
