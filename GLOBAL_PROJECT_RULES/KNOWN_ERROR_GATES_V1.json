@@ -723,6 +723,41 @@
         "deploy": "NO",
         "live": "NO"
       }
+    },
+    {
+      "error_id": "BGXAI_R13_105_134_ATTACK_TARGET_AND_TEMP_STATS_20261128",
+      "project": "BGXAI",
+      "discovered_at": "2026-11-28",
+      "type": "EXISTING_NATIVE_ATTACK_OBSERVER_INCOMPLETE_FOR_REAL_AI_ACTIONS",
+      "status": "CODE_FIX_AND_UNIT_PASS_GITHUB_SOURCE_ONLY_NATIVE_LIVE_NOT_DEPLOYED",
+      "prior_work_gate": {
+        "already_done": "Existing R13 target defense reader and single R13 started-action listener, R35 selected-APR double-read, R3 native EET ITM parsing, V3 target type-specific AC and V4 16-slot auto-batch",
+        "proof": "R13 target observer only accepted action raw 3/30; user R27 event raw action 105; original action ids confirmed by IESDP BG(2)EE scripting 105 AttackOneRound and 134 AttackReevaluate",
+        "missing_delta": "Old R13 silently skipped real 105 and 134, target-derived stats could be read from m_tempStats during EEex effects processing, V4 had not bound actor selected APR to target raw defense evidence in one read-only action",
+        "minimal_change": "Modify the same R13 core and same old R13 listener (no second hook) and reuse R35 inside EXISTING V4 actor-target pipeline"
+      },
+      "fix": {
+        "r13": "Adds 105,134 to EXISTING allowlist while retaining 3,30, blocks action 92; refuses target m_bAllowEffectListCall==0/unreadable or if guard changes while reading raw defense fields. These are attack-target candidates only, not hostile/EPS-safe proof.",
+        "v4": "Existing planAutoBatchWithR13 builds attack-type AC and four damage resistance estimates from same-action R13 raw stats, copies input scene, preserves older V3 models and R3 ITM, never invents magical immunities. Existing planAutoBatchWithActorTarget uses two R35 double-reads (before and after target/inventory), ties selected APR and exact selected R27 quickslot item resref, holds if raw APR mismatches modeled selected APR or actor stats drift, skips all reads when native queuedActionsRaw>0.",
+        "provenance": "R35 raw selected APR decoder only, no full alternative effective APR/THAC0; R13 raw target stats only, not hostility/protection immunity"
+      },
+      "sourceEvidence": {
+        "r13CoreBlob": "4a805b71fff522c4ead6b81e385ccb8618058066",
+        "r13SameListenerBlob": "58542acdf74b5db8f24fbe296eb8a59ec64dcfbf",
+        "v4SourceBlob": "3fe648250554da85652f75c9d85bd2c67e1a1506",
+        "v4TestBlob": "996ecfa8da9d169962312073369b8b1bc4e6bf98",
+        "R13NewTests": "R13 core 43 total; original R13 runtime 18 total, each run 3 Lua engines",
+        "V4NewTests": "V4 suite 74 total; existing model suite 530 total x3 Lua",
+        "R3ExistingTests": "35 Python tests",
+        "reference": "https://iesdp.bgforge.net/scripting/actions/bgeeactions"
+      },
+      "no_repeat": "Do not reinstall older R13 via separate listener. No more R47 179→22 witness capture. Do not use EEex v1.3+ B3AttackInfo in user's EEex v1.1.7. No BAF engine orders from V4 source. Never infer APR for not-selected weapon or safe command boundary from zero queue.",
+      "tiers": {
+        "code": "IN_EXISTING_GITHUB_MODULES",
+        "test": "R13/V4 targeted PASS; full CI pending verification at record creation",
+        "deploy": "NO",
+        "live": "NO"
+      }
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
