@@ -46,7 +46,7 @@ class T(unittest.TestCase):
     def test_new179_pin_is_exact(self):
         r=self.routes[0]
         self.assertIn(NEW179,r)
-        self.assertIn('$n=35283',r)
+        self.assertIn('$n=41403',r)
         self.assertIn(HELPER_PATH,r)
         # Exact staged child pin is enforced on branch. Current user release
         # continues using the OLD immutable source commit until the separate
@@ -118,6 +118,12 @@ class T(unittest.TestCase):
             # 179 child. Staged R44 source is not published until CI passes.
             self.assertEqual(channel['script_sha256'],
                 'f286b0080e4de38ea61cba4493c41f8020d8b68dbd26a6d8478887495e76b5ca')
+            self.assertNotEqual(staged_sha,channel['script_sha256'])
+        elif channel['commit']=='668b0fe4ba3b9b7c49245b73a2ba9834aa8f4768':
+            # Real user currently runs installed R44; staging R46 native
+            # TEMP-only source must NOT silently switch the user channel.
+            self.assertEqual(channel['script_sha256'],
+                '3e7c5574c88c5ac8e094d274dd9c789ee6b6c21b7211756e17669affa7b72d92')
             self.assertNotEqual(staged_sha,channel['script_sha256'])
         else:
             self.assertEqual(channel['script_sha256'],staged_sha)
