@@ -188,4 +188,123 @@ function M.plan(backpack,quick,other,scene,candidates)
   xEquipItemTransactionVerified=false,
   nextStep="REQUIRES_NATIVE_GAME_SAFE_BOUNDARY_AND_CONSERVATION_PROOF"})
 end
+-- SAME source-only V3 actor→target→backpack scoring, then the ORIGINAL
+-- V4 uniqueness / free-slot / hysteresis planner. No predictedUtility supplied
+-- by a caller is accepted here; it comes only from V3.scoreBackpackCandidate.
+-- This NEVER authenticates live EEex counterfactual stats or authorizes equip.
+function M.planWithV3(backpack,quick,other,scene,candidates,v3Scene,previous,v3)
+ if type(v3)~='table' or type(v3.preview)~='function' or
+    type(v3.scoreBackpackCandidate)~='function' or
+    type(scene)~='table' or type(v3Scene)~='table' or
+    type(v3Scene.frame)~='table' or type(v3Scene.actor)~='table' or
+    type(v3Scene.weapons)~='table' or type(v3Scene.quickslotIds)~='table' or
+    type(candidates)~='table' or type(backpack)~='table' or
+    type(backpack.slots)~='table' or type(quick)~='table' or
+    type(other)~='table' then
+  return result('HOLD_V3_V4_BRIDGE_INPUT_INCOMPLETE') end
+ local f=v3Scene.frame
+ if not integer(scene.actorId,1,2147483647) or
+    not integer(scene.targetActorId,1,2147483647) or
+    scene.targetActorId==scene.actorId or
+    f.actorId~=tostring(scene.actorId) or
+    f.enemyId~=tostring(scene.targetActorId) or
+    f.tick~=scene.tick or f.snapshotId~=scene.snapshotId or
+    v3Scene.actor.currentTargetId~=f.enemyId or
+    backpack.actorId~=scene.actorId then
+  return result('HOLD_V3_V4_ACTOR_TARGET_FRAME_MISMATCH') end
+ local validMap,why=mapValid(backpack,quick,other)
+ if not validMap then return result(why) end
+ -- Bind V3's IDs to the REAL quickslot resrefs supplied by the R37 raw map.
+ for i=1,4 do
+  local slot=quick[i+34]
+  local id=v3Scene.quickslotIds[i]
+  if slot.status=='EMPTY' then
+   if id~=false then return result('HOLD_V3_V4_QUICKSLOT_IDENTITY_DRIFT') end
+  else
+   if type(id)~='string' then
+    return result('HOLD_V3_V4_QUICKSLOT_IDENTITY_DRIFT') end
+   local count=0
+   for _,w in ipairs(v3Scene.weapons) do
+    if w.id==id and w.slot=='QUICKSLOT' and
+       w.quickslotIndex==i-1 and type(w.resRef)=='string' and
+       w.resRef:upper()==slot.resref:upper() then count=count+1 end
+   end
+   if count~=1 then return result('HOLD_V3_V4_QUICKSLOT_IDENTITY_DRIFT') end
+  end
+ end
+ local ok,preview=pcall(v3.preview,v3Scene,previous)
+ if not ok or type(preview)~='table' or preview.executable~=false or
+    preview.dispatchAuthorized~=false or preview.passivePreview~=true or
+    (preview.status~='KEEP_CURRENT' and
+     preview.status~='PASSIVE_RANKING_SUGGESTS_SLOT' and
+     preview.status~='HOLD_NO_EFFECTIVE_ATTACK') or
+    type(preview.candidates)~='table' then
+  return result('HOLD_V3_V4_TARGET_RANKING_UNSTABLE') end
+ local current=nil
+ for _,w in ipairs(preview.candidates) do
+  if w.id==v3Scene.actor.selectedWeaponId then
+   if current~=nil then return result('HOLD_V3_V4_SELECTED_AMBIGUOUS') end
+   current=w
+  end
+ end
+ if current==nil then return result('HOLD_V3_V4_SELECTED_AMBIGUOUS') end
+ local currentScore,currentReason=nil,nil
+ if current.available==false then
+  currentScore=0
+  currentReason=current.reason
+ else
+  currentScore=current.value
+  currentReason=current.ineffectiveReason
+ end
+ if not finite(currentScore) then
+  return result('HOLD_V3_V4_CURRENT_TARGET_SCORE_UNKNOWN') end
+ local count=0
+ for k in pairs(candidates) do
+  count=count+1
+  if count>16 or not integer(k,1,16) then
+   return result('HOLD_V3_V4_CANDIDATE_LIST_AMBIGUOUS') end
+ end
+ if count==0 then return result('HOLD_NO_CANDIDATE') end
+ local computed={}
+ for i=1,count do
+  local c=candidates[i]
+  if type(c)~='table' or c.predictedUtility~=nil or
+     type(c.weaponModel)~='table' or
+     c.weaponModel.sourceSlot~=c.sourceSlot or
+     type(c.resref)~='string' or
+     c.weaponModel.resRef~=c.resref:upper() then
+   return result('HOLD_V3_V4_EXTERNAL_OR_MISMATCHED_SCORE') end
+  local succeeded,rank=pcall(v3.scoreBackpackCandidate,v3Scene,c.weaponModel)
+  if not succeeded or type(rank)~='table' or
+     rank.status~='BACKPACK_TARGET_UTILITY_MODEL_ONLY' or
+     rank.executable~=false or rank.dispatchAuthorized~=false or
+     rank.engineFinalAlternativeStatsVerified~=false or
+     rank.sourceSlot~=c.sourceSlot or
+     rank.candidateResref~=c.resref:upper() or
+     rank.snapshotId~=scene.snapshotId or
+     rank.actorId~=f.actorId or rank.targetId~=f.enemyId or
+     not finite(rank.estimatedUtility) then
+   return result('HOLD_V3_V4_BACKPACK_TARGET_MODEL_UNVERIFIED',
+    {sourceSlot=type(c.sourceSlot)=='number' and c.sourceSlot or nil}) end
+  local cloned={}
+  for k,v in pairs(c) do if k~='weaponModel' then cloned[k]=v end end
+  cloned.predictedUtility=rank.estimatedUtility
+  computed[i]=cloned
+ end
+ local linked={}
+ for k,v in pairs(scene) do linked[k]=v end
+ linked.currentWeaponScore=currentScore
+ linked.currentWeaponScoreVerified=true
+ linked.currentWeaponUnusableReason=currentReason
+ linked.currentWeaponUnusableVerified=currentReason and true or nil
+ local advice=M.plan(backpack,quick,other,linked,computed)
+ -- This is a pure model composition; never set 'proven live' on any input.
+ advice.v3V4Link='SAME_ACTOR_TARGET_BACKPACK_MODEL_ONLY'
+ advice.engineFinalAlternativeStatsVerified=false
+ advice.inventoryMoveAuthorized=false
+ advice.dispatchAuthorized=false
+ advice.executable=false
+ advice.ordersSent=0
+ return advice
+end
 return M
