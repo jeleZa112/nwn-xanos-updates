@@ -389,7 +389,7 @@
       "error_id": "BGXAI_R42_LIVE_CAPTURE_HOLD_DETAIL_MASKED_20261128",
       "project": "BGXAI",
       "type": "CONFIRMED_FAILURE",
-      "status": "LIVE_HOLD_CLASS_BCS_UNREADABLE_REPRODUCED_IN_ORIGINAL_LOG",
+      "status": "LIVE_CLASS_READ_HOLD_SOURCE_DIAG_TESTED_NOT_DEPLOYED",
       "discovered_at": "2026-11-28",
       "trigger": "Real Windows R42 one-file 179→6 capture after independently positive 179→2 guarded installed status",
       "observed_failure": "Real 179→6 outer HOLD_R42_NATIVE_GUARD_OR_STATE. Original user-supplied BGXAI_R42_CLASS_BCS_20261128T084201129348Z.log (55,209 bytes, SHA256 5695aaacd4fb2da2f690188f46fb4241e5cad8961cd537dd3ee1c757ba452495) has exactly one well-formed [BGXBCS] row (line 354) with seq=1 partyIndex=1 scrlev=4 sameR38Listener=true, status=HOLD_CLASS_BCS_NOT_READABLE and classScriptResref=null. Exact Jagan identity callback [BGXID] match appears line 355; [BGXR27] actionRaw=23 seq=1 line 351. Listener and game ran, one row emitted. Separate menu Lua parsing error line 85 and BG_EET_RU_V150_HOLD line 397 also appear but are not proven causes of this BCS read failure.",
@@ -401,9 +401,22 @@
         "user-provided 2026-11-28 BGXAI_UPDATE.cmd 179→6 console in current BGXAI conversation (R42_HOLD_ONEFILE_GUARDED, HOLD_R42_NATIVE_GUARD_OR_STATE)",
         "https://github.com/jeleZa112/nwn-xanos-updates/blob/bg-eet-ai/BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py",
         "https://github.com/jeleZa112/nwn-xanos-updates/blob/bg-eet-ai/BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_GUARDED_FROM_R38.py",
-        "Uploaded original BGXAI_R42_CLASS_BCS_20261128T084201129348Z.log, 55209 bytes, SHA256 5695aaacd4fb2da2f690188f46fb4241e5cad8961cd537dd3ee1c757ba452495, [BGXBCS] line 354"
+        "Uploaded original BGXAI_R42_CLASS_BCS_20261128T084201129348Z.log, 55209 bytes, SHA256 5695aaacd4fb2da2f690188f46fb4241e5cad8961cd537dd3ee1c757ba452495, [BGXBCS] line 354",
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46127897683"
       ],
-      "enforcement": "Existing known-error record updated on receipt of first real raw log. No repeat 179→6, no automatic repair/install, keep first raw evidence and source/provenance contract. Underlying R39 reason still not instrumented."
+      "enforcement": "Existing known-error record remains OPEN at LIVE tier; source diagnostic reviewed and passed Windows/Linux CI. First CI false positive counted both embedded R39 method definition and call as two events; fixed guard to compare count against immutable original candidate, rerun PASS. Do not retry game before separate approved guarded upgrade and necessity review.",
+      "source_only_fix": {
+        "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_CLASS_HOLD_REASON_SOURCE_ONLY.py",
+        "tests": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_class_hold_reason_source_only.py",
+        "originalR39Unchanged": true,
+        "originalR42ComposerUnchanged": true,
+        "pinnedOnefileAndBootstrapUnchanged": true,
+        "installedR42Unchanged": true,
+        "gate": "SOURCE_ONLY_CI_116_EACH_OS_PASS_ON_20261128",
+        "lastSuccessfulRun": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46127897683",
+        "fix": "Two exact-only insertions into deterministic preexisting R42 callback: strictly allowlisted R39 probeStatus, allowlisted physical reason, sanitized CLASS slot state. Retains one [BGXBCS] and one original callback. No new game writes/ARM.",
+        "notClaimed": "Diagnostic not installed or observed live; first original R42 hold remains unresolved, no second capture approved."
+      }
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
@@ -553,7 +566,12 @@
           "source_only": true,
           "game_modified": false,
           "install_authorized": false,
-          "safety": "Original R42 one-shot matches actor, one action callback, no EQ/ARM. Add no new row; numeric or attacker-defined row.status must never be directly spliced into JSON; allowlist statuses. No installation or retry after first R42 HOLD without separate reviewed guarded last-only upgrade and typed consent. "
+          "safety": "Original R42 one-shot matches actor, one action callback, no EQ/ARM. Add no new row; numeric or attacker-defined row.status must never be directly spliced into JSON; allowlist statuses. No installation or retry after first R42 HOLD without separate reviewed guarded last-only upgrade and typed consent. ",
+          "status": "SOURCE_ONLY_CI_PASS_NOT_INSTALLED",
+          "source_implementation": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_CLASS_HOLD_REASON_SOURCE_ONLY.py",
+          "ci": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46127897683",
+          "tests": "Existing 103 + 13 targeted source tests = 116/116 Ubuntu and 116/116 Windows; Ubuntu generated diagnostic candidate Lua 5.4 syntax PASS, PS AST PASS, old R42 179 pin/regression unchanged.",
+          "ci_first_failure_correction": "Initial one-shot guard counted embedded R39 function definition and one call as two probeInstalledScriptAssignments() occurrences, incorrectly assumed one; narrow correction now validates count is identical to immutable predecessor, PASS both OS. No game change."
         }
       ]
     },
