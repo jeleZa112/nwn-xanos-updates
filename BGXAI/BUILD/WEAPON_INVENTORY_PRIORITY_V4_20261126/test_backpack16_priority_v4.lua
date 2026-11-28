@@ -912,4 +912,175 @@ test('R35_selected_slot_ITM_identity_mismatch_blocks_target_scan',function()
  assert(probes()==0)
  contract(x)
 end)
+
+-- Native runtime R37 item ability0/cProf evidence. Uses ONLY existing R37
+-- capture and R3 file parser; no Python execution or second EEex listener.
+local function native_ability_fixture()
+ local sprite,obs,ctx,bag,quick,other,scene,c,vm=r37_fixture()
+ local previous=sprite.m_equipment.m_items.get
+ local cached={}
+ local bytes={}
+ local counts={}
+ local getterCalls=0
+ local function add(slot,item)
+  local addr=100000+slot*256
+  local ability={addr=addr+128}
+  local header={addr=addr,abilityCount=counts[slot] or 1}
+  header.getAbility=function(_,index)
+   getterCalls=getterCalls+1
+   if index~=0 then error('unsafe second ability requested') end
+   return ability
+  end
+  item.pRes={pHeader=header}
+  bytes[addr+0x31]=slot==18 and 97 or 104
+  bytes[addr+128]=slot==18 and 1 or 2
+ end
+ sprite.m_equipment.m_items.get=function(self,slot)
+  local item=cached[slot]
+  if item then return item end
+  item=previous(self,slot)
+  if item then
+   cached[slot]=item
+   add(slot,item)
+  end
+  return item
+ end
+ local api={toPtr=function(o)return o.addr end,
+  read8=function(ptr) if bytes[ptr]==nil then error('unmapped ptr') end
+  return bytes[ptr] end}
+ local native=R37Bag.captureNativeAbility0(sprite,obs,ctx,api)
+ local r3=r3_snapshot(native)
+ r3.items['HAMM01'].item.proficiencyIdRaw=97
+ r3.items['BOW05']={item={schema='BGXAI_ITM_RAW_V1',rawOnly=true,
+  proficiencyIdRaw=104,abilities={{attackTypeRaw=2}}},
+  provenance={origin='CURRENT_GAME_BIFF'}}
+ r3.items['HAMM01'].item.rawOnly=true
+ local fixture={sprite,obs,ctx,bag,quick,other,scene,c,vm}
+ return {sprite=sprite,obs=obs,ctx=ctx,bag=bag,quick=quick,other=other,
+  scene=scene,candidates=c,vm=vm,api=api,native=native,r3=r3,
+  bytes=bytes,counts=counts,cached=cached,
+  getAbilityCalls=function()return getterCalls end,
+  projection=modeled_from(fixture)}
+end
+test('native_r37_engine_citem_single_ability_16_plus_4_proof',function()
+ local f=native_ability_fixture()
+ local x=f.native
+ assert(x.status=='TOPLEVEL0_38_AND_R37_STABLE_ADVICE_ONLY')
+ assert(x.nativeAbility0Count==2 and x.nativeAbility0SingleCount==2)
+ assert(x.nativeAbility0[18].firstAbilityAttackTypeRaw==1)
+ assert(x.nativeAbility0[18].proficiencyIdRaw==97)
+ assert(x.nativeAbility0[35].firstAbilityAttackTypeRaw==2)
+ assert(x.nativeAbility0[35].proficiencyIdRaw==104)
+ assert(x.nativeAbility0Source=='EEEX117_ENGINE_CITEM_FIRST_ABILITY_RAW')
+ assert(x.engineFinalAlternateAPRVerified==false and
+  x.nativeResourceShaVerified==false and x.nativeItemInstanceAuthenticated==false)
+ assert(f.getAbilityCalls()==2)
+ contract(x)
+end)
+test('native_r37_r3_v3v4_one_call_scores_actual_item_types',function()
+ local f=native_ability_fixture()
+ local p={sprite=f.sprite,r37=f.obs,contextReader=f.ctx,
+  reader=R37Bag,nativeApi=f.api,r3=f.r3,projection=f.projection,
+  scene=f.scene,v3Scene=f.vm,previousV3=nil,v3=V3}
+ local a=M.planAutoBatchNativeAbility0(p)
+ assert(a.status=='HOLD_AUTOBATCH_TARGET_RANKING_UNSTABLE')
+ p.scene.tick=101;p.v3Scene.frame.tick=101;p.previousV3=a.v3Next
+ local b=M.planAutoBatchNativeAbility0(p)
+ assert(b.status=='STAGE_DECISION_AWAIT_INDEPENDENT_MANUAL_EPS_ROUND_PROOF')
+ assert(b.pendingWeaponChange.kind=='EQUIP_BACKPACK_TO_EMPTY_QUICKSLOT')
+ assert(b.usedNativeAbility0Probe==true)
+ assert(b.nativeOtherAbilitiesRead==false and b.engineFinalAlternateAPRVerified==false)
+ contract(b)
+end)
+test('native_r37_r3_prof_id_mismatch_FAIL_CLOSED',function()
+ local f=native_ability_fixture()
+ f.r3.items['HAMM01'].item.proficiencyIdRaw=104
+ local excluded,reason=M.validateNativeAbility0AgainstR3(f.native,f.r3)
+ assert(excluded==nil and reason=='HOLD_NATIVE_R3_PROFICIENCY_OR_ATTACK_TYPE_MISMATCH')
+end)
+test('native_r37_r3_attack_type_mismatch_FAIL_CLOSED',function()
+ local f=native_ability_fixture()
+ f.r3.items['HAMM01'].item.abilities[1].attackTypeRaw=2
+ local excluded,reason=M.validateNativeAbility0AgainstR3(f.native,f.r3)
+ assert(excluded==nil and reason=='HOLD_NATIVE_R3_PROFICIENCY_OR_ATTACK_TYPE_MISMATCH')
+end)
+test('native_r37_r3_resref_replaced_HOLD',function()
+ local f=native_ability_fixture()
+ f.native.nativeAbility0[18].resref='SW1H04'
+ local excluded,reason=M.validateNativeAbility0AgainstR3(f.native,f.r3)
+ assert(excluded==nil and reason=='HOLD_NATIVE_R3_ABILITY_COUNT_OR_IDENTITY_MISMATCH')
+end)
+test('native_r37_cannot_run_during_nonempty_action_queue',function()
+ local f=native_ability_fixture()
+ f.obs.queuedActionsRaw=1
+ local x=R37Bag.captureNativeAbility0(f.sprite,f.obs,f.ctx,f.api)
+ assert(x.status=='HOLD_NATIVE_ITM_EVENT_OR_QUEUE_NOT_QUIET')
+ contract(x)
+end)
+test('native_r37_missing_engine_read8_rejects_without_fake_values',function()
+ local f=native_ability_fixture()
+ local x=R37Bag.captureNativeAbility0(f.sprite,f.obs,f.ctx,{
+  toPtr=f.api.toPtr,read8=false})
+ assert(x.status=='HOLD_NATIVE_ITM_EEEX117_READER_MISSING')
+ contract(x)
+end)
+test('native_r37_second_ability_never_dereferenced',function()
+ local f=native_ability_fixture()
+ -- In this source mock, changing the existing CItem header is enough to
+ -- emulate a valid native resource with two ability headers.
+ f.cached[18].pRes.pHeader.abilityCount=2
+ local before=f.getAbilityCalls()
+ local native=R37Bag.captureNativeAbility0(f.sprite,f.obs,f.ctx,f.api)
+ assert(native.status=='TOPLEVEL0_38_AND_R37_STABLE_ADVICE_ONLY')
+ assert(native.nativeAbility0[18].status=='SKIP_MULTIPLE_ABILITIES_UNSAFE_EEEX117_STRIDE')
+ assert(native.nativeAbility0[18].firstAbilityAttackTypeRaw==nil)
+ assert(f.getAbilityCalls()==before+1) -- the ready bow index0 only
+ local r3=r3_snapshot(native)
+ r3.items['HAMM01'].item.abilities={{attackTypeRaw=1},{attackTypeRaw=2}}
+ r3.items['HAMM01'].item.proficiencyIdRaw=97
+ r3.items['HAMM01'].item.rawOnly=true
+ r3.items['BOW05']={item={schema='BGXAI_ITM_RAW_V1',
+  rawOnly=true,proficiencyIdRaw=104,abilities={{attackTypeRaw=2}}},
+  provenance={origin='CURRENT_GAME_BIFF'}}
+ local excluded,reason=M.validateNativeAbility0AgainstR3(native,r3)
+ assert(reason==nil and excluded[18]==true)
+end)
+test('native_r37_detects_proficiency_drift_midreading',function()
+ local f=native_ability_fixture()
+ local ptr=100000+18*256+0x31
+ local n=0
+ local read=f.api.read8
+ f.api.read8=function(p)
+  if p==ptr then n=n+1;if n>=2 then return 99 end end
+  return read(p)
+ end
+ local out=R37Bag.captureNativeAbility0(f.sprite,f.obs,f.ctx,f.api)
+ assert(out.status=='HOLD_NATIVE_ITM_ATTACK_OR_PROF_DRIFT')
+ contract(out)
+end)
+test('native_r37_resource_ability_count_not_matching_R3_hold',function()
+ local f=native_ability_fixture()
+ f.native.nativeAbility0[18].abilityCountRaw=2
+ local excluded,reason=M.validateNativeAbility0AgainstR3(f.native,f.r3)
+ assert(excluded==nil and reason=='HOLD_NATIVE_R3_ABILITY_COUNT_OR_IDENTITY_MISMATCH')
+end)
+test('native_r37_CItem_present_but_missing_pRes_holds',function()
+ local f=native_ability_fixture()
+ f.cached[18].pRes=nil
+ local x=R37Bag.captureNativeAbility0(f.sprite,f.obs,f.ctx,f.api)
+ assert(x.status=='HOLD_NATIVE_ITM_HEADER_UNREADABLE')
+ contract(x)
+end)
+test('native_r37_known_busy_skips_all_live_item_reading',function()
+ local f=native_ability_fixture()
+ f.obs.queuedActionsRaw=4
+ local p={sprite=f.sprite,r37=f.obs,contextReader=f.ctx,reader=R37Bag,
+ nativeApi=f.api,r3=f.r3,projection=f.projection,scene=f.scene,
+ v3Scene=f.vm,previousV3=nil,v3=V3}
+ local prior=f.getAbilityCalls()
+ local x=M.planAutoBatchNativeAbility0(p)
+ assert(x.status=='PRESERVE_KNOWN_ACTION_QUEUE_NO_SCAN')
+ assert(x.inventoryCaptureCalls==0 and f.getAbilityCalls()==prior)
+ contract(x)
+end)
 print("BGXAI BACKPACK16 PRIORITY V4 "..n.." synthetic tests PASS")
