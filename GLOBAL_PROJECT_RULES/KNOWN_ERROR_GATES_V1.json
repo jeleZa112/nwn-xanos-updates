@@ -1002,19 +1002,20 @@
         "/BGXAI/UPDATER_V2/MODULES_V1.json",
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46155871557",
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46157354088",
-        "https://github.com/jeleZa112/nwn-xanos-updates/commit/47b0dfcc523fb21837e727f2f14a878ff69c34c7"
+        "https://github.com/jeleZa112/nwn-xanos-updates/commit/47b0dfcc523fb21837e727f2f14a878ff69c34c7",
+        "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46157579495"
       ],
       "enforcement": "No altered CMD/Hub/legacy game/WeiDU/EEex. SHA-pin new module source; mark only SOURCE mitigated, not live, until specific updated console proves actual Windows outcome.",
       "source_repair": {
         "sourceFile": "BGXAI/UPDATER_V2/BGXAI_MODULE180_SAVED_PARTY_CATALOG_RO.py",
         "firstBadImmutableCommit": "dd185a64a2120880a943f22b3e9108e8bbfbd5e9",
-        "repairedImmutableCommit": "8fd8b0014d1af62908ca57b52d52bb15d0b3fc98",
-        "repairedModuleSize": 12874,
-        "repairedModuleSha256": "1552abeb52602f9d1983a0196be15ede8be5f4cb6de22f7de81a8abc1aa23790",
-        "manifestCommit": "47b0dfcc523fb21837e727f2f14a878ff69c34c7",
+        "repairedImmutableCommit": "b27419d50298e1beef3e53d18837d97080ef8a0c",
+        "repairedModuleSize": 13879,
+        "repairedModuleSha256": "845b883a360d8c7f837d491fcd1ed3b83e011e4090b5ea75e2a5965b4c2c55b4",
+        "manifestCommit": "aa847c19d169218fbefc99952435a1544b25b524",
         "testFile": "BGXAI/UPDATER_V2/test_module180_saved_party_catalog_ro.py",
-        "ciRun": 46157354088,
-        "ciStatus": "SUCCESS_WINDOWS_AND_UBUNTU",
+        "ciRun": 46157579495,
+        "ciStatus": "SUCCESS_BOTH_WINDOWS_AND_UBUNTU_13_MODULE_TESTS_EACH",
         "limitations": "Only source error stage and exception class now observable. Original user Windows underlying cause UNKNOWN until one new patched read-only run. No real item move.",
         "noChange": [
           "BGXAI_UPDATE.cmd",
@@ -1023,7 +1024,9 @@
           "EET_game",
           "R47",
           "EPS"
-        ]
+        ],
+        "fixedExternalHoldSubclass": true,
+        "externalReaderHoldReason": "Only fixed status code prefix, no paths, item names or traceback; original source problem still unknown"
       }
     }
   ],
