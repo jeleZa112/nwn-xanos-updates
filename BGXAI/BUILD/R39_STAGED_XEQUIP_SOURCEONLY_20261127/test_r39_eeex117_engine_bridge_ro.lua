@@ -105,4 +105,58 @@ check('no source autohooks or arms',function()
  eq(M.registered,false);eq(M.sourceOnly,true);eq(M.ordersSent,0)
  hold(M.getStatus())
 end)
+
+
+local function scriptsFixture()
+ local a={m_id=1002,m_typeAI={m_Class=3},getActiveStats=function()return {m_nKit=16384}end}
+ local scripts={[0]='BDDEFAI',[1]='',[2]='',[4]='PRIEST1',[5]='',[6]='',[7]=''}
+ local ports={getPortraitSprite=function()return a end,
+   getPortraitID=function()return 1002 end,
+   getScriptLevelResRef=function(_,level)return scripts[level] end}
+ return ports,a,scripts
+end
+check('script assignment: native EEex resref list observed without deploy',function()
+ local p=scriptsFixture();local r=M.probeScriptAssignments(p)
+ eq(r.status,'R39_SCRIPT_RESREFS_OBSERVED_NO_DEPLOY')
+ eq(r.bddefaiAssigned,true);eq(r.bddefaiAssignedLevels[1],0)
+ eq(r.scriptLevelResrefs[4],'PRIEST1')
+ eq(r.actualBcsExecutionVerified,false);eq(r.scriptSlotOwnershipVerified,false)
+ hold(r)
+end)
+check('script assignment: BDDEFAI absent still NO deploy',function()
+ local p,a,s=scriptsFixture();s[0]='DEFAULT'
+ local r=M.probeScriptAssignments(p)
+ eq(r.status,'R39_SCRIPT_RESREFS_OBSERVED_NO_DEPLOY')
+ eq(r.bddefaiAssigned,false);hold(r)
+end)
+check('script assignment: unknown scripting API refused',function()
+ local p=scriptsFixture();p.getScriptLevelResRef=nil
+ local r=M.probeScriptAssignments(p)
+ eq(r.status,'HOLD_SCRIPT_ASSIGNMENT_APIS_UNAVAILABLE');hold(r)
+end)
+check('script assignment: actor mismatch refused',function()
+ local p=scriptsFixture();p.getPortraitID=function()return 20 end
+ local r=M.probeScriptAssignments(p);eq(r.status,'HOLD_SCRIPT_ASSIGNMENT_ACTOR_ID');hold(r)
+end)
+check('script assignment: wrong class refused',function()
+ local p,a=scriptsFixture();a.m_typeAI.m_Class=4
+ local r=M.probeScriptAssignments(p);eq(r.status,'HOLD_SCRIPT_ASSIGNMENT_CLASS_OR_KIT');hold(r)
+end)
+check('script assignment: malformed resref refused',function()
+ local p,a,s=scriptsFixture();s[4]='TOO_LONG_NAME'
+ local r=M.probeScriptAssignments(p);eq(r.status,'HOLD_SCRIPT_RESREF_UNREADABLE');hold(r)
+end)
+check('script assignment: change across double read refused',function()
+ local p,a,s=scriptsFixture();local n=0
+ p.getScriptLevelResRef=function(_,level)
+  if level==0 then n=n+1;if n>1 then return 'DEFAULT' end end
+  return s[level]
+ end
+ local r=M.probeScriptAssignments(p);eq(r.status,'HOLD_SCRIPT_RESREF_CHANGED');hold(r)
+end)
+check('script assignment: portrait changes between reads refused',function()
+ local p,a=scriptsFixture();local n=0
+ p.getPortraitSprite=function()n=n+1;return n==1 and a or {} end
+ local r=M.probeScriptAssignments(p);eq(r.status,'HOLD_SCRIPT_ACTOR_CHANGED');hold(r)
+end)
 print('BGXAI R39 EEex117 engine bridge RO '..tests..'/'..tests..' PASS')
