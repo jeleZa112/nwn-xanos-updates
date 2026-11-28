@@ -9,7 +9,7 @@ SYNC=ROOT/'BGXAI/BGXAI_SYNC.ps1'
 BOOT=ROOT/'BGXAI_UPDATE.cmd'
 HELPER=ROOT/'BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py'
 OLD175='d6fa98f19bb693e4f2cb43216307805ba427a4accefa703d03f33c299df21a3c'
-NEW179='7aa1ef524eb2b259c3911bd46126fc93a6c5dbe8195c8fce0d26069dabb5899c'
+NEW179='b0067b711269706071074c46f1d46e483815f9c657c20992ae280405e0d6cc13'
 HELPER_PATH='BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py'
 LIMIT=80000
 
@@ -46,23 +46,16 @@ class T(unittest.TestCase):
     def test_new179_pin_is_exact(self):
         r=self.routes[0]
         self.assertIn(NEW179,r)
-        self.assertIn('$n=16626',r)
+        self.assertIn('$n=24900',r)
         self.assertIn(HELPER_PATH,r)
-        # The channel still points to an IMMUTABLE earlier release. A newer
-        # child is allowed in the branch only as UNPUBLISHED staging; it
-        # must never be treated as available in BGXAI_UPDATE.cmd until
-        # BOOTSTRAP_PIN and the onefile PS exact source hash are repinned.
-        import json
-        channel=json.loads((ROOT/'BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text())
-        actual=hashlib.sha256(HELPER.read_bytes()).hexdigest()
-        if channel['commit']=='b0586b2d0c3d00afdc9ff68ad944505476733ff6':
-            self.assertNotEqual(actual,NEW179)
-            child=HELPER.read_text(encoding='utf-8')
-            self.assertIn('R43_GUARD = PREFIX',child)
-            self.assertIn('def run_diag_guarded',child)
-            self.assertIn('MODES.update({"7":',child)
-        else:
-            self.assertEqual(actual,NEW179)
+        # Exact staged child pin is enforced on branch. Current user release
+        # continues using the OLD immutable source commit until the separate
+        # BOOTSTRAP_PIN source+hash publishing gate succeeds.
+        self.assertEqual(hashlib.sha256(HELPER.read_bytes()).hexdigest(),NEW179)
+        child=HELPER.read_text(encoding='utf-8')
+        self.assertIn('R43_GUARD = PREFIX',child)
+        self.assertIn('def run_diag_guarded',child)
+        self.assertIn('MODES.update({"7":',child)
 
     def test_allowlist_is_finite(self):
         self.assertIn('|BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128)',self.src)
@@ -113,8 +106,31 @@ class T(unittest.TestCase):
         self.assertEqual(channel['channel'],'bgxai-fox-new-onefile')
         self.assertEqual(channel['script_path'],'BGXAI/BGXAI_SYNC.ps1')
         self.assertEqual(channel['script_size'],len(self.raw))
-        self.assertEqual(channel['script_sha256'],hashlib.sha256(self.raw).hexdigest())
-        self.assertEqual(channel['commit'],'b0586b2d0c3d00afdc9ff68ad944505476733ff6')
+        staged_sha=hashlib.sha256(self.raw).hexdigest()
+        if channel['commit']=='b0586b2d0c3d00afdc9ff68ad944505476733ff6':
+            # Pre-publication: the one user CMD STILL fetches the old
+            # immutable PS. Mismatching the current staged branch is intended.
+            self.assertEqual(channel['script_sha256'],
+                'de98827dbef5056755239f903ba0f7b4bb6106398d046b2d34a4d6c164747361')
+            self.assertNotEqual(staged_sha,channel['script_sha256'])
+        else:
+            self.assertEqual(channel['script_sha256'],staged_sha)
+            self.assertRegex(channel['commit'],r'^[a-f0-9]{40}
+
+    def test_published_source_only_claim_is_accurate(self):
+        import json
+        channel=json.loads((ROOT/'BGXAI/fox_new/BOOTSTRAP_PIN.json').read_text(encoding='utf-8'))
+        self.assertIn('Default source RO',channel['description'])
+        self.assertIn('install typed',channel['description'])
+        self.assertIn('rollback typed',channel['description'])
+        self.assertIn('capture RO',channel['description'])
+        self.assertIn('CLASS4 Jagan',channel['description'])
+        self.assertIn('179',channel['description'])
+        self.assertIn('175/176',channel['description'])
+        self.assertLess(channel['script_size'],80000)
+
+if __name__=='__main__':unittest.main()
+)
 
     def test_published_source_only_claim_is_accurate(self):
         import json
