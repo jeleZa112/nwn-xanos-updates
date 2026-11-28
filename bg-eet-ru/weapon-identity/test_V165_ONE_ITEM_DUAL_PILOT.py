@@ -240,7 +240,11 @@ class PilotTests(unittest.TestCase):
         base=ROOT.parent/'onefile'
         cmd=(base/'BG_EET_RU_UPDATE.cmd').read_bytes()
         manifest=json.loads((base/'release.json').read_text('utf-8'))
-        backend_sha=pilot.digest(P.read_bytes())
+        # Windows checkout may apply core.autocrlf. The immutable GitHub RAW
+        # download pin hashes LF-normalized Git bytes, NOT checkout CRLF.
+        backend_bytes=P.read_bytes().replace(b'\r\n',b'\n')
+        self.assertNotIn(b'\r',backend_bytes)
+        backend_sha=pilot.digest(backend_bytes)
         self.assertEqual(manifest['version'],166)
         self.assertEqual(manifest['sha256'],pilot.digest(cmd))
         self.assertEqual(len(cmd),747154)
