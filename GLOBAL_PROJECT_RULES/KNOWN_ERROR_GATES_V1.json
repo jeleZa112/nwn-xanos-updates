@@ -1123,11 +1123,11 @@
       "safe_action": "Use existing V2 runtime modular manifest (up to 100 guarded modules) to add 181 original R48 real one-shot and 182 independent last-only rollback. Thin Python adapter only calls old R48 native original, no second installer; hub exact typed consent before file staging, all 18 upstream files pinned immutable SHA. Preserve old single-module hub selftest through a generated original 180 fixture in native CI, and independently validate FULL index asset pins. Require user exact typed consent for real WeiDU installation; no automatic retry.",
       "closure_condition": "SOURCE/CI MITIGATED: existing modular V2 runtime 181/182 published; Windows+Ubuntu native CI PASS incl all 18 source SHA, guard and rollback mocked. USER LIVE menu 181 actual WeiDU install and XEquipItem runtime remain pending, so do not mark installed/live.",
       "evidence": [
-        "BGXAI/UPDATER_V2/BGXAI_MODULE181_182_R48_ONE_SHOT_GUARDED.py",
-        "BGXAI/UPDATER_V2/MODULES_V1.json",
-        "BGXAI/BUILD/R48_ONE_REAL_STAF01_EQUIP_AFTER_R47_20261128/BGXAI_R48_LAST158_TO159_ONE_ITEM_GUARDED.py",
-        "BGXAI/UPDATER_V2/test_module181_182_r48_existing_guarded.py",
-        "BGXAI/UPDATER_V2/test_updater_v2_static.py",
+        "/BGXAI/UPDATER_V2/BGXAI_MODULE181_182_R48_ONE_SHOT_GUARDED.py",
+        "/BGXAI/UPDATER_V2/MODULES_V1.json",
+        "/BGXAI/BUILD/R48_ONE_REAL_STAF01_EQUIP_AFTER_R47_20261128/BGXAI_R48_LAST158_TO159_ONE_ITEM_GUARDED.py",
+        "/BGXAI/UPDATER_V2/test_module181_182_r48_existing_guarded.py",
+        "/BGXAI/UPDATER_V2/test_updater_v2_static.py",
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46159440300"
       ],
       "enforcement": "No game changes until host prompts exact token, native R48 last-only preflight/proof, external backup. Even successful install only arms one Jagan STAF01 specific XEquip; not general AI weapon auto-equip, no known manual/EPS round boundary for arbitrary combat.",
