@@ -18,8 +18,8 @@ CMD=ROOT/'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd'
 RELEASE=ROOT/'bg-eet-ru/onefile/release.json'
 V165=ROOT/'bg-eet-ru/weapon-identity/V165_ONE_ITEM_DUAL_PILOT.py'
 V164_SHA='80db1808d3748f03c10c090345c40afcd17881bacac80d68ad9d88f0e1f1f90e'
-V165_SOURCE_SHA='8037cf2361f3c0431124a2ad03b88e3f477b5aac99d8c3c016d8adce12d97264'
-V165_SOURCE_COMMIT='fd815134f127ec568806eb2e23f41b6d9ff5b5c3'
+V165_SOURCE_SHA='d882c235ee4c2f57d02d5fc3afd614dead1bc918cbd45077a22bea3baf715dea'
+V165_SOURCE_COMMIT='8864c9cbd711297e07ba95f0cf118c61a12f0fdb'
 
 
 def sha(raw):return hashlib.sha256(raw).hexdigest()
@@ -53,8 +53,8 @@ def build():
     s=''.join(lines)
     old_marker="V163_PIN='b24bb80860103f31688d54c9d906b44619e01bcf50be1beb645fe8aa215d7426'"
     if s.count(old_marker)!=1:raise RuntimeError('V163_FROZEN_BACKEND_MISSING')
-    insert="""V165_PIN='8037cf2361f3c0431124a2ad03b88e3f477b5aac99d8c3c016d8adce12d97264'
-V165_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/fd815134f127ec568806eb2e23f41b6d9ff5b5c3/bg-eet-ru/weapon-identity/V165_ONE_ITEM_DUAL_PILOT.py'
+    insert="""V165_PIN='d882c235ee4c2f57d02d5fc3afd614dead1bc918cbd45077a22bea3baf715dea'
+V165_URL='https://raw.githubusercontent.com/jeleZa112/nwn-xanos-updates/8864c9cbd711297e07ba95f0cf118c61a12f0fdb/bg-eet-ru/weapon-identity/V165_ONE_ITEM_DUAL_PILOT.py'
 def v165_dispatch(game,mode,offline=False):
  try:
   p=v121_cache(game)/'V165_DUAL_ONE_ITEM.py'
