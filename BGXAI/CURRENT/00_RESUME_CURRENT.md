@@ -1,5 +1,26 @@
 # BGXAI — ЕДИНСТВЕННАЯ КАНОНИЧЕСКАЯ ТОЧКА ВОССТАНОВЛЕНИЯ
 
+## 28.11.2026 — READY-QUICKSLOT DOMINANCE BEFORE BACKPACK MOVE, OLD-REV REPRODUCED
+
+**MOST RECENT PRIOR-WORK GATE:** The previous V3→V4 source link exists and had 72/72 V3 and 7/7 composition tests. The user asked to continue; no R47 retries or passive-report loops. Existing single updater remains `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`; game R47 WeiDU last #158 unchanged; R48 not published or installed. Complete old private chat / first 40KB R47 console unavailable (HISTORY_INCOMPLETE).
+
+**SPECIFIC CONFIRMED DEFECT:** V4 `planWithV3` used the **currently selected** weapon score as the threshold baseline, even when `V3.preview.candidates` already contained a stronger weapon in another usable quickslot. This would recommend taking a weaker weapon from backpack even though a better ready weapon required no item transfer. **Proof:** reconstituted exact historic Git blob `e79ed0040a49be93e92cb9e2edc6ff2e39579c71` from existing published code, ran model test: old 7 existing checks PASS then `best_equipped_beats_backpack_no_item_move` FAIL as expected. This is SOURCE-level reproduced behavior, NOT an observed in-game equip.
+
+**EXCLUSIVE SOURCE FIX (no new scorer, no listener):** Updated existing `BGXAI/BUILD/WEAPON_INVENTORY_PRIORITY_V4_20261126/BGXAI_BACKPACK16_PRIORITY_RO_V4.lua`, commit `33a3b2525e5cfd534a43c7f8f43b61002f5d44be`, Git blob `d8a93a095a89e4ae8d960084976f83bc396404cc`. Reuse already-scored V3 `preview.candidates` to compute `readyBest` (highest available already-equipped quickslot). Compare a backpack candidate with `max(selectedScore,readyBest.value)` using existing hysteresis; never bypass when current selected is immune but another equipped weapon is viable. When backpack does not beat that ready weapon, advise `PREFER_ALREADY_EQUIPPED_QUICKSLOT_NO_INVENTORY_MOVE`, with quickslot index, and preserve `dispatchAuthorized=false`, `inventoryMoveAuthorized=false`, no engine action/queue change.
+
+**TEST/PROOF:** On exact corrected Git blob and same source-only fixture, `luahbtex --luaonly test_v3_v4_integration.lua` **10/10 PASS** (7 preexisting plus 3 new: equipped stronger, backpack stronger than all ready, immune selected with safe equipped alternative). Earlier independent existing V3 `test_weapon_priority_lua_v3.lua` **72/72 PASS**, R13 **36/36 PASS** on current source before new V4 change. Added the 3 new scenarios to *existing* `test_backpack16_priority_v4.lua` (now 37 `test(` cases), commit `e8ef5a6c809ffd016dbaa17e3fde22e06e39be9a`. Existing V3/V4/V5 CI runner now expects **493** source cases (commit `c8676120db650a3b678f33f195055f591c927e7a`). **Full 37/37, full 493/493 workflow CI, user's installed EET and real item transfer remain UNVERIFIED**; do not conflate isolated local fixture 10/10 with the full suite.
+
+**PERSISTENCE:** Exact source/test and existing V4 README amended; global known-error register `GLOBAL_PROJECT_RULES/KNOWN_ERROR_GATES_V1.json` added one specific `BGXAI_V3V4_WEAK_BACKPACK_BEATS_READY_QUICKSLOT_20261128` with old-code failure/new-code PASS and strict no-repeat. This is a functional improvement of existing implementation, not another duplicate pilot.
+
+**CODE/TEST/DEPLOY/LIVE:** Code FIXED source-only; local 10/10 model PASS including old-revision failure; Deploy NO; Live NO. Existing V6/R29 real bow→sword behavior not touched.
+
+**NEXT ONE REAL FUNCTIONAL BLOCKER:** Native installed EEex 1.1.7 provides selected raw APR/THAC0 and R37 read-only inventory context, but existing R6/R10/R13/R37/R39 do **not** prove same-frame, target-bound complete *unselected* weapon effective APR/THAC0/item ability and current protections/active buff effects. No proven read-only engine API in checked source to recalculate these without equipping, and no proven manual/EPS safe action window. Seek a bounded, non-mutating adapter reusing the existing R37 callback and original R3 ITM/WSPATCK/CLSWPBON data only when provenance validates installed EET; do NOT call Infinity_ActivateInventory or change selected weapon to obtain stats (both mutate state). Do not release a new source-only "observer" or a fixed-item R48 as smart selection. Any future guarded install needs exact typed approval/backup and an engine safe action boundary. No user action requested now.
+
+**RECOVERY_VERDICT:** `RESUME_PARTIAL_SAFE_ONLY`; current code and local test evidence known; missing live alternative stats and action arbitration.
+
+---
+
+
 ## 28.11.2026 — V3→V4 BACKPACK SAME TARGET COMPOSITION LOCAL 7/7 + V3 72/72 (AFTER BGXAI 1.7)
 
 **PROJECT GOAL / RECOVERY VERDICT:** Actor → actual current enemy → compare equipped weapons plus 16 backpack slots → only then consider noninterrupting equip. Continuing from exact R47 first 179→22 HOLD, **do not retry / rollback**; original one-file updater pinned `f2827f25da5`, game R47 WeiDU LAST #158 unchanged, R48 fixed-STAF01 source not published/installed. Complete private prior chat/40KB raw R47 log are not mounted: `HISTORY_INCOMPLETE`; `RESUME_PARTIAL_SAFE_ONLY` supports safe source development only.
