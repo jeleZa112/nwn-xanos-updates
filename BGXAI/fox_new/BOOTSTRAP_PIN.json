@@ -2,9 +2,9 @@
   "schema": 1,
   "channel": "bgxai-fox-new-onefile",
   "branch": "bg-eet-ai",
-  "commit": "b0586b2d0c3d00afdc9ff68ad944505476733ff6",
+  "commit": "180ef997fd6cee7e3b12c03ecaae472340d9aac0",
   "script_path": "BGXAI/BGXAI_SYNC.ps1",
-  "script_sha256": "de98827dbef5056755239f903ba0f7b4bb6106398d046b2d34a4d6c164747361",
+  "script_sha256": "f286b0080e4de38ea61cba4493c41f8020d8b68dbd26a6d8478887495e76b5ca",
   "script_size": 79798,
-  "description": "BGXAI sole original CMD, pinned PS 79798B: 179 R42 guarded one-listener script assignment probe. Default source RO; 2 status; 3 preflight; 4 install typed; 5 rollback typed; 6 existing InfinityLoader capture RO, exact one [BGXBCS] CLASS4 Jagan record. Install only if R38 WeiDU last154 and SHA backup pass; no auto install/retry, no XEquip/orders. 175/176 unchanged. R42 runtime/live class BCS still unverified until separately authorized installation/game capture."
+  "description": "BGXAI sole original CMD, SHA-pinned PS 79798B, 175/176 unchanged. Menu179 old R42 1=Default source RO, 2=status, 3=preflight, 4=install typed, 5=rollback typed, 6=capture RO CLASS4 Jagan preserved; new R43 diagnostic 7=status, 8=preflight, 9=install typed, 10=rollback typed, 11=capture RO. R43 exact source-only reason extension 95965B, one original listener, 0 orders, no XEquip. No auto install/rollback/retry, exact WeiDU 155-last required for separately typed 155->156 upgrade. Source CI 152/152 Windows+Linux PASS 46128946627. Original R42 LIVE first capture HOLD. No game files changed by channel publication."
 }
