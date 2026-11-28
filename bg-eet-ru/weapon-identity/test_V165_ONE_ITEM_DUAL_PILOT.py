@@ -15,7 +15,11 @@ pilot=importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(pilot)
 V107=(ROOT/'BG_EET_RU_V107_GUARDED_CALLBACK_SOURCE_ONLY.lua').read_bytes()
 
-BASE="""local BG_EET_RU_V160_names={ AROW01='Стрела', BOW05='Короткий лук' }
+BASE="""-- Synthetic V108 twice-wrapped callback, followed by V160 third wrapper.
+function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage(context) return nil end
+function BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage(context) return nil end
+local BG_EET_RU_V160_previous = BG_EET_RU_WEAPON_EVENT_OBSERVER_V1_OnBaseDamage
+local BG_EET_RU_V160_names={ AROW01='Стрела', BOW05='Короткий лук' }
 local function BG_EET_RU_V160_ref(item)
  if not item then return nil end
  return item.cResRef:get()
