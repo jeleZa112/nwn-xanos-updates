@@ -50,6 +50,8 @@ jobs:
           p=Path('BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py')
           b=p.read_bytes()
           print('NEW_R42_GUARDED179_PIN',len(b),hashlib.sha256(b).hexdigest())
+          guard=Path('BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_GUARDED_FROM_R38.py').read_bytes()
+          print('NEW_R42_GUARD_CAPTURE_PIN',len(guard),hashlib.sha256(guard).hexdigest())
           script=Path('BGXAI/BGXAI_SYNC.ps1').read_bytes()
           print('NEW_R42_GUARDED179_PS',len(script),hashlib.sha256(script).hexdigest())
           PY
