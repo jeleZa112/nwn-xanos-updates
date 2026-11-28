@@ -207,6 +207,8 @@ jobs:
         run: python -m unittest -v BGXAI/BUILD/R49_R48_BACKPACK16_SOURCE_ONLY_20261128/test_r49_reuse_r48_backpack16_source_only.py
       - name: R50 exact generated-PC false Name guard correction source-only (9 fail-closed tests NO GAME)
         run: python -m unittest -v BGXAI/BUILD/R50_JAGAN_SCRIPTNAME_FIX_SOURCEONLY_20261128/test_r50_exact_name_guard_repair.py
+      - name: R50 guarded original R49 last160 to R50 last161 mock EET installed proof and rollback (18 tests NO GAME)
+        run: python -m unittest -v BGXAI/BUILD/R50_JAGAN_SCRIPTNAME_FIX_SOURCEONLY_20261128/test_r50_last160_to161_guarded.py
       - name: R49 guarded old R48 last159 to last160 fake-EET install rollback exact preimage (16 tests, NO GAME)
         run: python -m unittest -v BGXAI/BUILD/R49_R48_BACKPACK16_SOURCE_ONLY_20261128/test_r49_last159_to160_guarded.py
 
