@@ -148,11 +148,13 @@ class CatalogStage(unittest.TestCase):
  def test_original_gam_and_r3_parser_hold_is_not_hidden_or_leaked(self):
     # These are the exact already-imported native parser classes, NOT a
     # fabricated new reader. The prefix is needed to avoid another game test.
+    installed_gam=mod.load(mod.GAM_PATH,"bgxai_existing_saved_gam_parser_v1")
+    installed_r3=mod.load(mod.R3_PATH,"bgxai_existing_r3_itm_parser_v3")
     tests=(
-       ("saved_names",gam.Hold("HOLD_UNSUPPORTED_GAM_VERSION_NOT_GUESSING"),
+       ("saved_names",installed_gam.Hold("HOLD_UNSUPPORTED_GAM_VERSION_NOT_GUESSING"),
         "VALIDATE_SAVED_PARTY_ITEMS",
         "HOLD_EXISTING_READER_HOLD_UNSUPPORTED_GAM_VERSION_NOT_GUESSING"),
-       ("build_source",r3.Hold("CHITIN_KEY_DUPLICATE_RESOURCE:PRIVATE_ITEM_NAME"),
+       ("build_source",installed_r3.Hold("CHITIN_KEY_DUPLICATE_RESOURCE:PRIVATE_ITEM_NAME"),
         "BUILD_INERT_LUA_CATALOG",
         "HOLD_EXISTING_READER_CHITIN_KEY_DUPLICATE_RESOURCE"),
     )
