@@ -20,6 +20,12 @@ BG_EET_RU_V107_GUARD = {
     current_x64_item_flags_binding_verified = false,
     callback_citem_flag_lifetime_verified = false,
     explicit_identification_read_consent = false,
+    -- Source-only proof of selection. NO pairs supplied by default.
+    -- A future guarded same-CMD preflight must pin current ITM+RU TLK SHA.
+    dual_name_catalog_verified = false,
+    explicit_dual_name_consent = false,
+    verified_dual_pairs = {},
+
     max_events = 16,
     seen = 0,
     recorded = 0,
@@ -85,6 +91,46 @@ local function read_citem_identification(item, state)
     return identified and 'IDENTIFIED_BIT0' or 'UNIDENTIFIED_BIT0'
 end
 
+-- Pure value selection from the EXISTING V107 bit0 result; no new native read.
+-- Only names proven against fresh ITM and both current RU TLKs are permitted.
+-- The catalogue is empty and both extra gates FALSE by default.
+local function select_verified_dual_name(ref, identification, state)
+    if not state.dual_name_catalog_verified or not state.explicit_dual_name_consent then
+        return 'DUAL_NAME_CATALOG_HOLD'
+    end
+    if type(ref) ~= 'string' or not ref:match('^[A-Z0-9_]+$') or #ref > 8 then
+        return 'DUAL_NAME_REF_HOLD'
+    end
+    if identification ~= 'IDENTIFIED_BIT0'
+        and identification ~= 'UNIDENTIFIED_BIT0' then
+        return 'DUAL_NAME_IDENTIFICATION_HOLD'
+    end
+    local pairs = state.verified_dual_pairs
+    if type(pairs) ~= 'table' then return 'DUAL_NAME_CATALOG_HOLD' end
+    local row = pairs[ref]
+    if type(row) ~= 'table' or row.current_itm_and_tlks_verified ~= true then
+        return 'DUAL_NAME_CURRENT_ITM_TLK_HOLD'
+    end
+    local name = identification == 'IDENTIFIED_BIT0'
+        and row.identified or row.unidentified
+    -- Strings only; reject controls, multiline and overlong values.
+    -- Actual Russian lexical validation is done BEFORE generating the
+    -- SHA-pinned installed manifest by the existing R3+V111 extractor.
+    if type(name) ~= 'string' or #name < 2 or #name > 180 then
+        return 'DUAL_NAME_VALUE_HOLD'
+    end
+    -- Lua %c/%s are platform-locale dependent on Windows; UTF-8 Cyrillic
+    -- continuation bytes must NEVER be treated as control/whitespace.
+    if name:sub(1, 1) == ' ' or name:sub(-1) == ' ' then
+        return 'DUAL_NAME_VALUE_HOLD'
+    end
+    for i = 1, #name do
+        local b = name:byte(i)
+        if b < 32 or b == 127 then return 'DUAL_NAME_VALUE_HOLD' end
+    end
+    return name
+end
+
 -- Called by an already-registered V105/V106 listener ONLY after a future
 -- explicitly approved same-CMD deployment; no auto-hook or auto-execution.
 function BG_EET_RU_V107_GuardedObserve(context)
@@ -102,11 +148,18 @@ function BG_EET_RU_V107_GuardedObserve(context)
         launcher_resref = read_citem_ref(context.launcher, st),
         weapon_identification = read_citem_identification(context.weapon, st),
         launcher_identification = read_citem_identification(context.launcher, st),
+        -- This callback saves primitive strings only; never raw CItem userdata.
+        weapon_dual_name = 'DUAL_NAME_PENDING',
+        launcher_dual_name = 'DUAL_NAME_PENDING',
         ammo_resref = 'NOT_VERIFIED',
         is_hit = 'NOT_VERIFIED',
         is_miss = 'NOT_VERIFIED',
         journal_row = 'NOT_VERIFIED',
     }
+    rec.weapon_dual_name = select_verified_dual_name(
+        rec.weapon_resref, rec.weapon_identification, st)
+    rec.launcher_dual_name = select_verified_dual_name(
+        rec.launcher_resref, rec.launcher_identification, st)
     st.recorded = st.recorded + 1
     st.events[#st.events + 1] = rec
     -- No raw CItem userdata, pointers, attacker or target retained.
@@ -124,6 +177,8 @@ function BG_EET_RU_V107_GuardStatus()
         identification_binding_verified = s.current_x64_item_flags_binding_verified,
         callback_item_flag_lifetime_verified = s.callback_citem_flag_lifetime_verified,
         identification_read_approved = s.explicit_identification_read_consent,
+        dual_name_catalog_verified = s.dual_name_catalog_verified,
+        dual_name_consent = s.explicit_dual_name_consent,
         live_identification_verified = false,
         dual_ru_name_selected = false,
         seen = s.seen,

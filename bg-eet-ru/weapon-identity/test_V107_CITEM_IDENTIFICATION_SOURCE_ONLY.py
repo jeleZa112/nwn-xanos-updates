@@ -130,5 +130,71 @@ class IdentificationSourceTests(unittest.TestCase):
         for k,v in self.state['events'][1].items():
             self.assertIn(type(v),(str,int,float,bool),f'user data retained: {k}')
 
+    def test_dual_russian_name_selects_only_with_all_current_proof_gates(self):
+        self.all_gates()
+        item1=FakeItem(1)
+        item0=FakeItem(0)
+        pairs=self.lua.table()
+        pairs['SW1H04']=self.lua.table_from({
+            'current_itm_and_tlks_verified':True,
+            'identified':'Проверенное опознанное имя',
+            'unidentified':'Проверенное неопознанное имя'
+        })
+        self.state['verified_dual_pairs']=pairs
+        self.observe(self.context(item1))
+        self.assertEqual(self.state['events'][1]['weapon_dual_name'],
+                         'DUAL_NAME_CATALOG_HOLD')
+        self.assertEqual(item1.flag_reads,1)
+        self.state['dual_name_catalog_verified']=True
+        self.state['recorded']=0
+        self.state['events']=self.lua.table()
+        self.observe(self.context(FakeItem(1)))
+        self.assertEqual(self.state['events'][1]['weapon_dual_name'],
+                         'DUAL_NAME_CATALOG_HOLD')
+        self.state['explicit_dual_name_consent']=True
+        self.state['recorded']=0
+        self.state['events']=self.lua.table()
+        self.observe(self.context(FakeItem(1)))
+        self.observe(self.context(item0))
+        self.assertEqual(self.state['events'][1]['weapon_dual_name'],
+                         'Проверенное опознанное имя')
+        self.assertEqual(self.state['events'][2]['weapon_dual_name'],
+                         'Проверенное неопознанное имя')
+        self.assertEqual(item0.flag_reads,1)
+        self.assertFalse(self.lua.globals().BG_EET_RU_V107_GuardStatus()['dual_ru_name_selected'])
+
+    def test_dual_name_ref_and_current_itm_tlk_fail_closed(self):
+        self.all_gates()
+        self.state['dual_name_catalog_verified']=True
+        self.state['explicit_dual_name_consent']=True
+        item=FakeItem(1)
+        self.observe(self.context(item))
+        self.assertEqual(self.state['events'][1]['weapon_dual_name'],
+                         'DUAL_NAME_CURRENT_ITM_TLK_HOLD')
+        self.state['recorded']=0
+        self.state['events']=self.lua.table()
+        self.state['verified_dual_pairs']=self.lua.table_from({
+            'SW1H04': self.lua.table_from({
+                'current_itm_and_tlks_verified':False,
+                'identified':'Неверная подмена',
+                'unidentified':'Неопознанное имя',
+            })
+        })
+        self.observe(self.context(FakeItem(1)))
+        self.assertEqual(self.state['events'][1]['weapon_dual_name'],
+                         'DUAL_NAME_CURRENT_ITM_TLK_HOLD')
+        self.state['verified_dual_pairs']['SW1H04']['current_itm_and_tlks_verified']=True
+        self.state['verified_dual_pairs']['SW1H04']['identified']='Многострочный\nввод'
+        self.state['recorded']=0
+        self.state['events']=self.lua.table()
+        self.observe(self.context(FakeItem(1)))
+        self.assertEqual(self.state['events'][1]['weapon_dual_name'],
+                         'DUAL_NAME_VALUE_HOLD')
+        self.state['recorded']=0
+        self.state['events']=self.lua.table()
+        self.observe(self.context(FakeItem(-1)))
+        self.assertEqual(self.state['events'][1]['weapon_dual_name'],
+                         'DUAL_NAME_IDENTIFICATION_HOLD')
+
 if __name__ == '__main__':
     unittest.main()
