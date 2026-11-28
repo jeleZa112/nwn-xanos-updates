@@ -287,7 +287,7 @@ class PilotTests(unittest.TestCase):
                 {'gamePins':{'Baldur.exe':'0'*64},'weiduSha':'0'*64},
                 {'itemPins':{}},FakeBatch,None)
 
-    def test_v167_published_onefile_backend_and_manifest_exact(self):
+    def test_v168_published_onefile_backend_and_manifest_exact(self):
         import json
         base=ROOT.parent/'onefile'
         cmd=(base/'BG_EET_RU_UPDATE.cmd').read_bytes()
@@ -297,18 +297,18 @@ class PilotTests(unittest.TestCase):
         backend_bytes=P.read_bytes().replace(b'\r\n',b'\n')
         self.assertNotIn(b'\r',backend_bytes)
         backend_sha=pilot.digest(backend_bytes)
-        self.assertEqual(manifest['version'],167)
+        self.assertEqual(manifest['version'],168)
         self.assertEqual(manifest['sha256'],pilot.digest(cmd))
         self.assertEqual(len(cmd),747154)
         self.assertLessEqual(len(cmd),750000)
         self.assertEqual(manifest['v165_backend_sha256'],backend_sha)
         self.assertEqual(manifest['v167_pr129_dual_bridge_sha256'],pilot.V167_DUAL_BRIDGE_SHA)
-        self.assertIn(b'SELF_VERSION = 167',cmd)
+        self.assertIn(b'SELF_VERSION = 168',cmd)
         self.assertIn(('V165_PIN=\''+backend_sha+'\'').encode('ascii'),cmd)
         self.assertIn(b'14=dual',cmd)
-        self.assertIn(b'V167 AROW01:1=status 2=check 3=install 4=undo',cmd)
+        self.assertIn(b'V168 AROW01:1=status 2=check 3=install 4=undo',cmd)
         self.assertIn(b'V165_ONE_ITEM_DUAL_PILOT.py',cmd)
-        self.assertIn(b'2cb9cab8b5f5b7f168be09a529e884948eae9941',cmd)
+        self.assertIn(b'39a98f35050097980180b322efb117e497454261',cmd)
         self.assertIs(manifest['default_game_writes_allowed'],False)
 
     def test_v167_actual_immutable_legacy_bridge_mismatch_and_verified_dual_loader(self):
