@@ -125,7 +125,7 @@ class OnefileV2Compatibility(unittest.TestCase):
 
     def test_r48_guarded_181_182_exact_pins_and_no_new_cmd(self):
         index=json.loads(INDEX.read_text(encoding='ascii'))
-        self.assertEqual([m['code'] for m in index['modules']],[180,181,182,183,184,185,186])
+        self.assertEqual([m['code'] for m in index['modules']],[180,181,182,183,184,185,186,187])
         r181,r182=index['modules'][1:3]
         self.assertEqual(r181['mode'],'guarded')
         self.assertEqual(r182['mode'],'guarded')
@@ -190,8 +190,8 @@ class OnefileV2Compatibility(unittest.TestCase):
 
     def test_r49_184_185_186_exact_native_21_pins_and_distinct_consent(self):
         index=json.loads(INDEX.read_text(encoding='ascii'))
-        self.assertEqual(len(index['modules']),7)
-        one,two,three=index['modules'][4:]
+        self.assertEqual(len(index['modules']),8)
+        one,two,three=index['modules'][4:7]
         self.assertEqual([x['code'] for x in (one,two,three)],[184,185,186])
         self.assertEqual([x['mode'] for x in (one,two,three)],
                          ['readonly','guarded','guarded'])
@@ -231,6 +231,43 @@ class OnefileV2Compatibility(unittest.TestCase):
         self.assertIn("native.preflight(",bridge)
         self.assertIn("native.install(",bridge)
         self.assertIn("native.rollback(",bridge)
+
+    def test_r50_one_original_guarded_menu187_exact_pins_and_inner_consent(self):
+        index=json.loads(INDEX.read_text(encoding='ascii'))
+        self.assertEqual(len(index['modules']),8)
+        r187=index['modules'][7]
+        self.assertEqual(r187['code'],187)
+        self.assertEqual(r187['mode'],'guarded')
+        self.assertEqual(r187['approval'],
+          'INSTALL_BGXAI_R50_OPEN_GUARDED_MENU_NO_GAME_WRITES')
+        self.assertEqual(len(r187['files']),24)
+        self.assertEqual(r187['files'][:21],index['modules'][5]['files'])
+        self.assertEqual(r187['entry'],
+          'BGXAI/UPDATER_V2/BGXAI_MODULE187_R50_GUARDED_SAME_ONEFILE.py')
+        expected={
+          'BGXAI/BUILD/R50_JAGAN_SCRIPTNAME_FIX_SOURCEONLY_20261128/BGXAI_R50_REUSE_R49_IDENTITY_DWARF_SOURCE_ONLY.py',
+          'BGXAI/BUILD/R50_JAGAN_SCRIPTNAME_FIX_SOURCEONLY_20261128/BGXAI_R50_LAST160_TO161_GUARDED.py',
+          'BGXAI/UPDATER_V2/BGXAI_MODULE187_R50_GUARDED_SAME_ONEFILE.py'}
+        self.assertEqual({x['path'] for x in r187['files'][21:]},expected)
+        for entry in r187['files']:
+            f=ROOT/entry['path']
+            self.assertTrue(f.is_file(),entry['path'])
+            self.assertFalse(f.is_symlink(),entry['path'])
+            self.assertEqual(f.stat().st_size,entry['size'],entry['path'])
+            self.assertEqual(hashlib.sha256(f.read_bytes()).hexdigest(),
+                             entry['sha256'],entry['path'])
+        self.assertLessEqual(INDEX.stat().st_size,32768)
+        raw=(ROOT/r187['entry']).read_text(encoding='ascii')
+        self.assertIn('native.install(',raw)
+        self.assertIn('native.rollback(',raw)
+        self.assertIn('native.preflight(',raw)
+        self.assertIn('native.status(',raw)
+        self.assertNotIn('XEquipItem(',raw)
+        self.assertIn('ROLLBACK_BGXAI_R50_RESTORE_R49_LAST160_ONLY',raw)
+        self.assertIn('INSTALL_BGXAI_R50_DWARF_CLERIC_IDENTITY_AFTER_R49_LAST160',raw)
+        self.assertNotIn(b'BGXAI_MODULE187',CMD.read_bytes())
+        self.assertNotIn(b'BGXR50',HUB.read_bytes())
+        self.assertEqual(index['modules'][0]['code'],180)
 
     def test_existing_pin_unchanged_during_staging(self):
         j=json.loads(PIN.read_text(encoding='utf-8'))
