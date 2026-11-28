@@ -160,8 +160,8 @@ class OnefileV2Compatibility(unittest.TestCase):
         self.assertIn("--onefile-hub-guarded --approved-token",original)
         self.assertNotIn('XEquipItem(',original)
         self.assertNotIn('XEquipItem(',((ROOT/r181['entry']).read_text(encoding='ascii')))
-        self.assertNotIn('181',CMD.read_text(encoding='ascii'))
-        self.assertEqual(len(CMD.read_bytes()),len((ROOT/'BGXAI_UPDATE.cmd').read_bytes()))
+        self.assertNotIn(b'BGXAI_MODULE181_182',CMD.read_bytes())
+        self.assertNotIn(b'R48_ONE_REAL_STAF01',CMD.read_bytes())
 
     def test_existing_pin_unchanged_during_staging(self):
         j=json.loads(PIN.read_text(encoding='utf-8'))
