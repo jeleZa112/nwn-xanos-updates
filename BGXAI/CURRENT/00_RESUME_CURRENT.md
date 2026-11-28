@@ -1,27 +1,42 @@
 # BGXAI — ЕДИНСТВЕННАЯ КАНОНИЧЕСКАЯ ТОЧКА ВОССТАНОВЛЕНИЯ
 
-## 28.11.2026 — АКТУАЛЬНЫЙ СТАТУС ПОСЛЕ СООБЩЕНИЯ ПОЛЬЗОВАТЕЛЯ: CMD V2 ЗАМЕНЁН
+## 28.11.2026 — LATEST USER RUNTIME: V2 ИСПОЛНЯЕТСЯ, MODULE180 SOURCE HOLD ИСПРАВЛЕН ПО ЭТАПАМ
 
-**PROJECT/CHAT:** «ТОПОВЫЙ БОТ НА СВЕТЕ» / «BG XAI 1.8». **База:** `C:\Games\BG_EET_FOXX_NEW`, EET + EPS 18.4 + EEex + SCS 35.21, Insane. Один `BGXAI_UPDATE.cmd`. Исторические записи ниже — не новый план и не основание повторять уже пройденные проверки.
+**PROJECT/CHAT:** «ТОПОВЫЙ БОТ НА СВЕТЕ» / «BG XAI 1.8». **Game:** `C:\Games\BG_EET_FOXX_NEW`, EET/EPS 18.4/EEex/SCS35.21 Insane. **Single updater:** installed by user in the same existing `BGXAI_UPDATE.cmd`. NEVER ask to download/replace it again.
 
-**ПОСЛЕДНЕЕ ДЕЙСТВИЕ ПОЛЬЗОВАТЕЛЯ:** «файл скачал и заменил» после получения фиксированного V2 выпуска `BGXAI/UPDATER_V2/BGXAI_UPDATE_V2_RELEASE.cmd` из коммита `9412957ffc7d9f717a207fbb381add19afa18795`. ВЫПОЛНЕНО СО СЛОВ ПОЛЬЗОВАТЕЛЯ: однократная замена того же `C:\Games\BG_EET_FOXX_NEW\BGXAI_UPDATE.cmd`. Не просить повторно скачивать, переименовывать или заменять файл. **HASH/BOOTSTRAP/RUNTIME НА ЕГО WINDOWS ПОКА НЕ ПОДТВЕРЖДЕНЫ.**
+**FIRST REAL USER V2 BOOTSTRAP/180 EVIDENCE (28 Nov 2026):**
+```text
+BGXAI: verified pinned script 40cd303fdcf9 (SHA256 OK)
+BGXAI V2: SAME original BGXAI_UPDATE.cmd. SHA-pinned isolated modules.
+Module 180: Saved party ITM catalog source RO [readonly]
+Choice [0]: 180
+BGXAI V2 module 180: Saved party ITM catalog source RO
+status=HOLD_SAVED_PARTY_CATALOG_PREPARATION
+reason=HOLD_R3_GAM_STAGE_IO_OR_SOURCE
+gameModified=false; ordersSent=0; dispatchAuthorized=false;
+inventoryMoveAuthorized=false; gameplayAIInstalled=false; noAutoRetry=true
+BGXAI V2 STOP: HOLD_UPDATER_V2_MODULE_EXIT_3
+```
+**Interpretation:** New V2 bootstrap, SHA pin, actual manifest dispatch and Python module180 START are **LIVE VERIFIED**. First old module180 saved-party data stage itself **HOLD**, NOT complete; no game files/WeiDU/EPS/R47 touched. Never rerun same immutable `dd185a64...` source, rollback, clear cache or change CMD. Exact underlying Python cause cannot be derived from generic first result.
 
-**CODE/TEST/DEPLOY/LIVE — независимые уровни:**
-- V2 `BGXAI_UPDATE_V2_RELEASE.cmd`: CODE published (9617 bytes, SHA256 `754cdf6b21aa23e0f410c8a4691bc1c333cf2bac8bb4759ca50097991bbafd9b`); TEST Windows+Ubuntu/verified offline fallback PASS, https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46155871557; DEPLOY user reports copying SAME CMD; LIVE actual launch not yet observed. Hub V2 immutable `40cd303fdcf9e776e6062b9ce6c8eaa3d00a7376` (12133 bytes, SHA256 `74ec9a026ea4a9d96cff21a66a5c753c8916fb0802e1b3d729426109795c8706`); legacy 1..179 exact f282 retained as one frozen module.
-- V2 module **180**: ALREADY CODED, registered and off-game tested, read-only `BGXAI_MODULE180_SAVED_PARTY_CATALOG_RO.py`; reuses existing GAM inventory and R3 native ITM, generates passive Lua/JSON ONLY in Documents; saved GAM is NOT the current EEex live actor. DEPLOY current user's runtime unobserved; NO installation, equip or orders. `MODULES_V1.json` already includes it, do NOT create new 180.
-- R47: earlier user evidence **INSTALLED** last WeiDU #158, passive inert witness; one first capture `R47_CAPTURE_HOLD_WITNESS_NOT_OBSERVED`; zero orders, no actual CLASS BCS evaluation/equip observed. DO NOT repeat `179→22`, do not reinstall or rollback.
-- Existing live proofs: R29/V6/R37 bow→sword and sword→bow under tested scenarios; V6 avoided new duplicate close-range attack without canceling committed round; R4 selected APR same-session 16/16; R44 current actor CLASS resref `BDDEFAI` observed. These DO NOT prove inventory item transfer or universal smart AI.
-- Existing source/CI: V3 weapon scorer, V4 16-backpack + ready quickslot priority, R3 native ITM/2DA/Lua export, R13 target-type AC/resists and actions 105/134, R35 actor selected APR/THAC0, R37 stable 39 slots, R39 fixed STAF01 native compile. Integrated regression `542/542` on Lua5.3/Lua5.4/LuaJIT plus Python R3 42 (https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46153484727); `CODE/TEST SOURCE ONLY` for general auto-equip. R48 fixed-STAF01 guarded stage was NOT released/installed and is not a general character→enemy→weapon ranker.
+**PRIOR WORK:** Existing source GAM parse had parsed a real user-supplied `BALDUR(1).gam` dated 27 Nov, 185732 bytes, `GAMEV2.0`, six CRE V1.0, original SHA256 `7e926634c0972e90e25c975a18c9bf34b96f4d85184195c630555fdd43f7e19c` per `BGXAI_REAL_GAM_PILOT_HANDOFF_20261127_RU.md` in Library; that DOES NOT prove current V2 picked the same save, but no reason to ask for or reparse this historic file.
 
-**OPEN DELTA / FIRST REAL UNFINISHED STEP:** Verify one first actual V2 bootstrap and module 180 on user's PC through *the already replaced same CMD* (no re-copy): game closed → run `BGXAI_UPDATE.cmd` → menu choice `180` once (READ ONLY) → preserve first console output. If `STOP/HOLD` do not retry or rollback. This single run simultaneously verifies V2 manifest dispatch and stages existing saved-party item catalog when supported. This is not proof of live autoequip. The assistant cannot inspect the user's Windows files directly.
+**ONE CONFIRMED CODE ERROR + MINIMAL CORRECTION:**
+- Existing module180 catch merged several Python errors from any stage into exactly `HOLD_R3_GAM_STAGE_IO_OR_SOURCE`, obscuring diagnosis. Root of original IO/source problem = **UNKNOWN**; do not claim corrupt GAM, mods, path or reinstall.
+- Fixed **the same** existing `BGXAI/UPDATER_V2/BGXAI_MODULE180_SAVED_PARTY_CATALOG_RO.py`: unexpected source errors now expose fixed `failureStage` and safe `exceptionType`, no private exception text/paths, original explicit HOLD reasons preserved. `noAutoRetry`, no game writes, zero orders retained.
+- Expanded existing tests with unexpected `TypeError/OSError/KeyError/ValueError` injections and original named HOLD. Published new immutable source commit `8fd8b0014d1af62908ca57b52d52bb15d0b3fc98`, size **12874**, SHA256 `1552abeb52602f9d1983a0196be15ede8be5f4cb6de22f7de81a8abc1aa23790`, pinned in **existing** `MODULES_V1.json` via commit `47b0dfcc523fb21837e727f2f14a878ff69c34c7`. Original CMD/hub/legacy 1–179 unchanged; no second updater/module number.
+- Independent CI https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46157354088 **SUCCESS Windows and Ubuntu**, including static manifest SHA matching and existing module180 tests; native PowerShell/old offline fallback checks on Windows pass. Earlier intermediate commits temporarily failed old-manifest SHA test by design; final pinned commit PASS.
+- Error record `BGXAI_V2_MODULE180_STAGE_EXCEPTION_MASKED_20261128` saved in existing `GLOBAL_PROJECT_RULES/KNOWN_ERROR_GATES_V1.json` and classified `MITIGATED_SOURCE_ONLY`; real underlying source failure remains not diagnosed, not LIVE fixed.
 
-**AFTER V2 RUNTIME:** Continue non-destructive work with EXISTING modules only: actor identity/class/kit/proficiency, buffs and effective *alternative-slot* APR/THAC0; real target damage-specific AC/resists/protections; all eligible ready/backpack items; then manual/EPS original action ownership and safe round-boundary, not `ClearActions`. Any missing data → HOLD. Only after independent source/native evidence + explicit typed approval may existing R39 guarded XEquip transfer be installed. Don't repeat 542 test suite for unchanged code.
+**CODE/TEST/DEPLOY/LIVE:**
+- V2 CMD+hub: CODE PASS, Windows/Ubuntu TEST PASS, USER DEPLOY + LIVE menu/module dispatch PASS.
+- Module180 new stage-aware CODE+TEST PASS; manifest published, user's Windows latest module runtime **not yet observed**.
+- R47 inert witness: user INSTALLED WeiDU component last #158, R47 first live witness `HOLD_WITNESS_NOT_OBSERVED`; no BCS execution or XEquip proven. NO repeat 179→22.
+- Existing V3/V4 actor→enemy→weapon priority, R3 native ITM/2DA, R13 action105/134 target defense, R35 selected APR/THAC0, R37 39 slots, R39 guarded source: SOURCE and CI including 542/542 each Lua5.3/Lua5.4/LuaJIT (https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46153484727). Prior R29/V6/R37 bow→sword works in tested live scenarios. **GENERAL AUTOEQUIP NOT DEPLOYED/LIVE**. No alternative effective APR/THAC0+target immunities+manual/EPS safe boundary proof.
 
-**KNOWN ERROR REGISTER:** `GLOBAL_PROJECT_RULES/KNOWN_ERROR_GATES_V1.json` was repaired in commit `3159e4bc0b4a4bc2bedd9f93e06bc6a5477f58b6` after previous canonical CI run `46156031808` failed due invalid project-specific type/status enums; original detailed states preserved and a single error record added. ERROR GATE and canonical resume CI verified SUCCESS on run https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46156906413; separate BGXAI R42 source-only CI also SUCCESS. No gameplay-runtime validation implied. No game/WeiDU/EPS/installed R47 change from the registry repair.
+**FIRST NEXT SAFE STEP:** After current source CI, use SAME already-replaced CMD once more for *changed* pinned read-only `180` only (no install): preserve first output, particularly `failureStage`, `exceptionType` and `reason`. On HOLD/STOP: no further rerun/rollback, analyze recorded stage; on passive SOURCE_CATALOG_READY: mark only saved-source data ready, NOT live current actor. Keep work focused on actor+enemy+weapon evidence and safe round boundary using existing components; no repeated 542 tests.
 
-**NO_REPEAT:** old R38/R39 native preflights; R44 179→16; R47 179→22 capture; repeated weapon switch/buff tests; fixed R48 STAF01 pilot as proxy for intelligent choice; monolithic 80KB PowerShell; any second user-facing updater; silent install/rollback; dynamic Python in EEex runtime. **RECOVERY:** `RESUME_PARTIAL_SAFE_ONLY` regarding user's new local V2 runtime (user has reported CMD replacement); `CODE/TEST` of V2 verified by GitHub CI, historical full prior chat not accessible verbatim.
-
-**AUTHORITATIVE PATHS:** this file; `BGXAI/UPDATER_V2/README_RU.md`; `BGXAI/UPDATER_V2/MODULES_V1.json`; `GLOBAL_PROJECT_RULES/KNOWN_ERROR_GATES_V1.json`. Historical paragraphs below are retained only as evidence and are **SUPERSEDED** wherever they say user still needs to replace the CMD.
+**NEVER REPEAT:** CMD replacement, monolithic 80KB PS, R44 179→16, R47 179→22, earlier R3/old GAME already-parsed source, new observers, synthetic R48 fixed STAF01 pilot as general AI, any silent install/rollback or unsafe queue cancel. **RECOVERY:** `RESUME_VERIFIED` for this next one read-only module180 step; full verbatim prior chat may be incomplete. Historical details below are superseded where contradicted by actual V2 first run.
 
 ---
 
