@@ -17,7 +17,7 @@ class OnefileV162ReleaseContract(unittest.TestCase):
     def test_onefile_published_sha_and_size(self):
         cmd=CMD.read_bytes()
         release=json.loads(RELEASE.read_text(encoding='utf-8'))
-        self.assertEqual(release['version'],163)
+        self.assertEqual(release['version'],164)
         self.assertEqual(hashlib.sha256(cmd).hexdigest(),release['sha256'])
         self.assertLessEqual(len(cmd),750000)
         self.assertGreater(len(cmd),700000)

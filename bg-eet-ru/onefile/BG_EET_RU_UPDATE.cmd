@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 import zlib
 UPDATER_ID = 'BG_EET_RU_ONEFILE_VISIBLE_ONLY'
-SELF_VERSION = 163
+SELF_VERSION = 164
 DEFAULT_GAME = r'C:\Games\BG_EET_FOXX_NEW'
 WORKDIR = Path.home() / 'Documents' / 'BG_EET_RU'
 REPORT_NAME = 'SEND_TO_CHATGPT_BG_EET_RU.zip'
@@ -6829,7 +6829,7 @@ V107_EXPECTED_FILES = {
 }
 assert all(len(v)==64 for v in V107_EXPECTED_FILES.values()), 'V107_SHA_LITERAL_LENGTH_HOLD'
 V107_PROBE_FILES = (
- 'EEex.dll', 'InfinityLoader.exe', 'InfinityLoader.dll', 'EEex/EEex.dll',
+ 'EEex.dll', 'LuaBindings.dll', 'InfinityLoader.exe', 'InfinityLoader.dll', 'EEex/EEex.dll',
  'Baldur.exe', 'EEex_scripts/EEex_Main.lua',
  'EEex_scripts/BG_EET_RU_WeaponObserver.lua',
  'EEex_scripts/EEex_Sprite.lua', 'EEex_scripts/EEex_Sprite_Patch.lua',
@@ -6945,6 +6945,7 @@ def v107_selftest():
     (scripts / 'EEex_Sprite.lua').write_bytes(b'function EEex_Sprite_AddAlterBaseWeaponDamageListener() end')
     (scripts / 'EEex_Sprite_Patch.lua').write_bytes(b'-- source')
     (game / 'Baldur.exe').write_bytes(b'MZ' + b'\0' * 128)
+    (game / 'LuaBindings.dll').write_bytes(b'LB')
     report = root / 'SEND_TO_CHATGPT_BG_EET_RU.zip'
     with zipfile.ZipFile(report, 'w') as z:
       z.writestr('keep.txt', b'preserved')
@@ -6954,6 +6955,7 @@ def v107_selftest():
     assert evidence['game_files_written'] == 0
     assert not evidence['v104_sprite_source_sha_match']
     assert evidence['files']['Baldur.exe']['status'] == 'FINGERPRINTED'
+    assert evidence['files']['LuaBindings.dll']['sha256'] == digest(b'LB')
     assert v107_save_report(game, report, evidence)
     prior_hash = digest(report.read_bytes())
     assert not v107_save_report(game, report, evidence)
