@@ -389,13 +389,13 @@
       "error_id": "BGXAI_R42_LIVE_CAPTURE_HOLD_DETAIL_MASKED_20261128",
       "project": "BGXAI",
       "type": "CONFIRMED_FAILURE",
-      "status": "R46_USER_NATIVE_TEMP_PASS_R47_PUBLISHED_POSTPIN_CI_PASS_NEXT_ONCE_179_18_RO",
+      "status": "R47_USER_NATIVE_PREFLIGHT_PASS_NOT_INSTALLED_NEXT_TYPED_ONEFILE179_19",
       "discovered_at": "2026-11-28",
       "trigger": "Real Windows R42 one-file 179→6 capture after independently positive 179→2 guarded installed status",
       "observed_failure": "28-Nov 2026 first real R43 installed Windows capture 179→11 produced R43_CAPTURE_HOLD_REASON_OBSERVED, inner R42_CAPTURE_HOLD_CLASS_BCS_UNREADABLE, noAutoRetry=true, r39ProbeStatus=HOLD_SCRIPT_ACTOR_CHANGED, r39ClassSlotState=NOT_READ, classScriptResref=null, installed=true, ordersSent=0, dispatchAuthorized=false, armAuthorized=false, gameModified=false. Existing 46,109-byte raw console file local path C:\\Users\\Drevo\\Documents\\BGXAI_LIVE_REPORTS\\BGXAI_R43_CLASS_REASON_20261128T093349396112Z.log WAS NOT uploaded and has NOT been inspected. Two BG_EET_RU_V106 registration lines are not causal proof. Native process STOP code 1 is deliberate on hold.",
       "cause": "SOURCE-EXACT STOP LOCATION: R39 EEex 1.1.7 bridge probeScriptAssignments() checks `sameActor ~= sprite or sameId ~= portraitId` immediately after first seven resref reads, returning HOLD_SCRIPT_ACTOR_CHANGED. The single observed reason does NOT distinguish Lua userdata wrapper reference inequality (fresh typed wrapper returned by EEex_GameObject_Get / EEex_GameObject_CastUT) from an actual portrait actor ID change. Need not assert the actor actually switched. R43 successful identity matched earlier; class script not read. Proposed exclusive minimal source-only fix: compare stable numeric m_id with initial physical actorId and portrait ID, then second read using second object wrapper, and retain all previously existing exact physical/selection/script/cursor change HOLD gates; test same actor new wrapper vs changed ID without game installation. Not known which of two comparisons failed live.",
       "do_not_repeat": "Do not replay 179→11, reinstall R43 179→9, rerun old R42 179→6, old R39 compile, R38 capture, old GAM parsing, or unguarded rollback. Preserve original raw file. No duplicate listener, no new command/ARM, no assertion of CLASS name from 19-Nov GAM saved snapshot, no blame on BG_EET_RU without evidence.",
-      "safe_action": "R46 user original onefile 8ac menu179→17 PASS native TEMP compiled inert 223B BAF to c44488ab80ddfab08eabc39ca302ea2797d6fd3b0caa83b42900741812cfb626, installed=false gameModified=false orders0. R44 remains actual last WeiDU #157 with one live CLASS BDDEFAI and STAF01 exactPhysical gate true. R47 corrected witness Lua 2232B SHA f095193... uses EEex_AIBase_GetScriptLevelResRef (real R44 API); original 223B BAF unchanged and always returns false. R47 source-only guarded last157→158 external BCS backup + exact 24d94062... preimage + rollback/status/capture fake EET 18 tests PASS Windows/Linux. Original single BGXAI_UPDATE.cmd immutable source f2827f25da5, PS 79798B sha 4728e8a..., child179 49505B sha db9126... modes18 preflight RO 19 typed install 20 status 21 typed rollback 22 once game capture; old1..17 retained. Pre-release CI 46138827273 Windows/Linux PASS; postrelease CI 46138925240 BOTH Windows+Ubuntu COMPLETED SUCCESS, user may now run ONE 179→18 read-only preflight. R47 not installed, BCS execution not proved; next ONLY user once 179→18 RO with game+InfinityLoader closed after postrelease CI. NEVER repeat 179→17 R46, 179→16 R44, old native tests. If HOLD preserve first console, no retry. If preflight PASS separately authorize 179→19 typed, after install later 179→22 once. NO actual XEquip and no new listener.",
+      "safe_action": "Real user onefile f2827f25da5 179→18 exactly once returned R47_PREFLIGHT_EXACT_GUARDED_PASS and inner R47_PREFLIGHT_R44_LAST157_PASS_NO_INSTALL with correct inert BAF af9c78..., Lua f095193..., installed false gameModified false orders0 arm false. R44 still verified last WeiDU157. R46 real user 179→17 TEMP BAF native PASS already done. NEXT exactly user-initiated typed 179→19 passive R47 BDDEFAI.BCS WeiDU last158 install with external backup, token INSTALL_BGXAI_R47_INERT_BDDEFAI_WITNESS_AFTER_R44_LAST. No automatic retry or rollback on failure; inspect first console; do NOT run R47 22 until actual successful install. No repeat 18/17/16/earlier. This passive witness BAF always returns false; no game commands/LOCALS/XEquip. User machine R47 install NOT performed yet; code-only tests pass two OS.",
       "closure_condition": "Specific original source of R39 CLASS assignment read HOLD is identified without speculating from unrelated mods or retrying the same capture. A future narrow source-only fix must explicitly preserve existing listener, no command dispatch, exact script/backup/provenance checks, one updated existing updater and CI; any new installation requires separate typed approval. Class script remains UNKNOWN until real current-game evidence.",
       "evidence": [
         "user-provided 2026-11-28 BGXAI_UPDATE.cmd 179→6 console in current BGXAI conversation (R42_HOLD_ONEFILE_GUARDED, HOLD_R42_NATIVE_GUARD_OR_STATE)",
@@ -408,7 +408,7 @@
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46133473161",
         "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46133585010"
       ],
-      "enforcement": "R44 real user installed last157 and LIVE CLASS assign PASS, R46 user native TEMP comp PASS, R47 source/CI/published SOURCE PASS only, game R47 DEPLOY/LIVE NOT DONE, R39 equip not installed, zero game orders. No automatic CMD install or retry, ignore stale handoff next steps. R47 post-release Win/Linux source CI 46138925240 PASS, native user R47 preflight not yet run. NEVER claim installed.",
+      "enforcement": "R47 CODE/TEST/PIN/REAL PREFLIGHT PASS only, game R47 DEPLOY=false, R47 LIVE BCS=false, XEquip=false; R44 installed last157 and R44 live read-only CLASS assignment PASS. Only next user explicit typed installation may modify game. No silent auto approve or rerun.",
       "source_only_fix": {
         "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_CLASS_HOLD_REASON_SOURCE_ONLY.py",
         "tests": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_class_hold_reason_source_only.py",
@@ -514,7 +514,11 @@
         "r47NewLuaSHA": "f095193e77b2a9ec5d8f21edf738a805c462656e58df41b9199ff9b2ac4da256",
         "r47PostreleaseCi": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46138925240",
         "r47PostreleaseCiWindowsPass": true,
-        "r47PostreleaseCiUbuntuPass": true
+        "r47PostreleaseCiUbuntuPass": true,
+        "r47RealUserPreflightDone": true,
+        "r47RealUserPreflightStatus": "R47_PREFLIGHT_EXACT_GUARDED_PASS",
+        "r47NextMenuChoice": "179→19",
+        "r47NextTypedToken": "INSTALL_BGXAI_R47_INERT_BDDEFAI_WITNESS_AFTER_R44_LAST"
       }
     }
   ],
@@ -705,7 +709,7 @@
           "exclusive_missing_delta": "Extend ONLY original 179 Python child with new exact typed/passive R47 modes 18=preflight RO,19=typed guarded install,20=status,21=typed rollback,22=once game capture RO. Stage existing R37/R38/R42/R43/R44 SHA-pinned parents plus R46 composer + old BAF + R47 corrected Lua composer + R47 guarded file outside game. Preserve old modes1..17 byte for byte semantics and original single CMD, only update parent PS child-size/SHA literal if 79798 bytes unchanged. Run mocked negative tests and Windows/Linux CI before immutable publication. User only 179→18 first, separately examine PASS then typed 179→19 with explicit consent; NO automatic install or retries.",
           "scope": "CODE+TEST+SOURCE, NOT REAL EET INSTALL",
           "safety": "No new CMD, no extra action-start listener, no weapon/equip commands, no LOCALS. On any HOLD STOP once. Do not repeat R44 179→16 or R46 native 179→17. Reuse user-proven original BDDEFAI.BCS SHA, external backup and WeiDU last157 exact proof. Source-only staged until green CI.",
-          "status": "R47_ONEFILE_IMMUTABLE_SOURCE_RELEASE_POSTPIN_CI_WIN_LINUX_PASS_USER_PREFLIGHT_PENDING",
+          "status": "R47_REAL_USER_NATIVE_GUARDED_PREFLIGHT_PASS_NOT_INSTALLED",
           "gameModified": false,
           "autoConsent": false,
           "targetFile": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py",
@@ -727,12 +731,20 @@
           "preserveOriginal1Through17": true,
           "realGameModified": false,
           "R47Installed": false,
-          "next": "FIRST one user-PC read-only 179→18 after verifying pinned script f2827f25da5 SHA; no game run. Inspect status R47_PREFLIGHT_EXACT_GUARDED_PASS and inner R47_PREFLIGHT_R44_LAST157_PASS_NO_INSTALL; only later distinct typed 179→19 can install passive witness, and later 179→22 one-shot live BCS evaluation capture. On HOLD do not retry/rollback automatically.",
+          "next": "User real 179→18 first and only native RO preflight PASS. Next separately user-typed R47 passive BCS last #158 install: game+InfinityLoader closed, same BGXAI_UPDATE.cmd verified f2827f25da5 SHA256 OK, select 179→19, type INSTALL_BGXAI_R47_INERT_BDDEFAI_WITNESS_AFTER_R44_LAST exactly; once only. Expected R47_INSTALL_EXACT_GUARDED_PASS / R47_INERT_BDDEFAI_WITNESS_INSTALLED_AWAITING_LIVE. This WILL mutate BDDEFAI.BCS, creates external SHA backup. If HOLD/STOP no retry or auto rollback. Only AFTER real install verified plan ONE 179→22 live passive witness; do not run 22 or earlier 17/18 again now. No R39 XEquip yet.",
           "postReleaseCIPassed": true,
           "sourceOnlyCiWindows": "PASS",
           "sourceOnlyCiUbuntu": "PASS",
-          "r47RealUserPreflightDone": false,
-          "r47Installed": false
+          "r47RealUserPreflightDone": true,
+          "r47Installed": false,
+          "r47ActualBcsWitnessLive": false,
+          "r47PreflightStatus": "R47_PREFLIGHT_EXACT_GUARDED_PASS",
+          "r47PreflightInnerStatus": "R47_PREFLIGHT_R44_LAST157_PASS_NO_INSTALL",
+          "r47PreflightSourceCommit": "f2827f25da5a01215fcbdc0b9a48e3900d654384",
+          "r47PreflightBafSHA256": "af9c78d00dd24806c694e7ee1d6fe882a65b8a9fd71acc90654f60188932a0d9",
+          "r47PreflightLuaSHA256": "f095193e77b2a9ec5d8f21edf738a805c462656e58df41b9199ff9b2ac4da256",
+          "r47PreflightGameModified": false,
+          "r47PreflightOrdersSent": 0
         }
       ],
       "project": "BGXAI",
