@@ -155,3 +155,81 @@ def build_catalog(repo: Path, game: Path, resrefs):
     r3 = verified_module(repo, R3_REL, R3_BLOB_SHA)
     v111 = verified_module(repo, V111_REL, V111_BLOB_SHA)
     return catalog_from_modules(game, resrefs, r3, v111)
+def catalog_from_r28(game: Path, r28, r3, v111, source=None):
+    """Reuse a *previously collected* R27/R28 report without new game capture.
+
+    The report selects only observed resources; current game item bytes must
+    still match every SHA-256 from the earlier real native audit. No actor ID,
+    personal paths or raw action logs are copied to the catalog.
+    """
+    if not isinstance(r28, dict) or r28.get('schema') != 'BGXAI_R28_NATIVE_FROM_R27_RO_V1' \
+            or r28.get('status') != 'R28_NATIVE_ITEMS_RAW_READ_AWAITING_REVIEW' \
+            or r28.get('gameModified') is not False or r28.get('ordersSent') != 0 \
+            or r28.get('dispatchAuthorized') is not False:
+        raise SourceHold('R28_REPORT_PROVENANCE_HOLD')
+    live, audit = r28.get('liveR27Evidence'), r28.get('nativeAudit')
+    if not isinstance(live, dict) or not isinstance(audit, dict):
+        raise SourceHold('R28_REPORT_SHAPE_HOLD')
+    if live.get('schema') != 'BGXAI_R28_R27_LIVE_INPUT_V1' \
+            or live.get('r27SessionMarkers') != 1 \
+            or type(live.get('r27ConfirmedCallbacks')) is not int \
+            or not 1 <= live['r27ConfirmedCallbacks'] <= 200000 \
+            or live.get('gameModified') is not False \
+            or audit.get('schema') != 'BGXAI_WEAPON_NATIVE_ITM_R3_READONLY' \
+            or audit.get('status') != 'ITM_NATIVE_ALL_ITEMS_RAW_READ' \
+            or audit.get('sourceKind') != 'CURRENT_GAME' \
+            or audit.get('gameModified') is not False \
+            or audit.get('missingItemsOrLinkedSpells') != []:
+        raise SourceHold('R28_NATIVE_PROVENANCE_HOLD')
+    sha_re = re.compile(r'[0-9a-f]{64}\Z')
+    capture = r28.get('captureSha256')
+    if not isinstance(capture, str) or not sha_re.fullmatch(capture) \
+            or capture != live.get('sourceSha256'):
+        raise SourceHold('R27_R28_CAPTURE_NOT_BOUND')
+    refs = live.get('observedRawItemResrefs')
+    requested = audit.get('requestedItems')
+    items = audit.get('items')
+    if not isinstance(refs, list) or not 1 <= len(refs) <= MAX_ITEMS \
+            or len(refs) != len(set(x for x in refs if isinstance(x, str))) \
+            or not all(isinstance(x, str) and REF.fullmatch(x) for x in refs) \
+            or requested != refs or not isinstance(items, dict) \
+            or set(items) != set(refs):
+        raise SourceHold('R28_ITEM_SET_NOT_BOUND')
+    expected = {}
+    for ref in refs:
+        entry = items.get(ref)
+        if not isinstance(entry, dict) or entry.get('resource') != ref \
+                or not isinstance(entry.get('provenance'), dict):
+            raise SourceHold('R28_ITEM_IDENTITY_HOLD')
+        prov = entry['provenance']
+        if prov.get('origin') not in ('CURRENT_GAME_BIFF','CURRENT_GAME_OVERRIDE') \
+                or not isinstance(prov.get('sha256'), str) \
+                or not sha_re.fullmatch(prov['sha256']):
+            raise SourceHold('R28_RESOURCE_HASH_HOLD')
+        expected[ref] = (prov['sha256'], prov['origin'])
+    inner = source if source is not None else r3.NativeSource(Path(game))
+    class PinnedItemReader:
+        def get(self, ref, ext):
+            if ext != '.ITM' or ref not in expected:
+                raise SourceHold('R28_UNEXPECTED_RESOURCE')
+            raw, provenance = inner.get(ref, ext)
+            if not isinstance(raw, bytes) or not isinstance(provenance, dict) \
+                    or hashlib.sha256(raw).hexdigest() != expected[ref][0] \
+                    or provenance.get('origin') != expected[ref][1]:
+                raise SourceHold('R28_ITM_SHA_OR_ORIGIN_CHANGED')
+            return raw, provenance
+    catalog = catalog_from_modules(game, refs, r3, v111, source=PinnedItemReader())
+    catalog['priorEvidence'] = 'R27_LIVE_R28_REAL_NATIVE_SHA'
+    catalog['itemShaComparedToR28'] = True
+    catalog['status'] = ('R28_ITEM_DRIFT_HOLD' if
+                         any(x['status'] == 'ITEM_HOLD' for x in catalog['items'].values())
+                         else 'R28_SHA_MATCH_CATALOG_READONLY')
+    return catalog
+
+
+def build_catalog_from_r28(repo: Path, game: Path, r28_report):
+    """No CLI, no extra updater; caller supplies the existing private report."""
+    r3 = verified_module(repo, R3_REL, R3_BLOB_SHA)
+    v111 = verified_module(repo, V111_REL, V111_BLOB_SHA)
+    return catalog_from_r28(game, r28_report, r3, v111)
+
