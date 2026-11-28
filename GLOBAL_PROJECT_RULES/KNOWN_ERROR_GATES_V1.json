@@ -654,6 +654,17 @@
           "postPublicationCI": "https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46133585010",
           "game_modified": false,
           "next": "Only user-selected 179→13 one read-only preflight; after first PASS and explicit typed permission, guarded 179→14 may install; never automatic."
+        },
+        {
+          "delta_id": "BGXAI_R46_ONEFILE179_NATIVE_TEMP_RO_REUSE_20261128",
+          "recorded_before_source_edit": true,
+          "already_done": "R44 user native last #157 installed, one and only 179→16 live selected actor CLASS BDDEFAI and R39 exactPhysical unique STAF01 slot20 empty 35 and offhand9; R45 source corrected R39/R41 prearm numeric actor ID mock CI 218/OS PASS; R46 passive BCS EXTEND_TOP BAF 223 bytes SHA af9c78d00dd24806c694e7ee1d6fe882a65b8a9fd71acc90654f60188932a0d9 and Lua 2222B SHA 6f6f090c57ad2d3a5dca54ad474c5bb475bb16502c7d0af6ce3ab6fafad396c4; R46 native RO compiler reused original R39/V3 backend, 10 mocked tests pass Windows/Ubuntu, not user native. Existing same one-CMD 179 child 35283B SHA 281362f..., PS 79798B, immutable channel 668b... and menu 1..16.",
+          "specific_missing_delta": "Add ONLY menu179→17 new R46 passive BAF native TEMP-only compile using SHA-pinned R46 builder/native helper and exactly previously proven R39/V3 source backend in existing parent one-CMD. Reuse earlier R44 status guard exact last #157 and installed proof before invoking native compilation. Stage fully outside EET with exact SHA/bytes; no new parent PowerShell functionality except child SHA length pin, PS retains 79798≤80000. New native result must prove zero game/WeiDU writes and compiler accepted EEex_LuaTrigger; NEVER assert BCS execution, auto arm, XEquip or item engine usability from this. Preserve 179 1..16 byte-for-byte, 175/176 and installed R44. Channel repin only after Windows+Linux CI PASS and immutable parent+child pin cross-check. Stop on any HOLD; no retry.",
+          "status": "PRIOR_WORK_REVIEWED_BEFORE_ONEFILE_CHANGE",
+          "source_only": true,
+          "gameModified": false,
+          "autoConsent": false,
+          "targetFile": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py"
         }
       ],
       "project": "BGXAI",
