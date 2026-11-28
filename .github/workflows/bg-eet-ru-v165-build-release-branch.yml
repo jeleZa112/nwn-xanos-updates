@@ -1,0 +1,56 @@
+name: BG EET RU V165 build pinned onefile on pilot branch
+on:
+  push:
+    branches: [bg-eet-ru-v165-one-item-dual-pilot]
+    paths:
+      - 'bg-eet-ru/weapon-identity/v165_compact_onefile_release.py'
+      - '.github/workflows/bg-eet-ru-v165-build-release-branch.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: v165-build-pilot-single-writer
+  cancel-in-progress: false
+jobs:
+  build-source-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Build exact V165 from exact V164 and reversible zlib compaction
+        run: python bg-eet-ru/weapon-identity/v165_compact_onefile_release.py
+      - name: Preserve onefile selftest (no live game)
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
+      - name: Preserve V160 release contract
+        run: python -m unittest discover -s bg-eet-ru/hit-only-v160 -p 'test_v160_release_contract.py' -v
+      - name: Preserve V162 release contract
+        run: python -m unittest discover -s bg-eet-ru/hit-only-v160 -p 'test_v162_onefile_release.py' -v
+      - name: Preserve V163 release contract
+        run: python -m unittest discover -s bg-eet-ru/hit-only-v160 -p 'test_v163_cumulative_release_contract.py' -v
+      - name: Only existing onefile plus manifest and three historical source tests may change
+        shell: bash
+        run: |
+          python - <<'PY'
+          import subprocess
+          expected={'bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd',
+          'bg-eet-ru/onefile/release.json',
+          'bg-eet-ru/hit-only-v160/test_v160_release_contract.py',
+          'bg-eet-ru/hit-only-v160/test_v162_onefile_release.py',
+          'bg-eet-ru/hit-only-v160/test_v163_cumulative_release_contract.py'}
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert changed==expected,(changed,expected)
+          print('ONLY_FIVE_EXPECTED_FILES_PASS')
+          PY
+      - name: Commit exact signed-off source and release contract to same PR branch
+        shell: bash
+        run: |
+          if git diff --quiet; then echo 'V165_ALREADY_BUILT'; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd bg-eet-ru/onefile/release.json bg-eet-ru/hit-only-v160/test_v160_release_contract.py bg-eet-ru/hit-only-v160/test_v162_onefile_release.py bg-eet-ru/hit-only-v160/test_v163_cumulative_release_contract.py
+          git commit -m "BG EET RU V165: pinned onefile one-item AROW01 pilot with exact release SHA and preserved 123 names"
+          git push origin HEAD:bg-eet-ru-v165-one-item-dual-pilot
