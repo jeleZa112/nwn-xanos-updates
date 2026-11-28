@@ -837,4 +837,79 @@ test('r13_busy_action_queue_disables_even_target_probe',function()
  assert(scans==0 and calls()==0)
  contract(x)
 end)
+
+local R35=dofile('BGXAI/BUILD/R35_NATURAL_SELECTED_APR_RO_20261126/BGXAI_R35_SELECTED_ENGINE_STATS_RO.lua')
+local function with_actor_target()
+ local p,stats,target,probes=with_r13()
+ p.sprite.m_bAllowEffectListCall=1
+ local active={m_nNumberOfAttacks=1,m_nTHAC0=20}
+ local actorReads=0
+ p.r35=R35
+ p.statsReader=function()
+  actorReads=actorReads+1
+  return active
+ end
+ return p,active,stats,target,probes,function()return actorReads end
+end
+test('real_R35_actor_APR_and_R13_enemy_and_R3_bag_one_batch',function()
+ local p,active,stats,target,probes,actorReads=with_actor_target()
+ local initial=M.planAutoBatchWithActorTarget(p)
+ assert(initial.status=='HOLD_AUTOBATCH_TARGET_RANKING_UNSTABLE')
+ assert(initial.r35SelectedAprObservedUnderEeexV117)
+ assert(initial.r35SelectedApr==1 and initial.r35SelectedThac0Raw==20)
+ assert(initial.r13DefensesReadFromSameAttack and initial.r13TargetId==222)
+ assert(probes()==1 and actorReads()==4)
+ p.scene.tick=101;p.v3Scene.frame.tick=101;p.previousV3=initial.v3Next
+ local final=M.planAutoBatchWithActorTarget(p)
+ assert(final.status=='STAGE_DECISION_AWAIT_INDEPENDENT_MANUAL_EPS_ROUND_PROOF')
+ assert(final.pendingWeaponChange.kind=='EQUIP_BACKPACK_TO_EMPTY_QUICKSLOT')
+ assert(final.r35OtherWeaponAprVerified==false)
+ assert(final.r35OtherWeaponThac0Verified==false)
+ assert(probes()==2 and actorReads()==8)
+ contract(final)
+end)
+test('real_R35_current_APR_mismatch_rejects_fake_actor_weapon_model',function()
+ local p,active,stats,target,probes=with_actor_target()
+ active.m_nNumberOfAttacks=7 -- encoded 1.5 APR vs caller-supplied model 1
+ local x=M.planAutoBatchWithActorTarget(p)
+ assert(x.status=='HOLD_AUTOBATCH_SELECTED_WEAPON_APR_OR_IDENTITY_MISMATCH')
+ assert(x.selectedAprDecoded==1.5 and probes()==0)
+ contract(x)
+end)
+test('real_R35_processing_active_effects_blocks_actor_scoring',function()
+ local p,active,stats,target,probes=with_actor_target()
+ p.sprite.m_bAllowEffectListCall=0
+ local x=M.planAutoBatchWithActorTarget(p)
+ assert(x.status=='HOLD_AUTOBATCH_R35_SELECTED_STATS_UNAVAILABLE')
+ assert(probes()==0)
+ contract(x)
+end)
+test('actor_APR_changes_during_enemy_probe_invalidates_bag_decision',function()
+ local p,active,stats,target,probes=with_actor_target()
+ local reader=p.api.GetActiveStats
+ p.api.GetActiveStats=function(...)
+  active.m_nNumberOfAttacks=2
+  return reader(...)
+ end
+ local x=M.planAutoBatchWithActorTarget(p)
+ assert(x.status=='HOLD_AUTOBATCH_ACTOR_STATS_DRIFT_DURING_TARGET_READ')
+ assert(probes()==1 and x.dispatchAuthorized==false)
+ contract(x)
+end)
+test('known_queued_attack_skips_both_actor_and_enemy_stats',function()
+ local p,active,stats,target,probes,actorReads=with_actor_target()
+ p.r37.queuedActionsRaw=3
+ local x=M.planAutoBatchWithActorTarget(p)
+ assert(x.status=='PRESERVE_KNOWN_ACTION_QUEUE_NO_SCAN')
+ assert(probes()==0 and actorReads()==0 and x.r13ObserveCalls==0)
+ contract(x)
+end)
+test('R35_selected_slot_ITM_identity_mismatch_blocks_target_scan',function()
+ local p,active,stats,target,probes=with_actor_target()
+ p.r37.quickWeaponsRaw[1].itemResrefRaw='STAF01'
+ local x=M.planAutoBatchWithActorTarget(p)
+ assert(x.status=='HOLD_AUTOBATCH_SELECTED_WEAPON_APR_OR_IDENTITY_MISMATCH')
+ assert(probes()==0)
+ contract(x)
+end)
 print("BGXAI BACKPACK16 PRIORITY V4 "..n.." synthetic tests PASS")
