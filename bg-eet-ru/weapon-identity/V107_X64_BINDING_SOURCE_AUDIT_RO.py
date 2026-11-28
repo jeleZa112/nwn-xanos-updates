@@ -134,11 +134,91 @@ def compare_release_v120(installed_eeex_sha256, installed_luabindings_sha256):
     }
 
 
+
+# Independent official 1.2.0 release-era source, recorded 2026-08-09 before
+# v1.2.0 release. Byte-pinned source corroboration, NOT a build attestation.
+V120_RELEASE_ERA_INFINITYLOADER_COMMIT = 'ad2c437b7055866bceafebf4ff9684e9af748c7c'
+V120_RELEASE_ERA_SOURCES = (
+    ('LuaBindings-v2.6.6.0/source/LuaBindings-v2.6.6.0/Generated/EEexLua_generated.cpp',
+     'd40a101d0a59d5deed2e1e7358f08908d1c159e9', 14_211_415),
+    ('EEex-Core-Shared-Files/source/EEex.cpp',
+     'fee6eef3ade31835947e4352043398736f30a05a', 183_555),
+)
+
+
+def fetch_pinned_v120_era_source(index):
+    path, sha, size = V120_RELEASE_ERA_SOURCES[index]
+    url = ('https://raw.githubusercontent.com/Bubb13/InfinityLoader/'
+           + V120_RELEASE_ERA_INFINITYLOADER_COMMIT + '/' + path)
+    with urllib.request.urlopen(url, timeout=45) as response:
+        data = response.read(size + 1)
+    if len(data) != size or _git_blob_sha(data) != sha:
+        raise ValueError(f'RELEASE_ERA_SOURCE_PIN_MISMATCH:{index}')
+    return data.decode('utf-8')
+
+
+def analyze_v120_callback(generated_cpp, cxx_callback, x64_citem_doc):
+    """Exact v1.2.0-era binding and callback structure, with no live access.
+
+    CItem* is passed as Lua userdata during synchronous luaCallProtected().
+    This does NOT establish crash safety of a native flags field, nor the
+    identity of the DLL actually loaded into the process.
+    """
+    binding = analyze(generated_cpp, x64_citem_doc)
+    start = cxx_callback.find('CGameEffectDamage* CGameSprite::Override_Damage(')
+    stop = cxx_callback.find('void CGameEffectList::Override_Unmarshal(', start)
+    if start < 0 or stop <= start:
+        raise ValueError('OVERRIDE_DAMAGE_CALLBACK_SOURCE_MISSING')
+    body = cxx_callback[start:stop]
+    def field(name, value):
+        return bool(re.search(
+            r'setImmediateTableUsertype\\s*\\(\\s*L\\s*,\\s*["\\']'
+            + name + r'["\\']\\s*,\\s*' + value
+            + r'\\s*,\\s*["\\']CItem["\\']\\s*\\)',
+            body))
+    sync = ('luaCallProtected(L, 1, 0,' in body and
+            'EEex_Sprite_LuaHook_AlterBaseWeaponDamage' in body and
+            'lua_newtable(L)' in body and
+            field('weapon', 'curWeaponIn') and
+            field('launcher', 'pLauncher') and
+            body.index('luaCallProtected(') <
+            body.index('setImmediateTableUsertype(') <
+            body.index('return pEffect;'))
+    success = binding['sourceOnlyPass'] and sync
+    return {
+        'schema': 'BG_EET_RU_V107_V120_RELEASE_ERA_BINDING_CALLBACK_SOURCE_RO_V1',
+        'release': 'EEex v1.2.0',
+        'releaseEraInfinityLoaderCommit': V120_RELEASE_ERA_INFINITYLOADER_COMMIT,
+        'citemFlagsBoundInReleaseEraGeneratedSource': binding['sourceLuaCItemFlagsRegistered']
+            and binding['sourceLuaCItemFlagsGetterPresent'],
+        'sourceWeaponAndLauncherCItemSynchronous': sync,
+        'sourceX64FlagsOffset24Bit0': binding['sourceStructX64FlagsOffset24Bit0'],
+        'sourceOnlyPass': success,
+        'realUserDLLBytesMatchOfficialV120': True,  # independently verified PR #133
+        'exactBuiltBinaryToReleaseEraSourceAttested': False,
+        'liveCItemFlagsReadVerified': False,
+        'itemIdentificationSemanticsForCallbackVerified': False,
+        'loadedDLLIdentityVerified': False,
+        'gameFilesWritten': 0,
+        'allowNativeRead': False,
+        'allowGameInstallation': False,
+        'status': ('V120_SOURCE_BINDING_AND_SYNCHRONOUS_CITEM_PASS_RUNTIME_HOLD'
+                   if success else 'V120_CITEM_SOURCE_PROOF_HOLD'),
+    }
+
+
+
+
 def main():
     import json
     import sys
     try:
-        if len(sys.argv) == 4 and sys.argv[1] == '--compare-release-v120':
+        if len(sys.argv) == 2 and sys.argv[1] == '--audit-release-v120-source':
+            report = analyze_v120_callback(
+                fetch_pinned_v120_era_source(0),
+                fetch_pinned_v120_era_source(1),
+                fetch_pinned(1))
+        elif len(sys.argv) == 4 and sys.argv[1] == '--compare-release-v120':
             report = compare_release_v120(sys.argv[2], sys.argv[3])
         elif len(sys.argv) == 1:
             report = analyze(fetch_pinned(0), fetch_pinned(1))
