@@ -392,7 +392,7 @@
       "receipt_id": "BGXAI_R42_GUARDED_R38_LAST_WEIDU_TYPED_INSTALL_PREWORK_20261128",
       "project": "BGXAI",
       "source_path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_GUARDED_FROM_R38.py",
-      "source_git_blob_sha": "e589b8fedae1e4681c07b42e8406fcc2a5c30bfb",
+      "source_git_blob_sha": "6d54acbffc09ce51a95bed67f5dacd852c2729bd",
       "status": "PREWORK_REVIEWED_SOURCE_ONLY",
       "predecessor_sources": [
         {
@@ -409,7 +409,7 @@
         },
         {
           "path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py",
-          "git_blob_sha": "4bb1dca5823aa0aa29586019b22ae726ee542453"
+          "git_blob_sha": "263322ba2b6ed92f3dd1109503975b31af2f62c8"
         }
       ],
       "already_implemented": [
@@ -459,7 +459,7 @@
       ],
       "project": "BGXAI",
       "source_path": "BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py",
-      "source_git_blob_sha": "4bb1dca5823aa0aa29586019b22ae726ee542453",
+      "source_git_blob_sha": "263322ba2b6ed92f3dd1109503975b31af2f62c8",
       "status": "PREWORK_REVIEWED_SOURCE_ONLY",
       "predecessor_sources": [
         {
