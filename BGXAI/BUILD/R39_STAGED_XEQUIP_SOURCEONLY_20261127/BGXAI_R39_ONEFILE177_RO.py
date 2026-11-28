@@ -25,12 +25,14 @@ SCHEMA='BGXAI_R39_ONEFILE177_NATIVE_RO_V1'
 P='BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/'
 A=P+'BGXAI_R39_NATIVE_EET_COMPILE_RO_V1.py'
 B=P+'BGXAI_R39_JAGAN_STAF01_SOURCE_ONLY.baf'
+B2=P+'BGXAI_R39_JAGAN_STAF01_EEEX_SESSION_SOURCE_ONLY.baf'
 V='BGXAI/BUILD/WEAPON_XEQUIP_V3_NATIVE_RO_20261127/BGXAI_XEQUIP_V3_NATIVE_COMPILE_RO.py'
 C='BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_COMPILE_PREFLIGHT_RO.py'
 # Immutable specific bytes, not source branch HEAD, CI, or a filename assertion.
 SOURCES={
- A:(12458,'c07b486f6ba68899d023f2ee9bfc4587ad2b5f79b9630f7f8321d494bc5f07be'),
+ A:(13584,'9cd96c77f07d7261b69139f9454c9a68e8d0773b0afa58a02c7051c73c32bed4'),
  B:(2303,'3b84d38a9df069e3dedfdaf8de6cbf6958a7252d43490fa64b829375cf7cd03d'),
+ B2:(2407,'6d39e72684548c7b1b900e80f1bdb4271044e9889364db958f52b0532d1b73f0'),
  V:(10743,'b4a0789c568879a179e21cf50391afd999861e85f832f587aceb07cf816e055e'),
  C:(9551,'27285b3d067eab2c67b075dc8654b9a0f74da0d7920b2e96339ced3e14bcd10a'),
 }
@@ -94,7 +96,7 @@ def run(game:Path,commit:str,fetcher=fetch,runner=subprocess.run,require_windows
                 raise Hold('HOLD_STAGED_BYTES_CHANGED')
         cmd=[sys.executable,str(temp.joinpath(*A.split('/'))),
              '--native-readonly','--game',str(game),
-             '--source',str(temp.joinpath(*B.split('/'))),
+             '--source',str(temp.joinpath(*B2.split('/'))),
              '--v3-helper',str(temp.joinpath(*V.split('/'))),
              '--backend',str(temp.joinpath(*C.split('/')))]
         call=runner(cmd,cwd=str(temp),stdin=subprocess.DEVNULL,
@@ -119,8 +121,8 @@ def run(game:Path,commit:str,fetcher=fetch,runner=subprocess.run,require_windows
               inner['itemHeaderCheck'].get('engineCanEquipVerified') is False)
         native=(is_full_pass or is_item_hold) and (
               inner.get('nativeWeiDUCompileVerified') is True and
-              inner.get('sourceSha256')==SOURCES[B][1] and
-              inner.get('sourceBytes')==SOURCES[B][0] and
+              inner.get('sourceSha256')==SOURCES[B2][1] and
+              inner.get('sourceBytes')==SOURCES[B2][0] and
               inner.get('watchedFilesChanged') is False and
               inner.get('temporaryOutputRemoved') is True and
               inner.get('installed') is False and
@@ -140,7 +142,10 @@ def run(game:Path,commit:str,fetcher=fetch,runner=subprocess.run,require_windows
                 'realGameplayTransferVerified':False,
                 'gameModified':False,'installed':False,'ordersSent':0,
                 'dispatchAuthorized':False,'armAuthorized':False,
-                'sourcePinCommit':commit,'bafSha256':SOURCES[B][1],
+                'sourcePinCommit':commit,'bafSha256':SOURCES[B2][1],
+                'bafVariant':'EEEX_SESSION_SOURCE_ONLY',
+                'eeexLuaTriggerBoundAtRuntime':False,
+                'volatileSessionGateRuntimeVerified':False,
                 'innerReport':inner}
 
 def report(data):
