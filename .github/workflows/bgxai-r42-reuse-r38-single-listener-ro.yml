@@ -10,6 +10,7 @@ on:
       - 'BGXAI/BUILD/R47_GUARDED_BDDEFAI_EXEC_WITNESS_SOURCEONLY_20261128/**'
       - 'BGXAI/BUILD/R48_ONE_REAL_STAF01_EQUIP_AFTER_R47_20261128/**'
       - 'BGXAI/BUILD/R49_R48_BACKPACK16_SOURCE_ONLY_20261128/**'
+      - 'BGXAI/BUILD/R50_JAGAN_SCRIPTNAME_FIX_SOURCEONLY_20261128/**'
       - 'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_ACTOR_ID_GUARD_SOURCE_ONLY.py'
       - 'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/test_r39_actor_wrapper_id_guard_source_only.py'
       - 'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/test_r39_actor_wrapper_id_guard_source_only.lua'
@@ -204,6 +205,8 @@ jobs:
           PY
       - name: R49 corrected R48 backpack16 exact diff SOURCE ONLY (8 regression tests, NO GAME)
         run: python -m unittest -v BGXAI/BUILD/R49_R48_BACKPACK16_SOURCE_ONLY_20261128/test_r49_reuse_r48_backpack16_source_only.py
+      - name: R50 exact generated-PC false Name guard correction source-only (9 fail-closed tests NO GAME)
+        run: python -m unittest -v BGXAI/BUILD/R50_JAGAN_SCRIPTNAME_FIX_SOURCEONLY_20261128/test_r50_exact_name_guard_repair.py
       - name: R49 guarded old R48 last159 to last160 fake-EET install rollback exact preimage (16 tests, NO GAME)
         run: python -m unittest -v BGXAI/BUILD/R49_R48_BACKPACK16_SOURCE_ONLY_20261128/test_r49_last159_to160_guarded.py
 
