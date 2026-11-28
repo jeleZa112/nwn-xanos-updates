@@ -46,17 +46,6 @@ jobs:
         run: python project_tools/resume_guard.py --preflight BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_GUARDED_FROM_R38.py
       - name: Existing immutable predecessor and canonical preflight
         run: python project_tools/resume_guard.py
-      - name: Print staged R48 original onefile179 child size/SHA before repin (NO GAME)
-        shell: bash
-        run: |
-          python - <<'PY'
-          import hashlib
-          from pathlib import Path
-          file=Path('BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py')
-          b=file.read_bytes()
-          print('R48_ORIGINAL_ONEFILE_CHILD_PIN',len(b),hashlib.sha256(b).hexdigest())
-          PY
-
       - name: Print staged R47 same-original-onefile179 child SHA before repin (NO GAME)
         shell: bash
         run: |
@@ -152,9 +141,6 @@ jobs:
           PY
       - name: R48 first actual STAF01 action/last159 WeiDU guard mock source (NO GAME)
         run: python -m unittest -v BGXAI/BUILD/R48_ONE_REAL_STAF01_EQUIP_AFTER_R47_20261128/test_r48_first_real_one_shot_item_source_only.py
-
-      - name: R48 original onefile179 modes23-25 typed real action, 12 mocks (NO GAME)
-        run: python -m unittest -v BGXAI/BUILD/R48_ONE_REAL_STAF01_EQUIP_AFTER_R47_20261128/test_r48_same_onefile179_real_equip_source_only.py
 
       - name: Print R48 staged one-shot action+guard pins before binding to onefile
         shell: bash
