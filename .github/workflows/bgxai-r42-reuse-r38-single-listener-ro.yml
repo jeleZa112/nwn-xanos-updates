@@ -92,7 +92,7 @@ jobs:
           if($mods[1].mode -cne 'guarded' -or $mods[2].mode -cne 'guarded'){throw 'Native V2 R48 consent mode invalid'}
           Write-Host 'BGXAI V2 ORIGINAL HUB FULL 180-182 INDEX NATIVE PASS'
           '@
-          [IO.File]::WriteAllText($probe,$sourceOnly+`"`n`"+$check,[Text.Encoding]::ASCII)
+          [IO.File]::WriteAllText($probe,$sourceOnly+"`n"+$check,[Text.Encoding]::ASCII)
           powershell.exe -NoProfile -ExecutionPolicy Bypass -File $probe
           $mods=@($all.modules)
           $old=@($mods | Where-Object { $_.code -eq 180 })
