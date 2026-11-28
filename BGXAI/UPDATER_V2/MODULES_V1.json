@@ -8,13 +8,13 @@
       "label": "Saved party ITM catalog source RO",
       "language": "python",
       "mode": "readonly",
-      "commit": "dd185a64a2120880a943f22b3e9108e8bbfbd5e9",
+      "commit": "8fd8b0014d1af62908ca57b52d52bb15d0b3fc98",
       "entry": "BGXAI/UPDATER_V2/BGXAI_MODULE180_SAVED_PARTY_CATALOG_RO.py",
       "files": [
         {
           "path": "BGXAI/UPDATER_V2/BGXAI_MODULE180_SAVED_PARTY_CATALOG_RO.py",
-          "size": 11520,
-          "sha256": "ff7bcd8c6f69c5af0a516dcc0c28291c02d89386e2f481a13539f1f986efec3c"
+          "size": 12874,
+          "sha256": "1552abeb52602f9d1983a0196be15ede8be5f4cb6de22f7de81a8abc1aa23790"
         },
         {
           "path": "BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_ITM_R3_RO.py",
