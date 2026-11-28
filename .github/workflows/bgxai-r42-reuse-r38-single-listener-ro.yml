@@ -4,6 +4,7 @@ on:
     branches: [bg-eet-ai]
     paths:
       - 'BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/**'
+      - 'BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/**'
       - 'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_ACTOR_ID_GUARD_SOURCE_ONLY.py'
       - 'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/test_r39_actor_wrapper_id_guard_source_only.py'
       - 'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/test_r39_actor_wrapper_id_guard_source_only.lua'
@@ -65,6 +66,9 @@ jobs:
               b=(root/name).read_bytes()
               print('R43_STAGE_PIN',name,len(b),hashlib.sha256(b).hexdigest())
           PY
+      - name: Test exact R44 replacement of R43 embedded R39 (SOURCE ONLY)
+        run: python -m unittest -v BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128/test_r44_numeric_id_compose_source_only.py
+
       - name: Test composed R38/R39 read-only bridge (required)
         run: python -m unittest -v BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/test_r42_reuse_r38_source_only.py
 
@@ -140,6 +144,25 @@ jobs:
               subprocess.run(['lua5.4','-e','assert(loadfile('+json.dumps(str(extra))+'))'],check=True)
           print('R42 bounded R39 HOLD-reason Lua syntax PASS; original installed candidate unchanged')
           print('R42 composed Lua syntax PASS; no listener executed; game untouched')
+          PY
+
+      - name: Syntax-check exact R43-to-R44 candidate with one listener (NO GAME)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib,importlib.util,json,subprocess,tempfile
+          from pathlib import Path
+          root=Path('BGXAI/BUILD/R44_R43_ACTOR_NUMERIC_ID_LAST157_20261128')
+          spec=importlib.util.spec_from_file_location('r44_exact_source',root/'BGXAI_R44_COMPOSE_FROM_R43_SOURCE_ONLY.py')
+          mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod)
+          raw=mod.compose()
+          print('R44_SINGLE_LISTENER_SOURCE_PIN',len(raw),hashlib.sha256(raw).hexdigest())
+          with tempfile.TemporaryDirectory(prefix='BGXAI_R44_NO_DEPLOY_') as folder:
+              target=Path(folder)/'M_BGXR27_R44_UNINSTALLED.lua'
+              target.write_bytes(raw)
+              subprocess.run(['lua5.4','-e','assert(loadfile('+json.dumps(str(target))+'))'],check=True)
+          print('R44 SOURCE candidate Lua syntax PASS; user game not modified')
           PY
 
       - name: R39 Lua wrapper-object versus numeric actor ID regression (NO GAME)
