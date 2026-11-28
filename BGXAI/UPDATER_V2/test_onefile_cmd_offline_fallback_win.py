@@ -16,7 +16,7 @@ import unittest
 ROOT=Path(__file__).resolve().parents[2]
 CMD=ROOT/"BGXAI/UPDATER_V2/BGXAI_UPDATE_V2_STAGE.txt"
 HUB=ROOT/"BGXAI/UPDATER_V2/BGXAI_HUB_V2.ps1"
-COMMIT="d6ca225e2ee39f3aaf3eee7ce03e32ad0d307526"
+COMMIT="40cd303fdcf9e776e6062b9ce6c8eaa3d00a7376"
 
 @unittest.skipUnless(os.name=="nt","Native Windows PowerShell 5.1 only")
 class TestOfflineBounded(unittest.TestCase):
