@@ -4,6 +4,8 @@ on:
     branches: [bg-eet-ai]
     paths:
       - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_PRIORITY_LUA_V3.lua'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/BGXAI_WEAPON_NATIVE_ITM_R3_RO.py'
+      - 'BGXAI/patchsets/ranged_fighter_guarded_20261119/test_weapon_native_itm_r3_ro.py'
       - 'BGXAI/BUILD/WEAPON_INVENTORY_PRIORITY_V4_20261126/BGXAI_BACKPACK16_PRIORITY_RO_V4.lua'
       - 'BGXAI/BUILD/WEAPON_INVENTORY_CORRECTED_V3_20261126/BGXAI_BACKPACK16_R37_RO_V3.lua'
       - 'BGXAI/BUILD/WEAPON_INVENTORY_PRIORITY_V4_20261126/test_backpack16_priority_v4.lua'
@@ -57,6 +59,9 @@ jobs:
             python3 BGXAI/patchsets/ranged_fighter_guarded_20261119/run_weapon_priority_v3_regression.py --lua "${runtime}" || result=1
           done
           exit "${result}"
+      - name: R3 native ITM/BIF + R37 39-slot join (35 read-only Python unit tests)
+        shell: bash
+        run: python3 -m unittest discover -s BGXAI/patchsets/ranged_fighter_guarded_20261119 -p 'test_weapon_native_itm_r3_ro.py' -q
       - name: R2 real quickslot/quiver/offhand fingerprint invalidation on THREE Lua runtimes (39 cases each)
         shell: bash
         run: |
