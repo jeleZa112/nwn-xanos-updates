@@ -81,7 +81,7 @@ def _lua(lua: str) -> None:
         for name in ('BGXAI_WEAPON_APR_PROVENANCE_V5.lua', 'test_weapon_apr_provenance_v5.lua'):
             shutil.copy2(ROOT / name, p5 / name)
         suites = [
-            (p3 / TEST, r'PASS WEAPON PRIORITY NATIVE LUA 59/59 SOURCE ONLY'),
+            (p3 / TEST, r'PASS WEAPON PRIORITY NATIVE LUA 65/65 SOURCE ONLY'),
             (p4 / 'test_weapon_effects_v4.lua', r'PASS TOTAL 34 / 34 NATIVE LUA SOURCE ONLY'),
             (p5 / 'test_weapon_apr_provenance_v5.lua', r'PASS APR V5 25/25 OFFLINE SOURCE ONLY'),
             (ROOT / 'test_weapon_noninterrupt_plan_v1.lua', r'PASS NONINTERRUPT SCHEDULER 26/26 SOURCE ONLY'),
@@ -102,8 +102,8 @@ def _lua(lua: str) -> None:
                 count = len(re.findall(r'^PASS ', result.stdout, re.M)) - 1
             print(f'PASS {path.name}: {count} offline tests / matrix cases')
             passed += count
-        assert passed == 443, passed
-        print(f'PASS TOTAL {passed}/443 OFFLINE LUA TESTS AND MATRIX CASES; NO GAME DEPLOY')
+        assert passed == 449, passed
+        print(f'PASS TOTAL {passed}/449 OFFLINE LUA TESTS AND MATRIX CASES; NO GAME DEPLOY')
 
 
 def main() -> int:
