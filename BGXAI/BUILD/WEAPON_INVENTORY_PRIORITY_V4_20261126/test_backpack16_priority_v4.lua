@@ -772,6 +772,10 @@ end)
 test('r13_action134_context_remains_observed_only',function()
  local p=with_r13()
  p.action.m_actionID=134;p.context.actionRaw=134;p.r37.actionRaw=134
+ local oldCtx=p.contextReader
+ p.contextReader=function()
+  local x=oldCtx();x.actionRaw=134;return x
+ end
  local initial=M.planAutoBatchWithR13(p)
  assert(initial.status=='HOLD_AUTOBATCH_TARGET_RANKING_UNSTABLE')
  assert(initial.r13ActionId==134)
