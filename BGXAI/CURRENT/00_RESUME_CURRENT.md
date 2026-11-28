@@ -3,7 +3,19 @@
 <!-- RESUME_GUARD_BGXAI_R39_BAF_BYTES=2303 -->
 <!-- RESUME_GUARD_BGXAI_R39_BAF_SHA256=3b84d38a9df069e3dedfdaf8de6cbf6958a7252d43490fa64b829375cf7cd03d -->
 
-**Дата сверки:** 2026-11-27. **Приоритет:** этот короткий файл → фактическая текущая ветка → последние отчёты пользователя → [подробная хронология](000_READ_FIRST_LIVE_PROGRESS_R38.md) только для доказательств. Старые `00_CURRENT_STATUS`, `00_AUTO_CONTINUE_READ_FIRST` и README — перенаправления/история. Не выполнять старые `next` из архивов.
+## 28.11.2026 — R41 SOURCE-ONLY FIXED + VERIFIED, ИГРОВАЯ УСТАНОВКА ЗАПРЕЩЕНА ДО LIVE PROOFS
+
+**RESUME_VERDICT:** RESUME_PARTIAL_SAFE_ONLY; полный текст чата BGXAI 1.5.1 недоступен, но ветка `bg-eet-ai`, исходники и отчёты в текущих handoff проверены. **PRIOR_WORK_RECEIPT:** R39 already native-compiled 2407B (реальный `BGXAI_R39_NATIVE177_20261128T061446243176Z.json`), R40 4632B source-only reset, R41 11/11 offline mock. Не повторять 176→7, R38 capture, V3/V6/R29, не писать новый ARM/обновлятор.
+
+**Только исправленная дельта:** существующий `build_r41_link_sourceonly.py` ссылался на несуществующий `R39.../M_BGXW3_SESSION_RESET_V1.lua`, хотя исходник уже есть в соседней `R40_SESSION_RESET_SOURCEONLY_20261127/`; путь восстановлен, SHA-проверки оригинальных R39/R40 сохранены. В существующем R41 мосте теперь отказ `addDestroyed`/`addLoaded` со значением `false` считается провалом регистрации. Никаких изменений оригинального R39/R40/BAF, AI, EPS, игры, PIN или одного `BGXAI_UPDATE.cmd`.
+
+**CODE:** исходник R41 = **21603 байта**, SHA256 `a808848e1752ebff8251bf56af96dc8983654359fa722b60858d57edea78da4e`; генератор = **7140 байт**; bundled original modules embedded unchanged. **TEST:** [GitHub Actions 46117471549](https://github.com/jeleZa112/nwn-xanos-updates/actions/runs/46117471549) **SUCCESS Ubuntu+Windows**: **118/118 Python tests on each OS** (including clean-checkout reproduce builder) и **14/14 Lua lifecycle mock** на Ubuntu (включая явный отказ callback регистрации). Это не нативный EET runtime. **DEPLOY:** только GitHub source/CI; R41 game install = NO; **LIVE XEquipItem = NO**.
+
+**Первый реально незавершённый рубеж:** доказанный installed-EEex `ports.capture` для конкретного Джагана, действующий script owner/assigned BCS (прежний `probeInstalledScriptAssignments` source-only уже есть), динамическая usability/effects, manual/EPS boundary и R40 before-AI order. Затем **только** existing one-file updater + separate typed approval + BCS exact baseline/last-only rollback + external backup + disposable-save single LIVE item transfer. Не подставлять `true` вместо runtime proof; не просить повторные native/old capture.
+
+---
+
+**Дата сверки:** 2026-11-28. **Приоритет:** этот короткий файл → фактическая текущая ветка → последние отчёты пользователя → [подробная хронология](000_READ_FIRST_LIVE_PROGRESS_R38.md) только для доказательств. Старые `00_CURRENT_STATUS`, `00_AUTO_CONTINUE_READ_FIRST` и README — перенаправления/история. Не выполнять старые `next` из архивов.
 
 ## 2026-11-28 — ПОДТВЕРЖДЁННЫЙ ПОВТОР V3 В НОВОМ R39 ARM
 
