@@ -1,0 +1,7 @@
+{
+  "schema": 1,
+  "channel": "BGXAI_ONEFILE_MODULES_V2",
+  "branch": "bg-eet-ai",
+  "modules": [],
+  "notes": "Add module entries using immutable commit, byte-size, sha256. Existing 1-179 remain in pinned legacy. No new CMD or hub release required."
+}
