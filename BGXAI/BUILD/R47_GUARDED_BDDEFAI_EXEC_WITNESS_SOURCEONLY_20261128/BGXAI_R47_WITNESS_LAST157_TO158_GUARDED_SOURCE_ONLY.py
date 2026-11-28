@@ -305,10 +305,85 @@ def status(r44,r43,r42,r38,old,game):
         "installed":False,"gameModified":False,"ordersSent":0,
         "armAuthorized":False,"dispatchAuthorized":False,"noAutoRetry":True}
 
+def parse_witness_console(log:Path,exitcode:int):
+    """Only one bounded, redacted read-only BCS trigger-evaluation witness."""
+    if log.is_symlink() or not log.is_file() or log.stat().st_size>64_000_000:
+        raise Hold("HOLD_R47_RAW_CONSOLE_FILE_INVALID")
+    marker=b"[BGXBEX] R46_BDDEFAI_CLASS_TRIGGER_EVALUATED_JAGAN_READONLY"
+    found=0
+    with log.open("rb") as stream:
+        for line in stream:
+            if marker not in line:
+                continue
+            if len(line)>8192:
+                raise Hold("HOLD_R47_WITNESS_LINE_OVERSIZE")
+            found+=1
+            if found>1 or not all(tag in line for tag in (
+                b"scrlev=4",b"class=BDDEFAI",b"partyIndex=1",
+                b"witnessBlockEvaluated=true",b"actionOriginVerified=false",
+                b"ordersSent=0",b"armAuthorized=false")):
+                raise Hold("HOLD_R47_WITNESS_AMBIGUOUS_OR_UNTRUSTED")
+    if found!=1:
+        return {"schema":SCHEMA,"status":"R47_CAPTURE_HOLD_WITNESS_NOT_OBSERVED",
+            "observedWitnessRows":found,
+            "gameExitCode":exitcode,"actualBcsWitnessBlockEvaluated":False,
+            "actualBcsActionExecutionVerified":False,
+            "manualEpsActionOriginVerified":False,
+            "installed":True,"gameModified":False,"ordersSent":0,
+            "armAuthorized":False,"dispatchAuthorized":False,
+            "noAutoRetry":True}
+    return {"schema":SCHEMA,
+        "status":"R47_LIVE_BDDEFAI_WITNESS_TRIGGER_EVALUATED_NO_ARM",
+        "observedWitnessRows":found,
+        "gameExitCode":exitcode,
+        "actualBcsWitnessBlockEvaluated":True,
+        "actualBcsActionExecutionVerified":False,
+        "manualEpsActionOriginVerified":False,
+        "installed":True,"gameModified":False,
+        "ordersSent":0,"armAuthorized":False,"dispatchAuthorized":False,
+        "noAutoRetry":False}
+
+def capture(r44,r43,r42,r38,old,game):
+    exact_last_r47(r44,r43,r42,r38,old,game)
+    r42.check_processes(r38,old)
+    proof=exact_proof(old,game)
+    if old.sha(old.safe(game,SOURCE_LUA))!=EXPECTED_LUA_SHA or (
+        old.sha(old.safe(game,SOURCE_BCS))!=proof.get("installedBcsSha256")):
+        raise Hold("HOLD_R47_CAPTURE_RESOURCE_DRIFT")
+    for rel,digest in proof["baselineSnapshot"].items():
+        if rel not in ("WeiDU.log",SOURCE_BCS) and old.sha(old.safe(game,rel))!=digest:
+            raise Hold("HOLD_R47_CAPTURE_UNRELATED_RESOURCE_DRIFT:"+rel)
+    loader=old.safe(game,"InfinityLoader.exe")
+    if (loader.is_symlink() or not loader.is_file() or
+        not 1024<loader.stat().st_size<70_000_000):
+        raise Hold("HOLD_R47_INFINITY_LOADER_SIZE")
+    with loader.open("rb") as reader:
+        if reader.read(2)!=b"MZ":
+            raise Hold("HOLD_R47_INFINITY_LOADER_SIGNATURE")
+    home=os.environ.get("USERPROFILE")
+    if not home:raise Hold("HOLD_R47_USERPROFILE_MISSING")
+    parent=Path(home)/"Documents"/"BGXAI_LIVE_REPORTS"
+    if parent.is_symlink() or (hasattr(parent,"is_junction") and parent.is_junction()):
+        raise Hold("HOLD_R47_CAPTURE_LOG_DIR_REPARSE")
+    parent.mkdir(parents=True,exist_ok=True)
+    file=parent/("BGXAI_R47_BDDEFAI_BCS_EXEC_"+
+        datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")+".log")
+    with file.open("xb") as target:
+        child=subprocess.Popen([str(loader)],cwd=game,stdin=subprocess.DEVNULL,
+            stdout=target,stderr=subprocess.STDOUT,close_fds=True)
+        exitcode=child.wait()
+        target.flush()
+    exact_last_r47(r44,r43,r42,r38,old,game)
+    result=parse_witness_console(file,exitcode)
+    result["rawConsoleFile"]=str(file)
+    result["rawConsoleBytes"]=file.stat().st_size
+    return result
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--game",type=Path,default=ROOT)
-    p.add_argument("--mode",choices=("status","preflight","install","rollback"),default="status")
+    p.add_argument("--mode",choices=("status","preflight","install","rollback","capture"),default="status")
     p.add_argument("--onefile-review-gate",action="store_true")
     args=p.parse_args(argv)
     try:
@@ -322,9 +397,11 @@ def main(argv=None):
         elif args.mode=="install":
             token=input("Type "+INSTALL_TOKEN+" exactly (ENTER cancels): ").strip()
             out=install(r44,r43,r42,r38,old,composer,args.game,token)
-        else:
+        elif args.mode=="rollback":
             token=input("Type "+ROLLBACK_TOKEN+" exactly (ENTER cancels): ").strip()
             out=rollback(r44,r43,r42,r38,old,args.game,token)
+        else:
+            out=capture(r44,r43,r42,r38,old,args.game)
         rc=3 if ("HOLD" in out["status"] or "STOP" in out["status"]) else 0
     except (OSError,ValueError,TypeError,UnicodeError,subprocess.TimeoutExpired,EOFError) as error:
         out={"schema":SCHEMA,"status":"R47_STOP_MANUAL_REVIEW",
