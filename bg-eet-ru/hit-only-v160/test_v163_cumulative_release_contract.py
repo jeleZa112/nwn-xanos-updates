@@ -21,11 +21,11 @@ class V163CumulativePublisher(unittest.TestCase):
     def test_exact_release_contract(self):
         blob=ONEFILE.read_bytes()
         manifest=json.loads(RELEASE.read_text(encoding='utf-8'))
-        self.assertEqual(manifest['version'],163)
+        self.assertEqual(manifest['version'],164)
         self.assertEqual(sha(ONEFILE),manifest['sha256'])
-        self.assertEqual(len(blob),749793)
+        self.assertEqual(len(blob),749937)
         self.assertLessEqual(len(blob),750000)
-        self.assertIn(b'SELF_VERSION = 163',blob)
+        self.assertIn(b'SELF_VERSION = 164',blob)
         self.assertIs(manifest['game_writes_allowed'],False)
         self.assertIs(manifest['default_game_writes_allowed'],False)
 
