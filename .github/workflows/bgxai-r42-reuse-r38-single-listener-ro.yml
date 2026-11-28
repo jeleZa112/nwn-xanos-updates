@@ -82,7 +82,7 @@ jobs:
           # The old immutable hub SelfTest intentionally tests its original
           # one-entry code180 fixture. Its runtime Check-Index supports 100.
           # Preserve that backwards-compatible test while separately
-          # checking the FULL (180+181+182+183+184+185+186) immutable manifest in Python CI.
+          # checking the FULL (180+181+182+183+184+185+186+187) immutable manifest in Python CI.
           $all=Get-Content 'BGXAI/UPDATER_V2/MODULES_V1.json' -Raw | ConvertFrom-Json
           # Test actual unmodified V2 hub Check-Index on the entire
           # production manifest using PowerShell 5.1; NO game/root access.
@@ -95,17 +95,17 @@ jobs:
           $check=@'
           $all=Get-Content 'BGXAI/UPDATER_V2/MODULES_V1.json' -Raw | ConvertFrom-Json
           $mods=@(Check-Index $all)
-          if($mods.Count -ne 7){throw 'Native V2 actual full manifest check failed'}
-          if($mods[0].code -ne 180 -or $mods[1].code -ne 181 -or $mods[2].code -ne 182 -or $mods[3].code -ne 183 -or $mods[4].code -ne 184 -or $mods[5].code -ne 185 -or $mods[6].code -ne 186){throw 'Native V2 module ordering changed'}
-          if($mods[1].mode -cne 'guarded' -or $mods[2].mode -cne 'guarded' -or $mods[3].mode -cne 'readonly' -or $mods[4].mode -cne 'readonly' -or $mods[5].mode -cne 'guarded' -or $mods[6].mode -cne 'guarded'){throw 'Native V2 R48 R49 consent or recovery mode invalid'}
-          Write-Host 'BGXAI V2 ORIGINAL HUB FULL 180-186 INDEX NATIVE PASS'
+          if($mods.Count -ne 8){throw 'Native V2 actual full manifest check failed'}
+          if($mods[0].code -ne 180 -or $mods[1].code -ne 181 -or $mods[2].code -ne 182 -or $mods[3].code -ne 183 -or $mods[4].code -ne 184 -or $mods[5].code -ne 185 -or $mods[6].code -ne 186 -or $mods[7].code -ne 187){throw 'Native V2 module ordering changed'}
+          if($mods[1].mode -cne 'guarded' -or $mods[2].mode -cne 'guarded' -or $mods[3].mode -cne 'readonly' -or $mods[4].mode -cne 'readonly' -or $mods[5].mode -cne 'guarded' -or $mods[6].mode -cne 'guarded' -or $mods[7].mode -cne 'guarded'){throw 'Native V2 R48 R49 R50 consent or recovery mode invalid'}
+          Write-Host 'BGXAI V2 ORIGINAL HUB FULL 180-187 INDEX NATIVE PASS'
           '@
           [IO.File]::WriteAllText($probe,$sourceOnly+"`n"+$check,[Text.Encoding]::ASCII)
           powershell.exe -NoProfile -ExecutionPolicy Bypass -File $probe
           $mods=@($all.modules)
           $old=@($mods | Where-Object { $_.code -eq 180 })
           if($old.Count -ne 1){throw 'Missing original safe readonly module180'}
-          if($mods.Count -ne 7){throw 'Wrong guarded R48 R49 and recovery module count'}
+          if($mods.Count -ne 8){throw 'Wrong guarded R48 R49 R50 and recovery module count'}
           $one=@{schema=1;channel='BGXAI_ONEFILE_MODULES_V2';branch='bg-eet-ai';modules=$old;notes='Original immutable hub exact one-entry selftest'}
           $fixture=Join-Path $env:RUNNER_TEMP 'bgxai_v2_original_180_selftest.json'
           $json=ConvertTo-Json -InputObject $one -Depth 20
