@@ -127,6 +127,41 @@ local function verified_scene(s,passivePreview)
   return 'HOLD_INCOMPLETE_LOADOUT' end
  return nil
 end
+-- R13 already reads distinct physical AC modifiers. When that complete
+-- source-only candidate is supplied, use the AC for ATTACK KIND, not damage
+-- resistance kind: all ranged weapon attacks test vs MISSILE AC even when
+-- their damage payload is PIERCING. The model is NOT an EEex live attestation.
+local AC_KINDS={SLASHING=true,PIERCING=true,CRUSHING=true,MISSILE=true}
+local function attack_ac(w,e)
+ local kind=w.mode=='RANGED' and 'MISSILE' or w.damageType
+ local v=e.targetArmorClassByAttackTypeCandidate
+ if v==nil then
+  if e.targetTypeACModelStatus~=nil or
+     e.targetTypeACModelSnapshotId~=nil or
+     e.targetArmorClassBaseCandidate~=nil or
+     e.targetTypeACNativeAuthenticated~=nil then
+   return nil,'TARGET_TYPE_AC_MODEL_INCOMPLETE'
+  end
+  return e.armorClass,nil,kind,'BASE_AC_ONLY_APPROXIMATE'
+ end
+ if type(v)~='table' or
+    e.targetTypeACModelStatus~='R13_DERIVED_ATTACK_TYPE_AC_MODEL_ONLY' or
+    e.targetTypeACModelSnapshotId~=e.protections.snapshotId or
+    e.targetTypeACNativeAuthenticated~=false or
+    e.targetArmorClassBaseCandidate~=e.armorClass then
+  return nil,'TARGET_TYPE_AC_EVIDENCE_INCONSISTENT'
+ end
+ local n=0
+ for k,x in pairs(v) do
+  if AC_KINDS[k]~=true or not between(x,-50,100) or x%1~=0 then
+   return nil,'TARGET_TYPE_AC_EVIDENCE_INVALID' end
+  n=n+1
+ end
+ if n~=4 or not between(v[kind],-50,100) then
+  return nil,'TARGET_TYPE_AC_EVIDENCE_INCOMPLETE'
+ end
+ return v[kind],nil,kind,'R13_TYPE_AC_MODEL_ONLY'
+end
 local function scored_weapon(w,a,e)
  local excludedReason=proven_ineligible(w,a)
  if excludedReason then
@@ -181,7 +216,9 @@ local function scored_weapon(w,a,e)
     (not w.magical and p.normalWeaponsBlocked) or
     (w.mode=='RANGED' and p.missilesBlocked))
  for _,x in ipairs(p.immuneDamageTypes) do if x==w.damageType then immune=true end end
- local hit=clamp((21-w.finalTHAC0+e.armorClass)/20,0.05,0.95)
+ local actualAC,acError,attackKind,acTier=attack_ac(w,e)
+ if actualAC==nil then return nil,acError end
+ local hit=clamp((21-w.finalTHAC0+actualAC)/20,0.05,0.95)
  local dpr=immune and 0 or hit*w.avgDamageOnHit*w.apr*(1-p.resistance[w.damageType])
  local extra=immune and 0 or w.extraEffectValue
  local value=dpr+extra-w.switchCost-w.resourceCost-w.retaliationRisk-w.movementCost
@@ -197,7 +234,8 @@ local function scored_weapon(w,a,e)
   ineffectiveReason='VERIFIED_NO_EFFECTIVE_DAMAGE_OR_EFFECT'
  end
  return {id=w.id,slotIndex=w.quickslotIndex,available=true,value=value,dpr=dpr,penetrates=not immune,
-         hitChance=hit,mode=w.mode,ineffectiveReason=ineffectiveReason},nil
+         hitChance=hit,mode=w.mode,ineffectiveReason=ineffectiveReason,
+         targetACUsed=actualAC,attackACType=attackKind,attackACModel=acTier},nil
 end
 local function choose_impl(scene,previous,passivePreview)
  local problem=verified_scene(scene,passivePreview)
