@@ -273,7 +273,7 @@ class T(unittest.TestCase):
 
     def test_guarded_invalid_mode_rejected_before_fetch(self):
         with self.assertRaisesRegex(R.Hold,'HOLD_R42_GUARDED_MODE'):
-            R.run_guarded(self.game,COMMIT,'capture',fetcher=self.guarded_fetch,
+            R.run_guarded(self.game,COMMIT,'nonesuch',fetcher=self.guarded_fetch,
                           require_windows=False)
 
     def test_guarded_does_not_infer_old_bddefai_is_live(self):
