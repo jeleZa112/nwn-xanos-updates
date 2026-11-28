@@ -113,6 +113,12 @@ class T(unittest.TestCase):
             self.assertEqual(channel['script_sha256'],
                 'de98827dbef5056755239f903ba0f7b4bb6106398d046b2d34a4d6c164747361')
             self.assertNotEqual(staged_sha,channel['script_sha256'])
+        elif channel['commit']=='180ef997fd6cee7e3b12c03ecaae472340d9aac0':
+            # Real user currently runs installed R43 from this immutable
+            # 179 child. Staged R44 source is not published until CI passes.
+            self.assertEqual(channel['script_sha256'],
+                'f286b0080e4de38ea61cba4493c41f8020d8b68dbd26a6d8478887495e76b5ca')
+            self.assertNotEqual(staged_sha,channel['script_sha256'])
         else:
             self.assertEqual(channel['script_sha256'],staged_sha)
             self.assertEqual(len(channel['commit']),40)
