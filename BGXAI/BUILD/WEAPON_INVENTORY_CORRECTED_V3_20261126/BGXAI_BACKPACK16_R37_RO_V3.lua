@@ -136,17 +136,24 @@ end
 -- top-level inventory slots, ON DEMAND, not in a new listener.
 -- Never treats equal resrefs as proof of individual CItem instance identity.
 local function same_raw_item(r,x,slot)
- if type(r)~='table' or r.slot~=slot or
+ -- Existing R2/R27 fields are {index,kind,ordinal,access,itemResrefRaw};
+ -- NOT {slot,resrefRaw}. The offhand is one raw object, not an array.
+ if type(r)~='table' or r.index~=slot or
     type(x)~='table' or x.slot~=slot then return false end
  if x.status=='EMPTY' then
-  return r.resrefRaw==nil and r.useCount1Raw==nil and
-         r.useCount2Raw==nil and r.useCount3Raw==nil
+  return r.access=='NULL' and r.itemResrefRaw==nil and
+         r.useCount1Raw==nil and r.useCount2Raw==nil and
+         r.useCount3Raw==nil and r.flagsRaw==nil
  end
- return x.status=='PRESENT_RAW' and type(r.resrefRaw)=='string' and
-        x.resref==r.resrefRaw:upper() and
+ return x.status=='PRESENT_RAW' and
+        r.access=='OBJECT_RETURNED_UNVERIFIED' and
+        r.resrefAccess=='RAW_RESREF_RETURNED_UNVERIFIED' and
+        type(r.itemResrefRaw)=='string' and
+        x.resref==r.itemResrefRaw:upper() and
         x.useCount1Raw==r.useCount1Raw and
         x.useCount2Raw==r.useCount2Raw and
-        x.useCount3Raw==r.useCount3Raw
+        x.useCount3Raw==r.useCount3Raw and
+        x.flagsRaw==r.flagsRaw
 end
 
 function M.captureTopLevel(sprite,r37,contextReader)
@@ -212,7 +219,7 @@ function M.captureTopLevel(sprite,r37,contextReader)
      not same_raw_item(r37.quiversRaw[i],other[10+i],10+i) then
    return hold('HOLD_TOPLEVEL_R37_GEAR_CHANGED') end
  end
- if not same_raw_item(r37.offhandRaw[1],other[9],9) then
+ if not same_raw_item(r37.offhandRaw,other[9],9) then
   return hold('HOLD_TOPLEVEL_R37_OFFHAND_CHANGED') end
  -- A final backpack read closes the window spanning the extra 23 slots.
  local endBag=M.observe(sprite)
