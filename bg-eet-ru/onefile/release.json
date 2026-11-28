@@ -2,7 +2,7 @@
   "schema": "bg-eet-ru-onefile-release-v1",
   "project": "BG_EET_RU_ONEFILE_VISIBLE_ONLY",
   "version": 162,
-  "sha256": "4e2c9135a918023f9dc7dd0d7db143d29a813de03a1916bf251b84b85127520a",
+  "sha256": "8daff9b3b513e14d9b261748657bab3d6acac8f08423ed532d3ed801b994c6ea",
   "mode": "V162_SHA_PINNED_WEAPON_NAME_BATCH_ONEFILE_MENU",
   "game_writes_allowed": false,
   "note": "Single existing BG_EET_RU_UPDATE.cmd, 747945 bytes (<750000), unchanged V160 installed Lua by default. Menu 12 -> status/preflight/typed install/typed rollback of up to 64 current-game R3/V111-verified item names; historical seed list not accepted as proof. New backend loaded only from immutable commit and SHA256-checked external cache; all five source modules SHA256-checked. Typed game writes guarded by exact installed V160 SHA, pinned game and TLK, WeiDU and current ITM SHA, external backup, atomic swap, last-only rollback to V160. Default game writes forbidden. Release status SOURCE/CI until user confirms installation. Existing menus 1-11 retained.",
