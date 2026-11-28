@@ -133,8 +133,8 @@ class V2OriginalR50(unittest.TestCase):
   self.assertEqual(self.native.operations,[])
 
  def test_12_guarded_inside choice_requires_EXACT_new_token(self):
-  with patch("builtins.input",side_effect=["3",""]),
-       patch.object(M,"run",side_effect=AssertionError("must not execute")):
+  with (patch("builtins.input",side_effect=["3",""]),
+        patch.object(M,"run",side_effect=AssertionError("must not execute"))):
    self.assertEqual(M.main(["--game",str(self.game),
        "--onefile-hub-guarded","--approved-token",M.OPEN]),3)
 
