@@ -42,7 +42,7 @@ CANDIDATE_SHA = "d14bf5f62f7d37663cf77f3305f57fb9631293940ed8ae2d4cb7b488248434b
 SOURCES.update({
     R38_GUARD: (21303, "f39c0efb08ef9db7097fe062db88c6f6b1452e4e77ec9b395d4e934d39440b9c"),
     R37_GUARD: (26252, "b34c93a0315c578989079c3565c6f0704315b8cdeabfb15be06508e4b5367e2d"),
-    R42_GUARD: (15458, "939274e0d30319fc04b9a1973b818a0da77370d55e85b46d8e085b7179fa0110"),
+    R42_GUARD: (20471, "347722909c8c41364530adc1c51cd1607fb4181d6c2628d1d52b80596c170215"),
 })
 MODES = {"1": "source", "2": "status", "3": "preflight",
          "4": "install", "5": "rollback", "6": "capture"}
