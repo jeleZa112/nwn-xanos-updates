@@ -1,0 +1,53 @@
+name: BG EET RU V162 guarded onefile stage
+on:
+  push:
+    branches: [bg-eet-ru-v162-batch-stage]
+  pull_request:
+    paths:
+      - 'bg-eet-ru/onefile/**'
+      - 'bg-eet-ru/hit-only-v160/weapon_names_onefile_dispatch.py'
+      - 'bg-eet-ru/hit-only-v160/test_weapon_names_onefile_dispatch.py'
+      - '.github/workflows/bg-eet-ru-v162-stage.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Hash immutable imported components
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from hashlib import sha256
+          paths=[
+             'bg-eet-ru/hit-only-v160/weapon_names_batch_source.py',
+             'bg-eet-ru/weapon-identity/BG_EET_RU_ITEM_NAMES_FROM_BGXAI_R3_RO.py',
+             'BGXAI/BUILD/R27_SINGLE_CALLBACK_SELECTED_RO_20261123/BGXAI_WEAPON_NATIVE_ITM_R3_RO.py',
+             'bg-eet-ru/weapon-identity/V111_ITEM_NAMES_READONLY_SOURCE_ONLY.py',
+             'bg-eet-ru/hit-only-v160/v160_guarded.py',
+             'bg-eet-ru/hit-only-v160/weapon_names_onefile_dispatch.py',
+          ]
+          for name in paths:
+              data=Path(name).read_bytes()
+              print('PIN_SHA256',sha256(data).hexdigest(),name)
+          PY
+      - name: New onefile routing unit tests
+        run: python -m unittest discover -s bg-eet-ru/hit-only-v160 -p 'test_weapon_names_onefile_dispatch.py' -v
+      - name: Existing guarded batch and V160 regression
+        run: python -m unittest discover -s bg-eet-ru/hit-only-v160 -p 'test_*.py' -v
+      - name: Existing R3/V111 integration
+        run: python -m unittest discover -s bg-eet-ru/weapon-identity -p 'test_BG_EET_RU_ITEM_NAMES_FROM_BGXAI_R3_RO.py' -v
+      - name: Existing onefile selftest (no game)
+        run: python -x bg-eet-ru/onefile/BG_EET_RU_UPDATE.cmd --selftest
