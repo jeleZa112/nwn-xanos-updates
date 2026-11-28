@@ -331,6 +331,32 @@
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
   "source_provenance_receipts": [
     {
+      "receipt_id": "BGXAI_V3_GAM_CRE_SAVED_BCS_ASSIGNMENTS_PREWORK_20261128",
+      "project": "BGXAI",
+      "source_path": "BGXAI/BUILD/WEAPON_XEQUIP_LOCAL_ARM_SOURCEONLY_V3_20261127/verify_candidate_ro.py",
+      "source_git_blob_sha": "4b095b4e61c167d55c19196abd7f2ea3083a4dce",
+      "predecessor_sources": [
+        {
+          "path": "BGXAI/BUILD/WEAPON_XEQUIP_LOCAL_ARM_SOURCEONLY_V3_20261127/BGXAI_XEQUIP_LOCAL_ARM_SOURCE_V3.py",
+          "git_blob_sha": "c692607782c787d183daee76fe712d09f304e777"
+        },
+        {
+          "path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/BGXAI_R39_EEEX117_ENGINE_BRIDGE_RO.lua",
+          "git_blob_sha": "440dd8d7bff6f47775331040c7b1bf99723e18b9"
+        }
+      ],
+      "already_implemented": [
+        "Existing verify_candidate_ro.py already strictly parses genuine GAMEV2.0 party, embedded CRE V1.0, class and STAF01 instance data",
+        "Existing R39 EEex117 bridge already reads seven script-level resrefs from an actual portrait and distinctly refuses to prove live BCS execution"
+      ],
+      "exclusive_delta": "Before any game install, reuse the existing bounded GAM/CRE parser to expose only five saved CRE V1.0 script resref fields (override/class/race/general/default) for the existing verified Jagan candidate; keep saved BCS names strictly separate from actual EEex script execution or script ownership and never authorize arming.",
+      "evidence": "BGXAI/CURRENT/00_RESUME_CURRENT.md; https://gibberlings3.github.io/iesdp/file_formats/ie_formats/cre_v1.htm",
+      "status": "PREWORK_REVIEWED_SOURCE_ONLY",
+      "recorded_before_change": true,
+      "game_modified": false,
+      "installed": false
+    },
+    {
       "receipt_id": "BGXAI_R39_GESTURE_V3_REUSE_20261128",
       "project": "BGXAI",
       "source_path": "BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/M_BGXW3_EXPLICIT_USER_ARM_SOURCE_ONLY.lua",
