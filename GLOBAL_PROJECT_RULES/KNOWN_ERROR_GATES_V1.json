@@ -384,6 +384,25 @@
       ],
       "enforcement": "existing R39 CI clean-checkout generator equality, Lua mock false-return regression, original R39/R40 sha pins; no install permission",
       "status_detail": "SOURCE_FIXED_CI_PASS_RUNTIME_UNPROVEN"
+    },
+    {
+      "error_id": "BGXAI_R42_LIVE_CAPTURE_HOLD_DETAIL_MASKED_20261128",
+      "project": "BGXAI",
+      "type": "CONFIRMED_FAILURE",
+      "status": "OPEN_AWAIT_EXISTING_RAW_CAPTURE_LOG",
+      "discovered_at": "2026-11-28",
+      "trigger": "Real Windows R42 one-file 179→6 capture after independently positive 179→2 guarded installed status",
+      "observed_failure": "The real capture printed BG_EET_RU_V106 SOURCE_LOADED and START true LISTENER_REGISTERED, then outer one-file status R42_HOLD_ONEFILE_GUARDED reason HOLD_R42_NATIVE_GUARD_OR_STATE, noAutoRetry=true and exit=1. It did not expose native inner status/reason or rawConsoleFile. The assigned CLASS resref remains unproven.",
+      "cause": "CONFIRMED_DIAGNOSTIC_MASKING: BGXAI_R42_ONEFILE_SOURCE_RO.py treats every nonzero or not-accepted native capture result as a single Hold('HOLD_R42_NATIVE_GUARD_OR_STATE'), dropping inner reason and raw log path from outer stdout. UNDERLYING_LIVE_HOLD_CAUSE=UNKNOWN until the already-written BGXAI_R42_CLASS_BCS_*.log is inspected. V106 listener registration is not evidence of conflict.",
+      "do_not_repeat": "Do not rerun 179→6 or 179→3/4, R38 capture, R39 native compile, reinstall or rollback. Do not infer the BG_EET_RU_V106 listener caused R42 failure, or assert a CLASS BCS name from historical GAM. Do not declare offline 103/103 CI a live proof.",
+      "safe_action": "Use the single existing raw BGXAI_R42_CLASS_BCS_*.log from Documents/BGXAI_LIVE_REPORTS, if created, from the failed run. Inspect [BGXBCS] counts, sanitized row format/status, INFO startup and process exit indicators with existing parser; preserve original file. Only after distinguishing malformed/zero/multi-row/launcher exit decide whether a minimal source-only correction is required; any updater change must retain one CMD, SHA pins, full CI, typed install/rollback safety and no automatic rerun.",
+      "closure_condition": "The cause is distinguished from existing first-run raw log without repeating the game test; then existing R42 capture path preserves exact native HOLD reason/rawConsoleFile or a narrowly justified fix is verified in source CI and live proof independently. No XEquip until separate actor/item/EPS guards verified.",
+      "evidence": [
+        "user-provided 2026-11-28 BGXAI_UPDATE.cmd 179→6 console in current BGXAI conversation (R42_HOLD_ONEFILE_GUARDED, HOLD_R42_NATIVE_GUARD_OR_STATE)",
+        "https://github.com/jeleZa112/nwn-xanos-updates/blob/bg-eet-ai/BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_ONEFILE_SOURCE_RO.py",
+        "https://github.com/jeleZa112/nwn-xanos-updates/blob/bg-eet-ai/BGXAI/BUILD/R42_R38_CLASS_BCS_SINGLE_LISTENER_20261128/BGXAI_R42_GUARDED_FROM_R38.py"
+      ],
+      "enforcement": "procedural no-retry HOLD; first inspect existing raw capture; no runtime or updater patch published yet"
     }
   ],
   "registry_note": "Legacy known_errors remain the voice-specific executable gates. project_error_register is cross-project evidence and manual/automated preflight; entries do not imply current live access or that a user updater is installed.",
