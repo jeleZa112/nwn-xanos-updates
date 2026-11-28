@@ -123,6 +123,46 @@ class OnefileV2Compatibility(unittest.TestCase):
             self.assertEqual(len(f.read_bytes()),entry['size'])
             self.assertEqual(hashlib.sha256(f.read_bytes()).hexdigest(),entry['sha256'])
 
+    def test_r48_guarded_181_182_exact_pins_and_no_new_cmd(self):
+        index=json.loads(INDEX.read_text(encoding='ascii'))
+        self.assertEqual([m['code'] for m in index['modules']],[180,181,182])
+        r181,r182=index['modules'][1:]
+        self.assertEqual(r181['mode'],'guarded')
+        self.assertEqual(r182['mode'],'guarded')
+        self.assertEqual(r181['language'],'python')
+        self.assertEqual(r182['language'],'python')
+        self.assertEqual(r181['approval'],
+            'INSTALL_BGXAI_R48_ONE_STAF01_FROM_BACKPACK_TO_WEAPON_AFTER_R47')
+        self.assertEqual(r182['approval'],'ROLLBACK_BGXAI_R48_RESTORE_R47_ONLY')
+        self.assertEqual(r181['commit'],r182['commit'])
+        self.assertEqual(r181['entry'],r182['entry'])
+        self.assertEqual(r181['files'],r182['files'])
+        self.assertEqual(len(r181['files']),18)
+        paths={x['path'] for x in r181['files']}
+        self.assertIn('BGXAI/UPDATER_V2/BGXAI_MODULE181_182_R48_ONE_SHOT_GUARDED.py',paths)
+        self.assertIn(
+            'BGXAI/BUILD/R48_ONE_REAL_STAF01_EQUIP_AFTER_R47_20261128/'
+            'BGXAI_R48_LAST158_TO159_ONE_ITEM_GUARDED.py',paths)
+        self.assertIn(
+            'BGXAI/BUILD/R39_STAGED_XEQUIP_SOURCEONLY_20261127/'
+            'BGXAI_R39_JAGAN_STAF01_EEEX_SESSION_SOURCE_ONLY.baf',paths)
+        for entry in r181['files']:
+            f=ROOT/entry['path']
+            payload=f.read_bytes()
+            self.assertEqual(len(payload),entry['size'],entry['path'])
+            self.assertEqual(hashlib.sha256(payload).hexdigest(),
+                             entry['sha256'],entry['path'])
+            self.assertFalse(f.is_symlink())
+        # Installed original hub already supports guarded exact confirmation.
+        original=HUB.read_text(encoding='ascii')
+        self.assertIn("GUARDED MODULE: a separate exact confirmation is required.",original)
+        self.assertIn("if($typed -cne $approval)",original)
+        self.assertIn("--onefile-hub-guarded --approved-token",original)
+        self.assertNotIn('XEquipItem(',original)
+        self.assertNotIn('XEquipItem(',((ROOT/r181['entry']).read_text(encoding='ascii')))
+        self.assertNotIn('181',CMD.read_text(encoding='ascii'))
+        self.assertEqual(len(CMD.read_bytes()),len((ROOT/'BGXAI_UPDATE.cmd').read_bytes()))
+
     def test_existing_pin_unchanged_during_staging(self):
         j=json.loads(PIN.read_text(encoding='utf-8'))
         self.assertEqual(j['commit'],'f2827f25da5a01215fcbdc0b9a48e3900d654384')
