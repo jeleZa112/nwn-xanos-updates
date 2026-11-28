@@ -624,4 +624,85 @@ test('battle_decision_forged_authority_or_origin_fails_closed',function()
  assert(y.status=='HOLD_BATTLE_EVIDENCE_OR_ACTION_CONTEXT_INCOMPLETE')
  contract(y)
 end)
+test('autobatch_known_busy_skips_39_slot_scan_and_rank_completely',function()
+ local sprite,obs,ctx,b,q,o,s,c,vm=r37_fixture()
+ obs.queuedActionsRaw=3
+ local called=0
+ local reader={captureTopLevel=function()called=called+1;error('scan forbidden')end}
+ local x=M.planAutoBatch(sprite,obs,ctx,reader,{},function()error('projection')end,
+                        s,vm,nil,V3)
+ assert(x.status=='PRESERVE_KNOWN_ACTION_QUEUE_NO_SCAN')
+ assert(x.knownQueuedActions==3 and x.inventoryCaptureCalls==0)
+ assert(x.scorerCalls==0 and called==0)
+ contract(x)
+end)
+test('autobatch_automatically_discovers_and_stages_backpack_weapon',function()
+ local sprite,obs,ctx,b,q,o,s,c,vm=r37_fixture()
+ local raw=R37Bag.captureTopLevel(sprite,obs,ctx)
+ local r3=r3_snapshot(raw)
+ local fixture={sprite,obs,ctx,b,q,o,s,c,vm}
+ local project=modeled_from(fixture)
+ local initial=M.planAutoBatch(sprite,obs,ctx,R37Bag,r3,project,s,vm,nil,V3)
+ assert(initial.status=='HOLD_AUTOBATCH_TARGET_RANKING_UNSTABLE')
+ assert(initial.candidateCount==1 and type(initial.v3Next)=='table')
+ s.tick=101;vm.frame.tick=101
+ local final=M.planAutoBatch(sprite,obs,ctx,R37Bag,r3,project,s,vm,initial.v3Next,V3)
+ assert(final.status=='STAGE_DECISION_AWAIT_INDEPENDENT_MANUAL_EPS_ROUND_PROOF')
+ assert(final.pendingWeaponChange.kind=='EQUIP_BACKPACK_TO_EMPTY_QUICKSLOT')
+ assert(final.pendingWeaponChange.sourceSlot==18)
+ assert(final.pendingWeaponChange.targetSlot==36)
+ assert(final.candidateCount==1 and final.inventoryCaptureCalls==1)
+ assert(final.r3ItemSourcesCrosschecked and final.nativeEffectiveAlternateAprVerified==false)
+ contract(final)
+end)
+test('autobatch_empty_eligible_candidates_keeps_weapon',function()
+ local sprite,obs,ctx,b,q,o,s,c,vm=r37_fixture()
+ local r3=r3_snapshot(R37Bag.captureTopLevel(sprite,obs,ctx))
+ local skip=function()return {status='CANNOT_USE_OR_NOT_WEAPON'}end
+ local initial=M.planAutoBatch(sprite,obs,ctx,R37Bag,r3,skip,s,vm,nil,V3)
+ assert(initial.status=='HOLD_AUTOBATCH_TARGET_RANKING_UNSTABLE')
+ s.tick=101;vm.frame.tick=101
+ local x=M.planAutoBatch(sprite,obs,ctx,R37Bag,r3,skip,s,vm,initial.v3Next,V3)
+ assert(x.status=='KEEP_CURRENT_ACTION_OR_UNPROVEN_GAIN')
+ assert(x.candidateCount==0)
+ contract(x)
+end)
+test('autobatch_forged_r3_item_map_blocks_all_scoring',function()
+ local sprite,obs,ctx,b,q,o,s,c,vm=r37_fixture()
+ local r3=r3_snapshot(R37Bag.captureTopLevel(sprite,obs,ctx))
+ r3.inventoryRawMap['18'].resref='CHEAT01'
+ local projectCalls=0
+ local x=M.planAutoBatch(sprite,obs,ctx,R37Bag,r3,function()
+   projectCalls=projectCalls+1;return {} end,s,vm,nil,V3)
+ assert(x.status=='HOLD_AUTOBATCH_R3_ITEM_JOIN')
+ assert(x.reason=='HOLD_R3_TOPLEVEL_ITEM_CHANGED_OR_UNMAPPED')
+ assert(projectCalls==0)
+ contract(x)
+end)
+test('autobatch_rejects_other_actor_and_forged_manual_origin',function()
+ local sprite,obs,ctx,b,q,o,s,c,vm=r37_fixture()
+ local r3=r3_snapshot(R37Bag.captureTopLevel(sprite,obs,ctx))
+ local fixture={sprite,obs,ctx,b,q,o,s,c,vm}
+ s.actorId=999
+ local x=M.planAutoBatch(sprite,obs,ctx,R37Bag,r3,modeled_from(fixture),s,vm,nil,V3)
+ assert(x.status=='HOLD_AUTOBATCH_EVENT_CONTRACT_INCOMPLETE')
+ contract(x)
+ s.actorId=123;obs.actionOriginVerified=true
+ local y=M.planAutoBatch(sprite,obs,ctx,R37Bag,r3,modeled_from(fixture),s,vm,nil,V3)
+ assert(y.status=='HOLD_AUTOBATCH_EVENT_CONTRACT_INCOMPLETE')
+ contract(y)
+end)
+test('autobatch_refuses_changed_r37_snapshot_mid_scan',function()
+ local sprite,obs,ctx,b,q,o,s,c,vm=r37_fixture()
+ local r3=r3_snapshot(R37Bag.captureTopLevel(sprite,obs,ctx))
+ local fixture={sprite,obs,ctx,b,q,o,s,c,vm}
+ local bad={captureTopLevel=function()
+   return {status='HOLD_TOPLEVEL_ITEM_CHANGED',readOnly=true,
+           sourceOnly=true,dispatchAuthorized=false}
+ end}
+ local x=M.planAutoBatch(sprite,obs,ctx,bad,r3,modeled_from(fixture),s,vm,nil,V3)
+ assert(x.status=='HOLD_AUTOBATCH_R37_RAW_SNAPSHOT')
+ assert(x.r37CaptureStatus=='HOLD_TOPLEVEL_ITEM_CHANGED')
+ contract(x)
+end)
 print("BGXAI BACKPACK16 PRIORITY V4 "..n.." synthetic tests PASS")
