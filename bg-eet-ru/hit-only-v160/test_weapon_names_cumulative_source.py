@@ -173,7 +173,7 @@ class CumulativeTests(unittest.TestCase):
         self.assertEqual(self.target.read_bytes(),self.first_lua)
         self.assertNotEqual(self.target.read_bytes(),FIRST_LUA)
         self.assertEqual(self.first_state_path.read_bytes(),self.first_state_bytes)
-        self.assertEqual(json.loads((self.work/cumulative.SECOND_STATE).read_text())['phase'],'ROLLED_BACK')
+        self.assertEqual(json.loads((self.work/cumulative.SECOND_STATE).read_text(encoding='utf-8'))['phase'],'ROLLED_BACK')
 
     def test_no_repeat_after_first_install(self):
         self.install()
@@ -261,7 +261,7 @@ class CumulativeTests(unittest.TestCase):
     def test_new_state_schema_drift_blocks_rollback(self):
         self.install()
         p=self.work/cumulative.SECOND_STATE
-        d=json.loads(p.read_text());d['schema']='FAKE';p.write_text(json.dumps(d))
+        d=json.loads(p.read_text(encoding='utf-8'));d['schema']='FAKE';p.write_text(json.dumps(d))
         self.assertIn('CUMULATIVE_ROLLBACK_RECEIPT_DRIFT',self.call('rollback',cumulative.APPROVE_ROLLBACK)['reason'])
 
     def test_second_state_symlink_blocks_preflight(self):
